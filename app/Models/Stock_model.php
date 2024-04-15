@@ -36,8 +36,7 @@ class Stock_model extends Model
     public function purchase_item()
     {
         // Define a custom method to retrieve only one order item
-        return $this->hasOne(Order_item_model::class, 'stock_id', 'id')->whereHas('order', function ($query) {
-            $query->where('id', $this->order_id); // Filter by order_id
-        });
+        return $this->hasOne(Order_item_model::class, 'stock_id', 'id')->where('order_id', $this->order_id);
     }
+
 }

@@ -126,7 +126,7 @@ class Order extends Component
     }
     public function purchase()
     {
-        $data['currencies'] = Currency_model::pluck('sign','id');
+
         $user_id = session('user_id');
         $data['vendors'] = Customer_model::where('is_vendor',1)->pluck('first_name','id');
         $data['order_statuses'] = Order_status_model::get();
@@ -141,33 +141,58 @@ class Order extends Component
                 case 4: $sort = "variation.name"; $by = "ASC"; break;
                 default: $sort = "orders.reference_id"; $by = "DESC";
             }
+            // $data['orders'] = Order_model::select(
+            //     'orders.id',
+            //     'orders.reference_id',
+            //     'orders.customer_id',
+            //     DB::raw('SUM(order_items.price) as total_price'),
+            //     DB::raw('COUNT(order_items.id) as total_quantity'),
+            //     DB::raw('(SELECT COUNT(order_items.id) FROM order_items INNER JOIN stock ON order_items.stock_id = stock.id WHERE order_items.order_id = orders.id AND stock.status = 1) as available_stock'),
+            //     'orders.created_at')
+            // ->where('orders.order_type_id',1)
+            // ->join('order_items', 'orders.id', '=', 'order_items.order_id')
+
+            // ->when(request('start_date') != '', function ($q) {
+            //     return $q->where('orders.created_at', '>=', request('start_date', 0));
+            // })
+            // ->when(request('end_date') != '', function ($q) {
+            //     return $q->where('orders.created_at', '<=', request('end_date', 0) . " 23:59:59");
+            // })
+            // ->when(request('order_id') != '', function ($q) {
+            //     return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
+            // })
+            // ->groupBy('orders.id', 'orders.reference_id', 'orders.customer_id', 'orders.currency', 'orders.created_at')
+            // ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
+            // // ->select('orders.*')
+            // ->paginate($per_page)
+            // ->onEachSide(5)
+            // ->appends(request()->except('page'));
+
             $data['orders'] = Order_model::select(
                 'orders.id',
                 'orders.reference_id',
                 'orders.customer_id',
                 DB::raw('SUM(order_items.price) as total_price'),
                 DB::raw('COUNT(order_items.id) as total_quantity'),
-                DB::raw('(SELECT COUNT(order_items.id) FROM order_items INNER JOIN stock ON order_items.stock_id = stock.id WHERE order_items.order_id = orders.id AND stock.status = 1) as available_stock'),
+                DB::raw('COUNT(CASE WHEN stock.status = 1 THEN order_items.id END) as available_stock'),
                 'orders.created_at')
-            ->where('orders.order_type_id',1)
+            ->where('orders.order_type_id', 1)
             ->join('order_items', 'orders.id', '=', 'order_items.order_id')
-
-            ->when(request('start_date') != '', function ($q) {
-                return $q->where('orders.created_at', '>=', request('start_date', 0));
+            ->join('stock', 'order_items.stock_id', '=', 'stock.id')
+            ->when(request('start_date'), function ($q) {
+                return $q->where('orders.created_at', '>=', request('start_date'));
             })
-            ->when(request('end_date') != '', function ($q) {
-                return $q->where('orders.created_at', '<=', request('end_date', 0) . " 23:59:59");
+            ->when(request('end_date'), function ($q) {
+                return $q->where('orders.created_at', '<=', request('end_date') . " 23:59:59");
             })
-            ->when(request('order_id') != '', function ($q) {
+            ->when(request('order_id'), function ($q) {
                 return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
             })
-            ->groupBy('orders.id', 'orders.reference_id', 'orders.customer_id', 'orders.currency', 'orders.created_at')
+            ->groupBy('orders.id', 'orders.reference_id', 'orders.customer_id', 'orders.created_at')
             ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
-            // ->select('orders.*')
             ->paginate($per_page)
             ->onEachSide(5)
             ->appends(request()->except('page'));
-
 
 
         // dd($data['orders']);
@@ -219,12 +244,20 @@ class Order extends Component
     public function purchase_detail($order_id){
 
         $data['storages'] = Storage_model::pluck('name','id');
-        $data['variations'] = Variation_model::whereHas('stocks.order_item', function($query) use ($order_id) {
+        $data['variations'] = Variation_model::with(['stocks' => function ($query) use ($order_id) {
+            $query->where('order_id', $order_id);
+        }, 'stocks.order_item' => function ($query) use ($order_id) {
+            $query->where('order_id', $order_id);
+        }])
+        ->whereHas('stocks', function ($query) use ($order_id) {
             $query->where('order_id', $order_id);
         })
-        ->with('stocks','stocks.order_item','stocks.variation')
-        ->orderBy('grade','desc')
+        // ->whereHas('stocks.order_item', function ($query) use ($order_id) {
+        //     $query->where('order_id', $order_id);
+        // })
+        ->orderBy('grade', 'desc')
         ->get();
+
 
         $data['all_variations'] = Variation_model::where('grade',9)->get();
         $data['order'] = Order_model::find($order_id);
@@ -237,7 +270,7 @@ class Order extends Component
         // print_r($items);
 
         // echo "</pre>";
-        // dd($items);
+        // dd($data['variations']);
         return view('livewire.purchase_detail')->with($data);
 
     }

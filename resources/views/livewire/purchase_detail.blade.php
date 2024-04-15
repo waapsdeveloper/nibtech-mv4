@@ -120,7 +120,7 @@
                                 </thead>
                                 <tbody>
                                     @php
-                                        $i = 1;
+                                        $i = 0;
                                         $id = [];
                                     @endphp
                                     @php
@@ -131,27 +131,28 @@
                                     @endphp
 
                                     @foreach ($stocks as $item)
-                                        @if($item->order_item[0]->order_id == $order_id)
+                                        {{-- @dd($item) --}}
+                                        {{-- @if($item->order_item[0]->order_id == $order_id) --}}
+                                        @php
+                                        $i ++;
+                                    @endphp
                                         <tr>
                                             <td>{{ $i }}</td>
                                             <td>{{ $item->imei.$item->serial_number }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
-                                            <td>{{ $currency.$item->order_item[0]->price }}</td>
+                                            <td>{{ $currency.$item->purchase_item->price }}</td>
                                             @endif
                                             @if (session('user')->hasPermission('delete_purchase_item'))
-                                            <td><a href="{{ url('delete_order_item').'/'.$item->order_item[0]->id }}"><i class="fa fa-trash"></i></a></td>
+                                            <td><a href="{{ url('delete_order_item').'/'.$item->purchase_item->id }}"><i class="fa fa-trash"></i></a></td>
                                             @endif
                                         </tr>
-                                        @php
-                                            $i ++;
-                                        @endphp
-                                        @endif
+                                        {{-- @endif --}}
                                     @endforeach
                                 </tbody>
                             </table>
                         <br>
                     </div>
-
+                    <div class="text-end">Total: {{$i }}</div>
                     </div>
                 </div>
             </div>
