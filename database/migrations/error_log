@@ -1,0 +1,112 @@
+[23-Dec-2022 17:41:31 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/transaction9/public_html/database/migrations/2014_10_12_000000_create_users_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/transaction9/public_html/database/migrations/2014_10_12_000000_create_users_table.php on line 7
+[23-Dec-2022 17:41:31 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/transaction9/public_html/database/migrations/2014_10_12_100000_create_password_resets_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/transaction9/public_html/database/migrations/2014_10_12_100000_create_password_resets_table.php on line 7
+[23-Dec-2022 17:41:31 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/transaction9/public_html/database/migrations/2019_08_19_000000_create_failed_jobs_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/transaction9/public_html/database/migrations/2019_08_19_000000_create_failed_jobs_table.php on line 7
+[23-Dec-2022 17:41:31 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/transaction9/public_html/database/migrations/2019_12_14_000001_create_personal_access_tokens_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/transaction9/public_html/database/migrations/2019_12_14_000001_create_personal_access_tokens_table.php on line 7
+[30-Dec-2022 22:21:18 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/transaction9/public_html/database/migrations/2014_10_12_000000_create_users_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/transaction9/public_html/database/migrations/2014_10_12_000000_create_users_table.php on line 7
+[30-Dec-2022 22:21:18 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/transaction9/public_html/database/migrations/2014_10_12_100000_create_password_resets_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/transaction9/public_html/database/migrations/2014_10_12_100000_create_password_resets_table.php on line 7
+[30-Dec-2022 22:21:18 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/transaction9/public_html/database/migrations/2019_08_19_000000_create_failed_jobs_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/transaction9/public_html/database/migrations/2019_08_19_000000_create_failed_jobs_table.php on line 7
+[30-Dec-2022 22:21:19 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/transaction9/public_html/database/migrations/2019_12_14_000001_create_personal_access_tokens_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/transaction9/public_html/database/migrations/2019_12_14_000001_create_personal_access_tokens_table.php on line 7
+[07-Jan-2023 03:59:42 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/transaction9/public_html/database/migrations/2014_10_12_000000_create_users_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/transaction9/public_html/database/migrations/2014_10_12_000000_create_users_table.php on line 7
+[07-Jan-2023 03:59:42 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/transaction9/public_html/database/migrations/2014_10_12_100000_create_password_resets_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/transaction9/public_html/database/migrations/2014_10_12_100000_create_password_resets_table.php on line 7
+[07-Jan-2023 03:59:42 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/transaction9/public_html/database/migrations/2019_08_19_000000_create_failed_jobs_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/transaction9/public_html/database/migrations/2019_08_19_000000_create_failed_jobs_table.php on line 7
+[07-Jan-2023 03:59:42 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/transaction9/public_html/database/migrations/2019_12_14_000001_create_personal_access_tokens_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/transaction9/public_html/database/migrations/2019_12_14_000001_create_personal_access_tokens_table.php on line 7
+[14-Jan-2023 04:00:59 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/transaction9/public_html/database/migrations/2014_10_12_000000_create_users_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/transaction9/public_html/database/migrations/2014_10_12_000000_create_users_table.php on line 7
+[14-Jan-2023 04:01:00 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/transaction9/public_html/database/migrations/2014_10_12_100000_create_password_resets_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/transaction9/public_html/database/migrations/2014_10_12_100000_create_password_resets_table.php on line 7
+[14-Jan-2023 04:01:00 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/transaction9/public_html/database/migrations/2019_08_19_000000_create_failed_jobs_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/transaction9/public_html/database/migrations/2019_08_19_000000_create_failed_jobs_table.php on line 7
+[14-Jan-2023 04:01:00 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/transaction9/public_html/database/migrations/2019_12_14_000001_create_personal_access_tokens_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/transaction9/public_html/database/migrations/2019_12_14_000001_create_personal_access_tokens_table.php on line 7
+[21-Jan-2023 04:16:49 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/transaction9/public_html/database/migrations/2014_10_12_000000_create_users_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/transaction9/public_html/database/migrations/2014_10_12_000000_create_users_table.php on line 7
+[21-Jan-2023 04:16:49 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/transaction9/public_html/database/migrations/2014_10_12_100000_create_password_resets_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/transaction9/public_html/database/migrations/2014_10_12_100000_create_password_resets_table.php on line 7
+[21-Jan-2023 04:16:49 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/transaction9/public_html/database/migrations/2019_08_19_000000_create_failed_jobs_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/transaction9/public_html/database/migrations/2019_08_19_000000_create_failed_jobs_table.php on line 7
+[21-Jan-2023 04:16:49 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/transaction9/public_html/database/migrations/2019_12_14_000001_create_personal_access_tokens_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/transaction9/public_html/database/migrations/2019_12_14_000001_create_personal_access_tokens_table.php on line 7
+[28-Jan-2023 07:42:14 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/transaction9/public_html/database/migrations/2014_10_12_000000_create_users_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/transaction9/public_html/database/migrations/2014_10_12_000000_create_users_table.php on line 7
+[28-Jan-2023 07:42:15 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/transaction9/public_html/database/migrations/2014_10_12_100000_create_password_resets_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/transaction9/public_html/database/migrations/2014_10_12_100000_create_password_resets_table.php on line 7
+[28-Jan-2023 07:42:15 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/transaction9/public_html/database/migrations/2019_08_19_000000_create_failed_jobs_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/transaction9/public_html/database/migrations/2019_08_19_000000_create_failed_jobs_table.php on line 7
+[28-Jan-2023 07:42:15 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/transaction9/public_html/database/migrations/2019_12_14_000001_create_personal_access_tokens_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/transaction9/public_html/database/migrations/2019_12_14_000001_create_personal_access_tokens_table.php on line 7
+[04-Feb-2023 14:10:27 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/transaction9/public_html/database/migrations/2014_10_12_000000_create_users_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/transaction9/public_html/database/migrations/2014_10_12_000000_create_users_table.php on line 7
+[04-Feb-2023 14:10:27 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/transaction9/public_html/database/migrations/2014_10_12_100000_create_password_resets_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/transaction9/public_html/database/migrations/2014_10_12_100000_create_password_resets_table.php on line 7
+[04-Feb-2023 14:10:27 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/transaction9/public_html/database/migrations/2019_08_19_000000_create_failed_jobs_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/transaction9/public_html/database/migrations/2019_08_19_000000_create_failed_jobs_table.php on line 7
+[04-Feb-2023 14:10:27 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/transaction9/public_html/database/migrations/2019_12_14_000001_create_personal_access_tokens_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/transaction9/public_html/database/migrations/2019_12_14_000001_create_personal_access_tokens_table.php on line 7

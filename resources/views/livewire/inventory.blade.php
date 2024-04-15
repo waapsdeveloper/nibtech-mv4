@@ -1,0 +1,325 @@
+@extends('layouts.app')
+
+    @section('styles')
+        <style>
+            .rows{
+                border: 1px solid #016a5949;
+            }
+            .columns{
+                background-color:#016a5949;
+                padding-top:5px
+            }
+            .childs{
+                padding-top:5px
+            }
+        </style>
+    @endsection
+<br>
+    @section('content')
+        <!-- breadcrumb -->
+            <div class="breadcrumb-header justify-content-between">
+                <div class="left-content">
+                </div>
+                <div class="justify-content-center mt-2">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Products</li>
+                    </ol>
+                </div>
+            </div>
+        <!-- /breadcrumb -->
+        <div class="row">
+            <div class="col-md-12" style="border-bottom: 1px solid rgb(216, 212, 212);">
+                <center><h4>Search</h4></center>
+            </div>
+        </div>
+        <br>
+        <form action="" method="GET" id="search">
+            <div class="row">
+
+                <div class="col-lg-2 col-xl-2 col-md-2 col-sm-2">
+                    <div class="card-header">
+                        <h4 class="card-title mb-1">Category</h4>
+                    </div>
+                    <select name="category" class="form-control form-select select2" data-bs-placeholder="Select Category" onchange="selectCategory(this.value)">
+                        <option value="">Select</option>
+                        @foreach ($categories as $category)
+                            <option value="{{$category->id}}" @if(isset($_GET['category']) && $category->id == $_GET['category']) {{'selected'}}@endif>{{$category->name}}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-lg-2 col-xl-2 col-md-2 col-sm-2">
+                    <div class="card-header">
+                        <h4 class="card-title mb-1">Brand</h4>
+                    </div>
+                    <select name="brand" class="form-control form-select select2" data-bs-placeholder="Select Brand" onchange="selectBrand(this.value)">
+                        <option value="">Select</option>
+                        @foreach ($brands as $brand)
+                            <option value="{{$brand->id}}" @if(isset($_GET['brand']) && $brand->id == $_GET['brand']) {{'selected'}}@endif>{{$brand->name}}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-lg-3 col-xl-3 col-md-3 col-sm-3">
+                    <div class="card-header">
+                        <h4 class="card-title mb-1">Model</h4>
+                    </div>
+                    <select name="product" class="form-control form-select select2" data-bs-placeholder="Select Model" id="product-menu" onchange="selectProduct(this.value)">
+                        <option value="">Select</option>
+                    </select>
+                </div>
+                <div class="col-lg-3 col-xl-3 col-md-3 col-sm-3">
+                    <div class="card-header">
+                        <h4 class="card-title mb-1">Variation</h4>
+                    </div>
+                    <select name="variation" class="form-control form-select select2" data-bs-placeholder="Select Variation" id="variation-menu">
+                        <option value="">Select</option>
+                    </select>
+                </div>
+                <div class="col-lg-2 col-xl-2 col-md-2 col-sm-2">
+                    <div class="card-header">
+                        <h4 class="card-title mb-1">Grade</h4>
+                    </div>
+                    <select name="grade" class="form-control form-select select2">
+                        <option value="">Select</option>
+                        @foreach ($grades as $id=>$name)
+                            <option value="{{ $id }}" @if(isset($_GET['grade']) && $id == $_GET['grade']) {{'selected'}}@endif>{{ $name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+            <div class=" p-2">
+                <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
+                <a href="{{url(session('url').'inventory')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
+            </div>
+
+            <input type="hidden" name="page" value="{{ Request::get('page') }}">
+            <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
+        </form>
+        <br>
+        <script>
+            @if (request('category'))
+                let selectedCategoryId = {{ request('category') }};
+                @if (request('brand'))
+                    document.addEventListener('DOMContentLoaded', function() {
+                        selectBrand({{ request('brand') }})
+                    })
+                    @if (request('product'))
+                        document.addEventListener('DOMContentLoaded', function() {
+                            selectProduct({{ request('product') }})
+                        })
+                    @endif
+                @endif
+            @else
+                let selectedCategoryId = null;
+            @endif
+
+            const colorData = {!! json_encode($colors) !!};
+            const storageData = {!! json_encode($storages) !!};
+            const gradeData = {!! json_encode($grades) !!};
+
+            function selectCategory(categoryId) {
+                selectedCategoryId = categoryId;
+            }
+            function selectBrand(brandId) {
+                // Use the selectedCategoryId variable here to fetch stocks based on both category and brand
+                if (selectedCategoryId !== null) {
+                    fetch("{{ url(session('url').'inventory') }}/get_products?category=" + selectedCategoryId + "&brand=" + brandId)
+                        .then(response => response.json())
+                        .then(products => {
+                            const productMenu = document.getElementById('product-menu');
+                            productMenu.innerHTML = '<option value="">Select</option>'; // Clear existing variation menu items
+
+                            products.forEach(product => {
+                                const productLink = document.createElement('option');
+                                productLink.value = `${product.id}`;
+                                productLink.innerHTML = `${product.model}`;
+                                @if(request('product'))
+                                    // Check if the request parameter matches the product's ID
+                                    if (product.id == {{ request('product') }}) {
+                                        productLink.selected = true; // Set the 'selected' attribute
+                                    }
+                                @endif
+                                productMenu.appendChild(productLink);
+                            });
+                        })
+                        .catch(error => console.error('Error fetching products:', error));
+                } else {
+                    console.error('Please select a category first.');
+                }
+            }
+            function selectProduct(productId) {
+                // Use the selectedCategoryId variable here to fetch products based on both category and brand
+                if (selectedCategoryId !== null) {
+                    fetch("{{ url(session('url').'inventory') }}/get_variations/" + productId)
+                        .then(response => response.json())
+                        .then(variations => {
+                            const variationMenu = document.getElementById('variation-menu');
+                            variationMenu.innerHTML = '<option value="">Select</option>'; // Clear existing variation menu items
+
+                            variations.forEach(variation => {
+                                const variationLink = document.createElement('option');
+                                variationLink.value = `${variation.id}`;
+                                variationLink.innerHTML =  colorData[variation.color] + ' ' + storageData[variation.storage] + ' ' + gradeData[variation.grade];
+                                @if (request('variation'))
+                                    // Check if the request parameter matches the product's ID
+                                    if (variation.id == {{ request('variation') }}) {
+                                        variationLink.selected = true; // Set the 'selected' attribute
+                                    }
+                                @endif
+                                variationMenu.appendChild(variationLink);
+                            });
+                        })
+                        .catch(error => console.error('Error fetching products:', error));
+                } else {
+                    console.error('Please select a category first.');
+                }
+            }
+        </script>
+
+        <div class="row">
+            <div class="col-md-12" style="border-bottom: 1px solid rgb(216, 212, 212);">
+                <center><h4>Inventory</h4></center>
+            </div>
+        </div>
+        <br>
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-header pb-0">
+                        <div class="d-flex justify-content-between">
+                            <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$stocks->firstItem()}} {{ __('locale.To') }} {{$stocks->lastItem()}} {{ __('locale.Out Of') }} {{$stocks->total()}} </h5>
+
+                            <div class=" mg-b-0">
+                                <form method="get" action="" class="row form-inline">
+                                    <label for="perPage" class="card-title inline">per page:</label>
+                                    <select name="per_page" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
+                                        <option value="10" {{ Request::get('per_page') == 10 ? 'selected' : '' }}>10</option>
+                                        <option value="20" {{ Request::get('per_page') == 20 ? 'selected' : '' }}>20</option>
+                                        <option value="50" {{ Request::get('per_page') == 50 ? 'selected' : '' }}>50</option>
+                                        <option value="100" {{ Request::get('per_page') == 100 ? 'selected' : '' }}>100</option>
+                                    </select>
+                                    {{-- <button type="submit">Apply</button> --}}
+                                    <input type="hidden" name="category" value="{{ Request::get('category') }}">
+                                    <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
+                                    <input type="hidden" name="product" value="{{ Request::get('product') }}">
+                                    <input type="hidden" name="variation" value="{{ Request::get('variation') }}">
+                                    <input type="hidden" name="grade" value="{{ Request::get('grade') }}">
+                                    <input type="hidden" name="page" value="{{ Request::get('page') }}">
+                                </form>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="card-body"><div class="table-responsive">
+
+
+
+                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th><small><b>No</b></small></th>
+                                        <th><small><b>Product</b></small></th>
+                                        <th><small><b>IMEI / Serial Number</b></small></th>
+                                        <th><small><b>Vendor</b></small></th>
+                                        <th><small><b>Reference</b></small></th>
+                                        @if (session('user')->hasPermission('view_cost'))
+                                        <th><small><b>Cost</b></small></th>
+                                        @endif
+                                        <th><small><b>Datetime</b></small></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @php
+                                        $i = $stocks->firstItem() - 1;
+                                    @endphp
+                                    @foreach ($stocks as $index => $stock)
+                                        <tr>
+                                            <td>{{ $i + 1 }}</td><td>{{ $stock->variation->product->model . " " . (isset($stock->variation->color_id) ? $stock->variation->color_id->name . " " : null) .
+                                                (isset($stock->variation->storage_id) ? $stock->variation->storage_id->name . " " : null) . " " . $stock->variation->grade_id->name }}</td>
+                                            <td>{{ $stock->imei.$stock->serial_number }}</td>
+                                            <td>{{ $stock->order->customer->first_name ?? null}}</td>
+                                            <td>{{ $stock->order->reference_id }}</td>
+                                            @if (session('user')->hasPermission('view_cost'))
+                                            <td>{{ $stock->order->currency_id->sign ?? null }}{{$stock->order_item[0]->price ?? null }}</td>
+                                            @endif
+                                            <td>{{ $stock->updated_at }}</td>
+                                        </tr>
+
+                                        @php
+                                            $i ++;
+                                        @endphp
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        <br>
+                        {{ $stocks->onEachSide(1)->links() }} {{ __('locale.From') }} {{$stocks->firstItem()}} {{ __('locale.To') }} {{$stocks->lastItem()}} {{ __('locale.Out Of') }} {{$stocks->total()}}
+                    </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal" id="modaldemo">
+            <div class="modal-dialog wd-xl-400" role="document">
+                <div class="modal-content">
+                    <div class="modal-body pd-sm-40">
+                        <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
+                            type="button"><span aria-hidden="true">&times;</span></button>
+                        <h5 class="modal-title mg-b-5">Add Product</h5>
+                        <hr>
+                        <form action="{{ url('add_product') }}" method="POST">
+                            @csrf
+                            <div class="form-group">
+                                <label for="">Category</label>
+                                <select class="form-select" placeholder="Input Category" name="product[category]" required>
+                                    <option>Select Category</option>
+                                    @foreach ($categories as $category)
+                                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="">Brand</label>
+                                <select class="form-select" placeholder="Input Brand" name="product[brand]" required>
+                                    <option>Select Brand</option>
+                                    @foreach ($brands as $brand)
+                                        <option value="{{ $brand->id }}">{{ $brand->name }}</option>
+
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="">Model</label>
+                                <input class="form-control" placeholder="Input Model" name="product[model]" type="text" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="">Description</label>
+                                <textarea class="form-control" placeholder="Input Description" name="product[description]"></textarea>
+                            </div>
+                            <button class="btn btn-primary btn-block">{{ __('locale.Submit') }}</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endsection
+
+    @section('scripts')
+        <script>
+
+        </script>
+		<!--Internal Sparkline js -->
+		<script src="{{asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js')}}"></script>
+
+		<!-- Internal Piety js -->
+		<script src="{{asset('assets/plugins/peity/jquery.peity.min.js')}}"></script>
+
+		<!-- Internal Chart js -->
+		<script src="{{asset('assets/plugins/chartjs/Chart.bundle.min.js')}}"></script>
+
+		<!-- INTERNAL Select2 js -->
+		{{-- <script src="{{asset('assets/plugins/select2/js/select2.full.min.js')}}"></script>
+		<script src="{{asset('assets/js/select2.js')}}"></script> --}}
+    @endsection

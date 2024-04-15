@@ -1,0 +1,111 @@
+<?php
+
+use App\Http\Controllers\LanguageController;
+use App\Http\Controllers\TestingController;
+use App\Http\Livewire\Change;
+use App\Http\Livewire\Emptypage;
+use App\Http\Livewire\Error404;
+use App\Http\Livewire\Error500;
+use App\Http\Livewire\Error501;
+use App\Http\Livewire\Index;
+use App\Http\Livewire\Profile;
+use App\Http\Livewire\Searching;
+use App\Http\Livewire\Signin;
+use App\Http\Livewire\Order;
+use App\Http\Livewire\Wholesale;
+use App\Http\Livewire\Inventory;
+use App\Http\Livewire\Product;
+use App\Http\Livewire\Variation;
+use App\Http\Livewire\Process;
+use App\Http\Livewire\Payouts;
+use App\Http\Livewire\Logout;
+use App\Http\Livewire\Team;
+use Illuminate\Support\Facades\Route;
+use App\Http\Middleware\GetAllowedRoutesMiddleware;
+
+use App\Models\Routes_model;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
+|
+*/
+
+// Route::get('/', function () {
+//     return view('livewire.index');
+// });
+Route::get('/', Index::class)->name('index');
+Route::get('index', Index::class)->name('index');
+// Route::post('change', Change::class);
+Route::get('error404', Error404::class)->name('error');
+Route::get('error500', Error500::class)->name('error');
+Route::get('error501', Error501::class)->name('error');
+Route::get('profile', Profile::class)->name('profile');
+Route::get('signin', Signin::class)->name('login');
+Route::post('login', [Signin::class,'login'])->name('signin');
+Route::get('logout', Logout::class)->name('signin');
+
+Route::get('purchase', [Order::class,'purchase'])->name('view_purchase');
+Route::post('add_purchase', [Order::class,'add_purchase'])->name('add_purchase');
+Route::post('add_purchase_item/{id}', [Order::class,'add_purchase_item'])->name('add_purchase_item');
+Route::get('delete_order/{id}', [Order::class,'delete_order'])->name('delete_purchase');
+Route::get('delete_order_item/{id}', [Order::class,'delete_order_item'])->name('delete_purchase_item');
+Route::get('purchase/detail/{id}', [Order::class,'purchase_detail'])->name('purchase_detail');
+
+Route::get('wholesale', Wholesale::class)->name('view_wholesale');
+Route::post('add_wholesale', [Wholesale::class,'add_wholesale'])->name('add_wholesale');
+Route::post('add_wholesale_item/{id}', [Wholesale::class,'add_wholesale_item'])->name('add_wholesale_item');
+Route::get('delete_order/{id}', [Wholesale::class,'delete_order'])->name('delete_wholesale');
+Route::get('delete_order_item/{id}', [Wholesale::class,'delete_order_item'])->name('delete_wholesale_item');
+Route::get('wholesale/detail/{id}', [Wholesale::class,'wholesale_detail'])->name('wholesale_detail');
+
+Route::get('order', Order::class)->name('view_order');
+Route::get('check_new/{return?}', [Order::class,'updateBMOrdersNew'])->name('view_order');
+Route::get('refresh_order', [Order::class,'getapiorders'])->name('view_order');
+Route::get('refresh_order/{id}', [Order::class,'getapiorders'])->name('view_order');
+Route::get('order/refresh/{id}', [Order::class,'updateBMOrder'])->name('view_order');
+Route::post('order/dispatch/{id}', [Order::class,'dispatch'])->name('dispatch_order');
+Route::post('order/correction', [Order::class,'correction'])->name('dispatch_order');
+Route::get('order/recheck/{id}/{refresh?}', [Order::class,'recheck'])->name('view_order');
+Route::get('import', [Order::class,'import'])->name('');
+Route::post('export_order', [Order::class,'export'])->name('dispatch_order');
+Route::get('export_note', [Order::class,'export_note'])->name('dispatch_order');
+Route::post('export_label', [Order::class,'export_label'])->name('dispatch_order');
+Route::get('export_ordersheet', [Order::class,'export_ordersheet'])->name('dispatch_order');
+Route::get('export_invoice/{id}', [Order::class,'export_invoice'])->name('dispatch_order');
+Route::get('order/label/{id}', [Order::class,'getLabel'])->name('dispatch_order');
+
+Route::get('inventory', Inventory::class)->name('view_inventory');
+Route::get('inventory/get_products', [Inventory::class,'get_products'])->name('view_inventory');
+Route::get('inventory/get_variations/{id}', [Inventory::class,'get_variations'])->name('view_inventory');
+
+Route::get('product', Product::class)->name('view_product');
+Route::post('add_product', [Product::class,'add_product'])->name('add_product');
+Route::post('product/update_product/{id}', [Product::class,'update_product'])->name('update_product');
+
+Route::get('variation', Variation::class)->name('view_variation');
+Route::post('variation/update_product/{id}', [Variation::class,'update_product'])->name('update_variation');
+
+Route::get('process', Process::class)->name('view_process');
+
+Route::get('team', Team::class)->name('view_team');
+Route::get('add-member', [Team::class,'add_member'])->name('add_member');
+Route::post('insert-member', [Team::class,'insert_member'])->name('add_member');
+Route::get('update-status/{id}', [Team::class,'update_status'])->name('edit_member');
+Route::get('edit-member/{id}', [Team::class,'edit_member'])->name('edit_member');
+Route::post('update-member/{id}', [Team::class,'update_member'])->name('edit_member');
+
+Route::get('get_permissions/{id}', [Team::class,'get_permissions'])->name('view_permissions');
+Route::get('toggle_role_permission/{roleId}/{permissionId}/{isChecked}', [Team::class, 'toggle_role_permission'])->name('change_permission');
+
+Route::post('change', [Change::class,'change_password'])->name('profile');
+Route::get('OTP/{any}', [Change::class,'otp'])->name('profile');
+Route::get('page', [Change::class,'page'])->name('profile');
+Route::post('QomeBa27WU', [Change::class,'reset_page'])->name('profile');
+Route::post('reset', [Change::class,'reset_pass'])->name('profile');
+

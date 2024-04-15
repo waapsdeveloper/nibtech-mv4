@@ -1,0 +1,588 @@
+@extends('layouts.app')
+
+    @section('styles')
+        <style>
+            .rows{
+                border: 1px solid #016a5949;
+            }
+            .columns{
+                background-color:#016a5949;
+                padding-top:5px
+            }
+            .childs{
+                padding-top:5px
+            }
+        </style>
+    @endsection
+<br>
+    @section('content')
+
+<div class="toast-container position-fixed top-0 end-0 p-3">
+    @if (session('error'))
+            <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header text-danger">
+                    <strong class="me-auto">Error</strong>
+                    <button type="button" class="btn" data-bs-dismiss="toast" aria-label="Close">x</button>
+                </div>
+                <div class="toast-body">{{ session('error') }}</div>
+            </div>
+        @php
+        session()->forget('error');
+        @endphp
+    @endif
+
+    @if (session('success'))
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header text-success bg-light">
+                    <strong class="me-auto">Success</strong>
+                    <button type="button" class="btn" data-bs-dismiss="toast" aria-label="Close">x</button>
+                </div>
+                <div class="toast-body">{{ session('success') }}</div>
+            </div>
+        @php
+        session()->forget('success');
+        @endphp
+    @endif
+
+    @if (session('copy'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Function to copy text to clipboard
+                function copyToClipboard(text) {
+                    var tempInput = document.createElement('textarea');
+                    tempInput.value = text;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+                }
+
+                // Check if there is a copy message in the session
+                var copiedText = "{{ session('copy') }}";
+                if (copiedText) {
+                    // Copy the IMEI number to the clipboard
+                    copyToClipboard(copiedText);
+
+                    // Show success toast
+                    var toastContainer = document.querySelector('.toast-container');
+                    var toastBody = document.querySelector('.toast-body');
+                    toastBody.innerText = "Message copied to clipboard: \n" + copiedText;
+                    var toast = new bootstrap.Toast(document.querySelector('.toast'));
+                    toast.show();
+                }
+            });
+        </script>
+        @php
+        session()->forget('copy');
+        @endphp
+    @endif
+</div>
+
+
+        <!-- breadcrumb -->
+            <div class="breadcrumb-header justify-content-between">
+                <div class="left-content">
+                {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">Orders</span> --}}
+                <a href="{{url(session('url').'refresh_order')}}" target="_blank" class="mg-b-0 mg-b-lg-1 btn btn-primary">Recheck All</a>
+                <a href="{{url(session('url').'check_new')}}" class="mg-b-0 mg-b-lg-1 btn btn-primary">Check for New</a>
+                </div>
+                <div class="justify-content-center mt-2">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Orders</li>
+                    </ol>
+                </div>
+            </div>
+        <!-- /breadcrumb -->
+        <div class="row">
+            <div class="col-md-12" style="border-bottom: 1px solid rgb(216, 212, 212);">
+                <center><h4>Search</h4></center>
+            </div>
+        </div>
+        <br>
+        <form action="" method="GET" id="search">
+            <div class="row">
+                <div class="col-lg-2 col-xl-2 col-md-4 col-sm-6">
+                    <div class="card-header">
+                        <h4 class="card-title mb-1">SKU</h4>
+                    </div>
+                    <input type="text" class="form-control focused" id="sku_input" name="sku" placeholder="Enter SKU" value="@isset($_GET['sku']){{$_GET['sku']}}@endisset" autofocus>
+                </div>
+                <div class="col-lg-2 col-xl-2 col-md-4 col-sm-6">
+                    <div class="card-header">
+                        <h4 class="card-title mb-1">Order ID</h4>
+                    </div>
+                    <input type="text" class="form-control" name="order_id" placeholder="Enter ID" value="@isset($_GET['order_id']){{$_GET['order_id']}}@endisset">
+                </div>
+                <div class="col-lg-2 col-xl-2 col-md-4 col-sm-6">
+                    <div class="card-header">
+                        <h4 class="card-title mb-1">IMEI</h4>
+                    </div>
+                    <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset">
+                </div>
+                <div class="col-lg-2 col-xl-2 col-md-4 col-sm-6">
+                    <div class="card-header">
+                        <h4 class="card-title mb-1">Order Status</h4>
+                    </div>
+                    <select name="status" class="form-control form-select select2" data-bs-placeholder="Select Status">
+                        <option value="">Select</option>
+                        @foreach ($order_statuses as $status)
+                            <option value="{{$status->id}}" @if(isset($_GET['status']) && $status->id == $_GET['status']) {{'selected'}}@endif>{{$status->name}}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-lg-2 col-xl-2 col-md-4 col-sm-6">
+                    <div class="card-header">
+                        <h4 class="card-title mb-1">{{ __('locale.Start Date') }}</h4>
+                    </div>
+                    <input class="form-control" name="start_date" id="datetimepicker" type="date" value="@isset($_GET['start_date']){{$_GET['start_date']}}@endisset">
+                </div>
+                <div class="col-lg-2 col-xl-2 col-md-4 col-sm-6">
+                    <div class="card-header">
+                        <h4 class="card-title mb-1">{{ __('locale.End Date') }}</h4>
+                    </div>
+                    <input class="form-control" name="end_date" id="datetimepicker" type="date" value="@isset($_GET['end_date']){{$_GET['end_date']}}@endisset">
+                </div>
+            </div>
+            <div class=" p-2">
+                <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
+                <a href="{{url(session('url').'order')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
+                {{-- <a href="{{url(session('url').'export_ordersheet')}}" target="_blank" class="btn btn-secondary pd-x-20">Orders Sheet</a> --}}
+                <button class="btn btn-secondary pd-x-20 " type="submit" form="picklist" name="ordersheet" value="1">Order Sheet</button>
+            </div>
+
+            <input type="hidden" name="page" value="{{ Request::get('page') }}">
+            <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
+            <input type="hidden" name="sort" value="{{ Request::get('sort') }}">
+            @if (Request::get('care') == 1)
+                <input type="hidden" name="care" value="{{ Request::get('care') }}">
+            @endif
+        </form>
+        <div class="d-flex justify-content-between">
+            <div class="">
+                <a href="{{url(session('url').'order')}}" class="btn btn-link">All Order</a>
+                <a href="{{url(session('url').'order')}}?status=2" class="btn btn-link">Pending Order ({{ $pending_orders_count }})</a>
+                <a href="{{url(session('url').'order')}}?care=1" class="btn btn-link">Conversation</a>
+            </div>
+            <div class="d-flex">
+
+                <input type="text" class="form-control pd-x-20" name="last_order" placeholder="Last Order (Optional)" value="" form="picklist" style="width: 170px;">
+                <button class="btn btn-secondary pd-x-20 " type="submit" form="picklist" name="order" value="1">Order List</button>
+                <button class="btn btn-secondary pd-x-20 " type="submit" form="picklist" name="picklist" value="1">Pick List</button>
+            </div>
+        </div>
+        <form id="picklist" method="POST" target="_blank" action="{{url(session('url').'export_order')}}">
+            @csrf
+            <input type="hidden" name="start_date" value="{{ Request::get('start_date') }}">
+            <input type="hidden" name="end_date" value="{{ Request::get('end_date') }}">
+            <input type="hidden" name="status" value="{{ Request::get('status') }}">
+            <input type="hidden" name="order_id" value="{{ Request::get('order_id') }}">
+            <input type="hidden" name="sku" value="{{ Request::get('sku') }}">
+            <input type="hidden" name="imei" value="{{ Request::get('imei') }}">
+            <input type="hidden" name="page" value="{{ Request::get('page') }}">
+            <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
+            @if (Request::get('care') == 1)
+                <input type="hidden" name="care" value="{{ Request::get('care') }}">
+            @endif
+        </form>
+        <br>
+        <div class="row">
+            <div class="col-md-12" style="border-bottom: 1px solid rgb(216, 212, 212);">
+                <center><h4>Orders</h4></center>
+            </div>
+        </div>
+        <br>
+
+        <script>
+            function checkAll() {
+                var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+                var checkAllCheckbox = document.getElementById('checkAll');
+
+                checkboxes.forEach(function(checkbox) {
+                    checkbox.checked = checkAllCheckbox.checked;
+                });
+            }
+        </script>
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-header pb-0">
+                        <div class="d-flex justify-content-between">
+                            <h4 class="card-title mg-b-0">
+                                <label>
+                                    <input type="checkbox" id="checkAll" onclick="checkAll()"> Check All
+                                </label>
+                                <input class="btn btn-sm btn-secondary" type="submit" value="Print Labels" form="pdf">
+                            </h4>
+                            <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$orders->firstItem()}} {{ __('locale.To') }} {{$orders->lastItem()}} {{ __('locale.Out Of') }} {{$orders->total()}} </h5>
+
+                            <div class=" mg-b-0">
+                                <form method="get" action="" class="row form-inline">
+                                    <label for="perPage" class="card-title inline">Sort:</label>
+                                    <select name="sort" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
+                                        <option value="1" {{ Request::get('sort') == 1 ? 'selected' : '' }}>Order DESC</option>
+                                        <option value="2" {{ Request::get('sort') == 2 ? 'selected' : '' }}>Order ASC</option>
+                                        <option value="3" {{ Request::get('sort') == 3 ? 'selected' : '' }}>Name DESC</option>
+                                        <option value="4" {{ Request::get('sort') == 4 ? 'selected' : '' }}>Name ASC</option>
+                                    </select>
+                                    {{-- <button type="submit">Apply</button> --}}
+                                    <input type="hidden" name="start_date" value="{{ Request::get('start_date') }}">
+                                    <input type="hidden" name="end_date" value="{{ Request::get('end_date') }}">
+                                    <input type="hidden" name="status" value="{{ Request::get('status') }}">
+                                    <input type="hidden" name="order_id" value="{{ Request::get('order_id') }}">
+                                    <input type="hidden" name="sku" value="{{ Request::get('sku') }}">
+                                    <input type="hidden" name="imei" value="{{ Request::get('imei') }}">
+                                    <input type="hidden" name="page" value="{{ Request::get('page') }}">
+                                    <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
+                                    <input type="hidden" name="care" value="{{ Request::get('care') }}">
+                                </form>
+                                <form method="get" action="" class="row form-inline">
+                                    <label for="perPage" class="card-title inline">per page:</label>
+                                    <select name="per_page" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
+                                        <option value="10" {{ Request::get('per_page') == 10 ? 'selected' : '' }}>10</option>
+                                        <option value="20" {{ Request::get('per_page') == 20 ? 'selected' : '' }}>20</option>
+                                        <option value="50" {{ Request::get('per_page') == 50 ? 'selected' : '' }}>50</option>
+                                        <option value="100" {{ Request::get('per_page') == 100 ? 'selected' : '' }}>100</option>
+                                    </select>
+                                    {{-- <button type="submit">Apply</button> --}}
+                                    <input type="hidden" name="start_date" value="{{ Request::get('start_date') }}">
+                                    <input type="hidden" name="end_date" value="{{ Request::get('end_date') }}">
+                                    <input type="hidden" name="status" value="{{ Request::get('status') }}">
+                                    <input type="hidden" name="order_id" value="{{ Request::get('order_id') }}">
+                                    <input type="hidden" name="sku" value="{{ Request::get('sku') }}">
+                                    <input type="hidden" name="imei" value="{{ Request::get('imei') }}">
+                                    <input type="hidden" name="page" value="{{ Request::get('page') }}">
+                                    <input type="hidden" name="sort" value="{{ Request::get('sort') }}">
+                                    @if (Request::get('care') == 1)
+                                        <input type="hidden" name="care" value="{{ Request::get('care') }}">
+                                    @endif
+                                </form>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="card-body"><div class="table-responsive">
+                        <form id="pdf" method="POST" target="_blank" action="{{url(session('url').'export_label')}}">
+                            @csrf
+                            <input type="hidden" name="sort" value="{{ Request::get('sort') }}">
+
+                        </form>
+                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th><small><b>No</b></small></th>
+                                        <th><small><b>Order ID</b></small></th>
+                                        <th><small><b>Product</b></small></th>
+                                        <th><small><b>Qty</b></small></th>
+                                        <th><small><b>IMEI</b></small></th>
+                                        <th><small><b>Creation Date | TN</b></small></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @php
+                                        $i = $orders->firstItem() - 1;
+                                        $id = [];
+                                    @endphp
+                                    @foreach ($orders as $index => $order)
+                                        @php
+                                            if(in_array($order->id,$id)){
+                                                continue;
+                                            }else {
+                                                $id[] = $order->id;
+                                            }
+                                            $items = $order->order_items;
+                                            $j = 0;
+                                        @endphp
+
+                                        @foreach ($items as $itemIndex => $item)
+                                            <tr @if ($order->customer->order->count() > 1) class="bg-light" @endif>
+                                                @if ($itemIndex == 0)
+                                                    <td rowspan="{{ count($items) }}"><input type="checkbox" name="ids[]" value="{{ $order->id }}" form="pdf"></td>
+                                                    <td rowspan="{{ count($items) }}">{{ $i + 1 }}</td>
+                                                    <td rowspan="{{ count($items) }}">{{ $order->reference_id }}</td>
+                                                @endif
+                                                <td>
+                                                    @if ($item->variation ?? false)
+                                                        <strong>{{ $item->variation->sku }}</strong>{{ " - " . $item->variation->product->model . " - " . (isset($item->variation->storage_id)?$item->variation->storage_id->name . " - " : null) . (isset($item->variation->color_id)?$item->variation->color_id->name. " - ":null)}} <strong><u>{{ $item->variation->grade_id->name }}</u></strong>
+                                                    @endif
+                                                    @if ($order->delivery_note_url == null || $order->label_url == null)
+                                                        <a class="" href="{{url(session('url').'order')}}/label/{{ $order->reference_id }}">
+                                                        @if ($order->delivery_note_url == null)
+                                                            <strong class="text-danger">Missing Delivery Note</strong>
+                                                        @endif
+                                                        @if ($order->label_url == null)
+
+                                                            <strong class="text-danger">Missing Label</strong>
+                                                        @endif
+                                                        </a>
+                                                    @endif
+                                                    @if ($item->care_id != null)
+                                                        <a class="" href="https://backmarket.fr/bo_merchant/customer-request/{{ $item->care_id }}" target="_blank"><strong class="text-danger">Conversation</strong></a>
+                                                    @endif
+                                                </td>
+                                                <td>{{ $item->quantity }}</td>
+                                                @if ($order->status == 3)
+                                                <td style="width:240px" class="text-success text-uppercase" id="copy_imei_{{ $order->id }}">
+                                                    @isset($item->stock->imei) {{ $item->stock->imei }}&nbsp; @endisset
+                                                    @isset($item->stock->serial_number) {{ $item->stock->serial_number }}&nbsp; @endisset
+                                                    @isset($order->processed_by) | {{ $order->admin->first_name[0] }} | @endisset
+                                                    @isset($item->stock->tester) ({{ $item->stock->tester }}) @endisset
+                                                </td>
+                                                @if ($item->quantity > 1 && $item->stock_id != null)
+                                                @php
+                                                    $content2 = "Hi, here are the IMEIs/Serial numbers for this order. \n";
+                                                    foreach ($items as $im) {
+                                                        $content2 .= $im->stock->imei . $im->stock->serial_number . " " . $im->stock->tester . "\n";
+                                                    }
+                                                    $content2 .= "Regards \n".session('fname');
+                                                @endphp
+
+                                                <script>
+                                                    document.addEventListener('DOMContentLoaded', function() {
+                                                        var imeiElement = document.getElementById('copy_imei_{{ $order->id }}');
+
+                                                        // Add event listener to the IMEI element
+                                                        imeiElement.addEventListener('click', function() {
+                                                            // Create a temporary input element to hold the text
+                                                            var tempInput2 = document.createElement('textarea');
+                                                            tempInput2.value = `{{ $content2 }}`; // Properly escape PHP content
+
+                                                            // Append the input element to the body
+                                                            document.body.appendChild(tempInput2);
+
+                                                            // Select the text inside the input element
+                                                            tempInput2.select();
+
+                                                            // Copy the selected text to the clipboard
+                                                            document.execCommand('copy');
+
+                                                            // Remove the temporary input element
+                                                            document.body.removeChild(tempInput2);
+
+                                                            // Optionally, provide feedback to the user
+                                                            alert('IMEI numbers copied to clipboard:\n' + tempInput2.value);
+                                                        });
+                                                    });
+                                                </script>
+                                                @endif
+
+
+                                                @endif
+                                                @if ($itemIndex == 0 && $order->status != 3)
+                                                <td style="width:240px" rowspan="{{ count($items) }}">
+                                                    @if ($item->status >= 5)
+                                                        <strong class="text-danger">{{ $order->order_status->name }}</strong>
+                                                    @else
+                                                        @if(!isset($item->stock->imei) && !isset($item->stock->serial_number) && $item->status > 2 && $item->quantity == 1)
+
+
+                                                            <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
+                                                            <a class="dropdown-item" href="{{url(session('url').'order')}}/refresh/{{ $order->reference_id }}"><i class="fe fe-arrows-rotate me-2 "></i>Refresh</a>
+                                                        @endif
+                                                    @endif
+                                                    @isset($item->stock->imei) {{ $item->stock->imei }}&nbsp; @endisset
+                                                    @isset($item->stock->serial_number) {{ $item->stock->serial_number }}&nbsp; @endisset
+
+                                                    @isset($order->processed_by) | {{ $order->admin->first_name[0] }} | @endisset
+                                                    @isset($item->stock->tester) ({{ $item->stock->tester }}) @endisset
+                                                    @if ($item->status == 2)
+                                                        @if (count($items) < 2 && $item->quantity < 2)
+                                                            <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url(session('url').'order')}}/dispatch/{{ $order->id }}">
+                                                                @csrf
+                                                                <div class="input-group">
+                                                                    <input type="text" name="tester[]" placeholder="Tester" class="form-control form-control-sm" style="max-width: 50px">
+                                                                    <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm">
+
+                                                                    <input type="hidden" name="sku[]" value="{{ $item->variation->sku }}">
+
+                                                                    <div class="input-group-append">
+                                                                        <input type="submit" name="imei_send" value=">" class="form-control form-control-sm" form="dispatch_{{ $i."_".$j }}">
+                                                                    </div>
+
+                                                                </div>
+                                                            </form>
+                                                        @elseif (count($items) < 2 && $item->quantity >= 2)
+
+                                                            <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url(session('url').'order')}}/dispatch/{{ $order->id }}">
+                                                                @csrf
+                                                                @for ($in = 1; $in <= $item->quantity; $in ++)
+
+                                                                    <div class="input-group">
+                                                                        <input type="text" name="tester[]" placeholder="Tester" class="form-control form-control-sm" style="max-width: 50px">
+                                                                        <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm" required>
+                                                                    </div>
+                                                                <input type="hidden" name="sku[]" value="{{ $item->variation->sku }}">
+                                                                @endfor
+                                                                <div class="w-100">
+                                                                    <input type="submit" name="imei_send" value="Submit IMEIs" class="form-control form-control-sm w-100" form="dispatch_{{ $i."_".$j }}">
+                                                                </div>
+                                                            </form>
+                                                        @elseif (count($items) >= 2 && $item->quantity == 1)
+                                                            <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url(session('url').'order')}}/dispatch/{{ $order->id }}">
+                                                                @csrf
+                                                                @for ($in = 1; $in <= count($items); $in ++)
+
+                                                                    <div class="input-group">
+                                                                        <input type="text" name="tester[]" placeholder="Tester" class="form-control form-control-sm" style="max-width: 50px">
+                                                                        <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm" required title="for SKU:{{ $items[$in-1]->variation->sku }}">
+                                                                    </div>
+                                                                <input type="hidden" name="sku[]" value="{{ $items[$in-1]->variation->sku }}">
+                                                                @endfor
+                                                                <div class="w-100">
+                                                                    <input type="submit" name="imei_send" value="Submit IMEIs" class="form-control form-control-sm w-100" form="dispatch_{{ $i."_".$j }}">
+                                                                </div>
+                                                            </form>
+                                                        @endif
+                                                    @endif
+                                                </td>
+                                                @endif
+                                                <td style="width:220px">{{ $order->created_at}} <br> {{ $order->processed_at." ".$order->tracking_number }}</td>
+                                                <td>
+                                                    <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
+                                                    <div class="dropdown-menu">
+                                                        <a class="dropdown-item" href="{{url(session('url').'order')}}/refresh/{{ $order->reference_id }}">Refresh</a>
+                                                        @if ($item->order->processed_at > $last_hour)
+                                                        <a class="dropdown-item" id="correction_{{ $item->id }}" href="javascript:void(0);" data-bs-target="#correction_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}"> Correction </a>
+                                                        @endif
+                                                        @if ($order->status == 3)
+
+                                                        <a class="dropdown-item" href="{{url(session('url').'order')}}/recheck/{{ $order->reference_id }}/true" target="_blank">Invoice</a>
+                                                        @endif
+                                                        <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank">View in Backmarket</a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            @php
+                                                $j++;
+                                            @endphp
+                                        @endforeach
+                                        @if ($order->customer->order->count() > 1)
+                                            @php
+                                                $def = 0;
+                                            @endphp
+                                            @foreach ($order->customer->order as $ins => $ord)
+                                                @if ($ord->id != $order->id)
+
+                                                    @foreach ($ord->order_items as $ind => $itm)
+
+                                                        <tr class="bg-secondary text-white">
+                                                            @if (!$def)
+                                                                @php
+                                                                    $def = 1;
+                                                                @endphp
+                                                                <td rowspan="{{ count($order->customer->order)-1 }}" colspan="2">{{ $ord->customer->first_name." ".$ord->customer->last_name." ".$ord->customer->phone }}</td>
+                                                            @endif
+                                                            <td>{{ $ord->reference_id }}</td>
+                                                            <td>
+
+                                                                @if ($itm->variation ?? false)
+                                                                    <strong>{{ $itm->variation->sku }}</strong>{{ " - " . $itm->variation->product->model . " - " . (isset($itm->variation->storage_id)?$itm->variation->storage_id->name . " - " : null) . (isset($itm->variation->color_id)?$itm->variation->color_id->name. " - ":null)}} <strong><u>{{ $itm->variation->grade_id->name }}</u></strong>
+                                                                @endif
+
+                                                                @if ($itm->care_id != null)
+                                                                    <a class="" href="https://backmarket.fr/bo_merchant/customer-request/{{ $itm->care_id }}" target="_blank"><strong class="text-white">Conversation</strong></a>
+                                                                @endif
+                                                            </td>
+                                                            <td>{{ $itm->quantity }}</td>
+                                                            <td>
+                                                                {{ $ord->order_status->name }}
+                                                                @isset($itm->stock->imei) {{ $itm->stock->imei }}&nbsp; @endisset
+                                                                @isset($itm->stock->serial_number) {{ $itm->stock->serial_number }}&nbsp; @endisset
+                                                            </td>
+
+                                                            <td>{{ $ord->created_at }}</td>
+                                                            <td>
+                                                                <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical text-white tx-18"></i></a>
+                                                                <div class="dropdown-menu">
+                                                                    <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $ord->reference_id }}&see-order-details={{ $ord->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
+                                                                    {{-- <a class="dropdown-item" href="javascript:void(0);"><i class="fe fe-trash-2 me-2"></i>Delete</a> --}}
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    @endforeach
+                                                @endif
+                                            @endforeach
+                                        @endif
+                                        @php
+                                            $i ++;
+                                        @endphp
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        <br>
+                        {{ $orders->onEachSide(1)->links() }} {{ __('locale.From') }} {{$orders->firstItem()}} {{ __('locale.To') }} {{$orders->lastItem()}} {{ __('locale.Out Of') }} {{$orders->total()}}
+                    </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal" id="correction_model">
+            <div class="modal-dialog wd-xl-400" role="document">
+                <div class="modal-content">
+                    <div class="modal-body pd-sm-40">
+                        <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
+                            type="button"><span aria-hidden="true">&times;</span></button>
+                        <h5 class="modal-title mg-b-5">Update Order</h5>
+                        <hr>
+                        <form action="{{ url('order/correction') }}" method="POST">
+                            @csrf
+                            <div class="form-group">
+                                <label for="">Order Number</label>
+                                <input class="form-control" name="correction[id]" type="text" id="order_reference" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label for="">Tester</label>
+                                <input class="form-control" placeholder="input Tester Initial" name="correction[tester]" type="text">
+                            </div>
+                            <div class="form-group">
+                                <label for="">IMEI / Serial Number</label>
+                                <input class="form-control" placeholder="input IMEI / Serial Number" name="correction[imei]" type="text" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="">Reason</label>
+                                <textarea class="form-control" name="correction[reason]">Wrong Dispatch</textarea>
+                            </div>
+                            <input type="hidden" id="item_id" name="correction[item_id]" value="">
+
+                            <button class="btn btn-primary btn-block">{{ __('locale.Submit') }}</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @script
+        <script>
+            setInterval(() => {
+                $wire.$refresh()
+            }, 2000)
+        </script>
+        @endscript
+    @endsection
+
+    @section('scripts')
+
+    <script>
+        $('#correction_model').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget) // Button that triggered the modal
+            var reference = button.data('bs-reference') // Extract info from data-* attributesv
+            var item = button.data('bs-item') // Extract info from data-* attributes
+            // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+            // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+            var modal = $(this)
+            modal.find('.modal-body #order_reference').val(reference)
+            modal.find('.modal-body #item_id').val(item)
+            })
+    </script>
+		<!--Internal Sparkline js -->
+		<script src="{{asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js')}}"></script>
+
+		<!-- Internal Piety js -->
+		<script src="{{asset('assets/plugins/peity/jquery.peity.min.js')}}"></script>
+
+		<!-- Internal Chart js -->
+		<script src="{{asset('assets/plugins/chartjs/Chart.bundle.min.js')}}"></script>
+
+    @endsection
