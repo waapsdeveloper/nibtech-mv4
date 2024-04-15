@@ -152,7 +152,7 @@
                                                     <td><a href="{{url(session('url').'purchase/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
                                                 <td>{{ $vendors[$order->customer_id] }}</td>
                                                 @if (session('user')->hasPermission('view_cost'))
-                                                <td>{{ $currencies[$order->currency] . number_format($order->total_price,2) }}</td>
+                                                <td>{{ $currencies[4] . number_format($order->total_price,2) }}</td>
                                                 @endif
                                                 <td>{{ $order->available_stock."/".$order->total_quantity }}</td>
                                                 <td style="width:220px">{{ $order->created_at }}</td>

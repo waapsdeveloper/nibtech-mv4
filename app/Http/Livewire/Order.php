@@ -126,7 +126,7 @@ class Order extends Component
     }
     public function purchase()
     {
-        $data['currencies'] = Currency_model::pluck('id','code');
+        $data['currencies'] = Currency_model::pluck('sign','id');
         $user_id = session('user_id');
         $data['vendors'] = Customer_model::where('is_vendor',1)->pluck('first_name','id');
         $data['order_statuses'] = Order_status_model::get();
