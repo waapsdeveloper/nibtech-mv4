@@ -56,33 +56,32 @@ class Order_model extends Model
         // Your implementation here using Eloquent ORM
         // Example:
         // $orderObj = (object) $orderObj[0];
-        if(!isset($orderObj->order_id)){
-            print_r($orderObj);
-        }
-        $customer_model = new Customer_model();
-        $order = Order_model::firstOrNew(['reference_id' => $orderObj->order_id]);
-        $order->customer_id = $customer_model->updateCustomerInDB($orderObj, false, $currency_codes, $country_codes);
-        $order->status = $this->mapStateToStatus($orderObj);
-        $order->currency = $currency_codes[$orderObj->currency];
-        $order->order_type_id = 3;
-        $order->price = $orderObj->price;
-        $order->delivery_note_url = $orderObj->delivery_note;
-        if($order->label_url == null && $bm->getOrderLabel($orderObj->order_id) != null){
-            if($bm->getOrderLabel($orderObj->order_id)->results != null){
-                $order->label_url = $bm->getOrderLabel($orderObj->order_id)->results[0]->labelUrl;
+        if(isset($orderObj->order_id)){
+            $customer_model = new Customer_model();
+            $order = Order_model::firstOrNew(['reference_id' => $orderObj->order_id]);
+            $order->customer_id = $customer_model->updateCustomerInDB($orderObj, false, $currency_codes, $country_codes);
+            $order->status = $this->mapStateToStatus($orderObj);
+            $order->currency = $currency_codes[$orderObj->currency];
+            $order->order_type_id = 3;
+            $order->price = $orderObj->price;
+            $order->delivery_note_url = $orderObj->delivery_note;
+            if($order->label_url == null && $bm->getOrderLabel($orderObj->order_id) != null){
+                if($bm->getOrderLabel($orderObj->order_id)->results != null){
+                    $order->label_url = $bm->getOrderLabel($orderObj->order_id)->results[0]->labelUrl;
+                }
             }
-        }
-        if($invoice == true){
-            $order->processed_by = session('user_id');
-            $order->processed_at = now()->format('Y-m-d H:i:s');
-        }
-        $order->tracking_number = $orderObj->tracking_number;
-        $order->created_at = Carbon::parse($orderObj->date_creation)->format('Y-m-d H:i:s');
-        $order->updated_at = Carbon::parse($orderObj->date_modification)->format('Y-m-d H:i:s');
-        // echo Carbon::parse($orderObj->date_creation)->format('Y-m-d H:i:s'). "       ";
-        // ... other fields
-        $order->save();
+            if($invoice == true){
+                $order->processed_by = session('user_id');
+                $order->processed_at = now()->format('Y-m-d H:i:s');
+            }
+            $order->tracking_number = $orderObj->tracking_number;
+            $order->created_at = Carbon::parse($orderObj->date_creation)->format('Y-m-d H:i:s');
+            $order->updated_at = Carbon::parse($orderObj->date_modification)->format('Y-m-d H:i:s');
+            // echo Carbon::parse($orderObj->date_creation)->format('Y-m-d H:i:s'). "       ";
+            // ... other fields
+            $order->save();
 
+        }
         // print_r(Order_model::find($order->id));
         // echo "----------------------------------------";
     }

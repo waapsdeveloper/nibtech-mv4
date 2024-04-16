@@ -121,12 +121,14 @@ class RefreshNew extends Command
     private function updateBMOrder($order_id, $bm, $currency_codes, $country_codes, $order_model, $order_item_model){
 
         $orderObj = $bm->getOneOrder($order_id);
+        if(isset($orderObj->order_id)){
 
-        $order_model->updateOrderInDB($orderObj, false, $bm, $currency_codes, $country_codes);
+            $order_model->updateOrderInDB($orderObj, false, $bm, $currency_codes, $country_codes);
 
-        $order_item_model->updateOrderItemsInDB($orderObj, null, $bm);
+            $order_item_model->updateOrderItemsInDB($orderObj, null, $bm);
+        }
 
-        $serializedPayload = serialize([$orderObj]);
+        // $serializedPayload = serialize([$orderObj]);
 
         // Query the database to check if a job with the same payload already exists
         // if (!Job_model::where('payload', $serializedPayload)->exists()) {
