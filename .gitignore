@@ -2,6 +2,7 @@
 /public/hot
 /public/storage
 /storage/*.key
+/storage/debugger
 /vendor
 .env
 .env.backup
