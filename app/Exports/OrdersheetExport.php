@@ -54,6 +54,12 @@ class OrdersheetExport implements FromCollection, WithHeadings
                 $q->where('sku', 'LIKE', '%' . request('sku') . '%');
             });
         })
+        ->when(request('adm') != '', function ($q) {
+            if(request('adm') == 0){
+                return $q->where('orders.processed_by', null);
+            }
+            return $q->where('orders.processed_by', request('adm'));
+        })
         ->when(request('imei') != '', function ($q) {
             return $q->whereHas('order_items.stock', function ($q) {
                 $q->where('imei', 'LIKE', '%' . request('imei') . '%');

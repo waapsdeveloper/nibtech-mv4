@@ -58,7 +58,7 @@ class Order extends Component
     {
 
         $data['last_hour'] = Carbon::now()->subHour(1);
-
+        $data['admins'] = Admin_model::where('id','!=',1)->get();
         $user_id = session('user_id');
         $data['pending_orders_count'] = Order_model::where('status',2)->count();
         $data['order_statuses'] = Order_status_model::get();
@@ -72,13 +72,14 @@ class Order extends Component
         //         $this->recheck($pend);
         //     }
         // }
+
         switch (request('sort')){
             case 2: $sort = "orders.reference_id"; $by = "ASC"; break;
             case 3: $sort = "products.model"; $by = "DESC"; break;
             case 4: $sort = "products.model"; $by = "ASC"; break;
             default: $sort = "orders.reference_id"; $by = "DESC";
         }
-        $data['orders'] = Order_model::join('order_items', 'orders.id', '=', 'order_items.order_id')
+        $orders = Order_model::join('order_items', 'orders.id', '=', 'order_items.order_id')
         ->join('variation', 'order_items.variation_id', '=', 'variation.id')
         ->join('products', 'variation.product_id', '=', 'products.id')
         ->with(['order_items.variation', 'order_items.variation.grade_id', 'order_items.stock'])
@@ -91,6 +92,12 @@ class Order extends Component
         })
         ->when(request('status') != '', function ($q) {
             return $q->where('orders.status', request('status'));
+        })
+        ->when(request('adm') != '', function ($q) {
+            if(request('adm') == 0){
+                return $q->where('orders.processed_by', null);
+            }
+            return $q->where('orders.processed_by', request('adm'));
         })
         ->when(request('care') != '', function ($q) {
             return $q->where('order_items.care_id', '!=', null);
@@ -111,7 +118,28 @@ class Order extends Component
         ->orderBy($sort, $by) // Order by variation name
         ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
         // ->orderBy('order_items.quantity', 'desc') // Secondary order by reference_id
-        ->select('orders.*')
+        ->select('orders.*');
+
+
+        if(request('bulk_invoice') && request('bulk_invoice') == 1){
+
+            $data['orders2'] = $orders
+            ->get();
+            foreach($data['orders2'] as $order){
+
+                $data2 = [
+                    'order' => $order,
+                    'customer' => $order->customer,
+                    'orderItems' => $order->order_items,
+                ];
+                echo "Hello";
+                Mail::to($order->customer->email)->send(new InvoiceMail($data2));
+
+            }
+            // return redirect()->back();
+
+        }
+        $data['orders'] = $orders
         ->paginate($per_page)
         ->onEachSide(5)
         ->appends(request()->except('page'));
@@ -119,8 +147,6 @@ class Order extends Component
         if(count($data['orders']) == 0 && request('order_id')){
             $this->recheck(request('order_id'));
         }
-
-
         // dd($data['orders']);
         return view('livewire.order')->with($data);
     }

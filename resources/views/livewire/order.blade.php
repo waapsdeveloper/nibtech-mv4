@@ -108,9 +108,9 @@
                     </div>
                     <input type="text" class="form-control focused" id="sku_input" name="sku" placeholder="Enter SKU" value="@isset($_GET['sku']){{$_GET['sku']}}@endisset" autofocus>
                 </div>
-                <div class="col-lg-2 col-xl-2 col-md-4 col-sm-6">
+                <div class="col-lg-1 col-xl-1 col-md-4 col-sm-6">
                     <div class="card-header">
-                        <h4 class="card-title mb-1">Order ID</h4>
+                        <h4 class="card-title mb-1">Order</h4>
                     </div>
                     <input type="text" class="form-control" name="order_id" placeholder="Enter ID" value="@isset($_GET['order_id']){{$_GET['order_id']}}@endisset">
                 </div>
@@ -120,14 +120,26 @@
                     </div>
                     <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset">
                 </div>
-                <div class="col-lg-2 col-xl-2 col-md-4 col-sm-6">
+                <div class="col-lg-1 col-xl-1 col-md-4 col-sm-6">
                     <div class="card-header">
-                        <h4 class="card-title mb-1">Order Status</h4>
+                        <h4 class="card-title mb-1">Status</h4>
                     </div>
                     <select name="status" class="form-control form-select select2" data-bs-placeholder="Select Status">
                         <option value="">Select</option>
                         @foreach ($order_statuses as $status)
                             <option value="{{$status->id}}" @if(isset($_GET['status']) && $status->id == $_GET['status']) {{'selected'}}@endif>{{$status->name}}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-lg-2 col-xl-2 col-md-4 col-sm-6">
+                    <div class="card-header">
+                        <h4 class="card-title mb-1">Processed By</h4>
+                    </div>
+                    <select name="adm" class="form-control form-select select2" data-bs-placeholder="Select Processed By">
+                        <option value="">Select</option>
+                        <option value="0">None</option>
+                        @foreach ($admins as $adm)
+                            <option value="{{$adm->id}}" @if(isset($_GET['adm']) && $adm->id == $_GET['adm']) {{'selected'}}@endif>{{$adm->first_name." ".$adm->last_name}}</option>
                         @endforeach
                     </select>
                 </div>
@@ -149,6 +161,10 @@
                 <a href="{{url(session('url').'order')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
                 {{-- <a href="{{url(session('url').'export_ordersheet')}}" target="_blank" class="btn btn-secondary pd-x-20">Orders Sheet</a> --}}
                 <button class="btn btn-secondary pd-x-20 " type="submit" form="picklist" name="ordersheet" value="1">Order Sheet</button>
+
+                @if (session('user')->hasPermission('send_bulk_invoice'))
+                <button class="btn btn-primary pd-x-20" name="bulk_invoice" value="1" type="submit">Send Bulk Invoice Email</button>
+                @endif
             </div>
 
             <input type="hidden" name="page" value="{{ Request::get('page') }}">
@@ -176,6 +192,7 @@
             <input type="hidden" name="start_date" value="{{ Request::get('start_date') }}">
             <input type="hidden" name="end_date" value="{{ Request::get('end_date') }}">
             <input type="hidden" name="status" value="{{ Request::get('status') }}">
+            <input type="hidden" name="adm" value="{{ Request::get('adm') }}">
             <input type="hidden" name="order_id" value="{{ Request::get('order_id') }}">
             <input type="hidden" name="sku" value="{{ Request::get('sku') }}">
             <input type="hidden" name="imei" value="{{ Request::get('imei') }}">
@@ -229,6 +246,7 @@
                                     <input type="hidden" name="start_date" value="{{ Request::get('start_date') }}">
                                     <input type="hidden" name="end_date" value="{{ Request::get('end_date') }}">
                                     <input type="hidden" name="status" value="{{ Request::get('status') }}">
+                                    <input type="hidden" name="adm" value="{{ Request::get('adm') }}">
                                     <input type="hidden" name="order_id" value="{{ Request::get('order_id') }}">
                                     <input type="hidden" name="sku" value="{{ Request::get('sku') }}">
                                     <input type="hidden" name="imei" value="{{ Request::get('imei') }}">
@@ -248,6 +266,7 @@
                                     <input type="hidden" name="start_date" value="{{ Request::get('start_date') }}">
                                     <input type="hidden" name="end_date" value="{{ Request::get('end_date') }}">
                                     <input type="hidden" name="status" value="{{ Request::get('status') }}">
+                                    <input type="hidden" name="adm" value="{{ Request::get('adm') }}">
                                     <input type="hidden" name="order_id" value="{{ Request::get('order_id') }}">
                                     <input type="hidden" name="sku" value="{{ Request::get('sku') }}">
                                     <input type="hidden" name="imei" value="{{ Request::get('imei') }}">
