@@ -18,6 +18,7 @@ class Order_item_model extends Model
         // other fields...
         'reference_id',
         'care_id',
+        'price',
     ];
     public function variation()
     {

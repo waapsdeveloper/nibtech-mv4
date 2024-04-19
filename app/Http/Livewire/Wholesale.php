@@ -14,11 +14,14 @@ namespace App\Http\Livewire;
     use App\Models\Currency_model;
     use App\Models\Country_model;
     use App\Models\Color_model;
-    use App\Models\Storage_model;
+use App\Models\Grade_model;
+use App\Models\Product_model;
+use App\Models\Storage_model;
     use GuzzleHttp\Psr7\Request;
     use Carbon\Carbon;
     use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Mail;
+use TCPDF;
 
 class Wholesale extends Component
 {
@@ -107,7 +110,7 @@ class Wholesale extends Component
         return redirect()->back();
     }
     public function delete_order_item($item_id){
-
+        // dd($item_id);
         $orderItem = Order_item_model::find($item_id);
 
         // Access the variation through orderItem->stock->variation
@@ -121,20 +124,43 @@ class Wholesale extends Component
         // $orderItem->stock->delete();
         Stock_model::find($orderItem->stock_id)->update(['status'=>1]);
         $orderItem->delete();
+        // $orderItem->forceDelete();
+
 
         return redirect()->back();
     }
     public function wholesale_detail($order_id){
 
-        $data['imeis'] = Stock_model::whereIn('status',[1,3])->get();
+        // $data['imeis'] = Stock_model::whereIn('status',[1,3])->orderBy('serial_number','asc')->orderBy('imei','asc')->get();
         $data['storages'] = Storage_model::pluck('name','id');
-        $data['variations'] = Variation_model::whereHas('stocks.order_item', function($query) use ($order_id) {
-            $query->where('order_id', $order_id);
+        $data['products'] = Products_model::pluck('model','id');
+        $data['grades'] = Grade_model::pluck('name','id');
+        $data['colors'] = Color_model::pluck('name','id');
+        $variations = Variation_model::with([
+            'stocks' => function ($query) use ($order_id) {
+                $query->whereHas('order_item', function ($query) use ($order_id) {
+                    $query->where('order_id', $order_id);
+                });
+            },
+            'stocks.order_item'
+        ])
+        ->whereHas('stocks', function ($query) use ($order_id) {
+            $query->whereHas('order_item', function ($query) use ($order_id) {
+                $query->where('order_id', $order_id);
+            });
         })
-        ->with('stocks','stocks.order_item','stocks.variation')
-        ->orderBy('grade','desc')
+        ->orderBy('grade', 'desc')
         ->get();
 
+        // Remove variations with no associated stocks
+        $variations = $variations->filter(function ($variation) {
+            return $variation->stocks->isNotEmpty();
+        });
+
+
+        $data['variations'] = $variations;
+        $last_ten = Order_item_model::where('order_id',$order_id)->orderBy('id','desc')->limit(10)->get();
+        $data['last_ten'] = $last_ten;
         $data['all_variations'] = Variation_model::where('grade',9)->get();
         $data['order'] = Order_model::find($order_id);
         $data['order_id'] = $order_id;
@@ -146,11 +172,23 @@ class Wholesale extends Component
         // print_r($items);
 
         // echo "</pre>";
-        // dd($items);
+        // dd($data['variations']);
         return view('livewire.wholesale_detail')->with($data);
 
     }
 
+    public function update_prices(){
+        print_r(request('item_ids'));
+        echo request('unit_price');
+
+        if(request('unit_price') > 0){
+            foreach(request('item_ids') as $item_id){
+                Order_item_model::find($item_id)->update(['price'=>request('unit_price')]);
+            }
+        }
+
+        return redirect()->back();
+    }
 
     public function add_wholesale(){
         // dd(request('wholesale'));
@@ -182,7 +220,6 @@ class Wholesale extends Component
         return redirect()->back();
     }
     public function add_wholesale_item($order_id){
-
         if(ctype_digit(request('imei'))){
             $i = request('imei');
             $s = null;
@@ -192,10 +229,36 @@ class Wholesale extends Component
         }
 
         $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
+        if(request('imei') == '' || !$stock){
+            session()->put('error', 'IMEI Invalid / Not Found');
+            return redirect()->back();
+
+        }
+        $variation = Variation_model::where(['id' => $stock->variation_id])->first();
+        if($stock->status != 1){
+            session()->put('error', 'Stock already sold');
+            return redirect()->back();
+        }
+        if(request('bypass_check') == 1){
+            session('bypass_check', 1);
+        }else{
+            session()->forget('bypass_check');
+            if($variation->grade != 11){
+
+                // dd('hello');
+                echo "<script>
+                if (confirm('This IMEI does not belong to wholesale, are you sure you want to continue?')) {
+                    // User clicked OK, do nothing or perform any other action
+                } else {
+                    // User clicked Cancel, redirect to the previous page
+                    window.history.back();
+                }
+                </script>";
+            }
+        }
         $stock->status = 2;
         $stock->save();
 
-        $variation = Variation_model::firstOrNew(['id' => $stock->variation_id]);
         $variation->stock -= 1;
         $variation->save();
 
@@ -205,17 +268,91 @@ class Wholesale extends Component
         $order_item->variation_id = $variation->id;
         $order_item->stock_id = $stock->id;
         $order_item->quantity = 1;
-        $order_item->price = request('price');
+        $order_item->price = $stock->purchase_item->price;
         $order_item->status = 3;
         $order_item->save();
 
+        session()->put('success', 'Stock added successfully');
 
 
+        echo "<script>
+
+            window.history.back();
+
+        </script>";
         // Delete the temporary file
         // Storage::delete($filePath);
 
-        return redirect()->back();
+        // return redirect()->back();
     }
 
 
+    public function export_bulksale_invoice($order_id)
+    {
+
+        // Find the order
+        // $order = Order_model::with('customer', 'order_items')->find($order_id);
+
+        $data = DB::table('orders')
+            ->join('order_items', 'orders.id', '=', 'order_items.order_id')
+            ->join('variation', 'order_items.variation_id', '=', 'variation.id')
+            ->join('products', 'variation.product_id', '=', 'products.id')
+            ->join('color', 'variation.color', '=', 'color.id')
+            ->join('storage', 'variation.storage', '=', 'storage.id')
+            ->join('grade', 'variation.grade', '=', 'grade.id')
+            ->select(
+                'variation.sku',
+                'products.model',
+                'color.name as color',
+                'storage.name as storage',
+                'grade.name as grade_name',
+                DB::raw('SUM(order_items.quantity) as total_quantity'),
+                DB::raw('AVG(order_items.price) as average_price'),
+                DB::raw('SUM(order_items.quantity) as total_quantity')
+            )
+            ->where('orders.id',$order_id)
+            ->groupBy('variation.sku', 'products.model', 'color.name', 'storage.name', 'grade.name')
+            ->orderBy('products.model', 'ASC')
+            ->get();
+        // Generate PDF for the invoice content
+        $data = [
+            'order' => $order,
+            'customer' => $order->customer,
+            'orderItems' => $order->order_items,
+        ];
+
+        // Create a new TCPDF instance
+        $pdf = new TCPDF();
+
+        // Set document information
+        $pdf->SetCreator(PDF_CREATOR);
+        $pdf->SetTitle('Invoice');
+        // $pdf->SetHeaderData('', 0, 'Invoice', '');
+
+        // Add a page
+        $pdf->AddPage();
+
+        // Set font
+        $pdf->SetFont('times', '', 12);
+
+        // Additional content from your view
+        $html = view('export.bulksale_invoice', $data)->render();
+        $pdf->writeHTML($html, true, false, true, false, '');
+
+        // dd($pdfContent);
+        // Send the invoice via email
+        // Mail::to($order->customer->email)->send(new InvoiceMail($data));
+
+        // Optionally, save the PDF locally
+        // file_put_contents('invoice.pdf', $pdfContent);
+
+        // Get the PDF content
+        $pdf->Output('', 'I');
+
+        // $pdfContent = $pdf->Output('', 'S');
+        // Return a response or redirect
+
+        // Pass the PDF content to the view
+        // return view('livewire.show_pdf')->with(['pdfContent'=> $pdfContent, 'delivery_note'=>$order->delivery_note_url]);
+    }
 }

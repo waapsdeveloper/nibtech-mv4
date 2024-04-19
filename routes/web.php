@@ -63,6 +63,8 @@ Route::post('add_wholesale_item/{id}', [Wholesale::class,'add_wholesale_item'])-
 Route::get('delete_order/{id}', [Wholesale::class,'delete_order'])->name('delete_wholesale');
 Route::get('delete_order_item/{id}', [Wholesale::class,'delete_order_item'])->name('delete_wholesale_item');
 Route::get('wholesale/detail/{id}', [Wholesale::class,'wholesale_detail'])->name('wholesale_detail');
+Route::post('wholesale/update_prices', [Wholesale::class,'update_prices'])->name('update_wholesale_item');
+Route::get('export_bulksale_invoice/{id}', [Wholesale::class,'export_bulksale_invoice'])->name('wholesale_detail');
 
 Route::get('order', Order::class)->name('view_order');
 Route::get('check_new/{return?}', [Order::class,'updateBMOrdersNew'])->name('view_order');
@@ -101,7 +103,7 @@ Route::get('edit-member/{id}', [Team::class,'edit_member'])->name('edit_member')
 Route::post('update-member/{id}', [Team::class,'update_member'])->name('edit_member');
 
 Route::get('get_permissions/{id}', [Team::class,'get_permissions'])->name('view_permissions');
-Route::get('toggle_role_permission/{roleId}/{permissionId}/{isChecked}', [Team::class, 'toggle_role_permission'])->name('change_permission');
+Route::post('toggle_role_permission/{roleId}/{permissionId}/{isChecked}', [Team::class, 'toggle_role_permission'])->name('change_permission');
 
 Route::post('change', [Change::class,'change_password'])->name('profile');
 Route::get('OTP/{any}', [Change::class,'otp'])->name('profile');

@@ -127,11 +127,24 @@ class Team extends Component
     }
     public function toggle_role_permission($roleId, $permissionId, $isChecked)
     {
-        // Create or delete role permission based on $isChecked value
-        if ($isChecked) {
-            Role_permission_model::create(['role_id' => $roleId, 'permission_id' => $permissionId]);
+
+        // Debugging: Print the value of $isChecked
+        var_dump($isChecked);
+
+        // Convert string values to boolean
+        $lowercase = strtolower($isChecked);
+        if ($lowercase === 'true') {
+            $check = true;
         } else {
-            Role_permission_model::where('role_id', $roleId)->where('permission_id', $permissionId)->delete();
+            $check = false;
+        }
+        // Create or delete role permission based on $isChecked value
+        if ($check) {
+            echo "Hello";
+            echo Role_permission_model::create(['role_id' => $roleId, 'permission_id' => $permissionId]);
+        } else {
+            echo "Ho";
+            echo Role_permission_model::where('role_id', $roleId)->where('permission_id', $permissionId)->delete();
         }
 
         // Return response

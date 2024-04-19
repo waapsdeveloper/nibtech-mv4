@@ -81,12 +81,12 @@ class Process extends Component
             $process->save();
         }
 
-        $items_grade_a = Order_item_model::where('linked_id', '!=', null)
+        $items_grade_a = Order_item_model::where('order_items.linked_id', '!=', null)
         ->join('orders', 'order_items.order_id', '=', 'orders.id')
         ->join('variation', 'order_items.variation_id', '=', 'variation.id')
         ->where('orders.order_type_id', 3)
         ->where('variation.grade', 2)
-        ->pluck('linked_id');
+        ->pluck('order_items.linked_id');
 
         $process_grade_a = Order_model::select('orders.id', DB::raw('COUNT(order_items.id) as total_quantity'))
         ->where('orders.order_type_id', 1)
@@ -111,12 +111,12 @@ class Process extends Component
             $process->save();
         }
 
-        $items_grade_b = Order_item_model::where('linked_id', '!=', null)
+        $items_grade_b = Order_item_model::where('order_items.linked_id', '!=', null)
         ->join('orders', 'order_items.order_id', '=', 'orders.id')
         ->join('variation', 'order_items.variation_id', '=', 'variation.id')
         ->where('orders.order_type_id', 3)
         ->where('variation.grade', 3)
-        ->pluck('linked_id');
+        ->pluck('order_items.linked_id');
 
         $process_grade_b = Order_model::select('orders.id', DB::raw('COUNT(order_items.id) as total_quantity'))
         ->where('orders.order_type_id', 1)
@@ -141,12 +141,12 @@ class Process extends Component
             $process->save();
         }
 
-        $items_grade_c = Order_item_model::where('linked_id', '!=', null)
+        $items_grade_c = Order_item_model::where('order_items.linked_id', '!=', null)
         ->join('orders', 'order_items.order_id', '=', 'orders.id')
         ->join('variation', 'order_items.variation_id', '=', 'variation.id')
         ->where('orders.order_type_id', 3)
         ->where('variation.grade', 5)
-        ->pluck('linked_id');
+        ->pluck('order_items.linked_id');
 
         $process_grade_c = Order_model::select('orders.id', DB::raw('COUNT(order_items.id) as total_quantity'))
         ->where('orders.order_type_id', 1)

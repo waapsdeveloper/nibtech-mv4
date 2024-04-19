@@ -19,7 +19,7 @@
 
 <div class="toast-container position-fixed top-0 end-0 p-3">
     @if (session('error'))
-            <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="toast-header text-danger">
                     <strong class="me-auto">Error</strong>
                     <button type="button" class="btn" data-bs-dismiss="toast" aria-label="Close">x</button>

@@ -131,18 +131,40 @@
                                         document.addEventListener('DOMContentLoaded', function() {
                                             fetchPermissions()
                                         })
+                                        // function togglePermission(roleId, permissionId, isChecked) {
+                                        //     // Send AJAX request to server to create or delete role permission
+                                        //     fetch(`{{ url(session('url').'toggle_role_permission') }}/${roleId}/${permissionId}/${isChecked}`, { method: 'POST' })
+                                        //         // .then(response => response.json())
+                                        //         .then(data => {
+                                        //             // Update UI based on server response
+                                        //             console.log(data); // You can handle the response as per your requirement
+                                        //         })
+                                        //         .catch(error => {
+                                        //             console.error('Error:', error);
+                                        //         });
+                                        // }
                                         function togglePermission(roleId, permissionId, isChecked) {
-                                            // Send AJAX request to server to create or delete role permission
-                                            fetch(`{{ url(session('url').'toggle_role_permission') }}/${roleId}/${permissionId}/${isChecked}`, { method: 'GET' })
-                                                // .then(response => response.json())
-                                                .then(data => {
-                                                    // Update UI based on server response
-                                                    console.log(data); // You can handle the response as per your requirement
-                                                })
-                                                .catch(error => {
-                                                    console.error('Error:', error);
-                                                });
-                                        }
+                                        // Get the CSRF token from the meta tag in your HTML
+                                        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+                                        // Send AJAX request to server to create or delete role permission
+                                        fetch(`{{ url(session('url').'toggle_role_permission') }}/${roleId}/${permissionId}/${isChecked}`, {
+                                            method: 'POST',
+                                            headers: {
+                                                // 'Content-Type': 'application/json',
+                                                'X-CSRF-TOKEN': csrfToken // Include the CSRF token in the headers
+                                            }
+                                        })
+                                            // .then(response => response.json()) // Parse response as JSON
+                                            .then(data => {
+                                                // Update UI based on server response
+                                                // console.log(data); // You can handle the response as per your requirement
+                                            })
+                                            .catch(error => {
+                                                console.error('Error:', error);
+                                            });
+                                    }
+
 
                                         function fetchPermissions() {
                                             var roleId = document.getElementById('role').value;

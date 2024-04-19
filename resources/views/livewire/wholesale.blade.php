@@ -28,14 +28,14 @@
         <!-- breadcrumb -->
             <div class="breadcrumb-header justify-content-between">
                 <div class="left-content">
-                {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">Wholesale</span> --}}
+                {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">BulkSale</span> --}}
                 <a href="javascript:void(0);" class="btn btn-success float-right" data-bs-target="#modaldemo"
-                data-bs-toggle="modal"><i class="mdi mdi-plus"></i> Add Wholesale </a>
+                data-bs-toggle="modal"><i class="mdi mdi-plus"></i> Add BulkSale </a>
                 </div>
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Wholesale</li>
+                        <li class="breadcrumb-item active" aria-current="page">BulkSale</li>
                     </ol>
                 </div>
             </div>
@@ -79,7 +79,7 @@
         <br>
         <div class="row">
             <div class="col-md-12" style="border-bottom: 1px solid rgb(216, 212, 212);">
-                <center><h4>Wholesale</h4></center>
+                <center><h4>BulkSale</h4></center>
             </div>
         </div>
         <br>
@@ -121,7 +121,7 @@
                                     <tr>
                                         <th><small><b>No</b></small></th>
                                         <th><small><b>Order ID</b></small></th>
-                                        <th><small><b>Vendor</b></small></th>
+                                        <th><small><b>Purchaser</b></small></th>
                                         @if (session('user')->hasPermission('view_cost'))
                                         <th><small><b>Cost</b></small></th>
                                         @endif
@@ -191,7 +191,7 @@
                 <div class="modal-body pd-sm-40">
                     <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
                         type="button"><span aria-hidden="true">&times;</span></button>
-                    <h5 class="modal-title mg-b-5">Add Wholesale Record</h5>
+                    <h5 class="modal-title mg-b-5">Add BulkSale Record</h5>
                     <hr>
                     <form action="{{ url('add_wholesale') }}" method="POST" enctype="multipart/form-data">
                         @csrf
@@ -201,7 +201,7 @@
                             <input class="form-control" placeholder="input Reference No" name="wholesale[reference_id]" type="text" required>
                         </div>
                         <div class="form-group">
-                            <label for="">Vendor</label>
+                            <label for="">Purchaser</label>
                             <input type="text" list="vendors" class="form-control" placeholder="Input Vendor" name="wholesale[vendor]" required>
                             <datalist id="vendors">
                                 <option>Select Vendor</option>
