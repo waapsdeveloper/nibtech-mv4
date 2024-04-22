@@ -2,14 +2,11 @@
 
 namespace App\Http\Livewire;
 
-use App\Http\Controllers\ApiCallController;
 use Livewire\Component;
-use Symfony\Component\HttpFoundation\Request;
 use App\Models\Admin_model;
 use App\Models\Role_model;
 use App\Models\Permission_model;
 use App\Models\Role_permission_model;
-use DB;
 use Illuminate\Support\Facades\Hash;
 
 
@@ -28,16 +25,16 @@ class Team extends Component
         return view('livewire.add-team')->with($data);
     }
 
-    public function insert_member(Request $request)
+    public function insert_member()
     {
 
-        $parent_id = $request->input('parent');
-        $role_id = $request->input('role');
-        $username = $request->input('username');
-        $f_name = $request->input('fname');
-        $l_name = $request->input('lname');
-        $email = $request->input('email');
-        $password = $request->input('password');
+        $parent_id = request()->input('parent');
+        $role_id = request()->input('role');
+        $username = request()->input('username');
+        $f_name = request()->input('fname');
+        $l_name = request()->input('lname');
+        $email = request()->input('email');
+        $password = request()->input('password');
         if(Admin_model::where('username',$username)->first() != null){
 
             session()->put('error',"Username Already Exist");
@@ -62,7 +59,7 @@ class Team extends Component
         return redirect('team');
     }
 
-    public function update_status(Request $request,$id)
+    public function update_status($id)
     {
        $member = Admin_model::where('id',$id)->first();
        $status = $member->status;
@@ -76,7 +73,7 @@ class Team extends Component
         return redirect('team');
        }
     }
-    public function edit_member(Request $request,$id)
+    public function edit_member($id)
     {
         $data['user'] = session('user');
         $data['roles'] = Role_model::where('id','>=',$data['user']->role_id)->get();
@@ -85,16 +82,16 @@ class Team extends Component
         $data['member'] = Admin_model::where('id',$id)->first();
         return view('livewire.edit-team')->with($data);
     }
-    public function update_member(Request $request,$id)
+    public function update_member($id)
     {
 
-        $parent_id = $request->input('parent');
-        $role_id = $request->input('role');
-        $username = $request->input('username');
-        $f_name = $request->input('fname');
-        $l_name = $request->input('lname');
-        $email = $request->input('email');
-        $password = $request->input('password');
+        $parent_id = request()->input('parent');
+        $role_id = request()->input('role');
+        $username = request()->input('username');
+        $f_name = request()->input('fname');
+        $l_name = request()->input('lname');
+        $email = request()->input('email');
+        $password = request()->input('password');
 
         if(Admin_model::where('username',$username)->where('id','!=',$id)->first() != null){
 

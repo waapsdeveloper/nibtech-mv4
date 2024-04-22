@@ -50,38 +50,38 @@
             <div class="breadcrumb-header justify-content-between">
                 <div class="left-content">
                     {{-- <span class="ms-3 form-check form-switch ms-4">
-                        <input type="checkbox" value="1" name="bypass_check" class="form-check-input" form="wholesale_item" @if (session('bypass_check') == 1) checked @endif>
+                        <input type="checkbox" value="1" name="bypass_check" class="form-check-input" form="rma_item" @if (session('bypass_check') == 1) checked @endif>
                         <label class="form-check-label" for="bypass_check">Bypass Wholesale check</label>
                     </span> --}}
-                <span class="main-content-title mg-b-0 mg-b-lg-1">BulkSale Order Detail</span>
+                <span class="main-content-title mg-b-0 mg-b-lg-1">RMA Order Detail</span>
                 </div>
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">BulkSale Detail</li>
+                        <li class="breadcrumb-item active" aria-current="page">RMA Detail</li>
                     </ol>
                 </div>
             </div>
         <!-- /breadcrumb -->
         <div class="text-center" style="border-bottom: 1px solid rgb(216, 212, 212);">
-                {{-- <center><h4>BulkSale Order Detail</h4></center> --}}
+                {{-- <center><h4>RMA Order Detail</h4></center> --}}
                 <h5>Reference: {{ $order->reference_id }} | Purchaser: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->count() }} | Total Price: {{ $order->currency_id->sign.number_format($order->order_items->sum('price'),2) }}</h5>
 
         </div>
         <br>
 
-                <h4>Add BulkSale Item</h4>
+                <h4>Add RMA Item</h4>
         <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
 
             <div class="p-2">
                 <span class="form-check form-switch ms-4" title="Bypass Wholesale check" onclick="$('#bypass_check').check()">
-                    <input type="checkbox" value="1" id="bypass_check" name="bypass_check" class="form-check-input" form="wholesale_item" @if (session('bypass_check') == 1) checked @endif>
+                    <input type="checkbox" value="1" id="bypass_check" name="bypass_check" class="form-check-input" form="rma_item" @if (session('bypass_check') == 1) checked @endif>
                     <label class="form-check-label" for="bypass_check">Bypass check</label>
                 </span>
 
             </div>
             <div class="p-1">
-                <form class="form-inline" action="{{ url('add_wholesale_item').'/'.$order_id }}" method="POST" id="wholesale_item">
+                <form class="form-inline" action="{{ url('add_rma_item').'/'.$order_id }}" method="POST" id="rma_item">
                 @csrf
 
                         <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
@@ -91,15 +91,15 @@
                 </form>
             </div>
             <div class="p-2">
-                <a href="{{url(session('url').'export_bulksale_invoice')}}/{{ $order->id }}" target="_blank"><button class="btn-sm btn-secondary">Invoice</button></a>
+                <a href="{{url(session('url').'export_rma_invoice')}}/{{ $order->id }}" target="_blank"><button class="btn-sm btn-secondary">Invoice</button></a>
 
                 <div class="btn-group" role="group">
                     <button type="button" class="btn-sm btn-secondary dropdown-toggle" id="pack_sheet" data-bs-toggle="dropdown" aria-expanded="false">
                     Pack Sheet
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="pack_sheet">
-                        <li><a class="dropdown-item" href="{{url(session('url').'export_bulksale_invoice')}}/{{ $order->id }}?packlist=2&id={{ $order->id }}">.xlsx</a></li>
-                        <li><a class="dropdown-item" href="{{url(session('url').'export_bulksale_invoice')}}/{{ $order->id }}?packlist=1" target="_blank">.pdf</a></li>
+                        <li><a class="dropdown-item" href="{{url(session('url').'export_rma_invoice')}}/{{ $order->id }}?packlist=2&id={{ $order->id }}">.xlsx</a></li>
+                        <li><a class="dropdown-item" href="{{url(session('url').'export_rma_invoice')}}/{{ $order->id }}?packlist=1" target="_blank">.pdf</a></li>
                     </ul>
                 </div>
             </div>
@@ -143,7 +143,7 @@
                                             <td>{{ $currency.number_format($item->price,2) }}</td>
                                             @endif
                                             <td style="width:220px">{{ $item->created_at }}</td>
-                                            <td><a href="{{ url('delete_wholesale_item').'/'.$item->id }}"><i class="fa fa-trash"></i></a></td>
+                                            <td><a href="{{ url('delete_rma_item').'/'.$item->id }}"><i class="fa fa-trash"></i></a></td>
                                         </tr>
                                         @php
                                             $i ++;
@@ -184,13 +184,13 @@
                                         {{-- @if (session('user')->hasPermission('view_cost')) --}}
                                         <th><small><b>Vendor Price</b></small></th>
                                         {{-- @endif --}}
-                                        @if (session('user')->hasPermission('delete_wholesale_item'))
+                                        @if (session('user')->hasPermission('delete_rma_item'))
                                         <th></th>
                                         @endif
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <form method="POST" action="{{url(session('url').'wholesale')}}/update_prices" id="update_prices_{{ $variation->id }}">
+                                    <form method="POST" action="{{url(session('url').'rma')}}/update_prices" id="update_prices_{{ $variation->id }}">
                                         @csrf
                                     @php
                                         $i = 0;
@@ -217,8 +217,8 @@
                                                 {{ $item->order->customer->first_name }} {{ $currency.$item->sale_item($order_id)->price }}
                                             </td>
 
-                                            @if (session('user')->hasPermission('delete_wholesale_item'))
-                                            <td><a href="{{ url('delete_wholesale_item').'/'.$item->sale_item($order_id)->id }}"><i class="fa fa-trash"></i></a></td>
+                                            @if (session('user')->hasPermission('delete_rma_item'))
+                                            <td><a href="{{ url('delete_rma_item').'/'.$item->sale_item($order_id)->id }}"><i class="fa fa-trash"></i></a></td>
                                             @endif
                                             <input type="hidden" name="item_ids[]" value="{{ $item->sale_item($order_id)->id }}">
                                         </tr>

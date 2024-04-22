@@ -25,7 +25,7 @@ class Customer_model extends Model
     {
         return $this->hasOne(Country_model::class, 'id', 'country');
     }
-    public function order()
+    public function orders()
     {
         return $this->hasMany(Order_model::class, 'customer_id', 'id');
     }

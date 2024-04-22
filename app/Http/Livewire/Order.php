@@ -13,28 +13,15 @@ namespace App\Http\Livewire;
     use App\Models\Customer_model;
     use App\Models\Currency_model;
     use App\Models\Country_model;
-    use App\Models\Color_model;
     use App\Models\Storage_model;
-    // use GuzzleHttp\Psr7\Request;
     use Carbon\Carbon;
-    use Illuminate\Support\Facades\Session;
     use App\Exports\OrdersExport;
     use App\Exports\PickListExport;
     use App\Exports\LabelsExport;
     use App\Exports\DeliveryNotesExport;
-    use App\Exports\InvoiceExport;
     use App\Exports\OrdersheetExport;
     use Illuminate\Support\Facades\DB;
     use Maatwebsite\Excel\Facades\Excel;
-    use GuzzleHttp\Client;
-    use Illuminate\Support\Facades\Storage;
-    use Illuminate\Support\Str;
-    use setasign\Fpdi\Fpdi;
-    use setasign\Fpdi\PdfReader;
-    use setasign\Fpdi\PdfParser\StreamReader;
-    use PDF;
-
-    use Illuminate\Http\Request;
     use TCPDF;
     use App\Mail\InvoiceMail;
     use Illuminate\Support\Facades\Mail;
@@ -519,7 +506,6 @@ class Order extends Component
     }
     public function dispatch($id)
     {
-        $detail;
         $order = Order_model::where('id',$id)->first();
         $bm = new BackMarketAPIController();
 
@@ -642,17 +628,17 @@ class Order extends Component
             $order = Order_model::find($order->id);
             $items = $order->order_items;
             if(count($items) > 1){
-                    foreach($skus as $s_ind => $each_sku){
-                        if($s_ind == 0 && count($ea) == 1){
-                            $detail = $bm->shippingOrderlines($order->reference_id,$sku[0],trim($imeis[0]),$orderObj->tracking_number,$serial);
-                        }elseif($s_ind == 0 && count($ea) > 1){
-                            $detail = $bm->shippingOrderlines($order->reference_id,$sku[0],false,$orderObj->tracking_number,$serial);
-                        }elseif($s_ind > 0 && count($ea) == 1){
-                            $detail = $bm->orderlineIMEI($order->reference_id,$sku[0],trim($imeis[0]),$orderObj->tracking_number,$serial);
-                        }else{
+                foreach($skus as $s_ind => $each_sku){
+                    if($s_ind == 0 && count($each_sku) == 1){
+                        $detail = $bm->shippingOrderlines($order->reference_id,$sku[0],trim($imeis[0]),$orderObj->tracking_number,$serial);
+                    }elseif($s_ind == 0 && count($each_sku) > 1){
+                        $detail = $bm->shippingOrderlines($order->reference_id,$sku[0],false,$orderObj->tracking_number,$serial);
+                    }elseif($s_ind > 0 && count($each_sku) == 1){
+                        $detail = $bm->orderlineIMEI($order->reference_id,$sku[0],trim($imeis[0]),$orderObj->tracking_number,$serial);
+                    }else{
 
-                        }
                     }
+                }
             }else{
                 $detail = $bm->shippingOrderlines($order->reference_id,$sku[0],trim($imeis[0]),$orderObj->tracking_number,$serial);
             }
@@ -873,34 +859,34 @@ class Order extends Component
     }
     public function import()
     {
-        $bm = new BackMarketAPIController();
-        // Replace 'your-excel-file.xlsx' with the actual path to your Excel file
-        $excelFilePath = storage_path(request('file'));
+        // $bm = new BackMarketAPIController();
+        // // Replace 'your-excel-file.xlsx' with the actual path to your Excel file
+        // $excelFilePath = storage_path(request('file'));
 
-        $data = Excel::toArray([], $excelFilePath)[0];
-        if(request('product') != null){
-            foreach($data as $dr => $d){
-                // $name = ;
-            }
-        }else{
+        // $data = Excel::toArray([], $excelFilePath)[0];
+        // if(request('product') != null){
+        //     foreach($data as $dr => $d){
+        //         // $name = ;
+        //     }
+        // }else{
 
-            // Print or use the resulting array
-            // dd($data);
-            $i = 0;
-            foreach($data as $d){
-                $orderObj = $bm->getOneOrder($d[1]);
-                $this->updateBMOrder($d[1]);
-                if($orderObj->state == 3){
-                    print_r($bm->shippingOrderlines($d[1],trim($d[6]),$orderObj->tracking_number));
-                    // $orderObj = $bm->getOneOrder($d[1]);
-                    // $this->updateBMOrder($d[1]);
-                    $i ++;
-                    print_r($orderObj);
-                    print_r($d[6]);
-                }
-                if($i == 100){break;}
-            }
-        }
+        //     // Print or use the resulting array
+        //     // dd($data);
+        //     $i = 0;
+        //     foreach($data as $d){
+        //         $orderObj = $bm->getOneOrder($d[1]);
+        //         $this->updateBMOrder($d[1]);
+        //         if($orderObj->state == 3){
+        //             print_r($bm->shippingOrderlines($d[1],trim($d[6]),$orderObj->tracking_number));
+        //             // $orderObj = $bm->getOneOrder($d[1]);
+        //             // $this->updateBMOrder($d[1]);
+        //             $i ++;
+        //             print_r($orderObj);
+        //             print_r($d[6]);
+        //         }
+        //         if($i == 100){break;}
+        //     }
+        // }
 
     }
 

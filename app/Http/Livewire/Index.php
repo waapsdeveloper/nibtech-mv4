@@ -44,9 +44,9 @@ class Index extends Component
 
         $start_date = Carbon::now()->startOfDay();
         $end_date = date('Y-m-d 23:59:59');
-        if ($request->start != NULL && $request->end != NULL) {
-            $start_date = $request->start . " 00:00:00";
-            $end_date = $request->end . " 23:59:59";
+        if (request('start') != NULL && request('end') != NULL) {
+            $start_date = request('start') . " 00:00:00";
+            $end_date = request('end') . " 23:59:59";
         }
         // $products = Products_model::get()->toArray();
         // Retrieve the top 10 selling products from the order_items table

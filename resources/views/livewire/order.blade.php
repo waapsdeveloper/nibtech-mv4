@@ -315,7 +315,7 @@
                                         @endphp
 
                                         @foreach ($items as $itemIndex => $item)
-                                            <tr @if ($order->customer->order->count() > 1) class="bg-light" @endif>
+                                            <tr @if ($order->customer->orders->count() > 1) class="bg-light" @endif>
                                                 @if ($itemIndex == 0)
                                                     <td rowspan="{{ count($items) }}"><input type="checkbox" name="ids[]" value="{{ $order->id }}" form="pdf"></td>
                                                     <td rowspan="{{ count($items) }}">{{ $i + 1 }}</td>
@@ -476,11 +476,11 @@
                                                 $j++;
                                             @endphp
                                         @endforeach
-                                        @if ($order->customer->order->count() > 1)
+                                        @if ($order->customer->orders->count() > 1)
                                             @php
                                                 $def = 0;
                                             @endphp
-                                            @foreach ($order->customer->order as $ins => $ord)
+                                            @foreach ($order->customer->orders as $ins => $ord)
                                                 @if ($ord->id != $order->id)
 
                                                     @foreach ($ord->order_items as $ind => $itm)
@@ -490,7 +490,7 @@
                                                                 @php
                                                                     $def = 1;
                                                                 @endphp
-                                                                <td rowspan="{{ count($order->customer->order)-1 }}" colspan="2">{{ $ord->customer->first_name." ".$ord->customer->last_name." ".$ord->customer->phone }}</td>
+                                                                <td rowspan="{{ count($order->customer->orders)-1 }}" colspan="2">{{ $ord->customer->first_name." ".$ord->customer->last_name." ".$ord->customer->phone }}</td>
                                                             @endif
                                                             <td>{{ $ord->reference_id }}</td>
                                                             <td>

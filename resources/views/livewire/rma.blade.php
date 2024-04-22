@@ -28,14 +28,14 @@
         <!-- breadcrumb -->
             <div class="breadcrumb-header justify-content-between">
                 <div class="left-content">
-                {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">BulkSale</span> --}}
+                {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">RMA</span> --}}
                 <a href="javascript:void(0);" class="btn btn-success float-right" data-bs-target="#modaldemo"
-                data-bs-toggle="modal"><i class="mdi mdi-plus"></i> Add BulkSale </a>
+                data-bs-toggle="modal"><i class="mdi mdi-plus"></i> Add RMA </a>
                 </div>
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">BulkSale</li>
+                        <li class="breadcrumb-item active" aria-current="page">RMA</li>
                     </ol>
                 </div>
             </div>
@@ -79,7 +79,7 @@
         <br>
         <div class="row">
             <div class="col-md-12" style="border-bottom: 1px solid rgb(216, 212, 212);">
-                <center><h4>BulkSale</h4></center>
+                <center><h4>RMA</h4></center>
             </div>
         </div>
         <br>
@@ -121,8 +121,8 @@
                                     <tr>
                                         <th><small><b>No</b></small></th>
                                         <th><small><b>Order ID</b></small></th>
-                                        <th><small><b>Purchaser</b></small></th>
-                                        @if (session('user')->hasPermission('view_price'))
+                                        <th><small><b>Vendor</b></small></th>
+                                        @if (session('user')->hasPermission('view_cost'))
                                         <th><small><b>Cost</b></small></th>
                                         @endif
                                         <th><small><b>Qty</b></small></th>
@@ -149,9 +149,9 @@
                                         {{-- @foreach ($items as $itemIndex => $item) --}}
                                             <tr>
                                                     <td>{{ $i + 1 }}</td>
-                                                    <td><a href="{{url(session('url').'wholesale/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                    <td><a href="{{url(session('url').'rma/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
                                                 <td>{{ $vendors[$order->customer_id] }}</td>
-                                                @if (session('user')->hasPermission('view_price'))
+                                                @if (session('user')->hasPermission('view_cost'))
                                                 <td>{{ $currencies[$order->currency] . number_format($order->order_items->sum('price'),2) }}</td>
                                                 @endif
                                                 <td>{{ $order->order_items->count() }}</td>
@@ -159,7 +159,7 @@
                                                 <td>
                                                     <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                                     <div class="dropdown-menu">
-                                                        <a class="dropdown-item" href="{{url(session('url').'delete_wholesale') . "/" . $order->id }}"><i class="fe fe-arrows-rotate me-2 "></i>Delete</a>
+                                                        <a class="dropdown-item" href="{{url(session('url').'delete_rma') . "/" . $order->id }}"><i class="fe fe-arrows-rotate me-2 "></i>Delete</a>
                                                         {{-- <a class="dropdown-item" href="{{ $order->delivery_note_url }}" target="_blank"><i class="fe fe-arrows-rotate me-2 "></i>Delivery Note</a>
                                                         <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a> --}}
                                                         {{-- <a class="dropdown-item" href="javascript:void(0);"><i class="fe fe-trash-2 me-2"></i>Delete</a> --}}
@@ -191,18 +191,18 @@
                 <div class="modal-body pd-sm-40">
                     <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
                         type="button"><span aria-hidden="true">&times;</span></button>
-                    <h5 class="modal-title mg-b-5">Add BulkSale Record</h5>
+                    <h5 class="modal-title mg-b-5">Add RMA Record</h5>
                     <hr>
-                    <form action="{{ url('add_wholesale') }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ url('add_rma') }}" method="POST" enctype="multipart/form-data">
                         @csrf
-                        <input type="hidden" name="wholesale[type]" id="" value="5">
+                        <input type="hidden" name="rma[type]" id="" value="5">
                         <div class="form-group">
                             <label for="">Reference ID</label>
-                            <input class="form-control" placeholder="input Reference No" name="wholesale[reference_id]" type="text" required>
+                            <input class="form-control" placeholder="input Reference No" name="rma[reference_id]" type="text" required>
                         </div>
                         <div class="form-group">
-                            <label for="">Purchaser</label>
-                            <input type="text" list="vendors" class="form-control" placeholder="Input Vendor" name="wholesale[vendor]" required>
+                            <label for="">Vendor</label>
+                            <input type="text" list="vendors" class="form-control" placeholder="Input Vendor" name="rma[vendor]" required>
                             <datalist id="vendors">
                                 <option>Select Vendor</option>
                                 @foreach ($vendors as $id=>$vendor)
@@ -211,7 +211,7 @@
                                 @endforeach
                             </datalist>
                         </div>
-                        <input type="hidden" name="wholesale[status]" value="2">
+                        <input type="hidden" name="rma[status]" value="2">
 
                         <button class="btn btn-primary btn-block">{{ __('locale.Submit') }}</button>
                     </form>

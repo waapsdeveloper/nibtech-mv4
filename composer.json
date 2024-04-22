@@ -14,7 +14,7 @@
         "illuminate/mail": "*",
         "intervention/image": "^3.4",
         "laravel/framework": "^9.0",
-        "laravel/sanctum": "^2.14",
+        "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.7",
         "livewire/livewire": "^2.12",
         "maatwebsite/excel": "^3.1",

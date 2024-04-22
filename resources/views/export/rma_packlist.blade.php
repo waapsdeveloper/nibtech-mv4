@@ -65,6 +65,7 @@
     {{-- <iframe src="{{ $order->delivery_note_url }}"></iframe> --}}
     <div class="invoice-container">
         <!-- Company Information -->
+
         <table border="0">
             <tr style="text-align: right; padding:0; margin:0;">
                 <td style="text-align: left; padding:0; margin:0; line-height:10px">
@@ -117,7 +118,7 @@
                 {{-- <td></td> --}}
                 <td style="text-align: right; padding:0; margin:0; line-height:10px" width="200">
                     <br><br>
-                    <h1 style="font-size: 26px; text-align:right;">INVOICE</h1>
+                    <h1 style="font-size: 26px; text-align:right;">PACKLIST</h1>
                     <table cellspacing="4">
 
                     <br><br><br><br>
@@ -151,12 +152,8 @@
                 </td>
             </tr>
         </table>
-
-
         <!-- Order Items -->
         <div class="order-items">
-            <br>
-            {{-- <h3>Order Items</h3> --}}
             <table cellpadding="5">
                 <thead border="1">
                     <tr border="1">
@@ -170,6 +167,7 @@
                     @php
                         $totalAmount = 0;
                         $totalQty = 0;
+                        $items = $order->order_items
                     @endphp
                     @foreach ($order_items as $item)
                         @php
@@ -190,10 +188,21 @@
                         @endphp
                         <tr>
                             <td width="320">{{ $item->model . " - " . $storage . $color . $grades[$item->grade] }}</td>
-                            <td width="80" align="right">{{ $order->currency_id->sign }}{{ number_format($item->average_price,2) }}</td>
+                            <td width="80" align="right"></td>
                             <td width="40">{{ $item->total_quantity }}</td>
                             <td width="90" align="right">{{ $order->currency_id->sign }}{{ number_format($item->total_price,2) }}</td>
                         </tr>
+                        @foreach ($items as $order_item)
+                            @if($order_item->variation_id == $item->variation_id)
+                            <tr class="font-sm">
+                                <td width="320" style="font-size: 10px" align="right">{{ $order_item->stock->imei.$order_item->stock->serial_number }}</td>
+                                <td width="80" style="font-size: 10px" align="right">{{ $order->currency_id->sign }}{{ number_format($order_item->price,2) }}</td>
+                                <td width="40"></td>
+                                <td width="90" align="right"></td>
+                            </tr>
+                            @endif
+                        @endforeach
+                        <br>
                     @endforeach
                         {{-- <tr>
                             <td width="320">Accessories</td>

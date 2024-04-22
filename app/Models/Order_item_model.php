@@ -36,11 +36,11 @@ class Order_item_model extends Model
 
     public function linked()
     {
-        return $this->belongsTo(Process_batch_model::class, 'linked_id');
+        return $this->belongsTo(Process_model::class, 'linked_id');
     }
     public function childs()
     {
-        return $this->hasMany(Process_batch_model::class, 'linked_id');
+        return $this->hasMany(Process_model::class, 'linked_id');
     }
 
     public function updateOrderItemsInDB($orderObj, $tester = null, $bm)

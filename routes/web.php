@@ -3,6 +3,7 @@
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\TestingController;
 use App\Http\Livewire\Change;
+use App\Http\Livewire\Customer;
 use App\Http\Livewire\Emptypage;
 use App\Http\Livewire\Error404;
 use App\Http\Livewire\Error500;
@@ -19,6 +20,7 @@ use App\Http\Livewire\Variation;
 use App\Http\Livewire\Process;
 use App\Http\Livewire\Payouts;
 use App\Http\Livewire\Logout;
+use App\Http\Livewire\RMA;
 use App\Http\Livewire\Team;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\GetAllowedRoutesMiddleware;
@@ -60,11 +62,20 @@ Route::get('purchase/detail/{id}', [Order::class,'purchase_detail'])->name('purc
 Route::get('wholesale', Wholesale::class)->name('view_wholesale');
 Route::post('add_wholesale', [Wholesale::class,'add_wholesale'])->name('add_wholesale');
 Route::post('add_wholesale_item/{id}', [Wholesale::class,'add_wholesale_item'])->name('add_wholesale_item');
-Route::get('delete_order/{id}', [Wholesale::class,'delete_order'])->name('delete_wholesale');
-Route::get('delete_order_item/{id}', [Wholesale::class,'delete_order_item'])->name('delete_wholesale_item');
+Route::get('delete_wholesale/{id}', [Wholesale::class,'delete_order'])->name('delete_wholesale');
+Route::get('delete_wholesale_item/{id}', [Wholesale::class,'delete_order_item'])->name('delete_wholesale_item');
 Route::get('wholesale/detail/{id}', [Wholesale::class,'wholesale_detail'])->name('wholesale_detail');
 Route::post('wholesale/update_prices', [Wholesale::class,'update_prices'])->name('update_wholesale_item');
 Route::get('export_bulksale_invoice/{id}', [Wholesale::class,'export_bulksale_invoice'])->name('wholesale_detail');
+
+Route::get('rma', RMA::class)->name('view_rma');
+Route::post('add_rma', [RMA::class,'add_rma'])->name('add_rma');
+Route::post('add_rma_item/{id}', [RMA::class,'add_rma_item'])->name('add_rma_item');
+Route::get('delete_rma/{id}', [RMA::class,'delete_order'])->name('delete_rma');
+Route::get('delete_rma_item/{id}', [RMA::class,'delete_order_item'])->name('delete_rma_item');
+Route::get('rma/detail/{id}', [RMA::class,'rma_detail'])->name('rma_detail');
+Route::post('rma/update_prices', [RMA::class,'update_prices'])->name('update_rma_item');
+Route::get('export_rma_invoice/{id}', [RMA::class,'export_rma_invoice'])->name('rma_detail');
 
 Route::get('order', Order::class)->name('view_order');
 Route::get('check_new/{return?}', [Order::class,'updateBMOrdersNew'])->name('view_order');
@@ -101,6 +112,13 @@ Route::post('insert-member', [Team::class,'insert_member'])->name('add_member');
 Route::get('update-status/{id}', [Team::class,'update_status'])->name('edit_member');
 Route::get('edit-member/{id}', [Team::class,'edit_member'])->name('edit_member');
 Route::post('update-member/{id}', [Team::class,'update_member'])->name('edit_member');
+
+Route::get('customer', Customer::class)->name('view_customer');
+Route::get('add-customer', [Customer::class,'add_customer'])->name('add_customer');
+Route::post('insert-customer', [Customer::class,'insert_customer'])->name('add_customer');
+Route::get('update-status/{id}', [Customer::class,'update_status'])->name('edit_customer');
+Route::get('edit-customer/{id}', [Customer::class,'edit_customer'])->name('edit_customer');
+Route::post('update-customer/{id}', [Customer::class,'update_customer'])->name('edit_customer');
 
 Route::get('get_permissions/{id}', [Team::class,'get_permissions'])->name('view_permissions');
 Route::post('toggle_role_permission/{roleId}/{permissionId}/{isChecked}', [Team::class, 'toggle_role_permission'])->name('change_permission');

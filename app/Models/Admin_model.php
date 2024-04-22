@@ -6,10 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use DB;
+use Illuminate\Auth\Authenticatable;
+use Laravel\Sanctum\HasApiTokens;
 
 class Admin_model extends Model
 {
-    use HasFactory;
+
+    use HasApiTokens, HasFactory, Authenticatable;
+
     protected $table = 'admin';
     protected $primaryKey = 'id';
     public $timestamps = FALSE;

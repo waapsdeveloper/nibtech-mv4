@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use TCPDF;
 
-class Wholesale extends Component
+class RMA extends Component
 {
 
     public $imei;
@@ -52,11 +52,8 @@ class Wholesale extends Component
                 'orders.reference_id',
                 'orders.customer_id',
                 'orders.currency',
-                // DB::raw('SUM(order_items.price) as total_price'),
-                // DB::raw('COUNT(order_items.id) as total_quantity'),
                 'orders.created_at')
-            ->where('orders.order_type_id',5)
-            // ->join('order_items', 'orders.id', '=', 'order_items.order_id')
+            ->where('orders.order_type_id',2)
 
             ->when(request('start_date') != '', function ($q) {
                 return $q->where('orders.created_at', '>=', request('start_date', 0));
@@ -69,7 +66,6 @@ class Wholesale extends Component
             })
             ->groupBy('orders.id', 'orders.reference_id', 'orders.customer_id', 'orders.currency', 'orders.created_at')
             ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
-            // ->select('orders.*')
             ->paginate($per_page)
             ->onEachSide(5)
             ->appends(request()->except('page'));
@@ -77,7 +73,7 @@ class Wholesale extends Component
 
 
         // dd($data['orders']);
-        return view('livewire.wholesale')->with($data);
+        return view('livewire.rma')->with($data);
     }
     public function delete_order($order_id){
 
@@ -102,6 +98,7 @@ class Wholesale extends Component
             $orderItem->delete();
         }
         Order_model::where('id',$order_id)->delete();
+
         session()->put('success', 'Order deleted successfully');
         return redirect()->back();
     }
@@ -126,7 +123,7 @@ class Wholesale extends Component
 
         return redirect()->back();
     }
-    public function wholesale_detail($order_id){
+    public function rma_detail($order_id){
 
         // $data['imeis'] = Stock_model::whereIn('status',[1,3])->orderBy('serial_number','asc')->orderBy('imei','asc')->get();
         $data['storages'] = Storage_model::pluck('name','id');
@@ -170,7 +167,7 @@ class Wholesale extends Component
 
         // echo "</pre>";
         // dd($data['variations']);
-        return view('livewire.wholesale_detail')->with($data);
+        return view('livewire.rma_detail')->with($data);
 
     }
 
@@ -187,25 +184,24 @@ class Wholesale extends Component
         return redirect()->back();
     }
 
-    public function add_wholesale(){
-        // dd(request('wholesale'));
-        $wholesale = (object) request('wholesale');
+    public function add_rma(){
+        // dd(request('rma'));
+        $rma = (object) request('rma');
         $error = "";
 
 
-        $customer = Customer_model::firstOrNew(['first_name' => $wholesale->vendor, ['is_vendor','!=',null] ]);
-        if($customer->id == null){
-            $customer->is_vendor = 2;
-        }
-        $customer->save();
+        $customer = Customer_model::where(['first_name' => $rma->vendor, 'is_vendor'=>1 ])->first();
+        // if($customer->id == null){
+        //     $customer->is_vendor = 1;
+        // }
+        // $customer->save();
 
-        $order = Order_model::firstOrNew(['reference_id' => $wholesale->reference_id, 'order_type_id' => 5 ]);
+        $order = Order_model::firstOrNew(['reference_id' => $rma->reference_id, 'order_type_id' => 2 ]);
         $order->customer_id = $customer->id;
         $order->status = 2;
         $order->currency = 4;
-        $order->order_type_id = 5;
+        $order->order_type_id = 2;
         $order->processed_by = session('user_id');
-        $order->created_at = now()->format('Y-m-d H:i:s');
         $order->save();
 
         // Delete the temporary file
@@ -216,7 +212,8 @@ class Wholesale extends Component
         }
         return redirect()->back();
     }
-    public function add_wholesale_item($order_id){
+    public function add_rma_item($order_id){
+
         if(ctype_digit(request('imei'))){
             $i = request('imei');
             $s = null;
@@ -224,12 +221,17 @@ class Wholesale extends Component
             $i = null;
             $s = request('imei');
         }
-
+        $purchase_order = Order_model::find($order_id);
         $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
         if(request('imei') == '' || !$stock || $stock->status == null){
             session()->put('error', 'IMEI Invalid / Not Found');
             return redirect()->back();
 
+        }
+
+        if($stock->order->customer_id != $purchase_order->customer_id){
+            session()->put('error', 'Stock belong to different Vendor');
+            return redirect()->back();
         }
         $variation = Variation_model::where(['id' => $stock->variation_id])->first();
         if($stock->status != 1){
@@ -240,11 +242,11 @@ class Wholesale extends Component
             session('bypass_check', 1);
         }else{
             session()->forget('bypass_check');
-            if($variation->grade != 11){
+            if($variation->grade != 10){
 
                 // dd('hello');
                 echo "<script>
-                if (confirm('This IMEI does not belong to wholesale, are you sure you want to continue?')) {
+                if (confirm('This IMEI does not belong to RMA, are you sure you want to continue?')) {
                     // User clicked OK, do nothing or perform any other action
                 } else {
                     // User clicked Cancel, redirect to the previous page
@@ -271,20 +273,17 @@ class Wholesale extends Component
 
         session()->put('success', 'Stock added successfully');
 
-
         echo "<script>
 
             window.history.back();
 
         </script>";
-        // Delete the temporary file
-        // Storage::delete($filePath);
 
         // return redirect()->back();
     }
 
 
-    public function export_bulksale_invoice($order_id)
+    public function export_rma_invoice($order_id)
     {
 
         // Find the order
@@ -336,12 +335,12 @@ class Wholesale extends Component
         // Additional content from your view
         if(request('packlist') == 1){
 
-            $html = view('export.bulksale_packlist', $data)->render();
+            $html = view('export.rma_packlist', $data)->render();
         }elseif(request('packlist') == 2){
 
             return Excel::download(new PacksheetExport, 'orders.xlsx');
         }else{
-            $html = view('export.bulksale_invoice', $data)->render();
+            $html = view('export.rma_invoice', $data)->render();
         }
 
         $pdf->writeHTML($html, true, false, true, false, '');

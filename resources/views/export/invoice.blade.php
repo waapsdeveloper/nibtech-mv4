@@ -65,17 +65,14 @@
     {{-- <iframe src="{{ $order->delivery_note_url }}"></iframe> --}}
     <div class="invoice-container">
         <!-- Company Information -->
-        <table border="0">
+        {{-- <table border="0">
             <tr style="text-align: center;">
                 <td style="text-align: center; padding:0; margin:0; line-height:10px">
 
-                    {{-- <div class="company-info"> --}}
                         <img src="{{ public_path('assets/img/brand/logo1.png') }}" alt="" height="60">
                         <h2><strong>(NI) Britain Tech Ltd</strong></h2>
                         <h4>Cromac Square, Forsyth House</h4>
                         <h4>Belfast, BT2 8LA</h4>
-                        {{-- <h4>Phone: 0203302787</h4> --}}
-                    {{-- </div> --}}
 
                 </td>
                 <td width="150"></td>
@@ -103,9 +100,6 @@
                             <td colspan="2"><h4 style="font-weight: 400">{{ \Carbon\Carbon::parse($order->processed_at)->format('d/m/Y') }} {{ \Carbon\Carbon::parse($order->updated_at)->format('H:m:s') }}</h4></td>
                         </tr>
                     </table>
-                    {{-- <h3><strong>Order ID:</strong> {{ $order->reference_id }}</h3>
-                    <h3><strong>Order Date:</strong> {{ \Carbon\Carbon::parse($order->created_at)->format('d/m/Y') }}</h4><h4> {{ \Carbon\Carbon::parse($order->created_at)->format('H:m:s') }}&nbsp;</h3>
-                    <h3><strong>Invoice Date:</strong> {{ \Carbon\Carbon::parse($order->updated_at)->format('d/m/Y') }}</h4><h4> {{ \Carbon\Carbon::parse($order->updated_at)->format('H:m:s') }}&nbsp;</h3> --}}
                 </td>
             </tr>
             <tr>
@@ -126,8 +120,94 @@
                 <td></td>
                 <td></td>
             </tr>
-        </table>
+        </table> --}}
 
+        <table border="0">
+            <tr style="text-align: right; padding:0; margin:0;">
+                <td style="text-align: left; padding:0; margin:0; line-height:10px">
+
+                    {{-- <div class="company-info"> --}}
+                        <br><br>
+                        <img src="{{ public_path('assets/img/brand/logo1.png') }}" alt="" height="50">
+                    {{-- </div> --}}
+                        {{-- <br> --}}
+                        {{-- <br> --}}
+                </td>
+                <td width="150"></td>
+                <td width="200" style="line-height:8px;">
+                        <h4><strong>(NI) Britain Tech Ltd</strong></h4>
+                        <h4>Cromac Square,</h4>
+                        <h4>Forsyth House,</h4>
+                        <h4>Belfast, BT2 8LA</h4>
+                        <h4>invoice@nibritaintech.com</h4>
+
+                </td>
+
+            </tr>
+
+            <tr style="border-top: 1px solid Black">
+                <td>
+                    <table>
+                    <tr>
+                        <br>
+                        <td colspan="2"><h3 style="line-height:10px; margin:0px; ">Bill To:</h3></td>
+                    </tr>
+                    <tr>
+                        <td width="20"></td>
+                        <td width="180">
+                            <div style="line-height:10px; margin:0; padding:0;">
+                                <h5>{{ $customer->company }}</h5>
+                                <h5>{{ $customer->first_name." ".$customer->last_name }}</h5>
+                                {{-- <h5>{{ $customer->email }}</h5> --}}
+                                <h5>{{ $customer->phone }}</h5>
+                                <h5>{{ $customer->street }} {{ $customer->street2 }}, {{ $customer->city }}</h5>
+                                <h5>{{ $customer->postal_code }} {{ $customer->country_id->title ?? null }}</h5>
+                                <!-- Add more customer details as needed -->
+                            </div>
+                        </td>
+                    </tr>
+                    </table>
+                </td>
+                <td>
+
+                </td>
+                {{-- <td></td> --}}
+                <td style="text-align: right; padding:0; margin:0; line-height:10px" width="200">
+                    <br><br>
+                    <h1 style="font-size: 26px; text-align:right;">INVOICE</h1>
+                    <table cellspacing="4">
+
+                    <br><br><br><br>
+                        <tr>
+                            <td width="40"></td>
+                            <td style="text-align: left; margin-top:5px;" width="70"><h4><strong>Order ID:</strong></h4></td>
+                            <td colspan="2" width="70"><h4 style="font-weight: 400">{{ $order->reference_id }}</h4></td>
+                        </tr>
+                        @if ($order->admin)
+
+                        <tr>
+                            <td></td>
+                            <td style="text-align: left; margin-top:5px;"><h4><strong>Sales Rep:</strong></h4></td>
+                            <td colspan="2"><h4 style="font-weight: 400">{{ $order->admin->first_name }}</h4></td>
+                        </tr>
+                        @endif
+                        <tr>
+                            <td></td>
+                            <td style="text-align: left; margin-top:5px;"><h4><strong>Order Date:</strong></h4></td>
+                            <td colspan="2"><h4 style="font-weight: 400">{{ \Carbon\Carbon::parse($order->created_at)->format('d-m-Y') }}</h4></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td style="text-align: left; margin-top:5px;"><h4><strong>Invoice Date:</strong></h4></td>
+                            <td colspan="2"><h4 style="font-weight: 400">{{ \Carbon\Carbon::parse($order->processed_at)->format('d-m-Y') }}</h4></td>
+                        </tr>
+                    </table>
+                    {{-- <h3><strong>Order ID:</strong> {{ $order->reference_id }}</h3>
+                    <h3><strong>Order Date:</strong> {{ \Carbon\Carbon::parse($order->created_at)->format('d/m/Y') }}</h4><h4> {{ \Carbon\Carbon::parse($order->created_at)->format('H:m:s') }}&nbsp;</h3>
+                    <h3><strong>Invoice Date:</strong> {{ \Carbon\Carbon::parse($order->updated_at)->format('d/m/Y') }}</h4><h4> {{ \Carbon\Carbon::parse($order->updated_at)->format('H:m:s') }}&nbsp;</h3> --}}
+                </td>
+            </tr>
+        </table>
 
         <!-- Order Items -->
         <div class="order-items">

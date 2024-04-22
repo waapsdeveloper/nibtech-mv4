@@ -14,7 +14,7 @@ return [
     */
 
     'defaults' => [
-        'guard' => 'web',
+        'guard' => 'web', // Set the default guard to 'web' for web authentication
         'passwords' => 'users',
     ],
 
@@ -38,7 +38,12 @@ return [
     'guards' => [
         'web' => [
             'driver' => 'session',
-            'provider' => 'admins',
+            'provider' => 'users',
+        ],
+
+        'api' => [ // Define a guard specifically for API authentication
+            'driver' => 'sanctum',
+            'provider' => 'admins', // Use the 'admins' provider for retrieving users
         ],
     ],
 
@@ -64,11 +69,6 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\Admin_model::class,
         ],
-
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
     ],
 
     /*
@@ -85,7 +85,7 @@ return [
     | they have less time to be guessed. You may change this as needed.
     |
     */
-    
+
     'passwords' => [
         'admins' => [
             'provider' => 'admins', // Use the 'admins' provider for password resets
@@ -109,3 +109,4 @@ return [
     'password_timeout' => 10800,
 
 ];
+
