@@ -44,7 +44,7 @@ class Index extends Component
 
         $start_date = Carbon::now()->startOfDay();
         $end_date = date('Y-m-d 23:59:59');
-        if (request('start') != NULL && request('end') != NULL) {
+        if (request('start_date') != NULL && request('end_date') != NULL) {
             $start_date = request('start_date') . " 00:00:00";
             $end_date = request('end_date') . " 23:59:59";
         }
