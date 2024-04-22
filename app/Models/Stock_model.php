@@ -18,7 +18,8 @@ class Stock_model extends Model
         // other fields...
         // 'reference_id',
         'imei',
-        'serial_number'
+        'serial_number',
+        'status'
     ];
     public function variation()
     {
