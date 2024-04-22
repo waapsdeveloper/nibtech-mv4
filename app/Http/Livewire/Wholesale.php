@@ -216,7 +216,8 @@ class Wholesale extends Component
         }
         return redirect()->back();
     }
-    public function add_wholesale_item($order_id){
+
+    public function check_wholesale_item($order_id){
         if(ctype_digit(request('imei'))){
             $i = request('imei');
             $s = null;
@@ -231,28 +232,53 @@ class Wholesale extends Component
             return redirect()->back();
 
         }
+
         $variation = Variation_model::where(['id' => $stock->variation_id])->first();
         if($stock->status != 1){
             session()->put('error', 'Stock already sold');
             return redirect()->back();
         }
+
         if(request('bypass_check') == 1){
-            session('bypass_check', 1);
+            $this->add_wholesale_item($order_id);
+            session()->put('bypass_check', 1);
+            request()->merge(['bypass_check'=> 1]);
+            return redirect()->back();
         }else{
             session()->forget('bypass_check');
-            if($variation->grade != 11){
-
-                // dd('hello');
+            // request()->merge(['bypass_check' => null]);
+            if($variation->grade != 10){
+                echo "<p>This IMEI does not belong to Wholesale. Do you want to continue?</p>";
+                echo "<form id='continueForm' action='" . url('add_wholesale_item') . "/" . $order_id . "' method='POST'>";
+                echo "<input type='hidden' name='_token' value='" . csrf_token() . "'>";
+                echo "<input type='hidden' name='order_id' value='" . $order_id . "'>";
+                echo "<input type='hidden' name='imei' value='" . request('imei') . "'>";
+                echo "</form>";
+                echo "<a href='javascript:history.back()'>Cancel</a> ";
+                echo "<button onclick='submitForm()'>Continue</button>";
                 echo "<script>
-                if (confirm('This IMEI does not belong to wholesale, are you sure you want to continue?')) {
-                    // User clicked OK, do nothing or perform any other action
-                } else {
-                    // User clicked Cancel, redirect to the previous page
-                    window.history.back();
-                }
+                    function submitForm() {
+                        document.getElementById('continueForm').submit();
+                    }
                 </script>";
+                exit;
             }
         }
+    }
+    public function add_wholesale_item($order_id){
+        if(!request('bypass_check')){
+            session()->forget('bypass_check');
+        }
+        if(ctype_digit(request('imei'))){
+            $i = request('imei');
+            $s = null;
+        }else{
+            $i = null;
+            $s = request('imei');
+        }
+
+        $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
+        $variation = Variation_model::where(['id' => $stock->variation_id])->first();
         $stock->status = 2;
         $stock->save();
 
@@ -272,14 +298,15 @@ class Wholesale extends Component
         session()->put('success', 'Stock added successfully');
 
 
-        echo "<script>
+        // echo "<script>
 
-            window.history.back();
+        //     window.history.back();
 
-        </script>";
+        // </script>";
         // Delete the temporary file
         // Storage::delete($filePath);
 
+        return redirect(url('wholesale/detail').'/'.$order_id);
         // return redirect()->back();
     }
 

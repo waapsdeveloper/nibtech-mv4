@@ -81,7 +81,7 @@
 
             </div>
             <div class="p-1">
-                <form class="form-inline" action="{{ url('add_wholesale_item').'/'.$order_id }}" method="POST" id="wholesale_item">
+                <form class="form-inline" action="{{ url('check_wholesale_item').'/'.$order_id }}" method="POST" id="wholesale_item">
                 @csrf
 
                         <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>

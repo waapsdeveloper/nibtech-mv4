@@ -160,7 +160,6 @@ class RMA extends Component
         $data['order_id'] = $order_id;
         $data['currency'] = $data['order']->currency_id->sign;
 
-
         // echo "<pre>";
         // // print_r($items->stocks);
         // print_r($items);
@@ -182,6 +181,59 @@ class RMA extends Component
         }
 
         return redirect()->back();
+    }
+    public function check_rma_item($order_id){
+        if(ctype_digit(request('imei'))){
+            $i = request('imei');
+            $s = null;
+        }else{
+            $i = null;
+            $s = request('imei');
+        }
+
+        $purchase_order = Order_model::find($order_id);
+        $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
+        if(request('imei') == '' || !$stock || $stock->status == null){
+            session()->put('error', 'IMEI Invalid / Not Found');
+            return redirect()->back();
+
+        }
+
+        if($stock->order->customer_id != $purchase_order->customer_id){
+            session()->put('error', 'Stock belong to different Vendor');
+            return redirect()->back();
+        }
+        $variation = Variation_model::where(['id' => $stock->variation_id])->first();
+        if($stock->status != 1){
+            session()->put('error', 'Stock already sold');
+            return redirect()->back();
+        }
+
+        if(request('bypass_check') == 1){
+            $this->add_rma_item($order_id);
+            session()->put('bypass_check', 1);
+            request()->merge(['bypass_check'=> 1]);
+            return redirect()->back();
+        }else{
+            session()->forget('bypass_check');
+            // request()->merge(['bypass_check' => null]);
+            if($variation->grade != 10){
+                echo "<p>This IMEI does not belong to RMA. Do you want to continue?</p>";
+                echo "<form id='continueForm' action='" . url('add_rma_item') . "/" . $order_id . "' method='POST'>";
+                echo "<input type='hidden' name='_token' value='" . csrf_token() . "'>";
+                echo "<input type='hidden' name='order_id' value='" . $order_id . "'>";
+                echo "<input type='hidden' name='imei' value='" . request('imei') . "'>";
+                echo "</form>";
+                echo "<a href='javascript:history.back()'>Cancel</a> ";
+                echo "<button onclick='submitForm()'>Continue</button>";
+                echo "<script>
+                    function submitForm() {
+                        document.getElementById('continueForm').submit();
+                    }
+                </script>";
+                exit;
+            }
+        }
     }
 
     public function add_rma(){
@@ -214,6 +266,9 @@ class RMA extends Component
     }
     public function add_rma_item($order_id){
 
+        if(!request('bypass_check')){
+            session()->forget('bypass_check');
+        }
         if(ctype_digit(request('imei'))){
             $i = request('imei');
             $s = null;
@@ -221,40 +276,10 @@ class RMA extends Component
             $i = null;
             $s = request('imei');
         }
-        $purchase_order = Order_model::find($order_id);
+
         $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
-        if(request('imei') == '' || !$stock || $stock->status == null){
-            session()->put('error', 'IMEI Invalid / Not Found');
-            return redirect()->back();
-
-        }
-
-        if($stock->order->customer_id != $purchase_order->customer_id){
-            session()->put('error', 'Stock belong to different Vendor');
-            return redirect()->back();
-        }
         $variation = Variation_model::where(['id' => $stock->variation_id])->first();
-        if($stock->status != 1){
-            session()->put('error', 'Stock already sold');
-            return redirect()->back();
-        }
-        if(request('bypass_check') == 1){
-            session('bypass_check', 1);
-        }else{
-            session()->forget('bypass_check');
-            if($variation->grade != 10){
 
-                // dd('hello');
-                echo "<script>
-                if (confirm('This IMEI does not belong to RMA, are you sure you want to continue?')) {
-                    // User clicked OK, do nothing or perform any other action
-                } else {
-                    // User clicked Cancel, redirect to the previous page
-                    window.history.back();
-                }
-                </script>";
-            }
-        }
         $stock->status = 2;
         $stock->save();
 
@@ -273,13 +298,8 @@ class RMA extends Component
 
         session()->put('success', 'Stock added successfully');
 
-        echo "<script>
 
-            window.history.back();
-
-        </script>";
-
-        // return redirect()->back();
+        return redirect(url('rma/detail').'/'.$order_id);
     }
 
 

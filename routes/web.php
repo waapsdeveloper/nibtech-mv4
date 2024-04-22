@@ -62,6 +62,7 @@ Route::get('purchase/detail/{id}', [Order::class,'purchase_detail'])->name('purc
 
 Route::get('wholesale', Wholesale::class)->name('view_wholesale');
 Route::post('add_wholesale', [Wholesale::class,'add_wholesale'])->name('add_wholesale');
+Route::post('check_wholesale_item/{id}', [Wholesale::class,'check_wholesale_item'])->name('add_wholesale_item');
 Route::post('add_wholesale_item/{id}', [Wholesale::class,'add_wholesale_item'])->name('add_wholesale_item');
 Route::get('delete_wholesale/{id}', [Wholesale::class,'delete_order'])->name('delete_wholesale');
 Route::get('delete_wholesale_item/{id}', [Wholesale::class,'delete_order_item'])->name('delete_wholesale_item');
@@ -71,6 +72,7 @@ Route::get('export_bulksale_invoice/{id}', [Wholesale::class,'export_bulksale_in
 
 Route::get('rma', RMA::class)->name('view_rma');
 Route::post('add_rma', [RMA::class,'add_rma'])->name('add_rma');
+Route::post('check_rma_item/{id}', [RMA::class,'check_rma_item'])->name('add_rma_item');
 Route::post('add_rma_item/{id}', [RMA::class,'add_rma_item'])->name('add_rma_item');
 Route::get('delete_rma/{id}', [RMA::class,'delete_order'])->name('delete_rma');
 Route::get('delete_rma_item/{id}', [RMA::class,'delete_order_item'])->name('delete_rma_item');
