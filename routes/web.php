@@ -48,6 +48,7 @@ Route::get('error404', Error404::class)->name('error');
 Route::get('error500', Error500::class)->name('error');
 Route::get('error501', Error501::class)->name('error');
 Route::get('profile', Profile::class)->name('profile');
+Route::post('profile', Profile::class)->name('profile');
 Route::get('signin', Signin::class)->name('login');
 Route::post('login', [Signin::class,'login'])->name('signin');
 Route::get('logout', Logout::class)->name('signin');

@@ -21,6 +21,11 @@ class Profile extends Component
     public function render()
     {
         $admin = Admin_model::where('id',session('user_id'))->first();
+        if(request('update_profile')){
+            $admin->first_name = request('first_name');
+            $admin->last_name = request('last_name');
+            $admin->email = request('email');
+        }
         $data = array(
             'admin' => $admin,
         );

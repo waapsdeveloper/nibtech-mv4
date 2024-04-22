@@ -57,7 +57,8 @@
 									<div class="card">
 										<div class="card-body border-0">
 											<div class="mb-4 main-content-label">{{ __('locale.Personal Information') }}</div>
-											<form class="form-horizontal">
+											<form class="form-horizontal" method="POST">
+                                                @csrf
 												{{-- <div class="mb-4 main-content-label">Name</div> --}}
 												<div class="form-group ">
 													<div class="row row-sm">
@@ -65,8 +66,8 @@
 															<label class="form-label">{{ __('locale.First Name') }}</label>
 														</div>
 														<div class="col-md-9">
-															<input type="text" class="form-control"
-																placeholder="{{ __('locale.First Name') }}" value="{{$admin->first_name}}" disabled>
+															<input type="text" class="form-control" name="first_name"
+																placeholder="{{ __('locale.First Name') }}" value="{{$admin->first_name}}">
 														</div>
 													</div>
 												</div>
@@ -76,8 +77,8 @@
 															<label class="form-label">{{ __('locale.Last Name') }}</label>
 														</div>
 														<div class="col-md-9">
-															<input type="text" class="form-control"
-																placeholder="{{ __('locale.Last Name') }}" value="{{$admin->last_name}}" disabled>
+															<input type="text" class="form-control" name="last_name"
+																placeholder="{{ __('locale.Last Name') }}" value="{{$admin->last_name}}">
 														</div>
 													</div>
 												</div>
@@ -88,11 +89,22 @@
 															<label class="form-label">{{ __('locale.Email') }}</label>
 														</div>
 														<div class="col-md-9">
-															<input type="text" class="form-control" placeholder="Email"
-																value="{{$admin->email}}" disabled>
+															<input type="email" class="form-control" placeholder="Email" name="email"
+																value="{{$admin->email}}">
 														</div>
 													</div>
 												</div>
+												<div class="form-group ">
+													<div class="row row-sm">
+														<div class="col-md-3">
+															<label class="form-label">Submit</label>
+														</div>
+														<div class="col-md-9">
+															<input type="submit" class="btn btn-success" value="Update" name="update_profile">
+														</div>
+													</div>
+												</div>
+
 												<div class="mb-4 main-content-label">{{ __('locale.Security & Passwords') }}</div>
                                                 @if (session('error'))
                                                     <div class="alert alert-danger alert-dismissible fade show mb-0" role="alert">
