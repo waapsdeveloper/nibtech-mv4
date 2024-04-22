@@ -12,8 +12,8 @@
     </style>
 </head>
 <body>
-    <iframe id="pdfFrame" style="display:block; width:100%; height:97.5vh;" src="{{ $delivery_note }}"></iframe>
-
+    {{-- <iframe id="pdfFrame" style="display:block; width:100%; height:97.5vh;" src="{{ $delivery_note }}"></iframe> --}}
+    {{-- <embed src="{{ $delivery_note }}" width="500" height="375" type="application/pdf"> --}}
     <script>
         // Print the PDF when the page loads
         window.onload = function() {
@@ -44,31 +44,6 @@
                 }, 50000);
             };
 
-            // Get the iframe element
-            var iframe = document.getElementById('pdfFrame');
-
-            // // Set the src attribute of the iframe to the PDF URL
-            // iframe.src = url;
-
-            // // Handle onload event of the iframe
-            iframe.onload = function() {
-
-                console.log(window.frames['pdfFrame']);
-                try {
-                    window.frames['pdfFrame'].print();
-                } catch (e) {
-                    console.log(e);
-                    try {
-                        window.frames['pdfFrame'].contentWindow.print();
-                    } catch (e) {
-                        console.log(e);
-                    }
-                }
-                // Once the PDF is fully loaded in the iframe, trigger the print dialogue
-                    // alert("Print dialogue triggered"); // Debugging message
-                    window.frames['pdfFrame'].focus(); // Focus on the iframe
-                    window.frames['pdfFrame'].print(); // Print the PDF
-            };
         };
     </script>
 </body>

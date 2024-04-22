@@ -838,16 +838,16 @@ class Order extends Component
             $invoice_url = url(session('url').'export_invoice').'/'.$order->id;
              // JavaScript to open two tabs and print
             echo '<script>
-            var newTab1 = window.open("'.$order->delivery_note_url.'", "_blank");
             var newTab2 = window.open("'.$invoice_url.'", "_blank");
+            var newTab1 = window.open("'.$order->delivery_note_url.'", "_blank");
 
             newTab1.onload = function() {
                 newTab1.print();
             };
 
-            // newTab2.onload = function() {
-            //     newTab2.print();
-            // };
+            newTab2.onload = function() {
+                newTab2.print();
+            };
 
             window.close();
             </script>';
