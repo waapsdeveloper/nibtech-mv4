@@ -75,26 +75,29 @@ class RefreshNew extends Command
         }
 
 
-        $last_id = Order_item_model::where('care_id','!=',null)->where('created_at','>=',Carbon::now()->subDays(5))->orderBy('reference_id','asc')->first()->care_id;
-        $care = $bm->getAllCare(false, ['last_id'=>$last_id,'page-size'=>50]);
-        // $care = $bm->getAllCare(false, ['page-size'=>50]);
-        // print_r($care);
-        $care_line = collect($care)->pluck('id','orderline')->toArray();
-        $care_keys = array_keys($care_line);
+        $last_id = Order_item_model::where('care_id','!=',null)->where('created_at','>=',Carbon::now()->subDays(5))->orderBy('reference_id','asc')->first();
+        if($last_id != null){
+            $last_id = $last_id->care_id;
+            $care = $bm->getAllCare(false, ['last_id'=>$last_id,'page-size'=>50]);
+            // $care = $bm->getAllCare(false, ['page-size'=>50]);
+            // print_r($care);
+            $care_line = collect($care)->pluck('id','orderline')->toArray();
+            $care_keys = array_keys($care_line);
 
 
-        // Assuming $care_line is already defined from the previous code
-        $careLineKeys = array_keys($care_line);
+            // Assuming $care_line is already defined from the previous code
+            $careLineKeys = array_keys($care_line);
 
-        // Construct the raw SQL expression for the CASE statement
-        // $caseExpression = "CASE ";
-        foreach ($care_line as $id => $care) {
-            // $caseExpression .= "WHEN reference_id = $id THEN $care ";
-            $order = Order_item_model::where('reference_id',$id)->update(['care_id' => $care]);
-            if($order != 0){
-                print_r($order);
+            // Construct the raw SQL expression for the CASE statement
+            // $caseExpression = "CASE ";
+            foreach ($care_line as $id => $care) {
+                // $caseExpression .= "WHEN reference_id = $id THEN $care ";
+                $order = Order_item_model::where('reference_id',$id)->update(['care_id' => $care]);
+                if($order != 0){
+                    print_r($order);
+                }
+
             }
-
         }
         $care = $bm->getAllCare(false, ['page-size'=>50]);
         // $care = $bm->getAllCare(false, ['page-size'=>50]);
