@@ -634,6 +634,7 @@ class Order extends Component
             $items = $order->order_items;
             if(count($items) > 1 || $items[0]->quantity > 1){
                 foreach($skus as $s_ind => $each_sku){
+                    echo $s_ind;
                     print_r($each_sku);
                     print_r(count($each_sku));
                     if($s_ind == 0 && count($each_sku) == 1){
