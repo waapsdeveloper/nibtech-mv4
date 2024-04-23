@@ -45,7 +45,7 @@ class IMEI extends Component
                 return redirect()->back(); // Redirect here is not recommended
             }
             $stock_id = $stock->id;
-            $orders = Order_item_model::where('stock_id', $stock_id)->get();
+            $orders = Order_item_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
             $data['orders'] = $orders;
             // dd($orders);
         }
