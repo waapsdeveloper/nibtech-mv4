@@ -47,6 +47,7 @@ class Order extends Component
         $data['last_hour'] = Carbon::now()->subHour(1);
         $data['admins'] = Admin_model::where('id','!=',1)->get();
         $user_id = session('user_id');
+        $data['user_id'] = $user_id;
         $data['pending_orders_count'] = Order_model::where('status',2)->count();
         $data['order_statuses'] = Order_status_model::get();
         if(request('per_page') != null){
@@ -754,7 +755,10 @@ class Order extends Component
 
 
     }
-
+    public function delete_item($id){
+        Order_item_model::find($id)->delete();
+        return redirect()->back();
+    }
     public function correction(){
         $item = Order_item_model::find(request('correction')['item_id']);
         if($item->order->processed_at > Carbon::now()->subHour(1)){

@@ -90,6 +90,7 @@ Route::get('refresh_order', [Order::class,'getapiorders'])->name('view_order');
 Route::get('refresh_order/{id}', [Order::class,'getapiorders'])->name('view_order');
 Route::get('order/refresh/{id}', [Order::class,'updateBMOrder'])->name('view_order');
 Route::post('order/dispatch/{id}', [Order::class,'dispatch'])->name('dispatch_order');
+Route::post('order/delete_item/{id}', [Order::class,'delete_item'])->name('delete_order');
 Route::post('order/correction', [Order::class,'correction'])->name('dispatch_order');
 Route::get('order/recheck/{id}/{refresh?}', [Order::class,'recheck'])->name('view_order');
 Route::get('import', [Order::class,'import'])->name('');
