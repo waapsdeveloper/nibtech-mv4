@@ -17,7 +17,7 @@
 <br>
     @section('content')
 
-<div class="toast-container position-fixed top-0 end-0 p-3">
+<div class="toast-container position-fixed top-0 end-0 p-5" style="z-index: 1000">
     @if (session('error'))
             <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="toast-header text-danger">
