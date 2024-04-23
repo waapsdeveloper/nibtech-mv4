@@ -217,7 +217,7 @@ class BackMarketAPIController extends Controller
 
         $end_point = 'sav?';
 
-        if (!$date_modification) {
+        if ($date_modification == false) {
             $date_modification = date("Y-m-d-H-i", time() - 2 * 24 * 60 * 60);
         }
 
