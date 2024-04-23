@@ -634,6 +634,7 @@ class Order extends Component
             $items = $order->order_items;
             if(count($items) > 1 || $items[0]->quantity > 1){
                 foreach($skus as $s_ind => $each_sku){
+                    print_r($each_sku);
                     if($s_ind == 0 && count($each_sku) == 1){
                         $detail = $bm->shippingOrderlines($order->reference_id,$sku[0],trim($imeis[0]),$orderObj->tracking_number,$serial);
                     }elseif($s_ind == 0 && count($each_sku) > 1){
