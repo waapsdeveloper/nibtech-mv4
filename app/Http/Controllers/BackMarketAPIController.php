@@ -181,6 +181,7 @@ class BackMarketAPIController extends Controller
             $request_shipping = array('order_id' => $order_id, 'sku' => $sku, 'new_state' => $new_state, 'tracking_number' => $tracking_number, 'imei' => $imei );
         }
         if($imei == false){
+            dd('Hello');
             $request_shipping = array('order_id' => $order_id, 'sku' => $sku, 'new_state' => $new_state, 'tracking_number' => $tracking_number );
         }
 
