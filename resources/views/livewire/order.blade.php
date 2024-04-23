@@ -347,6 +347,11 @@
                                                     @isset($item->stock->serial_number) {{ $item->stock->serial_number }}&nbsp; @endisset
                                                     @isset($order->processed_by) | {{ $order->admin->first_name[0] }} | @endisset
                                                     @isset($item->stock->tester) ({{ $item->stock->tester }}) @endisset
+
+                                                    @if ((count($items) >= 2 || $item->quantity > 1) && $user_id == 1)
+
+                                                    <a class="text-danger" href="{{url(session('url').'order')}}/delete_item/{{ $item->id }}">Delete</a>
+                                                    @endif
                                                 </td>
                                                 @if ($item->quantity > 1 && $item->stock_id != null)
                                                 @php
@@ -357,10 +362,6 @@
                                                     $content2 .= "Regards \n".session('fname');
                                                 @endphp
 
-                                                @if ((count($items) >= 2 || $item->quantity > 1) && $user_id == 1)
-
-                                                <a class="text-danger" href="{{url(session('url').'order')}}/delete_item/{{ $item->id }}">Delete</a>
-                                                @endif
                                                 <script>
                                                     document.addEventListener('DOMContentLoaded', function() {
                                                         var imeiElement = document.getElementById('copy_imei_{{ $order->id }}');
@@ -469,10 +470,6 @@
                                                         <a class="dropdown-item" href="{{url(session('url').'order')}}/refresh/{{ $order->reference_id }}">Refresh</a>
                                                         @if ($item->order->processed_at > $last_hour)
                                                         <a class="dropdown-item" id="correction_{{ $item->id }}" href="javascript:void(0);" data-bs-target="#correction_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}"> Correction </a>
-                                                            @if (count($items) >= 2 && $item->quantity == 1)
-
-                                                                <a class="dropdown-item" href="{{url(session('url').'order')}}/delete_item/{{ $order->reference_id }}/true" target="_blank">Delete</a>
-                                                            @endif
                                                         @endif
                                                         @if ($order->status == 3)
 
