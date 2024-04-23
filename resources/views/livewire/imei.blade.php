@@ -143,7 +143,7 @@
                                                 </td>
                                                 <td>{{ $item->quantity }}</td>
                                                 @if ($order->status == 3)
-                                                <td style="width:240px" class="text-success text-uppercase" id="copy_imei_{{ $order->id }}">
+                                                <td style="width:240px" class="text-success text-uppercase" title="{{ $item->stock_id }}" id="copy_imei_{{ $order->id }}">
                                                     @isset($item->stock->imei) {{ $item->stock->imei }}&nbsp; @endisset
                                                     @isset($item->stock->serial_number) {{ $item->stock->serial_number }}&nbsp; @endisset
                                                     @isset($order->processed_by) | {{ $order->admin->first_name[0] }} | @endisset
