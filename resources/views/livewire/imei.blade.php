@@ -108,8 +108,8 @@
                                 <thead>
                                     <tr>
                                         <th><small><b>No</b></small></th>
-                                        <th><small><b>Type</b></small></th>
                                         <th><small><b>Order ID</b></small></th>
+                                        <th><small><b>Type</b></small></th>
                                         <th><small><b>Customer / Vendor</b></small></th>
                                         <th><small><b>Product</b></small></th>
                                         <th><small><b>Qty</b></small></th>
@@ -129,7 +129,7 @@
                                         @endphp
 
                                             <tr>
-                                                <td>{{ $i + 1 }}</td>
+                                                <td title="{{ $item->id }}">{{ $i + 1 }}</td>
                                                 <td>{{ $order->reference_id }}</td>
                                                 <td>{{ $order->order_type->name }}</td>
                                                 <td>{{ $order->customer->first_name." ".$order->customer->last_name }}</td>
