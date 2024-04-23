@@ -23,7 +23,7 @@ class Functions extends Command
      *
      * @var string
      */
-    protected $signature = 'Functions';
+    protected $signature = 'Functions:ten';
 
     /**
      * The console command description.
