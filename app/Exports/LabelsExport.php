@@ -14,10 +14,10 @@ class LabelsExport
     {
 
         switch (request('sort')){
-            case 2: $sort = "orders.reference_id"; $by = "ASC"; break;
+            case 2: $sort = "orders.reference_id"; $by = "DESC"; break;
             case 3: $sort = "variation.name"; $by = "DESC"; break;
             case 4: $sort = "variation.name"; $by = "ASC"; break;
-            default: $sort = "orders.reference_id"; $by = "DESC";
+            default: $sort = "orders.reference_id"; $by = "ASC";
         }
 
         // Fetch data from the database
