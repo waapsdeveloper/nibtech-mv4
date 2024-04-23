@@ -433,11 +433,16 @@ class Order extends Component
         $variation->save();
 
         $stock = Stock_model::firstOrNew(['imei' => $i, 'serial_number' => $s]);
-        $stock->product_id = $variation->product_id;
-        $stock->variation_id = $variation->id;
         $stock->added_by = session('user_id');
         $stock->order_id = $order_id;
-        $stock->status = 1;
+        if($stock->id){
+            $stock->status = 2;
+        }else{
+
+            $stock->product_id = $variation->product_id;
+            $stock->variation_id = $variation->id;
+            $stock->status = 1;
+        }
         $stock->save();
 
         $order_item = new Order_item_model();
