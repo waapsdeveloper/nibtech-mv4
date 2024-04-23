@@ -633,6 +633,7 @@ class Order extends Component
             $order = Order_model::find($order->id);
             $items = $order->order_items;
             if(count($skus) > 1 || count($skus[0]) > 1){
+                dd("Hello");
                 foreach($skus as $s_ind => $each_sku){
                     if($s_ind == 0 && count($each_sku) == 1){
                         $detail = $bm->shippingOrderlines($order->reference_id,$sku[0],trim($imeis[0]),$orderObj->tracking_number,$serial);
