@@ -549,11 +549,11 @@ class Order extends Component
                         return redirect()->back();
                     }
                     $stock[$i] = Stock_model::where('imei',trim($imei))->first();
-                    // if(!$stock[$i]){
-                    //     session()->put('error', "Stock not Found");
-                    //     return redirect()->back();
+                    if(!$stock[$i]){
+                        session()->put('error', "Stock not Found");
+                        return redirect()->back();
 
-                    // }
+                    }
                     if($stock[$i]){
                         if($stock[$i]->variation->storage != null){
                             $storage = $stock[$i]->variation->storage_id->name . " - ";
@@ -579,10 +579,10 @@ class Order extends Component
                 }else{
 
                     $stock[$i] = Stock_model::where('serial_number',trim($imei))->first();
-                    // if(!$stock[$i]){
-                    //     session()->put('error', "Stock not Found");
-                    //     return redirect()->back();
-                    // }
+                    if(!$stock[$i]){
+                        session()->put('error', "Stock not Found");
+                        return redirect()->back();
+                    }
                     if($stock[$i]){
                         if($stock[$i]->variation->storage != null){
                             $storage = $stock[$i]->variation->storage_id->name . " - ";
