@@ -263,7 +263,7 @@ class BackMarketAPIController extends Controller
 
         // if (!$date_modification) {
             // $date_modification = date("Y-m-d+H:i:s", time() - 2 * 24 * 60 * 60);
-            $date_modification = "2024-04-21 00:00:00";
+            $date_modification = "2024-04-21+00:00:00";
         // }
 
         $end_point .= "?date_modification=$date_modification";
