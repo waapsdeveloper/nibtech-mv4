@@ -284,13 +284,7 @@
                 </div>
             </div>
         </div>
-        @script
-        <script>
-            setInterval(() => {
-                $wire.$refresh()
-            }, 2000)
-        </script>
-        @endscript
+
     @endsection
 
     @section('scripts')
