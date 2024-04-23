@@ -152,71 +152,13 @@
 
                                                 @endif
                                                 @if ($order->status != 3)
-                                                <td style="width:240px" rowspan="{{ count($items) }}">
-                                                    @if ($item->status >= 5)
+                                                <td style="width:240px" title="{{ $item->stock_id }}">
                                                         <strong class="text-danger">{{ $order->order_status->name }}</strong>
-                                                    @else
-                                                        @if(!isset($item->stock->imei) && !isset($item->stock->serial_number) && $item->status > 2 && $item->quantity == 1)
-
-
-                                                            <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
-                                                            <a class="dropdown-item" href="{{url(session('url').'order')}}/refresh/{{ $order->reference_id }}"><i class="fe fe-arrows-rotate me-2 "></i>Refresh</a>
-                                                        @endif
-                                                    @endif
                                                     @isset($item->stock->imei) {{ $item->stock->imei }}&nbsp; @endisset
                                                     @isset($item->stock->serial_number) {{ $item->stock->serial_number }}&nbsp; @endisset
 
                                                     @isset($order->processed_by) | {{ $order->admin->first_name[0] }} | @endisset
                                                     @isset($item->stock->tester) ({{ $item->stock->tester }}) @endisset
-                                                    @if ($item->status == 2)
-                                                        @if (count($items) < 2 && $item->quantity < 2)
-                                                            <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url(session('url').'order')}}/dispatch/{{ $order->id }}">
-                                                                @csrf
-                                                                <div class="input-group">
-                                                                    <input type="text" name="tester[]" placeholder="Tester" class="form-control form-control-sm" style="max-width: 50px">
-                                                                    <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm">
-
-                                                                    <input type="hidden" name="sku[]" value="{{ $item->variation->sku }}">
-
-                                                                    <div class="input-group-append">
-                                                                        <input type="submit" name="imei_send" value=">" class="form-control form-control-sm" form="dispatch_{{ $i."_".$j }}">
-                                                                    </div>
-
-                                                                </div>
-                                                            </form>
-                                                        @elseif (count($items) < 2 && $item->quantity >= 2)
-
-                                                            <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url(session('url').'order')}}/dispatch/{{ $order->id }}">
-                                                                @csrf
-                                                                @for ($in = 1; $in <= $item->quantity; $in ++)
-
-                                                                    <div class="input-group">
-                                                                        <input type="text" name="tester[]" placeholder="Tester" class="form-control form-control-sm" style="max-width: 50px">
-                                                                        <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm" required>
-                                                                    </div>
-                                                                <input type="hidden" name="sku[]" value="{{ $item->variation->sku }}">
-                                                                @endfor
-                                                                <div class="w-100">
-                                                                    <input type="submit" name="imei_send" value="Submit IMEIs" class="form-control form-control-sm w-100" form="dispatch_{{ $i."_".$j }}">
-                                                                </div>
-                                                            </form>
-                                                        @elseif (count($items) >= 2 && $item->quantity == 1)
-                                                            <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url(session('url').'order')}}/dispatch/{{ $order->id }}">
-                                                                @csrf
-                                                                @for ($in = 1; $in <= count($items); $in ++)
-
-                                                                    <div class="input-group">
-                                                                        <input type="text" name="tester[]" placeholder="Tester" class="form-control form-control-sm" style="max-width: 50px">
-                                                                        <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm" required title="for SKU:{{ $items[$in-1]->variation->sku }}">
-                                                                    </div>
-                                                                <input type="hidden" name="sku[]" value="{{ $items[$in-1]->variation->sku }}">
-                                                                @endfor
-                                                                <div class="w-100">
-                                                                    <input type="submit" name="imei_send" value="Submit IMEIs" class="form-control form-control-sm w-100" form="dispatch_{{ $i."_".$j }}">
-                                                                </div>
-                                                            </form>
-                                                        @endif
-                                                    @endif
                                                 </td>
                                                 @endif
                                                 <td style="width:220px">{{ $order->created_at}} <br> {{ $order->processed_at." ".$order->tracking_number }}</td>
