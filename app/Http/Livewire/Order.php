@@ -633,20 +633,19 @@ class Order extends Component
             $order = Order_model::find($order->id);
             $items = $order->order_items;
             if(count($items) > 1 || $items[0]->quantity > 1){
+                $indexes = 0;
                 foreach($skus as $s_ind => $each_sku){
-                    echo $s_ind;
-                    print_r($each_sku);
-                    print_r(count($each_sku));
-                    if($s_ind == 0 && count($each_sku) == 1){
+                    if($indexes == 0 && count($each_sku) == 1){
                         $detail = $bm->shippingOrderlines($order->reference_id,$sku[0],trim($imeis[0]),$orderObj->tracking_number,$serial);
-                    }elseif($s_ind == 0 && count($each_sku) > 1){
-                        dd("Hello");
+                    }elseif($indexes == 0 && count($each_sku) > 1){
+                        // dd("Hello");
                         $detail = $bm->shippingOrderlines($order->reference_id,$sku[0],false,$orderObj->tracking_number,$serial);
-                    }elseif($s_ind > 0 && count($each_sku) == 1){
+                    }elseif($indexes > 0 && count($each_sku) == 1){
                         $detail = $bm->orderlineIMEI($order->reference_id,$sku[0],trim($imeis[0]),$orderObj->tracking_number,$serial);
                     }else{
 
                     }
+                    $indexes++;
                 }
             }else{
                 $detail = $bm->shippingOrderlines($order->reference_id,$sku[0],trim($imeis[0]),$orderObj->tracking_number,$serial);
