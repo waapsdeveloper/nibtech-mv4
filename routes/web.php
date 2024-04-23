@@ -8,6 +8,7 @@ use App\Http\Livewire\Emptypage;
 use App\Http\Livewire\Error404;
 use App\Http\Livewire\Error500;
 use App\Http\Livewire\Error501;
+use App\Http\Livewire\IMEI;
 use App\Http\Livewire\Index;
 use App\Http\Livewire\Profile;
 use App\Http\Livewire\Searching;
@@ -79,6 +80,9 @@ Route::get('delete_rma_item/{id}', [RMA::class,'delete_order_item'])->name('dele
 Route::get('rma/detail/{id}', [RMA::class,'rma_detail'])->name('rma_detail');
 Route::post('rma/update_prices', [RMA::class,'update_prices'])->name('update_rma_item');
 Route::get('export_rma_invoice/{id}', [RMA::class,'export_rma_invoice'])->name('rma_detail');
+
+Route::get('imei', IMEI::class)->name('view_imei');
+
 
 Route::get('order', Order::class)->name('view_order');
 Route::get('check_new/{return?}', [Order::class,'updateBMOrdersNew'])->name('view_order');

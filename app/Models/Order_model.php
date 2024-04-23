@@ -32,6 +32,10 @@ class Order_model extends Model
     {
         return $this->hasOne(Order_status_model::class, 'id', 'status');
     }
+    public function order_type()
+    {
+        return $this->hasOne(Multi_type_model::class, 'id', 'order_type_id');
+    }
     public function order_items()
     {
         return $this->hasMany(Order_item_model::class, 'order_id', 'id');
