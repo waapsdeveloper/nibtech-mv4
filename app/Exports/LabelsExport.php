@@ -26,7 +26,7 @@ class LabelsExport
         ->with(['order_items.variation', 'order_items.variation.grade_id', 'order_items.stock'])
         ->where('orders.label_url', '!=', null)->whereIn('orders.id', request('ids'))
         ->orderBy($sort, $by)
-        ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
+        ->orderBy('orders.reference_id', 'ASC') // Secondary order by reference_id
         ->pluck('label_url')->toArray();
 
         // Output PDF to the browser
