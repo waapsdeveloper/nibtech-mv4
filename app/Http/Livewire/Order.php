@@ -762,7 +762,7 @@ class Order extends Component
     }
     public function correction(){
         $item = Order_item_model::find(request('correction')['item_id']);
-        if($item->order->processed_at > Carbon::now()->subHour(1)){
+        if($item->order->processed_at > Carbon::now()->subHour(1) || session('user_id') == 1){
 
             $imei = request('correction')['imei'];
             $serial_number = null;
