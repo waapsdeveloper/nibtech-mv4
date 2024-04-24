@@ -89,6 +89,62 @@
         </form>
 
         <br>
+        @if (count($missing_stock)>0)
+
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-header pb-0">
+                        <div class="d-flex justify-content-between">
+                            <h4 class="card-title mg-b-0">Latest Added Items</h4>
+                        </div>
+                    </div>
+                    <div class="card-body"><div class="table-responsive" style="max-height: 250px">
+                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th><small><b>No</b></small></th>
+                                        <th><small><b>Variation</b></small></th>
+                                        <th><small><b>IMEI | Serial Number</b></small></th>
+                                        <th><small><b>Vendor</b></small></th>
+                                        @if (session('user')->hasPermission('view_cost'))
+                                        <th><small><b>Cost</b></small></th>
+                                        @endif
+                                        <th><small><b>Creation Date</b></small></th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @php
+                                        $i = 0;
+                                    @endphp
+                                    @foreach ($missing_stock as $item)
+                                        <tr>
+                                            <td>{{ $i + 1 }}</td>
+                                            <td>{{ $products[$item->variation->product_id]}} {{$storages[$item->variation->storage] ?? null}} {{$colors[$item->variation->color] ?? null}} {{$grades[$item->variation->grade] }}</td>
+                                            <td>{{ $item->stock->imei.$item->stock->serial_number }}</td>
+                                            <td>{{ $item->stock->order->customer->first_name }}</td>
+                                            @if (session('user')->hasPermission('view_cost'))
+                                            <td>{{ $currency.number_format($item->price,2) }}</td>
+                                            @endif
+                                            <td style="width:220px">{{ $item->created_at }}</td>
+                                            <td><a href="{{ url('delete_rma_item').'/'.$item->id }}"><i class="fa fa-trash"></i></a></td>
+                                        </tr>
+                                        @php
+                                            $i ++;
+                                        @endphp
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        <br>
+                    </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @endif
         <br>
 
         <div class="row">

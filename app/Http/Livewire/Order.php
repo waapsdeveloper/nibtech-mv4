@@ -272,6 +272,7 @@ class Order extends Component
         ->orderBy('grade', 'desc')
         ->get();
 
+        $data['missing_stock'] = Order_item_model::where(['order_id'=>$order_id,'stock_id'=>null])->get();
 
         $data['all_variations'] = Variation_model::where('grade',9)->get();
         $data['order'] = Order_model::find($order_id);
@@ -416,7 +417,7 @@ class Order extends Component
 
             session()->put('error', $error);
         }
-        return redirect()->back();
+        return redirect(url('purchase/detail/').$order->id);
     }
     public function add_purchase_item($order_id){
 
