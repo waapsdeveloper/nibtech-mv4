@@ -72,7 +72,7 @@
                                                         <td>{{ $product->name }}</td>
                                                         <td>{{ $product->sku }}</td>
                                                         <td>
-                                                            <select name="update[color]" class="form-select form-select-sm select2">
+                                                            <select name="update[color]" class="form-select form-select-sm">
                                                                 <option value="">None</option>
                                                                 @foreach ($colors as $color)
                                                                     <option value="{{ $color->id }}" {{ $product->color == $color->id ? 'selected' : '' }}>{{ $color->name }}</option>
