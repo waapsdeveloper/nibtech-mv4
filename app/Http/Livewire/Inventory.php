@@ -30,8 +30,10 @@ class Inventory extends Component
         $data['brands'] = Brand_model::get();
         $data['stocks'] = Stock_model::where('status',1)
 
-        ->when(request('variation') != '', function ($q) {
-            return $q->where('variation_id', request('variation'));
+        ->when(request('storage') != '', function ($q) {
+            return $q->whereHas('variation', function ($q) {
+                $q->where('storage', request('storage'));
+            });
         })
         ->when(request('category') != '', function ($q) {
             return $q->whereHas('variation.product', function ($q) {
@@ -53,6 +55,8 @@ class Inventory extends Component
                 $q->where('grade', request('grade'));
             });
         })
+
+        // $data['average_cost'] = $stocks->average()
 
         // ->orderBy($sort, $by) // Order by product name
         ->paginate($per_page)

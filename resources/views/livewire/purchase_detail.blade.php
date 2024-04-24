@@ -54,7 +54,8 @@
                     <div class="card-header">
                         <h4 class="card-title">Variation</h4>
                     </div>
-                    <select name="variation" class="form-control form-select select2 test">
+                    <input type="text" list="variations" name="variation" class="form-control">
+                    <datalist id="variations">
                         <option value="">Select</option>
                         @foreach ($all_variations as $variation)
                             @php
@@ -66,7 +67,7 @@
                             @endphp
                             <option value="{{$variation->id}}" @if(isset($_GET['variation']) && $variation->id == $_GET['variation']) {{'selected'}}@endif>{{$variation->product->model." ".$storage}}</option>
                         @endforeach
-                    </select>
+                    </datalist>
                 </div>
                 <div class="col-lg-3 col-xl-3 col-md-4 col-sm-6">
                     <div class="card-header">

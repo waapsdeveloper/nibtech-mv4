@@ -61,7 +61,7 @@
                                                     <tr>
                                                         <td>{{ $i + 1 }}</td>
                                                         <td>
-                                                            <select name="update[product_id]" class="form-select form-select-sm">
+                                                            <select name="update[product_id]" class="form-select form-select-sm" required>
                                                                 <option value="">None</option>
                                                                 @foreach ($products as $prod)
                                                                     <option value="{{ $prod->id }}" {{ $product->product_id == $prod->id ? 'selected' : '' }}>{{ $prod->series." ".$prod->model }}</option>
@@ -71,7 +71,7 @@
                                                         <td>{{ $product->name }}</td>
                                                         <td>{{ $product->sku }}</td>
                                                         <td>
-                                                            <select name="update[color]" class="form-select form-select-sm">
+                                                            <select name="update[color]" class="form-select form-select-sm select2">
                                                                 <option value="">None</option>
                                                                 @foreach ($colors as $color)
                                                                     <option value="{{ $color->id }}" {{ $product->color == $color->id ? 'selected' : '' }}>{{ $color->name }}</option>
@@ -285,6 +285,14 @@
 
     @section('scripts')
 		<!-- Internal Chart.Bundle js-->
+        <script>
+            $(document).ready(function(){
+                $('.select2').select2();
+            })
+            $('.select2').select2({
+            placeholder: 'Select an option'
+            });
+        </script>
 		<script src="{{asset('assets/plugins/chartjs/Chart.bundle.min.js')}}"></script>
 
 		<!-- Moment js -->

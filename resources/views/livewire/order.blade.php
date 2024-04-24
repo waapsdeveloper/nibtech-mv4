@@ -12,6 +12,21 @@
             .childs{
                 padding-top:5px
             }
+            .form-floating>.form-control,
+            .form-floating>.form-control-plaintext {
+            padding: 0rem 0.75rem;
+            }
+
+            .form-floating>.form-control,
+            .form-floating>.form-control-plaintext,
+            .form-floating>.form-select {
+            height: calc(2.5rem + 2px);
+            line-height: 1;
+            }
+
+            .form-floating>label {
+            padding: 0.5rem 0.75rem;
+            }
         </style>
     @endsection
 <br>
@@ -102,77 +117,73 @@
         <br>
         <form action="" method="GET" id="search">
             <div class="row">
-                <div class="col-lg-2 col-xl-2 col-md-4 col-sm-6">
-                    <div class="card-header">
-                        <h4 class="card-title mb-1">SKU</h4>
+                <div class="col-md col-sm-6">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="order_id_input" name="order_id" placeholder="Enter ID" value="@isset($_GET['order_id']){{$_GET['order_id']}}@endisset">
+                        <label for="order_id_input">Order Number</label>
                     </div>
-                    <input type="text" class="form-control focused" id="sku_input" name="sku" placeholder="Enter SKU" value="@isset($_GET['sku']){{$_GET['sku']}}@endisset" autofocus>
                 </div>
-                <div class="col-lg-1 col-xl-1 col-md-4 col-sm-6">
-                    <div class="card-header">
-                        <h4 class="card-title mb-1">Order</h4>
+                <div class="col-md col-sm-6">
+                    <div class="form-floating">
+                        <input class="form-control" id="start_date_input" name="start_date" id="datetimepicker" type="date" value="@isset($_GET['start_date']){{$_GET['start_date']}}@endisset">
+                        <label for="start_date_input">{{ __('locale.Start Date') }}</label>
                     </div>
-                    <input type="text" class="form-control" name="order_id" placeholder="Enter ID" value="@isset($_GET['order_id']){{$_GET['order_id']}}@endisset">
                 </div>
-                <div class="col-lg-2 col-xl-2 col-md-4 col-sm-6">
-                    <div class="card-header">
-                        <h4 class="card-title mb-1">IMEI</h4>
+                <div class="col-md col-sm-6">
+                    <div class="form-floating">
+                        <input class="form-control" id="end_date_input" name="end_date" id="datetimepicker" type="date" value="@isset($_GET['end_date']){{$_GET['end_date']}}@endisset">
+                        <label for="end_date_input">{{ __('locale.End Date') }}</label>
                     </div>
-                    <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset">
                 </div>
-                <div class="col-lg-1 col-xl-1 col-md-4 col-sm-6">
-                    <div class="card-header">
-                        <h4 class="card-title mb-1">Status</h4>
+                <div class="col-md col-sm-6">
+                    <div class="form-floating">
+                        <input type="text" class="form-control focused" id="sku_input" name="sku" placeholder="Enter SKU" value="@isset($_GET['sku']){{$_GET['sku']}}@endisset" autofocus>
+                        <label for="sku_input" class="">SKU</label>
                     </div>
-                    <select name="status" class="form-control form-select select2" data-bs-placeholder="Select Status">
-                        <option value="">Select</option>
-                        @foreach ($order_statuses as $status)
-                            <option value="{{$status->id}}" @if(isset($_GET['status']) && $status->id == $_GET['status']) {{'selected'}}@endif>{{$status->name}}</option>
-                        @endforeach
-                    </select>
                 </div>
-                <div class="col-lg-2 col-xl-2 col-md-4 col-sm-6">
-                    <div class="card-header">
-                        <h4 class="card-title mb-1">Processed By</h4>
-                    </div>
-                    <select name="adm" class="form-control form-select select2" data-bs-placeholder="Select Processed By">
-                        <option value="">Select</option>
-                        <option value="0">None</option>
-                        @foreach ($admins as $adm)
-                            <option value="{{$adm->id}}" @if(isset($_GET['adm']) && $adm->id == $_GET['adm']) {{'selected'}}@endif>{{$adm->first_name." ".$adm->last_name}}</option>
-                        @endforeach
-                    </select>
+                <div class="col-md col-sm-6">
+                    {{-- <div class="form-floating"> --}}
+                        <select id="status_input" name="status" class="form-control form-select" data-bs-placeholder="Select Status">
+                            <option value="">Status</option>
+                            @foreach ($order_statuses as $status)
+                                <option value="{{$status->id}}" @if(isset($_GET['status']) && $status->id == $_GET['status']) {{'selected'}}@endif>{{$status->name}}</option>
+                            @endforeach
+                        </select>
+                        {{-- <label for="status_input">Status</label>
+                    </div> --}}
                 </div>
-                <div class="col-lg-2 col-xl-2 col-md-4 col-sm-6">
-                    <div class="card-header">
-                        <h4 class="card-title mb-1">{{ __('locale.Start Date') }}</h4>
-                    </div>
-                    <input class="form-control" name="start_date" id="datetimepicker" type="date" value="@isset($_GET['start_date']){{$_GET['start_date']}}@endisset">
-                </div>
-                <div class="col-lg-2 col-xl-2 col-md-4 col-sm-6">
-                    <div class="card-header">
-                        <h4 class="card-title mb-1">{{ __('locale.End Date') }}</h4>
-                    </div>
-                    <input class="form-control" name="end_date" id="datetimepicker" type="date" value="@isset($_GET['end_date']){{$_GET['end_date']}}@endisset">
-                </div>
+                <button class="btn btn-primary" type="submit">{{ __('locale.Search') }}</button>
+                <a href="{{url(session('url').'order')}}?per_page=10" class="btn btn-default">Reset</a>
             </div>
-            <div class=" p-2">
-                <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
-                <a href="{{url(session('url').'order')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
-                {{-- <a href="{{url(session('url').'export_ordersheet')}}" target="_blank" class="btn btn-secondary pd-x-20">Orders Sheet</a> --}}
-                <button class="btn btn-secondary pd-x-20 " type="submit" form="picklist" name="ordersheet" value="1">Order Sheet</button>
+                <br>
+            <div class="row">
+                <div class="col-lg-2 col-xl-2 col-md-4 col-sm-6">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset">
+                        <label for="">IMEI</label>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-xl-2 col-md-4 col-sm-6">
+                    {{-- <div class="form-floating"> --}}
+                        <select id="adm_input" name="adm" class="form-control form-select" data-bs-placeholder="Select Processed By">
+                            <option value="">Processed by</option>
+                            <option value="0">None</option>
+                            @foreach ($admins as $adm)
+                                <option value="{{$adm->id}}" @if(isset($_GET['adm']) && $adm->id == $_GET['adm']) {{'selected'}}@endif>{{$adm->first_name." ".$adm->last_name}}</option>
+                            @endforeach
+                        </select>
+                        {{-- <label for="adm_input">Processed By</label> --}}
+                    {{-- </div> --}}
+                </div>
 
-                @if (session('user')->hasPermission('send_bulk_invoice'))
-                <button class="btn btn-primary pd-x-20" name="bulk_invoice" value="1" type="submit">Send Bulk Invoice Email</button>
+                <input type="hidden" name="page" value="{{ Request::get('page') }}">
+                <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
+                <input type="hidden" name="sort" value="{{ Request::get('sort') }}">
+                @if (Request::get('care') == 1)
+                    <input type="hidden" name="care" value="{{ Request::get('care') }}">
                 @endif
             </div>
 
-            <input type="hidden" name="page" value="{{ Request::get('page') }}">
-            <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
-            <input type="hidden" name="sort" value="{{ Request::get('sort') }}">
-            @if (Request::get('care') == 1)
-                <input type="hidden" name="care" value="{{ Request::get('care') }}">
-            @endif
         </form>
         <div class="d-flex justify-content-between">
             <div class="">
@@ -183,8 +194,12 @@
             <div class="d-flex">
 
                 <input type="text" class="form-control pd-x-20" name="last_order" placeholder="Last Order (Optional)" value="" form="picklist" style="width: 170px;">
-                <button class="btn btn-secondary pd-x-20 " type="submit" form="picklist" name="order" value="1">Order List</button>
-                <button class="btn btn-secondary pd-x-20 " type="submit" form="picklist" name="picklist" value="1">Pick List</button>
+                <button class="btn btn-sm btn-secondary pd-x-20 " type="submit" form="picklist" name="order" value="1">Order List</button>
+                <button class="btn btn-sm btn-secondary pd-x-20 " type="submit" form="picklist" name="picklist" value="1">Pick List</button>
+                <button class="btn btn-sm btn-secondary pd-x-20 " type="submit" form="picklist" name="ordersheet" value="1">Order Sheet</button>
+                @if (session('user')->hasPermission('send_bulk_invoice'))
+                <button class="btn btn-sm btn-primary pd-x-20 " type="submit" name="bulk_invoice" value="1">Send Bulk Invoice Email</button>
+                @endif
             </div>
         </div>
         <form id="picklist" method="POST" target="_blank" action="{{url(session('url').'export_order')}}">
