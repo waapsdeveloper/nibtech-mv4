@@ -61,12 +61,13 @@
                                                     <tr>
                                                         <td>{{ $i + 1 }}</td>
                                                         <td>
-                                                            <select name="update[product_id]" class="form-select form-select-sm" required>
+                                                            <input type="text" name="update[product_id]" list="models" class="form-select form-select-sm" required>
+                                                            <datalist id="models">
                                                                 <option value="">None</option>
                                                                 @foreach ($products as $prod)
                                                                     <option value="{{ $prod->id }}" {{ $product->product_id == $prod->id ? 'selected' : '' }}>{{ $prod->series." ".$prod->model }}</option>
                                                                 @endforeach
-                                                            </select>
+                                                            </datalist>
                                                         </td>
                                                         <td>{{ $product->name }}</td>
                                                         <td>{{ $product->sku }}</td>

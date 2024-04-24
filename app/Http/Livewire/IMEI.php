@@ -42,7 +42,8 @@ class IMEI extends Component
             $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
             if (request('imei') == '' || !$stock || $stock->status == null) {
                 session()->put('error', 'IMEI Invalid / Not Found');
-                return redirect()->back(); // Redirect here is not recommended
+                // return redirect()->back(); // Redirect here is not recommended
+                return view('livewire.imei', $data); // Return the Blade view instance with data
             }
             $stock_id = $stock->id;
             $orders = Order_item_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
