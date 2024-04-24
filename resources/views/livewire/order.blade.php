@@ -483,7 +483,7 @@
                                                     <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                                     <div class="dropdown-menu">
                                                         <a class="dropdown-item" href="{{url(session('url').'order')}}/refresh/{{ $order->reference_id }}">Refresh</a>
-                                                        @if ($item->order->processed_at > $last_hour)
+                                                        @if ($item->order->processed_at > $last_hour || $user_id == 1)
                                                         <a class="dropdown-item" id="correction_{{ $item->id }}" href="javascript:void(0);" data-bs-target="#correction_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}"> Correction </a>
                                                         @endif
                                                         @if ($order->status == 3)
