@@ -54,7 +54,7 @@
                     <div class="card-header">
                         <h4 class="card-title">Variation</h4>
                     </div>
-                    <input type="text" list="variations" name="variation" class="form-control">
+                    <input type="text" list="variations" name="variation" class="form-control" required>
                     <datalist id="variations">
                         <option value="">Select</option>
                         @foreach ($all_variations as $variation)
@@ -73,13 +73,13 @@
                     <div class="card-header">
                         <h4 class="card-title">IMEI</h4>
                     </div>
-                    <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset">
+                    <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" required>
                 </div>
                 <div class="col-lg-3 col-xl-3 col-md-4 col-sm-6">
                     <div class="card-header">
                         <h4 class="card-title">Cost</h4>
                     </div>
-                    <input type="text" class="form-control" name="price" placeholder="Enter Price" value="@isset($_GET['price']){{$_GET['price']}}@endisset">
+                    <input type="text" class="form-control" name="price" placeholder="Enter Price" value="@isset($_GET['price']){{$_GET['price']}}@endisset" required>
                 </div>
                 <div class="col-lg-3 col-xl-3 col-md-4 col-sm-6 align-self-end mb-1 tx-center">
                     <h4>Add Purchased Item</h4>
