@@ -195,7 +195,7 @@
                                     @endphp
                                         <tr>
                                             <td>{{ $i }}</td>
-                                            <td>{{ $item->imei.$item->serial_number }}</td>
+                                            <td data-stock="{{ $item->stock_id }}">{{ $item->imei.$item->serial_number }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
                                             <td>{{ $currency.$item->purchase_item->price }}</td>
                                             @endif
