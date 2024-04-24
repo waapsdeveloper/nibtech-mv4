@@ -417,7 +417,7 @@ class Order extends Component
 
             session()->put('error', $error);
         }
-        return redirect(url('purchase/detail/').$order->id);
+        return redirect(url('purchase/detail').'/'.$order->id);
     }
     public function add_purchase_item($order_id){
 
