@@ -90,8 +90,8 @@
                         </div>
                         <select name="grade" class="form-control form-select" required>
                             <option value="">Grade</option>
-                            @foreach ($grades as $id=>$name)
-                                <option value="{{ $id }}" @if(isset($_GET['grade']) && $id == $_GET['grade']) {{'selected'}}@endif>{{ $name }}</option>
+                            @foreach ($grades as $grade)
+                                <option value="{{ $grade->id }}" @if(isset($_GET['grade']) && $grade->id == $_GET['grade']) {{'selected'}}@endif>{{ $grade->name }}</option>
                             @endforeach
                         </select>
                         <input class="btn btn-secondary pd-x-20 " type="submit" value="Send">

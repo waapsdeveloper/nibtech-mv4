@@ -46,6 +46,7 @@ class IMEI extends Component
             $data['products'] = Products_model::orderBy('model','asc')->get();
             $data['colors'] = Color_model::all();
             $data['storages'] = Storage_model::all();
+            $data['grades'] = Grade_model::all();
             if (request('imei') == '' || !$stock || $stock->status == null) {
                 session()->put('error', 'IMEI Invalid / Not Found');
                 // return redirect()->back(); // Redirect here is not recommended
@@ -70,7 +71,6 @@ class IMEI extends Component
                     session()->put('success', 'IMEI Sold');
                 }
             }
-            $data['grades'] = Grade_model::pluck('name','id');
             $stock_id = $stock->id;
             $orders = Order_item_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
             $data['stock'] = $stock;
