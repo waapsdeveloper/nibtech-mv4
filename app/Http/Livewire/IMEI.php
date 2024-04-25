@@ -51,6 +51,7 @@ class IMEI extends Component
                 if($sale_status != null){
                     $stock->status = 2;
                     $stock->save();
+                    session()->put('success', 'IMEI Sold');
                 }else{
                     session()->put('success', 'IMEI AVailable');
                 }
@@ -61,6 +62,7 @@ class IMEI extends Component
                 if($sale_status == null){
                     $stock->status = 1;
                     $stock->save();
+                    session()->put('success', 'IMEI AVailable');
                 }else{
                     session()->put('success', 'IMEI Sold');
                 }
