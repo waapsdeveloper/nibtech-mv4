@@ -61,6 +61,7 @@
                                     <tr>
                                         <th><small><b>{{ __('locale.S.No') }}</b></small></th>
                                         <th><small><b>Name</b></small></th>
+                                        <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -74,6 +75,7 @@
                                         <tr>
                                             <td title="{{$grade->id}}">{{$i}}</td>
                                             <td>{{$grade->name}}</td>
+                                            <td><center><a href="edit-customer/{{$customer->id}}" class="text text-success w-100 vh-100">{{ __('locale.Edit') }}</a></center></td>
                                         </tr>
                                     @endforeach
                                 </tbody>
