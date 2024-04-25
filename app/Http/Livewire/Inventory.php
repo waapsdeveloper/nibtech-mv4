@@ -64,7 +64,34 @@ class Inventory extends Component
         ->appends(request()->except('page'));
 
 
-        $data['average_cost'] = $stocks->join('order_items', 'stock.id', '=', 'order_items.stock_id')
+        $data['average_cost'] = Stock_model::where('stock.status',1)
+
+        ->when(request('storage') != '', function ($q) {
+            return $q->whereHas('variation', function ($q) {
+                $q->where('storage', request('storage'));
+            });
+        })
+        ->when(request('category') != '', function ($q) {
+            return $q->whereHas('variation.product', function ($q) {
+                $q->where('category', request('category'));
+            });
+        })
+        ->when(request('brand') != '', function ($q) {
+            return $q->whereHas('variation.product', function ($q) {
+                $q->where('brand', request('brand'));
+            });
+        })
+        ->when(request('product') != '', function ($q) {
+            return $q->whereHas('variation', function ($q) {
+                $q->where('product_id', request('product'));
+            });
+        })
+        ->when(request('grade') != '', function ($q) {
+            return $q->whereHas('variation', function ($q) {
+                $q->where('grade', request('grade'));
+            });
+        })
+        ->join('order_items', 'stock.id', '=', 'order_items.stock_id')
         ->selectRaw('AVG(order_items.price) as average_price')
         ->selectRaw('SUM(order_items.price) as total_price')
         // ->pluck('average_price')
