@@ -21,8 +21,8 @@ class PickListExport
             ->select(
                 'variation.sku',
                 'products.model',
-                DB::raw('IFNULL(color.name, "Unknown") as color'), // Use IFNULL to provide a default value
-                DB::raw('IFNULL(storage.name, "Unknown") as storage_name'), // Use IFNULL to provide a default value
+                'color.name as color',
+                'storage.name as storage_name',
                 'grade.name as grade_name',
                 DB::raw('SUM(order_items.quantity) as total_quantity')
             )
