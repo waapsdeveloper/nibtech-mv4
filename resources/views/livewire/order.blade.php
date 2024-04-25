@@ -408,6 +408,25 @@
 
 
                                                 @endif
+                                                @if ($itemIndex == 0 && $order->status != 3)
+                                                <td style="width:240px" rowspan="{{ count($items) }}">
+                                                    {{-- @if ($item->status >= 5) --}}
+                                                        <strong class="text-danger">{{ $order->order_status->name }}</strong>
+                                                    {{-- @else
+                                                        @if(!isset($item->stock->imei) && !isset($item->stock->serial_number) && $item->status > 2 && $item->quantity == 1)
+
+
+                                                            <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
+                                                            <a class="dropdown-item" href="{{url(session('url').'order')}}/refresh/{{ $order->reference_id }}"><i class="fe fe-arrows-rotate me-2 "></i>Refresh</a>
+                                                        @endif
+                                                    @endif --}}
+                                                    @isset($item->stock->imei) {{ $item->stock->imei }}&nbsp; @endisset
+                                                    @isset($item->stock->serial_number) {{ $item->stock->serial_number }}&nbsp; @endisset
+
+                                                    @isset($order->processed_by) | {{ $order->admin->first_name[0] }} | @endisset
+                                                    @isset($item->stock->tester) ({{ $item->stock->tester }}) @endisset
+
+
                                                     @if ($item->status == 2)
                                                         @if (count($items) < 2 && $item->quantity < 2)
                                                             <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url(session('url').'order')}}/dispatch/{{ $order->id }}">
@@ -457,25 +476,6 @@
                                                             </form>
                                                         @endif
                                                     @endif
-                                                @if ($itemIndex == 0 && $order->status > 3)
-                                                <td style="width:240px" rowspan="{{ count($items) }}">
-                                                    {{-- @if ($item->status >= 5) --}}
-                                                        <strong class="text-danger">{{ $order->order_status->name }}</strong>
-                                                    {{-- @else
-                                                        @if(!isset($item->stock->imei) && !isset($item->stock->serial_number) && $item->status > 2 && $item->quantity == 1)
-
-
-                                                            <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
-                                                            <a class="dropdown-item" href="{{url(session('url').'order')}}/refresh/{{ $order->reference_id }}"><i class="fe fe-arrows-rotate me-2 "></i>Refresh</a>
-                                                        @endif
-                                                    @endif --}}
-                                                    @isset($item->stock->imei) {{ $item->stock->imei }}&nbsp; @endisset
-                                                    @isset($item->stock->serial_number) {{ $item->stock->serial_number }}&nbsp; @endisset
-
-                                                    @isset($order->processed_by) | {{ $order->admin->first_name[0] }} | @endisset
-                                                    @isset($item->stock->tester) ({{ $item->stock->tester }}) @endisset
-
-
                                                 </td>
                                                 @endif
                                                 <td style="width:220px">{{ $order->created_at}} <br> {{ $order->processed_at." ".$order->tracking_number }}</td>
