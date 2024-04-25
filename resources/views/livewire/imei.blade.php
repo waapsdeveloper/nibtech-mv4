@@ -139,17 +139,15 @@
                                                 <datalist id="models">
                                                     <option value="">None</option>
                                                     @foreach ($products as $prod)
-                                                        <option value="{{ $prod->id }}" {{ $product->product_id == $prod->id ? 'selected' : '' }}>{{ $prod->series." ".$prod->model }}</option>
+                                                        <option value="{{ $prod->id }}" {{ $stock->product_id == $prod->id ? 'selected' : '' }}>{{ $prod->series." ".$prod->model }}</option>
                                                     @endforeach
                                                 </datalist>
                                             </td>
-                                            <td>{{ $product->name }}</td>
-                                            <td>{{ $product->sku }}</td>
                                             <td>
                                                 <select name="update[color]" class="form-select form-select-sm">
                                                     <option value="">None</option>
                                                     @foreach ($colors as $color)
-                                                        <option value="{{ $color->id }}" {{ $product->color == $color->id ? 'selected' : '' }}>{{ $color->name }}</option>
+                                                        <option value="{{ $color->id }}" {{ $stock->variation->color == $color->id ? 'selected' : '' }}>{{ $color->name }}</option>
                                                     @endforeach
                                                 </select>
                                             </td>
@@ -157,7 +155,7 @@
                                                 <select name="update[storage]" class="form-select form-select-sm">
                                                     <option value="">None</option>
                                                     @foreach ($storages as $storage)
-                                                        <option value="{{ $storage->id }}" {{ $product->storage == $storage->id ? 'selected' : '' }}>{{ $storage->name }}</option>
+                                                        <option value="{{ $storage->id }}" {{ $stock->variation->storage == $storage->id ? 'selected' : '' }}>{{ $storage->name }}</option>
                                                     @endforeach
                                                 </select>
                                             </td>
@@ -165,7 +163,7 @@
                                                 <select name="update[grade]" class="form-select form-select-sm">
                                                     <option value="">None</option>
                                                     @foreach ($grades as $grade)
-                                                        <option value="{{ $grade->id }}" {{ $product->grade == $grade->id ? 'selected' : '' }}>{{ $grade->name }}</option>
+                                                        <option value="{{ $grade->id }}" {{ $stock->variation->grade == $grade->id ? 'selected' : '' }}>{{ $grade->name }}</option>
                                                     @endforeach
                                                 </select>
                                             </td>
