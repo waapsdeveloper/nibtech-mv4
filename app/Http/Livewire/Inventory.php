@@ -66,7 +66,8 @@ class Inventory extends Component
 
         $data['average_cost'] = $stocks->join('order_items', 'stock.id', '=', 'order_items.stock_id')
         ->selectRaw('AVG(order_items.price) as average_price')
-        ->pluck('average_price')
+        ->selectRaw('SUM(order_items.price) as total_price')
+        // ->pluck('average_price')
         ->first();
 
         return view('livewire.inventory')->with($data);

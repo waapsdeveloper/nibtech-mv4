@@ -66,20 +66,39 @@
             </div>
         </div>
         <br>
-        <form action="{{ url('imei')}}" method="GET" id="search">
-            <div class="row">
-                <div class="col-lg-2 col-xl-2 col-md-4 col-sm-6">
-                    <div class="card-header">
-                        <h4 class="card-title mb-1">IMEI</h4>
-                    </div>
-                    <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset">
-                </div>
-            </div>
-            <div class=" p-2">
-                <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
-            </div>
 
-        </form>
+        <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
+
+            <div class="p-2">
+                <form action="{{ url('imei')}}" method="GET" id="search" class="form-inline">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset">
+                        <label for="">IMEI</label>
+                    </div>
+                        <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
+                </form>
+            </div>
+            <div class="p-2">
+                @if (isset($stock) && $stock->status == 1 && session('user')->hasPermission('change_stock_grade'))
+
+
+                    <form class="form-inline" method="POST" target="_blank" action="{{url(session('url').'imei/change_grade')."/".$stock->id}}">
+                        <div class="form-floating">
+                            <input type="text" class="form-control pd-x-20" name="reason" placeholder="Reason" style="width: 370px;">
+                            {{-- <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset"> --}}
+                            <label for="">Change Grade Reason</label>
+                        </div>
+                        <select name="grade" class="form-control form-select" required>
+                            <option value="">Grade</option>
+                            @foreach ($grades as $id=>$name)
+                                <option value="{{ $id }}" @if(isset($_GET['grade']) && $id == $_GET['grade']) {{'selected'}}@endif>{{ $name }}</option>
+                            @endforeach
+                        </select>
+                        <input class="btn btn-secondary pd-x-20 " type="submit" value="Send">
+                    </form>
+                @endif
+            </div>
+        </div>
         <br>
         <div class="row">
             <div class="col-md-12" style="border-bottom: 1px solid rgb(216, 212, 212);">
@@ -87,7 +106,82 @@
             </div>
         </div>
         <br>
+        @if (isset($stock))
 
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-header pb-0">
+                        <div class="d-flex justify-content-between">
+                            <h4 class="card-title mg-b-0">
+                                Stock Detail
+                            </h4>
+                        </div>
+                    </div>
+                    <div class="card-body"><div class="table-responsive">
+                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th><small><b>Model</b></small></th>
+                                        <th><small><b>Color</b></small></th>
+                                        <th><small><b>Storage</b></small></th>
+                                        <th><small><b>Grade</b></small></th>
+                                        <th><small><b>Status</b></small></th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <form method="post" action="{{url(session('url').'imei/change_variant')}}/{{ $stock->id }}" class="row form-inline">
+                                        @csrf
+                                        <tr>
+                                            <td>
+                                                <input type="text" name="update[product_id]" list="models" class="form-select form-select-sm" required>
+                                                <datalist id="models">
+                                                    <option value="">None</option>
+                                                    @foreach ($products as $prod)
+                                                        <option value="{{ $prod->id }}" {{ $product->product_id == $prod->id ? 'selected' : '' }}>{{ $prod->series." ".$prod->model }}</option>
+                                                    @endforeach
+                                                </datalist>
+                                            </td>
+                                            <td>{{ $product->name }}</td>
+                                            <td>{{ $product->sku }}</td>
+                                            <td>
+                                                <select name="update[color]" class="form-select form-select-sm">
+                                                    <option value="">None</option>
+                                                    @foreach ($colors as $color)
+                                                        <option value="{{ $color->id }}" {{ $product->color == $color->id ? 'selected' : '' }}>{{ $color->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <select name="update[storage]" class="form-select form-select-sm">
+                                                    <option value="">None</option>
+                                                    @foreach ($storages as $storage)
+                                                        <option value="{{ $storage->id }}" {{ $product->storage == $storage->id ? 'selected' : '' }}>{{ $storage->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <select name="update[grade]" class="form-select form-select-sm">
+                                                    <option value="">None</option>
+                                                    @foreach ($grades as $grade)
+                                                        <option value="{{ $grade->id }}" {{ $product->grade == $grade->id ? 'selected' : '' }}>{{ $grade->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <input type="submit" value="Update" class="btn btn-success">
+                                            </td>
+                                        </tr>
+                                    </form>
+
+                                </tbody>
+                            </table>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="row">
             <div class="col-xl-12">
                 <div class="card">
@@ -194,40 +288,7 @@
             </div>
         </div>
 
-        <div class="modal" id="correction_model">
-            <div class="modal-dialog wd-xl-400" role="document">
-                <div class="modal-content">
-                    <div class="modal-body pd-sm-40">
-                        <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
-                            type="button"><span aria-hidden="true">&times;</span></button>
-                        <h5 class="modal-title mg-b-5">Update Order</h5>
-                        <hr>
-                        <form action="{{ url('order/correction') }}" method="POST">
-                            @csrf
-                            <div class="form-group">
-                                <label for="">Order Number</label>
-                                <input class="form-control" name="correction[id]" type="text" id="order_reference" disabled>
-                            </div>
-                            <div class="form-group">
-                                <label for="">Tester</label>
-                                <input class="form-control" placeholder="input Tester Initial" name="correction[tester]" type="text">
-                            </div>
-                            <div class="form-group">
-                                <label for="">IMEI / Serial Number</label>
-                                <input class="form-control" placeholder="input IMEI / Serial Number" name="correction[imei]" type="text" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="">Reason</label>
-                                <textarea class="form-control" name="correction[reason]">Wrong Dispatch</textarea>
-                            </div>
-                            <input type="hidden" id="item_id" name="correction[item_id]" value="">
-
-                            <button class="btn btn-primary btn-block">{{ __('locale.Submit') }}</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
+        @endif
 
     @endsection
 

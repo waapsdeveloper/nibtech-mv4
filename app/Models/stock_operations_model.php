@@ -1,0 +1,35 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class stock_operations_model extends Model
+{
+    use HasFactory;
+    protected $table = 'stock';
+    protected $primaryKey = 'id';
+    // public $timestamps = FALSE;
+    protected $fillable = [
+        // other fields...
+        'stock_id',
+        'order_id',
+        'process_id',
+        'old_variation_id',
+        'new_variation_id',
+        'description'
+    ];
+    public function stock()
+    {
+        return $this->hasOne(Stock_model::class, 'id', 'stock_id');
+    }
+    public function order()
+    {
+        return $this->hasOne(Order_model::class, 'id', 'order_id');
+    }
+    public function process()
+    {
+        return $this->hasOne(Process_model::class, 'id', 'process_id');
+    }
+}
