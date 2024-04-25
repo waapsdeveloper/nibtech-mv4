@@ -28,7 +28,7 @@ class Inventory extends Component
         $data['grades'] = Grade_model::pluck('name','id');
         $data['categories'] = Category_model::get();
         $data['brands'] = Brand_model::get();
-        $data['stocks'] = Stock_model::where('status',1)
+        $stocks = Stock_model::where('stock.status',1)
 
         ->when(request('storage') != '', function ($q) {
             return $q->whereHas('variation', function ($q) {
@@ -54,14 +54,20 @@ class Inventory extends Component
             return $q->whereHas('variation', function ($q) {
                 $q->where('grade', request('grade'));
             });
-        })
+        });
 
-        // $data['average_cost'] = $stocks->average()
 
         // ->orderBy($sort, $by) // Order by product name
+        $data['stocks'] = $stocks
         ->paginate($per_page)
         ->onEachSide(5)
         ->appends(request()->except('page'));
+
+
+        $data['average_cost'] = $stocks->join('order_items', 'stock.id', '=', 'order_items.stock_id')
+        ->selectRaw('AVG(order_items.price) as average_price')
+        ->pluck('average_price')
+        ->first();
 
         return view('livewire.inventory')->with($data);
     }
