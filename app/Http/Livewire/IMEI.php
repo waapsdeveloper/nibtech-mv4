@@ -3,11 +3,14 @@
 namespace App\Http\Livewire;
     use Livewire\Component;
     use App\Models\Admin_model;
-    use App\Models\Stock_model;
+use App\Models\Color_model;
+use App\Models\Stock_model;
     use App\Models\Order_item_model;
     use App\Models\Currency_model;
     use App\Models\Country_model;
 use App\Models\Grade_model;
+use App\Models\Products_model;
+use App\Models\Storage_model;
 use Carbon\Carbon;
 
 
@@ -18,8 +21,6 @@ class IMEI extends Component
 
     public function mount()
     {
-        $this->currency_codes = Currency_model::pluck('id','code');
-        $this->country_codes = Country_model::pluck('id','code');
         $user_id = session('user_id');
         if($user_id == NULL){
             return redirect('index');
@@ -41,6 +42,10 @@ class IMEI extends Component
             }
 
             $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
+
+            $data['products'] = Products_model::orderBy('model','asc')->get();
+            $data['colors'] = Color_model::all();
+            $data['storages'] = Storage_model::all();
             if (request('imei') == '' || !$stock || $stock->status == null) {
                 session()->put('error', 'IMEI Invalid / Not Found');
                 // return redirect()->back(); // Redirect here is not recommended
