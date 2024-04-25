@@ -13,7 +13,7 @@ class PickListExport
         // Fetch data from the database
         $data = DB::table('orders')
             ->join('order_items', 'orders.id', '=', 'order_items.order_id')
-            ->join('variation', 'order_items.variation_id', '=', 'variation.id')
+            ->leftJoin('variation', 'order_items.variation_id', '=', 'variation.id') // Use LEFT JOIN instead of JOIN
             ->join('products', 'variation.product_id', '=', 'products.id')
             ->leftJoin('color', 'variation.color', '=', 'color.id') // Use leftJoin instead of join
             ->leftJoin('storage', 'variation.storage', '=', 'storage.id') // Use leftJoin instead of join
@@ -21,8 +21,8 @@ class PickListExport
             ->select(
                 'variation.sku',
                 'products.model',
-                DB::raw('COALESCE(color.name, "Unknown") as color'), // Use COALESCE to handle null values
-                DB::raw('COALESCE(storage.name, "Unknown") as storage_name'), // Use COALESCE to handle null values
+                'color.name as color', // Access the storage column directly
+                'storage.name as storage_name', // Access the storage column directly
                 'grade.name as grade_name',
                 DB::raw('SUM(order_items.quantity) as total_quantity')
             )

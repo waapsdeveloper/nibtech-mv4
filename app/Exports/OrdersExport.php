@@ -13,7 +13,7 @@ class OrdersExport
         // Fetch data from the database
         $data = DB::table('orders')
             ->join('order_items', 'orders.id', '=', 'order_items.order_id')
-            ->join('variation', 'order_items.variation_id', '=', 'variation.id')
+            ->leftJoin('variation', 'order_items.variation_id', '=', 'variation.id') // Use LEFT JOIN instead of JOIN
             ->join('products', 'variation.product_id', '=', 'products.id')
             ->leftJoin('color', 'variation.color', '=', 'color.id') // Use leftJoin instead of join
             ->leftJoin('storage', 'variation.storage', '=', 'storage.id') // Use leftJoin instead of join
@@ -23,8 +23,8 @@ class OrdersExport
                 'variation.sku',
                 'order_items.quantity',
                 'products.model',
-                DB::raw('COALESCE(color.name, "Unknown") as color'), // Use COALESCE to handle null values
-                DB::raw('COALESCE(storage.name, "Unknown") as storage_name'), // Use COALESCE to handle null values
+                'color.name as color', // Access the storage column directly
+                'storage.name as storage_name', // Access the storage column directly
                 'grade.name as grade_name',
                 // DB::raw('SUM(order_items.quantity) as total_quantity')
             )
@@ -93,7 +93,7 @@ class OrdersExport
             // $pdf->Cell(110, 10, $order->name, 1);
             // Add Product Name (ellipsize to fit within 110)
             $pdf->Cell(8, 0, $i, 1);
-            $variationName = $this->ellipsize($order->model." - ".$order->storage ?? null." - ".$order->color ?? null, 60);
+            $variationName = $this->ellipsize($order->model." - ".$order->storage." - ".$order->color, 60);
             $sku = $this->ellipsize($order->sku, 13);
             $pdf->Cell(20, 0, $order->reference_id, 1);
             $pdf->Cell(25, 0, $sku, 1);
