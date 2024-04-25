@@ -46,8 +46,12 @@ class IMEI extends Component
                 return view('livewire.imei', $data); // Return the Blade view instance with data
             }
             if($stock->status == 2){
-                $sale_status = Order_item_model::where(['stock_id'=>$stock->id,'linked_id'=>$stock->purchase_item->id])->get();
-                print_r($sale_status);
+                $sale_status = Order_item_model::where(['stock_id'=>$stock->id,'linked_id'=>$stock->purchase_item->id])->first();
+                // print_r($sale_status);
+                if($sale_status != null){
+                    $stock->status = 1;
+                    $stock->save();
+                }
             }
             $stock_id = $stock->id;
             $orders = Order_item_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
