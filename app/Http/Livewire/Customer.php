@@ -16,7 +16,15 @@ class Customer extends Component
 {
     public function render()
     {
-        $data['customers'] = Customer_model::paginate(50);
+        $data['customers'] = Customer_model::
+        when(request('type') && request('type') != 0, function($q){
+            if(request('type') == 3){
+                return $q->where('is_vendor',null);
+            }else{
+                return $q->where('is_vendor',request('type'));
+            }
+        })
+        ->paginate(50);
 
         // foreach($data['customers'] as $customer){
         //     if($customer->orders->count() == 0){

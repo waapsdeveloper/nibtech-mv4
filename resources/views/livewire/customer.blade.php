@@ -33,10 +33,17 @@
         <!-- /breadcrumb -->
         <hr style="border-bottom: 1px solid #000">
         <br>
-        <div class="row">
-            <div class="col-md-12" style="text-align: right">
+        <div class="d-flex justify-content-between">
+
+            <form method="get" action="" class="row form-inline">
+                <select name="type" class="form-select" onchange="this.form.submit()">
+                    <option value="0">All Types</option>
+                    <option value="1" {{ Request::get('type') == 1 ? 'selected' : '' }}>Vendors</option>
+                    <option value="2" {{ Request::get('type') == 2 ? 'selected' : '' }}>BulkSale Purchasers</option>
+                    <option value="3" {{ Request::get('type') == 3 ? 'selected' : '' }}>Customers</option>
+                </select>
+            </form>
                 <a href="{{url('add-customer')}}" class="btn btn-success float-right"><i class="mdi mdi-plus"></i> Add Customer</a>
-            </div>
         </div>
         <br>
         @if (session('success'))
