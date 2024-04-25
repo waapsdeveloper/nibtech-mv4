@@ -356,8 +356,16 @@ class Order extends Component
                 $i = null;
                 $s = $d[$imei];
             }
-
+            if(trim($d[$imei]) == ''){
+                continue;
+            }
+            if(trim($n) == ''){
+                continue;
+            }
             $c = $d[$cost];
+            if(trim($c) == ''){
+                continue;
+            }
             $names = explode(" ",$n);
             $last = end($names);
             if(in_array($last, $storages)){
@@ -429,7 +437,11 @@ class Order extends Component
             $s = request('imei');
         }
 
-        $variation = Variation_model::firstOrNew(['id' => request('variation')]);
+        $variation = Variation_model::find(request('variation'));
+        if($variation == null){
+            session()->put('error', 'Variation Not Found');
+            return redirect()->back();
+        }
         $variation->stock += 1;
         $variation->status = 1;
         $variation->save();
