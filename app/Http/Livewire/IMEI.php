@@ -51,6 +51,8 @@ class IMEI extends Component
                 if($sale_status != null){
                     $stock->status = 1;
                     $stock->save();
+                }else{
+                    session()->put('success', 'IMEI Sold');
                 }
             }
             $stock_id = $stock->id;
