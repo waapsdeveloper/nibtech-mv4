@@ -45,6 +45,10 @@ class IMEI extends Component
                 // return redirect()->back(); // Redirect here is not recommended
                 return view('livewire.imei', $data); // Return the Blade view instance with data
             }
+            if($stock->status == 2){
+                $sale_status = Order_item_model::where(['stock_id'=>$stock->id,'linked_id'=>$stock->purchase_item->id])->get();
+                print_r($sale_status);
+            }
             $stock_id = $stock->id;
             $orders = Order_item_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
             $data['orders'] = $orders;
