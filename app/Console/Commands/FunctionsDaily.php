@@ -41,6 +41,7 @@ class FunctionsDaily extends Command
     public function handle()
     {
         $this->remove_extra_customers();
+        $this->check_stock_status();
     }
     private function remove_extra_customers(){
 
@@ -55,8 +56,28 @@ class FunctionsDaily extends Command
 
     }
 
-    private function duplicate_orders(){
+    private function check_stock_status(){
 
+        $stocks = Stock_model::all();
+        foreach($stocks as $stock){
+
+            if($stock->status == 1){
+                $sale_status = Order_item_model::where(['stock_id'=>$stock->id,'linked_id'=>$stock->purchase_item->id])->first();
+                // print_r($sale_status);
+                if($sale_status != null){
+                    $stock->status = 2;
+                    $stock->save();
+                }
+            }
+            if($stock->status == 2){
+                $sale_status = Order_item_model::where(['stock_id'=>$stock->id,'linked_id'=>$stock->purchase_item->id])->first();
+                // print_r($sale_status);
+                if($sale_status == null){
+                    $stock->status = 1;
+                    $stock->save();
+                }
+            }
+        }
 
 
 

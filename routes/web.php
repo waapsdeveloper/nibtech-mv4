@@ -8,6 +8,7 @@ use App\Http\Livewire\Emptypage;
 use App\Http\Livewire\Error404;
 use App\Http\Livewire\Error500;
 use App\Http\Livewire\Error501;
+use App\Http\Livewire\Grade;
 use App\Http\Livewire\IMEI;
 use App\Http\Livewire\Index;
 use App\Http\Livewire\Profile;
@@ -128,12 +129,12 @@ Route::get('update-status/{id}', [Customer::class,'update_status'])->name('edit_
 Route::get('edit-customer/{id}', [Customer::class,'edit_customer'])->name('edit_customer');
 Route::post('update-customer/{id}', [Customer::class,'update_customer'])->name('edit_customer');
 
-Route::get('grade', Customer::class)->name('view_grade');
-Route::get('add-grade', [Customer::class,'add_grade'])->name('add_grade');
-Route::post('insert-grade', [Customer::class,'insert_grade'])->name('add_grade');
-Route::get('update-status/{id}', [Customer::class,'update_status'])->name('edit_grade');
-Route::get('edit-grade/{id}', [Customer::class,'edit_grade'])->name('edit_grade');
-Route::post('update-grade/{id}', [Customer::class,'update_grade'])->name('edit_grade');
+Route::get('grade', Grade::class)->name('view_grade');
+Route::get('add-grade', [Grade::class,'add_grade'])->name('add_grade');
+Route::post('insert-grade', [Grade::class,'insert_grade'])->name('add_grade');
+Route::get('update-status/{id}', [Grade::class,'update_status'])->name('edit_grade');
+Route::get('edit-grade/{id}', [Grade::class,'edit_grade'])->name('edit_grade');
+Route::post('update-grade/{id}', [Grade::class,'update_grade'])->name('edit_grade');
 
 Route::get('get_permissions/{id}', [Team::class,'get_permissions'])->name('view_permissions');
 Route::post('toggle_role_permission/{roleId}/{permissionId}/{isChecked}', [Team::class, 'toggle_role_permission'])->name('change_permission');

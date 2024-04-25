@@ -107,35 +107,4 @@ class Grade extends Component
         session()->put('success',"Grade has been updated successfully");
         return redirect('grade');
     }
-    public function get_permissions($roleId)
-    {
-        $role = Role_model::findOrFail($roleId);
-        $permissions = $role->permissions()->pluck('name')->toArray();
-        return response()->json($permissions);
-    }
-    public function toggle_role_permission($roleId, $permissionId, $isChecked)
-    {
-
-        // Debugging: Print the value of $isChecked
-        var_dump($isChecked);
-
-        // Convert string values to boolean
-        $lowercase = strtolower($isChecked);
-        if ($lowercase === 'true') {
-            $check = true;
-        } else {
-            $check = false;
-        }
-        // Create or delete role permission based on $isChecked value
-        if ($check) {
-            echo "Hello";
-            echo Role_permission_model::create(['role_id' => $roleId, 'permission_id' => $permissionId]);
-        } else {
-            echo "Ho";
-            echo Role_permission_model::where('role_id', $roleId)->where('permission_id', $permissionId)->delete();
-        }
-
-        // Return response
-        return response()->json(['success' => true]);
-    }
 }
