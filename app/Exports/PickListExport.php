@@ -13,16 +13,16 @@ class PickListExport
         // Fetch data from the database
         $data = DB::table('orders')
             ->join('order_items', 'orders.id', '=', 'order_items.order_id')
-            ->leftJoin('variation', 'order_items.variation_id', '=', 'variation.id') // Use LEFT JOIN instead of JOIN
+            ->join('variation', 'order_items.variation_id', '=', 'variation.id')
             ->join('products', 'variation.product_id', '=', 'products.id')
-            ->leftJoin('color', 'variation.color', '=', 'color.id') // Use leftJoin instead of join
-            ->leftJoin('storage', 'variation.storage', '=', 'storage.id') // Use leftJoin instead of join
+            ->join('color', 'variation.color', '=', 'color.id')
+            ->join('storage', 'variation.storage', '=', 'storage.id')
             ->join('grade', 'variation.grade', '=', 'grade.id')
             ->select(
                 'variation.sku',
                 'products.model',
                 'color.name as color',
-                'storage.name as storage_name',
+                'storage.name as storage',
                 'grade.name as grade_name',
                 DB::raw('SUM(order_items.quantity) as total_quantity')
             )
