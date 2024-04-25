@@ -49,10 +49,10 @@ class IMEI extends Component
                 $sale_status = Order_item_model::where(['stock_id'=>$stock->id,'linked_id'=>$stock->purchase_item->id])->first();
                 // print_r($sale_status);
                 if($sale_status != null){
-                    $stock->status = 1;
+                    $stock->status = 2;
                     $stock->save();
                 }else{
-                    session()->put('success', 'IMEI Sold');
+                    session()->put('success', 'IMEI AVailable');
                 }
             }
             if($stock->status == 2){
