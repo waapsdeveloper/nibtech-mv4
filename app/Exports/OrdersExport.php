@@ -93,7 +93,7 @@ class OrdersExport
             // $pdf->Cell(110, 10, $order->name, 1);
             // Add Product Name (ellipsize to fit within 110)
             $pdf->Cell(8, 0, $i, 1);
-            $variationName = $this->ellipsize($order->model." - ".$order->storage." - ".$order->color, 60);
+            $variationName = $this->ellipsize($order->model." - ".$order->storage ?? null." - ".$order->color ?? null, 60);
             $sku = $this->ellipsize($order->sku, 13);
             $pdf->Cell(20, 0, $order->reference_id, 1);
             $pdf->Cell(25, 0, $sku, 1);
