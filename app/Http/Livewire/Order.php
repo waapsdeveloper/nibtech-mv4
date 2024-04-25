@@ -573,6 +573,10 @@ class Order extends Component
                         return redirect()->back();
 
                     }
+                    if($stock[$i]->status != 1){
+                        session()->put('error', "Stock Already Sold");
+                        return redirect()->back();
+                    }
                     if($stock[$i]){
                         if($stock[$i]->variation->storage != null){
                             $storage = $stock[$i]->variation->storage_id->name . " - ";
@@ -600,6 +604,10 @@ class Order extends Component
                     $stock[$i] = Stock_model::where('serial_number',trim($imei))->first();
                     if(!$stock[$i]){
                         session()->put('error', "Stock not Found");
+                        return redirect()->back();
+                    }
+                    if($stock[$i]->status != 1){
+                        session()->put('error', "Stock Already Sold");
                         return redirect()->back();
                     }
                     if($stock[$i]){

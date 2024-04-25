@@ -18,7 +18,24 @@
 		<title> Britain Tech – Admin Panel </title>
 
         @include('layouts.components.styles')
+        <style>
 
+            .form-floating>.form-control,
+            .form-floating>.form-control-plaintext {
+            padding: 0rem 0.75rem;
+            }
+
+            .form-floating>.form-control,
+            .form-floating>.form-control-plaintext,
+            .form-floating>.form-select {
+            height: calc(2.5rem + 2px);
+            line-height: 1;
+            }
+
+            .form-floating>label {
+            padding: 0.5rem 0.75rem;
+            }
+        </style>
         @livewireStyles
 	</head>
 

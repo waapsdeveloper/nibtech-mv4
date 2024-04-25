@@ -38,46 +38,52 @@
         <br>
         <form action="" method="GET" id="search">
             <div class="row">
-                <div class="col-lg-2 col-xl-2 col-md-4 col-sm-6">
-                    <div class="card-header">
-                        <h4 class="card-title mb-1">SKU</h4>
+                <div class="col-md col-sm-6">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="reference_id" name="reference_id" placeholder="Enter IMEI" value="@isset($_GET['reference_id']){{$_GET['reference_id']}}@endisset">
+                        <label for="reference_id">Reference ID</label>
                     </div>
-                    <input type="text" class="form-control focused" id="sku_input" name="sku" placeholder="Enter SKU" value="@isset($_GET['sku']){{$_GET['sku']}}@endisset" autofocus>
                 </div>
-                <div class="col-lg-2 col-xl-2 col-md-4 col-sm-6">
-                    <div class="card-header">
-                        <h4 class="card-title mb-1">Order ID</h4>
+                <div class="col-md col-sm-6">
+                    <div class="form-floating">
+                        <input type="text" id="product" name="product" list="products" class="form-control" data-bs-placeholder="Select Status">
+                        <label for="product">Product</label>
                     </div>
-                    <input type="text" class="form-control" name="order_id" placeholder="Enter ID" value="@isset($_GET['order_id']){{$_GET['order_id']}}@endisset">
+                        <datalist id="products">
+                            @foreach ($products as $product)
+                                <option value="{{$product->id}}" @if(isset($_GET['product']) && $product->id == $_GET['product']) {{'selected'}}@endif>{{$product->model}}</option>
+                            @endforeach
+                        </datalist>
                 </div>
-                <div class="col-lg-2 col-xl-2 col-md-4 col-sm-6">
-                    <div class="card-header">
-                        <h4 class="card-title mb-1">IMEI</h4>
+                <div class="col-md col-sm-6">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" name="sku" placeholder="Enter IMEI" value="@isset($_GET['sku']){{$_GET['sku']}}@endisset">
+                        <label for="">SKU</label>
                     </div>
-                    <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset">
                 </div>
-                <div class="col-lg-2 col-xl-2 col-md-4 col-sm-6">
-                    <div class="card-header">
-                        <h4 class="card-title mb-1">Grade</h4>
-                    </div>
-                    <select name="grade" class="form-control form-select select2" data-bs-placeholder="Select Status">
-                        <option value="">Select</option>
+                <div class="col-md col-sm-6">
+                    <select name="color" class="form-control form-select" data-bs-placeholder="Select Status">
+                        <option value="">Color</option>
+                        @foreach ($colors as $color)
+                            <option value="{{$color->id}}" @if(isset($_GET['color']) && $color->id == $_GET['color']) {{'selected'}}@endif>{{$color->name}}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md col-sm-6">
+                    <select name="storage" class="form-control form-select" data-bs-placeholder="Select Status">
+                        <option value="">Storage</option>
+                        @foreach ($storages as $storage)
+                            <option value="{{$storage->id}}" @if(isset($_GET['storage']) && $storage->id == $_GET['storage']) {{'selected'}}@endif>{{$storage->name}}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md col-sm-6">
+                    <select name="grade" class="form-control form-select" data-bs-placeholder="Select Status">
+                        <option value="">Grade</option>
                         @foreach ($grades as $grade)
                             <option value="{{$grade->id}}" @if(isset($_GET['grade']) && $grade->id == $_GET['grade']) {{'selected'}}@endif>{{$grade->name}}</option>
                         @endforeach
                     </select>
-                </div>
-                <div class="col-lg-2 col-xl-2 col-md-4 col-sm-6">
-                    <div class="card-header">
-                        <h4 class="card-title mb-1">{{ __('locale.Start Date') }}</h4>
-                    </div>
-                    <input class="form-control" name="start_date" id="datetimepicker" type="date" value="@isset($_GET['start_date']){{$_GET['start_date']}}@endisset">
-                </div>
-                <div class="col-lg-2 col-xl-2 col-md-4 col-sm-6">
-                    <div class="card-header">
-                        <h4 class="card-title mb-1">{{ __('locale.End Date') }}</h4>
-                    </div>
-                    <input class="form-control" name="end_date" id="datetimepicker" type="date" value="@isset($_GET['end_date']){{$_GET['end_date']}}@endisset">
                 </div>
             </div>
             <div class=" p-2">

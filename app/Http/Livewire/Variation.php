@@ -3,30 +3,12 @@
 namespace App\Http\Livewire;
     use App\Http\Controllers\BackMarketAPIController;
     use Livewire\Component;
-    use App\Models\Merchant_model;
-    use App\Models\Category_model;
-    use App\Models\Brand_model;
     use App\Models\Variation_model;
     use App\Models\Products_model;
     use App\Models\Color_model;
     use App\Models\Storage_model;
     use App\Models\Grade_model;
-    use App\Models\Stock_model;
-    use App\Models\Order_model;
-    use App\Models\Order_item_model;
     use App\Models\Order_status_model;
-    use App\Models\Customer_model;
-    use App\Models\Currency_model;
-    use App\Models\Country_model;
-    use GuzzleHttp\Psr7\Request;
-    use Carbon\Carbon;
-    use Illuminate\Support\Facades\Session;
-    use App\Exports\OrdersExport;
-    use App\Exports\PickListExport;
-    use App\Exports\LabelsExport;
-    use App\Exports\DeliveryNotesExport;
-    use Illuminate\Support\Facades\DB;
-    use Maatwebsite\Excel\Facades\Excel;
 
 
 
@@ -51,19 +33,28 @@ class Variation extends Component
                 $per_page = 10;
             }
 
-            switch (request('sort')){
-                case 2: $sort = "reference_id"; $by = "ASC"; break;
-                case 3: $sort = "variation.name"; $by = "DESC"; break;
-                case 4: $sort = "variation.name"; $by = "ASC"; break;
-                default: $sort = "reference_id"; $by = "DESC";
-            }
 
         $data['products'] = Products_model::all();
         $data['colors'] = Color_model::all();
         $data['storages'] = Storage_model::all();
         $data['grades'] = Grade_model::all();
         $data['variations'] = Variation_model::
-        when(request('grade') != '', function ($q) {
+        when(request('reference_id') != '', function ($q) {
+            return $q->where('reference_id', request('reference_id'));
+        })
+        ->when(request('product') != '', function ($q) {
+            return $q->where('product_id', request('product'));
+        })
+        ->when(request('sku') != '', function ($q) {
+            return $q->where('sku', request('sku'));
+        })
+        ->when(request('color') != '', function ($q) {
+            return $q->where('color', request('color'));
+        })
+        ->when(request('storage') != '', function ($q) {
+            return $q->where('storage', request('storage'));
+        })
+        ->when(request('grade') != '', function ($q) {
             return $q->where('grade', request('grade'));
         })
         ->orderBy('name','desc')
