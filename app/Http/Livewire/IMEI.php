@@ -48,7 +48,7 @@ class IMEI extends Component
             if($stock->status == 2){
                 $sale_status = Order_item_model::where(['stock_id'=>$stock->id,'linked_id'=>$stock->purchase_item->id])->first();
                 // print_r($sale_status);
-                if($sale_status != null){
+                if($sale_status == null){
                     $stock->status = 1;
                     $stock->save();
                 }else{
