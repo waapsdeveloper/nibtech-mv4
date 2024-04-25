@@ -51,24 +51,7 @@ class Grade extends Component
     public function update_grade($id)
     {
 
-        // $parent_id = request()->input('parent');
-        // $role_id = request()->input('role');
-        // $username = request()->input('username');
-        // $f_name = request()->input('fname');
-        // $l_name = request()->input('lname');
-        // $email = request()->input('email');
-        // $password = request()->input('password');
-
-        // $data = array(
-        //     'parent_id' =>$parent_id,
-        //     'role_id' =>$role_id,
-        //     'username' =>$username,
-        //     'first_name'=> $f_name,
-        //     'last_name'=> $l_name,
-        //     'email'=> $email,
-        //     'password'=> Hash::make($password),
-        // );
-        Grade_model::where('id',$id)->update(request('grade'));
+        Grade_model::where('id',$id)->update(['name'=>request('name')]);
         session()->put('success',"Grade has been updated successfully");
         return redirect('grade');
     }
