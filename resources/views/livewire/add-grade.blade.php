@@ -39,7 +39,7 @@
                                                     <label class="form-label mg-b-0">Name</label>
                                                 </div>
                                                 <div class="col-md-9 mg-t-5 mg-md-t-0">
-                                                    <input class="form-control" placeholder="Enter grade's company" name="name" type="text">
+                                                    <input class="form-control" placeholder="Enter grade's company" name="name" type="text" required>
                                                 </div>
                                             </div>
                                             <button class="btn btn-primary pd-x-30 mg-r-5 mg-t-5 float-end" >{{ __('locale.Add') }}</button>

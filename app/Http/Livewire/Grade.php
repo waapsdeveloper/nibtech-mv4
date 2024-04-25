@@ -33,32 +33,7 @@ class Grade extends Component
     public function insert_grade()
     {
 
-        // $parent_id = request()->input('parent');
-        // $role_id = request()->input('role');
-        // $username = request()->input('username');
-        // $f_name = request()->input('fname');
-        // $l_name = request()->input('lname');
-        // $email = request()->input('email');
-        // $password = request()->input('password');
-        // if(Grade_model::where('username',$username)->first() != null){
 
-        //     session()->put('error',"Username Already Exist");
-        //     return redirect('grade');
-        // }
-        // if(Grade_model::where('email',$email)->first() != null){
-
-        //     session()->put('error',"Email Already Exist");
-        //     return redirect('grade');
-        // }
-        // $data = array(
-        //     'parent_id' =>$parent_id,
-        //     'role_id' =>$role_id,
-        //     'username' =>$username,
-        //     'first_name'=> $f_name,
-        //     'last_name'=> $l_name,
-        //     'email'=> $email,
-        //     'password'=> Hash::make($password),
-        // );
         Grade_model::insert(['name'=>request('name')]);
         session()->put('success',"Grade has been added successfully");
         return redirect('grade');
@@ -67,18 +42,8 @@ class Grade extends Component
     public function edit_grade($id)
     {
 
-        $data['countries'] = Country_model::all();
         $data['grade'] = Grade_model::where('id',$id)->first();
 
-        $orders = Order_model::join('order_items', 'orders.id', '=', 'order_items.order_id')
-        ->join('variation', 'order_items.variation_id', '=', 'variation.id')
-        ->join('products', 'variation.product_id', '=', 'products.id')
-        ->with(['order_items.variation', 'order_items.variation.grade_id', 'order_items.stock'])
-        ->where('orders.grade_id',$id)
-
-        ->orderBy('orders.reference_id', 'desc')
-        ->select('orders.*')->get();
-        $data['orders'] = $orders;
         // dd($orders);
 
         return view('livewire.edit-grade')->with($data);
