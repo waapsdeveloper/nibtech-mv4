@@ -189,7 +189,7 @@
                     <div class="card-header pb-0">
                         <div class="d-flex justify-content-between">
                             <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$stocks->firstItem()}} {{ __('locale.To') }} {{$stocks->lastItem()}} {{ __('locale.Out Of') }} {{$stocks->total()}} </h5>
-                            <h5>Average Cost: {{ number_format($average_cost,2) }} | Total Cost: {{ number_format($total_cost,2) }}</h5>
+                            <h5>Average Cost: {{ number_format($average_cost->average_price,2) }} | Total Cost: {{ number_format($average_cost->total_price,2) }}</h5>
                             <div class=" mg-b-0">
                                 <form method="get" action="" class="row form-inline">
                                     <label for="perPage" class="card-title inline">per page:</label>
