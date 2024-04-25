@@ -20,12 +20,11 @@
             <div class="breadcrumb-header justify-content-between">
                 <div class="left-content">
                 {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">products</span> --}}
-                <a href="{{url(session('url').'refresh_order')}}" target="_blank" class="mg-b-0 mg-b-lg-1 btn btn-primary">Refresh</a>
                 </div>
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">products</li>
+                        <li class="breadcrumb-item active" aria-current="page">Product Variation</li>
                     </ol>
                 </div>
             </div>
@@ -85,35 +84,20 @@
                         @endforeach
                     </select>
                 </div>
-            </div>
-            <div class=" p-2">
-                <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
-                <a href="{{url(session('url').'order')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
+                <div class="p-2">
+                    <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
+                    <a href="{{url(session('url').'order')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
+                </div>
             </div>
 
             <input type="hidden" name="page" value="{{ Request::get('page') }}">
             <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
             <input type="hidden" name="sort" value="{{ Request::get('sort') }}">
         </form>
-<div class="tx-right">
-                <button class="btn btn-secondary pd-x-20 " type="submit" form="picklist" name="order" value="1">Order List</button>
-                <button class="btn btn-secondary pd-x-20 " type="submit" form="picklist" name="picklist" value="1">Pick List</button>
-</div>
-        <form id="picklist" method="POST" target="_blank" action="{{url(session('url').'export_order')}}">
-            @csrf
-            <input type="hidden" name="start_date" value="{{ Request::get('start_date') }}">
-            <input type="hidden" name="end_date" value="{{ Request::get('end_date') }}">
-            <input type="hidden" name="status" value="{{ Request::get('status') }}">
-            <input type="hidden" name="order_id" value="{{ Request::get('order_id') }}">
-            <input type="hidden" name="sku" value="{{ Request::get('sku') }}">
-            <input type="hidden" name="imei" value="{{ Request::get('imei') }}">
-            <input type="hidden" name="page" value="{{ Request::get('page') }}">
-            <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
-        </form>
         <br>
         <div class="row">
             <div class="col-md-12" style="border-bottom: 1px solid rgb(216, 212, 212);">
-                <center><h4>products</h4></center>
+                <center><h4>Product Variations</h4></center>
             </div>
         </div>
         <br>

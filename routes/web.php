@@ -128,6 +128,13 @@ Route::get('update-status/{id}', [Customer::class,'update_status'])->name('edit_
 Route::get('edit-customer/{id}', [Customer::class,'edit_customer'])->name('edit_customer');
 Route::post('update-customer/{id}', [Customer::class,'update_customer'])->name('edit_customer');
 
+Route::get('grade', Customer::class)->name('view_grade');
+Route::get('add-grade', [Customer::class,'add_grade'])->name('add_grade');
+Route::post('insert-grade', [Customer::class,'insert_grade'])->name('add_grade');
+Route::get('update-status/{id}', [Customer::class,'update_status'])->name('edit_grade');
+Route::get('edit-grade/{id}', [Customer::class,'edit_grade'])->name('edit_grade');
+Route::post('update-grade/{id}', [Customer::class,'update_grade'])->name('edit_grade');
+
 Route::get('get_permissions/{id}', [Team::class,'get_permissions'])->name('view_permissions');
 Route::post('toggle_role_permission/{roleId}/{permissionId}/{isChecked}', [Team::class, 'toggle_role_permission'])->name('change_permission');
 

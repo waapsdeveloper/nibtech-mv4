@@ -174,15 +174,8 @@
                                                 <td>
                                                     <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                                     <div class="dropdown-menu">
-                                                        <a class="dropdown-item" href="{{url(session('url').'order')}}/refresh/{{ $order->reference_id }}">Refresh</a>
-                                                        @if ($item->order->processed_at > $last_hour)
-                                                        <a class="dropdown-item" id="correction_{{ $item->id }}" href="javascript:void(0);" data-bs-target="#correction_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}"> Correction </a>
-                                                        @endif
-                                                        @if ($order->status == 3)
 
-                                                        <a class="dropdown-item" href="{{url(session('url').'order')}}/recheck/{{ $order->reference_id }}/true" target="_blank">Invoice</a>
-                                                        @endif
-                                                        <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank">View in Backmarket</a>
+                                                        <a class="dropdown-item" href="{{url(session('url').'order')}}/delete_item/{{ $item->id }}">Delete</a>
                                                     </div>
                                                 </td>
                                             </tr>
