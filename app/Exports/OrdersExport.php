@@ -23,8 +23,8 @@ class OrdersExport
                 'variation.sku',
                 'order_items.quantity',
                 'products.model',
-                'color.name as color', // Access the storage column directly
-                'storage.name as storage_name', // Access the storage column directly
+                DB::raw('IFNULL(color.name, "Unknown") as color'), // Use IFNULL to provide a default value
+                DB::raw('IFNULL(storage.name, "Unknown") as storage_name'), // Use IFNULL to provide a default value
                 'grade.name as grade_name',
                 // DB::raw('SUM(order_items.quantity) as total_quantity')
             )
