@@ -123,6 +123,7 @@
                                         <th><small><b>Old Variation</b></small></th>
                                         <th><small><b>New Variation</b></small></th>
                                         <th><small><b>IMEI</b></small></th>
+                                        <th><small><b>Reason</b></small></th>
                                         <th><small><b>DateTime</b></small></th>
                                     </tr>
                                 </thead>
@@ -145,6 +146,7 @@
                                                     @endif
                                                 </td>
                                                 <td>{{ $operation->stock->imei.$operation->stock->serial_number }}</td>
+                                                <td>{{ $operation->description }}</td>
                                                 <td>{{ $operation->created_at }}</td>
                                             </tr>
                                         @php
