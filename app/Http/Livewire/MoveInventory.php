@@ -66,7 +66,6 @@ class MoveInventory extends Component
         $description = request('description');
         if(request('grade')){
             session()->put('grade',request('grade'));
-            session()->put('success',request('grade')." 2");
         }
         session()->put('description',request('description'));
 
@@ -93,6 +92,11 @@ class MoveInventory extends Component
                 'grade' => $grade,
             ]);
             $new_variation->status = 1;
+            if($new_variation->id && $stock->variation_id == $new_variation->id){
+                session()->put('error', 'Stock already exist in this variation');
+                return redirect()->back();
+
+            }
             $new_variation->save();
             $stock_operation = Stock_operations_model::create([
                 'stock_id' => $stock_id,
