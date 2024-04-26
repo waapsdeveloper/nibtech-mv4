@@ -74,7 +74,7 @@
                     @csrf
 
                     <select name="grade" class="form-control form-select">
-                        <option value="">Grade</option>
+                        <option value="">Move to</option>
                         @foreach ($grades as $grade)
                             <option value="{{ $grade->id }}" @if(session('grade') && $grade->id == session('grade')) {{'selected'}}@endif @if(request('grade') && $grade->id == request('grade')) {{'selected'}}@endif>{{ $grade->name }}</option>
                         @endforeach
