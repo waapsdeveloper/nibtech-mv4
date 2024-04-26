@@ -681,10 +681,11 @@ class Order extends Component
 
 
             foreach ($skus as $each) {
+                $inde = 0;
                 foreach ($each as $idt => $s) {
                     $variation = Variation_model::where('sku',$s)->first();
                     $item = Order_item_model::where(['order_id'=>$id, 'variation_id'=>$variation->id])->first();
-                    if ($idt != 0) {
+                    if ($inde != 0) {
 
                         $new_item = new Order_item_model();
                         $new_item->order_id = $id;
@@ -700,6 +701,7 @@ class Order extends Component
                     // $new_item->linked_id = Order_item_model::where(['order_id'=>$stock[$idt]->order_id,'stock_id'=>$stock[$idt]->id])->first()->id;
                     }
                     $new_item->save();
+                    $inde ++;
                 }
             }
 
@@ -727,7 +729,7 @@ class Order extends Component
             </script>';
 
         }
-        if($detail->orderlines == null){
+        if(!$detail->orderlines){
             dd($detail);
         }
         if($detail->orderlines[0]->imei == null && $detail->orderlines[0]->serial_number  == null){
