@@ -16,8 +16,6 @@ use Carbon\Carbon;
 
 class IMEI extends Component
 {
-    public $currency_codes;
-    public $country_codes;
 
     public function mount()
     {

@@ -17,12 +17,12 @@ class Variation_model extends Model
     // public $timestamps = FALSE;
     protected $fillable = [
         // other fields...
+        'product_id',
         'reference_id',
         'sku',
-        'product_id',
-        'grade',
         'color',
         'storage',
+        'grade',
     ];
     protected static function booted()
     {

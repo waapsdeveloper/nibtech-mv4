@@ -663,7 +663,7 @@ class Order extends Component
                         // dd("Hello");
                         $detail = $bm->shippingOrderlines($order->reference_id,$sku[0],false,$orderObj->tracking_number,$serial);
                     }elseif($indexes > 0 && count($each_sku) == 1){
-                        $detail = $bm->orderlineIMEI($order->reference_id,$sku[0],trim($imeis[0]),$orderObj->tracking_number,$serial);
+                        $detail = $bm->orderlineIMEI($order->reference_id,trim($imeis[0]),$serial);
                     }else{
 
                     }

@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Support\Facades\Route;
 use App\Models\Admin_model;
+use App\Models\Grade_model;
 
 class AuthorizeMiddleware
 {
@@ -17,7 +18,9 @@ class AuthorizeMiddleware
         if($userId != null){
 
             $user = Admin_model::find($userId);
+            $all_grades = Grade_model::all();
             session()->put('user',$user);
+            session()->put('all_grades',$all_grades);
         }
         // If the current route is the login route or sign-in route, bypass the middleware
         if ($currentRoute == 'login' || $currentRoute == 'signin' || $currentRoute == 'index' || $currentRoute == 'profile' || $currentRoute == 'error') {

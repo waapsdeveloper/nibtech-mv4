@@ -22,12 +22,14 @@ use App\Http\Livewire\Variation;
 use App\Http\Livewire\Process;
 use App\Http\Livewire\Payouts;
 use App\Http\Livewire\Logout;
+use App\Http\Livewire\MoveInventory;
 use App\Http\Livewire\RMA;
 use App\Http\Livewire\Team;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\GetAllowedRoutesMiddleware;
 
 use App\Models\Routes_model;
+use Livewire\Commands\MoveCommand;
 
 /*
 |--------------------------------------------------------------------------
@@ -83,6 +85,9 @@ Route::post('rma/update_prices', [RMA::class,'update_prices'])->name('update_rma
 Route::get('export_rma_invoice/{id}', [RMA::class,'export_rma_invoice'])->name('rma_detail');
 
 Route::get('imei', IMEI::class)->name('view_imei');
+
+Route::get('move_inventory', MoveInventory::class)->name('move_inventory');
+Route::post('move_inventory/change_grade', [MoveInventory::class,'change_grade'])->name('move_inventory');
 
 
 Route::get('order', Order::class)->name('view_order');

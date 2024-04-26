@@ -5,10 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class stock_operations_model extends Model
+class Stock_operations_model extends Model
 {
     use HasFactory;
-    protected $table = 'stock';
+    protected $table = 'stock_operations';
     protected $primaryKey = 'id';
     // public $timestamps = FALSE;
     protected $fillable = [
@@ -31,5 +31,13 @@ class stock_operations_model extends Model
     public function process()
     {
         return $this->hasOne(Process_model::class, 'id', 'process_id');
+    }
+    public function old_variation()
+    {
+        return $this->hasOne(Variation_model::class, 'id', 'old_variation_id');
+    }
+    public function new_variation()
+    {
+        return $this->hasOne(Variation_model::class, 'id', 'new_variation_id');
     }
 }
