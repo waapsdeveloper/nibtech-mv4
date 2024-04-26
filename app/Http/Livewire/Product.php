@@ -68,7 +68,7 @@ class Product extends Component
             return $q->where('category', request('category'));
         })
         ->when(request('brand') != '', function ($q) {
-            return $q->where('brand', request('brand'));
+            return $q->where('brand', 'LIKE','%'.request('brand').'%');
         })
         ->orderBy($sort, $by) // Order by product name
         ->paginate($per_page)
