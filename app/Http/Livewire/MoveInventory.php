@@ -1,17 +1,10 @@
 <?php
 
 namespace App\Http\Livewire;
-    use Livewire\Component;
-    use App\Models\Admin_model;
-use App\Models\Color_model;
+use Livewire\Component;
 use App\Models\Stock_model;
-    use App\Models\Order_item_model;
-    use App\Models\Currency_model;
-    use App\Models\Country_model;
 use App\Models\Grade_model;
-use App\Models\Products_model;
 use App\Models\Stock_operations_model;
-use App\Models\Storage_model;
 use App\Models\Variation_model;
 use Carbon\Carbon;
 
