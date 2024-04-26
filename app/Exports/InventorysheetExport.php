@@ -21,8 +21,10 @@ class InventorysheetExport implements FromCollection, WithHeadings
         ->leftJoin('grade', 'variation.grade', '=', 'grade.id')
         ->leftJoin('orders', 'stock.order_id', '=', 'orders.id')
         ->leftJoin('customer', 'orders.customer_id', '=', 'customer.id')
-        ->leftJoin('order_items', 'stock.id', '=', 'order_items.stock_id')
-        ->where('order_items.order_id','stock.order_id')
+        ->leftJoin('order_items', function($join) {
+            $join->on('stock.id', '=', 'order_items.stock_id')
+                 ->whereColumn('order_items.order_id', 'stock.order_id');
+        })
 
         ->select(
             'products.model',
@@ -41,29 +43,19 @@ class InventorysheetExport implements FromCollection, WithHeadings
         ->where('stock.deleted_at',null)
 
         ->when(request('storage') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('storage', request('storage'));
-            });
+            $q->where('variation.storage', request('storage'));
         })
         ->when(request('category') != '', function ($q) {
-            return $q->whereHas('variation.product', function ($q) {
-                $q->where('category', request('category'));
-            });
+            $q->where('products.category', request('category'));
         })
         ->when(request('brand') != '', function ($q) {
-            return $q->whereHas('variation.product', function ($q) {
-                $q->where('brand', request('brand'));
-            });
+            $q->where('products.brand', request('brand'));
         })
         ->when(request('product') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('product_id', request('product'));
-            });
+            $q->where('variation.product_id', request('product'));
         })
         ->when(request('grade') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('grade', request('grade'));
-            });
+            $q->where('variation.grade', request('grade'));
         })
         ->get();
 
