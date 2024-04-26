@@ -18,7 +18,7 @@ class Stock_operations_model extends Model
         'process_id',
         'old_variation_id',
         'new_variation_id',
-        'description'
+        'description',
     ];
     public function stock()
     {
