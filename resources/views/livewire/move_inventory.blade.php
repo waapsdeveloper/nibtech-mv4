@@ -90,7 +90,7 @@
         @if (isset($stocks))
         <div class="row">
             <div class="col-md-12" style="border-bottom: 1px solid rgb(216, 212, 212);">
-                <center><h4>Moved Inventory in this Session</h4></center>
+                <center><h4>Moved Inventory Today</h4></center>
             </div>
         </div>
         <br>

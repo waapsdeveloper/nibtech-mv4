@@ -78,26 +78,6 @@
                         <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
                 </form>
             </div>
-            <div class="p-2">
-                @if (isset($stock) && $stock->status == 1 && session('user')->hasPermission('change_stock_grade'))
-
-
-                    <form class="form-inline" method="POST" target="_blank" action="{{url(session('url').'imei/change_grade')."/".$stock->id}}">
-                        <div class="form-floating">
-                            <input type="text" class="form-control pd-x-20" name="reason" placeholder="Reason" style="width: 370px;">
-                            {{-- <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset"> --}}
-                            <label for="">Change Grade Reason</label>
-                        </div>
-                        <select name="grade" class="form-control form-select" required>
-                            <option value="">Grade</option>
-                            @foreach ($grades as $grade)
-                                <option value="{{ $grade->id }}" @if(isset($_GET['grade']) && $grade->id == $_GET['grade']) {{'selected'}}@endif>{{ $grade->name }}</option>
-                            @endforeach
-                        </select>
-                        <input class="btn btn-secondary pd-x-20 " type="submit" value="Send">
-                    </form>
-                @endif
-            </div>
         </div>
         <br>
         <div class="row">
@@ -108,78 +88,6 @@
         <br>
         @if (isset($stock))
 
-        <div class="row">
-            <div class="col-xl-12">
-                <div class="card">
-                    <div class="card-header pb-0">
-                        <div class="d-flex justify-content-between">
-                            <h4 class="card-title mg-b-0">
-                                Stock Detail
-                            </h4>
-                        </div>
-                    </div>
-                    <div class="card-body"><div class="table-responsive">
-                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
-                                <thead>
-                                    <tr>
-                                        <th><small><b>Model</b></small></th>
-                                        <th><small><b>Color</b></small></th>
-                                        <th><small><b>Storage</b></small></th>
-                                        <th><small><b>Grade</b></small></th>
-                                        <th><small><b>Status</b></small></th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <form method="post" action="{{url(session('url').'imei/change_variant')}}/{{ $stock->id }}" class="row form-inline">
-                                        @csrf
-                                        <tr>
-                                            <td>
-                                                <input type="text" name="update[product_id]" list="models" class="form-select form-select-sm" required>
-                                                <datalist id="models">
-                                                    <option value="">None</option>
-                                                    @foreach ($products as $prod)
-                                                        <option value="{{ $prod->id }}" {{ $stock->product_id == $prod->id ? 'selected' : '' }}>{{ $prod->series." ".$prod->model }}</option>
-                                                    @endforeach
-                                                </datalist>
-                                            </td>
-                                            <td>
-                                                <select name="update[color]" class="form-select form-select-sm">
-                                                    <option value="">None</option>
-                                                    @foreach ($colors as $color)
-                                                        <option value="{{ $color->id }}" {{ $stock->variation->color == $color->id ? 'selected' : '' }}>{{ $color->name }}</option>
-                                                    @endforeach
-                                                </select>
-                                            </td>
-                                            <td>
-                                                <select name="update[storage]" class="form-select form-select-sm">
-                                                    <option value="">None</option>
-                                                    @foreach ($storages as $storage)
-                                                        <option value="{{ $storage->id }}" {{ $stock->variation->storage == $storage->id ? 'selected' : '' }}>{{ $storage->name }}</option>
-                                                    @endforeach
-                                                </select>
-                                            </td>
-                                            <td>
-                                                <select name="update[grade]" class="form-select form-select-sm">
-                                                    <option value="">None</option>
-                                                    @foreach ($grades as $grade)
-                                                        <option value="{{ $grade->id }}" {{ $stock->variation->grade == $grade->id ? 'selected' : '' }}>{{ $grade->name }}</option>
-                                                    @endforeach
-                                                </select>
-                                            </td>
-                                            <td>
-                                                <input type="submit" value="Update" class="btn btn-success">
-                                            </td>
-                                        </tr>
-                                    </form>
-
-                                </tbody>
-                            </table>
-                    </div>
-                    </div>
-                </div>
-            </div>
-        </div>
         <div class="row">
             <div class="col-xl-12">
                 <div class="card">

@@ -41,12 +41,18 @@ class MoveInventory extends Component
 
         if(request('grade')){
             $grade = request('grade');
-            if(isset(session('added_imeis')[$grade])){
-                $added_imeis = session('added_imeis')[$grade];
-                $stocks = Stock_operations_model::whereIn('stock_id',$added_imeis)->get();
+            // if(isset(session('added_imeis')[$grade])){
+                // $added_imeis = session('added_imeis')[$grade];
+                $stocks = Stock_operations_model::where('created_at','>=',now()->format('Y-m-d')." 00:00:00")
+                ->whereHas('new_variation', function ($query) use ($grade) {
+                    $query->where('grade', $grade);
+                })
+                ->whereHas('stock', function ($query) {
+                    $query->where('status', 1);
+                })->get();
                 $data['stocks'] = $stocks;
-                dd($stocks);
-            }
+            //     dd($stocks);
+            // }
 
             $data['grade'] = Grade_model::find($grade);
         }
@@ -73,8 +79,8 @@ class MoveInventory extends Component
             }
 
             $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
-            if (request('imei') == '' || !$stock || $stock->status == null) {
-                session()->put('error', 'IMEI Invalid / Not Found');
+            if (request('imei') == '' || !$stock || $stock->status != 1) {
+                session()->put('error', 'IMEI Invalid / Not Available');
                 return redirect()->back();
             }
             $stock_id = $stock->id;
@@ -96,7 +102,7 @@ class MoveInventory extends Component
             $stock->variation_id = $new_variation->id;
             $stock->save();
 
-            session()->put('added_imeis['.$grade.'][]', $stock_id);
+            // session()->put('added_imeis['.$grade.'][]', $stock_id);
             // dd($orders);
         }
 
