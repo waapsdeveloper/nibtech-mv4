@@ -28,19 +28,20 @@ class MoveInventory extends Component
     }
     public function render()
     {
-        if(session('added_imeis') == ''){
-            session()->put('added_imeis',[]);
-            session()->put('error','none');
+
+        $data['grades'] = Grade_model::all();
+
+        if(request('grade')){
+            session()->put('grade',request('grade'));
+            session()->put('success',request('grade'));
 
         }
-        $user_id = session('user_id');
+        $grade = session('grade');
         if(request('description')){
             session()->put('description',request('description'));
         }
-        $description = session('description');
 
-        if(request('grade')){
-            $grade = request('grade');
+        if($grade){
             // if(isset(session('added_imeis')[$grade])){
                 // $added_imeis = session('added_imeis')[$grade];
                 $stocks = Stock_operations_model::where('created_at','>=',now()->format('Y-m-d')." 00:00:00")
@@ -56,9 +57,6 @@ class MoveInventory extends Component
 
             $data['grade'] = Grade_model::find($grade);
         }
-        if(session('added_imeis') != []){
-            dd(session('added_imeis'));
-        }
 
         return view('livewire.move_inventory', $data); // Return the Blade view instance with data
     }
@@ -66,6 +64,10 @@ class MoveInventory extends Component
     public function change_grade(){
         $grade = request('grade');
         $description = request('description');
+        if(request('grade')){
+            session()->put('grade',request('grade'));
+            session()->put('success',request('grade')." 2");
+        }
         session()->put('description',request('description'));
 
 

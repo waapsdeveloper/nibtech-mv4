@@ -72,17 +72,23 @@
             <div class="p-2">
                 <form action="{{ url('move_inventory/change_grade') }}" method="POST" id="search" class="form-inline">
                     @csrf
+
+                    <select name="grade" class="form-control form-select">
+                        <option value="">Grade {{session('grade')}}</option>
+                        @foreach ($grades as $grade)
+                            <option value="{{ $grade->id }}" @if(session('grade') && $grade->id == session('grade')) {{'selected'}}@endif @if(request('grade') && $grade->id == request('grade')) {{'selected'}}@endif>{{ $grade->name }}</option>
+                        @endforeach
+                    </select>
                     <div class="form-floating">
                         <input type="text" class="form-control pd-x-20" value="{{session('description')}}" name="description" placeholder="Reason" style="width: 370px;">
                         {{-- <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset"> --}}
-                        <label for="">Change Grade Reason</label>
+                        <label for="">Reason</label>
                     </div>
                     <div class="form-floating">
                         <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset">
                         <label for="">IMEI</label>
                     </div>
-                    <input type="hidden" name="grade" value="{{request('grade')}}">
-                    <button class="btn btn-primary pd-x-20" type="submit">Send to {{ $grade->name }}</button>
+                    <button class="btn btn-primary pd-x-20" type="submit">Send to</button>
                 </form>
             </div>
         </div>
@@ -130,7 +136,7 @@
                                                 <td title="{{ $operation->id }}">{{ $i + 1 }}</td>
                                                 <td>
                                                     @if ($operation->old_variation ?? false)
-                                                        <strong>{{ $operation->old_variation->sku }}</strong>{{ " - " . $operation->old_variation->product->model . " - " . (isset($operation->old_variation->storage_id)?$operation->old_variation->storage_id->name . " - " : null) . (isset($operation->old_variation->color_id)?$operation->old_variation->color_id->name. " - ":null)}} <strong><u>{{ $operation->old_variation->grade_id->name }}</u></strong>
+                                                        <strong>{{ $operation->old_variation->sku }}</strong>{{ " - " . $operation->old_variation->product->model . " - " . (isset($operation->old_variation->storage_id)?$operation->old_variation->storage_id->name . " - " : null) . (isset($operation->old_variation->color_id)?$operation->old_variation->color_id->name. " - ":null)}} <strong><u>{{ (isset($operation->old_variation->grade_id)?$operation->old_variation->grade_id->name:null)}} </u></strong>
                                                     @endif
                                                 </td>
                                                 <td>

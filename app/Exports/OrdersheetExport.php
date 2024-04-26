@@ -37,6 +37,7 @@ class OrdersheetExport implements FromCollection, WithHeadings
             'orders.created_at as date'
         )
         ->where('orders.status', 3)
+        ->where('orders.deleted_at',null)
         ->when(request('start_date') != '', function ($q) {
             return $q->where('orders.created_at', '>=', request('start_date', 0));
         })

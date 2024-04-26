@@ -63,9 +63,12 @@
                     {{-- <div class="card-header">
                         <h4 class="card-title mb-1">Model</h4>
                     </div> --}}
-                    <select name="product" class="form-control form-select" data-bs-placeholder="Select Model" id="product-menu" onchange="selectProduct(this.value)">
-                        <option value="">Model</option>
-                    </select>
+                    <div class="form-floating">
+                        <input type="text" name="product" class="form-control" data-bs-placeholder="Select Model" list="product-menu">
+                        <label for="product">Product</label>
+                    </div>
+                    <datalist id="product-menu">
+                    </datalist>
                 </div>
                 <div class="col-md col-sm-2">
                     {{-- <div class="card-header">
@@ -182,6 +185,24 @@
                 <center><h4>Inventory</h4></center>
             </div>
         </div>
+        <br>
+        <div class="d-flex justify-content-between">
+            <div class="">
+                Vendor wise average:
+            </div>
+            <div class="d-flex">
+                <button class="btn btn-sm btn-secondary pd-x-20 " type="submit" form="export" name="inventorysheet" value="1">Export Sheet</button>
+            </div>
+        </div>
+        <form id="export" method="POST" target="_blank" action="{{url(session('url').'inventory/export')}}">
+            @csrf
+            <input type="hidden" name="category" value="{{ Request::get('category') }}">
+            <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
+            <input type="hidden" name="product" value="{{ Request::get('product') }}">
+            <input type="hidden" name="storage" value="{{ Request::get('storage') }}">
+            <input type="hidden" name="grade" value="{{ Request::get('grade') }}">
+            <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
+        </form>
         <br>
         <div class="row">
             <div class="col-xl-12">

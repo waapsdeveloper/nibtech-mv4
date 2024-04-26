@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Exports\InventorysheetExport;
 use Livewire\Component;
 use App\Models\Color_model;
 use App\Models\Storage_model;
@@ -11,6 +12,7 @@ use App\Models\Brand_model;
 use App\Models\Stock_model;
 use App\Models\Products_model;
 use App\Models\Variation_model;
+use Maatwebsite\Excel\Facades\Excel;
 
 class Inventory extends Component
 {
@@ -121,5 +123,10 @@ class Inventory extends Component
 
         Products_model::where('id', $id)->update(request('update'));
         return redirect()->back();
+    }
+
+    public function export(){
+
+        return Excel::download(new InventorysheetExport, 'inventory.xlsx');
     }
 }

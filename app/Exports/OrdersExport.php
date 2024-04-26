@@ -28,6 +28,7 @@ class OrdersExport
                 'grade.name as grade_name',
                 // DB::raw('SUM(order_items.quantity) as total_quantity')
             )
+            ->where('orders.deleted_at',null)
             ->when(request('start_date') != '', function ($q) {
                 return $q->where('orders.created_at', '>=', request('start_date', 0));
             })
