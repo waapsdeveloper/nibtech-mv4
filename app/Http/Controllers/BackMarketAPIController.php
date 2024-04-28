@@ -51,6 +51,38 @@ class BackMarketAPIController extends Controller
 
         return json_decode($response);
     }
+    public function requestPatch($end_point, $patch_data){
+        if(substr($end_point, 0, 1) === '/') {
+            $end_point = substr($end_point, 1);
+        }
+
+        $api_call_data['Content-Type'] = 'application/json';
+        $api_call_data['Accept'] = 'application/json';
+        $api_call_data['Accept-Language'] = self::$COUNTRY_CODE;
+        $api_call_data['Authorization'] = 'Basic ' . self::$YOUR_ACCESS_TOKEN;
+        $api_call_data['User-Agent'] = self::$YOUR_USER_AGENT;
+
+        $headers = [];
+        foreach($api_call_data as $key => $value) {
+            array_push($headers, "$key:$value");
+        }
+
+        $target_url = self::$base_url . $end_point;
+
+        // Specify the URL
+        $url = "https://www.backmarket.fr/ws/sav";
+
+        // Basic Authorization Header
+        $authorizationHeader = "Basic YmFlNDFiOWI5OTZiOGE0YjYyZGU3NjpCTVQtOGI3NjRmYThjMDhhOTYwMGIwYTFkYmUyYjA3NjEyNGY2M2I4NzZiNg==";
+
+        // Make the PATCH request
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json', // Set the Content-Type header to JSON
+            'Authorization' => 'Bearer YOUR_ACCESS_TOKEN', // Add authorization token/header if required
+        ])->patch($target_url, $patch_data);
+
+        return json_decode($response);
+    }
     public function apiGet($end_point) {
         if(substr($end_point, 0, 1) === '/') {
             $end_point = substr($end_point, 1);
@@ -207,7 +239,7 @@ class BackMarketAPIController extends Controller
 
         // echo $end_point."\n";
         // echo $request_JSON;
-        $result = $this->apiPatch($end_point, $request_JSON);
+        $result = $this->requestPatch($end_point, $request_shipping);
 
         return $result;
     }

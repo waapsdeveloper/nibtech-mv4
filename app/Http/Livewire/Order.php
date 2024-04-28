@@ -294,6 +294,7 @@ class Order extends Component
         // dd(request('purchase'));
         $purchase = (object) request('purchase');
         $error = "";
+        $missing = [];
         // Validate the uploaded file
         request()->validate([
             'purchase.sheet' => 'required|file|mimes:xlsx,xls',
@@ -380,7 +381,7 @@ class Order extends Component
             //     array_pop($names);
             //     $n = implode(" ", $names);
             // }
-            if(in_array(strtolower($n), array_map('strtolower',$products))){
+            if(in_array(strtolower($n), array_map('strtolower',$products)) && ($i != null || $s != null)){
                 $product = array_search(strtolower($n), array_map('strtolower',$products));
                 $storage = $gb;
 
@@ -399,10 +400,7 @@ class Order extends Component
                 $stock->status = 1;
                 $stock->save();
 
-                $order_item = new Order_item_model();
-                $order_item->order_id = $order->id;
-                $order_item->variation_id = $variation->id;
-                $order_item->stock_id = $stock->id;
+                $order_item = Order_item_model::firstOrNew(['order_id' => $order->id, 'variation_id' => $variation->id, 'stock_id' => $stock->id]);
                 $order_item->quantity = 1;
                 $order_item->price = $c;
                 $order_item->status = 3;
@@ -411,9 +409,13 @@ class Order extends Component
 
 
             }else{
-                if(isset($storages[$gb])){$s = $storages[$gb];}else{$s = null;}
+                if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
                 if($n != null){
-                    $error .= $n . " " . $s . " || ";
+                    $error .= $n . " " . $st . " " . $i.$s . " || ";
+                    $missing[$dr]['name'] = $n;
+                    $missing[$dr]['storage'] = $st;
+                    $missing[$dr]['imei'] = $i.$s;
+                    $missing[$dr]['cost'] = $c;
                 }
             }
 
@@ -424,6 +426,7 @@ class Order extends Component
         if($error != ""){
 
             session()->put('error', $error);
+            session()->put('missing', $missing);
         }
         return redirect(url('purchase/detail').'/'.$order->id);
     }
@@ -933,8 +936,8 @@ class Order extends Component
             $pdfExport = new OrdersExport();
             $pdfExport->generatePdf();
         }
-        if(request('ordersheet') != null){
-            return Excel::download(new OrdersheetExport, 'orders.xlsx');
+            if(request('ordersheet') != null){
+                return Excel::download(new OrdersheetExport, 'orders.xlsx');
             // echo "<script>window.close();</script>";
         }
         if(request('picklist') != null){
