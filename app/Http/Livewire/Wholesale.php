@@ -344,7 +344,8 @@ class Wholesale extends Component
         if(!$name){
             print_r($dh);
             session()->put('error', "Heading not Found(name, imei)");
-            return redirect()->back();
+            // return redirect()->back();
+            die;
         }
         // echo $name;
         $imei = array_search('imei', $arrayLower);
