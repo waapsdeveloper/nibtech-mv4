@@ -40,6 +40,10 @@ class Order_model extends Model
     {
         return $this->hasMany(Order_item_model::class, 'order_id', 'id');
     }
+    public function order_issues()
+    {
+        return $this->hasMany(Order_issue_model::class, 'order_id', 'id');
+    }
     public function process()
     {
         return $this->hasMany(Process_model::class, 'order_id', 'id');

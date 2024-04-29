@@ -363,10 +363,6 @@
                                                     @isset($order->processed_by) | {{ $order->admin->first_name[0] }} | @endisset
                                                     @isset($item->stock->tester) ({{ $item->stock->tester }}) @endisset
 
-                                                    @if ((count($items) >= 2 || $item->quantity > 1) && $user_id == 1)
-
-                                                    <a class="text-danger" href="{{url(session('url').'order')}}/delete_item/{{ $item->id }}">Delete</a>
-                                                    @endif
                                                 </td>
                                                 @if ($item->quantity > 1 && $item->stock_id != null)
                                                 @php

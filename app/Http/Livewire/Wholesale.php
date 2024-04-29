@@ -14,6 +14,7 @@ use App\Models\Customer_model;
 use App\Models\Currency_model;
 use App\Models\Color_model;
 use App\Models\Grade_model;
+use App\Models\Order_issue_model;
 use App\Models\Storage_model;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
@@ -87,21 +88,15 @@ class Wholesale extends Component
                 // Access the variation through orderItem->stock->variation
                 $variation = $orderItem->stock->variation;
 
-                // If a variation record exists and either product_id or sku is not null
-                if ($variation->stock == 1 && $variation->product_id == null && $variation->sku == null) {
-                    // Decrement the stock by 1
-
-                    // Save the variation record
-                    $variation->delete();
-                } else {
-                    $variation->stock += 1;
-                    // No variation record found or product_id and sku are both null, delete the order item
-                }
-                Stock_model::find($orderItem->stock_id)->delete();
+                $variation->stock += 1;
+                Stock_model::find($orderItem->stock_id)->update([
+                    'status' => 1
+                ]);
             }
             $orderItem->delete();
         }
         Order_model::where('id',$order_id)->delete();
+        Order_issue_model::where('order_id',$order_id)->delete();
         session()->put('success', 'Order deleted successfully');
         return redirect()->back();
     }
@@ -154,6 +149,17 @@ class Wholesale extends Component
             return $variation->stocks->isNotEmpty();
         });
 
+        $order_issues = Order_issue_model::where('order_id',$order_id)->select(
+            DB::raw('JSON_UNQUOTE(JSON_EXTRACT(data, "$.name")) AS name'),
+            'message',
+            DB::raw('COUNT(*) as count'),
+            DB::raw('GROUP_CONCAT(JSON_OBJECT("id", id, "order_id", order_id, "data", data, "message", message, "created_at", created_at, "updated_at", updated_at)) AS all_rows')
+        )
+        ->groupBy('name', 'message')
+        ->get();
+        // dd($order_issues);
+
+        $data['order_issues'] = $order_issues;
 
         $data['variations'] = $variations;
         $last_ten = Order_item_model::where('order_id',$order_id)->orderBy('id','desc')->limit(10)->get();
@@ -309,7 +315,185 @@ class Wholesale extends Component
         return redirect(url('wholesale/detail').'/'.$order_id);
         // return redirect()->back();
     }
+    public function add_wholesale_sheet($order_id){
+        $issue = [];
+        $storages = Storage_model::pluck('name','id')->toArray();
 
+        $products = Products_model::pluck('model','id')->toArray();
+        request()->validate([
+            'sheet' => 'required|file|mimes:xlsx,xls',
+        ]);
+
+        // Store the uploaded file in a temporary location
+        $filePath = request()->file('sheet')->store('temp');
+
+        // // Perform operations on the Excel file
+        // $spreadsheet = IOFactory::load(storage_path('app/'.$filePath));
+        // // Perform your operations here...
+
+        // Replace 'your-excel-file.xlsx' with the actual path to your Excel file
+        $excelFilePath = storage_path('app/'.$filePath);
+
+        $data = Excel::toArray([], $excelFilePath)[0];
+        $dh = $data[0];
+        // print_r($dh);
+        unset($data[0]);
+        $arrayLower = array_map('strtolower', $dh);
+        // Search for the lowercase version of the search value in the lowercase array
+        $name = array_search('name', $arrayLower);
+        if(!$name){
+            print_r($dh);
+            session()->put('error', "Heading not Found(name, imei)");
+            return redirect()->back();
+        }
+        // echo $name;
+        $imei = array_search('imei', $arrayLower);
+        // echo $imei;
+
+
+        foreach($data as $dr => $d){
+            // $name = ;
+            // echo $dr." ";
+            // print_r($d);
+            $n = trim($d[$name]);
+            if(ctype_digit($d[$imei])){
+                $i = $d[$imei];
+                $s = null;
+            }else{
+                $i = null;
+                $s = $d[$imei];
+            }
+            if(trim($d[$imei]) == ''){
+                continue;
+            }
+            if(trim($n) == ''){
+                continue;
+            }
+            $names = explode(" ",$n);
+            $last = end($names);
+            if(in_array($last, $storages)){
+                $gb = array_search($last,$storages);
+                array_pop($names);
+                $n = implode(" ", $names);
+            }else{
+                $gb = null;
+            }
+            // $last2 = end($names);
+            // if($last2 == "5G"){
+            //     array_pop($names);
+            //     $n = implode(" ", $names);
+            // }
+
+
+            if(in_array(strtolower($n), array_map('strtolower',$products)) && ($i != null || $s != null)){
+                $product = array_search(strtolower($n), array_map('strtolower',$products));
+                $storage = $gb;
+
+                // echo $product." ".$grade." ".$storage." | ";
+
+
+                $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
+                if($stock == null ){
+                    if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
+                    $issue[$dr]['data']['row'] = $dr;
+                    $issue[$dr]['data']['name'] = $n;
+                    $issue[$dr]['data']['storage'] = $st;
+                    $issue[$dr]['data']['imei'] = $i.$s;
+                    $issue[$dr]['message'] = 'Stock Not Found';
+
+                    continue;
+
+
+                }
+                $variation = Variation_model::where(['id' => $stock->variation_id])->first();
+
+                $variation_2 = Variation_model::where(['product_id' => $product, 'storage' => $storage])->pluck('id')->toArray();
+                if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
+                if($variation_2 == []){
+
+                    $issue[$dr]['data']['row'] = $dr;
+                    $issue[$dr]['data']['name'] = $n;
+                    $issue[$dr]['data']['storage'] = $st;
+                    $issue[$dr]['data']['imei'] = $i.$s;
+                    $issue[$dr]['message'] = 'Product name not found';
+                }elseif(!in_array($variation->id, $variation_2)){
+
+                    $issue[$dr]['data']['row'] = $dr;
+                    $issue[$dr]['data']['name'] = $n;
+                    $issue[$dr]['data']['storage'] = $st;
+                    $issue[$dr]['data']['imei'] = $i.$s;
+                    $issue[$dr]['message'] = 'Variation not matched';
+
+                }elseif($stock->id != null && $stock->status == 2){
+                    $issue[$dr]['data']['row'] = $dr;
+                    $issue[$dr]['data']['name'] = $n;
+                    $issue[$dr]['data']['storage'] = $st;
+                    $issue[$dr]['data']['imei'] = $i.$s;
+                    if($stock->order_id == $order_id){
+                        $issue[$dr]['message'] = 'Item Already Sold in this order';
+                    }else{
+                        $issue[$dr]['message'] = 'Item Already Sold';
+                    }
+
+
+                }elseif($stock->id == null ){
+                    if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
+                    $issue[$dr]['data']['row'] = $dr;
+                    $issue[$dr]['data']['name'] = $n;
+                    $issue[$dr]['data']['storage'] = $st;
+                    $issue[$dr]['data']['imei'] = $i.$s;
+                    $issue[$dr]['message'] = 'Stock Not Found';
+
+
+
+                }else{
+                    $stock->status = 2;
+                    $stock->save();
+
+                    $variation->stock -= 1;
+                    $variation->save();
+
+                    $order_item = Order_item_model::firstOrNew(['order_id' => $order_id, 'variation_id' => $variation->id, 'stock_id' => $stock->id]);
+                    $order_item->quantity = 1;
+                    $order_item->price = $stock->purchase_item->price;
+                    $order_item->status = 3;
+                    $order_item->save();
+
+
+
+                }
+
+            }else{
+                if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
+                if($n != null){
+                    $issue[$dr]['data']['row'] = $dr;
+                    $issue[$dr]['data']['name'] = $n;
+                    $issue[$dr]['data']['storage'] = $st;
+                    $issue[$dr]['data']['imei'] = $i.$s;
+                    if($i == null && $s == null){
+                        $issue[$dr]['message'] = 'IMEI/Serial Not Found';
+                    }else{
+                        $issue[$dr]['message'] = 'Product Name Not Found';
+                    }
+
+                }
+            }
+
+        }
+
+
+        if($issue != []){
+            foreach($issue as $row => $datas){
+                Order_issue_model::create([
+                    'order_id' => $order_id,
+                    'data' => json_encode($datas['data']),
+                    'message' => $datas['message'],
+                ]);
+            }
+        }
+
+        return redirect()->back();
+    }
 
     public function export_bulksale_invoice($order_id)
     {

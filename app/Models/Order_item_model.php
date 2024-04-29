@@ -17,6 +17,9 @@ class Order_item_model extends Model
     protected $fillable = [
         // other fields...
         'reference_id',
+        'order_id',
+        'variation_id',
+        'stock_id',
         'care_id',
         'price',
     ];
@@ -41,6 +44,10 @@ class Order_item_model extends Model
     public function childs()
     {
         return $this->hasMany(Process_model::class, 'linked_id');
+    }
+    public function purchase_grade()
+    {
+        return $this->hasOne(Purchase_grade_model::class, 'order_item_id', 'id');
     }
 
     public function updateOrderItemsInDB($orderObj, $tester = null, $bm)

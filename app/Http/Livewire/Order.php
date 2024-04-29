@@ -24,7 +24,8 @@ namespace App\Http\Livewire;
     use Maatwebsite\Excel\Facades\Excel;
     use TCPDF;
     use App\Mail\InvoiceMail;
-    use Illuminate\Support\Facades\Mail;
+use App\Models\Order_issue_model;
+use Illuminate\Support\Facades\Mail;
 
 
 class Order extends Component
@@ -141,72 +142,40 @@ class Order extends Component
     public function purchase()
     {
 
-        $user_id = session('user_id');
+        $data['latest_reference'] = Order_model::where('order_type_id',1)->orderBy('reference_id','DESC')->first()->reference_id;
         $data['vendors'] = Customer_model::where('is_vendor',1)->pluck('first_name','id');
         $data['order_statuses'] = Order_status_model::get();
-            if(request('per_page') != null){
-                $per_page = request('per_page');
-            }else{
-                $per_page = 10;
-            }
-            switch (request('sort')){
-                case 2: $sort = "orders.reference_id"; $by = "ASC"; break;
-                case 3: $sort = "variation.name"; $by = "DESC"; break;
-                case 4: $sort = "variation.name"; $by = "ASC"; break;
-                default: $sort = "orders.reference_id"; $by = "DESC";
-            }
-            // $data['orders'] = Order_model::select(
-            //     'orders.id',
-            //     'orders.reference_id',
-            //     'orders.customer_id',
-            //     DB::raw('SUM(order_items.price) as total_price'),
-            //     DB::raw('COUNT(order_items.id) as total_quantity'),
-            //     DB::raw('(SELECT COUNT(order_items.id) FROM order_items INNER JOIN stock ON order_items.stock_id = stock.id WHERE order_items.order_id = orders.id AND stock.status = 1) as available_stock'),
-            //     'orders.created_at')
-            // ->where('orders.order_type_id',1)
-            // ->join('order_items', 'orders.id', '=', 'order_items.order_id')
+        if(request('per_page') != null){
+            $per_page = request('per_page');
+        }else{
+            $per_page = 20;
+        }
 
-            // ->when(request('start_date') != '', function ($q) {
-            //     return $q->where('orders.created_at', '>=', request('start_date', 0));
-            // })
-            // ->when(request('end_date') != '', function ($q) {
-            //     return $q->where('orders.created_at', '<=', request('end_date', 0) . " 23:59:59");
-            // })
-            // ->when(request('order_id') != '', function ($q) {
-            //     return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
-            // })
-            // ->groupBy('orders.id', 'orders.reference_id', 'orders.customer_id', 'orders.currency', 'orders.created_at')
-            // ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
-            // // ->select('orders.*')
-            // ->paginate($per_page)
-            // ->onEachSide(5)
-            // ->appends(request()->except('page'));
-
-            $data['orders'] = Order_model::select(
-                'orders.id',
-                'orders.reference_id',
-                'orders.customer_id',
-                DB::raw('SUM(order_items.price) as total_price'),
-                DB::raw('COUNT(order_items.id) as total_quantity'),
-                DB::raw('COUNT(CASE WHEN stock.status = 1 THEN order_items.id END) as available_stock'),
-                'orders.created_at')
-            ->where('orders.order_type_id', 1)
-            ->join('order_items', 'orders.id', '=', 'order_items.order_id')
-            ->join('stock', 'order_items.stock_id', '=', 'stock.id')
-            ->when(request('start_date'), function ($q) {
-                return $q->where('orders.created_at', '>=', request('start_date'));
-            })
-            ->when(request('end_date'), function ($q) {
-                return $q->where('orders.created_at', '<=', request('end_date') . " 23:59:59");
-            })
-            ->when(request('order_id'), function ($q) {
-                return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
-            })
-            ->groupBy('orders.id', 'orders.reference_id', 'orders.customer_id', 'orders.created_at')
-            ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
-            ->paginate($per_page)
-            ->onEachSide(5)
-            ->appends(request()->except('page'));
+        $data['orders'] = Order_model::select(
+            'orders.id',
+            'orders.reference_id',
+            'orders.customer_id',
+            DB::raw('SUM(order_items.price) as total_price'),
+            DB::raw('COUNT(order_items.id) as total_quantity'),
+            DB::raw('COUNT(CASE WHEN stock.status = 1 THEN order_items.id END) as available_stock'),
+            'orders.created_at')
+        ->where('orders.order_type_id', 1)
+        ->join('order_items', 'orders.id', '=', 'order_items.order_id')
+        ->join('stock', 'order_items.stock_id', '=', 'stock.id')
+        ->when(request('start_date'), function ($q) {
+            return $q->where('orders.created_at', '>=', request('start_date'));
+        })
+        ->when(request('end_date'), function ($q) {
+            return $q->where('orders.created_at', '<=', request('end_date') . " 23:59:59");
+        })
+        ->when(request('order_id'), function ($q) {
+            return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
+        })
+        ->groupBy('orders.id', 'orders.reference_id', 'orders.customer_id', 'orders.created_at')
+        ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
+        ->paginate($per_page)
+        ->onEachSide(5)
+        ->appends(request()->except('page'));
 
 
         // dd($data['orders']);
@@ -235,6 +204,7 @@ class Order extends Component
             $orderItem->delete();
         }
         Order_model::where('id',$order_id)->delete();
+        Order_issue_model::where('order_id',$order_id)->delete();
         return redirect()->back();
     }
     public function delete_order_item($item_id){
@@ -272,8 +242,22 @@ class Order extends Component
         ->orderBy('grade', 'desc')
         ->get();
 
-        $data['missing_stock'] = Order_item_model::where(['order_id'=>$order_id,'stock_id'=>null])->get();
+        $data['missing_stock'] = Order_item_model::where('order_id',$order_id)->whereHas('stock',function ($q) {
+            $q->where(['imei'=>null,'serial_number'=>null]);
+        })->get();
+        // $order_issues = Order_issue_model::where('order_id',$order_id)->orderBy('message','ASC')->get();
+        $order_issues = Order_issue_model::where('order_id',$order_id)->select(
+            DB::raw('JSON_UNQUOTE(JSON_EXTRACT(data, "$.name")) AS name'),
+            'message',
+            DB::raw('COUNT(*) as count'),
+            DB::raw('GROUP_CONCAT(JSON_OBJECT("id", id, "order_id", order_id, "data", data, "message", message, "created_at", created_at, "updated_at", updated_at)) AS all_rows')
+        )
+        ->groupBy('name', 'message')
+        ->get();
+        // dd($order_issues);
 
+        $data['order_issues'] = $order_issues;
+        // dd($data['missing_stock']);
         $data['all_variations'] = Variation_model::where('grade',9)->get();
         $data['order'] = Order_model::find($order_id);
         $data['order_id'] = $order_id;
@@ -294,7 +278,7 @@ class Order extends Component
         // dd(request('purchase'));
         $purchase = (object) request('purchase');
         $error = "";
-        $missing = [];
+        $issue = [];
         // Validate the uploaded file
         request()->validate([
             'purchase.sheet' => 'required|file|mimes:xlsx,xls',
@@ -349,7 +333,7 @@ class Order extends Component
             // $name = ;
             // echo $dr." ";
             // print_r($d);
-            $n = $d[$name];
+            $n = trim($d[$name]);
             if(ctype_digit($d[$imei])){
                 $i = $d[$imei];
                 $s = null;
@@ -388,12 +372,129 @@ class Order extends Component
                 // echo $product." ".$grade." ".$storage." | ";
 
                 $variation = Variation_model::firstOrNew(['product_id' => $product, 'grade' => $grade, 'storage' => $storage]);
+                $stock = Stock_model::firstOrNew(['imei' => $i, 'serial_number' => $s]);
+                if($stock->id != null && $stock->status == 1){
+                    if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
+                    $issue[$dr]['data']['row'] = $dr;
+                    $issue[$dr]['data']['name'] = $n;
+                    $issue[$dr]['data']['storage'] = $st;
+                    $issue[$dr]['data']['imei'] = $i.$s;
+                    $issue[$dr]['data']['cost'] = $c;
+                    if($stock->order_id == $order->id){
+                        $issue[$dr]['message'] = 'Item Already added in this order';
+                    }else{
+                        if($stock->status != 2){
+                            $issue[$dr]['message'] = 'Item already available in inventory under order reference '.$stock->order->reference_id;
+                        }else{
+                            $issue[$dr]['message'] = 'Item Previously purchased in order reference '.$stock->order->reference_id;
+                        }
+
+                    }
+
+
+                }else{
+                    $variation->stock += 1;
+                    $variation->status = 1;
+                    $variation->save();
+
+                    $stock->product_id = $product;
+                    $stock->variation_id = $variation->id;
+                    $stock->added_by = session('user_id');
+                    $stock->order_id = $order->id;
+                    $stock->status = 1;
+                    $stock->save();
+
+                    $order_item = Order_item_model::firstOrNew(['order_id' => $order->id, 'variation_id' => $variation->id, 'stock_id' => $stock->id]);
+                    $order_item->quantity = 1;
+                    $order_item->price = $c;
+                    $order_item->status = 3;
+                    $order_item->save();
+
+                }
+
+            }else{
+                if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
+                if($n != null){
+                    $error .= $n . " " . $st . " " . $i.$s . " || ";
+                    $issue[$dr]['data']['row'] = $dr;
+                    $issue[$dr]['data']['name'] = $n;
+                    $issue[$dr]['data']['storage'] = $st;
+                    $issue[$dr]['data']['imei'] = $i.$s;
+                    $issue[$dr]['data']['cost'] = $c;
+                    if($i == null && $s == null){
+                        $issue[$dr]['message'] = 'IMEI/Serial Not Found';
+                    }else{
+                        $issue[$dr]['message'] = 'Product Name Not Found';
+                    }
+
+                }
+            }
+
+        }
+
+        // Delete the temporary file
+        // Storage::delete($filePath);
+        if($error != ""){
+
+            session()->put('error', $error);
+            session()->put('missing', $issue);
+        }
+        if($issue != []){
+            foreach($issue as $row => $datas){
+                Order_issue_model::create([
+                    'order_id' => $order->id,
+                    'data' => json_encode($datas['data']),
+                    'message' => $datas['message'],
+                ]);
+            }
+        }
+        return redirect(url('purchase/detail').'/'.$order->id);
+    }
+    private function insert_purchase_item($products, $storages, $order, $n, $c, $i, $s, $g = null, $dr = null){
+
+        $names = explode(" ",$n);
+        $last = end($names);
+        if(in_array($last, $storages)){
+            $gb = array_search($last,$storages);
+            array_pop($names);
+            $n = implode(" ", $names);
+        }else{
+            $gb = 0;
+        }
+
+        $stock = Stock_model::firstOrNew(['imei' => $i, 'serial_number' => $s]);
+        if($stock->id != null){
+            if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
+            $issue['data']['row'] = $dr;
+            $issue['data']['name'] = $n;
+            $issue['data']['storage'] = $st;
+            $issue['data']['imei'] = $i.$s;
+            $issue['data']['cost'] = $c;
+            $issue['data']['stock_id'] = $stock->id;
+            if($stock->order_id == $order->id && $stock->status == 1){
+                $issue['message'] = 'Duplicate IMEI';
+            }else{
+                if($stock->status != 2){
+                    $issue['message'] = 'IMEI Available In Inventory';
+                }else{
+                    $issue['message'] = 'IMEI Repurchase';
+                }
+            }
+
+        }else{
+            if(in_array(strtolower($n), array_map('strtolower',$products)) && ($i != null || $s != null)){
+                $product = array_search(strtolower($n), array_map('strtolower',$products));
+                $storage = $gb;
+
+                // echo $product." ".$grade." ".$storage." | ";
+
+                $variation = Variation_model::firstOrNew(['product_id' => $product, 'grade' => 9, 'storage' => $storage]);
+
                 $variation->stock += 1;
                 $variation->status = 1;
                 $variation->save();
 
-                $stock = Stock_model::firstOrNew(['imei' => $i, 'serial_number' => $s]);
-                $stock->variation_id = $product;
+                $stock->product_id = $product;
                 $stock->variation_id = $variation->id;
                 $stock->added_by = session('user_id');
                 $stock->order_id = $order->id;
@@ -407,28 +508,35 @@ class Order extends Component
                 $order_item->save();
 
 
-
             }else{
                 if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
                 if($n != null){
-                    $error .= $n . " " . $st . " " . $i.$s . " || ";
-                    $missing[$dr]['name'] = $n;
-                    $missing[$dr]['storage'] = $st;
-                    $missing[$dr]['imei'] = $i.$s;
-                    $missing[$dr]['cost'] = $c;
+                    $error = $n . " " . $st . " " . $i.$s . " || ";
+                    $issue['data']['row'] = $dr;
+                    $issue['data']['name'] = $n;
+                    $issue['data']['storage'] = $st;
+                    $issue['data']['imei'] = $i.$s;
+                    $issue['data']['cost'] = $c;
+                    $issue['data']['stock_id'] = '';
+                    if($i == null && $s == null){
+                        $issue['message'] = 'IMEI Not Found';
+                    }else{
+                        $issue['message'] = 'Product Name Not Accepted';
+                    }
+
                 }
             }
-
         }
 
-        // Delete the temporary file
-        // Storage::delete($filePath);
-        if($error != ""){
 
-            session()->put('error', $error);
-            session()->put('missing', $missing);
+        if($issue != []){
+            Order_issue_model::create([
+                'order_id' => $order->id,
+                'data' => json_encode($issue['data']),
+                'message' => $issue['message'],
+            ]);
         }
-        return redirect(url('purchase/detail').'/'.$order->id);
+
     }
     public function add_purchase_item($order_id){
 
@@ -453,7 +561,7 @@ class Order extends Component
         $stock->added_by = session('user_id');
         $stock->order_id = $order_id;
         if($stock->id){
-            $stock->status = 2;
+            // $stock->status = 2;
         }else{
 
             $stock->product_id = $variation->product_id;
@@ -478,7 +586,13 @@ class Order extends Component
 
         return redirect()->back();
     }
+    public function remove_issues(){
+        // dd(request('ids'));
+        Order_issue_model::whereIn('id',request('ids'))->delete();
 
+        return redirect()->back();
+
+    }
     public function export_invoice($orderId)
     {
 
