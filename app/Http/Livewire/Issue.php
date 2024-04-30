@@ -41,7 +41,8 @@ class Issue extends Component
         foreach($items as $item){
             if($item->linked && $item->variation_id != $item->linked->variation_id &&
             $item->variation->product_id != $item->linked->variation->product_id &&
-            $item->variation->storage != $item->linked->variation->storage){
+            $item->variation->storage != $item->linked->variation->storage &&
+            $item->variation->product_id != 144 && $item->linked->variation->product_id != 229){
                 // print_r($item);
                 // print_r($item->stock);
                 // print_r($item->linked);
