@@ -45,7 +45,7 @@ class Order extends Component
     public function render()
     {
 
-        $data['last_hour'] = Carbon::now()->subHour(1);
+        $data['last_hour'] = Carbon::now()->subHour(2);
         $data['admins'] = Admin_model::where('id','!=',1)->get();
         $user_id = session('user_id');
         $data['user_id'] = $user_id;
@@ -956,7 +956,7 @@ class Order extends Component
     }
     public function correction(){
         $item = Order_item_model::find(request('correction')['item_id']);
-        if($item->order->processed_at > Carbon::now()->subHour(1) || session('user_id') == 1){
+        if($item->order->processed_at > Carbon::now()->subHour(2) || session('user_id') == 1){
 
             $imei = request('correction')['imei'];
             $serial_number = null;
