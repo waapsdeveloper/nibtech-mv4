@@ -262,7 +262,7 @@
 								</div>
 								<div class="card-body row">
 									@foreach ($graded_inventory as $inv)
-                                        <div class="col-md-4"><h6><a href="{{url(session('url').'inventory')}}?grade={{ $inv->grade_id }}" title="Go to orders page">{{ $inv->grade.": ".$inv->quantity }}</a></h6></div>
+                                        <div class="col-md-4"><h6><a href="{{url(session('url').'inventory')}}?grade={{ $inv->grade_id }}&status={{ $inv->status_id }}" title="Go to orders page">{{ $inv->grade.": ".$inv->quantity." ".$purchase_status[$inv->status_id] }}</a></h6></div>
                                     @endforeach
 								</div>
 							</div>

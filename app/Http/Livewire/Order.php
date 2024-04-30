@@ -183,6 +183,11 @@ class Order extends Component
     }
     public function delete_order($order_id){
 
+        $stock = Stock_model::where(['order_id'=>$order_id,'status'=>2])->first();
+        if($stock != null){
+            session()->put('error', "Order cannot be deleted");
+            return redirect()->back();
+        }
         $items = Order_item_model::where('order_id',$order_id)->get();
         foreach($items as $orderItem){
             if($orderItem->stock){
@@ -199,7 +204,14 @@ class Order extends Component
                     $variation->stock -= 1;
                     // No variation record found or product_id and sku are both null, delete the order item
                 }
-                Stock_model::find($orderItem->stock_id)->delete();
+                $stock = Stock_model::find($orderItem->stock_id);
+                if($stock->status == 1){
+                    $stock->delete();
+                }else{
+                    $stock->order_id = null;
+                    $stock->status = null;
+                    $stock->save();
+                }
             }
             $orderItem->delete();
         }
@@ -211,6 +223,10 @@ class Order extends Component
 
         $orderItem = Order_item_model::find($item_id);
 
+        if($orderItem->stock->status == 2){
+            session()->put('error', "Order Item cannot be deleted");
+            return redirect()->back();
+        }
         // Access the variation through orderItem->stock->variation
         $variation = $orderItem->stock->variation;
 
@@ -220,7 +236,15 @@ class Order extends Component
         // No variation record found or product_id and sku are both null, delete the order item
 
         // $orderItem->stock->delete();
-        Stock_model::find($orderItem->stock_id)->delete();
+        $stock = Stock_model::find($orderItem->stock_id);
+        if($stock->status == 1){
+            $stock->delete();
+        }else{
+            $stock->order_id = null;
+            $stock->status = null;
+            $stock->save();
+        }
+
         $orderItem->delete();
 
         return redirect()->back();
@@ -316,7 +340,7 @@ class Order extends Component
 
         $order = Order_model::firstOrNew(['reference_id' => $purchase->reference_id, 'order_type_id' => $purchase->type ]);
         $order->customer_id = $purchase->vendor;
-        $order->status = $purchase->status;
+        $order->status = 2;
         $order->currency = 4;
         $order->order_type_id = $purchase->type;
         $order->processed_by = session('user_id');
@@ -381,12 +405,12 @@ class Order extends Component
                     $issue[$dr]['data']['imei'] = $i.$s;
                     $issue[$dr]['data']['cost'] = $c;
                     if($stock->order_id == $order->id){
-                        $issue[$dr]['message'] = 'Item Already added in this order';
+                        $issue[$dr]['message'] = 'Item already added in this order';
                     }else{
                         if($stock->status != 2){
                             $issue[$dr]['message'] = 'Item already available in inventory under order reference '.$stock->order->reference_id;
                         }else{
-                            $issue[$dr]['message'] = 'Item Previously purchased in order reference '.$stock->order->reference_id;
+                            $issue[$dr]['message'] = 'Item previously purchased in order reference '.$stock->order->reference_id;
                         }
 
                     }
@@ -694,6 +718,10 @@ class Order extends Component
                         session()->put('error', "Stock Already Sold");
                         return redirect()->back();
                     }
+                    if($stock[$i]->order->status == 2){
+                        session()->put('error', "Stock List Awaiting Approval");
+                        return redirect()->back();
+                    }
                     if($stock[$i]){
                         if($stock[$i]->variation->storage != null){
                             $storage = $stock[$i]->variation->storage_id->name . " - ";
@@ -725,6 +753,10 @@ class Order extends Component
                     }
                     if($stock[$i]->status != 1){
                         session()->put('error', "Stock Already Sold");
+                        return redirect()->back();
+                    }
+                    if($stock[$i]->order->status == 2){
+                        session()->put('error', "Stock List Awaiting Approval");
                         return redirect()->back();
                     }
                     if($stock[$i]){

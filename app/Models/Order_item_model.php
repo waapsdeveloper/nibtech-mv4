@@ -39,17 +39,16 @@ class Order_item_model extends Model
 
     public function linked()
     {
-        return $this->belongsTo(Process_model::class, 'linked_id');
+        return $this->belongsTo(Order_item_model::class, 'linked_id');
     }
     public function childs()
     {
-        return $this->hasMany(Process_model::class, 'linked_id');
+        return $this->hasMany(Order_item_model::class, 'linked_id');
     }
     public function purchase_grade()
     {
         return $this->hasOne(Purchase_grade_model::class, 'order_item_id', 'id');
     }
-
     public function updateOrderItemsInDB($orderObj, $tester = null, $bm)
     {
         // Your implementation here

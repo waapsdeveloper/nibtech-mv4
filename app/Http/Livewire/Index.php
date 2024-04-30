@@ -31,7 +31,7 @@ class Index extends Component
         }else{
             $per_page = 10;
         }
-
+        $data['purchase_status'] = [2 => '(Pending)', 3 => ''];
         $data['products'] = Products_model::orderBy('model','asc')->get();
         $data['colors'] = Color_model::all();
         $data['storages'] = Storage_model::all();
@@ -67,11 +67,12 @@ class Index extends Component
         $data['pending_orders'] = Order_model::where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date)->where('order_type_id',3)->where('status','<',3)->count();
         $data['total_conversations'] = Order_item_model::where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date)->where('care_id','!=',null)->count();
 
-        $data['graded_inventory'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', DB::raw('COUNT(*) as quantity'))
+        $data['graded_inventory'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', 'orders.status as status_id', DB::raw('COUNT(*) as quantity'))
         ->where('stock.status', '!=', 2)
         ->join('variation', 'stock.variation_id', '=', 'variation.id')
         ->join('grade', 'variation.grade', '=', 'grade.id')
-        ->groupBy('variation.grade', 'grade.name')
+        ->join('orders', 'stock.order_id', '=', 'orders.id')
+        ->groupBy('variation.grade', 'grade.name', 'orders.status')
         ->orderBy('grade_id')
         ->get();
 

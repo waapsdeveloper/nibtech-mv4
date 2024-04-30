@@ -17,6 +17,7 @@ use App\Http\Livewire\Signin;
 use App\Http\Livewire\Order;
 use App\Http\Livewire\Wholesale;
 use App\Http\Livewire\Inventory;
+use App\Http\Livewire\Issue;
 use App\Http\Livewire\Product;
 use App\Http\Livewire\Variation;
 use App\Http\Livewire\Process;
@@ -87,6 +88,8 @@ Route::post('rma/update_prices', [RMA::class,'update_prices'])->name('update_rma
 Route::get('export_rma_invoice/{id}', [RMA::class,'export_rma_invoice'])->name('rma_detail');
 
 Route::get('imei', IMEI::class)->name('view_imei');
+
+Route::get('issue', Issue::class)->name('view_issue');
 
 Route::get('move_inventory', MoveInventory::class)->name('move_inventory');
 Route::post('move_inventory/change_grade', [MoveInventory::class,'change_grade'])->name('move_inventory');

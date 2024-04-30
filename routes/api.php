@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ApiRequestController;
 use App\Http\Controllers\TestingController;
 use App\Models\Admin_model;
 use Illuminate\Http\Request;
@@ -30,5 +31,5 @@ use Illuminate\Support\Facades\Route;
 //     return response()->json('Hello');
 // });
 Route::group(['middleware' => ['auth:sanctum']], function () {
-    Route::resource('/testing', TestingController::class);
+    Route::resource('/request', ApiRequestController::class);
 });

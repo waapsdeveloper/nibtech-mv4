@@ -70,39 +70,38 @@
         <form action="{{ url('add_purchase_item').'/'.$order_id }}" method="POST">
             @csrf
             <div class="row">
-                <div class="col-lg-3 col-xl-3 col-md-4 col-sm-6">
-                    <div class="card-header">
-                        <h4 class="card-title">Variation</h4>
+                <div class="col-md col-sm-6">
+                    <div class="form-floating">
+                        <input type="text" list="variations" id="variation" name="variation" class="form-control" required>
+                        <datalist id="variations">
+                            <option value="">Select</option>
+                            @foreach ($all_variations as $variation)
+                                @php
+                                    if($variation->storage){
+                                        $storage = $storages[$variation->storage];
+                                    }else{
+                                        $storage = null;
+                                    }
+                                @endphp
+                                <option value="{{$variation->id}}" @if(isset($_GET['variation']) && $variation->id == $_GET['variation']) {{'selected'}}@endif>{{$variation->product->model." ".$storage}}</option>
+                            @endforeach
+                        </datalist>
+                        <label for="variation">Variation</label>
                     </div>
-                    <input type="text" list="variations" name="variation" class="form-control" required>
-                    <datalist id="variations">
-                        <option value="">Select</option>
-                        @foreach ($all_variations as $variation)
-                            @php
-                                if($variation->storage){
-                                    $storage = $storages[$variation->storage];
-                                }else{
-                                    $storage = null;
-                                }
-                            @endphp
-                            <option value="{{$variation->id}}" @if(isset($_GET['variation']) && $variation->id == $_GET['variation']) {{'selected'}}@endif>{{$variation->product->model." ".$storage}}</option>
-                        @endforeach
-                    </datalist>
                 </div>
-                <div class="col-lg-3 col-xl-3 col-md-4 col-sm-6">
-                    <div class="card-header">
-                        <h4 class="card-title">IMEI</h4>
+                <div class="col-md col-sm-6">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="imei" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" required>
+                        <label for="imei">IMEI</label>
                     </div>
-                    <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" required>
                 </div>
-                <div class="col-lg-3 col-xl-3 col-md-4 col-sm-6">
-                    <div class="card-header">
-                        <h4 class="card-title">Cost</h4>
+                <div class="col-md col-sm-6">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="price" name="price" placeholder="Enter Price" value="@isset($_GET['price']){{$_GET['price']}}@endisset" required>
+                        <label for="price">Cost</label>
                     </div>
-                    <input type="text" class="form-control" name="price" placeholder="Enter Price" value="@isset($_GET['price']){{$_GET['price']}}@endisset" required>
                 </div>
-                <div class="col-lg-3 col-xl-3 col-md-4 col-sm-6 align-self-end mb-1 tx-center">
-                    <h4>Add Purchased Item</h4>
+                <div class="col-md col-sm-6 align-self-end mb-1 tx-center">
                     <button class="btn btn-primary pd-x-20" type="submit">Insert</button>
                 </div>
             </div>

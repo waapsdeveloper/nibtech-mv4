@@ -64,7 +64,7 @@
                         <h4 class="card-title mb-1">Model</h4>
                     </div> --}}
                     <div class="form-floating">
-                        <input type="text" name="product" class="form-control" data-bs-placeholder="Select Model" list="product-menu">
+                        <input type="text" name="product" value="{{ Request::get('product') }}" class="form-control" data-bs-placeholder="Select Model" list="product-menu">
                         <label for="product">Product</label>
                     </div>
                     <datalist id="product-menu">
@@ -96,6 +96,7 @@
                 <a href="{{url(session('url').'inventory')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
             </div>
 
+            <input type="hidden" name="status" value="{{ Request::get('status') }}">
             <input type="hidden" name="page" value="{{ Request::get('page') }}">
             <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
         </form>
@@ -151,33 +152,6 @@
                     console.error('Please select a category first.');
                 }
             }
-            // function selectProduct(productId) {
-            //     // Use the selectedCategoryId variable here to fetch products based on both category and brand
-            //     if (selectedCategoryId !== null) {
-            //         fetch("{{ url(session('url').'inventory') }}/get_variations/" + productId)
-            //             .then(response => response.json())
-            //             .then(variations => {
-            //                 const variationMenu = document.getElementById('variation-menu');
-            //                 variationMenu.innerHTML = '<option value="">Select</option>'; // Clear existing variation menu items
-
-            //                 variations.forEach(variation => {
-            //                     const variationLink = document.createElement('option');
-            //                     variationLink.value = `${variation.id}`;
-            //                     variationLink.innerHTML =  colorData[variation.color] + ' ' + storageData[variation.storage] + ' ' + gradeData[variation.grade];
-            //                     @if (request('variation'))
-            //                         // Check if the request parameter matches the product's ID
-            //                         if (variation.id == {{ request('variation') }}) {
-            //                             variationLink.selected = true; // Set the 'selected' attribute
-            //                         }
-            //                     @endif
-            //                     variationMenu.appendChild(variationLink);
-            //                 });
-            //             })
-            //             .catch(error => console.error('Error fetching products:', error));
-            //     } else {
-            //         console.error('Please select a category first.');
-            //     }
-            // }
         </script>
 
         <div class="row">
@@ -186,11 +160,27 @@
             </div>
         </div>
         <br>
-        <div class="d-flex justify-content-between">
+
+        @if (session('user')->hasPermission('view_cost'))
             <div class="">
                 Vendor wise average:
+                @foreach ($vendor_average_cost as $v_cost)
+                    {{ $vendors[$v_cost->customer_id] }}:
+                    {{ number_format($v_cost->average_price,2) }} x
+                    {{ $v_cost->total_qty }} =
+                    {{ number_format($v_cost->total_price,2) }} ({{number_format($v_cost->total_qty/$stocks->total()*100,2)}}%) ||
+
+                @endforeach
             </div>
-            <div class="d-flex">
+        @endif
+        <div class="d-flex justify-content-between">
+            <div>
+
+                <a href="{{url(session('url').'inventory')}}?status=3" class="btn btn-link">Active</a>
+                <a href="{{url(session('url').'inventory')}}?status=2" class="btn btn-link">Pending</a>
+                <a href="{{url(session('url').'inventory')}}" class="btn btn-link">All</a>
+            </div>
+            <div class="">
                 <button class="btn btn-sm btn-secondary pd-x-20 " type="submit" form="export" name="inventorysheet" value="1">Export Sheet</button>
             </div>
         </div>
@@ -202,6 +192,7 @@
             <input type="hidden" name="storage" value="{{ Request::get('storage') }}">
             <input type="hidden" name="grade" value="{{ Request::get('grade') }}">
             <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
+            <input type="hidden" name="status" value="{{ Request::get('status') }}">
         </form>
         <br>
         <div class="row">
@@ -210,7 +201,10 @@
                     <div class="card-header pb-0">
                         <div class="d-flex justify-content-between">
                             <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$stocks->firstItem()}} {{ __('locale.To') }} {{$stocks->lastItem()}} {{ __('locale.Out Of') }} {{$stocks->total()}} </h5>
+
+                            @if (session('user')->hasPermission('view_cost'))
                             <h5>Average Cost: {{ number_format($average_cost->average_price,2) }} | Total Cost: {{ number_format($average_cost->total_price,2) }}</h5>
+                            @endif
                             <div class=" mg-b-0">
                                 <form method="get" action="" class="row form-inline">
                                     <label for="perPage" class="card-title inline">per page:</label>
@@ -227,6 +221,7 @@
                                     <input type="hidden" name="storage" value="{{ Request::get('storage') }}">
                                     <input type="hidden" name="grade" value="{{ Request::get('grade') }}">
                                     <input type="hidden" name="page" value="{{ Request::get('page') }}">
+                                    <input type="hidden" name="status" value="{{ Request::get('status') }}">
                                 </form>
                             </div>
 
@@ -256,7 +251,7 @@
                                     @endphp
                                     @foreach ($stocks as $index => $stock)
                                         <tr>
-                                            <td>{{ $i + 1 }}</td><td>{{ $stock->variation->product->model . " " . (isset($stock->variation->color_id) ? $stock->variation->color_id->name . " " : null) .
+                                            <td title="{{ $stock->id }}">{{ $i + 1 }}</td><td>{{ $stock->variation->product->model . " " . (isset($stock->variation->color_id) ? $stock->variation->color_id->name . " " : null) .
                                                 (isset($stock->variation->storage_id) ? $stock->variation->storage_id->name . " " : null) . " " . $stock->variation->grade_id->name }}</td>
                                             <td>{{ $stock->imei.$stock->serial_number }}</td>
                                             <td>{{ $stock->order->customer->first_name ?? null}}</td>
