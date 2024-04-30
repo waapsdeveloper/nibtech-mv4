@@ -751,7 +751,7 @@ class Order extends Component
                             session()->put('error', "Product Model not matched");
                             return redirect()->back();
                         }
-                        if(($stock[$i]->variation->storage == $variant->storage) || ($variant->storage == 5 && $stock[$i]->variation->storage == 0 && $variant->product->brant == 2)){
+                        if(($stock[$i]->variation->storage == $variant->storage) || ($variant->storage == 5 && $stock[$i]->variation->storage == 0 && $variant->product->brand == 2)){
                         }else{
                             session()->put('error', "Product Storage not matched");
                             return redirect()->back();
