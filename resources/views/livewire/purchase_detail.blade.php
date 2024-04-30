@@ -50,6 +50,10 @@
             <div class="breadcrumb-header justify-content-between">
                 <div class="left-content">
                 {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">Purchase</span> --}}
+                    {{-- @if ($order->status == 2) --}}
+                    <a class="btn btn-sm btn-success" href="">Approve</a>
+                    <a class="btn btn-sm btn-danger" href="">Delete</a>
+                    {{-- @endif --}}
                 </div>
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
@@ -104,9 +108,11 @@
                 <div class="col-md col-sm-6 align-self-end mb-1 tx-center">
                     <button class="btn btn-primary pd-x-20" type="submit">Insert</button>
                 </div>
+                <br>
+                <br>
             </div>
         </form>
-
+        <hr style="border-bottom: 1px solid rgb(62, 45, 45);">
         <br>
         @if (count($order_issues)>0)
 

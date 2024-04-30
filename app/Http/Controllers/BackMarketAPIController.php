@@ -202,7 +202,7 @@ class BackMarketAPIController extends Controller
         return json_decode($post_result);
     }
 
-    public function shippingOrderlines($order_id, $sku, $imei, $tracking_number, $serial = false) {
+    public function shippingOrderlines($order_id, $sku, $imei, $tracking_number, $serial = null) {
         $end_point = 'orders/'.$order_id;
 
         $new_state = 3;
@@ -210,8 +210,8 @@ class BackMarketAPIController extends Controller
         if($imei == false){
             // dd('Hello');
             $request_shipping = array('order_id' => $order_id, 'sku' => $sku, 'new_state' => $new_state, 'tracking_number' => $tracking_number );
-        }elseif($serial == true){
-            $request_shipping = array('order_id' => $order_id, 'sku' => $sku, 'new_state' => $new_state, 'tracking_number' => $tracking_number, 'serial_number' => $imei );
+        }elseif($serial != null){
+            $request_shipping = array('order_id' => $order_id, 'sku' => $sku, 'new_state' => $new_state, 'tracking_number' => $tracking_number, 'serial_number' => $serial );
         }else{
             $request_shipping = array('order_id' => $order_id, 'sku' => $sku, 'new_state' => $new_state, 'tracking_number' => $tracking_number, 'imei' => $imei );
         }
@@ -225,12 +225,12 @@ class BackMarketAPIController extends Controller
         return $result;
     }
 
-    public function orderlineIMEI($orderline_id, $imei, $serial = false) {
+    public function orderlineIMEI($orderline_id, $imei, $serial = null) {
         $end_point = 'orderlines/'.$orderline_id;
 
         // construct the request body when state == 3
-        if($serial == true){
-            $request_shipping = array( 'serial_number' => $imei );
+        if($serial != null){
+            $request_shipping = array( 'serial_number' => $serial );
         }else{
             $request_shipping = array( 'imei' => $imei );
         }

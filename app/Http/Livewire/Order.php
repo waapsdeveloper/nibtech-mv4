@@ -702,13 +702,26 @@ class Order extends Component
                 }else{
                     $color2 = null;
                 }
-                if (ctype_digit($imei)) {
+
+                $serial_number = null;
+                $imei = trim($imei);
+                if(!ctype_digit($imei)){
+                    $serial_number = $imei;
+                    $imei = null;
+
+                }else{
+
                     if(strlen($imei) != 15){
 
                         session()->put('error', "IMEI invalid");
                         return redirect()->back();
                     }
-                    $stock[$i] = Stock_model::where('imei',trim($imei))->first();
+                }
+
+                $stock[$i] = Stock_model::where(['imei'=>$imei, 'serial_number'=>$serial_number])->first();
+                // if (ctype_digit($imei)) {
+
+                //     $stock[$i] = Stock_model::where('imei',trim($imei))->first();
                     if(!$stock[$i]){
                         session()->put('error', "Stock not Found");
                         return redirect()->back();
@@ -722,7 +735,7 @@ class Order extends Component
                         session()->put('error', "Stock List Awaiting Approval");
                         return redirect()->back();
                     }
-                    if($stock[$i]){
+                    // if($stock[$i]){
                         if($stock[$i]->variation->storage != null){
                             $storage = $stock[$i]->variation->storage_id->name . " - ";
                         }else{
@@ -733,6 +746,16 @@ class Order extends Component
                         }else{
                             $color = null;
                         }
+                        if($stock[$i]->variation->product_id != $variant->product_id){
+
+                            session()->put('error', "Product Model not matched");
+                            return redirect()->back();
+                        }
+                        if(($stock[$i]->variation->storage == $variant->storage) || ($variant->storage == 5 && $stock[$i]->variation->storage == 0 && $variant->product->brant == 2)){
+                        }else{
+                            session()->put('error', "Product Storage not matched");
+                            return redirect()->back();
+                        }
                         echo "<script>
                         if (confirm('System Model: " . $stock[$i]->variation->product->model . " - " . $storage . $color . $stock[$i]->variation->grade_id->name . "\\nRequired Model: " . $variant->product->model . " - " . $storage2 . $color2 . $variant->grade_id->name . "')) {
                             // User clicked OK, do nothing or perform any other action
@@ -741,62 +764,62 @@ class Order extends Component
                             window.history.back();
                         }
                         </script>";
-                    }
-                    $serial = false;
+                    // }
+                    // $serial = false;
                     // dd($stock[$i]);
-                }else{
+                // }else{
 
-                    $stock[$i] = Stock_model::where('serial_number',trim($imei))->first();
-                    if(!$stock[$i]){
-                        session()->put('error', "Stock not Found");
-                        return redirect()->back();
-                    }
-                    if($stock[$i]->status != 1){
-                        session()->put('error', "Stock Already Sold");
-                        return redirect()->back();
-                    }
-                    if($stock[$i]->order->status == 2){
-                        session()->put('error', "Stock List Awaiting Approval");
-                        return redirect()->back();
-                    }
-                    if($stock[$i]){
-                        if($stock[$i]->variation->storage != null){
-                            $storage = $stock[$i]->variation->storage_id->name . " - ";
-                        }else{
-                            $storage = null;
-                        }
-                        if($stock[$i]->variation->color != null){
-                            $color = $stock[$i]->variation->color_id->name . " - ";
-                        }else{
-                            $color = null;
-                        }
-                        echo "<script>
-                        if (confirm('System Model: " . $stock[$i]->variation->product->model . " - " . $storage . $color . $stock[$i]->variation->grade_id->name . "\\nRequired Model: " . $variant->product->model . " - " . $storage2 . $color2 . $variant->grade_id->name . "')) {
-                            // User clicked OK, do nothing or perform any other action
-                        } else {
-                            // User clicked Cancel, redirect to the previous page
-                            window.history.back();
-                        }
-                        </script>";
-                    }
-                    $serial = true;
-                }
-                if(!$stock[$i]){
-                    if($serial == false){
-                        $add_imei = trim($imei);
-                        $add_serial = null;
-                    }else{
-                        $add_imei = null;
-                        $add_serial = trim($imei);
-                    }
-                    $stock[$i] = Stock_model::firstOrNew(['imei'=>$add_imei,'serial_number'=>$add_serial]);
-                    $stock[$i]->variation_id = $variant->id;
-                }
-                if($stock[$i]){
+                //     $stock[$i] = Stock_model::where('serial_number',trim($imei))->first();
+                //     if(!$stock[$i]){
+                //         session()->put('error', "Stock not Found");
+                //         return redirect()->back();
+                //     }
+                //     if($stock[$i]->status != 1){
+                //         session()->put('error', "Stock Already Sold");
+                //         return redirect()->back();
+                //     }
+                //     if($stock[$i]->order->status == 2){
+                //         session()->put('error', "Stock List Awaiting Approval");
+                //         return redirect()->back();
+                //     }
+                //     if($stock[$i]){
+                //         if($stock[$i]->variation->storage != null){
+                //             $storage = $stock[$i]->variation->storage_id->name . " - ";
+                //         }else{
+                //             $storage = null;
+                //         }
+                //         if($stock[$i]->variation->color != null){
+                //             $color = $stock[$i]->variation->color_id->name . " - ";
+                //         }else{
+                //             $color = null;
+                //         }
+                //         echo "<script>
+                //         if (confirm('System Model: " . $stock[$i]->variation->product->model . " - " . $storage . $color . $stock[$i]->variation->grade_id->name . "\\nRequired Model: " . $variant->product->model . " - " . $storage2 . $color2 . $variant->grade_id->name . "')) {
+                //             // User clicked OK, do nothing or perform any other action
+                //         } else {
+                //             // User clicked Cancel, redirect to the previous page
+                //             window.history.back();
+                //         }
+                //         </script>";
+                //     }
+                //     $serial = true;
+                // }
+                // if(!$stock[$i]){
+                //     if($serial == false){
+                //         $add_imei = trim($imei);
+                //         $add_serial = null;
+                //     }else{
+                //         $add_imei = null;
+                //         $add_serial = trim($imei);
+                //     }
+                //     $stock[$i] = Stock_model::firstOrNew(['imei'=>$add_imei,'serial_number'=>$add_serial]);
+                //     $stock[$i]->variation_id = $variant->id;
+                // }
+                // if($stock[$i]){
                     $stock[$i]->tester = $tester[$i];
                     $stock[$i]->status = 2;
                     $stock[$i]->save();
-                }
+                // }
 
                 // $orderObj = $bm->getOneOrder($order->reference_id);
                 $orderObj = $this->updateBMOrder($order->reference_id, true, $tester[$i], true);
@@ -807,19 +830,19 @@ class Order extends Component
                 $indexes = 0;
                 foreach($skus as $each_sku){
                     if($indexes == 0 && count($each_sku) == 1){
-                        $detail = $bm->shippingOrderlines($order->reference_id,$sku[0],trim($imeis[0]),$orderObj->tracking_number,$serial);
+                        $detail = $bm->shippingOrderlines($order->reference_id,$sku[0],trim($imeis[0]),$orderObj->tracking_number,$serial_number);
                     }elseif($indexes == 0 && count($each_sku) > 1){
                         // dd("Hello");
-                        $detail = $bm->shippingOrderlines($order->reference_id,$sku[0],false,$orderObj->tracking_number,$serial);
+                        $detail = $bm->shippingOrderlines($order->reference_id,$sku[0],false,$orderObj->tracking_number,$serial_number);
                     }elseif($indexes > 0 && count($each_sku) == 1){
-                        $detail = $bm->orderlineIMEI($order->reference_id,trim($imeis[0]),$serial);
+                        $detail = $bm->orderlineIMEI($order->reference_id,trim($imeis[0]),$serial_number);
                     }else{
 
                     }
                     $indexes++;
                 }
             }else{
-                $detail = $bm->shippingOrderlines($order->reference_id,$sku[0],trim($imeis[0]),$orderObj->tracking_number,$serial);
+                $detail = $bm->shippingOrderlines($order->reference_id,$sku[0],trim($imeis[0]),$orderObj->tracking_number,$serial_number);
             }
             print_r($detail);
 
@@ -942,7 +965,11 @@ class Order extends Component
                 $imei = null;
             }
 
-            $stock = Stock_model::firstOrNew(['imei'=>$imei, 'serial_number'=>$serial_number]);
+            $stock = Stock_model::where(['imei'=>$imei, 'serial_number'=>$serial_number])->first();
+            if(!$stock){
+                session()->put('error', 'Stock not found');
+                return redirect()->back();
+            }
             $stock->variation_id = $item->variation_id;
             $stock->tester = request('correction')['tester'];
             $stock->added_by = session('user_id');
@@ -952,6 +979,7 @@ class Order extends Component
             $stock->save();
 
             $item->stock_id = $stock->id;
+            $item->linked_id = $stock->purchase_item->id;
             $item->save();
 
             $message = "Hi, here is the correct IMEI/Serial number for this order. \n".$imei.$serial_number." ".$stock->tester."\n Regards, \n" . session('fname');
