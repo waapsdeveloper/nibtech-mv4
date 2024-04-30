@@ -746,7 +746,7 @@ class Order extends Component
                         }else{
                             $color = null;
                         }
-                        if($stock[$i]->variation->product_id != $variant->product_id){
+                        if(($stock[$i]->variation->product_id == $variant->product_id) || ($variant->product_id == 144 && $stock[$i]->variation->product_id == 229)){
 
                             session()->put('error', "Product Model not matched");
                             return redirect()->back();
