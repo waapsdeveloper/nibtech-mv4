@@ -284,6 +284,20 @@ class Wholesale extends Component
         }
 
         $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
+
+        if(!$stock){
+            session()->put('error', "Stock not Found");
+            return redirect()->back();
+
+        }
+        if($stock->status != 1){
+            session()->put('error', "Stock Already Sold");
+            return redirect()->back();
+        }
+        if($stock->order->status == 2){
+            session()->put('error', "Stock List Awaiting Approval");
+            return redirect()->back();
+        }
         $variation = Variation_model::where(['id' => $stock->variation_id])->first();
         $stock->status = 2;
         $stock->save();
@@ -405,6 +419,16 @@ class Wholesale extends Component
                     continue;
 
 
+                }
+                if($stock->order->status == 2){
+                    if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
+                    $issue[$dr]['data']['row'] = $dr;
+                    $issue[$dr]['data']['name'] = $n;
+                    $issue[$dr]['data']['storage'] = $st;
+                    $issue[$dr]['data']['imei'] = $i.$s;
+                    $issue[$dr]['message'] = 'Stock Awaiting Approval';
+
+                    continue;
                 }
                 $variation = Variation_model::where(['id' => $stock->variation_id])->first();
 
