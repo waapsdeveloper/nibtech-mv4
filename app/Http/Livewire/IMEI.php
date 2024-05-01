@@ -75,14 +75,14 @@ class IMEI extends Component
             $data['orders'] = $orders;
             // dd($orders);
 
-            if(request('delete') == "YES"){
-                foreach($orders as $item){
-                    $item->delete();
-                    $item->forceDelete();
-                }
+            // if(request('delete') == "YES"){
+            //     foreach($orders as $item){
+            //         $item->delete();
+            //         $item->forceDelete();
+            //     }
 
-                Stock_model::where(['imei' => $i, 'serial_number' => $s])->withTrashed()->forceDelete();
-            }
+            //     Stock_model::where(['imei' => $i, 'serial_number' => $s])->withTrashed()->forceDelete();
+            // }
         }
 
 

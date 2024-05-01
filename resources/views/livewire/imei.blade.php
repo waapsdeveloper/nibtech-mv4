@@ -79,7 +79,7 @@
                 </form>
             </div>
             @if (session('user')->hasPermission('delete'))
-                <a href="{{ url('imei')}}?imei={{$imei}}&delete=YES">DELETE</a>
+                {{-- <a href="{{ url('imei')}}?imei={{$imei}}&delete=YES">DELETE</a> --}}
             @endif
         </div>
         <br>
