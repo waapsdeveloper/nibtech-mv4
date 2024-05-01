@@ -645,11 +645,17 @@ class Order extends Component
                 'data' => json_encode($issue['data']),
                 'message' => $issue['message'],
             ]);
+        }else{
+            $issue = 1;
         }
         // Delete the temporary file
         // Storage::delete($filePath);
+        if(request('imei') != null){
+            return redirect()->back();
+        }else{
+            return $issue;
+        }
 
-        return redirect()->back();
     }
     public function remove_issues(){
         // dd(request('ids'));
@@ -664,7 +670,10 @@ class Order extends Component
                 $data = json_decode($issue->data);
                 // echo $variation." ".$data->imei." ".$data->cost;
 
-                $this->add_purchase_item($issue->order_id, $data->imei, $variation. $data->cost);
+                if($this->add_purchase_item($issue->order_id, $data->imei, $variation, $data->cost) == 1){
+                    $issue->delete();
+                }
+
             }
         }
         return redirect()->back();
