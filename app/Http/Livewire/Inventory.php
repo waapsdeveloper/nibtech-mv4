@@ -64,6 +64,7 @@ class Inventory extends Component
                 $q->where('grade', request('grade'));
             });
         })
+        ->orderBy('product_id','ASC')
         ->paginate($per_page)
         ->onEachSide(5)
         ->appends(request()->except('page'));
