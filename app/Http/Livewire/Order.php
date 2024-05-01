@@ -104,6 +104,11 @@ class Order extends Component
                 $q->where('imei', 'LIKE', '%' . request('imei') . '%');
             });
         })
+        ->when(request('tracking_number') != '', function ($q) {
+            return $q->whereHas('order_items.stock', function ($q) {
+                $q->where('tracking_number', 'LIKE', '%' . request('tracking_number') . '%');
+            });
+        })
         ->orderBy($sort, $by) // Order by variation name
         ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
         // ->orderBy('order_items.quantity', 'desc') // Secondary order by reference_id
@@ -1132,6 +1137,11 @@ class Order extends Component
 
         $pdfExport = new DeliveryNotesExport();
         $pdfExport->generatePdf();
+    }
+    public function track_order($order_id){
+        $order = Order_model::find($order_id);
+        $orderObj = $this->updateBMOrder($order->reference_id, false, null, true);
+        return redirect($orderObj->tracking_url);
     }
     public function getLabel($order_id)
     {

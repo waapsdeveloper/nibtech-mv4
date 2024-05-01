@@ -175,6 +175,12 @@
                         {{-- <label for="adm_input">Processed By</label> --}}
                     {{-- </div> --}}
                 </div>
+                <div class="col-lg-2 col-xl-2 col-md-4 col-sm-6">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" name="tracking_number" placeholder="Enter Tracking Number" value="@isset($_GET['tracking_number']){{$_GET['tracking_number']}}@endisset">
+                        <label for="">Tracking Number</label>
+                    </div>
+                </div>
 
                 <input type="hidden" name="page" value="{{ Request::get('page') }}">
                 <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
@@ -211,6 +217,7 @@
             <input type="hidden" name="order_id" value="{{ Request::get('order_id') }}">
             <input type="hidden" name="sku" value="{{ Request::get('sku') }}">
             <input type="hidden" name="imei" value="{{ Request::get('imei') }}">
+            <input type="hidden" name="tracking_number" value="{{ Request::get('tracking_number') }}">
             <input type="hidden" name="page" value="{{ Request::get('page') }}">
             <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
             @if (Request::get('care') == 1)
@@ -285,6 +292,7 @@
                                     <input type="hidden" name="order_id" value="{{ Request::get('order_id') }}">
                                     <input type="hidden" name="sku" value="{{ Request::get('sku') }}">
                                     <input type="hidden" name="imei" value="{{ Request::get('imei') }}">
+                                    <input type="hidden" name="tracking_number" value="{{ Request::get('tracking_number') }}">
                                     <input type="hidden" name="page" value="{{ Request::get('page') }}">
                                     <input type="hidden" name="sort" value="{{ Request::get('sort') }}">
                                     @if (Request::get('care') == 1)
@@ -474,7 +482,11 @@
                                                     @endif
                                                 </td>
                                                 @endif
-                                                <td style="width:220px">{{ $order->created_at}} <br> {{ $order->processed_at." ".$order->tracking_number }}</td>
+                                                <td style="width:220px">{{ $order->created_at}} <br> {{ $order->processed_at}}<br>
+                                                    @if ($order->tracking_number != null)
+                                                    <a href="{{url('order/track/').'/'.$order->id}}" target="_blank">{{$order->tracking_number}}</a>
+
+                                                @endif</td>
                                                 <td>
                                                     <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                                     <div class="dropdown-menu">

@@ -33,18 +33,59 @@
         <!-- /breadcrumb -->
         <hr style="border-bottom: 1px solid #000">
         <br>
-        <div class="d-flex justify-content-between">
+            <form method="get" action="" class="">
+        <div class="row">
+            <div class="col-md col-sm-6">
 
-            <form method="get" action="" class="row form-inline">
                 <select name="type" class="form-select" onchange="this.form.submit()">
                     <option value="0">All Types</option>
                     <option value="1" {{ Request::get('type') == 1 ? 'selected' : '' }}>Vendors</option>
                     <option value="2" {{ Request::get('type') == 2 ? 'selected' : '' }}>BulkSale Purchasers</option>
                     <option value="3" {{ Request::get('type') == 3 ? 'selected' : '' }}>Customers</option>
                 </select>
-            </form>
-                <a href="{{url('add-customer')}}" class="btn btn-success float-right"><i class="mdi mdi-plus"></i> Add Customer</a>
+            </div>
+            <div class="col-md col-sm-6">
+
+                <div class="form-floating">
+                    <input type="text" class="form-control" name="company" placeholder="Enter Company" value="@isset($_GET['company']){{$_GET['company']}}@endisset">
+                    <label for="">Company</label>
+                </div>
+            </div>
+            <div class="col-md col-sm-6">
+
+                <div class="form-floating">
+                    <input type="text" class="form-control" name="first_name" placeholder="Enter First Name" value="@isset($_GET['first_name']){{$_GET['first_name']}}@endisset">
+                    <label for="">First Name</label>
+                </div>
+            </div>
+            <div class="col-md col-sm-6">
+
+                <div class="form-floating">
+                    <input type="text" class="form-control" name="last_name" placeholder="Enter Last Name" value="@isset($_GET['last_name']){{$_GET['last_name']}}@endisset">
+                    <label for="">Last Name</label>
+                </div>
+            </div>
+            <div class="col-md col-sm-6">
+
+                <div class="form-floating">
+                    <input type="text" class="form-control" name="phone" placeholder="Enter Phone" value="@isset($_GET['phone']){{$_GET['phone']}}@endisset">
+                    <label for="">Phone</label>
+                </div>
+            </div>
+            <div class="col-md col-sm-6">
+
+                <div class="form-floating">
+                    <input type="text" class="form-control" name="email" placeholder="Enter Email" value="@isset($_GET['email']){{$_GET['email']}}@endisset">
+                    <label for="">Email</label>
+                </div>
+            </div>
+            <div class="col-md col-sm-6">
+                <button type="submit" class="btn btn-primary">Search</button>
+                <a href="{{url(session('url').'customer')}}" class="btn btn-default">Reset</a>
+            </div>
+
         </div>
+            </form>
         <br>
         @if (session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -60,6 +101,7 @@
                     <div class="card-header pb-0">
                         <div class="d-flex justify-content-between">
                             <h4 class="card-title mg-b-0">Customers</h4>
+                            <a href="{{url('add-customer')}}" class="btn btn-sm btn-success float-right"><i class="mdi mdi-plus"></i> Add Customer</a>
                         </div>
                     </div>
                     <div class="card-body">

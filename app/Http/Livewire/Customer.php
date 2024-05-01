@@ -24,6 +24,21 @@ class Customer extends Component
                 return $q->where('is_vendor',request('type'));
             }
         })
+        ->when(request('company') != '', function ($q) {
+            return $q->where('company', 'LIKE', '%' . request('company') . '%');
+        })
+        ->when(request('first_name') != '', function ($q) {
+            return $q->where('first_name', 'LIKE', '%' . request('first_name') . '%');
+        })
+        ->when(request('last_name') != '', function ($q) {
+            return $q->where('last_name', 'LIKE', '%' . request('last_name') . '%');
+        })
+        ->when(request('phone') != '', function ($q) {
+            return $q->where('phone', 'LIKE', '%' . request('phone') . '%');
+        })
+        ->when(request('email') != '', function ($q) {
+            return $q->where('email', 'LIKE', '%' . request('email') . '%');
+        })
         ->paginate(50);
 
         // foreach($data['customers'] as $customer){
