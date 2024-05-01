@@ -76,7 +76,23 @@ class Index extends Component
         ->take($per_page)
         ->get();
 
-        $data['total_orders'] = Order_model::where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date)->where('order_type_id',3)->count();
+        $data['total_orders'] = Order_model::where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date)->where('order_type_id',3)
+
+        ->when(request('product') != '', function ($q) {
+            return $q->where('products.id', '=', request('product'));
+        })
+        ->when(request('storage') != '', function ($q) {
+            return $q->whereHas('order_items.variation', function ($q) {
+                $q->where('variation.storage', 'LIKE', request('storage') . '%');
+            });
+        })
+        ->when(request('color') != '', function ($q) {
+            return $q->where('variation.color', 'LIKE', request('color') . '%');
+        })
+        ->when(request('grade') != '', function ($q) {
+            return $q->where('variation.grade', 'LIKE', request('grade') . '%');
+        })
+        ->count();
         $data['pending_orders'] = Order_model::where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date)->where('order_type_id',3)->where('status','<',3)->count();
         $data['total_conversations'] = Order_item_model::where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date)->where('care_id','!=',null)->count();
 

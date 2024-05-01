@@ -189,10 +189,10 @@
                                         @foreach ($all_rows as $row)
                                             @php
                                                 $row = json_decode($row);
-                                            // print_r($row);
+                                            print_r($row);
                                             // echo "<br>";
                                             // echo "<br>";
-                                                $data = json_decode($row->data);
+                                                // $data = json_decode($row->data);
                                             @endphp
 
                                         {{-- @if (json_decode($grouped_issue->all_rows) != null) --}}
@@ -201,7 +201,7 @@
                                         {{-- @foreach ($grouped_issue->all_rows ? json_decode($grouped_issue->all_rows) : [] as $issue)
                                         @foreach ($grouped_issue->all_rows ? json_decode($grouped_issue->all_rows) : [] as $issue) --}}
                                             <input type="hidden" name="ids[]" value="{{$row->id}}" form="order_issues_{{$j}}">
-                                            <tr>
+                                            {{-- <tr>
                                                 <td>{{ $i + 1 }}</td>
                                                 @foreach ($data as $key => $value)
                                                     <td title="{{ $key }}">{{ $value }}</td>
@@ -215,7 +215,7 @@
                                                         <a class="dropdown-item" href="" target="_blank">link</a>
                                                     </div>
                                                 </td>
-                                            </tr>
+                                            </tr> --}}
 
                                             @php
                                             // print_r($issue);
