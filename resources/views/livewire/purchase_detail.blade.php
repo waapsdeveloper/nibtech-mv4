@@ -341,6 +341,7 @@
                                         $stocks = $variation->stocks;
                                         // $items = $stocks->order_item;
                                         $j = 0;
+                                        $prices = [];
                                         // print_r($variation);
                                     @endphp
 
@@ -349,6 +350,7 @@
                                         {{-- @if($item->order_item[0]->order_id == $order_id) --}}
                                         @php
                                         $i ++;
+                                        $prices[] = $item->purchase_item->price;
                                     @endphp
                                         <tr>
                                             <td>{{ $i }}</td>
@@ -366,7 +368,7 @@
                             </table>
                         <br>
                     </div>
-                    <div class="text-end">Total: {{$i }}</div>
+                    <div class="text-end">Average Cost: {{avg($prices) }} &nbsp;&nbsp;&nbsp; Total: {{$i }}</div>
                     </div>
                 </div>
             </div>
