@@ -29,7 +29,7 @@ class IMEI extends Component
         $data['last_hour'] = Carbon::now()->subHour(1);
         $data['admins'] = Admin_model::where('id', '!=', 1)->get();
         $user_id = session('user_id');
-
+        $data['imei'] = request('imei');
         if (request('imei')) {
             if (ctype_digit(request('imei'))) {
                 $i = request('imei');
@@ -74,7 +74,17 @@ class IMEI extends Component
             $data['stock'] = $stock;
             $data['orders'] = $orders;
             // dd($orders);
+
+            if(request('delete') == "YES"){
+                foreach($orders as $item){
+                    $item->delete();
+                    $item->forceDelete();
+                }
+                $stock->delete();
+                $stock->forceDelete();
+            }
         }
+
 
         return view('livewire.imei', $data); // Return the Blade view instance with data
     }

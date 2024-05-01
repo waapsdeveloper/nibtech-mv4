@@ -78,6 +78,9 @@
                         <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
                 </form>
             </div>
+            @if (session('user')->hasPermission('delete'))
+                <a href="{{ url('imei')}}?imei={{$imei}}&delete=YES">DELETE</a>
+            @endif
         </div>
         <br>
         <div class="row">

@@ -50,10 +50,10 @@
             <div class="breadcrumb-header justify-content-between">
                 <div class="left-content">
                 {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">Purchase</span> --}}
-                    {{-- @if ($order->status == 2) --}}
+                    @if ($order->status == 2)
                     <a class="btn btn-sm btn-success" href="">Approve</a>
                     <a class="btn btn-sm btn-danger" href="">Delete</a>
-                    {{-- @endif --}}
+                    @endif
                 </div>
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
