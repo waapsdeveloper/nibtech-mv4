@@ -189,20 +189,25 @@
                                         @foreach ($all_rows as $row)
                                             @php
                                                 $row = json_decode($row);
-                                            print_r($row);
+                                            // print_r($row);
+                                            @endphp
+                                            @if ($row != null)
+                                            @php
+                                            if(){}
                                             // echo "<br>";
                                             // echo "<br>";
                                                 $data = json_decode($row->data);
-                                            print_r($data);
+                                            // print_r($data);
                                             @endphp
+
 
                                         {{-- @if (json_decode($grouped_issue->all_rows) != null) --}}
 
                                         {{-- @foreach (json_decode($grouped_issue->all_rows) as $key => $issue) --}}
                                         {{-- @foreach ($grouped_issue->all_rows ? json_decode($grouped_issue->all_rows) : [] as $issue)
                                         @foreach ($grouped_issue->all_rows ? json_decode($grouped_issue->all_rows) : [] as $issue) --}}
-                                            {{-- <input type="hidden" name="ids[]" value="{{$row->id}}" form="order_issues_{{$j}}"> --}}
-                                            {{-- <tr>
+                                            <input type="hidden" name="ids[]" value="{{$row->id}}" form="order_issues_{{$j}}">
+                                            <tr>
                                                 <td>{{ $i + 1 }}</td>
                                                 @foreach ($data as $key => $value)
                                                     <td title="{{ $key }}">{{ $value }}</td>
@@ -216,13 +221,15 @@
                                                         <a class="dropdown-item" href="" target="_blank">link</a>
                                                     </div>
                                                 </td>
-                                            </tr> --}}
+                                            </tr>
 
                                             @php
                                             // print_r($issue);
                                             // echo " | ";
                                                 $i++;
+
                                             @endphp
+                                            @endif
                                             {{-- @endforeach --}}
                                         {{-- @endif --}}
                                         @endforeach
