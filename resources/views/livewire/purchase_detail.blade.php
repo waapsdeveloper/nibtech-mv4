@@ -200,7 +200,7 @@
                                         {{-- @foreach (json_decode($grouped_issue->all_rows) as $key => $issue) --}}
                                         {{-- @foreach ($grouped_issue->all_rows ? json_decode($grouped_issue->all_rows) : [] as $issue)
                                         @foreach ($grouped_issue->all_rows ? json_decode($grouped_issue->all_rows) : [] as $issue) --}}
-                                            <input type="hidden" name="ids[]" value="{{$row->id}}" form="order_issues_{{$j}}">
+                                            {{-- <input type="hidden" name="ids[]" value="{{$row->id}}" form="order_issues_{{$j}}"> --}}
                                             {{-- <tr>
                                                 <td>{{ $i + 1 }}</td>
                                                 @foreach ($data as $key => $value)
