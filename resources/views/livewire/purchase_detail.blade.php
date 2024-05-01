@@ -371,7 +371,7 @@
                                         // $items = $stocks->order_item;
                                         $j = 0;
                                         $prices = [];
-                                        print_r($variation);
+                                        print_r($stocks);
                                     @endphp
 
                                     @foreach ($stocks as $item)
