@@ -192,7 +192,8 @@
                                             print_r($row);
                                             // echo "<br>";
                                             // echo "<br>";
-                                                // $data = json_decode($row->data);
+                                                $data = json_decode($row->data);
+                                            print_r($data);
                                             @endphp
 
                                         {{-- @if (json_decode($grouped_issue->all_rows) != null) --}}
