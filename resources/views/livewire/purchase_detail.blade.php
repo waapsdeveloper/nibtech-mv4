@@ -368,7 +368,7 @@
                             </table>
                         <br>
                     </div>
-                    <div class="text-end">Average Cost: {{avg($prices) }} &nbsp;&nbsp;&nbsp; Total: {{$i }}</div>
+                    <div class="text-end">Average Cost: {{array_sum($prices)/count($prices) }} &nbsp;&nbsp;&nbsp; Total: {{$i }}</div>
                     </div>
                 </div>
             </div>
