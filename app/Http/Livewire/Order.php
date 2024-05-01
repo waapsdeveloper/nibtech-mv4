@@ -573,17 +573,27 @@ class Order extends Component
         }
 
     }
-    public function add_purchase_item($order_id){
+    public function add_purchase_item($order_id, $imei = null, $variation_id = null, $price = null){
+        $issue = [];
+        if(request('imei')){
+            $imei = request('imei');
+        }
+        if(request('variation')){
+            $variation_id = request('variation');
+        }
+        $variation = Variation_model::find($variation_id);
+        if(request('price')){
+            $price = request('price');
+        }
 
-        if(ctype_digit(request('imei'))){
-            $i = request('imei');
+        if(ctype_digit($imei)){
+            $i = $imei;
             $s = null;
         }else{
             $i = null;
-            $s = request('imei');
+            $s = $imei;
         }
 
-        $variation = Variation_model::find(request('variation'));
         if($variation == null){
             session()->put('error', 'Variation Not Found');
             return redirect()->back();
@@ -593,29 +603,49 @@ class Order extends Component
         $variation->save();
 
         $stock = Stock_model::firstOrNew(['imei' => $i, 'serial_number' => $s]);
-        $stock->added_by = session('user_id');
-        $stock->order_id = $order_id;
         if($stock->id){
+            $issue['data']['variation'] = $variation_id;
+            $issue['data']['imei'] = $i.$s;
+            $issue['data']['cost'] = $price;
+            $issue['data']['stock_id'] = $stock->id;
+            if($stock->order_id == $order_id && $stock->status == 1){
+                $issue['message'] = 'Duplicate IMEI';
+            }else{
+                if($stock->status != 2){
+                    $issue['message'] = 'IMEI Available In Inventory';
+                }else{
+                    $issue['message'] = 'IMEI Repurchase';
+                }
+            }
             // $stock->status = 2;
         }else{
+            $stock->added_by = session('user_id');
+            $stock->order_id = $order_id;
 
             $stock->product_id = $variation->product_id;
             $stock->variation_id = $variation->id;
             $stock->status = 1;
+            $stock->save();
+
+            $order_item = new Order_item_model();
+            $order_item->order_id = $order_id;
+            $order_item->variation_id = $variation->id;
+            $order_item->stock_id = $stock->id;
+            $order_item->quantity = 1;
+            $order_item->price = $price;
+            $order_item->status = 3;
+            $order_item->save();
+
+
         }
-        $stock->save();
 
-        $order_item = new Order_item_model();
-        $order_item->order_id = $order_id;
-        $order_item->variation_id = $variation->id;
-        $order_item->stock_id = $stock->id;
-        $order_item->quantity = 1;
-        $order_item->price = request('price');
-        $order_item->status = 3;
-        $order_item->save();
-
-
-
+        if($issue != []){
+            Order_issue_model::create([
+                'order_id' => $order_id,
+                'data' => json_encode($issue['data']),
+                'message' => $issue['message'],
+            ]);
+        }
         // Delete the temporary file
         // Storage::delete($filePath);
 
@@ -623,8 +653,20 @@ class Order extends Component
     }
     public function remove_issues(){
         // dd(request('ids'));
-        Order_issue_model::whereIn('id',request('ids'))->delete();
+        $ids = request('ids');
+        $issues = Order_issue_model::whereIn('id',$ids)->get();
+        if(request('remove_entries') == 1){
+            $issues->delete();
+        }
+        if(request('insert_variation') == 1){
+            $variation = request('variation');
+            foreach($issues as $issue){
+                $data = json_decode($issue->data);
+                // echo $variation." ".$data->imei." ".$data->cost;
 
+                $this->add_purchase_item($issue->order_id, $data->imei, $variation. $data->cost);
+            }
+        }
         return redirect()->back();
 
     }

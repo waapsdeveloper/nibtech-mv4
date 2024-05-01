@@ -172,11 +172,33 @@
                                             <td colspan="3" >{{ $grouped_issue->name }}</td>
                                             <td colspan="{{ $col-5 }}">{{ $grouped_issue->message }}</td>
                                             <td colspan="2">
-                                                <form id="order_issues_{{$j+=1}}" method="POST" action="{{ url('purchase/remove_issues') }}">
+                                                <form id="order_issues_{{$j+=1}}" method="POST" action="{{ url('purchase/remove_issues') }}" class="form-inline">
                                                     @csrf
                                                 @switch($grouped_issue->message)
                                                     @case("Item Already added in this order")
-                                                    <button class="btn btn-sm btn-danger m-0">Remove Entries</button>
+                                                    <button class="btn btn-sm btn-danger m-0" name="remove_entries" value="1">Remove Entries</button>
+
+                                                        @break
+                                                    @case("Product Name Not Found")
+
+                                                    <div class="form-floating">
+                                                        <input type="text" list="variations" id="variation" name="variation" class="form-control" required>
+                                                        <datalist id="variations">
+                                                            <option value="">Select</option>
+                                                            @foreach ($all_variations as $variation)
+                                                                @php
+                                                                    if($variation->storage){
+                                                                        $storage = $storages[$variation->storage];
+                                                                    }else{
+                                                                        $storage = null;
+                                                                    }
+                                                                @endphp
+                                                                <option value="{{$variation->id}}" @if(isset($_GET['variation']) && $variation->id == $_GET['variation']) {{'selected'}}@endif>{{$variation->product->model." ".$storage}}</option>
+                                                            @endforeach
+                                                        </datalist>
+                                                        <label for="variation">Variation</label>
+                                                    </div>
+                                                    <button class="btn btn-primary m-0" name="insert_variation" value="1">Insert Variation</button>
 
                                                         @break
 
