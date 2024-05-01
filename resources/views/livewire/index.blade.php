@@ -25,6 +25,59 @@
 						</div>
 					</div>
 					<!-- /breadcrumb -->
+
+            <div class="row">
+
+                <div class="col-lg-3 col-xl-3 col-md-3 col-sm-3">
+                    {{-- <div class="card-header">
+                        <h4 class="card-title mb-1">Model</h4>
+                    </div> --}}
+                    <div class="form-floating">
+                        <input type="text" name="product" value="{{ Request::get('product') }}" class="form-control" data-bs-placeholder="Select Model" list="product-menu" form="index">
+                        <label for="product">Product</label>
+                    </div>
+                    <datalist id="product-menu">
+                        <option value="">Products</option>
+                        @foreach ($products as $product)
+                            <option value="{{ $product->id }}" @if(isset($_GET['product']) && $product->id == $_GET['product']) {{'selected'}}@endif>{{ $product->model }}</option>
+                        @endforeach
+                    </datalist>
+                </div>
+                <div class="col-md col-sm-2">
+                    {{-- <div class="card-header">
+                        <h4 class="card-title mb-1">Storage</h4>
+                    </div> --}}
+                    <select name="storage" class="form-control form-select" form="index">
+                        <option value="">Storage</option>
+                        @foreach ($storages as $id=>$name)
+                            <option value="{{ $id }}" @if(isset($_GET['storage']) && $id == $_GET['storage']) {{'selected'}}@endif>{{ $name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md col-sm-2">
+                    {{-- <div class="card-header">
+                        <h4 class="card-title mb-1">Storage</h4>
+                    </div> --}}
+                    <select name="color" class="form-control form-select" form="index">
+                        <option value="">Color</option>
+                        @foreach ($colors as $id=>$name)
+                            <option value="{{ $id }}" @if(isset($_GET['color']) && $id == $_GET['color']) {{'selected'}}@endif>{{ $name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md col-sm-2">
+                    {{-- <div class="card-header">
+                        <h4 class="card-title mb-1">Grade</h4>
+                    </div> --}}
+                    <select name="grade" class="form-control form-select" form="index">
+                        <option value="">Grade</option>
+                        @foreach ($grades as $id=>$name)
+                            <option value="{{ $id }}" @if(isset($_GET['grade']) && $id == $_GET['grade']) {{'selected'}}@endif>{{ $name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+            <br>
                     @if (count($variations) > 0)
 
                     <div class="row">
@@ -124,6 +177,7 @@
 										<div class="card-header">
                                             <div class="d-flex justify-content-between">
 											<h4 class="card-title mb-1">Top Selling Products</h4>
+
                                                 {{-- @dd($products) --}}
                                             {{-- <select class="select2" multiple>
                                                 @foreach ($products as $pro)
@@ -152,6 +206,7 @@
                                             </form>
                                             </div>
 										</div>
+
 										<div class="card-body">
                                             <table class="table table-bordered table-hover text-md-nowrap">
                                                 <thead>
@@ -230,7 +285,7 @@
                                             <h4 class="card-title mb-1">{{ __('locale.Search Records By Dates') }}</h4>
                                         </div>
                                         <div class="card-body">
-                                            <form action="" method="GET">
+                                            <form action="" method="GET" id="index">
                                                 <div class="row">
                                                     <div class="col-xl-5 col-lg-5 col-md-5 col-xs-5">
                                                         <label for="">{{ __('locale.Start Date') }}</label>

@@ -33,9 +33,9 @@ class Index extends Component
         }
         $data['purchase_status'] = [2 => '(Pending)', 3 => ''];
         $data['products'] = Products_model::orderBy('model','asc')->get();
-        $data['colors'] = Color_model::all();
-        $data['storages'] = Storage_model::all();
-        $data['grades'] = Grade_model::all();
+        $data['colors'] = Color_model::pluck('name','id');
+        $data['storages'] = Storage_model::pluck('name','id');
+        $data['grades'] = Grade_model::pluck('name','id');
         $data['variations'] = Variation_model::where('product_id',null)
         ->orderBy('name','desc')
         ->paginate($per_page)
@@ -58,6 +58,19 @@ class Index extends Component
         ->join('color', 'variation.color', '=', 'color.id')
         ->join('storage', 'variation.storage', '=', 'storage.id')
         ->join('grade', 'variation.grade', '=', 'grade.id')
+
+        ->when(request('product') != '', function ($q) {
+            return $q->where('products.id', '=', request('product'));
+        })
+        ->when(request('storage') != '', function ($q) {
+            return $q->where('variation.storage', 'LIKE', request('storage') . '%');
+        })
+        ->when(request('color') != '', function ($q) {
+            return $q->where('variation.color', 'LIKE', request('color') . '%');
+        })
+        ->when(request('grade') != '', function ($q) {
+            return $q->where('variation.grade', 'LIKE', request('grade') . '%');
+        })
         ->groupBy('order_items.variation_id', 'products.model', 'storage.name', 'color.name', 'variation.sku', 'grade.name')
         ->orderByDesc('total_quantity_sold')
         ->take($per_page)
