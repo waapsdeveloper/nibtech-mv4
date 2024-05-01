@@ -174,13 +174,6 @@
                                                 </td>
                                                 @endif
                                                 <td style="width:220px">{{ $order->created_at}} <br> {{ $order->processed_at." ".$order->tracking_number }}</td>
-                                                <td>
-                                                    <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
-                                                    <div class="dropdown-menu">
-
-                                                        <a class="dropdown-item" href="{{url(session('url').'order')}}/delete_item/{{ $item->id }}">Delete</a>
-                                                    </div>
-                                                </td>
                                             </tr>
                                         @php
                                             $i ++;

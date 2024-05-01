@@ -186,6 +186,12 @@ class Order extends Component
         // dd($data['orders']);
         return view('livewire.purchase')->with($data);
     }
+    public function purchase_approve($order_id){
+        $order = Order_model::find($order_id);
+        $order->tracking_number = request('tracking_number');
+        $order->status = 3;
+        $order->save();
+    }
     public function delete_order($order_id){
 
         $stock = Stock_model::where(['order_id'=>$order_id,'status'=>2])->first();

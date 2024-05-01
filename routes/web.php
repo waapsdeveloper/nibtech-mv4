@@ -64,6 +64,7 @@ Route::post('add_purchase_item/{id}', [Order::class,'add_purchase_item'])->name(
 Route::get('delete_order/{id}', [Order::class,'delete_order'])->name('delete_purchase');
 Route::get('delete_order_item/{id}', [Order::class,'delete_order_item'])->name('delete_purchase_item');
 Route::get('purchase/detail/{id}', [Order::class,'purchase_detail'])->name('purchase_detail');
+Route::post('purchase/approve/{id}', [Order::class,'purchase_approve'])->name('purchase_approve');
 Route::post('purchase/remove_issues', [Order::class,'remove_issues'])->name('remove_purchase_issues');
 
 Route::get('wholesale', Wholesale::class)->name('view_wholesale');

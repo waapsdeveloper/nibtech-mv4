@@ -51,8 +51,14 @@
                 <div class="left-content">
                 {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">Purchase</span> --}}
                     @if ($order->status == 2)
-                    <a class="btn btn-sm btn-success" href="">Approve</a>
-                    <a class="btn btn-sm btn-danger" href="">Delete</a>
+                    <form class="form-inline" method="POST" action="{{url('purchase/approve').'/'.$order->id}}">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="tracking_number" name="tracking_number" placeholder="Enter Tracking Number" required>
+                            <label for="tracking_number">Tracking Number</label>
+                        </div>
+                        <button type="submit" class="btn btn-success">Approve</button>
+                        <a class="btn btn-danger" href="{{url('delete_order') . "/" . $order->id }}">Delete</a>
+                    </form>
                     @endif
                 </div>
                 <div class="justify-content-center mt-2">
@@ -65,7 +71,7 @@
         <!-- /breadcrumb -->
         <div class="row">
             <div class="col-md-12 tx-center" style="border-bottom: 1px solid rgb(216, 212, 212);">
-                <center><h4>Purchase Order Detail</h4></center>
+                <center><h4>@if ($order->status == 2)<small>(Pending)</small>@endif Purchase Order Detail</h4></center>
                 <h5>Reference: {{ $order->reference_id }} | Vendor: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->count() }} | Total Cost: {{ $order->currency_id->sign.number_format($order->order_items->sum('price'),2) }}</h5>
             </div>
         </div>
