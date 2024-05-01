@@ -82,6 +82,7 @@
             </div>
             <div class="p-1">
                 <form class="form-inline" action="{{ url('check_wholesale_item').'/'.$order_id }}" method="POST" id="wholesale_item">
+                    @csrf
                     <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
                     <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
                     <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
