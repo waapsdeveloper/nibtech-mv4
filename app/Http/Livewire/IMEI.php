@@ -80,8 +80,8 @@ class IMEI extends Component
                     $item->delete();
                     $item->forceDelete();
                 }
-                $stock->delete();
-                $stock->forceDelete();
+
+                Stock_model::where(['imei' => $i, 'serial_number' => $s])->withTrashed()->forceDelete();
             }
         }
 
