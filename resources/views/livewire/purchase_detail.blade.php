@@ -193,7 +193,6 @@
                                             @endphp
                                             @if ($row != null)
                                             @php
-                                            if(){}
                                             // echo "<br>";
                                             // echo "<br>";
                                                 $data = json_decode($row->data);
