@@ -127,24 +127,24 @@
                                                         <td>
                                                             <select name="update[color]" class="form-select form-select-sm">
                                                                 <option value="">None</option>
-                                                                @foreach ($colors as $color)
-                                                                    <option value="{{ $color->id }}" {{ $product->color == $color->id ? 'selected' : '' }}>{{ $color->name }}</option>
+                                                                @foreach ($colors as $id => $name)
+                                                                    <option value="{{ $id }}" {{ $product->color == $id ? 'selected' : '' }}>{{ $name }}</option>
                                                                 @endforeach
                                                             </select>
                                                         </td>
                                                         <td>
                                                             <select name="update[storage]" class="form-select form-select-sm">
                                                                 <option value="">None</option>
-                                                                @foreach ($storages as $storage)
-                                                                    <option value="{{ $storage->id }}" {{ $product->storage == $storage->id ? 'selected' : '' }}>{{ $storage->name }}</option>
+                                                                @foreach ($storages as $id => $name)
+                                                                    <option value="{{ $id }}" {{ $product->storage == $id ? 'selected' : '' }}>{{ $name }}</option>
                                                                 @endforeach
                                                             </select>
                                                         </td>
                                                         <td>
                                                             <select name="update[grade]" class="form-select form-select-sm">
                                                                 <option value="">None</option>
-                                                                @foreach ($grades as $grade)
-                                                                    <option value="{{ $grade->id }}" {{ $product->grade == $grade->id ? 'selected' : '' }}>{{ $grade->name }}</option>
+                                                                @foreach ($grades as  $id => $name)
+                                                                    <option value="{{ $id }}" {{ $product->grade == $id ? 'selected' : '' }}>{{ $name }}</option>
                                                                 @endforeach
                                                             </select>
                                                         </td>
