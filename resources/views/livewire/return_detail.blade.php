@@ -99,6 +99,7 @@
                     <div class="card-header pb-0">
                         <div class="d-flex justify-content-between">
                             <h4 class="card-title mg-b-0">
+                                External Movement
                             </h4>
 
                             <div class=" mg-b-0">
@@ -194,12 +195,6 @@
 
         @endif
         @if (isset($stocks))
-        <div class="row">
-            <div class="col-md-12" style="border-bottom: 1px solid rgb(216, 212, 212);">
-                <center><h4>Moved Inventory</h4></center>
-            </div>
-        </div>
-        <br>
 
         <div class="row">
             <div class="col-xl-12">
@@ -207,7 +202,7 @@
                     <div class="card-header pb-0">
                         <div class="d-flex justify-content-between">
                             <h4 class="card-title mg-b-0">
-
+                                Internal Movement
                             </h4>
 
                             <div class=" mg-b-0">

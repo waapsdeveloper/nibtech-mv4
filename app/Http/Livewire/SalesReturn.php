@@ -56,14 +56,13 @@ class SalesReturn extends Component
         $data['orders'] = Order_model::select(
             'orders.id',
             'orders.reference_id',
-            'orders.customer_id',
-            DB::raw('SUM(order_items.price) as total_price'),
-            DB::raw('COUNT(order_items.id) as total_quantity'),
-            DB::raw('COUNT(CASE WHEN stock.status = 1 THEN order_items.id END) as available_stock'),
+            // DB::raw('SUM(order_items.price) as total_price'),
+            // DB::raw('COUNT(order_items.id) as total_quantity'),
+            // DB::raw('COUNT(CASE WHEN stock.status = 1 THEN order_items.id END) as available_stock'),
             'orders.created_at')
         ->where('orders.order_type_id', 4)
-        ->join('order_items', 'orders.id', '=', 'order_items.order_id')
-        ->join('stock', 'order_items.stock_id', '=', 'stock.id')
+        // ->join('order_items', 'orders.id', '=', 'order_items.order_id')
+        // ->join('stock', 'order_items.stock_id', '=', 'stock.id')
         ->when(request('start_date'), function ($q) {
             return $q->where('orders.created_at', '>=', request('start_date'));
         })
@@ -73,7 +72,7 @@ class SalesReturn extends Component
         ->when(request('order_id'), function ($q) {
             return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
         })
-        ->groupBy('orders.id', 'orders.reference_id', 'orders.customer_id', 'orders.created_at')
+        // ->groupBy('orders.id', 'orders.reference_id', 'orders.created_at')
         ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
         ->paginate($per_page)
         ->onEachSide(5)
@@ -208,7 +207,10 @@ class SalesReturn extends Component
             // dd($orders);
 
             $stocks = Stock_operations_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
-            $data['stocks'] = $stocks;
+            if($stocks->count() > 0){
+                $data['stocks'] = $stocks;
+            }
+
         }
 
         $data['storages'] = Storage_model::pluck('name','id');

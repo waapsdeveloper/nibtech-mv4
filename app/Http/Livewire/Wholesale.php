@@ -287,7 +287,7 @@ class Wholesale extends Component
 
         if(request('bypass_check') == 1){
 
-            $this->add_wholesale_item($order_id, $back);
+            $this->add_wholesale_item($order_id, $imei, $variation_id, $back);
             session()->put('bypass_check', 1);
             request()->merge(['bypass_check'=> 1]);
             if($back != 1){
@@ -317,16 +317,22 @@ class Wholesale extends Component
         }
 
     }
-    public function add_wholesale_item($order_id, $back = null){
+    public function add_wholesale_item($order_id, $imei = null, $variation_id = null, $back = null){
+        if(request('imei')){
+            $imei = request('imei');
+        }
+        if(request('variation')){
+            $variation_id = request('variation');
+        }
         if(!request('bypass_check')){
             session()->forget('bypass_check');
         }
-        if(ctype_digit(request('imei'))){
-            $i = request('imei');
+        if(ctype_digit($imei)){
+            $i = $imei;
             $s = null;
         }else{
             $i = null;
-            $s = request('imei');
+            $s = $imei;
         }
 
         $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
