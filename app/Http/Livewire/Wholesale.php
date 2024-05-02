@@ -223,7 +223,7 @@ class Wholesale extends Component
         return redirect()->back();
     }
 
-    public function check_wholesale_item($order_id, $imei = null, $variation_id = null, $price = null){
+    public function check_wholesale_item($order_id, $imei = null, $variation_id = null){
         $issue = [];
         if(request('imei')){
             $imei = request('imei');
@@ -232,11 +232,6 @@ class Wholesale extends Component
             $variation_id = request('variation');
         }
         $variation = Variation_model::find($variation_id);
-        if(request('price')){
-            $price = request('price');
-        }else{
-            request()->put('price', $price);
-        }
 
         if($variation == null){
             session()->put('error', 'Variation Not Found');
@@ -355,7 +350,7 @@ class Wholesale extends Component
                 $data = json_decode($issue->data);
                 // echo $variation." ".$data->imei." ".$data->cost;
 
-                if($this->add_wholesale_item($issue->order_id, $data->imei, $variation, $data->cost) == 1){
+                if($this->add_wholesale_item($issue->order_id, $data->imei, $variation) == 1){
                     $issue->delete();
                 }
 
