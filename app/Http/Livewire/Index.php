@@ -79,7 +79,9 @@ class Index extends Component
         $data['total_orders'] = Order_model::where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date)->where('order_type_id',3)
 
         ->when(request('product') != '', function ($q) {
-            return $q->where('products.id', '=', request('product'));
+            return $q->whereHas('order_items.variation', function ($q) {
+                $q->where('product_id', '=', request('product'));
+            });
         })
         ->when(request('storage') != '', function ($q) {
             return $q->whereHas('order_items.variation', function ($q) {
@@ -87,14 +89,61 @@ class Index extends Component
             });
         })
         ->when(request('color') != '', function ($q) {
-            return $q->where('variation.color', 'LIKE', request('color') . '%');
+            return $q->whereHas('order_items.variation', function ($q) {
+                $q->where('variation.color', 'LIKE', request('color') . '%');
+            });
         })
         ->when(request('grade') != '', function ($q) {
-            return $q->where('variation.grade', 'LIKE', request('grade') . '%');
+            return $q->whereHas('order_items.variation', function ($q) {
+                $q->where('variation.grade', 'LIKE', request('grade') . '%');
+            });
         })
         ->count();
-        $data['pending_orders'] = Order_model::where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date)->where('order_type_id',3)->where('status','<',3)->count();
-        $data['total_conversations'] = Order_item_model::where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date)->where('care_id','!=',null)->count();
+        $data['pending_orders'] = Order_model::where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date)->where('order_type_id',3)->where('status','<',3)
+
+        ->when(request('product') != '', function ($q) {
+            return $q->whereHas('order_items.variation', function ($q) {
+                $q->where('product_id', '=', request('product'));
+            });
+        })
+        ->when(request('storage') != '', function ($q) {
+            return $q->whereHas('order_items.variation', function ($q) {
+                $q->where('variation.storage', 'LIKE', request('storage') . '%');
+            });
+        })
+        ->when(request('color') != '', function ($q) {
+            return $q->whereHas('order_items.variation', function ($q) {
+                $q->where('variation.color', 'LIKE', request('color') . '%');
+            });
+        })
+        ->when(request('grade') != '', function ($q) {
+            return $q->whereHas('order_items.variation', function ($q) {
+                $q->where('variation.grade', 'LIKE', request('grade') . '%');
+            });
+        })
+        ->count();
+        $data['total_conversations'] = Order_item_model::where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date)->where('care_id','!=',null)
+        ->when(request('product') != '', function ($q) {
+            return $q->whereHas('order_items.variation', function ($q) {
+                $q->where('product_id', '=', request('product'));
+            });
+        })
+        ->when(request('storage') != '', function ($q) {
+            return $q->whereHas('order_items.variation', function ($q) {
+                $q->where('variation.storage', 'LIKE', request('storage') . '%');
+            });
+        })
+        ->when(request('color') != '', function ($q) {
+            return $q->whereHas('order_items.variation', function ($q) {
+                $q->where('variation.color', 'LIKE', request('color') . '%');
+            });
+        })
+        ->when(request('grade') != '', function ($q) {
+            return $q->whereHas('order_items.variation', function ($q) {
+                $q->where('variation.grade', 'LIKE', request('grade') . '%');
+            });
+        })
+        ->count();
 
         $data['graded_inventory'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', 'orders.status as status_id', DB::raw('COUNT(*) as quantity'))
         ->where('stock.status', '!=', 2)
