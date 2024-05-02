@@ -267,10 +267,15 @@ class Wholesale extends Component
         }
 
         if(request('bypass_check') == 1){
+
             $this->add_wholesale_item($order_id);
             session()->put('bypass_check', 1);
             request()->merge(['bypass_check'=> 1]);
-            return redirect()->back();
+            if(request('imei') != null){
+                return redirect()->back();
+            }else{
+                return 1;
+            }
         }else{
             session()->forget('bypass_check');
             // request()->merge(['bypass_check' => null]);
@@ -291,6 +296,7 @@ class Wholesale extends Component
                 exit;
             }
         }
+
     }
     public function add_wholesale_item($order_id){
         if(!request('bypass_check')){
@@ -334,7 +340,11 @@ class Wholesale extends Component
         // Delete the temporary file
         // Storage::delete($filePath);
 
-        return redirect(url('wholesale/detail').'/'.$order_id);
+        if(request('imei') != null){
+            return redirect(url('wholesale/detail').'/'.$order_id);
+        }else{
+            return 1;
+        }
         // return redirect()->back();
     }
     public function remove_issues(){
@@ -350,7 +360,7 @@ class Wholesale extends Component
                 $data = json_decode($issue->data);
                 // echo $variation." ".$data->imei." ".$data->cost;
 
-                if($this->add_wholesale_item($issue->order_id, $data->imei, $variation) == 1){
+                if($this->check_wholesale_item($issue->order_id, $data->imei, $variation) == 1){
                     $issue->delete();
                 }
 
