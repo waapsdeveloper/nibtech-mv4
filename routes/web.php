@@ -94,6 +94,8 @@ Route::get('issue', Issue::class)->name('view_issue');
 
 Route::get('move_inventory', MoveInventory::class)->name('move_inventory');
 Route::post('move_inventory/change_grade', [MoveInventory::class,'change_grade'])->name('move_inventory');
+Route::post('move_inventory/delete_move', [MoveInventory::class,'delete_move'])->name('move_inventory');
+Route::post('move_inventory/delete_multiple_moves', [MoveInventory::class,'delete_multiple_moves'])->name('move_inventory');
 
 
 Route::get('order', Order::class)->name('view_order');

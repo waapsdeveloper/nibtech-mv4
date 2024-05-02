@@ -1,10 +1,14 @@
 <?php
 
 namespace App\Http\Livewire;
+
+use App\Models\Color_model;
 use Livewire\Component;
 use App\Models\Stock_model;
 use App\Models\Grade_model;
+use App\Models\Products_model;
 use App\Models\Stock_operations_model;
+use App\Models\Storage_model;
 use App\Models\Variation_model;
 use Carbon\Carbon;
 
@@ -22,6 +26,9 @@ class MoveInventory extends Component
     public function render()
     {
 
+        $data['products'] = Products_model::orderBy('model','asc')->get();
+        $data['colors'] = Color_model::pluck('name','id');
+        $data['storages'] = Storage_model::pluck('name','id');
         $data['grades'] = Grade_model::all();
 
         if(request('grade')){
@@ -78,10 +85,26 @@ class MoveInventory extends Component
                 return redirect()->back();
             }
             $stock_id = $stock->id;
+
+            $product_id = $stock->variation->product_id;
+            $storage = $stock->variation->storage;
+            $color = $stock->variation->color;
+            if(session('user')->hasPermission('change_variation')){
+                if(request('product') != ''){
+                    $product_id = request('product');
+                }
+                if(request('storage') != ''){
+                    $storage = request('storage');
+                }
+                if(request('color') != ''){
+                    $color = request('color');
+                }
+            }
+
             $new_variation = Variation_model::firstOrNew([
-                'product_id' => $stock->variation->product_id,
-                'color' => $stock->variation->color,
-                'storage' => $stock->variation->storage,
+                'product_id' => $product_id,
+                'storage' => $storage,
+                'color' => $color,
                 'grade' => $grade,
             ]);
             $new_variation->status = 1;
@@ -107,6 +130,50 @@ class MoveInventory extends Component
 
 
         session()->put('success', 'Stock Sent Successfully');
+        return redirect()->back();
+
+    }
+    public function delete_move(){
+        $id = request('id');
+        if(request('grade')){
+            session()->put('grade',request('grade'));
+        }
+        session()->put('description',request('description'));
+
+
+        if ($id != null) {
+            $stock_operation = Stock_operations_model::find($id);
+            $stock = $stock_operation->stock;
+            $stock->variation_id = $stock_operation->old_variation_id;
+            $stock->save();
+            $stock_operation->delete();
+        }
+
+
+        session()->put('success', 'Stock Sent Back Successfully');
+        return redirect()->back();
+
+    }
+    public function delete_multiple_moves(){
+        $ids = request('ids');
+        if(request('grade')){
+            session()->put('grade',request('grade'));
+        }
+        session()->put('description',request('description'));
+
+
+        if ($ids != null) {
+            foreach($ids as $id){
+                $stock_operation = Stock_operations_model::find($id);
+                $stock = $stock_operation->stock;
+                $stock->variation_id = $stock_operation->old_variation_id;
+                $stock->save();
+                $stock_operation->delete();
+            }
+        }
+
+
+        session()->put('success', 'Stock Sent Back Successfully');
         return redirect()->back();
 
     }

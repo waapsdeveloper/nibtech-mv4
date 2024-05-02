@@ -62,33 +62,80 @@
         <!-- /breadcrumb -->
         <div class="row">
             <div class="col-md-12" style="border-bottom: 1px solid rgb(216, 212, 212);">
-                <center><h4>Search</h4></center>
+                <center><h4>Move Inventory To</h4></center>
             </div>
         </div>
         <br>
 
-        <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
+        <div class="" style="border-bottom: 1px solid rgb(216, 212, 212);">
 
             <div class="p-2">
-                <form action="{{ url('move_inventory/change_grade') }}" method="POST" id="search" class="form-inline">
+                <form action="{{ url('move_inventory/change_grade') }}" method="POST" id="search" class="">
                     @csrf
 
-                    <select name="grade" class="form-control form-select">
-                        <option value="">Move to</option>
-                        @foreach ($grades as $grade)
-                            <option value="{{ $grade->id }}" @if(session('grade') && $grade->id == session('grade')) {{'selected'}}@endif @if(request('grade') && $grade->id == request('grade')) {{'selected'}}@endif>{{ $grade->name }}</option>
-                        @endforeach
-                    </select>
-                    <div class="form-floating">
-                        <input type="text" class="form-control pd-x-20" value="{{session('description')}}" name="description" placeholder="Reason" style="width: 370px;">
-                        {{-- <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset"> --}}
-                        <label for="">Reason</label>
+                    @if (session('user')->hasPermission('change_variation'))
+                        <div class="d-flex justify-content-between">
+                        <div class="col-md col-sm-3">
+                            <div class="form-floating">
+                                <input type="text" name="product" class="form-control" data-bs-placeholder="Select Model" list="product-menu">
+                                <label for="product">Product</label>
+                            </div>
+                            <datalist id="product-menu">
+                                <option value="">Products</option>
+                                @foreach ($products as $product)
+                                    <option value="{{ $product->id }}" >{{ $product->model }}</option>
+                                @endforeach
+                            </datalist>
+                        </div>
+                        <div class="col-md col-sm-2">
+                            {{-- <div class="card-header">
+                                <h4 class="card-title mb-1">Storage</h4>
+                            </div> --}}
+                            <select name="storage" class="form-control form-select">
+                                <option value="">Storage</option>
+                                @foreach ($storages as $id=>$name)
+                                    <option value="{{ $id }}" >{{ $name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md col-sm-2">
+                            {{-- <div class="card-header">
+                                <h4 class="card-title mb-1">Storage</h4>
+                            </div> --}}
+                            <select name="color" class="form-control form-select">
+                                <option value="">Color</option>
+                                @foreach ($colors as $id=>$name)
+                                    <option value="{{ $id }}" >{{ $name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        </div>
+                        <br>
+                    @endif
+                    <div class="d-flex justify-content-between">
+                        <div class="col-md col-sm-2">
+                            <select name="grade" class="form-control form-select">
+                                <option value="">Move to</option>
+                                @foreach ($grades as $grade)
+                                    <option value="{{ $grade->id }}" @if(session('grade') && $grade->id == session('grade')) {{'selected'}}@endif @if(request('grade') && $grade->id == request('grade')) {{'selected'}}@endif>{{ $grade->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md col-sm-2">
+                            <div class="form-floating">
+                                <input type="text" class="form-control pd-x-20" value="{{session('description')}}" name="description" placeholder="Reason" style="width: 370px;">
+                                {{-- <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset"> --}}
+                                <label for="">Reason</label>
+                            </div>
+                        </div>
+                        <div class="col-md col-sm-2">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset">
+                                <label for="">IMEI</label>
+                            </div>
+                        </div>
+                            <button class="btn btn-primary pd-x-20" type="submit">Send</button>
                     </div>
-                    <div class="form-floating">
-                        <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset">
-                        <label for="">IMEI</label>
-                    </div>
-                    <button class="btn btn-primary pd-x-20" type="submit">Send to</button>
                 </form>
             </div>
         </div>
@@ -101,6 +148,16 @@
         </div>
         <br>
 
+        <script>
+            function checkAlls() {
+                var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+                var checkAllCheckbox = document.getElementById('checkAll');
+
+                checkboxes.forEach(function(checkbox) {
+                    checkbox.checked = checkAllCheckbox.checked;
+                });
+            }
+        </script>
         <div class="row">
             <div class="col-xl-12">
                 <div class="card">
@@ -108,6 +165,16 @@
                         <div class="d-flex justify-content-between">
                             <h4 class="card-title mg-b-0">
 
+                                <form id="pdf" method="POST" action="{{url('move_inventory/delete_multiple_moves')}}">
+                                    @csrf
+                                    <input type="hidden" name="grade" value="{{ session('grade') }}">
+                                    <input type="hidden" name="description" value="{{ session('description') }}">
+                                    <label>
+                                        <input type="checkbox" id="checkAll" onclick="checkAlls()"> Check All
+                                    </label>
+                                    <input class="btn btn-sm btn-secondary" type="submit" value="Delete Selected">
+
+                                </form>
                             </h4>
 
                             <div class=" mg-b-0">
@@ -121,6 +188,7 @@
                             <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                                 <thead>
                                     <tr>
+                                        <th><small><b></b></small></th>
                                         <th><small><b>No</b></small></th>
                                         <th><small><b>Old Variation</b></small></th>
                                         <th><small><b>New Variation</b></small></th>
@@ -128,6 +196,8 @@
                                         <th><small><b>Vendor | Lot</b></small></th>
                                         <th><small><b>Reason</b></small></th>
                                         <th><small><b>DateTime</b></small></th>
+                                        <th><small><b></b></small></th>
+
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -137,6 +207,7 @@
                                     @foreach ($stocks as $operation)
 
                                             <tr>
+                                                <td><input type="checkbox" name="ids[]" value="{{ $operation->id }}" form="pdf"></td>
                                                 <td title="{{ $operation->id }}">{{ $i + 1 }}</td>
                                                 <td>
                                                     @if ($operation->old_variation ?? false)
@@ -152,6 +223,16 @@
                                                 <td>{{ $operation->stock->order->customer->first_name." | ".$operation->stock->order->reference_id }}</td>
                                                 <td>{{ $operation->description }}</td>
                                                 <td>{{ $operation->created_at }}</td>
+                                                <td>
+                                                    <form method="POST" action="{{url('move_inventory/delete_move')}}">
+                                                        @csrf
+                                                        <input type="hidden" name="id" value="{{ $operation->id }}">
+                                                        <input type="hidden" name="grade" value="{{ session('grade') }}">
+                                                        <input type="hidden" name="description" value="{{ session('description') }}">
+                                                        <button type="submit" class="btn btn-link"><i class="fa fa-trash"></i></button>
+                                                    </form>
+
+                                                </td>
                                             </tr>
                                         @php
                                             $i ++;
