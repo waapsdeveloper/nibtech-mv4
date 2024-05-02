@@ -237,7 +237,7 @@ class Order extends Component
         }
         Order_model::where('id',$order_id)->delete();
         Order_issue_model::where('order_id',$order_id)->delete();
-        return redirect()->back();
+        return redirect(url('purchase'));
     }
     public function delete_order_item($item_id){
 

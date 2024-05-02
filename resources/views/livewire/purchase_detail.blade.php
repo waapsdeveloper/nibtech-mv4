@@ -25,6 +25,7 @@
                 {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">Purchase</span> --}}
                     @if ($order->status == 2)
                     <form class="form-inline" method="POST" action="{{url('purchase/approve').'/'.$order->id}}">
+                        @csrf
                         <div class="form-floating">
                             <input type="text" class="form-control" id="tracking_number" name="tracking_number" placeholder="Enter Tracking Number" required>
                             <label for="tracking_number">Tracking Number</label>
