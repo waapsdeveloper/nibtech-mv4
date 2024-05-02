@@ -200,6 +200,8 @@ class Order extends Component
         $order->tracking_number = request('tracking_number');
         $order->status = 3;
         $order->save();
+
+        return redirect()->back();
     }
     public function delete_order($order_id){
 
