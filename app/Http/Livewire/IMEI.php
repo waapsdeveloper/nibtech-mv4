@@ -81,7 +81,6 @@ class IMEI extends Component
             //     dd($stocks);
             // }
 
-            $data['grade'] = Grade_model::find($grade);
             // if(request('delete') == "YES"){
             //     foreach($orders as $item){
             //         $item->delete();
