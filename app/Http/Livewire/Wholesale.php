@@ -279,6 +279,7 @@ class Wholesale extends Component
             }
         }else{
             session()->forget('bypass_check');
+            dd("hell");
             // request()->merge(['bypass_check' => null]);
             if($variation->grade != 10){
                 echo "<p>This IMEI does not belong to Wholesale. Do you want to continue?</p>";
