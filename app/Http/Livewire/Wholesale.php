@@ -269,6 +269,7 @@ class Wholesale extends Component
         if(request('bypass_check') == 1){
 
             $this->add_wholesale_item($order_id, $back);
+            dd("he");
             session()->put('bypass_check', 1);
             request()->merge(['bypass_check'=> 1]);
             if($back != 1){
