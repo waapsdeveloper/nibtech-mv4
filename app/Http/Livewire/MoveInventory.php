@@ -43,7 +43,7 @@ class MoveInventory extends Component
                 })
                 ->whereHas('stock', function ($query) {
                     $query->where('status', 1);
-                })->get();
+                })->orderBy('id','desc')->get();
                 $data['stocks'] = $stocks;
             //     dd($stocks);
             // }

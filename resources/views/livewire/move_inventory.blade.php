@@ -107,9 +107,11 @@
                     <div class="card-header pb-0">
                         <div class="d-flex justify-content-between">
                             <h4 class="card-title mg-b-0">
+
                             </h4>
 
                             <div class=" mg-b-0">
+                                Today's count: {{ count($stocks) }}
                             </div>
 
                         </div>
@@ -123,6 +125,7 @@
                                         <th><small><b>Old Variation</b></small></th>
                                         <th><small><b>New Variation</b></small></th>
                                         <th><small><b>IMEI</b></small></th>
+                                        <th><small><b>Vendor | Lot</b></small></th>
                                         <th><small><b>Reason</b></small></th>
                                         <th><small><b>DateTime</b></small></th>
                                     </tr>
@@ -146,6 +149,7 @@
                                                     @endif
                                                 </td>
                                                 <td>{{ $operation->stock->imei.$operation->stock->serial_number }}</td>
+                                                <td>{{ $operation->stock->order->customer->first_name." | ".$operation->stock->order->reference_id }}</td>
                                                 <td>{{ $operation->description }}</td>
                                                 <td>{{ $operation->created_at }}</td>
                                             </tr>
