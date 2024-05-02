@@ -18,7 +18,7 @@
     @section('content')
 
 <div class="toast-container position-fixed top-0 end-0 p-5" style="z-index: 1000;">
-    @if (session('error'))
+    {{-- @if (session('error'))
             <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="toast-header text-danger">
                     <strong class="me-auto">Error</strong>
@@ -42,7 +42,7 @@
         @php
         session()->forget('success');
         @endphp
-    @endif
+    @endif --}}
 
 </div>
 
@@ -158,6 +158,29 @@
                 });
             }
         </script>
+
+        @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <span class="alert-inner--icon"><i class="fe fe-thumbs-up"></i></span>
+            <span class="alert-inner--text"><strong>{{session('success')}}</strong></span>
+            <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <br>
+        @php
+        session()->forget('success');
+        @endphp
+        @endif
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <span class="alert-inner--icon"><i class="fe fe-thumbs-down"></i></span>
+                <span class="alert-inner--text"><strong>{{session('error')}}</strong></span>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
+            </div>
+        <br>
+        @php
+        session()->forget('error');
+        @endphp
+        @endif
         <div class="row">
             <div class="col-xl-12">
                 <div class="card">

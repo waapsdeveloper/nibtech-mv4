@@ -17,35 +17,6 @@
 <br>
     @section('content')
 
-<div class="toast-container position-fixed top-0 end-0 p-5" style="z-index: 1000;">
-    @if (session('error'))
-            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
-                <div class="toast-header text-danger">
-                    <strong class="me-auto">Error</strong>
-                    <button type="button" class="btn" data-bs-dismiss="toast" aria-label="Close">x</button>
-                </div>
-                <div class="toast-body">{{ session('error') }}</div>
-            </div>
-        @php
-        session()->forget('error');
-        @endphp
-    @endif
-
-    @if (session('success'))
-            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
-                <div class="toast-header text-success bg-light">
-                    <strong class="me-auto">Success</strong>
-                    <button type="button" class="btn" data-bs-dismiss="toast" aria-label="Close">x</button>
-                </div>
-                <div class="toast-body">{{ session('success') }}</div>
-            </div>
-        @php
-        session()->forget('success');
-        @endphp
-    @endif
-
-</div>
-
 
         <!-- breadcrumb -->
             <div class="breadcrumb-header justify-content-between">
@@ -89,6 +60,28 @@
             </div>
         </div>
         <br>
+        @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <span class="alert-inner--icon"><i class="fe fe-thumbs-up"></i></span>
+            <span class="alert-inner--text"><strong>{{session('success')}}</strong></span>
+            <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <br>
+        @php
+        session()->forget('success');
+        @endphp
+        @endif
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <span class="alert-inner--icon"><i class="fe fe-thumbs-down"></i></span>
+                <span class="alert-inner--text"><strong>{{session('error')}}</strong></span>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
+            </div>
+        <br>
+        @php
+        session()->forget('error');
+        @endphp
+        @endif
         @if (isset($stock))
 
         <div class="row">

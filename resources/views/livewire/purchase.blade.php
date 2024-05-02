@@ -16,14 +16,6 @@
     @endsection
 <br>
     @section('content')
-        @if (session('error'))
-            <script>
-                window.alert('{{ session()->get("error") }}');
-            </script>
-            @php
-            session()->forget('error');
-            @endphp
-        @endif
 
         <!-- breadcrumb -->
             <div class="breadcrumb-header justify-content-between">
@@ -84,6 +76,28 @@
         </div>
         <br>
 
+        @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <span class="alert-inner--icon"><i class="fe fe-thumbs-up"></i></span>
+            <span class="alert-inner--text"><strong>{{session('success')}}</strong></span>
+            <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <br>
+        @php
+        session()->forget('success');
+        @endphp
+        @endif
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <span class="alert-inner--icon"><i class="fe fe-thumbs-down"></i></span>
+                <span class="alert-inner--text"><strong>{{session('error')}}</strong></span>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
+            </div>
+        <br>
+        @php
+        session()->forget('error');
+        @endphp
+        @endif
         <div class="row">
             <div class="col-xl-12">
                 <div class="card">
