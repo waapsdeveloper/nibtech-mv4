@@ -340,6 +340,7 @@
                                         $stocks = $variation->stocks;
                                         // $items = $stocks->order_item;
                                         $j = 0;
+                                        $total = 0;
                                         // print_r($variation);
                                     @endphp
 
@@ -348,6 +349,7 @@
                                         @if($item->sale_item($order_id)->order_id == $order_id)
                                         @php
                                             $i ++;
+                                            $total += $item->sale_item($order_id)->price
                                         @endphp
                                         <tr>
                                             <td>{{ $i }}</td>
@@ -374,6 +376,7 @@
                             <label for="unit-price" class="">Change Unit Price: </label>
                             <input type="number" name="unit_price" id="unit_price" class="w-50 border-0" placeholder="Input Unit price" form="update_prices_{{ $variation->id }}">
                         </div>
+                        <div>Average: {{$total/$i }}</div>
                         <div>Total: {{$i }}</div>
                     </div>
                     </div>

@@ -25,6 +25,7 @@ use App\Http\Livewire\Payouts;
 use App\Http\Livewire\Logout;
 use App\Http\Livewire\MoveInventory;
 use App\Http\Livewire\RMA;
+use App\Http\Livewire\SalesReturn;
 use App\Http\Livewire\Team;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\GetAllowedRoutesMiddleware;
@@ -66,6 +67,15 @@ Route::get('delete_order_item/{id}', [Order::class,'delete_order_item'])->name('
 Route::get('purchase/detail/{id}', [Order::class,'purchase_detail'])->name('purchase_detail');
 Route::post('purchase/approve/{id}', [Order::class,'purchase_approve'])->name('purchase_approve');
 Route::post('purchase/remove_issues', [Order::class,'remove_issues'])->name('remove_purchase_issues');
+
+Route::get('return', SalesReturn::class)->name('view_return');
+Route::post('add_return', [SalesReturn::class,'add_return'])->name('add_return');
+Route::post('add_return_item/{id}', [SalesReturn::class,'add_return_item'])->name('add_return_item');
+Route::get('delete_return/{id}', [SalesReturn::class,'delete_return'])->name('delete_return');
+Route::get('delete_return_item/{id}', [SalesReturn::class,'delete_return_item'])->name('delete_return_item');
+Route::get('return/detail/{id}', [SalesReturn::class,'return_detail'])->name('return_detail');
+Route::post('return/approve/{id}', [SalesReturn::class,'return_approve'])->name('return_approve');
+Route::post('return/remove_issues', [SalesReturn::class,'remove_issues'])->name('remove_return_issues');
 
 Route::get('wholesale', Wholesale::class)->name('view_wholesale');
 Route::post('add_wholesale', [Wholesale::class,'add_wholesale'])->name('add_wholesale');

@@ -285,6 +285,7 @@ class Wholesale extends Component
                 echo "<input type='hidden' name='_token' value='" . csrf_token() . "'>";
                 echo "<input type='hidden' name='order_id' value='" . $order_id . "'>";
                 echo "<input type='hidden' name='imei' value='" . $imei . "'>";
+                echo "<input type='hidden' name='go' value='1'>";
                 echo "</form>";
                 echo "<a href='javascript:history.back()'>Cancel</a> ";
                 echo "<button onclick='submitForm()'>Continue</button>";
@@ -340,7 +341,7 @@ class Wholesale extends Component
         // Delete the temporary file
         // Storage::delete($filePath);
 
-        if(request('imei') != null){
+        if(request('go') != 1){
             return redirect(url('wholesale/detail').'/'.$order_id);
         }else{
             return 1;

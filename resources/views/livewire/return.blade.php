@@ -20,14 +20,14 @@
         <!-- breadcrumb -->
             <div class="breadcrumb-header justify-content-between">
                 <div class="left-content">
-                {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">Purchase</span> --}}
+                {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">Return</span> --}}
                 <a href="javascript:void(0);" class="btn btn-success float-right" data-bs-target="#modaldemo"
-                data-bs-toggle="modal"><i class="mdi mdi-plus"></i> Add Purchase </a>
+                data-bs-toggle="modal"><i class="mdi mdi-plus"></i> Add Return </a>
                 </div>
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Purchase</li>
+                        <li class="breadcrumb-item active" aria-current="page">Return</li>
                     </ol>
                 </div>
             </div>
@@ -71,7 +71,7 @@
         <br>
         <div class="row">
             <div class="col-md-12" style="border-bottom: 1px solid rgb(216, 212, 212);">
-                <center><h4>Purchase</h4></center>
+                <center><h4>Return</h4></center>
             </div>
         </div>
         <br>
@@ -207,14 +207,15 @@
                 <div class="modal-body pd-sm-40">
                     <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
                         type="button"><span aria-hidden="true">&times;</span></button>
-                    <h5 class="modal-title mg-b-5">Add Purchase Record</h5>
+                    <h5 class="modal-title mg-b-5">Add Return Record</h5>
                     <hr>
                     <form action="{{ url('add_purchase') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <input type="hidden" name="purchase[type]" id="" value="1">
                         <div class="form-group">
                             <label for="">Reference ID</label>
-                            <input class="form-control" placeholder="input Reference No" name="purchase[reference_id]" value="{{ $latest_reference + 1}}" type="text" required readonly>
+                            {{-- {{ $latest_reference + 1}} --}}
+                            <input class="form-control" placeholder="input Reference No" name="purchase[reference_id]" value="" type="text" required readonly>
                         </div>
                         <div class="form-group">
                             <label for="">Vendor</label>

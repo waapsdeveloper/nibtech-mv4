@@ -30,13 +30,9 @@ use Illuminate\Support\Facades\Mail;
 
 class SalesReturn extends Component
 {
-    public $currency_codes;
-    public $country_codes;
 
     public function mount()
     {
-        $this->currency_codes = Currency_model::pluck('id','code');
-        $this->country_codes = Country_model::pluck('id','code');
         $user_id = session('user_id');
         if($user_id == NULL){
             return redirect('index');
@@ -45,118 +41,7 @@ class SalesReturn extends Component
     public function render()
     {
 
-        $data['last_hour'] = Carbon::now()->subHour(2);
-        $data['admins'] = Admin_model::where('id','!=',1)->get();
-        $user_id = session('user_id');
-        $data['user_id'] = $user_id;
-        $data['pending_orders_count'] = Order_model::where('status',2)->count();
-        $data['order_statuses'] = Order_status_model::get();
-        if(request('per_page') != null){
-            $per_page = request('per_page');
-        }else{
-            $per_page = 10;
-        }
-        // if(request('care')){
-        //     foreach(Order_model::where('status',2)->pluck('reference_id') as $pend){
-        //         $this->recheck($pend);
-        //     }
-        // }
-
-        switch (request('sort')){
-            case 2: $sort = "orders.reference_id"; $by = "ASC"; break;
-            case 3: $sort = "products.model"; $by = "DESC"; break;
-            case 4: $sort = "products.model"; $by = "ASC"; break;
-            default: $sort = "orders.reference_id"; $by = "DESC";
-        }
-        $orders = Order_model::join('order_items', 'orders.id', '=', 'order_items.order_id')
-        ->join('variation', 'order_items.variation_id', '=', 'variation.id')
-        ->join('products', 'variation.product_id', '=', 'products.id')
-        ->with(['order_items.variation', 'order_items.variation.grade_id', 'order_items.stock'])
-        ->where('orders.order_type_id',3)
-        ->when(request('start_date') != '', function ($q) {
-            if(request('adm') > 0){
-                return $q->where('orders.processed_at', '>=', request('start_date', 0));
-            }else{
-                return $q->where('orders.created_at', '>=', request('start_date', 0));
-
-            }
-        })
-        ->when(request('end_date') != '', function ($q) {
-            if(request('adm') > 0){
-                return $q->where('orders.processed_at', '<=', request('end_date', 0) . " 23:59:59");
-            }else{
-                return $q->where('orders.created_at', '<=', request('end_date', 0) . " 23:59:59");
-            }
-        })
-        ->when(request('status') != '', function ($q) {
-            return $q->where('orders.status', request('status'));
-        })
-        ->when(request('adm') != '', function ($q) {
-            if(request('adm') == 0){
-                return $q->where('orders.processed_by', null);
-            }
-            return $q->where('orders.processed_by', request('adm'));
-        })
-        ->when(request('care') != '', function ($q) {
-            return $q->where('order_items.care_id', '!=', null);
-        })
-        ->when(request('order_id') != '', function ($q) {
-            return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
-        })
-        ->when(request('sku') != '', function ($q) {
-            return $q->whereHas('order_items.variation', function ($q) {
-                $q->where('sku', 'LIKE', '%' . request('sku') . '%');
-            });
-        })
-        ->when(request('imei') != '', function ($q) {
-            return $q->whereHas('order_items.stock', function ($q) {
-                $q->where('imei', 'LIKE', '%' . request('imei') . '%');
-            });
-        })
-        ->when(request('tracking_number') != '', function ($q) {
-            return $q->whereHas('order_items.stock', function ($q) {
-                $q->where('tracking_number', 'LIKE', '%' . request('tracking_number') . '%');
-            });
-        })
-        ->orderBy($sort, $by) // Order by variation name
-        ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
-        // ->orderBy('order_items.quantity', 'desc') // Secondary order by reference_id
-        ->select('orders.*');
-
-
-        if(request('bulk_invoice') && request('bulk_invoice') == 1){
-
-            $data['orders2'] = $orders
-            ->get();
-            foreach($data['orders2'] as $order){
-
-                $data2 = [
-                    'order' => $order,
-                    'customer' => $order->customer,
-                    'orderItems' => $order->order_items,
-                ];
-                echo "Hello";
-                Mail::to($order->customer->email)->send(new InvoiceMail($data2));
-
-            }
-            // return redirect()->back();
-
-        }
-        $data['orders'] = $orders
-        ->paginate($per_page)
-        ->onEachSide(5)
-        ->appends(request()->except('page'));
-
-        if(count($data['orders']) == 0 && request('order_id')){
-            $this->recheck(request('order_id'));
-        }
-        // dd($data['orders']);
-        return view('livewire.order')->with($data);
-    }
-    public function purchase()
-    {
-
-        $data['latest_reference'] = Order_model::where('order_type_id',1)->orderBy('reference_id','DESC')->first()->reference_id;
+        // $data['latest_reference'] = Order_model::where('order_type_id',4)->orderBy('reference_id','DESC')->first()->reference_id;
         $data['vendors'] = Customer_model::where('is_vendor',1)->pluck('first_name','id');
         $data['order_statuses'] = Order_status_model::get();
         if(request('per_page') != null){
@@ -193,7 +78,7 @@ class SalesReturn extends Component
 
 
         // dd($data['orders']);
-        return view('livewire.purchase')->with($data);
+        return view('livewire.return')->with($data);
     }
     public function purchase_approve($order_id){
         $order = Order_model::find($order_id);
