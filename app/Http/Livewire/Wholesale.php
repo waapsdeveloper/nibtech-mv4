@@ -223,17 +223,35 @@ class Wholesale extends Component
         return redirect()->back();
     }
 
-    public function check_wholesale_item($order_id){
-        if(ctype_digit(request('imei'))){
-            $i = request('imei');
+    public function check_wholesale_item($order_id, $imei = null, $variation_id = null, $price = null){
+        $issue = [];
+        if(request('imei')){
+            $imei = request('imei');
+        }
+        if(request('variation')){
+            $variation_id = request('variation');
+        }
+        $variation = Variation_model::find($variation_id);
+        if(request('price')){
+            $price = request('price');
+        }else{
+            request()->put('price', $price);
+        }
+
+        if($variation == null){
+            session()->put('error', 'Variation Not Found');
+            return redirect()->back();
+        }
+        if(ctype_digit($imei)){
+            $i = $imei;
             $s = null;
         }else{
             $i = null;
-            $s = request('imei');
+            $s = $imei;
         }
 
         $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
-        if(request('imei') == '' || !$stock || $stock->status == null){
+        if($imei == '' || !$stock || $stock->status == null){
             session()->put('error', 'IMEI Invalid / Not Found');
             return redirect()->back();
 
@@ -266,7 +284,7 @@ class Wholesale extends Component
                 echo "<form id='continueForm' action='" . url('add_wholesale_item') . "/" . $order_id . "' method='POST'>";
                 echo "<input type='hidden' name='_token' value='" . csrf_token() . "'>";
                 echo "<input type='hidden' name='order_id' value='" . $order_id . "'>";
-                echo "<input type='hidden' name='imei' value='" . request('imei') . "'>";
+                echo "<input type='hidden' name='imei' value='" . $imei . "'>";
                 echo "</form>";
                 echo "<a href='javascript:history.back()'>Cancel</a> ";
                 echo "<button onclick='submitForm()'>Continue</button>";
@@ -323,6 +341,28 @@ class Wholesale extends Component
 
         return redirect(url('wholesale/detail').'/'.$order_id);
         // return redirect()->back();
+    }
+    public function remove_issues(){
+        // dd(request('ids'));
+        $ids = request('ids');
+        $issues = Order_issue_model::whereIn('id',$ids)->get();
+        if(request('remove_entries') == 1){
+            $issues->delete();
+        }
+        if(request('insert_variation') == 1){
+            $variation = request('variation');
+            foreach($issues as $issue){
+                $data = json_decode($issue->data);
+                // echo $variation." ".$data->imei." ".$data->cost;
+
+                if($this->add_wholesale_item($issue->order_id, $data->imei, $variation, $data->cost) == 1){
+                    $issue->delete();
+                }
+
+            }
+        }
+        return redirect()->back();
+
     }
     public function add_wholesale_sheet($order_id){
         $issue = [];
