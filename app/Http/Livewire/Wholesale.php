@@ -223,7 +223,7 @@ class Wholesale extends Component
         return redirect()->back();
     }
 
-    public function check_wholesale_item($order_id, $imei = null, $variation_id = null){
+    public function check_wholesale_item($order_id, $imei = null, $variation_id = null, $back = null){
         $issue = [];
         if(request('imei')){
             $imei = request('imei');
@@ -268,10 +268,10 @@ class Wholesale extends Component
 
         if(request('bypass_check') == 1){
 
-            $this->add_wholesale_item($order_id);
+            $this->add_wholesale_item($order_id, $back);
             session()->put('bypass_check', 1);
             request()->merge(['bypass_check'=> 1]);
-            if(request('imei') != null){
+            if($back != 1){
                 return redirect()->back();
             }else{
                 return 1;
@@ -285,7 +285,6 @@ class Wholesale extends Component
                 echo "<input type='hidden' name='_token' value='" . csrf_token() . "'>";
                 echo "<input type='hidden' name='order_id' value='" . $order_id . "'>";
                 echo "<input type='hidden' name='imei' value='" . $imei . "'>";
-                echo "<input type='hidden' name='go' value='1'>";
                 echo "</form>";
                 echo "<a href='javascript:history.back()'>Cancel</a> ";
                 echo "<button onclick='submitForm()'>Continue</button>";
@@ -299,7 +298,7 @@ class Wholesale extends Component
         }
 
     }
-    public function add_wholesale_item($order_id){
+    public function add_wholesale_item($order_id, $back = null){
         if(!request('bypass_check')){
             session()->forget('bypass_check');
         }
@@ -341,7 +340,7 @@ class Wholesale extends Component
         // Delete the temporary file
         // Storage::delete($filePath);
 
-        if(request('go') != 1){
+        if($back != 1){
             return redirect(url('wholesale/detail').'/'.$order_id);
         }else{
             return 1;
@@ -360,8 +359,10 @@ class Wholesale extends Component
             foreach($issues as $issue){
                 $data = json_decode($issue->data);
                 // echo $variation." ".$data->imei." ".$data->cost;
+            session()->put('bypass_check', 1);
+            request()->merge(['bypass_check'=> 1]);
 
-                if($this->check_wholesale_item($issue->order_id, $data->imei, $variation) == 1){
+                if($this->check_wholesale_item($issue->order_id, $data->imei, $variation, 1) == 1){
                     $issue->delete();
                 }
 
