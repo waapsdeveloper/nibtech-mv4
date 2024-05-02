@@ -244,7 +244,7 @@ class Wholesale extends Component
             $i = null;
             $s = $imei;
         }
-
+        dd('Hello');
         $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
         if($imei == '' || !$stock || $stock->status == null){
             session()->put('error', 'IMEI Invalid / Not Found');
