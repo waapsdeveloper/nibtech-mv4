@@ -156,7 +156,7 @@
                                             <td colspan="3" >{{ $grouped_issue->name }}</td>
                                             <td colspan="{{ $col-5 }}">{{ $grouped_issue->message }}</td>
                                             <td colspan="2">
-                                                <form id="order_issues_{{$j+=1}}" method="POST" action="{{ url('purchase/remove_issues') }}">
+                                                <form id="order_issues_{{$j+=1}}" method="POST" action="{{ url('wholesale/remove_issues') }}">
                                                     @csrf
                                                 @switch($grouped_issue->message)
                                                 @case("Item Already added in this order")
