@@ -10,6 +10,7 @@ use App\Models\Stock_model;
     use App\Models\Country_model;
 use App\Models\Grade_model;
 use App\Models\Products_model;
+use App\Models\Stock_operations_model;
 use App\Models\Storage_model;
 use Carbon\Carbon;
 
@@ -75,6 +76,12 @@ class IMEI extends Component
             $data['orders'] = $orders;
             // dd($orders);
 
+            $stocks = Stock_operations_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
+            $data['stocks'] = $stocks;
+            //     dd($stocks);
+            // }
+
+            $data['grade'] = Grade_model::find($grade);
             // if(request('delete') == "YES"){
             //     foreach($orders as $item){
             //         $item->delete();
