@@ -182,7 +182,7 @@
                                                     @case("Product Name Not Found")
 
                                                     <div class="form-floating">
-                                                        <input type="text" list="variations" id="variation" name="variation" class="form-control" value="{{ $grouped_issue->name }}" required>
+                                                        <input type="text" list="variations" id="variation" name="variation" class="form-control" required>
                                                         <datalist id="variations">
                                                             <option value="">Select</option>
                                                             @foreach ($all_variations as $variation)
