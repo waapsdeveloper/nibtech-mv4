@@ -182,7 +182,7 @@
                                                     @case("Product Name Not Found")
 
                                                     <div class="form-floating">
-                                                        <input type="text" list="variations" id="variation" name="variation" class="form-control" required>
+                                                        <input type="text" list="variations" id="variation" name="variation" class="form-control" value="{{ $grouped_issue->name }}" required>
                                                         <datalist id="variations">
                                                             <option value="">Select</option>
                                                             @foreach ($all_variations as $variation)
@@ -235,13 +235,13 @@
                                                 @endforeach
                                                 <td>{{ $row->message }}</td>
                                                 <td>{{ $row->created_at }}</td>
-                                                <td>
+                                                {{-- <td>
                                                     <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                                     <div class="dropdown-menu">
                                                         <a class="dropdown-item" href="">link</a>
                                                         <a class="dropdown-item" href="" target="_blank">link</a>
                                                     </div>
-                                                </td>
+                                                </td> --}}
                                             </tr>
 
                                             @php
