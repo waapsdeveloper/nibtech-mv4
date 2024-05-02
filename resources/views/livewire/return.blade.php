@@ -21,8 +21,9 @@
             <div class="breadcrumb-header justify-content-between">
                 <div class="left-content">
                 {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">Return</span> --}}
-                <a href="javascript:void(0);" class="btn btn-success float-right" data-bs-target="#modaldemo"
-                data-bs-toggle="modal"><i class="mdi mdi-plus"></i> Add Return </a>
+                {{-- <a href="javascript:void(0);" class="btn btn-success float-right" data-bs-target="#modaldemo"
+                data-bs-toggle="modal"><i class="mdi mdi-plus"></i> Add Return </a> --}}
+                <a href="{{url('add_return')}}" class="btn btn-success float-right"><i class="mdi mdi-plus"></i> Add Return </a>
                 </div>
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">

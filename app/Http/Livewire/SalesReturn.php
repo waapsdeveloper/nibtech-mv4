@@ -24,7 +24,10 @@ namespace App\Http\Livewire;
     use Maatwebsite\Excel\Facades\Excel;
     use TCPDF;
     use App\Mail\InvoiceMail;
+use App\Models\Color_model;
+use App\Models\Grade_model;
 use App\Models\Order_issue_model;
+use App\Models\Stock_operations_model;
 use Illuminate\Support\Facades\Mail;
 
 
@@ -58,7 +61,7 @@ class SalesReturn extends Component
             DB::raw('COUNT(order_items.id) as total_quantity'),
             DB::raw('COUNT(CASE WHEN stock.status = 1 THEN order_items.id END) as available_stock'),
             'orders.created_at')
-        ->where('orders.order_type_id', 1)
+        ->where('orders.order_type_id', 4)
         ->join('order_items', 'orders.id', '=', 'order_items.order_id')
         ->join('stock', 'order_items.stock_id', '=', 'stock.id')
         ->when(request('start_date'), function ($q) {
@@ -80,7 +83,7 @@ class SalesReturn extends Component
         // dd($data['orders']);
         return view('livewire.return')->with($data);
     }
-    public function purchase_approve($order_id){
+    public function return_approve($order_id){
         $order = Order_model::find($order_id);
         $order->tracking_number = request('tracking_number');
         $order->status = 3;
@@ -124,7 +127,7 @@ class SalesReturn extends Component
         }
         Order_model::where('id',$order_id)->delete();
         Order_issue_model::where('order_id',$order_id)->delete();
-        return redirect(url('purchase'));
+        return redirect(url('return'));
     }
     public function delete_order_item($item_id){
 
@@ -156,7 +159,57 @@ class SalesReturn extends Component
 
         return redirect()->back();
     }
-    public function purchase_detail($order_id){
+    public function return_detail($order_id){
+
+        $data['imei'] = request('imei');
+        if (request('imei')) {
+            if (ctype_digit(request('imei'))) {
+                $i = request('imei');
+                $s = null;
+            } else {
+                $i = null;
+                $s = request('imei');
+            }
+
+            $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
+
+            $data['products'] = Products_model::orderBy('model','asc')->get();
+            $data['colors'] = Color_model::all();
+            $data['storages'] = Storage_model::all();
+            $data['grades'] = Grade_model::all();
+            if (request('imei') == '' || !$stock || $stock->status == null) {
+                session()->put('error', 'IMEI Invalid / Not Found');
+                // return redirect()->back(); // Redirect here is not recommended
+                return view('livewire.imei', $data); // Return the Blade view instance with data
+            }
+            $sale_status = Order_item_model::where(['stock_id'=>$stock->id,'linked_id'=>$stock->purchase_item->id])->first();
+            if($stock->status == 1){
+                if($sale_status != null){
+                    $stock->status = 2;
+                    $stock->save();
+                    session()->put('success', 'IMEI Sold');
+                }else{
+                    session()->put('success', 'IMEI Available');
+                }
+            }
+            if($stock->status == 2){
+                if($sale_status == null){
+                    $stock->status = 1;
+                    $stock->save();
+                    session()->put('success', 'IMEI Available');
+                }else{
+                    session()->put('success', 'IMEI Sold');
+                }
+            }
+            $stock_id = $stock->id;
+            $orders = Order_item_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
+            $data['stock'] = $stock;
+            $data['orders'] = $orders;
+            // dd($orders);
+
+            $stocks = Stock_operations_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
+            $data['stocks'] = $stocks;
+        }
 
         $data['storages'] = Storage_model::pluck('name','id');
         $data['variations'] = Variation_model::with(['stocks' => function ($query) use ($order_id) {
@@ -201,187 +254,22 @@ class SalesReturn extends Component
 
         // echo "</pre>";
         // dd($data['variations']);
-        return view('livewire.purchase_detail')->with($data);
+        return view('livewire.return_detail')->with($data);
 
     }
-    public function add_purchase(){
+    public function add_return(){
 
-        // dd(request('purchase'));
-        $purchase = (object) request('purchase');
-        $error = "";
-        $issue = [];
-        // Validate the uploaded file
-        request()->validate([
-            'purchase.sheet' => 'required|file|mimes:xlsx,xls',
+        $order = Order_model::create([
+            'reference_id' => 11001,
+            'status' => 1,
+            'currency' => 4,
+            'order_type_id' => 4,
+            'processed_by' => session('user_id')
         ]);
 
-        // Store the uploaded file in a temporary location
-        $filePath = request()->file('purchase.sheet')->store('temp');
-
-        // // Perform operations on the Excel file
-        // $spreadsheet = IOFactory::load(storage_path('app/'.$filePath));
-        // // Perform your operations here...
-
-        // Replace 'your-excel-file.xlsx' with the actual path to your Excel file
-        $excelFilePath = storage_path('app/'.$filePath);
-
-        $data = Excel::toArray([], $excelFilePath)[0];
-        $dh = $data[0];
-        // print_r($dh);
-        unset($data[0]);
-        $arrayLower = array_map('strtolower', $dh);
-        // Search for the lowercase version of the search value in the lowercase array
-        $name = array_search('name', $arrayLower);
-        if(!$name){
-            print_r($dh);
-            session()->put('error', "Heading not Found(name, imei, cost)");
-            return redirect()->back();
-        }
-        // echo $name;
-        $imei = array_search('imei', $arrayLower);
-        // echo $imei;
-        $cost = array_search('cost', $arrayLower);
-        // echo $cost;
-        $grade = 9;
-
-
-        $order = Order_model::firstOrNew(['reference_id' => $purchase->reference_id, 'order_type_id' => $purchase->type ]);
-        $order->customer_id = $purchase->vendor;
-        $order->status = 2;
-        $order->currency = 4;
-        $order->order_type_id = $purchase->type;
-        $order->processed_by = session('user_id');
-        $order->created_at = now()->format('Y-m-d H:i:s');
-        $order->save();
-
-        $storages = Storage_model::pluck('name','id')->toArray();
-
-        $products = Products_model::pluck('model','id')->toArray();
-
-        // $variations = Variation_model::where('grade',$grade)->get();
-
-        foreach($data as $dr => $d){
-            // $name = ;
-            // echo $dr." ";
-            // print_r($d);
-            $n = trim($d[$name]);
-            if(ctype_digit($d[$imei])){
-                $i = $d[$imei];
-                $s = null;
-            }else{
-                $i = null;
-                $s = $d[$imei];
-            }
-            if(trim($d[$imei]) == ''){
-                continue;
-            }
-            if(trim($n) == ''){
-                continue;
-            }
-            $c = $d[$cost];
-            if(trim($c) == ''){
-                continue;
-            }
-            $names = explode(" ",$n);
-            $last = end($names);
-            if(in_array($last, $storages)){
-                $gb = array_search($last,$storages);
-                array_pop($names);
-                $n = implode(" ", $names);
-            }else{
-                $gb = null;
-            }
-            // $last2 = end($names);
-            // if($last2 == "5G"){
-            //     array_pop($names);
-            //     $n = implode(" ", $names);
-            // }
-            if(in_array(strtolower($n), array_map('strtolower',$products)) && ($i != null || $s != null)){
-                $product = array_search(strtolower($n), array_map('strtolower',$products));
-                $storage = $gb;
-
-                // echo $product." ".$grade." ".$storage." | ";
-
-                $variation = Variation_model::firstOrNew(['product_id' => $product, 'grade' => $grade, 'storage' => $storage]);
-                $stock = Stock_model::firstOrNew(['imei' => $i, 'serial_number' => $s]);
-                if($stock->id != null && $stock->status == 1){
-                    if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
-                    $issue[$dr]['data']['row'] = $dr;
-                    $issue[$dr]['data']['name'] = $n;
-                    $issue[$dr]['data']['storage'] = $st;
-                    $issue[$dr]['data']['imei'] = $i.$s;
-                    $issue[$dr]['data']['cost'] = $c;
-                    if($stock->order_id == $order->id){
-                        $issue[$dr]['message'] = 'Item already added in this order';
-                    }else{
-                        if($stock->status != 2){
-                            $issue[$dr]['message'] = 'Item already available in inventory under order reference '.$stock->order->reference_id;
-                        }else{
-                            $issue[$dr]['message'] = 'Item previously purchased in order reference '.$stock->order->reference_id;
-                        }
-
-                    }
-
-
-                }else{
-                    $variation->stock += 1;
-                    $variation->status = 1;
-                    $variation->save();
-
-                    $stock->product_id = $product;
-                    $stock->variation_id = $variation->id;
-                    $stock->added_by = session('user_id');
-                    $stock->order_id = $order->id;
-                    $stock->status = 1;
-                    $stock->save();
-
-                    $order_item = Order_item_model::firstOrNew(['order_id' => $order->id, 'variation_id' => $variation->id, 'stock_id' => $stock->id]);
-                    $order_item->quantity = 1;
-                    $order_item->price = $c;
-                    $order_item->status = 3;
-                    $order_item->save();
-
-                }
-
-            }else{
-                if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
-                if($n != null){
-                    $error .= $n . " " . $st . " " . $i.$s . " || ";
-                    $issue[$dr]['data']['row'] = $dr;
-                    $issue[$dr]['data']['name'] = $n;
-                    $issue[$dr]['data']['storage'] = $st;
-                    $issue[$dr]['data']['imei'] = $i.$s;
-                    $issue[$dr]['data']['cost'] = $c;
-                    if($i == null && $s == null){
-                        $issue[$dr]['message'] = 'IMEI/Serial Not Found';
-                    }else{
-                        $issue[$dr]['message'] = 'Product Name Not Found';
-                    }
-
-                }
-            }
-
-        }
-
-        // Delete the temporary file
-        // Storage::delete($filePath);
-        if($error != ""){
-
-            session()->put('error', $error);
-            session()->put('missing', $issue);
-        }
-        if($issue != []){
-            foreach($issue as $row => $datas){
-                Order_issue_model::create([
-                    'order_id' => $order->id,
-                    'data' => json_encode($datas['data']),
-                    'message' => $datas['message'],
-                ]);
-            }
-        }
-        return redirect(url('purchase/detail').'/'.$order->id);
+        return redirect(url('return/detail').'/'.$order->id);
     }
-    private function insert_purchase_item($products, $storages, $order, $n, $c, $i, $s, $g = null, $dr = null){
+    private function insert_return_item($products, $storages, $order, $n, $c, $i, $s, $g = null, $dr = null){
 
         $names = explode(" ",$n);
         $last = end($names);
@@ -408,7 +296,7 @@ class SalesReturn extends Component
                 if($stock->status != 2){
                     $issue['message'] = 'IMEI Available In Inventory';
                 }else{
-                    $issue['message'] = 'IMEI Repurchase';
+                    $issue['message'] = 'IMEI Rereturn';
                 }
             }
 
@@ -469,7 +357,7 @@ class SalesReturn extends Component
         }
 
     }
-    public function add_purchase_item($order_id, $imei = null, $variation_id = null, $price = null){
+    public function add_return_item($order_id, $imei = null, $variation_id = null, $price = null){
         $issue = [];
         if(request('imei')){
             $imei = request('imei');
@@ -510,7 +398,7 @@ class SalesReturn extends Component
                 if($stock->status != 2){
                     $issue['message'] = 'IMEI Available In Inventory';
                 }else{
-                    $issue['message'] = 'IMEI Repurchase';
+                    $issue['message'] = 'IMEI Rereturn';
                 }
             }
             // $stock->status = 2;
@@ -566,7 +454,7 @@ class SalesReturn extends Component
                 $data = json_decode($issue->data);
                 // echo $variation." ".$data->imei." ".$data->cost;
 
-                if($this->add_purchase_item($issue->order_id, $data->imei, $variation, $data->cost) == 1){
+                if($this->add_return_item($issue->order_id, $data->imei, $variation, $data->cost) == 1){
                     $issue->delete();
                 }
 
@@ -937,7 +825,7 @@ class SalesReturn extends Component
             $stock->save();
 
             $item->stock_id = $stock->id;
-            $item->linked_id = $stock->purchase_item->id;
+            $item->linked_id = $stock->return_item->id;
             $item->save();
 
             $message = "Hi, here is the correct IMEI/Serial number for this order. \n".$imei.$serial_number." ".$stock->tester."\n Regards, \n" . session('fname');

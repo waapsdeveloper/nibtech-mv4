@@ -18,6 +18,9 @@ class Order_model extends Model
     protected $fillable = [
         // other fields...
         'reference_id',
+        'status',
+        'currency',
+        'processed_by',
         'order_type_id',
     ];
     public function currency_id()

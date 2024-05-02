@@ -196,6 +196,9 @@
                                             @php
                                                 $row = json_decode($row);
                                             // print_r($row);
+                                            @endphp
+                                            @if ($row != null)
+                                            @php
                                             // echo "<br>";
                                             // echo "<br>";
                                                 $data = json_decode($row->data);
@@ -228,6 +231,7 @@
                                             // echo " | ";
                                                 $i++;
                                             @endphp
+                                            @endif
                                             {{-- @endforeach --}}
                                         {{-- @endif --}}
                                         @endforeach

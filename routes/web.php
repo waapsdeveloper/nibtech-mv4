@@ -69,7 +69,7 @@ Route::post('purchase/approve/{id}', [Order::class,'purchase_approve'])->name('p
 Route::post('purchase/remove_issues', [Order::class,'remove_issues'])->name('remove_purchase_issues');
 
 Route::get('return', SalesReturn::class)->name('view_return');
-Route::post('add_return', [SalesReturn::class,'add_return'])->name('add_return');
+Route::get('add_return', [SalesReturn::class,'add_return'])->name('add_return');
 Route::post('add_return_item/{id}', [SalesReturn::class,'add_return_item'])->name('add_return_item');
 Route::get('delete_return/{id}', [SalesReturn::class,'delete_return'])->name('delete_return');
 Route::get('delete_return_item/{id}', [SalesReturn::class,'delete_return_item'])->name('delete_return_item');
