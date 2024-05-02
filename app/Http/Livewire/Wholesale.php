@@ -235,7 +235,11 @@ class Wholesale extends Component
 
         if($variation == null){
             session()->put('error', 'Variation Not Found');
-            return redirect()->back();
+            if($back != 1){
+                return redirect()->back();
+            }else{
+                return 1;
+            }
         }
         if(ctype_digit($imei)){
             $i = $imei;
@@ -244,32 +248,46 @@ class Wholesale extends Component
             $i = null;
             $s = $imei;
         }
-        dd('Hello');
         $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
         if($imei == '' || !$stock || $stock->status == null){
             session()->put('error', 'IMEI Invalid / Not Found');
-            return redirect()->back();
+            if($back != 1){
+                return redirect()->back();
+            }else{
+                return 1;
+            }
 
         }
 
         if($stock->status != 1){
             session()->put('error', "Stock Already Sold");
-            return redirect()->back();
+            if($back != 1){
+                return redirect()->back();
+            }else{
+                return 1;
+            }
         }
         if($stock->order->status == 2){
             session()->put('error', "Stock List Awaiting Approval");
-            return redirect()->back();
+            if($back != 1){
+                return redirect()->back();
+            }else{
+                return 1;
+            }
         }
         $variation = Variation_model::where(['id' => $stock->variation_id])->first();
         if($stock->status != 1){
             session()->put('error', 'Stock already sold');
-            return redirect()->back();
+            if($back != 1){
+                return redirect()->back();
+            }else{
+                return 1;
+            }
         }
 
         if(request('bypass_check') == 1){
 
             $this->add_wholesale_item($order_id, $back);
-            dd("he");
             session()->put('bypass_check', 1);
             request()->merge(['bypass_check'=> 1]);
             if($back != 1){
@@ -279,7 +297,6 @@ class Wholesale extends Component
             }
         }else{
             session()->forget('bypass_check');
-            dd("hell");
             // request()->merge(['bypass_check' => null]);
             if($variation->grade != 10){
                 echo "<p>This IMEI does not belong to Wholesale. Do you want to continue?</p>";
