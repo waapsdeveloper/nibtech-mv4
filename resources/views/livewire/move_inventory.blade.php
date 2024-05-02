@@ -130,12 +130,17 @@
                         </div>
                         <div class="col-md col-sm-2">
                             <div class="form-floating">
-                                <input type="text" class="form-control focused" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" onload="this.focus()" autofocus>
+                                <input type="text" class="form-control focused" id="imeiInput" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" onload="this.focus()" autofocus>
                                 <label for="">IMEI</label>
                             </div>
                         </div>
                             <button class="btn btn-primary pd-x-20" type="submit">Send</button>
                     </div>
+                    <script>
+                        window.onload = function() {
+    document.getElementById('imeiInput').focus();
+};
+                    </script>
                 </form>
             </div>
         </div>
