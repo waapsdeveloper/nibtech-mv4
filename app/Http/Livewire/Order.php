@@ -289,7 +289,7 @@ class Order extends Component
         )
         ->groupBy('name', 'message')
         ->get();
-        // dd($order_issues);
+        dd($order_issues);
 
         $data['order_issues'] = $order_issues;
         // dd($data['missing_stock']);
