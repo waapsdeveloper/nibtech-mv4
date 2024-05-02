@@ -74,10 +74,19 @@ class Order extends Component
         ->with(['order_items.variation', 'order_items.variation.grade_id', 'order_items.stock'])
         ->where('orders.order_type_id',3)
         ->when(request('start_date') != '', function ($q) {
-            return $q->where('orders.created_at', '>=', request('start_date', 0));
+            if(request('adm') > 0){
+                return $q->where('orders.processed_at', '>=', request('start_date', 0));
+            }else{
+                return $q->where('orders.created_at', '>=', request('start_date', 0));
+
+            }
         })
         ->when(request('end_date') != '', function ($q) {
-            return $q->where('orders.created_at', '<=', request('end_date', 0) . " 23:59:59");
+            if(request('adm') > 0){
+                return $q->where('orders.processed_at', '<=', request('end_date', 0) . " 23:59:59");
+            }else{
+                return $q->where('orders.created_at', '<=', request('end_date', 0) . " 23:59:59");
+            }
         })
         ->when(request('status') != '', function ($q) {
             return $q->where('orders.status', request('status'));
