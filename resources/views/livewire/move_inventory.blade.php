@@ -129,8 +129,7 @@
                         </div>
                         <div class="col-md col-sm-2">
                             <div class="form-floating">
-                                <input type="text" class="form-control pd-x-20" value="{{session('description')}}" name="description" placeholder="Reason" style="width: 370px;">
-                                {{-- <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset"> --}}
+                                <input type="text" class="form-control pd-x-20" value="{{session('description')}}" name="description" placeholder="Reason">
                                 <label for="">Reason</label>
                             </div>
                         </div>
