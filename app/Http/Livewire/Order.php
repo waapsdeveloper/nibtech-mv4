@@ -917,13 +917,16 @@ class Order extends Component
                 //
                 // }
                 // if($stock[$i]){
-                    $stock_operation = Stock_operations_model::create([
-                        'stock_id' => $stock[$i]->id,
-                        'old_variation_id' => $stock[$i]->variation_id,
-                        'new_variation_id' => $variant->id,
-                        'description' => "Grade Sold",
-                        'admin_id' => session('user_id'),
-                    ]);
+                    if($stock[$i]->variation_id != $variant->id){
+
+                        $stock_operation = Stock_operations_model::create([
+                            'stock_id' => $stock[$i]->id,
+                            'old_variation_id' => $stock[$i]->variation_id,
+                            'new_variation_id' => $variant->id,
+                            'description' => "Grade Sold",
+                            'admin_id' => session('user_id'),
+                        ]);
+                    }
                     $stock[$i]->variation_id = $variant->id;
                     $stock[$i]->tester = $tester[$i];
                     $stock[$i]->status = 2;
