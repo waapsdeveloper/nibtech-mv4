@@ -75,7 +75,6 @@ Route::get('delete_return/{id}', [SalesReturn::class,'delete_return'])->name('de
 Route::get('delete_return_item/{id}', [SalesReturn::class,'delete_return_item'])->name('delete_return_item');
 Route::get('return/detail/{id}', [SalesReturn::class,'return_detail'])->name('return_detail');
 Route::post('return/approve/{id}', [SalesReturn::class,'return_approve'])->name('return_approve');
-Route::post('return/remove_issues', [SalesReturn::class,'remove_issues'])->name('remove_return_issues');
 
 Route::get('wholesale', Wholesale::class)->name('view_wholesale');
 Route::post('add_wholesale', [Wholesale::class,'add_wholesale'])->name('add_wholesale');

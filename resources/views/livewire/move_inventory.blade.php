@@ -144,8 +144,8 @@
                     </div>
                     <script>
                         window.onload = function() {
-    document.getElementById('imeiInput').focus();
-};
+                            document.getElementById('imeiInput').focus();
+                        };
                     </script>
                 </form>
             </div>
@@ -229,6 +229,7 @@
                                         <th><small><b>IMEI</b></small></th>
                                         <th><small><b>Vendor | Lot</b></small></th>
                                         <th><small><b>Reason</b></small></th>
+                                        <th><small><b>Processor</b></small></th>
                                         <th><small><b>DateTime</b></small></th>
                                         <th><small><b></b></small></th>
 
@@ -288,18 +289,6 @@
 
     @section('scripts')
 
-    <script>
-        $('#correction_model').on('show.bs.modal', function (event) {
-            var button = $(event.relatedTarget) // Button that triggered the modal
-            var reference = button.data('bs-reference') // Extract info from data-* attributesv
-            var item = button.data('bs-item') // Extract info from data-* attributes
-            // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
-            // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
-            var modal = $(this)
-            modal.find('.modal-body #order_reference').val(reference)
-            modal.find('.modal-body #item_id').val(item)
-            })
-    </script>
 		<!--Internal Sparkline js -->
 		<script src="{{asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js')}}"></script>
 

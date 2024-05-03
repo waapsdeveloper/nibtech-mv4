@@ -30,6 +30,10 @@ class Stock_model extends Model
     {
         return $this->hasMany(Order_item_model::class, 'stock_id', 'id');
     }
+    public function latest_operation()
+    {
+        return $this->hasOne(Stock_operations_model::class, 'stock_id', 'id')->where('new_variation_id', $this->variation_id)->orderBy('id','desc');
+    }
     public function order()
     {
         return $this->hasOne(Order_model::class, 'id', 'order_id');

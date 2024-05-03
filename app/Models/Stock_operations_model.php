@@ -20,6 +20,12 @@ class Stock_operations_model extends Model
         'new_variation_id',
         'description',
     ];
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+
+        $this->attributes['admin_id'] = session('user_id');
+    }
     public function stock()
     {
         return $this->hasOne(Stock_model::class, 'id', 'stock_id');
