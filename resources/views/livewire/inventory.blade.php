@@ -259,10 +259,10 @@
                                             @if (session('user')->hasPermission('view_cost'))
                                             <td>{{ $stock->order->currency_id->sign ?? null }}{{$stock->order_item[0]->price ?? null }}</td>
                                             @endif
-                                            <td>@if ($stock->latest_variation)
-                                                {{ $stock->latest_variation->description }}
-                                            @endif</td>
                                             <td>{{ $stock->updated_at }}</td>
+                                            @if ($stock->latest_operation)<td>
+                                                {{ $stock->latest_operation->description }}
+                                            </td>@endif
                                         </tr>
 
                                         @php
