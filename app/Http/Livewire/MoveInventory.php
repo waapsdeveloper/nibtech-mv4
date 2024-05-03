@@ -6,6 +6,7 @@ use App\Models\Color_model;
 use Livewire\Component;
 use App\Models\Stock_model;
 use App\Models\Grade_model;
+use App\Models\Order_model;
 use App\Models\Products_model;
 use App\Models\Stock_operations_model;
 use App\Models\Storage_model;
@@ -62,7 +63,6 @@ class MoveInventory extends Component
     }
 
     public function change_grade(){
-        $grade = request('grade');
         $description = request('description');
         if(request('grade')){
             session()->put('grade',request('grade'));
@@ -89,6 +89,7 @@ class MoveInventory extends Component
             $product_id = $stock->variation->product_id;
             $storage = $stock->variation->storage;
             $color = $stock->variation->color;
+            $grade = $stock->variation->grade;
             if(session('user')->hasPermission('change_variation')){
                 if(request('product') != ''){
                     $product_id = request('product');
@@ -99,13 +100,18 @@ class MoveInventory extends Component
                 if(request('color') != ''){
                     $color = request('color');
                 }
+                if(request('grade') != ''){
+                    $grade = request('grade');
+                }
                 if(request('price') != ''){
                     $price = request('price');
-                    $p_order = $stock->order;
+                    $p_order = $stock->purchase_item;
 
                     $description .= "Price changed from ".$p_order->price;
                     $p_order->price = $price;
                     $p_order->save();
+
+                    // dd($p_order);
                 }
             }
 
@@ -116,7 +122,7 @@ class MoveInventory extends Component
                 'grade' => $grade,
             ]);
             $new_variation->status = 1;
-            if($new_variation->id && $stock->variation_id == $new_variation->id){
+            if($new_variation->id && $stock->variation_id == $new_variation->id && request('price') == null){
                 session()->put('error', 'Stock already exist in this variation');
                 return redirect()->back();
 
