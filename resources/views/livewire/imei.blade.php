@@ -151,9 +151,9 @@
                                                 <td>{{ $item->quantity }}</td>
 
                                                 @if ($order->order_type_id == 1 && session('user')->hasPermission('view_cost'))
-                                                    <td>{{$item->price}}</td>
+                                                    <td>{{ $order->currency_id->sign.number_format($item->price,2) }}</td>
                                                 @elseif (session('user')->hasPermission('view_price'))
-                                                    <td>{{ $item->price }}</td>
+                                                    <td>{{ $order->currency_id->sign.number_format($item->price,2) }}</td>
                                                 @endif
 
                                                 @if ($order->status == 3)
