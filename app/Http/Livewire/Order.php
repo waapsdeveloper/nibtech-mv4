@@ -923,7 +923,7 @@ class Order extends Component
                             'stock_id' => $stock[$i]->id,
                             'old_variation_id' => $stock[$i]->variation_id,
                             'new_variation_id' => $variant->id,
-                            'description' => "Grade Sold",
+                            'description' => "Grade changed for Sell",
                             'admin_id' => session('user_id'),
                         ]);
                     }
