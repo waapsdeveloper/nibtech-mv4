@@ -149,6 +149,13 @@
                                                     @endif
                                                 </td>
                                                 <td>{{ $item->quantity }}</td>
+
+                                                @if ($order->order_type_id == 1 && session('user')->hasPermission('view_cost'))
+                                                    <td>{{$item->price}}</td>
+                                                @elseif (session('user')->hasPermission('view_price'))
+                                                    <td>{{ $item->price }}</td>
+                                                @endif
+
                                                 @if ($order->status == 3)
                                                 <td style="width:240px" class="text-success text-uppercase" title="{{ $item->stock_id }}" id="copy_imei_{{ $order->id }}">
                                                     @isset($item->stock->imei) {{ $item->stock->imei }}&nbsp; @endisset

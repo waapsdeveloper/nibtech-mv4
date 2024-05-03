@@ -378,7 +378,7 @@
                     <div class="d-flex justify-content-between">
                         <div>
                             <label for="unit-price" class="">Change Unit Price: </label>
-                            <input type="number" name="unit_price" id="unit_price" class="w-50 border-0" placeholder="Input Unit price" form="update_prices_{{ $variation->id }}">
+                            <input type="number" name="unit_price" id="unit_price" step="0.01" class="w-50 border-0" placeholder="Input Unit price" form="update_prices_{{ $variation->id }}">
                         </div>
                         <div>Average: {{$total/$i }}</div>
                         <div>Total: {{$i }}</div>
