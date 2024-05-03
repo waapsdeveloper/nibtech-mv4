@@ -228,9 +228,9 @@
                     @endphp
                     @foreach ($orderItems as $item)
                         @php
-                            $itemTotal = $item->quantity * $item->price;
+                            $itemTotal = $item->price;
                             $totalAmount += $itemTotal;
-                            $totalQty += $item->quantity;
+                            $totalQty += 1;
 
                             if($item->variation->storage_id){
                                 $storage = $item->variation->storage_id->name . " - " ;
@@ -246,7 +246,7 @@
                         <tr>
                             <td width="320">{{ $item->variation->product->model . " - " . $storage . $color . $item->variation->grade_id->name }} <br> {{  $item->stock->imei . $item->stock->serial_number . " - " . $item->stock->tester }}</td>
                             <td width="80" align="right">{{ $order->currency_id->sign }}{{ number_format($item->price,2) }}</td>
-                            <td width="40">{{ $item->quantity }}</td>
+                            <td width="40"> 1 </td>
                             <td width="90" align="right">{{ $order->currency_id->sign }}{{ number_format($item->quantity * $item->price,2) }}</td>
                         </tr>
                     @endforeach

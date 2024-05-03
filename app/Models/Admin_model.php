@@ -16,7 +16,7 @@ class Admin_model extends Model
 
     protected $table = 'admin';
     protected $primaryKey = 'id';
-    public $timestamps = FALSE;
+    // public $timestamps = FALSE;
 
     protected $fillable = [
         'first_name',
