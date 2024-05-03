@@ -109,6 +109,7 @@
                                         <th><small><b>Customer / Vendor</b></small></th>
                                         <th><small><b>Product</b></small></th>
                                         <th><small><b>Qty</b></small></th>
+                                        <th><small><b>Price</b></small></th>
                                         <th><small><b>IMEI</b></small></th>
                                         <th><small><b>Creation Date | TN</b></small></th>
                                     </tr>
@@ -149,13 +150,13 @@
                                                     @endif
                                                 </td>
                                                 <td>{{ $item->quantity }}</td>
-
+                                                <td>
                                                 @if ($order->order_type_id == 1 && session('user')->hasPermission('view_cost'))
-                                                    <td>{{ $order->currency_id->sign.number_format($item->price,2) }}</td>
+                                                    {{ $order->currency_id->sign.number_format($item->price,2) }}
                                                 @elseif (session('user')->hasPermission('view_price'))
-                                                    <td>{{ $order->currency_id->sign.number_format($item->price,2) }}</td>
+                                                    {{ $order->currency_id->sign.number_format($item->price,2) }}
                                                 @endif
-
+                                                </td>
                                                 @if ($order->status == 3)
                                                 <td style="width:240px" class="text-success text-uppercase" title="{{ $item->stock_id }}" id="copy_imei_{{ $order->id }}">
                                                     @isset($item->stock->imei) {{ $item->stock->imei }}&nbsp; @endisset
