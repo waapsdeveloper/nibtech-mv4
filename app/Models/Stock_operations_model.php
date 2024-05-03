@@ -46,4 +46,8 @@ class Stock_operations_model extends Model
     {
         return $this->hasOne(Variation_model::class, 'id', 'new_variation_id');
     }
+    public function admin()
+    {
+        return $this->hasOne(Admin_model::class, 'id', 'admin_id');
+    }
 }
