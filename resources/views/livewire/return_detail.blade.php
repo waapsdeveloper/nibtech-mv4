@@ -157,7 +157,6 @@
                                         <th><small><b>No</b></small></th>
                                         <th><small><b>Order ID</b></small></th>
                                         <th><small><b>Type</b></small></th>
-                                        <th><small><b>Customer / Vendor</b></small></th>
                                         <th><small><b>Product</b></small></th>
                                         <th><small><b>Qty</b></small></th>
                                         <th><small><b>IMEI</b></small></th>
@@ -182,13 +181,14 @@
                                                     <td><a href="{{url(session('url').'purchase/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
                                                 @elseif ($order->order_type_id == 2)
                                                     <td><a href="{{url(session('url').'rma/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                @elseif ($order->order_type_id == 4)
+                                                    <td><a href="{{url(session('url').'return/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
                                                 @elseif ($order->order_type_id == 5)
                                                     <td><a href="{{url(session('url').'wholesale/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
                                                 @elseif ($order->order_type_id == 3)
                                                     <td>{{ $order->reference_id }}</td>
                                                 @endif
                                                 <td>{{ $order->order_type->name }}</td>
-                                                <td>{{ $order->customer->first_name." ".$order->customer->last_name }}</td>
                                                 <td>
                                                     @if ($item->variation ?? false)
                                                         <strong>{{ $item->variation->sku }}</strong>{{ " - " . $item->variation->product->model . " - " . (isset($item->variation->storage_id)?$item->variation->storage_id->name . " - " : null) . (isset($item->variation->color_id)?$item->variation->color_id->name. " - ":null)}} <strong><u>{{ $item->variation->grade_id->name }}</u></strong>
@@ -198,7 +198,7 @@
                                                     @endif
                                                 </td>
                                                 <td>{{ $item->quantity }}</td>
-                                                @if ($order->status == 3)
+                                                @if ($order->status <= 3)
                                                 <td style="width:240px" class="text-success text-uppercase" title="{{ $item->stock_id }}" id="copy_imei_{{ $order->id }}">
                                                     @isset($item->stock->imei) {{ $item->stock->imei }}&nbsp; @endisset
                                                     @isset($item->stock->serial_number) {{ $item->stock->serial_number }}&nbsp; @endisset
@@ -207,7 +207,7 @@
                                                 </td>
 
                                                 @endif
-                                                @if ($order->status != 3)
+                                                @if ($order->status > 3)
                                                 <td style="width:240px" title="{{ $item->stock_id }}">
                                                         <strong class="text-danger">{{ $order->order_status->name }}</strong>
                                                     @isset($item->stock->imei) {{ $item->stock->imei }}&nbsp; @endisset
@@ -354,16 +354,16 @@
                                         {{-- @if($item->order_item[0]->order_id == $order_id) --}}
                                         @php
                                         $i ++;
-                                        $prices[] = $item->return_item->price;
+                                        $prices[] = $item->sale_item($order_id)->price;
                                     @endphp
                                         <tr>
                                             <td>{{ $i }}</td>
                                             <td data-stock="{{ $item->id }}">{{ $item->imei.$item->serial_number }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
-                                            <td>{{ $currency.$item->return_item->price }}</td>
+                                            <td>{{ $currency.$item->sale_item($order_id)->price }}</td>
                                             @endif
                                             @if (session('user')->hasPermission('delete_return_item'))
-                                            <td><a href="{{ url('delete_order_item').'/'.$item->return_item->id }}"><i class="fa fa-trash"></i></a></td>
+                                            <td><a href="{{ url('delete_order_item').'/'.$item->sale_item($order_id)->id }}"><i class="fa fa-trash"></i></a></td>
                                             @endif
                                         </tr>
                                         {{-- @endif --}}

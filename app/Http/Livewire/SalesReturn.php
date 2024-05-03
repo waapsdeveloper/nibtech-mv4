@@ -97,36 +97,25 @@ class SalesReturn extends Component
             session()->put('error', "Order cannot be deleted");
             return redirect()->back();
         }
+
         $items = Order_item_model::where('order_id',$order_id)->get();
         foreach($items as $orderItem){
             if($orderItem->stock){
                 // Access the variation through orderItem->stock->variation
                 $variation = $orderItem->stock->variation;
 
-                // If a variation record exists and either product_id or sku is not null
-                if ($variation->stock == 1 && $variation->product_id == null && $variation->sku == null) {
-                    // Decrement the stock by 1
-
-                    // Save the variation record
-                    $variation->delete();
-                } else {
-                    $variation->stock -= 1;
-                    // No variation record found or product_id and sku are both null, delete the order item
-                }
-                $stock = Stock_model::find($orderItem->stock_id);
-                if($stock->status == 1){
-                    $stock->delete();
-                }else{
-                    $stock->order_id = null;
-                    $stock->status = null;
-                    $stock->save();
-                }
+                $variation->stock += 1;
+                Stock_model::find($orderItem->stock_id)->update([
+                    'status' => 2
+                ]);
             }
             $orderItem->delete();
         }
         Order_model::where('id',$order_id)->delete();
         Order_issue_model::where('order_id',$order_id)->delete();
-        return redirect(url('return'));
+        session()->put('success', 'Order deleted successfully');
+        return redirect()->back();
+
     }
     public function delete_order_item($item_id){
 
@@ -145,18 +134,14 @@ class SalesReturn extends Component
         // No variation record found or product_id and sku are both null, delete the order item
 
         // $orderItem->stock->delete();
-        $stock = Stock_model::find($orderItem->stock_id);
-        if($stock->status == 1){
-            $stock->delete();
-        }else{
-            $stock->order_id = null;
-            $stock->status = null;
-            $stock->save();
-        }
-
+        Stock_model::find($orderItem->stock_id)->update(['status'=>2]);
         $orderItem->delete();
+        // $orderItem->forceDelete();
+
+        session()->put('success', 'Stock deleted successfully');
 
         return redirect()->back();
+
     }
     public function return_detail($order_id){
 
@@ -218,20 +203,28 @@ class SalesReturn extends Component
             }
 
         }
-
-        $data['variations'] = Variation_model::with(['stocks' => function ($query) use ($order_id) {
-            $query->where('order_id', $order_id);
-        }, 'stocks.order_item' => function ($query) use ($order_id) {
-            $query->where('order_id', $order_id);
-        }])
+        $variations = Variation_model::with([
+            'stocks' => function ($query) use ($order_id) {
+                $query->whereHas('order_item', function ($query) use ($order_id) {
+                    $query->where('order_id', $order_id);
+                });
+            },
+            'stocks.order_item'
+        ])
         ->whereHas('stocks', function ($query) use ($order_id) {
-            $query->where('order_id', $order_id);
+            $query->whereHas('order_item', function ($query) use ($order_id) {
+                $query->where('order_id', $order_id);
+            });
         })
-        // ->whereHas('stocks.order_item', function ($query) use ($order_id) {
-        //     $query->where('order_id', $order_id);
-        // })
         ->orderBy('grade', 'desc')
         ->get();
+
+        // Remove variations with no associated stocks
+        $variations = $variations->filter(function ($variation) {
+            return $variation->stocks->isNotEmpty();
+        });
+
+        $data['variations'] = $variations;
 
         $data['all_variations'] = Variation_model::where('grade',9)->get();
         $data['order'] = Order_model::find($order_id);
@@ -350,6 +343,7 @@ class SalesReturn extends Component
     }
     public function add_return_item($order_id){
         $return = request('return');
+        // print_r($return);
         if($order_id == $return['order_id']){
             $variation = Variation_model::firstOrNew(['product_id' => $return['product'], 'storage' => $return['storage'], 'color' => $return['color'], 'grade' => $return['grade']]);
 
@@ -357,37 +351,45 @@ class SalesReturn extends Component
             $variation->status = 1;
             $variation->save();
 
-            $stock = Stock_model::find($return['stock_id'])->first();
+            $stock = Stock_model::find($return['stock_id']);
+
             if($stock->id){
+                $item = Order_item_model::where(['order_id'=>$order_id, 'stock_id' => $stock->id])->first();
+                // print_r($stock);
+                if($item == null){
 
-            session()->put('error',"Hello");
 
 
-                $order_item = new Order_item_model();
-                $order_item->order_id = $order_id;
-                $order_item->reference_id = $return['reference_id'];
-                $order_item->variation_id = $variation->id;
-                $order_item->stock_id = $stock->id;
-                $order_item->quantity = 1;
-                $order_item->price = $return['price'];
-                $order_item->status = 3;
-                $order_item->linked_id = $return['linked_id'];
-                $order_item->admin_id = session('user_id');
-                $order_item->save();
+                    $order_item = new Order_item_model();
+                    $order_item->order_id = $order_id;
+                    $order_item->reference_id = $return['reference_id'];
+                    $order_item->variation_id = $variation->id;
+                    $order_item->stock_id = $stock->id;
+                    $order_item->quantity = 1;
+                    $order_item->price = $return['price'];
+                    $order_item->status = 3;
+                    $order_item->linked_id = $return['linked_id'];
+                    $order_item->admin_id = session('user_id');
+                    $order_item->save();
 
-                print_r($order_item);
+                    print_r($order_item);
 
-                $stock_operation = Stock_operations_model::create([
-                    'stock_id' => $stock->id,
-                    'old_variation_id' => $stock->variation_id,
-                    'new_variation_id' => $variation->id,
-                    'description' => $return['description'],
-                    'admin_id' => session('user_id'),
-                ]);
+                    $stock_operation = Stock_operations_model::create([
+                        'stock_id' => $stock->id,
+                        'old_variation_id' => $stock->variation_id,
+                        'new_variation_id' => $variation->id,
+                        'description' => $return['description'],
+                        'admin_id' => session('user_id'),
+                    ]);
 
-                $stock->variation_id = $variation->id;
-                $stock->status = 1;
-                $stock->save();
+                    $stock->variation_id = $variation->id;
+                    $stock->status = 1;
+                    $stock->save();
+
+                    session()->put('success','Item added');
+                }else{
+                    session()->put('error','Item already added');
+                }
             }else{
                 session()->put('error','Stock Not Found');
             }
@@ -396,7 +398,7 @@ class SalesReturn extends Component
             session()->put('error',"Don't ANGRY ME");
         }
 
-        // return redirect()->back();
+        return redirect()->back();
 
     }
     public function remove_issues(){

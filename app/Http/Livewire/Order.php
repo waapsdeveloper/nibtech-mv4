@@ -399,26 +399,31 @@ class Order extends Component
                 $gb = null;
             }
             if(trim($d[$imei]) == ''){
-                if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
-                $issue[$dr]['data']['row'] = $dr;
-                $issue[$dr]['data']['name'] = $n;
-                $issue[$dr]['data']['storage'] = $st;
-                $issue[$dr]['data']['imei'] = $i.$s;
-                $issue[$dr]['data']['cost'] = $c;
-                $issue[$dr]['message'] = 'IMEI not Provided';
+                if(trim($n) != '' || trim($c) != ''){
+                    if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
+                    $issue[$dr]['data']['row'] = $dr;
+                    $issue[$dr]['data']['name'] = $n;
+                    $issue[$dr]['data']['storage'] = $st;
+                    $issue[$dr]['data']['imei'] = $i.$s;
+                    $issue[$dr]['data']['cost'] = $c;
+                    $issue[$dr]['message'] = 'IMEI not Provided';
+                }
                 continue;
             }
             if(trim($n) == ''){
-                if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
-                $issue[$dr]['data']['row'] = $dr;
-                $issue[$dr]['data']['name'] = $n;
-                $issue[$dr]['data']['storage'] = $st;
-                $issue[$dr]['data']['imei'] = $i.$s;
-                $issue[$dr]['data']['cost'] = $c;
-                $issue[$dr]['message'] = 'Name not Provided';
+                if(trim($n) != '' || trim($c) != ''){
+                    if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
+                    $issue[$dr]['data']['row'] = $dr;
+                    $issue[$dr]['data']['name'] = $n;
+                    $issue[$dr]['data']['storage'] = $st;
+                    $issue[$dr]['data']['imei'] = $i.$s;
+                    $issue[$dr]['data']['cost'] = $c;
+                    $issue[$dr]['message'] = 'Name not Provided';
+                }
                 continue;
             }
             if(trim($c) == ''){
+                if(trim($n) != '' || trim($c) != ''){
                 if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
                 $issue[$dr]['data']['row'] = $dr;
                 $issue[$dr]['data']['name'] = $n;
@@ -427,6 +432,7 @@ class Order extends Component
                 $issue[$dr]['data']['cost'] = $c;
                 $issue[$dr]['message'] = 'Cost not Provided';
                 continue;
+                }
             }
             // $last2 = end($names);
             // if($last2 == "5G"){
