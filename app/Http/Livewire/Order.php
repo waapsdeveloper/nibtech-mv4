@@ -173,6 +173,7 @@ class Order extends Component
             DB::raw('SUM(order_items.price) as total_price'),
             DB::raw('COUNT(order_items.id) as total_quantity'),
             DB::raw('COUNT(CASE WHEN stock.status = 1 THEN order_items.id END) as available_stock'),
+            'orders.status',
             'orders.created_at')
         ->where('orders.order_type_id', 1)
         ->join('order_items', 'orders.id', '=', 'order_items.order_id')
@@ -186,7 +187,7 @@ class Order extends Component
         ->when(request('order_id'), function ($q) {
             return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
         })
-        ->groupBy('orders.id', 'orders.reference_id', 'orders.customer_id', 'orders.created_at')
+        ->groupBy('orders.id', 'orders.reference_id', 'orders.customer_id', 'orders.status', 'orders.created_at')
         ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
         ->paginate($per_page)
         ->onEachSide(5)
