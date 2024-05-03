@@ -80,7 +80,7 @@ class InventorysheetExport implements FromCollection, WithHeadings
             'Vendor',
             'Reference',
             'Cost',
-            'CHange Grade Reason'
+            'Change Grade Reason'
         ];
     }
 }
