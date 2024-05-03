@@ -98,7 +98,7 @@
                                                     <label class="form-label mg-b-0">Password</label>
                                                 </div>
                                                 <div class="col-md-8 mg-t-5 mg-md-t-0">
-                                                    <input class="form-control" placeholder="Enter password for member" name="password" value="********" type="password">
+                                                    <input class="form-control" placeholder="Enter password for member" name="password" type="password">
                                                 </div>
                                             </div>
                                             <button class="btn btn-primary pd-x-30 mg-r-5 mg-t-5 float-end" >Update</button>

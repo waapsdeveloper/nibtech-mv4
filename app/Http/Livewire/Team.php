@@ -110,8 +110,10 @@ class Team extends Component
             'first_name'=> $f_name,
             'last_name'=> $l_name,
             'email'=> $email,
-            'password'=> Hash::make($password),
         );
+        if($password != null){
+            $data['password'] = Hash::make($password);
+        }
         Admin_model::where('id',$id)->update($data);
         session()->put('success',"Member has been updated successfully");
         return redirect('team');
