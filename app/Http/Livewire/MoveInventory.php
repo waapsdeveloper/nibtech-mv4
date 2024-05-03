@@ -42,22 +42,13 @@ class MoveInventory extends Component
             session()->put('description',request('description'));
         }
 
-        if($grade){
-            // if(isset(session('added_imeis')[$grade])){
-                // $added_imeis = session('added_imeis')[$grade];
-                $stocks = Stock_operations_model::where('created_at','>=',now()->format('Y-m-d')." 00:00:00")
-                ->whereHas('new_variation', function ($query) use ($grade) {
-                    $query->where('grade', $grade);
-                })
-                ->whereHas('stock', function ($query) {
-                    $query->where('status', 1);
-                })->orderBy('id','desc')->get();
-                $data['stocks'] = $stocks;
-            //     dd($stocks);
-            // }
 
-            $data['grade'] = Grade_model::find($grade);
-        }
+            $stocks = Stock_operations_model::where('created_at','>=',now()->format('Y-m-d')." 00:00:00")
+            ->whereHas('stock', function ($query) {
+                $query->where('status', 1);
+            })->orderBy('id','desc')->get();
+            $data['stocks'] = $stocks;
+        $data['grade'] = Grade_model::find($grade);
 
         return view('livewire.move_inventory', $data); // Return the Blade view instance with data
     }
