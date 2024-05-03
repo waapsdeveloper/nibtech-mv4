@@ -25,6 +25,11 @@ class InventorysheetExport implements FromCollection, WithHeadings
             $join->on('stock.id', '=', 'order_items.stock_id')
                  ->whereColumn('order_items.order_id', 'stock.order_id');
         })
+        ->leftJoin('stock_operations', function($join) {
+            $join->on('stock.id', '=', 'stock_operations.stock_id')
+                 ->whereColumn('stock_operations.new_variation_id', 'stock.variation_id')
+                 ->orderBy('id','desc');
+        })
 
         ->select(
             'products.model',
@@ -35,7 +40,8 @@ class InventorysheetExport implements FromCollection, WithHeadings
             'stock.serial_number as serial_number',
             'customer.first_name as vendor',
             'orders.reference_id as reference_id',
-            'order_items.price as cost'
+            'order_items.price as cost',
+            'stock_operations.description as reason'
         )
         ->where('stock.status', 1)
         ->where('orders.deleted_at',null)
@@ -73,7 +79,8 @@ class InventorysheetExport implements FromCollection, WithHeadings
             'Serial Number',
             'Vendor',
             'Reference',
-            'Cost'
+            'Cost',
+            'CHange Grade Reason'
         ];
     }
 }
