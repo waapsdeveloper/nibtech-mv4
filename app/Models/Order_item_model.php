@@ -22,6 +22,10 @@ class Order_item_model extends Model
         'stock_id',
         'care_id',
         'price',
+        'quantity',
+        'status',
+        'linked_id',
+        'admin_id'
     ];
     public function variation()
     {

@@ -186,18 +186,24 @@ class SalesReturn extends Component
                 if($sale_status != null){
                     $stock->status = 2;
                     $stock->save();
-                    session()->put('success', 'IMEI Sold');
                 }else{
-                    session()->put('success', 'IMEI Available');
                 }
             }
             if($stock->status == 2){
                 if($sale_status == null){
                     $stock->status = 1;
                     $stock->save();
-                    session()->put('success', 'IMEI Available');
                 }else{
-                    session()->put('success', 'IMEI Sold');
+                }
+            }
+            if($sale_status != null){
+                $item = Order_item_model::where('stock_id',$stock->id)->orderBy('id','desc')->first();
+                if(in_array($item->order->order_type_id, [3,5])){
+                    $data['restock']['order_id'] = $order_id;
+                    $data['restock']['reference_id'] = $item->order->reference_id;
+                    $data['restock']['stock_id'] = $stock->id;
+                    $data['restock']['price'] = $item->price;
+                    $data['restock']['linked_id'] = $item->id;
                 }
             }
             $stock_id = $stock->id;
@@ -213,7 +219,6 @@ class SalesReturn extends Component
 
         }
 
-        $data['storages'] = Storage_model::pluck('name','id');
         $data['variations'] = Variation_model::with(['stocks' => function ($query) use ($order_id) {
             $query->where('order_id', $order_id);
         }, 'stocks.order_item' => function ($query) use ($order_id) {
@@ -228,22 +233,6 @@ class SalesReturn extends Component
         ->orderBy('grade', 'desc')
         ->get();
 
-        $data['missing_stock'] = Order_item_model::where('order_id',$order_id)->whereHas('stock',function ($q) {
-            $q->where(['imei'=>null,'serial_number'=>null]);
-        })->get();
-        // $order_issues = Order_issue_model::where('order_id',$order_id)->orderBy('message','ASC')->get();
-        $order_issues = Order_issue_model::where('order_id',$order_id)->select(
-            DB::raw('JSON_UNQUOTE(JSON_EXTRACT(data, "$.name")) AS name'),
-            'message',
-            DB::raw('COUNT(*) as count'),
-            DB::raw('GROUP_CONCAT(JSON_OBJECT("id", id, "order_id", order_id, "data", data, "message", message, "created_at", created_at, "updated_at", updated_at)) AS all_rows')
-        )
-        ->groupBy('name', 'message')
-        ->get();
-        // dd($order_issues);
-
-        $data['order_issues'] = $order_issues;
-        // dd($data['missing_stock']);
         $data['all_variations'] = Variation_model::where('grade',9)->get();
         $data['order'] = Order_model::find($order_id);
         $data['order_id'] = $order_id;
@@ -359,88 +348,55 @@ class SalesReturn extends Component
         }
 
     }
-    public function add_return_item($order_id, $imei = null, $variation_id = null, $price = null){
-        $issue = [];
-        if(request('imei')){
-            $imei = request('imei');
-        }
-        if(request('variation')){
-            $variation_id = request('variation');
-        }
-        $variation = Variation_model::find($variation_id);
-        if(request('price')){
-            $price = request('price');
-        }
+    public function add_return_item($order_id){
+        $return = request('return');
+        if($order_id == $return['order_id']){
+            $variation = Variation_model::firstOrNew(['product_id' => $return['product'], 'storage' => $return['storage'], 'color' => $return['color'], 'grade' => $return['grade']]);
 
-        if(ctype_digit($imei)){
-            $i = $imei;
-            $s = null;
-        }else{
-            $i = null;
-            $s = $imei;
-        }
+            $variation->stock += 1;
+            $variation->status = 1;
+            $variation->save();
 
-        if($variation == null){
-            session()->put('error', 'Variation Not Found');
-            return redirect()->back();
-        }
-        $variation->stock += 1;
-        $variation->status = 1;
-        $variation->save();
+            $stock = Stock_model::find($return['stock_id'])->first();
+            if($stock->id){
 
-        $stock = Stock_model::firstOrNew(['imei' => $i, 'serial_number' => $s]);
-        if($stock->id){
-            $issue['data']['variation'] = $variation_id;
-            $issue['data']['imei'] = $i.$s;
-            $issue['data']['cost'] = $price;
-            $issue['data']['stock_id'] = $stock->id;
-            if($stock->order_id == $order_id && $stock->status == 1){
-                $issue['message'] = 'Duplicate IMEI';
+            session()->put('error',"Hello");
+
+
+                $order_item = new Order_item_model();
+                $order_item->order_id = $order_id;
+                $order_item->reference_id = $return['reference_id'];
+                $order_item->variation_id = $variation->id;
+                $order_item->stock_id = $stock->id;
+                $order_item->quantity = 1;
+                $order_item->price = $return['price'];
+                $order_item->status = 3;
+                $order_item->linked_id = $return['linked_id'];
+                $order_item->admin_id = session('user_id');
+                $order_item->save();
+
+                print_r($order_item);
+
+                $stock_operation = Stock_operations_model::create([
+                    'stock_id' => $stock->id,
+                    'old_variation_id' => $stock->variation_id,
+                    'new_variation_id' => $variation->id,
+                    'description' => $return['description'],
+                    'admin_id' => session('user_id'),
+                ]);
+
+                $stock->variation_id = $variation->id;
+                $stock->status = 1;
+                $stock->save();
             }else{
-                if($stock->status != 2){
-                    $issue['message'] = 'IMEI Available In Inventory';
-                }else{
-                    $issue['message'] = 'IMEI Rereturn';
-                }
+                session()->put('error','Stock Not Found');
             }
-            // $stock->status = 2;
+
         }else{
-            $stock->added_by = session('user_id');
-            $stock->order_id = $order_id;
-
-            $stock->product_id = $variation->product_id;
-            $stock->variation_id = $variation->id;
-            $stock->status = 1;
-            $stock->save();
-
-            $order_item = new Order_item_model();
-            $order_item->order_id = $order_id;
-            $order_item->variation_id = $variation->id;
-            $order_item->stock_id = $stock->id;
-            $order_item->quantity = 1;
-            $order_item->price = $price;
-            $order_item->status = 3;
-            $order_item->save();
-
-
+            session()->put('error',"Don't ANGRY ME");
         }
 
-        if($issue != []){
-            Order_issue_model::create([
-                'order_id' => $order_id,
-                'data' => json_encode($issue['data']),
-                'message' => $issue['message'],
-            ]);
-        }else{
-            $issue = 1;
-        }
-        // Delete the temporary file
-        // Storage::delete($filePath);
-        if(request('imei') != null){
-            return redirect()->back();
-        }else{
-            return $issue;
-        }
+        // return redirect()->back();
 
     }
     public function remove_issues(){

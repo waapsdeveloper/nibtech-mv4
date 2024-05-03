@@ -25,6 +25,7 @@ namespace App\Http\Livewire;
     use TCPDF;
     use App\Mail\InvoiceMail;
 use App\Models\Order_issue_model;
+use App\Models\Stock_operations_model;
 use Illuminate\Support\Facades\Mail;
 
 
@@ -49,7 +50,7 @@ class Order extends Component
         $data['admins'] = Admin_model::where('id','!=',1)->get();
         $user_id = session('user_id');
         $data['user_id'] = $user_id;
-        $data['pending_orders_count'] = Order_model::where('status',2)->count();
+        $data['pending_orders_count'] = Order_model::where('order_type_id',3)->where('status',2)->count();
         $data['order_statuses'] = Order_status_model::get();
         if(request('per_page') != null){
             $per_page = request('per_page');
@@ -380,22 +381,13 @@ class Order extends Component
             // echo $dr." ";
             // print_r($d);
             $n = trim($d[$name]);
+            $c = $d[$cost];
             if(ctype_digit($d[$imei])){
                 $i = $d[$imei];
                 $s = null;
             }else{
                 $i = null;
                 $s = $d[$imei];
-            }
-            if(trim($d[$imei]) == ''){
-                continue;
-            }
-            if(trim($n) == ''){
-                continue;
-            }
-            $c = $d[$cost];
-            if(trim($c) == ''){
-                continue;
             }
             $names = explode(" ",$n);
             $last = end($names);
@@ -405,6 +397,36 @@ class Order extends Component
                 $n = implode(" ", $names);
             }else{
                 $gb = null;
+            }
+            if(trim($d[$imei]) == ''){
+                if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
+                $issue[$dr]['data']['row'] = $dr;
+                $issue[$dr]['data']['name'] = $n;
+                $issue[$dr]['data']['storage'] = $st;
+                $issue[$dr]['data']['imei'] = $i.$s;
+                $issue[$dr]['data']['cost'] = $c;
+                $issue[$dr]['message'] = 'IMEI not Provided';
+                continue;
+            }
+            if(trim($n) == ''){
+                if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
+                $issue[$dr]['data']['row'] = $dr;
+                $issue[$dr]['data']['name'] = $n;
+                $issue[$dr]['data']['storage'] = $st;
+                $issue[$dr]['data']['imei'] = $i.$s;
+                $issue[$dr]['data']['cost'] = $c;
+                $issue[$dr]['message'] = 'Name not Provided';
+                continue;
+            }
+            if(trim($c) == ''){
+                if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
+                $issue[$dr]['data']['row'] = $dr;
+                $issue[$dr]['data']['name'] = $n;
+                $issue[$dr]['data']['storage'] = $st;
+                $issue[$dr]['data']['imei'] = $i.$s;
+                $issue[$dr]['data']['cost'] = $c;
+                $issue[$dr]['message'] = 'Cost not Provided';
+                continue;
             }
             // $last2 = end($names);
             // if($last2 == "5G"){
@@ -886,9 +908,17 @@ class Order extends Component
                 //         $add_serial = trim($imei);
                 //     }
                 //     $stock[$i] = Stock_model::firstOrNew(['imei'=>$add_imei,'serial_number'=>$add_serial]);
-                //     $stock[$i]->variation_id = $variant->id;
+                //
                 // }
                 // if($stock[$i]){
+                    $stock_operation = Stock_operations_model::create([
+                        'stock_id' => $stock[$i]->id,
+                        'old_variation_id' => $stock[$i]->variation_id,
+                        'new_variation_id' => $variant->id,
+                        'description' => "Grade Sold",
+                        'admin_id' => session('user_id'),
+                    ]);
+                    $stock[$i]->variation_id = $variant->id;
                     $stock[$i]->tester = $tester[$i];
                     $stock[$i]->status = 2;
                     $stock[$i]->save();

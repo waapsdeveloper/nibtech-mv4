@@ -45,7 +45,7 @@
         <!-- /breadcrumb -->
         <div class="row">
             <div class="col-md-12 tx-center" style="border-bottom: 1px solid rgb(216, 212, 212);">
-                <center><h4>@if ($order->status == 2)<small>(Pending)</small>@endif Return Order Detail</h4></center>
+                <center><h4>@if ($order->status == 1)<small>(Pending)</small>@endif @if ($order->status == 2)<small>(Awaiting Approval)</small>@endif Return Order Detail</h4></center>
                 <h5>Reference: {{ $order->reference_id }} | Total Items: {{ $order->order_items->count() }} | Total Cost: {{ $order->currency_id->sign.number_format($order->order_items->sum('price'),2) }}</h5>
             </div>
         </div>
@@ -62,8 +62,49 @@
                         <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
                 </form>
             </div>
-            @if (session('user')->hasPermission('delete'))
-                {{-- <a href="{{ url('imei')}}?imei={{$imei}}&delete=YES">DELETE</a> --}}
+            @if (session('user')->hasPermission('add_refund_items') && isset($restock))
+                <div class="p-2">
+                    <form action="{{ url('add_return_item').'/'.$order_id}}" method="POST" class="form-inline">
+                        @csrf
+                        <select name="return[product]" class="form-control form-select" style="width: 150px;">
+                            <option value="">Model</option>
+                            @foreach ($products as $product)
+                                <option value="{{ $product->id }}"@if($product->id == $stock->variation->product_id) {{'selected'}}@endif>{{ $product->model }}</option>
+                            @endforeach
+                        </select>
+                        <select name="return[storage]" class="form-control form-select">
+                            <option value="">Storage</option>
+                            @foreach ($storages as $storage)
+                                <option value="{{ $storage->id }}"@if($storage->id == $stock->variation->storage) {{'selected'}}@endif>{{ $storage->name }}</option>
+                            @endforeach
+                        </select>
+                        <select name="return[color]" class="form-control form-select" style="width: 150px;">
+                            <option value="">Color</option>
+                            @foreach ($colors as $color)
+                                <option value="{{ $color->id }}"@if($color->id == $stock->variation->color) {{'selected'}}@endif>{{ $color->name }}</option>
+                            @endforeach
+                        </select>
+                        <select name="return[grade]" class="form-control form-select">
+                            <option value="">Move to</option>
+                            @foreach ($grades as $grade)
+                                <option value="{{ $grade->id }}">{{ $grade->name }}</option>
+                            @endforeach
+                        </select>
+
+                        <div class="form-floating">
+                            <input type="text" class="form-control pd-x-20" name="return[description]" placeholder="Reason" style="width: 270px;">
+                            {{-- <input type="text" class="form-control" name="return[imei]" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset"> --}}
+                            <label for="">Reason</label>
+                        </div>
+
+                        <input type="hidden" name="return[order_id]" value="{{ $restock['order_id'] }}">
+                        <input type="hidden" name="return[reference_id]" value="{{ $restock['reference_id'] }}">
+                        <input type="hidden" name="return[stock_id]" value="{{ $restock['stock_id'] }}">
+                        <input type="hidden" name="return[price]" value="{{ $restock['price'] }}">
+                        <input type="hidden" name="return[linked_id]" value="{{ $restock['linked_id'] }}">
+                        <button class="btn btn-secondary pd-x-20" type="submit">Restock</button>
+                    </form>
+                </div>
             @endif
         </div>
         <hr style="border-bottom: 1px solid rgb(62, 45, 45);">
@@ -265,217 +306,6 @@
         @endif
 
 
-        @if (count($order_issues)>0)
-
-        <div class="row">
-            <div class="col-xl-12">
-                <div class="card">
-                    <div class="card-header pb-0">
-                        <div class="d-flex justify-content-between">
-                            <h4 class="card-title mg-b-0">Order Issues List</h4>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive" style="max-height: 500px">
-                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
-                                @php
-                                    $col = 4;
-                                @endphp
-                                <thead>
-                                    <tr>
-                                        <th><small><b>No</b></small></th>
-                                        {{-- @foreach (json_decode($order_issues[0]->all_rows)[0]->data as $key => $value) --}}
-                                        @foreach (json_decode(json_decode(preg_split('/(?<=\}),(?=\{)/', $order_issues[0]->all_rows)[0])->data) as $key => $value)
-
-                                        @php
-                                            $col ++;
-                                        @endphp
-                                        <th><small><b>{{ $key }}</b></small></th>
-                                        @endforeach
-                                        <th><small><b>Message</b></small></th>
-                                        <th><small><b>Creation Date</b></small></th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @php
-                                        $i = 0;
-                                        $j = 0;
-                                    @endphp
-                                    @foreach ($order_issues as $grouped_issue)
-                                        @php
-                                            // $array = explode('},{',$grouped_issue->all_rows);
-                                            // Split the JSON string into individual JSON objects
-                                            $all_rows = preg_split('/(?<=\}),(?=\{)/', $grouped_issue->all_rows);
-
-                                            // $array[0][0] = '';
-                                            // print_r($array);
-                                            // echo "<br>";
-                                            // echo "<br>";
-                                        @endphp
-                                        <tr class="bg-light tx-center">
-                                            <td colspan="3" >{{ $grouped_issue->name }}</td>
-                                            <td colspan="{{ $col-5 }}">{{ $grouped_issue->message }}</td>
-                                            <td colspan="2">
-                                                <form id="order_issues_{{$j+=1}}" method="POST" action="{{ url('return/remove_issues') }}" class="form-inline">
-                                                    @csrf
-                                                @switch($grouped_issue->message)
-                                                    @case("Item Already added in this order")
-                                                    <button class="btn btn-sm btn-danger m-0" name="remove_entries" value="1">Remove Entries</button>
-
-                                                        @break
-                                                    @case("Product Name Not Found")
-
-                                                    <div class="form-floating">
-                                                        <input type="text" list="variations" id="variation" name="variation" class="form-control" value="{{ $grouped_issue->name }}" required>
-                                                        <datalist id="variations">
-                                                            <option value="">Select</option>
-                                                            @foreach ($all_variations as $variation)
-                                                                @php
-                                                                    if($variation->storage){
-                                                                        $storage = $storages[$variation->storage];
-                                                                    }else{
-                                                                        $storage = null;
-                                                                    }
-                                                                @endphp
-                                                                <option value="{{$variation->id}}" @if(isset($_GET['variation']) && $variation->id == $_GET['variation']) {{'selected'}}@endif>{{$variation->product->model." ".$storage}}</option>
-                                                            @endforeach
-                                                        </datalist>
-                                                        <label for="variation">Variation</label>
-                                                    </div>
-                                                    <button class="btn btn-primary m-0" name="insert_variation" value="1">Insert Variation</button>
-
-                                                        @break
-
-                                                    @default
-
-                                                @endswitch
-                                                </form>
-                                            </td>
-                                        </tr>
-                                        @foreach ($all_rows as $row)
-                                            @php
-                                                $row = json_decode($row);
-                                            // print_r($row);
-                                            @endphp
-                                            @if ($row != null)
-                                            @php
-                                            // echo "<br>";
-                                            // echo "<br>";
-                                                $data = json_decode($row->data);
-                                            // print_r($data);
-                                            @endphp
-
-
-                                        {{-- @if (json_decode($grouped_issue->all_rows) != null) --}}
-
-                                        {{-- @foreach (json_decode($grouped_issue->all_rows) as $key => $issue) --}}
-                                        {{-- @foreach ($grouped_issue->all_rows ? json_decode($grouped_issue->all_rows) : [] as $issue)
-                                        @foreach ($grouped_issue->all_rows ? json_decode($grouped_issue->all_rows) : [] as $issue) --}}
-                                            <input type="hidden" name="ids[]" value="{{$row->id}}" form="order_issues_{{$j}}">
-                                            <tr>
-                                                <td>{{ $i + 1 }}</td>
-                                                @foreach ($data as $key => $value)
-                                                    <td title="{{ $key }}">{{ $value }}</td>
-                                                @endforeach
-                                                <td>{{ $row->message }}</td>
-                                                <td>{{ $row->created_at }}</td>
-                                                {{-- <td>
-                                                    <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
-                                                    <div class="dropdown-menu">
-                                                        <a class="dropdown-item" href="">link</a>
-                                                        <a class="dropdown-item" href="" target="_blank">link</a>
-                                                    </div>
-                                                </td> --}}
-                                            </tr>
-
-                                            @php
-                                            // print_r($issue);
-                                            // echo " | ";
-                                                $i++;
-
-                                            @endphp
-                                            @endif
-                                            {{-- @endforeach --}}
-                                        {{-- @endif --}}
-                                        @endforeach
-                                    @endforeach
-                                </tbody>
-                            </table>
-                            <br>
-                        </div>
-                    </div>
-
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        @endif
-        <br>
-        @if (count($missing_stock)>0)
-
-        <div class="row">
-            <div class="col-xl-12">
-                <div class="card">
-                    <div class="card-header pb-0">
-                        <div class="d-flex justify-content-between">
-                            <h4 class="card-title mg-b-0">Missing IMEI Items</h4>
-                        </div>
-                    </div>
-                    <div class="card-body"><div class="table-responsive" style="max-height: 250px">
-                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
-                                <thead>
-                                    <tr>
-                                        <th><small><b>No</b></small></th>
-                                        <th><small><b>Variation</b></small></th>
-                                        <th><small><b>IMEI | Serial Number</b></small></th>
-                                        <th><small><b>Vendor</b></small></th>
-                                        @if (session('user')->hasPermission('view_cost'))
-                                        <th><small><b>Cost</b></small></th>
-                                        @endif
-                                        <th><small><b>Creation Date</b></small></th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @php
-                                        $i = 0;
-                                    @endphp
-                                    @foreach ($missing_stock as $item)
-                                        <tr>
-                                            <td>{{ $i + 1 }}</td>
-                                            <td>
-
-                                                @php
-                                                isset($item->variation->color_id)?$color = $item->variation->color_id->name:$color = null;
-                                                isset($item->variation->storage)?$storage = $storages[$item->variation->storage]:$storage = null;
-                                                @endphp
-                                                {{ $item->variation->product->model." ".$storage." ".$color." ".$item->variation->grade_id->name }}
-                                            </td>
-                                            <td data-stock="{{ $item->stock_id }}">{{ $item->stock->imei.$item->stock->serial_number }}</td>
-                                            <td>{{ $item->stock->order->customer->first_name }}</td>
-                                            @if (session('user')->hasPermission('view_cost'))
-                                            <td>{{ $currency.number_format($item->price,2) }}</td>
-                                            @endif
-                                            <td style="width:220px">{{ $item->created_at }}</td>
-                                            <td><a href="{{ url('delete_rma_item').'/'.$item->id }}"><i class="fa fa-trash"></i></a></td>
-                                        </tr>
-                                        @php
-                                            $i ++;
-                                        @endphp
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        <br>
-                    </div>
-
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        @endif
         <br>
 
         <div class="row">
