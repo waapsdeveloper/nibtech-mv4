@@ -973,10 +973,11 @@ class Order extends Component
                         $new_item->variation_id = $item->variation_id;
                         $new_item->quantity = $item->quantity;
                         $new_item->status = $item->status;
+                        $new_item->price = $item->price;
                     }else{
                         $new_item = $item;
+                        $new_item->price = $item->price/count($each);
                     }
-                    $new_item->price = $item->price/count($each);
                     if($stock[$idt]){
                     $new_item->stock_id = $stock[$idt]->id;
                     // $new_item->linked_id = Order_item_model::where(['order_id'=>$stock[$idt]->order_id,'stock_id'=>$stock[$idt]->id])->first()->id;

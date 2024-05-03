@@ -109,6 +109,12 @@
                                 @endforeach
                             </select>
                         </div>
+                        <div class="col-md col-sm-2">
+                            <div class="form-floating">
+                                <input type="text" class="form-control pd-x-20" value="" name="price" placeholder="Price">
+                                <label for="">Price</label>
+                            </div>
+                        </div>
                         </div>
                         <br>
                     @endif

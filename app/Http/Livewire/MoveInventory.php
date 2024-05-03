@@ -99,6 +99,14 @@ class MoveInventory extends Component
                 if(request('color') != ''){
                     $color = request('color');
                 }
+                if(request('price') != ''){
+                    $price = request('price');
+                    $p_order = $stock->order;
+
+                    $description .= "Price changed from ".$p_order->price;
+                    $p_order->price = $price;
+                    $p_order->save();
+                }
             }
 
             $new_variation = Variation_model::firstOrNew([
