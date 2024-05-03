@@ -365,7 +365,7 @@
                                             <td>{{ $currency.$item->sale_item($order_id)->price }}</td>
                                             @endif
                                             @if (session('user')->hasPermission('delete_return_item'))
-                                            <td><a href="{{ url('delete_order_item').'/'.$item->sale_item($order_id)->id }}"><i class="fa fa-trash"></i></a></td>
+                                            <td><a href="{{ url('delete_return_item').'/'.$item->sale_item($order_id)->id }}"><i class="fa fa-trash"></i></a></td>
                                             @endif
                                         </tr>
                                         {{-- @endif --}}
