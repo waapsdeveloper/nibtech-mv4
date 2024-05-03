@@ -63,6 +63,12 @@ class InventorysheetExport implements FromCollection, WithHeadings
         ->when(request('grade') != '', function ($q) {
             $q->where('variation.grade', request('grade'));
         })
+        ->when(request('vendor') != '', function ($q) {
+            $q->where('orders.customer_id', request('vendor'));
+        })
+        ->when(request('status') != '', function ($q) {
+            $q->where('orders.status', request('status'));
+        })
         ->get();
 
         return $data;

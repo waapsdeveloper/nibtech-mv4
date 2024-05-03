@@ -92,6 +92,14 @@
                         @endforeach
                     </select>
                 </div>
+                <div class="col-md col-sm-2">
+                    <select name="vendor" class="form-control form-select">
+                        <option value="">Vendor</option>
+                        @foreach ($vendors as $id=>$name)
+                            <option value="{{ $id }}" @if(isset($_GET['vendor']) && $id == $_GET['vendor']) {{'selected'}}@endif>{{ $name }}</option>
+                        @endforeach
+                    </select>
+                </div>
                 <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
                 <a href="{{url(session('url').'inventory')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
             </div>

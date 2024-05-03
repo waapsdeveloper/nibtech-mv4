@@ -34,6 +34,11 @@ class Inventory extends Component
         $data['brands'] = Brand_model::get();
         $data['stocks'] = Stock_model::where('stock.status',1)
 
+        ->when(request('vendor') != '', function ($q) {
+            return $q->whereHas('order', function ($q) {
+                $q->where('customer_id', request('vendor'));
+            });
+        })
         ->when(request('status') != '', function ($q) {
             return $q->whereHas('order', function ($q) {
                 $q->where('status', request('status'));
