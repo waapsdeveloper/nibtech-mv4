@@ -91,9 +91,6 @@ class MoveInventory extends Component
                 if(request('color') != ''){
                     $color = request('color');
                 }
-                if(request('grade') != ''){
-                    $grade = request('grade');
-                }
                 if(request('price') != ''){
                     $price = request('price');
                     $p_order = $stock->purchase_item;
@@ -106,6 +103,9 @@ class MoveInventory extends Component
                 }
             }
 
+                if(request('grade') != ''){
+                    $grade = request('grade');
+                }
             $new_variation = Variation_model::firstOrNew([
                 'product_id' => $product_id,
                 'storage' => $storage,

@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
     @section('styles')
+    <link href="{{asset('assets/plugins/select2/css/select2.min.css')}}" rel="stylesheet" />
         <style>
             .rows{
                 border: 1px solid #016a5949;
@@ -85,7 +86,7 @@
                     {{-- <div class="card-header">
                         <h4 class="card-title mb-1">Grade</h4>
                     </div> --}}
-                    <select name="grade" class="form-control form-select">
+                    <select name="grade" class="form-control form-select select2" multiple>
                         <option value="">Grade</option>
                         @foreach ($grades as $id=>$name)
                             <option value="{{ $id }}" @if(isset($_GET['grade']) && $id == $_GET['grade']) {{'selected'}}@endif>{{ $name }}</option>
@@ -336,6 +337,9 @@
 
     @section('scripts')
         <script>
+            $(document).ready(function(){
+                $(.select2).select2();
+            });
 
         </script>
 		<!--Internal Sparkline js -->
@@ -348,6 +352,6 @@
 		<script src="{{asset('assets/plugins/chartjs/Chart.bundle.min.js')}}"></script>
 
 		<!-- INTERNAL Select2 js -->
-		{{-- <script src="{{asset('assets/plugins/select2/js/select2.full.min.js')}}"></script>
-		<script src="{{asset('assets/js/select2.js')}}"></script> --}}
+		<script src="{{asset('assets/plugins/select2/js/select2.full.min.js')}}"></script>
+		<script src="{{asset('assets/js/select2.js')}}"></script>
     @endsection
