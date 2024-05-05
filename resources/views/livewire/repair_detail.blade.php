@@ -46,7 +46,7 @@
         <div class="row">
             <div class="col-md-12 tx-center" style="border-bottom: 1px solid rgb(216, 212, 212);">
                 <center><h4>@if ($repair->status == 1)<small>(Pending)</small>@endif @if ($repair->status == 2)<small>(Awaiting Approval)</small>@endif Repair Order Detail</h4></center>
-                <h5>Reference: {{ $repair->reference_id }} | Total Items: {{ $repair->stock_operations->count() }} | Total Cost: {{ $repair->currency_id->sign.number_format($repair->stock_operations->sum('price'),2) }}</h5>
+                <h5>Reference: {{ $repair->reference_id }} | Total Items: {{ $repair->process_stocks->count() }} </h5>
             </div>
         </div>
         <br>

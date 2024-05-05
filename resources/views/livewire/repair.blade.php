@@ -40,9 +40,9 @@
             <div class="row">
                 <div class="col-lg-4 col-xl-4 col-md-4 col-sm-6">
                     <div class="card-header">
-                        <h4 class="card-title mb-1">Order ID</h4>
+                        <h4 class="card-title mb-1">Reference ID</h4>
                     </div>
-                    <input type="text" class="form-control" name="order_id" placeholder="Enter ID" value="@isset($_GET['order_id']){{$_GET['order_id']}}@endisset">
+                    <input type="text" class="form-control" name="reference_id" placeholder="Enter Reference ID" value="@isset($_GET['reference_id']){{$_GET['reference_id']}}@endisset">
                 </div>
                 <div class="col-lg-4 col-xl-4 col-md-4 col-sm-6">
                     <div class="card-header">
@@ -117,7 +117,7 @@
                                     <input type="hidden" name="start_date" value="{{ Request::get('start_date') }}">
                                     <input type="hidden" name="end_date" value="{{ Request::get('end_date') }}">
                                     <input type="hidden" name="status" value="{{ Request::get('status') }}">
-                                    <input type="hidden" name="order_id" value="{{ Request::get('order_id') }}">
+                                    <input type="hidden" name="reference_id" value="{{ Request::get('reference_id') }}">
                                     <input type="hidden" name="sku" value="{{ Request::get('sku') }}">
                                     <input type="hidden" name="imei" value="{{ Request::get('imei') }}">
                                     <input type="hidden" name="page" value="{{ Request::get('page') }}">
@@ -202,31 +202,31 @@
                         type="button"><span aria-hidden="true">&times;</span></button>
                     <h5 class="modal-title mg-b-5">Add Repair Record</h5>
                     <hr>
-                    <form action="{{ url('add_purchase') }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ url('add_repair') }}" method="POST" enctype="multipart/form-data">
                         @csrf
-                        <input type="hidden" name="purchase[type]" id="" value="1">
+                        <input type="hidden" name="repair[type]" id="" value="1">
                         <div class="form-group">
                             <label for="">Reference ID</label>
                             {{-- {{ $latest_reference + 1}} --}}
-                            <input class="form-control" placeholder="input Reference No" name="purchase[reference_id]" value="" type="text" required readonly>
+                            <input class="form-control" placeholder="input Reference No" name="repair[reference_id]" value="" type="text" required readonly>
                         </div>
                         <div class="form-group">
-                            <label for="">Vendor</label>
-                            <select class="form-select" placeholder="Input Vendor" name="purchase[vendor]" required>
-                                <option>Select Vendor</option>
-                                @foreach ($vendors as $id=>$vendor)
-                                    <option value="{{ $id }}">{{ $vendor }}</option>
+                            <label for="">Repairer</label>
+                            <select class="form-select" placeholder="Input Repairer" name="repair[repairer]" required>
+                                <option>Select Repairer</option>
+                                @foreach ($repairers as $id=>$repairer)
+                                    <option value="{{ $id }}">{{ $repairer }}</option>
 
                                 @endforeach
                             </select>
                         </div>
-                        <input type="hidden" name="purchase[status]" value="3">
+                        <input type="hidden" name="repair[status]" value="3">
 
                         <div class="form-group">
                             <label for="">Inventory Sheet</label>
-                            {{-- <input class="form-control" placeholder="Input Total Amount" name="purchase[amount]" type="number"
+                            {{-- <input class="form-control" placeholder="Input Total Amount" name="repair[amount]" type="number"
                                 step="0.01" required> --}}
-                            <input type="file" class="form-control" name="purchase[sheet]">
+                            <input type="file" class="form-control" name="repair[sheet]">
                         </div>
                         <button class="btn btn-primary btn-block">{{ __('locale.Submit') }}</button>
                     </form>

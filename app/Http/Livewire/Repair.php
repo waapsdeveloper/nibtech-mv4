@@ -44,35 +44,24 @@ class Repair extends Component
     {
 
         // $data['latest_reference'] = Order_model::where('order_type_id',4)->orderBy('reference_id','DESC')->first()->reference_id;
-        $data['vendors'] = Customer_model::where('is_vendor',1)->pluck('first_name','id');
-        $data['order_statuses'] = Order_status_model::get();
+        $data['repairers'] = Customer_model::where('is_vendor',3)->pluck('first_name','id');
         if(request('per_page') != null){
             $per_page = request('per_page');
         }else{
             $per_page = 20;
         }
 
-        $data['repairs'] = Process_model::select(
-            'orders.id',
-            'orders.reference_id',
-            // DB::raw('SUM(order_items.price) as total_price'),
-            // DB::raw('COUNT(order_items.id) as total_quantity'),
-            // DB::raw('COUNT(CASE WHEN stock.status = 1 THEN order_items.id END) as available_stock'),
-            'orders.created_at')
-        ->where('orders.order_type_id', 4)
-        // ->join('order_items', 'orders.id', '=', 'order_items.order_id')
-        // ->join('stock', 'order_items.stock_id', '=', 'stock.id')
+        $data['repairs'] = Process_model::where('process_type_id', 9)
         ->when(request('start_date'), function ($q) {
-            return $q->where('orders.created_at', '>=', request('start_date'));
+            return $q->where('created_at', '>=', request('start_date'));
         })
         ->when(request('end_date'), function ($q) {
-            return $q->where('orders.created_at', '<=', request('end_date') . " 23:59:59");
+            return $q->where('created_at', '<=', request('end_date') . " 23:59:59");
         })
-        ->when(request('order_id'), function ($q) {
-            return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
+        ->when(request('reference_id'), function ($q) {
+            return $q->where('reference_id', 'LIKE', request('reference_id') . '%');
         })
-        // ->groupBy('orders.id', 'orders.reference_id', 'orders.created_at')
-        ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
+        ->orderBy('reference_id', 'desc') // Secondary order by reference_id
         ->paginate($per_page)
         ->onEachSide(5)
         ->appends(request()->except('page'));
@@ -81,11 +70,11 @@ class Repair extends Component
         // dd($data['orders']);
         return view('livewire.repair')->with($data);
     }
-    public function return_approve($order_id){
-        $order = Order_model::find($order_id);
-        $order->tracking_number = request('tracking_number');
-        $order->status = 3;
-        $order->save();
+    public function repair_approve($repair_id){
+        $repair = Process_model::find($repair_id);
+        $repair->tracking_number = request('tracking_number');
+        $repair->status = 3;
+        $repair->save();
 
         return redirect()->back();
     }
@@ -142,7 +131,7 @@ class Repair extends Component
         return redirect()->back();
 
     }
-    public function return_detail($order_id){
+    public function repair_detail($order_id){
 
         $data['imei'] = request('imei');
         if (request('imei')) {
@@ -202,6 +191,18 @@ class Repair extends Component
             }
 
         }
+        $repair_stocks = Stock_model::with([
+            'process_stock' => function ($query) use ($order_id) {
+                $query->whereHas('process', function ($query) use ($order_id) {
+                    $query->where('order_id', $order_id);
+                });
+            },
+            'stocks.order_item'
+        ])
+        ->whereHas('variation', function ($query) {
+            $query->where('grade', 8);
+        });
+
         $variations = Variation_model::with([
             'stocks' => function ($query) use ($order_id) {
                 $query->whereHas('order_item', function ($query) use ($order_id) {
@@ -226,9 +227,8 @@ class Repair extends Component
         $data['variations'] = $variations;
 
         $data['all_variations'] = Variation_model::where('grade',9)->get();
-        $data['order'] = Order_model::find($order_id);
+        $data['repair'] = Process_model::find($order_id);
         $data['order_id'] = $order_id;
-        $data['currency'] = $data['order']->currency_id->sign;
 
 
         // echo "<pre>";
@@ -240,19 +240,17 @@ class Repair extends Component
         return view('livewire.repair_detail')->with($data);
 
     }
-    public function add_return(){
+    public function add_repair(){
 
-        $order = Order_model::create([
-            'reference_id' => 11001,
+        $order = Process_model::create([
+            'reference_id' => 20001,
+            'process_type_id' => 9,
             'status' => 1,
-            'currency' => 4,
-            'order_type_id' => 4,
-            'processed_by' => session('user_id')
         ]);
 
-        return redirect(url('return/detail').'/'.$order->id);
+        return redirect(url('repair/detail').'/'.$order->id);
     }
-    private function insert_return_item($products, $storages, $order, $n, $c, $i, $s, $g = null, $dr = null){
+    private function insert_repair_item($products, $storages, $order, $n, $c, $i, $s, $g = null, $dr = null){
 
         $names = explode(" ",$n);
         $last = end($names);

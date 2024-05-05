@@ -235,7 +235,6 @@
                                     <input type="hidden" name="product" value="{{ Request::get('product') }}">
                                     <input type="hidden" name="storage" value="{{ Request::get('storage') }}">
                                     @if (Request::get('grade'))
-
                                     @foreach (Request::get('grade') as $grd)
 
                                         <input type="hidden" name="grade[]" value="{{ $grd }}">

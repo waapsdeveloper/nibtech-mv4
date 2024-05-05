@@ -16,6 +16,7 @@ class Process_model extends Model
     // public $timestamps = FALSE;
     protected $fillable = [
         // other fields...
+        'reference_id',
         'order_id',
         // 'old_variation_id',
         // 'new_variation_id',
@@ -24,7 +25,7 @@ class Process_model extends Model
         'process_type_id',
         // 'grade',
         // 'color',
-        // 'storage',
+        'status',
     ];
 
 
@@ -51,18 +52,14 @@ class Process_model extends Model
     }
     public function linked()
     {
-        return $this->belongsTo(Process_batch_model::class, 'linked_id');
+        return $this->belongsTo(Process_model::class, 'linked_id');
     }
     public function childs()
     {
-        return $this->hasMany(Process_batch_model::class, 'linked_id');
+        return $this->hasMany(Process_model::class, 'linked_id');
     }
-    public function status_id()
+    public function process_stocks()
     {
-        return $this->hasOne(Multi_status_model::class, 'id', 'status');
-    }
-    public function process()
-    {
-        return $this->hasMany(Process_model::class, 'process_batch_id', 'id');
+        return $this->hasMany(Process_stock_model::class, 'process_id', 'id');
     }
 }
