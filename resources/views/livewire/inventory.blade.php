@@ -82,7 +82,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md col-sm-2">
+                <div class="col-md-3 col-sm-2">
                     {{-- <div class="card-header">
                         <h4 class="card-title mb-1">Grade</h4>
                     </div> --}}
