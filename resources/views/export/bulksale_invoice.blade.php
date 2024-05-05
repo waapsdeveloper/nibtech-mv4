@@ -89,7 +89,7 @@
             </tr>
 
             <tr style="border-top: 1px solid Black">
-                <td>
+                <td width="200">
                     <table>
                     <tr>
                         <br>
