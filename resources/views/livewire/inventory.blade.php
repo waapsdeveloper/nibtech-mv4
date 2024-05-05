@@ -60,7 +60,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-lg-3 col-xl-3 col-md-3 col-sm-3">
+                <div class="col-md col-sm-3">
                     {{-- <div class="card-header">
                         <h4 class="card-title mb-1">Model</h4>
                     </div> --}}
@@ -185,6 +185,7 @@
         <div class="d-flex justify-content-between">
             <div>
 
+                <a href="{{url(session('url').'inventory')}}?status=3&grade[]=2&grade[]=3&grade[]=5&grade[]=7&grade[]=9" class="btn btn-link">RTG</a>
                 <a href="{{url(session('url').'inventory')}}?status=3" class="btn btn-link">Active</a>
                 <a href="{{url(session('url').'inventory')}}?status=2" class="btn btn-link">Pending</a>
                 <a href="{{url(session('url').'inventory')}}" class="btn btn-link">All</a>
