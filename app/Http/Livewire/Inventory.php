@@ -103,9 +103,9 @@ class Inventory extends Component
                 $q->where('product_id', request('product'));
             });
         })
-        ->when(request('grade') != '', function ($q) {
+        ->when(request('grade') != [], function ($q) {
             return $q->whereHas('variation', function ($q) {
-                $q->where('grade', request('grade'));
+                $q->whereIn('grade', request('grade'));
             });
         })
 
