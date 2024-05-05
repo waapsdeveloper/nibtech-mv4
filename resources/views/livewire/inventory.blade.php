@@ -89,7 +89,7 @@
                     <select name="grade[]" class="form-control form-select select2" multiple>
                         <option value="">Grade</option>
                         @foreach ($grades as $id=>$name)
-                            <option value="{{ $id }}" @if(isset($_GET['grade']) && $id == $_GET['grade']) {{'selected'}}@endif>{{ $name }}</option>
+                            <option value="{{ $id }}" @if(isset($_GET['grade']) && in_array($id,$_GET['grade'])) {{'selected'}}@endif>{{ $name }}</option>
                         @endforeach
                     </select>
                 </div>

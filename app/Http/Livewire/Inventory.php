@@ -66,7 +66,7 @@ class Inventory extends Component
         })
         ->when(request('grade') != [], function ($q) {
             return $q->whereHas('variation', function ($q) {
-                print_r(request('grade'));
+                // print_r(request('grade'));
                 $q->whereIn('grade', request('grade'));
             });
         })
