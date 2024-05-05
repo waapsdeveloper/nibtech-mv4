@@ -163,6 +163,11 @@ class Repair extends Component
             }
 
             $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
+            if (request('imei') == '' || !$stock || $stock->status == null) {
+                session()->put('error', 'IMEI Invalid / Not Found in Repair');
+                // return redirect()->back(); // Redirect here is not recommended
+                return view('livewire.repair_detail', $data); // Return the Blade view instance with data
+            }
             $data['stock_id'] = $stock->id;
             $data['products'] = Products_model::orderBy('model','asc')->get();
             $data['colors'] = Color_model::all();
