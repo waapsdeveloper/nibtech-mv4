@@ -66,24 +66,6 @@
                 <div class="p-2">
                     <form action="{{ url('add_repair_item').'/'.$repair_id}}" method="POST" class="form-inline">
                         @csrf
-                        <select name="repair[product]" class="form-control form-select" style="width: 150px;">
-                            <option value="">Model</option>
-                            @foreach ($products as $product)
-                                <option value="{{ $product->id }}"@if($product->id == $stock->variation->product_id) {{'selected'}}@endif>{{ $product->model }}</option>
-                            @endforeach
-                        </select>
-                        <select name="repair[storage]" class="form-control form-select">
-                            <option value="">Storage</option>
-                            @foreach ($storages as $storage)
-                                <option value="{{ $storage->id }}"@if($storage->id == $stock->variation->storage) {{'selected'}}@endif>{{ $storage->name }}</option>
-                            @endforeach
-                        </select>
-                        <select name="repair[color]" class="form-control form-select" style="width: 150px;">
-                            <option value="">Color</option>
-                            @foreach ($colors as $color)
-                                <option value="{{ $color->id }}"@if($color->id == $stock->variation->color) {{'selected'}}@endif>{{ $color->name }}</option>
-                            @endforeach
-                        </select>
                         <select name="repair[grade]" class="form-control form-select">
                             <option value="">Move to</option>
                             @foreach ($grades as $grade)
@@ -151,7 +133,7 @@
                         </div>
                     </div>
                     <div class="card-body"><div class="table-responsive">
-                        @if (isset($repairs))
+                        @if (isset($orders))
 
                             <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                                 <thead>
@@ -170,27 +152,27 @@
                                         $i = 0;
                                         $id = [];
                                     @endphp
-                                    @foreach ($repairs as $index => $item)
+                                    @foreach ($orders as $index => $item)
                                         @php
-                                            $repair = $item->order;
+                                            $order = $item->order;
                                             $j = 0;
                                         @endphp
 
                                             <tr>
                                                 <td title="{{ $item->id }}">{{ $i + 1 }}</td>
-                                                @if ($repair->order_type_id == 1)
+                                                @if ($order->order_type_id == 1)
 
-                                                    <td><a href="{{url(session('url').'purchase/detail/'.$repair->id)}}">{{ $repair->reference_id }}</a></td>
-                                                @elseif ($repair->order_type_id == 2)
-                                                    <td><a href="{{url(session('url').'rma/detail/'.$repair->id)}}">{{ $repair->reference_id }}</a></td>
-                                                @elseif ($repair->order_type_id == 4)
-                                                    <td><a href="{{url(session('url').'repair/detail/'.$repair->id)}}">{{ $repair->reference_id }}</a></td>
-                                                @elseif ($repair->order_type_id == 5)
-                                                    <td><a href="{{url(session('url').'wholesale/detail/'.$repair->id)}}">{{ $repair->reference_id }}</a></td>
-                                                @elseif ($repair->order_type_id == 3)
-                                                    <td>{{ $repair->reference_id }}</td>
+                                                    <td><a href="{{url(session('url').'purchase/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                @elseif ($order->order_type_id == 2)
+                                                    <td><a href="{{url(session('url').'rma/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                @elseif ($order->order_type_id == 4)
+                                                    <td><a href="{{url(session('url').'order/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                @elseif ($order->order_type_id == 5)
+                                                    <td><a href="{{url(session('url').'wholesale/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                @elseif ($order->order_type_id == 3)
+                                                    <td>{{ $order->reference_id }}</td>
                                                 @endif
-                                                <td>{{ $repair->order_type->name }}</td>
+                                                <td>{{ $order->order_type->name }}</td>
                                                 <td>
                                                     @if ($item->variation ?? false)
                                                         <strong>{{ $item->variation->sku }}</strong>{{ " - " . $item->variation->product->model . " - " . (isset($item->variation->storage_id)?$item->variation->storage_id->name . " - " : null) . (isset($item->variation->color_id)?$item->variation->color_id->name. " - ":null)}} <strong><u>{{ $item->variation->grade_id->name }}</u></strong>
@@ -200,7 +182,7 @@
                                                     @endif
                                                 </td>
                                                 <td>{{ $item->quantity }}</td>
-                                                @if ($repair->status <= 3)
+                                                @if ($order->status <= 3)
                                                 <td style="width:240px" class="text-success text-uppercase" title="{{ $item->stock_id }}" id="copy_imei_{{ $repair->id }}">
                                                     @isset($item->stock->imei) {{ $item->stock->imei }}&nbsp; @endisset
                                                     @isset($item->stock->serial_number) {{ $item->stock->serial_number }}&nbsp; @endisset
@@ -311,74 +293,60 @@
         <br>
 
         <div class="row">
+            <div class="col-xl-12">
 
-            @foreach ($variations as $variation)
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header pb-0">
-                        @php
-                            isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
-                            isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
-                        @endphp
-                        {{ $variation->product->model." ".$storage." ".$color." ".$variation->grade_id->name }}
-                    </div>
-                            {{-- {{ $variation }} --}}
-                    <div class="card-body"><div class="table-responsive" style="max-height: 400px">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <div class="d-flex justify-content-between">
+                        <h4 class="card-title mg-b-0"></h4>
+                        <div class=" mg-b-0">
+                        </div>
 
-                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
-                                <thead>
-                                    <tr>
-                                        <th><small><b>No</b></small></th>
-                                        <th><small><b>IMEI/Serial</b></small></th>
-                                        @if (session('user')->hasPermission('view_cost'))
-                                        <th><small><b>Cost</b></small></th>
-                                        @endif
-                                        @if (session('user')->hasPermission('delete_repair_item'))
-                                        <th></th>
-                                        @endif
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @php
-                                        $i = 0;
-                                        $id = [];
-                                    @endphp
-                                    @php
-                                        $stocks = $variation->stocks;
-                                        // $items = $stocks->order_item;
-                                        $j = 0;
-                                        $prices = [];
-                                        // print_r($stocks);
-                                    @endphp
-
-                                    @foreach ($stocks as $item)
-                                        {{-- @dd($item) --}}
-                                        {{-- @if($item->order_item[0]->order_id == $repair_id) --}}
-                                        @php
-                                        $i ++;
-                                        $prices[] = $item->sale_item($repair_id)->price;
-                                    @endphp
-                                        <tr>
-                                            <td>{{ $i }}</td>
-                                            <td data-stock="{{ $item->id }}">{{ $item->imei.$item->serial_number }}</td>
-                                            @if (session('user')->hasPermission('view_cost'))
-                                            <td>{{ $currency.$item->sale_item($repair_id)->price }}</td>
-                                            @endif
-                                            @if (session('user')->hasPermission('delete_repair_item'))
-                                            <td><a href="{{ url('delete_repair_item').'/'.$item->sale_item($repair_id)->id }}"><i class="fa fa-trash"></i></a></td>
-                                            @endif
-                                        </tr>
-                                        {{-- @endif --}}
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        <br>
-                    </div>
-                    <div class="text-end">Average Cost: {{array_sum($prices)/count($prices) }} &nbsp;&nbsp;&nbsp; Total: {{$i }}</div>
                     </div>
                 </div>
+                <div class="card-body"><div class="table-responsive">
+                        <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                            <thead>
+                                <tr>
+                                    <th><small><b>No</b></small></th>
+                                    <th><small><b>Variation</b></small></th>
+                                    <th><small><b>IMEI</b></small></th>
+                                    <th><small><b>Reason</b></small></th>
+                                    <th><small><b>Creation Date</b></small></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php
+                                    $i = 0;
+                                    $id = [];
+                                @endphp
+                                @foreach ($repair_stocks as $stock)
+                                        <tr>
+                                            <td>{{ $i + 1 }}</td>
+                                            <td>
+                                                @if ($stock->variation ?? false)
+                                                    <strong>{{ $stock->variation->sku }}</strong>{{ " - " . $stock->variation->product->model . " - " . (isset($stock->variation->storage_id)?$stock->variation->storage_id->name . " - " : null) . (isset($stock->variation->color_id)?$stock->variation->color_id->name. " - ":null)}} <strong><u>{{ $stock->variation->grade_id->name }}</u></strong>
+                                                @endif
+                                            </td>
+                                            <td>{{$stock->imei.$stock->serial_number }}</td>
+                                            <td>{{$stock->latest_operation->description }}</td>
+                                            <td style="width:180px">{{ $stock->created_at."  ".$stock->updated_at }}</td>
+                                        </tr>
+                                        {{-- @php
+                                            $j++;
+                                        @endphp
+                                    @endforeach --}}
+                                    @php
+                                        $i ++;
+                                    @endphp
+                                @endforeach
+                            </tbody>
+                        </table>
+                    <br>
+                </div>
+
+                </div>
             </div>
-            @endforeach
         </div>
 
     @endsection
@@ -400,6 +368,6 @@
 		<script src="{{asset('assets/plugins/chartjs/Chart.bundle.min.js')}}"></script>
 
 		<!-- INTERNAL Select2 js -->
-		<script src="{{asset('assets/plugins/select2/js/select2.full.min.js')}}"></script>
-		<script src="{{asset('assets/js/select2.js')}}"></script>
+		{{-- <script src="{{asset('assets/plugins/select2/js/select2.full.min.js')}}"></script>
+		<script src="{{asset('assets/js/select2.js')}}"></script> --}}
     @endsection

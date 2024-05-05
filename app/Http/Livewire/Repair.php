@@ -131,9 +131,19 @@ class Repair extends Component
         return redirect()->back();
 
     }
-    public function repair_detail($order_id){
+    public function repair_detail($process_id){
 
         $data['imei'] = request('imei');
+
+        $data['repair'] = Process_model::find($process_id);
+
+
+        $repair_stocks = Stock_model::
+        whereHas('variation', function ($query) {
+            $query->where('grade', 8);
+        })->get();
+        $data['repair_stocks'] = $repair_stocks;
+
         if (request('imei')) {
             if (ctype_digit(request('imei'))) {
                 $i = request('imei');
@@ -149,10 +159,11 @@ class Repair extends Component
             $data['colors'] = Color_model::all();
             $data['storages'] = Storage_model::all();
             $data['grades'] = Grade_model::all();
+
             if (request('imei') == '' || !$stock || $stock->status == null) {
                 session()->put('error', 'IMEI Invalid / Not Found');
                 // return redirect()->back(); // Redirect here is not recommended
-                return view('livewire.imei', $data); // Return the Blade view instance with data
+                return view('livewire.repair_detail', $data); // Return the Blade view instance with data
             }
             $sale_status = Order_item_model::where(['stock_id'=>$stock->id,'linked_id'=>$stock->purchase_item->id])->first();
             if($stock->status == 1){
@@ -172,7 +183,7 @@ class Repair extends Component
             if($sale_status != null){
                 $item = Order_item_model::where('stock_id',$stock->id)->orderBy('id','desc')->first();
                 if(in_array($item->order->order_type_id, [3,5])){
-                    $data['restock']['order_id'] = $order_id;
+                    $data['restock']['order_id'] = $process_id;
                     $data['restock']['reference_id'] = $item->order->reference_id;
                     $data['restock']['stock_id'] = $stock->id;
                     $data['restock']['price'] = $item->price;
@@ -191,29 +202,18 @@ class Repair extends Component
             }
 
         }
-        $repair_stocks = Stock_model::with([
-            'process_stock' => function ($query) use ($order_id) {
-                $query->whereHas('process', function ($query) use ($order_id) {
-                    $query->where('order_id', $order_id);
-                });
-            },
-            'stocks.order_item'
-        ])
-        ->whereHas('variation', function ($query) {
-            $query->where('grade', 8);
-        });
 
         $variations = Variation_model::with([
-            'stocks' => function ($query) use ($order_id) {
-                $query->whereHas('order_item', function ($query) use ($order_id) {
-                    $query->where('order_id', $order_id);
+            'stocks' => function ($query) use ($process_id) {
+                $query->whereHas('order_item', function ($query) use ($process_id) {
+                    $query->where('order_id', $process_id);
                 });
             },
             'stocks.order_item'
         ])
-        ->whereHas('stocks', function ($query) use ($order_id) {
-            $query->whereHas('order_item', function ($query) use ($order_id) {
-                $query->where('order_id', $order_id);
+        ->whereHas('stocks', function ($query) use ($process_id) {
+            $query->whereHas('order_item', function ($query) use ($process_id) {
+                $query->where('order_id', $process_id);
             });
         })
         ->orderBy('grade', 'desc')
@@ -227,8 +227,7 @@ class Repair extends Component
         $data['variations'] = $variations;
 
         $data['all_variations'] = Variation_model::where('grade',9)->get();
-        $data['repair'] = Process_model::find($order_id);
-        $data['order_id'] = $order_id;
+        $data['order_id'] = $process_id;
 
 
         // echo "<pre>";
