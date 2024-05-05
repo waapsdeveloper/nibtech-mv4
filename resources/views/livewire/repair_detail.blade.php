@@ -317,8 +317,6 @@
                                 @endphp
                                 @foreach ($repaired_stocks as $r_stock)
                                     @php
-                                        $i = 0;
-                                        $id = [];
                                         $stock = $r_stock->stock;
                                     @endphp
                                         <tr>
@@ -332,10 +330,6 @@
                                             <td>{{$stock->latest_operation->description }}</td>
                                             <td style="width:180px">{{ $stock->created_at."  ".$stock->updated_at }}</td>
                                         </tr>
-                                        {{-- @php
-                                            $j++;
-                                        @endphp
-                                    @endforeach --}}
                                     @php
                                         $i ++;
                                     @endphp
