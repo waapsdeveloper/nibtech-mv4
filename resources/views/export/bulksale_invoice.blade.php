@@ -111,7 +111,7 @@
                     </tr>
                     </table>
                 </td>
-                <td width="20">
+                <td width="30">
 
                 </td>
                 {{-- <td></td> --}}
