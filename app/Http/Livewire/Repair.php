@@ -155,7 +155,7 @@ class Repair extends Component
             }
 
             $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
-
+            $data['stock_id'] = $stock->id;
             $data['products'] = Products_model::orderBy('model','asc')->get();
             $data['colors'] = Color_model::all();
             $data['storages'] = Storage_model::all();
@@ -239,26 +239,19 @@ class Repair extends Component
 
         return redirect(url('repair/detail').'/'.$order->id);
     }
-    public function add_return_item($process_id){
-        $return = request('return');
-        $description = request('description');
-        if(request('grade')){
-            session()->put('grade',request('grade'));
+    public function add_repair_item($process_id){
+        $repair = request('repair');
+        $description = $repair['description'];
+        if($repair['grade']){
+            session()->put('grade',$repair['grade']);
         }
-        session()->put('description',request('description'));
+        session()->put('description',$repair['description']);
 
 
-        if (request('imei')) {
-            if (ctype_digit(request('imei'))) {
-                $i = request('imei');
-                $s = null;
-            } else {
-                $i = null;
-                $s = request('imei');
-            }
-            $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
-            if (request('imei') == '' || !$stock || $stock->status != 1) {
-                session()->put('error', 'IMEI Invalid / Not Available');
+        if ($repair['stock_id']) {
+            $stock = Stock_model::find($repair['stock_id']);
+            if (!$stock || $stock->status != 1 || $stock->variation->grade != 8) {
+                session()->put('error', 'IMEI Invalid / Not Available in this Grade');
                 return redirect()->back();
             }
             $stock_id = $stock->id;
@@ -268,8 +261,8 @@ class Repair extends Component
             $color = $stock->variation->color;
             $grade = $stock->variation->grade;
 
-            if(request('grade') != ''){
-                $grade = request('grade');
+            if($repair['grade'] != ''){
+                $grade = $repair['grade'];
             }
             $new_variation = Variation_model::firstOrNew([
                 'product_id' => $product_id,
@@ -278,7 +271,7 @@ class Repair extends Component
                 'grade' => $grade,
             ]);
             $new_variation->status = 1;
-            if($new_variation->id && $stock->variation_id == $new_variation->id && request('price') == null){
+            if($new_variation->id && $stock->variation_id == $new_variation->id && $repair['price'] == null){
                 session()->put('error', 'Stock already exist in this variation');
                 return redirect()->back();
 

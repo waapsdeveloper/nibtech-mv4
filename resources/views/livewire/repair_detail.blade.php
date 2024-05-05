@@ -80,7 +80,7 @@
                             {{-- <input type="text" class="form-control" name="repair[imei]" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset"> --}}
                             <label for="">Reason</label>
                         </div>
-
+                        <input type="hidden" name="repair[stock_id]" value="{{$stock_id}}">
                         <button class="btn btn-secondary pd-x-20" type="submit">Move</button>
                     </form>
                 </div>
