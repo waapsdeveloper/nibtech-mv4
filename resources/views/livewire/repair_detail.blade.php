@@ -62,7 +62,7 @@
                         <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
                 </form>
             </div>
-            @if (session('user')->hasPermission('add_refund_items') && isset($restock))
+            @if (session('user')->hasPermission('add_repair_items'))
                 <div class="p-2">
                     <form action="{{ url('add_repair_item').'/'.$repair_id}}" method="POST" class="form-inline">
                         @csrf
@@ -81,12 +81,7 @@
                             <label for="">Reason</label>
                         </div>
 
-                        <input type="hidden" name="repair[order_id]" value="{{ $restock['order_id'] }}">
-                        <input type="hidden" name="repair[reference_id]" value="{{ $restock['reference_id'] }}">
-                        <input type="hidden" name="repair[stock_id]" value="{{ $restock['stock_id'] }}">
-                        <input type="hidden" name="repair[price]" value="{{ $restock['price'] }}">
-                        <input type="hidden" name="repair[linked_id]" value="{{ $restock['linked_id'] }}">
-                        <button class="btn btn-secondary pd-x-20" type="submit">Restock</button>
+                        <button class="btn btn-secondary pd-x-20" type="submit">Move</button>
                     </form>
                 </div>
             @endif

@@ -180,16 +180,6 @@ class Repair extends Component
                 }else{
                 }
             }
-            if($sale_status != null){
-                $item = Order_item_model::where('stock_id',$stock->id)->orderBy('id','desc')->first();
-                if(in_array($item->order->order_type_id, [3,5])){
-                    $data['restock']['order_id'] = $process_id;
-                    $data['restock']['reference_id'] = $item->order->reference_id;
-                    $data['restock']['stock_id'] = $stock->id;
-                    $data['restock']['price'] = $item->price;
-                    $data['restock']['linked_id'] = $item->id;
-                }
-            }
             $stock_id = $stock->id;
             $orders = Order_item_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
             $data['stock'] = $stock;
