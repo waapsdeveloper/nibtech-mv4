@@ -89,7 +89,7 @@
             </tr>
 
             <tr style="border-top: 1px solid Black">
-                <td width="200">
+                <td width="300">
                     <table>
                     <tr>
                         <br>
@@ -111,7 +111,7 @@
                     </tr>
                     </table>
                 </td>
-                <td>
+                <td width="50">
 
                 </td>
                 {{-- <td></td> --}}
