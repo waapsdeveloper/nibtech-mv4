@@ -199,10 +199,13 @@
             <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
             <input type="hidden" name="product" value="{{ Request::get('product') }}">
             <input type="hidden" name="storage" value="{{ Request::get('storage') }}">
+            @if (Request::get('grade'))
+
             @foreach (Request::get('grade') as $grd)
 
                 <input type="hidden" name="grade[]" value="{{ $grd }}">
             @endforeach
+            @endif
             <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
             <input type="hidden" name="status" value="{{ Request::get('status') }}">
         </form>
@@ -231,10 +234,13 @@
                                     <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
                                     <input type="hidden" name="product" value="{{ Request::get('product') }}">
                                     <input type="hidden" name="storage" value="{{ Request::get('storage') }}">
+                                    @if (Request::get('grade'))
+
                                     @foreach (Request::get('grade') as $grd)
 
                                         <input type="hidden" name="grade[]" value="{{ $grd }}">
                                     @endforeach
+                                    @endif
                                     <input type="hidden" name="page" value="{{ Request::get('page') }}">
                                     <input type="hidden" name="status" value="{{ Request::get('status') }}">
                                 </form>

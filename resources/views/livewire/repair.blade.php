@@ -20,15 +20,12 @@
         <!-- breadcrumb -->
             <div class="breadcrumb-header justify-content-between">
                 <div class="left-content">
-                {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">Return</span> --}}
-                {{-- <a href="javascript:void(0);" class="btn btn-success float-right" data-bs-target="#modaldemo"
-                data-bs-toggle="modal"><i class="mdi mdi-plus"></i> Add Return </a> --}}
-                <a href="{{url('add_return')}}" class="btn btn-success float-right"><i class="mdi mdi-plus"></i> Add Return </a>
+                <a href="{{url('add_repair')}}" class="btn btn-success float-right"><i class="mdi mdi-plus"></i> Add Repair </a>
                 </div>
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Return</li>
+                        <li class="breadcrumb-item active" aria-current="page">Repair</li>
                     </ol>
                 </div>
             </div>
@@ -62,7 +59,7 @@
             </div>
             <div class=" p-2">
                 <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
-                <a href="{{url(session('url').'order')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
+                <a href="{{url(session('url').'repair')}}" class="btn btn-default pd-x-20">Reset</a>
             </div>
 
             <input type="hidden" name="page" value="{{ Request::get('page') }}">
@@ -72,7 +69,7 @@
         <br>
         <div class="row">
             <div class="col-md-12" style="border-bottom: 1px solid rgb(216, 212, 212);">
-                <center><h4>Return</h4></center>
+                <center><h4>Repair</h4></center>
             </div>
         </div>
         <br>
@@ -105,7 +102,7 @@
                     <div class="card-header pb-0">
                         <div class="d-flex justify-content-between">
                             <h4 class="card-title mg-b-0"></h4>
-                            <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$orders->firstItem()}} {{ __('locale.To') }} {{$orders->lastItem()}} {{ __('locale.Out Of') }} {{$orders->total()}} </h5>
+                            <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$repairs->firstItem()}} {{ __('locale.To') }} {{$repairs->lastItem()}} {{ __('locale.Out Of') }} {{$repairs->total()}} </h5>
 
                             <div class=" mg-b-0">
                                 <form method="get" action="" class="row form-inline">
@@ -145,10 +142,10 @@
                                 </thead>
                                 <tbody>
                                     @php
-                                        $i = $orders->firstItem() - 1;
+                                        $i = $repairs->firstItem() - 1;
                                         $id = [];
                                     @endphp
-                                    @foreach ($orders as $index => $order)
+                                    @foreach ($repairs as $index => $order)
                                         @php
                                             if(in_array($order->id,$id)){
                                                 continue;
@@ -163,7 +160,7 @@
                                         {{-- @foreach ($items as $itemIndex => $item) --}}
                                             <tr>
                                                     <td>{{ $i + 1 }}</td>
-                                                    <td><a href="{{url(session('url').'return/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                    <td><a href="{{url(session('url').'repair/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
                                                 @if (session('user')->hasPermission('view_cost'))
                                                 <td>Є{{ number_format($order->total_price,2) }}</td>
                                                 @endif
@@ -174,7 +171,7 @@
                                                 <td>
                                                     <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                                     <div class="dropdown-menu">
-                                                        <a class="dropdown-item" href="{{url(session('url').'delete_return') . "/" . $order->id }}"><i class="fe fe-arrows-rotate me-2 "></i>Delete</a>
+                                                        <a class="dropdown-item" href="{{url(session('url').'delete_repair') . "/" . $order->id }}"><i class="fe fe-arrows-rotate me-2 "></i>Delete</a>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -189,7 +186,7 @@
                                 </tbody>
                             </table>
                         <br>
-                        {{ $orders->onEachSide(1)->links() }} {{ __('locale.From') }} {{$orders->firstItem()}} {{ __('locale.To') }} {{$orders->lastItem()}} {{ __('locale.Out Of') }} {{$orders->total()}}
+                        {{ $repairs->onEachSide(1)->links() }} {{ __('locale.From') }} {{$repairs->firstItem()}} {{ __('locale.To') }} {{$repairs->lastItem()}} {{ __('locale.Out Of') }} {{$repairs->total()}}
                     </div>
 
                     </div>
@@ -203,7 +200,7 @@
                 <div class="modal-body pd-sm-40">
                     <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
                         type="button"><span aria-hidden="true">&times;</span></button>
-                    <h5 class="modal-title mg-b-5">Add Return Record</h5>
+                    <h5 class="modal-title mg-b-5">Add Repair Record</h5>
                     <hr>
                     <form action="{{ url('add_purchase') }}" method="POST" enctype="multipart/form-data">
                         @csrf

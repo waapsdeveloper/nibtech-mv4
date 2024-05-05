@@ -24,6 +24,7 @@ use App\Http\Livewire\Process;
 use App\Http\Livewire\Payouts;
 use App\Http\Livewire\Logout;
 use App\Http\Livewire\MoveInventory;
+use App\Http\Livewire\Repair;
 use App\Http\Livewire\RMA;
 use App\Http\Livewire\SalesReturn;
 use App\Http\Livewire\Team;
@@ -75,6 +76,14 @@ Route::get('delete_return/{id}', [SalesReturn::class,'delete_return'])->name('de
 Route::get('delete_return_item/{id}', [SalesReturn::class,'delete_return_item'])->name('delete_return_item');
 Route::get('return/detail/{id}', [SalesReturn::class,'return_detail'])->name('return_detail');
 Route::post('return/approve/{id}', [SalesReturn::class,'return_approve'])->name('return_approve');
+
+Route::get('repair', Repair::class)->name('view_repair');
+Route::get('add_repair', [Repair::class,'add_repair'])->name('add_repair');
+Route::post('add_repair_item/{id}', [Repair::class,'add_repair_item'])->name('add_repair_item');
+Route::get('delete_repair/{id}', [Repair::class,'delete_repair'])->name('delete_repair');
+Route::get('delete_repair_item/{id}', [Repair::class,'delete_repair_item'])->name('delete_repair_item');
+Route::get('repair/detail/{id}', [Repair::class,'repair_detail'])->name('repair_detail');
+Route::post('repair/approve/{id}', [Repair::class,'repair_approve'])->name('repair_approve');
 
 Route::get('wholesale', Wholesale::class)->name('view_wholesale');
 Route::post('add_wholesale', [Wholesale::class,'add_wholesale'])->name('add_wholesale');
