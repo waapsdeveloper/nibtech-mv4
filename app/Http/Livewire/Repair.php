@@ -161,7 +161,7 @@ class Repair extends Component
             $data['colors'] = Color_model::all();
             $data['storages'] = Storage_model::all();
 
-            if (request('imei') == '' || !$stock || $stock->status == null || $stock->variation->grade != 8) {
+            if (request('imei') == '' || !$stock || $stock->status == null) {
                 session()->put('error', 'IMEI Invalid / Not Found in Repair');
                 // return redirect()->back(); // Redirect here is not recommended
                 return view('livewire.repair_detail', $data); // Return the Blade view instance with data

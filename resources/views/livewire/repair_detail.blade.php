@@ -62,7 +62,7 @@
                         <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
                 </form>
             </div>
-            @if (session('user')->hasPermission('add_repair_item'))
+            @if (session('user')->hasPermission('add_repair_item') && $stock->variation->grade == 8)
                 <div class="p-2">
                     <form action="{{ url('add_repair_item').'/'.$repair_id}}" method="POST" class="form-inline">
                         @csrf
