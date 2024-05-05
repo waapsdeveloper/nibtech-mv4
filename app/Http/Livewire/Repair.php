@@ -217,7 +217,7 @@ class Repair extends Component
         $data['variations'] = $variations;
 
         $data['all_variations'] = Variation_model::where('grade',9)->get();
-        $data['order_id'] = $process_id;
+        $data['repair_id'] = $process_id;
 
 
         // echo "<pre>";
