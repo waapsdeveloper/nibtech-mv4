@@ -268,9 +268,9 @@
                                         <tr>
                                             <td title="{{ $stock->id }}">{{ $i + 1 }}</td><td>{{ $stock->variation->product->model . " " . (isset($stock->variation->color_id) ? $stock->variation->color_id->name . " " : null) .
                                                 (isset($stock->variation->storage_id) ? $stock->variation->storage_id->name . " " : null) . " " . $stock->variation->grade_id->name }}</td>
-                                            <td><a href="{{url('imei')."?imei=".$stock->imei.$stock->serial_number}}"> {{$stock->imei.$stock->serial_number }} </a></td>
-                                            <td><a href="{{url('edit-customer').'/'.$stock->order->customer_id}}"> {{ $stock->order->customer->first_name ?? null}} </a></td>
-                                            <td><a href="{{url('purchase/detail').'/'.$stock->order_id}}"> {{ $stock->order->reference_id }} </a></td>
+                                            <td><a href="{{url('imei')."?imei=".$stock->imei.$stock->serial_number}}" target="_blank"> {{$stock->imei.$stock->serial_number }} </a></td>
+                                            <td><a href="{{url('edit-customer').'/'.$stock->order->customer_id}}" target="_blank"> {{ $stock->order->customer->first_name ?? null}} </a></td>
+                                            <td><a href="{{url('purchase/detail').'/'.$stock->order_id}}" target="_blank"> {{ $stock->order->reference_id }} </a></td>
                                             @if (session('user')->hasPermission('view_cost'))
                                             <td>{{ $stock->order->currency_id->sign ?? null }}{{$stock->order_item[0]->price ?? null }}</td>
                                             @endif
