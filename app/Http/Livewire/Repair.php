@@ -239,149 +239,64 @@ class Repair extends Component
 
         return redirect(url('repair/detail').'/'.$order->id);
     }
-    private function insert_repair_item($products, $storages, $order, $n, $c, $i, $s, $g = null, $dr = null){
-
-        $names = explode(" ",$n);
-        $last = end($names);
-        if(in_array($last, $storages)){
-            $gb = array_search($last,$storages);
-            array_pop($names);
-            $n = implode(" ", $names);
-        }else{
-            $gb = 0;
-        }
-
-        $stock = Stock_model::firstOrNew(['imei' => $i, 'serial_number' => $s]);
-        if($stock->id != null){
-            if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
-            $issue['data']['row'] = $dr;
-            $issue['data']['name'] = $n;
-            $issue['data']['storage'] = $st;
-            $issue['data']['imei'] = $i.$s;
-            $issue['data']['cost'] = $c;
-            $issue['data']['stock_id'] = $stock->id;
-            if($stock->order_id == $order->id && $stock->status == 1){
-                $issue['message'] = 'Duplicate IMEI';
-            }else{
-                if($stock->status != 2){
-                    $issue['message'] = 'IMEI Available In Inventory';
-                }else{
-                    $issue['message'] = 'IMEI Rereturn';
-                }
-            }
-
-        }else{
-            if(in_array(strtolower($n), array_map('strtolower',$products)) && ($i != null || $s != null)){
-                $product = array_search(strtolower($n), array_map('strtolower',$products));
-                $storage = $gb;
-
-                // echo $product." ".$grade." ".$storage." | ";
-
-                $variation = Variation_model::firstOrNew(['product_id' => $product, 'grade' => 9, 'storage' => $storage]);
-
-                $variation->stock += 1;
-                $variation->status = 1;
-                $variation->save();
-
-                $stock->product_id = $product;
-                $stock->variation_id = $variation->id;
-                $stock->added_by = session('user_id');
-                $stock->order_id = $order->id;
-                $stock->status = 1;
-                $stock->save();
-
-                $order_item = Order_item_model::firstOrNew(['order_id' => $order->id, 'variation_id' => $variation->id, 'stock_id' => $stock->id]);
-                $order_item->quantity = 1;
-                $order_item->price = $c;
-                $order_item->status = 3;
-                $order_item->save();
-
-
-            }else{
-                if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
-                if($n != null){
-                    $error = $n . " " . $st . " " . $i.$s . " || ";
-                    $issue['data']['row'] = $dr;
-                    $issue['data']['name'] = $n;
-                    $issue['data']['storage'] = $st;
-                    $issue['data']['imei'] = $i.$s;
-                    $issue['data']['cost'] = $c;
-                    $issue['data']['stock_id'] = '';
-                    if($i == null && $s == null){
-                        $issue['message'] = 'IMEI Not Found';
-                    }else{
-                        $issue['message'] = 'Product Name Not Accepted';
-                    }
-
-                }
-            }
-        }
-
-
-        if($issue != []){
-            Order_issue_model::create([
-                'order_id' => $order->id,
-                'data' => json_encode($issue['data']),
-                'message' => $issue['message'],
-            ]);
-        }
-
-    }
-    public function add_return_item($order_id){
+    public function add_return_item($process_id){
         $return = request('return');
-        // print_r($return);
-        if($order_id == $return['order_id']){
-            $variation = Variation_model::firstOrNew(['product_id' => $return['product'], 'storage' => $return['storage'], 'color' => $return['color'], 'grade' => $return['grade']]);
-
-            $variation->stock += 1;
-            $variation->status = 1;
-            $variation->save();
-
-            $stock = Stock_model::find($return['stock_id']);
-
-            if($stock->id){
-                $item = Order_item_model::where(['order_id'=>$order_id, 'stock_id' => $stock->id])->first();
-                // print_r($stock);
-                if($item == null){
+        $description = request('description');
+        if(request('grade')){
+            session()->put('grade',request('grade'));
+        }
+        session()->put('description',request('description'));
 
 
-
-                    $order_item = new Order_item_model();
-                    $order_item->order_id = $order_id;
-                    $order_item->reference_id = $return['reference_id'];
-                    $order_item->variation_id = $variation->id;
-                    $order_item->stock_id = $stock->id;
-                    $order_item->quantity = 1;
-                    $order_item->price = $return['price'];
-                    $order_item->status = 3;
-                    $order_item->linked_id = $return['linked_id'];
-                    $order_item->admin_id = session('user_id');
-                    $order_item->save();
-
-                    print_r($order_item);
-
-                    $stock_operation = Stock_operations_model::create([
-                        'stock_id' => $stock->id,
-                        'old_variation_id' => $stock->variation_id,
-                        'new_variation_id' => $variation->id,
-                        'description' => $return['description'],
-                        'admin_id' => session('user_id'),
-                    ]);
-
-                    $stock->variation_id = $variation->id;
-                    $stock->status = 1;
-                    $stock->save();
-
-                    session()->put('success','Item added');
-                }else{
-                    session()->put('error','Item already added');
-                }
-            }else{
-                session()->put('error','Stock Not Found');
+        if (request('imei')) {
+            if (ctype_digit(request('imei'))) {
+                $i = request('imei');
+                $s = null;
+            } else {
+                $i = null;
+                $s = request('imei');
             }
+            $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
+            if (request('imei') == '' || !$stock || $stock->status != 1) {
+                session()->put('error', 'IMEI Invalid / Not Available');
+                return redirect()->back();
+            }
+            $stock_id = $stock->id;
 
-        }else{
-            session()->put('error',"Don't ANGRY ME");
+            $product_id = $stock->variation->product_id;
+            $storage = $stock->variation->storage;
+            $color = $stock->variation->color;
+            $grade = $stock->variation->grade;
+
+            if(request('grade') != ''){
+                $grade = request('grade');
+            }
+            $new_variation = Variation_model::firstOrNew([
+                'product_id' => $product_id,
+                'storage' => $storage,
+                'color' => $color,
+                'grade' => $grade,
+            ]);
+            $new_variation->status = 1;
+            if($new_variation->id && $stock->variation_id == $new_variation->id && request('price') == null){
+                session()->put('error', 'Stock already exist in this variation');
+                return redirect()->back();
+
+            }
+            $new_variation->save();
+            $stock_operation = Stock_operations_model::create([
+                'process_id' => $process_id,
+                'stock_id' => $stock_id,
+                'old_variation_id' => $stock->variation_id,
+                'new_variation_id' => $new_variation->id,
+                'description' => $description,
+                'admin_id' => session('user_id'),
+            ]);
+            $stock->variation_id = $new_variation->id;
+            $stock->save();
+
+            // session()->put('added_imeis['.$grade.'][]', $stock_id);
+            // dd($orders);
         }
 
         return redirect()->back();
@@ -400,7 +315,7 @@ class Repair extends Component
                 $data = json_decode($issue->data);
                 // echo $variation." ".$data->imei." ".$data->cost;
 
-                if($this->add_return_item($issue->order_id, $data->imei, $variation, $data->cost) == 1){
+                if($this->add_return_item($issue->process_id, $data->imei, $variation, $data->cost) == 1){
                     $issue->delete();
                 }
 
