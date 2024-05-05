@@ -62,7 +62,7 @@
                         <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
                 </form>
             </div>
-            @if (session('user')->hasPermission('add_repair_item') && $stock->variation->grade == 8)
+            @if (session('user')->hasPermission('add_repair_item') && isset($stock) && $stock->variation->grade == 8)
                 <div class="p-2">
                     <form action="{{ url('add_repair_item').'/'.$repair_id}}" method="POST" class="form-inline">
                         @csrf
@@ -284,6 +284,70 @@
 
         @endif
 
+
+        <br>
+
+        <div class="row">
+            <div class="col-xl-12">
+
+            <div class="card">
+                <div class="card-header pb-0">
+                    <div class="d-flex justify-content-between">
+                        <h4 class="card-title mg-b-0">Repaired</h4>
+                        <div class=" mg-b-0">
+                        </div>
+
+                    </div>
+                </div>
+                <div class="card-body"><div class="table-responsive">
+                        <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                            <thead>
+                                <tr>
+                                    <th><small><b>No</b></small></th>
+                                    <th><small><b>Variation</b></small></th>
+                                    <th><small><b>IMEI</b></small></th>
+                                    <th><small><b>Reason</b></small></th>
+                                    <th><small><b>Creation Date</b></small></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php
+                                    $i = 0;
+                                    $id = [];
+                                @endphp
+                                @foreach ($repaired_stocks as $r_stock)
+                                    @php
+                                        $i = 0;
+                                        $id = [];
+                                        $stock = $r_stock->stock;
+                                    @endphp
+                                        <tr>
+                                            <td>{{ $i + 1 }}</td>
+                                            <td>
+                                                @if ($stock->variation ?? false)
+                                                    <strong>{{ $stock->variation->sku }}</strong>{{ " - " . $stock->variation->product->model . " - " . (isset($stock->variation->storage_id)?$stock->variation->storage_id->name . " - " : null) . (isset($stock->variation->color_id)?$stock->variation->color_id->name. " - ":null)}} <strong><u>{{ $stock->variation->grade_id->name }}</u></strong>
+                                                @endif
+                                            </td>
+                                            <td>{{$stock->imei.$stock->serial_number }}</td>
+                                            <td>{{$stock->latest_operation->description }}</td>
+                                            <td style="width:180px">{{ $stock->created_at."  ".$stock->updated_at }}</td>
+                                        </tr>
+                                        {{-- @php
+                                            $j++;
+                                        @endphp
+                                    @endforeach --}}
+                                    @php
+                                        $i ++;
+                                    @endphp
+                                @endforeach
+                            </tbody>
+                        </table>
+                    <br>
+                </div>
+
+                </div>
+            </div>
+        </div>
 
         <br>
 
