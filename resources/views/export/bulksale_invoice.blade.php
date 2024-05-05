@@ -96,7 +96,7 @@
                         <td colspan="2"><h3 style="line-height:10px; margin:0px; ">Bill To:</h3></td>
                     </tr>
                     <tr>
-                        <td width="20"></td>
+                        <td width="10"></td>
                         <td>
                             <div style="line-height:10px;">
                                 <h5>{{ $customer->company }}</h5>
@@ -111,7 +111,7 @@
                     </tr>
                     </table>
                 </td>
-                <td width="50">
+                <td width="20">
 
                 </td>
                 {{-- <td></td> --}}
