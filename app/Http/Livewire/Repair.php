@@ -138,6 +138,7 @@ class Repair extends Component
         $data['grades'] = Grade_model::all();
         $data['repair'] = Process_model::find($process_id);
 
+        $data['repair_id'] = $process_id;
 
         $repair_stocks = Stock_model::
         whereHas('variation', function ($query) {
