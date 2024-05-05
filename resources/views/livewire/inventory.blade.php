@@ -86,7 +86,7 @@
                     {{-- <div class="card-header">
                         <h4 class="card-title mb-1">Grade</h4>
                     </div> --}}
-                    <select name="grade" class="form-control form-select select2" multiple>
+                    <select name="grade[]" class="form-control form-select select2" multiple>
                         <option value="">Grade</option>
                         @foreach ($grades as $id=>$name)
                             <option value="{{ $id }}" @if(isset($_GET['grade']) && $id == $_GET['grade']) {{'selected'}}@endif>{{ $name }}</option>

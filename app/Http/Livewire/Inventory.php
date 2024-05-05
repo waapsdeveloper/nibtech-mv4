@@ -66,7 +66,7 @@ class Inventory extends Component
         })
         ->when(request('grade') != '', function ($q) {
             return $q->whereHas('variation', function ($q) {
-                $q->where('grade', request('grade'));
+                $q->whereIn('grade', request('grade'));
             });
         })
         ->orderBy('product_id','ASC')
