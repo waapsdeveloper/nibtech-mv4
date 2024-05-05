@@ -135,6 +135,7 @@ class Repair extends Component
 
         $data['imei'] = request('imei');
 
+        $data['grades'] = Grade_model::all();
         $data['repair'] = Process_model::find($process_id);
 
 
@@ -158,7 +159,6 @@ class Repair extends Component
             $data['products'] = Products_model::orderBy('model','asc')->get();
             $data['colors'] = Color_model::all();
             $data['storages'] = Storage_model::all();
-            $data['grades'] = Grade_model::all();
 
             if (request('imei') == '' || !$stock || $stock->status == null) {
                 session()->put('error', 'IMEI Invalid / Not Found');
