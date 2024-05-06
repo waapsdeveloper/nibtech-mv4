@@ -128,6 +128,49 @@
                 <span class="alert-inner--text"><strong>{{session('error')}}</strong></span>
                 <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
             </div>
+
+
+        <form action="{{ url('add_purchase_item').'/8441' }}" method="POST">
+            @csrf
+            <div class="row">
+                <div class="col-md col-sm-6">
+                    <div class="form-floating">
+                        <input type="text" list="variations" id="variation" name="variation" class="form-control" required>
+                        <datalist id="variations">
+                            <option value="">Select</option>
+                            @foreach ($all_variations as $variation)
+                                @php
+                                    if($variation->storage){
+                                        $storage = $storages[$variation->storage];
+                                    }else{
+                                        $storage = null;
+                                    }
+                                @endphp
+                                <option value="{{$variation->id}}" @if(isset($_GET['variation']) && $variation->id == $_GET['variation']) {{'selected'}}@endif>{{$variation->product->model." ".$storage}}</option>
+                            @endforeach
+                        </datalist>
+                        <label for="variation">Variation</label>
+                    </div>
+                </div>
+                <div class="col-md col-sm-6">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="imei" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" required>
+                        <label for="imei">IMEI</label>
+                    </div>
+                </div>
+                <div class="col-md col-sm-6">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="price" name="price" placeholder="Enter Price" value="@isset($_GET['price']){{$_GET['price']}}@endisset" required>
+                        <label for="price">Cost</label>
+                    </div>
+                </div>
+                <div class="col-md col-sm-6 align-self-end mb-1 tx-center">
+                    <button class="btn btn-primary pd-x-20" type="submit">Insert</button>
+                </div>
+                <br>
+                <br>
+            </div>
+        </form>
         <br>
         @php
         session()->forget('error');

@@ -148,6 +148,7 @@ class SalesReturn extends Component
     }
     public function return_detail($order_id){
 
+        $data['storages'] = Storage_model::pluck('name','id');
         $data['imei'] = request('imei');
         if (request('imei')) {
             if (ctype_digit(request('imei'))) {
@@ -167,7 +168,7 @@ class SalesReturn extends Component
             if (request('imei') == '' || !$stock || $stock->status == null) {
                 session()->put('error', 'IMEI Invalid / Not Found');
                 // return redirect()->back(); // Redirect here is not recommended
-                return view('livewire.imei', $data); // Return the Blade view instance with data
+                return view('livewire.return_detail', $data); // Return the Blade view instance with data
             }
             $sale_status = Order_item_model::where(['stock_id'=>$stock->id,'linked_id'=>$stock->purchase_item->id])->first();
             if($stock->status == 1){
