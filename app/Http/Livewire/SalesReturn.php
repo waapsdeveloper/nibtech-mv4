@@ -243,8 +243,13 @@ class SalesReturn extends Component
     }
     public function add_return(){
         $last_order = Order_model::where('order_type_id',4)->orderBy('id','desc')->first();
+        if($last_order == null){
+            $ref = 3001;
+        }else{
+            $ref = $last_order->reference_id+1;
+        }
         $order = Order_model::create([
-            'reference_id' => $last_order->reference_id+1,
+            'reference_id' => $ref,
             'status' => 1,
             'currency' => 4,
             'order_type_id' => 4,
