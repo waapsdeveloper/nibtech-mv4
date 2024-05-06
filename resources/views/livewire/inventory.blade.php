@@ -191,7 +191,10 @@
                 <a href="{{url(session('url').'inventory')}}" class="btn btn-link">All</a>
             </div>
             <div class="">
+                @if (session('user')->hasPermission('view_cost'))
                 <button class="btn btn-sm btn-secondary pd-x-20 " type="submit" form="export" name="inventorysheet" value="1">Export Sheet</button>
+
+                @endif
             </div>
         </div>
         <form id="export" method="POST" target="_blank" action="{{url(session('url').'inventory/export')}}">

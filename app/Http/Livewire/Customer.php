@@ -137,10 +137,8 @@ class Customer extends Component
         }
         // Create or delete role permission based on $isChecked value
         if ($check) {
-            echo "Hello";
             echo Role_permission_model::create(['role_id' => $roleId, 'permission_id' => $permissionId]);
         } else {
-            echo "Ho";
             echo Role_permission_model::where('role_id', $roleId)->where('permission_id', $permissionId)->delete();
         }
 
