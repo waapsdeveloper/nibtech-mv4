@@ -24,6 +24,7 @@ namespace App\Http\Livewire;
     use Maatwebsite\Excel\Facades\Excel;
     use TCPDF;
     use App\Mail\InvoiceMail;
+use App\Models\Grade_model;
 use App\Models\Order_issue_model;
 use App\Models\Stock_operations_model;
 use Illuminate\Support\Facades\Mail;
@@ -46,6 +47,7 @@ class Order extends Component
     public function render()
     {
 
+        $data['grades'] = Grade_model::all();
         $data['last_hour'] = Carbon::now()->subHour(2);
         $data['admins'] = Admin_model::where('id','!=',1)->get();
         $user_id = session('user_id');
