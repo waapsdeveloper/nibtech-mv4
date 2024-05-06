@@ -1093,6 +1093,11 @@ class Order extends Component
             }
             $stock->save();
 
+            if($item->stock->status == 2){
+                $item->stock->status = 1;
+            }
+            $item->stock->save();
+
             $item->stock_id = $stock->id;
             $item->linked_id = $stock->purchase_item->id;
             $item->save();
@@ -1106,44 +1111,6 @@ class Order extends Component
         return redirect()->back();
     }
 
-    public function sales_return($id)
-    {
-        $item = Order_item_model::find($id);
-        $order = Order_model::find($item->order_id);
-
-        $return = new Order_model();
-        $return->reference_id = $order->reference_id;
-        $return->customer_id = $order->customer_id;
-        $return->order_type_id = 4;
-        $return->currency = $order->currency;
-        $return->price = $order->price;
-        $return->delivery_note_url = request('message');
-        $return->status = request('status');
-        $return->save();
-
-        $order->update(['reference_id'=>null]);
-
-        $return_item = new Order_item_model();
-        $return_item->order_id = $return->id;
-        $return_item->reference_id = $item->reference_id;
-        $return_item->variation_id = $item->variation_id;
-        $return_item->stock_id = $item->stock_id;
-        $return_item->quantity = 1;
-        $return_item->price = $item->price;
-        $return_item->status = request('status');
-        $return_item->linked_id = $item->id;
-        $return_item->save();
-
-        $item->update(['reference_id'=>null]);
-
-        if($item->stock->status == 2){
-            $item->stock->update(['status'=>3]);
-        }elseif($item->stock->status == null){
-            $item->stock->delete();
-        }else{}
-
-
-    }
 
     public function recheck($order_id, $refresh = false, $invoice = false, $tester = null){
 
