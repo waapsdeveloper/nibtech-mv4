@@ -181,12 +181,12 @@
                                                     (Pending)
                                                 @endif</td>
                                                 <td style="width:220px">{{ $order->created_at." ".$order->updated_at }}</td>
-                                                <td>
+                                                {{-- <td>
                                                     <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                                     <div class="dropdown-menu">
                                                         <a class="dropdown-item" href="{{url(session('url').'delete_return') . "/" . $order->id }}"><i class="fe fe-arrows-rotate me-2 "></i>Delete</a>
                                                     </div>
-                                                </td>
+                                                </td> --}}
                                             </tr>
                                             {{-- @php
                                                 $j++;
