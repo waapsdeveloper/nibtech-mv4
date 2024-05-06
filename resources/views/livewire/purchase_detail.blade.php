@@ -239,7 +239,7 @@
                                                 <td>
                                                     @if ($row->message == "IMEI not Provided")
                                                     <form id="order_issues_{{$i}}" method="POST" action="{{ url('purchase/remove_issues') }}" class="form-inline">
-
+                                                        @csrf
                                                         <div class="form-floating">
                                                             <input type="text" class="form-control" id="imei" name="imei" placeholder="Enter IMEI" required>
                                                             <label for="imei">IMEI</label>
