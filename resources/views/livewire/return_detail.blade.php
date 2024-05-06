@@ -164,9 +164,7 @@
                         <label for="price">Cost</label>
                     </div>
                 </div>
-                <div class="col-md col-sm-6 align-self-end mb-1 tx-center">
                     <button class="btn btn-primary pd-x-20" type="submit">Insert</button>
-                </div>
                 <br>
                 <br>
             </div>
