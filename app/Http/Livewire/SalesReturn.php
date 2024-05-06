@@ -150,6 +150,12 @@ class SalesReturn extends Component
 
         $data['storages'] = Storage_model::pluck('name','id');
         $data['imei'] = request('imei');
+
+        $data['all_variations'] = Variation_model::where('grade',9)->get();
+        $data['order'] = Order_model::find($order_id);
+        $data['order_id'] = $order_id;
+        $data['currency'] = $data['order']->currency_id->sign;
+
         if (request('imei')) {
             if (ctype_digit(request('imei'))) {
                 $i = request('imei');
@@ -230,10 +236,6 @@ class SalesReturn extends Component
 
         $data['variations'] = $variations;
 
-        $data['all_variations'] = Variation_model::where('grade',9)->get();
-        $data['order'] = Order_model::find($order_id);
-        $data['order_id'] = $order_id;
-        $data['currency'] = $data['order']->currency_id->sign;
 
 
         // echo "<pre>";
