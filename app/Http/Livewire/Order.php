@@ -701,9 +701,13 @@ class Order extends Component
     public function remove_issues(){
         // dd(request('ids'));
         $ids = request('ids');
+        $id = request('id');
         $issues = Order_issue_model::whereIn('id',$ids)->get();
+        $issue = Order_issue_model::find($id);
         if(request('remove_entries') == 1){
-            $issues->delete();
+            foreach ($issues as $issue) {
+                $issue->delete();
+            }
         }
         if(request('insert_variation') == 1){
             $variation = request('variation');
@@ -716,6 +720,17 @@ class Order extends Component
                 }
 
             }
+        }
+        if(request('add_imei') == 1){
+            $imei = request('imei');
+            $variation = request('variation');
+            $data = json_decode($issue->data);
+            // echo $variation." ".$data->imei." ".$data->cost;
+
+            if($this->add_purchase_item($issue->order_id, $imei, $variation, $data->cost) == 1){
+                $issue->delete();
+            }
+
         }
         return redirect()->back();
 

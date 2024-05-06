@@ -137,7 +137,7 @@
                         <div class="table-responsive" style="max-height: 500px">
                             <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                                 @php
-                                    $col = 4;
+                                    $col = 3;
                                 @endphp
                                 <thead>
                                     <tr>
@@ -236,7 +236,38 @@
                                                 @foreach ($data as $key => $value)
                                                     <td title="{{ $key }}">{{ $value }}</td>
                                                 @endforeach
-                                                <td>{{ $row->message }}</td>
+                                                <td>
+                                                    @if ($row->message == "IMEI not Provided")
+                                                    <form id="order_issues_{{$i}}" method="POST" action="{{ url('purchase/remove_issues') }}" class="form-inline">
+
+                                                        <div class="form-floating">
+                                                            <input type="text" class="form-control" id="imei" name="imei" placeholder="Enter IMEI" required>
+                                                            <label for="imei">IMEI</label>
+                                                        </div>
+                                                        <div class="form-floating">
+                                                            <input type="text" list="variations" id="variation" name="variation" class="form-control" value="{{ $grouped_issue->name }}" required>
+                                                            <datalist id="variations">
+                                                                <option value="">Select</option>
+                                                                @foreach ($all_variations as $variation)
+                                                                    @php
+                                                                        if($variation->storage){
+                                                                            $storage = $storages[$variation->storage];
+                                                                        }else{
+                                                                            $storage = null;
+                                                                        }
+                                                                    @endphp
+                                                                    <option value="{{$variation->id}}" @if(isset($_GET['variation']) && $variation->id == $_GET['variation']) {{'selected'}}@endif>{{$variation->product->model." ".$storage}}</option>
+                                                                @endforeach
+                                                            </datalist>
+                                                            <label for="variation">Variation</label>
+                                                        </div>
+                                                        <button class="btn btn-primary m-0" name="insert_variation" value="1">Insert Variation</button>
+
+                                                    </form>
+                                                    @else
+                                                        {{ $row->message }}
+                                                    @endif
+                                                </td>
                                                 <td>{{ $row->created_at }}</td>
                                                 {{-- <td>
                                                     <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
