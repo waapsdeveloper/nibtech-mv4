@@ -261,7 +261,7 @@
                                                             </datalist>
                                                             <label for="variation">Variation</label>
                                                         </div>
-                                                        <button class="btn btn-primary m-0" name="insert_variation" value="1">Insert Variation</button>
+                                                        <button class="btn btn-primary m-0" name="insert_variation" value="1">Insert</button>
 
                                                     </form>
                                                     @else
