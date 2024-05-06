@@ -48,6 +48,13 @@
             <div class="col-md col-sm-6">
 
                 <div class="form-floating">
+                    <input type="text" class="form-control" name="order_id" placeholder="Enter Company" value="@isset($_GET['order_id']){{$_GET['order_id']}}@endisset">
+                    <label for="">Order Number</label>
+                </div>
+            </div>
+            <div class="col-md col-sm-6">
+
+                <div class="form-floating">
                     <input type="text" class="form-control" name="company" placeholder="Enter Company" value="@isset($_GET['company']){{$_GET['company']}}@endisset">
                     <label for="">Company</label>
                 </div>
@@ -80,7 +87,7 @@
                     <label for="">Email</label>
                 </div>
             </div>
-            <div class="col-md col-sm-6">
+            <div class="col-md-2 col-sm-6">
                 <button type="submit" class="btn btn-primary">Search</button>
                 <a href="{{url(session('url').'customer')}}" class="btn btn-default">Reset</a>
             </div>
