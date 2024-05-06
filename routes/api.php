@@ -27,9 +27,9 @@ use Illuminate\Support\Facades\Route;
 //     return ['token' => $token->plainTextToken];
 // });
 
-// Route::get('/test', function (Request $request) {
-//     return response()->json('Hello');
-// });
+Route::get('/test', function (Request $request) {
+    return response()->json('Hello');
+});
 Route::group(['middleware' => ['auth:sanctum']], function () {
     // return response()->json('Hello');
     Route::resource('/request', ApiRequestController::class);
