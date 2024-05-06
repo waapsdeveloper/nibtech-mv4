@@ -702,8 +702,13 @@ class Order extends Component
         // dd(request('ids'));
         $ids = request('ids');
         $id = request('id');
-        $issues = Order_issue_model::whereIn('id',$ids)->get();
-        $issue = Order_issue_model::find($id);
+        if(request('ids')){
+            $issues = Order_issue_model::whereIn('id',$ids)->get();
+        }
+        if(request('id')){
+            $issue = Order_issue_model::find($id);
+        }
+
         if(request('remove_entries') == 1){
             foreach ($issues as $issue) {
                 $issue->delete();
