@@ -9,7 +9,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use TCPDF;
 
-class InvoiceMail extends Mailable
+class BulksaleInvoiceMail extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -26,8 +26,8 @@ class InvoiceMail extends Mailable
 
         $pdf = new TCPDF();
         $pdf->SetCreator(PDF_CREATOR);
-        $pdf->SetTitle('Invoice');
-        $pdf->SetHeaderData('', 0, 'Invoice', '');
+        // $pdf->SetTitle('Invoice');
+        // $pdf->SetHeaderData('', 0, 'Invoice', '');
 
         // Add a page
         $pdf->AddPage();
@@ -36,15 +36,39 @@ class InvoiceMail extends Mailable
         $pdf->SetFont('dejavusans', '', 12);
 
         // Additional content from your view
-        $html = view('export.invoice', $this->data)->render();
+        $html = view('export.bulksale_invoice', $this->data)->render();
         $pdf->writeHTML($html, true, false, true, false, '');
 
         // Get the TCPDF output as a string
         $pdfOutput = $pdf->getPdfData();
         // $pdf = PDF::loadView('export.invoice', $this->data);
 
+
+        $pdf2 = new TCPDF();
+        $pdf2->SetCreator(PDF_CREATOR);
+        // $pdf2->SetTitle('Invoice');
+        // $pdf2->SetHeaderData('', 0, 'Invoice', '');
+
+        // Add a page
+        $pdf2->AddPage();
+
+        // Set font
+        $pdf2->SetFont('dejavusans', '', 12);
+
+        // Additional content from your view
+        $html = view('export.bulksale_packlist', $this->data)->render();
+        $pdf2->writeHTML($html, true, false, true, false, '');
+
+        // Get the TCPDF output as a string
+        $pdf2Output = $pdf2->getPdfData();
+
+
+
         return $this->view('email.invoice')
             ->attachData($pdfOutput, 'invoice.pdf', [
+                'mime' => 'application/pdf',
+            ])
+            ->attachData($pdf2Output, 'packlist.pdf', [
                 'mime' => 'application/pdf',
             ]);
 

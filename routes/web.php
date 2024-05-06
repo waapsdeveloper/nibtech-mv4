@@ -94,6 +94,7 @@ Route::get('delete_wholesale_item/{id}', [Wholesale::class,'delete_order_item'])
 Route::get('wholesale/detail/{id}', [Wholesale::class,'wholesale_detail'])->name('wholesale_detail');
 Route::post('wholesale/update_prices', [Wholesale::class,'update_prices'])->name('update_wholesale_item');
 Route::get('export_bulksale_invoice/{id}', [Wholesale::class,'export_bulksale_invoice'])->name('wholesale_detail');
+Route::get('bulksale_email/{id}', [Wholesale::class,'bulksale_email'])->name('wholesale_detail');
 Route::post('wholesale/add_wholesale_sheet/{id}', [Wholesale::class,'add_wholesale_sheet'])->name('add_wholesale_item');
 Route::post('wholesale/remove_issues', [Wholesale::class,'remove_issues'])->name('remove_wholesale_issues');
 

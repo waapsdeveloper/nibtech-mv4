@@ -3,6 +3,7 @@
 namespace App\Http\Livewire;
 
 use App\Exports\PacksheetExport;
+use App\Mail\BulksaleInvoiceMail;
 use Livewire\Component;
 use App\Models\Variation_model;
 use App\Models\Products_model;
@@ -17,6 +18,7 @@ use App\Models\Grade_model;
 use App\Models\Order_issue_model;
 use App\Models\Storage_model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
 use TCPDF;
 
@@ -664,5 +666,43 @@ class Wholesale extends Component
 
         // Pass the PDF content to the view
         // return view('livewire.show_pdf')->with(['pdfContent'=> $pdfContent, 'delivery_note'=>$order->delivery_note_url]);
+    }
+
+    public function bulksale_email($order_id){
+
+        // Find the order
+        $order = Order_model::with('customer', 'order_items')->find($order_id);
+
+        $order_items = Order_item_model::
+            join('variation', 'order_items.variation_id', '=', 'variation.id')
+            ->join('products', 'variation.product_id', '=', 'products.id')
+            ->select(
+                'variation.id as variation_id',
+                'products.model',
+                'variation.color',
+                'variation.storage',
+                'variation.grade',
+                DB::raw('AVG(order_items.price) as average_price'),
+                DB::raw('SUM(order_items.quantity) as total_quantity'),
+                DB::raw('SUM(order_items.price) as total_price')
+            )
+            ->where('order_items.order_id',$order_id)
+            ->groupBy('variation.id','products.model', 'variation.color', 'variation.storage', 'variation.grade')
+            ->orderBy('products.model', 'ASC')
+            ->get();
+
+            // dd($order);
+        // Generate PDF for the invoice content
+        $data = [
+            'order' => $order,
+            'customer' => $order->customer,
+            'order_items' =>$order_items
+        ];
+        $data['storages'] = Storage_model::pluck('name','id');
+        $data['grades'] = Grade_model::pluck('name','id');
+        $data['colors'] = Color_model::pluck('name','id');
+
+
+        Mail::to('haleem.shahhs@gmail.com')->send(new BulksaleInvoiceMail($data));
     }
 }
