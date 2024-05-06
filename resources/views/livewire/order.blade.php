@@ -628,11 +628,11 @@
                                 <label for="">Reason</label>
                                 <textarea class="form-control" name="replace[reason]"></textarea>
                             </div>
+                            <h4>With</h4>
                             <div class="form-group">
                                 <label for="">Tester</label>
                                 <input class="form-control" placeholder="input Tester Initial" name="replace[tester]" type="text">
                             </div>
-                            <h4>With</h4>
                             <div class="form-group">
                                 <label for="">IMEI / Serial Number</label>
                                 <input class="form-control" placeholder="input IMEI / Serial Number" name="replace[imei]" type="text" required>
