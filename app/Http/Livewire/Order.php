@@ -644,7 +644,7 @@ class Order extends Component
         $variation->save();
 
         $stock = Stock_model::firstOrNew(['imei' => $i, 'serial_number' => $s]);
-        if($stock->id){
+        if($stock->id && $stock->status != null){
             $issue['data']['variation'] = $variation_id;
             $issue['data']['imei'] = $i.$s;
             $issue['data']['cost'] = $price;

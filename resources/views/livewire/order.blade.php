@@ -491,6 +491,7 @@
                                                         @if ($item->order->processed_at > $last_hour || $user_id == 1)
                                                         <a class="dropdown-item" id="correction_{{ $item->id }}" href="javascript:void(0);" data-bs-target="#correction_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}"> Correction </a>
                                                         @endif
+                                                        <a class="dropdown-item" id="replacement_{{ $item->id }}" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}"> Correction </a>
                                                         @if ($order->status == 3)
 
                                                         <a class="dropdown-item" href="{{url(session('url').'order')}}/recheck/{{ $order->reference_id }}/true" target="_blank">Invoice</a>
@@ -592,6 +593,51 @@
                                 <textarea class="form-control" name="correction[reason]">Wrong Dispatch</textarea>
                             </div>
                             <input type="hidden" id="item_id" name="correction[item_id]" value="">
+
+                            <button class="btn btn-primary btn-block">{{ __('locale.Submit') }}</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal" id="replacement_model">
+            <div class="modal-dialog wd-xl-400" role="document">
+                <div class="modal-content">
+                    <div class="modal-body pd-sm-40">
+                        <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
+                            type="button"><span aria-hidden="true">&times;</span></button>
+                        <h5 class="modal-title mg-b-5">Update Order</h5>
+                        <hr>
+                        <form action="{{ url('order/replace') }}" method="POST">
+                            @csrf
+                            <div class="form-group">
+                                <label for="">Order Number</label>
+                                <input class="form-control" name="replace[id]" type="text" id="order_reference" disabled>
+                            </div>
+                            <h4>Replace</h4>
+                            <div class="form-group">
+                                <label for="">Move to</label>
+                                <select name="replace[grade]" class="form-control form-select">
+                                    <option value="">Move to</option>
+                                    @foreach ($grades as $grade)
+                                        <option value="{{ $grade->id }}">{{ $grade->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="">Reason</label>
+                                <textarea class="form-control" name="replace[reason]"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="">Tester</label>
+                                <input class="form-control" placeholder="input Tester Initial" name="replace[tester]" type="text">
+                            </div>
+                            <h4>With</h4>
+                            <div class="form-group">
+                                <label for="">IMEI / Serial Number</label>
+                                <input class="form-control" placeholder="input IMEI / Serial Number" name="replace[imei]" type="text" required>
+                            </div>
+                            <input type="hidden" id="item_id" name="replace[item_id]" value="">
 
                             <button class="btn btn-primary btn-block">{{ __('locale.Submit') }}</button>
                         </form>
