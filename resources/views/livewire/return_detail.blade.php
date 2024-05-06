@@ -30,7 +30,7 @@
                             <input type="text" class="form-control" id="tracking_number" name="tracking_number" placeholder="Enter Tracking Number" required>
                             <label for="tracking_number">Tracking Number</label>
                         </div>
-                        <button type="submit" class="btn btn-success">Approve</button>
+                        <button type="submit" class="btn btn-success">Ship</button>
                     </form>
                     @endif
                 </div>
