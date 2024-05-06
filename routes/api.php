@@ -32,6 +32,6 @@ Route::get('/test', function (Request $request) {
 });
 Route::group(['middleware' => ['auth:sanctum']], function () {
     // return response()->json('Hello');
-    Route::resource('/request', ApiRequestController::class);
+    // Route::resource('/request', ApiRequestController::class);
     Route::post('request', [ApiRequestController::class, 'store']);
 });
