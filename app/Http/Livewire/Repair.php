@@ -78,7 +78,7 @@ class Repair extends Component
 
         return redirect()->back();
     }
-    public function delete_order($order_id){
+    public function delete_repair($order_id){
 
         $stock = Stock_model::where(['order_id'=>$order_id,'status'=>2])->first();
         if($stock != null){
@@ -105,7 +105,7 @@ class Repair extends Component
         return redirect()->back();
 
     }
-    public function delete_order_item($item_id){
+    public function delete_repair_item($item_id){
 
         $orderItem = Order_item_model::find($item_id);
 
