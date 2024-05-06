@@ -606,7 +606,7 @@
                     <div class="modal-body pd-sm-40">
                         <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
                             type="button"><span aria-hidden="true">&times;</span></button>
-                        <h5 class="modal-title mg-b-5">Update Order</h5>
+                        <h3 class="modal-title mg-b-5">Update Order</h3>
                         <hr>
                         <form action="{{ url('order/replace') }}" method="POST">
                             @csrf
