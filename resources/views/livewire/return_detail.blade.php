@@ -23,7 +23,7 @@
             <div class="breadcrumb-header justify-content-between">
                 <div class="left-content">
                 {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">Return</span> --}}
-                    @if ($order->status == 2)
+                    @if ($order->status == 1)
                     <form class="form-inline" method="POST" action="{{url('return/approve').'/'.$order->id}}">
                         @csrf
                         <div class="form-floating">

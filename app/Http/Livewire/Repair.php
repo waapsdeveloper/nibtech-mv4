@@ -86,21 +86,21 @@ class Repair extends Component
             return redirect()->back();
         }
 
-        $items = Order_item_model::where('order_id',$order_id)->get();
-        foreach($items as $orderItem){
-            if($orderItem->stock){
-                // Access the variation through orderItem->stock->variation
-                $variation = $orderItem->stock->variation;
+        // $items = Order_item_model::where('order_id',$order_id)->get();
+        // foreach($items as $orderItem){
+        //     if($orderItem->stock){
+        //         // Access the variation through orderItem->stock->variation
+        //         $variation = $orderItem->stock->variation;
 
-                $variation->stock += 1;
-                Stock_model::find($orderItem->stock_id)->update([
-                    'status' => 2
-                ]);
-            }
-            $orderItem->delete();
-        }
-        Order_model::where('id',$order_id)->delete();
-        Order_issue_model::where('order_id',$order_id)->delete();
+        //         $variation->stock += 1;
+        //         Stock_model::find($orderItem->stock_id)->update([
+        //             'status' => 2
+        //         ]);
+        //     }
+        //     $orderItem->delete();
+        // }
+        // Order_model::where('id',$order_id)->delete();
+        // Order_issue_model::where('order_id',$order_id)->delete();
         session()->put('success', 'Order deleted successfully');
         return redirect()->back();
 
