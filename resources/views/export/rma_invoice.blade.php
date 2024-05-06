@@ -105,6 +105,7 @@
                                 <h5>{{ $customer->phone }}</h5>
                                 <h5>{{ $customer->street }} {{ $customer->street2 }}, {{ $customer->city }}</h5>
                                 <h5>{{ $customer->postal_code }} {{ $customer->country_id->title ?? null }}</h5>
+                                <h5>{{ $customer->vat }}</h5>
                                 <!-- Add more customer details as needed -->
                             </div>
                         </td>
