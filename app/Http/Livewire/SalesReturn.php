@@ -90,7 +90,7 @@ class SalesReturn extends Component
 
         return redirect()->back();
     }
-    public function delete_order($order_id){
+    public function delete_return($order_id){
 
         $stock = Stock_model::where(['order_id'=>$order_id,'status'=>2])->first();
         if($stock != null){
@@ -117,7 +117,7 @@ class SalesReturn extends Component
         return redirect()->back();
 
     }
-    public function delete_order_item($item_id){
+    public function delete_return_item($item_id){
 
         $orderItem = Order_item_model::find($item_id);
 
@@ -242,9 +242,9 @@ class SalesReturn extends Component
 
     }
     public function add_return(){
-
+        $last_order = Order_model::where('order_type_id',4)->orderBy('id','desc')->first();
         $order = Order_model::create([
-            'reference_id' => 11001,
+            'reference_id' => $last_order->reference_id+1,
             'status' => 1,
             'currency' => 4,
             'order_type_id' => 4,
