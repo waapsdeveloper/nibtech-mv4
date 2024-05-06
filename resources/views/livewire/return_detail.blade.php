@@ -352,6 +352,7 @@
 
 
         <br>
+        @if (isset($variations))
 
         <div class="row">
 
@@ -424,6 +425,7 @@
             @endforeach
         </div>
 
+        @endif
     @endsection
 
     @section('scripts')
