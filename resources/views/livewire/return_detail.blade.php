@@ -31,7 +31,6 @@
                             <label for="tracking_number">Tracking Number</label>
                         </div>
                         <button type="submit" class="btn btn-success">Approve</button>
-                        <a class="btn btn-danger" href="{{url('delete_order') . "/" . $order->id }}">Delete</a>
                     </form>
                     @endif
                 </div>
