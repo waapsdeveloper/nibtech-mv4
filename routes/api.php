@@ -31,5 +31,7 @@ use Illuminate\Support\Facades\Route;
 //     return response()->json('Hello');
 // });
 Route::group(['middleware' => ['auth:sanctum']], function () {
+    // return response()->json('Hello');
     Route::resource('/request', ApiRequestController::class);
+    Route::post('request', [ApiRequestController::class, 'store']);
 });
