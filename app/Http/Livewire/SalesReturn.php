@@ -72,6 +72,9 @@ class SalesReturn extends Component
         ->when(request('order_id'), function ($q) {
             return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
         })
+        ->when(request('status'), function ($q) {
+            return $q->where('orders.status', request('status'));
+        })
         // ->groupBy('orders.id', 'orders.reference_id', 'orders.created_at')
         ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
         ->paginate($per_page)
