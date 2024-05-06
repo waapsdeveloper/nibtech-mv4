@@ -614,7 +614,7 @@ class Order extends Component
         }
 
     }
-    public function add_purchase_item($order_id, $imei = null, $variation_id = null, $price = null){
+    public function add_purchase_item($order_id, $imei = null, $variation_id = null, $price = null, $return = null){
         $issue = [];
         if(request('imei')){
             $imei = request('imei');
@@ -691,7 +691,7 @@ class Order extends Component
         }
         // Delete the temporary file
         // Storage::delete($filePath);
-        if(request('imei') != null){
+        if($return == null){
             return redirect()->back();
         }else{
             return $issue;
@@ -720,7 +720,7 @@ class Order extends Component
                 $data = json_decode($issue->data);
                 // echo $variation." ".$data->imei." ".$data->cost;
 
-                if($this->add_purchase_item($issue->order_id, $data->imei, $variation, $data->cost) == 1){
+                if($this->add_purchase_item($issue->order_id, $data->imei, $variation, $data->cost, 1) == 1){
                     $issue->delete();
                 }
 
