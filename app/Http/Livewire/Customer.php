@@ -18,7 +18,7 @@ class Customer extends Component
     {
         $data['customers'] = Customer_model::
         when(request('type') && request('type') != 0, function($q){
-            if(request('type') == 3){
+            if(request('type') == 4){
                 return $q->where('is_vendor',null);
             }else{
                 return $q->where('is_vendor',request('type'));
@@ -90,20 +90,6 @@ class Customer extends Component
         return redirect('customer');
     }
 
-    public function update_status($id)
-    {
-       $customer = Customer_model::where('id',$id)->first();
-       $status = $customer->status;
-       if($status == 1){
-        Customer_model::where('id',$id)->update(['status'=> 0]);
-        session()->put('success',"Member has been Activated successfully");
-        return redirect('customer');
-       }else{
-        Customer_model::where('id',$id)->update(['status'=> 1]);
-        session()->put('success',"Member has been Deactivated successfully");
-        return redirect('customer');
-       }
-    }
     public function edit_customer($id)
     {
 
@@ -126,23 +112,6 @@ class Customer extends Component
     public function update_customer($id)
     {
 
-        // $parent_id = request()->input('parent');
-        // $role_id = request()->input('role');
-        // $username = request()->input('username');
-        // $f_name = request()->input('fname');
-        // $l_name = request()->input('lname');
-        // $email = request()->input('email');
-        // $password = request()->input('password');
-
-        // $data = array(
-        //     'parent_id' =>$parent_id,
-        //     'role_id' =>$role_id,
-        //     'username' =>$username,
-        //     'first_name'=> $f_name,
-        //     'last_name'=> $l_name,
-        //     'email'=> $email,
-        //     'password'=> Hash::make($password),
-        // );
         Customer_model::where('id',$id)->update(request('customer'));
         session()->put('success',"Customer has been updated successfully");
         return redirect('customer');

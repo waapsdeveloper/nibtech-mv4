@@ -146,15 +146,15 @@
             </tr>
 
             <tr style="border-top: 1px solid Black">
-                <td>
+                <td width="300">
                     <table>
                     <tr>
                         <br>
                         <td colspan="2"><h3 style="line-height:10px; margin:0px; ">Bill To:</h3></td>
                     </tr>
                     <tr>
-                        <td width="20"></td>
-                        <td width="180">
+                        <td width="10"></td>
+                        <td width="">
                             <div style="line-height:10px; margin:0; padding:0;">
                                 <h5>{{ $customer->company }}</h5>
                                 <h5>{{ $customer->first_name." ".$customer->last_name }}</h5>
@@ -162,13 +162,14 @@
                                 <h5>{{ $customer->phone }}</h5>
                                 <h5>{{ $customer->street }} {{ $customer->street2 }}, {{ $customer->city }}</h5>
                                 <h5>{{ $customer->postal_code }} {{ $customer->country_id->title ?? null }}</h5>
+                                <h5>{{ $customer->vat }}</h5>
                                 <!-- Add more customer details as needed -->
                             </div>
                         </td>
                     </tr>
                     </table>
                 </td>
-                <td>
+                <td width="30">
 
                 </td>
                 {{-- <td></td> --}}

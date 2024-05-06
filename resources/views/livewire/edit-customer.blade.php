@@ -116,6 +116,14 @@
                                     </select>
                                 </div>
                             </div>
+                            <div class="row row-xs align-items-center mg-b-20">
+                                <div class="col-md-3">
+                                    <label class="form-label mg-b-0">VAT Number</label>
+                                </div>
+                                <div class="col-md-9 mg-t-5 mg-md-t-0">
+                                    <input class="form-control" placeholder="Enter customer's VAT Number" name="customer[vat]" value="{{$customer->vat}}" type="text">
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <button class="btn btn-primary pd-x-30 mg-r-5 mg-t-5" >Update</button>
