@@ -90,14 +90,14 @@
             </tr>
 
             <tr style="border-top: 1px solid Black">
-                <td>
+                <td width="300">
                     <table>
                     <tr>
                         <br>
                         <td colspan="2"><h3 style="line-height:10px; margin:0px; ">Bill To:</h3></td>
                     </tr>
                     <tr>
-                        <td width="20"></td>
+                        <td width="10"></td>
                         <td>
                             <div style="line-height:10px;">
                                 <h5>{{ $customer->company }}</h5>
@@ -112,36 +112,32 @@
                     </tr>
                     </table>
                 </td>
-                <td>
+                <td width="60">
 
                 </td>
                 {{-- <td></td> --}}
-                <td style="text-align: right; padding:0; margin:0; line-height:10px" width="200">
+                <td style="text-align: right; padding:0; margin:0; line-height:10px" width="170">
                     <br><br>
                     <h1 style="font-size: 26px; text-align:right;">PACKLIST</h1>
                     <table cellspacing="4">
 
                     <br><br><br><br>
                         <tr>
-                            <td width="40"></td>
-                            <td style="text-align: left; margin-top:5px;" width="70"><h4><strong>Order ID:</strong></h4></td>
-                            <td colspan="2" width="70"><h4 style="font-weight: 400">{{ $order->reference_id }}</h4></td>
+                            <td style="text-align: left; margin-top:5px;" width="80"><h4><strong>Order ID:</strong></h4></td>
+                            <td colspan="2" width="80"><h4 style="font-weight: 400">{{ $order->reference_id }}</h4></td>
                         </tr>
                         @if ($order->admin)
 
                         <tr>
-                            <td></td>
                             <td style="text-align: left; margin-top:5px;"><h4><strong>Sales Rep:</strong></h4></td>
                             <td colspan="2"><h4 style="font-weight: 400">{{ $order->admin->first_name }}</h4></td>
                         </tr>
                         @endif
                         <tr>
-                            <td></td>
                             <td style="text-align: left; margin-top:5px;"><h4><strong>Order Date:</strong></h4></td>
                             <td colspan="2"><h4 style="font-weight: 400">{{ \Carbon\Carbon::parse($order->created_at)->format('d-m-Y') }}</h4></td>
                         </tr>
                         <tr>
-                            <td></td>
                             <td style="text-align: left; margin-top:5px;"><h4><strong>Invoice Date:</strong></h4></td>
                             <td colspan="2"><h4 style="font-weight: 400">{{ \Carbon\Carbon::parse($order->processed_at)->format('d-m-Y') }}</h4></td>
                         </tr>

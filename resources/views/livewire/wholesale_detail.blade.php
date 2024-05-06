@@ -68,6 +68,7 @@
                     <input type="file" class="form-control form-control-sm" name="sheet">
                     <button type="submit" class="btn btn-sm btn-primary">Upload Sheet</button>
                 </form>
+                <a href="{{url(session('url').'bulksale_email')}}/{{ $order->id }}" target="_blank"><button class="btn-sm btn-secondary">Send Email</button></a>
                 <a href="{{url(session('url').'export_bulksale_invoice')}}/{{ $order->id }}" target="_blank"><button class="btn-sm btn-secondary">Invoice</button></a>
 
                 <div class="btn-group p-1" role="group">

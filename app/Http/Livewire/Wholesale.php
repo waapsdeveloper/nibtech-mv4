@@ -703,6 +703,6 @@ class Wholesale extends Component
         $data['colors'] = Color_model::pluck('name','id');
 
 
-        Mail::to('haleem.shahhs@gmail.com')->send(new BulksaleInvoiceMail($data));
+        Mail::to($order->customer->email)->send(new BulksaleInvoiceMail($data));
     }
 }

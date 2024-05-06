@@ -4,9 +4,11 @@
 
 namespace App\Mail;
 
+use App\Exports\PacksheetExport;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
+use Maatwebsite\Excel\Facades\Excel;
 use TCPDF;
 
 class BulksaleInvoiceMail extends Mailable
@@ -62,6 +64,7 @@ class BulksaleInvoiceMail extends Mailable
         // Get the TCPDF output as a string
         $pdf2Output = $pdf2->getPdfData();
 
+        $excelFile = Excel::download(new PacksheetExport, 'packsheet.xlsx');
 
 
         return $this->view('email.invoice')
@@ -70,6 +73,10 @@ class BulksaleInvoiceMail extends Mailable
             ])
             ->attachData($pdf2Output, 'packlist.pdf', [
                 'mime' => 'application/pdf',
+            ])
+            ->attach($excelFile->getFile(), [
+                'as' => 'packsheet.xlsx',
+                'mime' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             ]);
 
         // return $this->view('export.invoice', $this->data)
