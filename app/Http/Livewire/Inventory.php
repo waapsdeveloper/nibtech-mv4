@@ -78,6 +78,11 @@ class Inventory extends Component
 
         $data['average_cost'] = Stock_model::where('stock.status',1)->where('stock.deleted_at',null)->where('order_items.deleted_at',null)
 
+        ->when(request('vendor') != '', function ($q) {
+            return $q->whereHas('order', function ($q) {
+                $q->where('customer_id', request('vendor'));
+            });
+        })
         ->when(request('status') != '', function ($q) {
             return $q->whereHas('order', function ($q) {
                 $q->where('status', request('status'));
@@ -117,6 +122,11 @@ class Inventory extends Component
 
         $data['vendor_average_cost'] = Stock_model::where('stock.status',1)->where('stock.deleted_at',null)->where('order_items.deleted_at',null)->where('orders.deleted_at',null)
 
+        ->when(request('vendor') != '', function ($q) {
+            return $q->whereHas('order', function ($q) {
+                $q->where('customer_id', request('vendor'));
+            });
+        })
         ->when(request('status') != '', function ($q) {
             return $q->whereHas('order', function ($q) {
                 $q->where('status', request('status'));
