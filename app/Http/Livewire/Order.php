@@ -1195,7 +1195,7 @@ class Order extends Component
                     'stock_id' => $stock->id,
                     'old_variation_id' => $stock->variation_id,
                     'new_variation_id' => $variation->id,
-                    'description' => request('replacement')['description'],
+                    'description' => request('replacement')['reason'],
                     'admin_id' => session('user_id'),
                 ]);
 
