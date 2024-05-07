@@ -612,7 +612,7 @@
                             @csrf
                             <div class="form-group">
                                 <label for="">Order Number</label>
-                                <input class="form-control" name="replacement[id]" type="text" id="order_reference" disabled>
+                                <input class="form-control" name="replacement[id]" type="text" id="order_reference" readonly>
                             </div>
                             <h4>Replace</h4>
                             <div class="form-group">
