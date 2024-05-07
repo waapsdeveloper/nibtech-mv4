@@ -176,6 +176,15 @@ class SalesReturn extends Component
                 // return redirect()->back(); // Redirect here is not recommended
                 return view('livewire.return_detail', $data); // Return the Blade view instance with data
             }
+            $check_old_sale = Order_item_model::where(['stock_id'=>$stock->id, 'linked_id'=>null])
+            ->whereHas('order', function ($query) {
+                $query->whereIn('order_type_id', [2,3,5]);
+            })->first();
+            if($check_old_sale != null){
+
+                $check_old_sale->linked_id = $stock->purchase_item->id;
+                $check_old_sale->save();
+            }
             $sale_status = Order_item_model::where(['stock_id'=>$stock->id,'linked_id'=>$stock->purchase_item->id])->first();
             if($stock->status == 1){
                 if($sale_status != null){
