@@ -122,7 +122,7 @@ Route::get('order', Order::class)->name('view_order');
 Route::get('check_new/{return?}', [Order::class,'updateBMOrdersNew'])->name('view_order');
 Route::get('refresh_order', [Order::class,'getapiorders'])->name('view_order');
 Route::get('refresh_order/{id}', [Order::class,'getapiorders'])->name('view_order');
-Route::get('order/refresh/{id}', [Order::class,'updateBMOrder'])->name('view_order');
+Route::get('order/refresh/{id?}', [Order::class,'updateBMOrder'])->name('view_order');
 Route::post('order/dispatch/{id}', [Order::class,'dispatch'])->name('dispatch_order');
 Route::get('order/track/{id}', [Order::class,'track_order'])->name('view_order');
 Route::get('order/delete_item/{id}', [Order::class,'delete_item'])->name('delete_order');

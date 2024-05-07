@@ -66,7 +66,7 @@
                 <div class="p-2">
                     <form action="{{url('order/refresh/')}}" method="GET" id="search" class="form-inline">
                         <div class="form-floating">
-                            <input type="text" class="form-control" name="id" placeholder="Enter Order Number" value="@isset($_GET['id']){{$_GET['id']}}@endisset">
+                            <input type="text" class="form-control" name="reference_id" placeholder="Enter Order Number" value="@isset($_GET['reference_id']){{$_GET['reference_id']}}@endisset">
                             <label for="">Order Number</label>
                         </div>
                             <button class="btn btn-primary pd-x-20" type="submit">Get Sales Order</button>
@@ -383,8 +383,8 @@
                                         <th><small><b>Variation</b></small></th>
                                         <th><small><b>IMEI | Serial Number</b></small></th>
                                         <th><small><b>Vendor</b></small></th>
-                                        @if (session('user')->hasPermission('view_cost'))
-                                        <th><small><b>Cost</b></small></th>
+                                        @if (session('user')->hasPermission('view_price'))
+                                        <th><small><b>Price</b></small></th>
                                         @endif
                                         <th><small><b>Creation Date</b></small></th>
                                         <th></th>

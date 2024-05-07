@@ -1426,7 +1426,10 @@ class Order extends Component
 
 
     }
-    public function updateBMOrder($order_id, $invoice = false, $tester = null, $data = false){
+    public function updateBMOrder($order_id = null, $invoice = false, $tester = null, $data = false){
+        if(request('reference_id')){
+            $order_id = request('reference_id');
+        }
         $bm = new BackMarketAPIController();
 
         $order_model = new Order_model();
