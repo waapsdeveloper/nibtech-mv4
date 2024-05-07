@@ -79,27 +79,27 @@
                         @csrf
                         <select name="return[product]" class="form-control form-select" style="width: 150px;">
                             <option value="">Model</option>
-                            @foreach ($products as $product)
-                                <option value="{{ $product->id }}"@if($product->id == $stock->variation->product_id) {{'selected'}}@endif>{{ $product->model }}</option>
+                            @foreach ($products as $id => $model)
+                                <option value="{{ $id }}"@if($id == $stock->variation->product_id) {{'selected'}}@endif>{{ $model }}</option>
                             @endforeach
                         </select>
                         <select name="return[storage]" class="form-control form-select">
                             <option value="">Storage</option>
-                            @foreach ($storages as $storage)
-                                <option value="{{ $storage->id }}"@if($storage->id == $stock->variation->storage) {{'selected'}}@endif>{{ $storage->name }}</option>
+                            @foreach ($storages as $id => $name)
+                                <option value="{{ $id }}"@if($id == $stock->variation->storage) {{'selected'}}@endif>{{ $name }}</option>
                             @endforeach
                         </select>
                         <select name="return[color]" class="form-control form-select" style="width: 150px;">
                             <option value="">Color</option>
-                            @foreach ($colors as $color)
-                                <option value="{{ $color->id }}"@if($color->id == $stock->variation->color) {{'selected'}}@endif>{{ $color->name }}</option>
+                            @foreach ($colors as $id => $name)
+                                <option value="{{ $id }}"@if($id == $stock->variation->color) {{'selected'}}@endif>{{ $name }}</option>
                             @endforeach
                         </select>
                         <select name="return[grade]" class="form-control form-select">
                             <option value="">Move to</option>
-                            @foreach ($grades as $grade)
-                                @if($grade->id > 7)
-                                <option value="{{ $grade->id }}">{{ $grade->name }}</option>
+                            @foreach ($grades as $id => $name)
+                                @if($id > 7)
+                                <option value="{{ $id }}">{{ $name }}</option>
                                 @endif
                             @endforeach
                         </select>
