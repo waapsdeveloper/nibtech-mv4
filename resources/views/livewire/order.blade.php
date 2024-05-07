@@ -556,7 +556,7 @@
 
                                                         <tr class="bg-secondary text-white">
                                                                 <td colspan="2">{{ $order->customer->first_name." ".$order->customer->last_name." ".$order->customer->phone }}</td>
-                                                            @endif
+
                                                             <td>{{ $order->reference_id }}</td>
                                                             <td>
 
