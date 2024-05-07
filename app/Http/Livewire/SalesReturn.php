@@ -201,7 +201,9 @@ class SalesReturn extends Component
                 }
             }
             if($sale_status != null){
-                $item = Order_item_model::where('stock_id',$stock->id)->orderBy('id','desc')->first();
+                $item = Order_item_model::where('stock_id',$stock->id)->whereHas('order', function ($query) {
+                    $query->whereIn('order_type_id', [2,3,5]);
+                })->orderBy('id','desc')->first();
                 if(in_array($item->order->order_type_id, [3,5])){
                     $data['restock']['order_id'] = $order_id;
                     $data['restock']['reference_id'] = $item->order->reference_id;
