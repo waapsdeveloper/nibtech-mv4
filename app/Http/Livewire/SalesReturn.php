@@ -149,6 +149,10 @@ class SalesReturn extends Component
     public function return_detail($order_id){
 
         $data['storages'] = Storage_model::pluck('name','id');
+        $data['products'] = Products_model::pluck('model','id');
+        $data['grades'] = Grade_model::pluck('name','id');
+        $data['colors'] = Color_model::pluck('name','id');
+
         $data['imei'] = request('imei');
 
         $data['all_variations'] = Variation_model::where('grade',9)->get();
@@ -167,10 +171,6 @@ class SalesReturn extends Component
 
             $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
 
-            $data['products'] = Products_model::orderBy('model','asc')->get();
-            $data['colors'] = Color_model::all();
-            $data['storages'] = Storage_model::all();
-            $data['grades'] = Grade_model::all();
             if (request('imei') == '' || !$stock || $stock->status == null) {
                 session()->put('error', 'IMEI Invalid / Not Found');
                 // return redirect()->back(); // Redirect here is not recommended
