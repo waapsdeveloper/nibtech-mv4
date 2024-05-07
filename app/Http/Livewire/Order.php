@@ -1447,6 +1447,8 @@ class Order extends Component
             $order_model->updateOrderInDB($orderObj, $invoice, $bm, $currency_codes, $country_codes);
 
             $order_item_model->updateOrderItemsInDB($orderObj, $tester, $bm);
+        }else{
+            session()->put('error','Order not Found');
         }
         if($data == true){
             return $orderObj;
