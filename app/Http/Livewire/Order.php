@@ -1228,14 +1228,6 @@ class Order extends Component
             $order_item->linked_id = $return_item->id;
             $order_item->save();
 
-            if($item->stock->status == 2){
-                $item->stock->status = 1;
-            }
-            $item->stock->save();
-
-            $item->stock_id = $stock->id;
-            $item->linked_id = $stock->purchase_item->id;
-            $item->save();
 
             $message = "Hi, here is the correct IMEI/Serial number for this order. \n".$imei.$serial_number." ".$stock->tester."\n Regards, \n" . session('fname');
             session()->put('success', $message);
