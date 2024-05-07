@@ -585,8 +585,6 @@
                                                             </td>
                                                         </tr>
                                                     @endforeach
-                                                @endif
-                                            @endforeach
                                         @endif
                                         @php
                                             $i ++;
