@@ -608,7 +608,7 @@
                             type="button"><span aria-hidden="true">&times;</span></button>
                         <h3 class="modal-title mg-b-5">Update Order</h3>
                         <hr>
-                        <form action="{{ url('order/replace') }}" method="POST">
+                        <form action="{{ url('order/replacement') }}" method="POST">
                             @csrf
                             <div class="form-group">
                                 <label for="">Order Number</label>
@@ -617,7 +617,7 @@
                             <h4>Replace</h4>
                             <div class="form-group">
                                 <label for="">Move to</label>
-                                <select name="replace[grade]" class="form-control form-select">
+                                <select name="replace[grade]" class="form-control form-select" required>
                                     <option value="">Move to</option>
                                     @foreach ($grades as $grade)
                                         <option value="{{ $grade->id }}">{{ $grade->name }}</option>

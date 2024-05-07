@@ -629,7 +629,7 @@ class Wholesale extends Component
 
         // Set document information
         $pdf->SetCreator(PDF_CREATOR);
-        $pdf->SetTitle('Invoice');
+        // $pdf->SetTitle('Invoice');
         // $pdf->SetHeaderData('', 0, 'Invoice', '');
 
         // Add a page

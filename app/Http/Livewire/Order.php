@@ -760,7 +760,7 @@ class Order extends Component
 
         // Set document information
         $pdf->SetCreator(PDF_CREATOR);
-        $pdf->SetTitle('Invoice');
+        // $pdf->SetTitle('Invoice');
         // $pdf->SetHeaderData('', 0, 'Invoice', '');
 
         // Add a page
@@ -1109,6 +1109,100 @@ class Order extends Component
             }
             $stock->variation_id = $item->variation_id;
             $stock->tester = request('correction')['tester'];
+            $stock->added_by = session('user_id');
+            if($stock->status == 1){
+                $stock->status = 2;
+            }
+            $stock->save();
+
+            if($item->stock->status == 2){
+                $item->stock->status = 1;
+            }
+            $item->stock->save();
+
+            $item->stock_id = $stock->id;
+            $item->linked_id = $stock->purchase_item->id;
+            $item->save();
+
+            $message = "Hi, here is the correct IMEI/Serial number for this order. \n".$imei.$serial_number." ".$stock->tester."\n Regards, \n" . session('fname');
+            session()->put('success', $message);
+            session()->put('copy', $message);
+        }else{
+            session()->put('error', 'Update deadline exceeded');
+        }
+        return redirect()->back();
+    }
+
+    public function replacement(){
+        $item = Order_item_model::find(request('replacement')['item_id']);
+        if(session('user_id') == 1){
+
+            $imei = request('replacement')['imei'];
+            $serial_number = null;
+            if(!ctype_digit($imei)){
+                $serial_number = $imei;
+                $imei = null;
+            }
+
+            $stock = Stock_model::where(['imei'=>$imei, 'serial_number'=>$serial_number])->first();
+            if(!$stock){
+                session()->put('error', 'Stock not found');
+                return redirect()->back();
+            }
+
+            $return_order = Order_model::where(['order_type_id'=>4,'status'=>1])->first();
+            if(!$return_order){
+                session()->put('error', 'No Active Return Order Found');
+                return redirect()->back();
+            }
+
+            $item->variation->stock -= 1;
+            $item->variation->status = 1;
+            $item->variation->save();
+
+
+            $variation = Variation_model::firstOrNew(['product_id' => $item->variation->product_id, 'storage' => $item->variation->storage, 'color' => $item->variation->color, 'grade' => request('replacement')['grade']]);
+
+            $variation->stock += 1;
+            $variation->status = 1;
+            $variation->save();
+
+            $r_item = Order_item_model::where(['order_id'=>$return_order->id, 'stock_id' => $stock->id])->first();
+            // print_r($stock);
+            if($r_item == null){
+                $return_item = new Order_item_model();
+                $return_item->order_id = $return_order->id;
+                $return_item->reference_id = request('replacement')['id'];
+                $return_item->variation_id = $variation->id;
+                $return_item->stock_id = $stock->id;
+                $return_item->quantity = 1;
+                $return_item->price = $item->price;
+                $return_item->status = 3;
+                $return_item->linked_id = $item->id;
+                $return_item->admin_id = session('user_id');
+                $return_item->save();
+
+                print_r($return_item);
+
+                $stock_operation = Stock_operations_model::create([
+                    'stock_id' => $stock->id,
+                    'old_variation_id' => $stock->variation_id,
+                    'new_variation_id' => $variation->id,
+                    'description' => request('replacement')['description'],
+                    'admin_id' => session('user_id'),
+                ]);
+
+                $stock->variation_id = $variation->id;
+                $stock->status = 1;
+                $stock->save();
+
+                session()->put('success','Item added');
+            }else{
+                session()->put('error','Item already added');
+            }
+
+            $stock->variation_id = $item->variation_id;
+            $stock->tester = request('replacement')['tester'];
             $stock->added_by = session('user_id');
             if($stock->status == 1){
                 $stock->status = 2;

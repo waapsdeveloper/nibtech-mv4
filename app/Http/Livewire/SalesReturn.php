@@ -236,6 +236,7 @@ class SalesReturn extends Component
 
         $data['variations'] = $variations;
 
+        $last_ten = Order_item_model::where('order_id',$order_id)->orderBy('id','desc')->limit(10)->get();
 
 
         // echo "<pre>";
