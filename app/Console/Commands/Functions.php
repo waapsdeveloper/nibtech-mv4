@@ -71,7 +71,9 @@ class Functions extends Command
         })->delete();
 
         // Subquery to get the IDs of duplicate orders based on reference_id
-        $subquery = Order_item_model::select('id')->where('reference_id','!=',null)
+        $subquery = Order_item_model::select('id')->where('reference_id','!=',null)->whereHas('order', function ($query) {
+            $query->where('order_type_id', 3);
+        })
         ->selectRaw('ROW_NUMBER() OVER (PARTITION BY reference_id ORDER BY id) AS row_num');
 
         // Final query to delete duplicate orders
