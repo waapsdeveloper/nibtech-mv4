@@ -557,7 +557,7 @@
                                                         <tr class="bg-secondary text-white">
                                                                 <td colspan="2">{{ $order->customer->first_name." ".$order->customer->last_name." ".$order->customer->phone }}</td>
 
-                                                            <td>{{ $order->reference_id }}</td>
+                                                            <td>Exchanged With</td>
                                                             <td>
 
                                                                 @if ($itm->variation ?? false)
