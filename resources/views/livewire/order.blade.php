@@ -612,12 +612,12 @@
                             @csrf
                             <div class="form-group">
                                 <label for="">Order Number</label>
-                                <input class="form-control" name="replace[id]" type="text" id="order_reference" disabled>
+                                <input class="form-control" name="replacement[id]" type="text" id="order_reference" disabled>
                             </div>
                             <h4>Replace</h4>
                             <div class="form-group">
                                 <label for="">Move to</label>
-                                <select name="replace[grade]" class="form-control form-select" required>
+                                <select name="replacement[grade]" class="form-control form-select" required>
                                     <option value="">Move to</option>
                                     @foreach ($grades as $grade)
                                         <option value="{{ $grade->id }}">{{ $grade->name }}</option>
@@ -626,18 +626,18 @@
                             </div>
                             <div class="form-group">
                                 <label for="">Reason</label>
-                                <textarea class="form-control" name="replace[reason]"></textarea>
+                                <textarea class="form-control" name="replacement[reason]"></textarea>
                             </div>
                             <h4>With</h4>
                             <div class="form-group">
                                 <label for="">Tester</label>
-                                <input class="form-control" placeholder="input Tester Initial" name="replace[tester]" type="text">
+                                <input class="form-control" placeholder="input Tester Initial" name="replacement[tester]" type="text">
                             </div>
                             <div class="form-group">
                                 <label for="">IMEI / Serial Number</label>
-                                <input class="form-control" placeholder="input IMEI / Serial Number" name="replace[imei]" type="text" required>
+                                <input class="form-control" placeholder="input IMEI / Serial Number" name="replacement[imei]" type="text" required>
                             </div>
-                            <input type="hidden" id="item_id" name="replace[item_id]" value="">
+                            <input type="hidden" id="item_id" name="replacement[item_id]" value="">
 
                             <button class="btn btn-primary btn-block">{{ __('locale.Submit') }}</button>
                         </form>
