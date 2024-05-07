@@ -871,7 +871,7 @@ class Order extends Component
                         }else{
                             $color = null;
                         }
-                        if(($stock[$i]->variation->product_id == $variant->product_id) || ($variant->product_id == 144 && $stock[$i]->variation->product_id == 229)){
+                        if(($stock[$i]->variation->product_id == $variant->product_id) || ($variant->product_id == 144 && $stock[$i]->variation->product_id == 229) || ($variant->product_id == 54 && $stock[$i]->variation->product_id == 55) || ($variant->product_id == 55 && $stock[$i]->variation->product_id == 54)){
                         }else{
                             session()->put('error', "Product Model not matched");
                             return redirect()->back();
