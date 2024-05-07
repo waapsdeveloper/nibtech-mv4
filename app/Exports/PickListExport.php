@@ -55,9 +55,9 @@ class PickListExport
             })
             ->groupBy('variation.sku', 'products.model', 'color.name', 'storage.name', 'grade.name')
             ->orderBy('products.model', 'ASC')
-            ->orderBy('variation.storage', 'ASC')
-            ->orderBy('variation.color', 'ASC')
-            ->orderBy('variation.grade', 'ASC')
+            ->orderBy('storage.name', 'ASC')
+            ->orderBy('color.name', 'ASC')
+            ->orderBy('grade.name', 'ASC')
             ->get();
 
         // Create a TCPDF instance
