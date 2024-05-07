@@ -43,12 +43,17 @@
             <div class="p-2">
                 <form action="{{ url('imei')}}" method="GET" id="search" class="form-inline">
                     <div class="form-floating">
-                        <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset">
+                        <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" id="imeiInput" onload="this.focus()" autofocus>
                         <label for="">IMEI</label>
                     </div>
                         <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
                 </form>
             </div>
+            <script>
+                window.onload = function() {
+                    document.getElementById('imeiInput').focus();
+                };
+            </script>
             @if (session('user')->hasPermission('delete'))
                 {{-- <a href="{{ url('imei')}}?imei={{$imei}}&delete=YES">DELETE</a> --}}
             @endif
