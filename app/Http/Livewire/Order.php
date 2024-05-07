@@ -1438,7 +1438,7 @@ class Order extends Component
         $country_codes = Country_model::pluck('id','code');
 
         $orderObj = $bm->getOneOrder($order_id);
-        if($orderObj->delivery_note == null){
+        if($orderObj->delivery_note){
             $orderObj = $bm->getOneOrder($order_id);
         }
 
