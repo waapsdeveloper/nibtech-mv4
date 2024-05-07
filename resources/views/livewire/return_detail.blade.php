@@ -61,15 +61,18 @@
                         <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
                 </form>
             </div>
-            <div class="p-2">
-                <form action="{{url('order/refresh/')}}" method="GET" id="search" class="form-inline">
-                    <div class="form-floating">
-                        <input type="text" class="form-control" name="id" placeholder="Enter Order Number" value="@isset($_GET['id']){{$_GET['id']}}@endisset">
-                        <label for="">Order Number</label>
-                    </div>
-                        <button class="btn btn-primary pd-x-20" type="submit">Get Sales Order</button>
-                </form>
-            </div>
+            @if (isset($stock) && $stock->status == 1)
+
+                <div class="p-2">
+                    <form action="{{url('order/refresh/')}}" method="GET" id="search" class="form-inline">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" name="id" placeholder="Enter Order Number" value="@isset($_GET['id']){{$_GET['id']}}@endisset">
+                            <label for="">Order Number</label>
+                        </div>
+                            <button class="btn btn-primary pd-x-20" type="submit">Get Sales Order</button>
+                    </form>
+                </div>
+            @endif
             @if (session('user')->hasPermission('add_refund_items') && isset($restock))
                 <div class="p-2">
                     <form action="{{ url('add_return_item').'/'.$order_id}}" method="POST" class="form-inline">
