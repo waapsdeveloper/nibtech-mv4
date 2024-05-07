@@ -1181,7 +1181,7 @@ class Order extends Component
                 $return_item->order_id = $return_order->id;
                 $return_item->reference_id = request('replacement')['id'];
                 $return_item->variation_id = $variation->id;
-                $return_item->stock_id = $stock->id;
+                $return_item->stock_id = $item->stock_id;
                 $return_item->quantity = 1;
                 $return_item->price = $item->price;
                 $return_item->status = 3;
@@ -1199,9 +1199,9 @@ class Order extends Component
                     'admin_id' => session('user_id'),
                 ]);
 
-                $stock->variation_id = $variation->id;
-                $stock->status = 1;
-                $stock->save();
+                $item->stock->variation_id = $variation->id;
+                $item->stock->status = 1;
+                $item->stock->save();
 
                 session()->put('success','Item added');
             }else{
@@ -1215,6 +1215,18 @@ class Order extends Component
                 $stock->status = 2;
             }
             $stock->save();
+
+
+            $order_item = new Order_item_model();
+            $order_item->order_id = 8974;
+            $order_item->reference_id = $item->order->reference_id;
+            $order_item->variation_id = $item->variation_id;
+            $order_item->stock_id = $stock->id;
+            $order_item->quantity = 1;
+            $order_item->price = $item->price;
+            $order_item->status = 3;
+            $order_item->linked_id = $return_item->id;
+            $order_item->save();
 
             if($item->stock->status == 2){
                 $item->stock->status = 1;
