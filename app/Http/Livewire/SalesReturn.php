@@ -210,6 +210,8 @@ class SalesReturn extends Component
                     $data['restock']['stock_id'] = $stock->id;
                     $data['restock']['price'] = $item->price;
                     $data['restock']['linked_id'] = $item->id;
+                }else{
+                    echo "HEllo";
                 }
             }
             $stock_id = $stock->id;

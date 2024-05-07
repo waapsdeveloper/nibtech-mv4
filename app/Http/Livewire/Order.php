@@ -1142,7 +1142,7 @@ class Order extends Component
 
     public function replacement(){
         $item = Order_item_model::find(request('replacement')['item_id']);
-        if(session('user_id') == 1){
+        // if(session('user_id') == 1){
 
             $imei = request('replacement')['imei'];
             $serial_number = null;
@@ -1232,9 +1232,9 @@ class Order extends Component
             $message = "Hi, here is the correct IMEI/Serial number for this order. \n".$imei.$serial_number." ".$stock->tester."\n Regards, \n" . session('fname');
             session()->put('success', $message);
             session()->put('copy', $message);
-        }else{
-            session()->put('error', 'Update deadline exceeded');
-        }
+        // }else{
+        //     session()->put('error', 'Update deadline exceeded');
+        // }
         return redirect()->back();
     }
 
