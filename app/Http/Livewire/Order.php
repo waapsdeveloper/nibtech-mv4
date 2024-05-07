@@ -1438,13 +1438,16 @@ class Order extends Component
         $country_codes = Country_model::pluck('id','code');
 
         $orderObj = $bm->getOneOrder($order_id);
-        if($orderObj->delivery_note){
-            $orderObj = $bm->getOneOrder($order_id);
+        if(isset($orderObj->delivery_note)){
+
+            if($orderObj->delivery_note == null){
+                $orderObj = $bm->getOneOrder($order_id);
+            }
+
+            $order_model->updateOrderInDB($orderObj, $invoice, $bm, $currency_codes, $country_codes);
+
+            $order_item_model->updateOrderItemsInDB($orderObj, $tester, $bm);
         }
-
-        $order_model->updateOrderInDB($orderObj, $invoice, $bm, $currency_codes, $country_codes);
-
-        $order_item_model->updateOrderItemsInDB($orderObj, $tester, $bm);
         if($data == true){
             return $orderObj;
         }else{
