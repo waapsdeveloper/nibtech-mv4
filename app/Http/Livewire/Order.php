@@ -122,6 +122,13 @@ class Order extends Component
             });
         })
         ->orderBy($sort, $by) // Order by variation name
+        ->when(request('sort') == 4, function ($q) {
+            return $q
+            ->orderBy('products.model', 'ASC')
+            ->orderBy('variation.storage', 'ASC')
+            ->orderBy('variation.color', 'ASC')
+            ->orderBy('variation.grade', 'ASC');
+        })
         ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
         // ->orderBy('order_items.quantity', 'desc') // Secondary order by reference_id
         ->select('orders.*');
