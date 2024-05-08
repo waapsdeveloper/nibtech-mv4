@@ -202,17 +202,30 @@ class SalesReturn extends Component
                 }else{
                 }
             }
-            if($sale_status != null){
-                $item = Order_item_model::where('stock_id',$stock->id)->whereHas('order', function ($query) {
-                    $query->whereIn('order_type_id', [2,3,5]);
-                })->orderBy('id','desc')->first();
-                if(in_array($item->order->order_type_id, [3,5])){
-                    $data['restock']['order_id'] = $order_id;
-                    $data['restock']['reference_id'] = $item->order->reference_id;
-                    $data['restock']['stock_id'] = $stock->id;
-                    $data['restock']['price'] = $item->price;
-                    $data['restock']['linked_id'] = $item->id;
+            $last_item = Order_item_model::find($stock->purchase_item->id);
+            while(Order_item_model::where('linked_id',$last_item->id)->first()){
+                $last_item = Order_item_model::where('linked_id',$last_item->id)->first();
+            }
+            if(in_array($last_item->order->order_type_id,[1,4])){
+
+                if($stock->status == 2){
+                    $stock->status = 1;
+                    $stock->save();
                 }
+                    session()->put('success', 'IMEI Available');
+            }else{
+                if($stock->status == 1){
+                    $stock->status = 2;
+                    $stock->save();
+                }
+                    session()->put('success', 'IMEI Sold');
+            }
+            if($stock->status == 2){
+                    $data['restock']['order_id'] = $order_id;
+                    $data['restock']['reference_id'] = $last_item->order->reference_id;
+                    $data['restock']['stock_id'] = $stock->id;
+                    $data['restock']['price'] = $last_item->price;
+                    $data['restock']['linked_id'] = $last_item->id;
             }
             $stock_id = $stock->id;
             $orders = Order_item_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
