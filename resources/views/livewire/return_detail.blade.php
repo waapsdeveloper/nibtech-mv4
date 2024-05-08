@@ -203,7 +203,7 @@
                             <div class=" mg-b-0">
 
                                 @if (session('user')->hasPermission('add_refund_items') && isset($restock))
-                                    <form action="{{ url('move_inventory/change_grade').'/'.$order_id}}" method="POST" class="form-inline">
+                                    <form action="{{ url('move_inventory/change_grade')}}" method="POST" class="form-inline">
                                         @csrf
 
                                         <div class="form-floating">
