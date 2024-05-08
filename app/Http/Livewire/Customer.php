@@ -119,6 +119,6 @@ class Customer extends Component
 
         Customer_model::where('id',$id)->update(request('customer'));
         session()->put('success',"Customer has been updated successfully");
-        return redirect('customer');
+        return redirect()->back();
     }
 }
