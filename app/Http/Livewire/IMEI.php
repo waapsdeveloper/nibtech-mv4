@@ -92,7 +92,7 @@ class IMEI extends Component
                     session()->put('success', 'IMEI Available');
                 }
             }
-            print_r($last_item);
+            // print_r($last_item);
             $stock_id = $stock->id;
             $orders = Order_item_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
             $data['stock'] = $stock;
