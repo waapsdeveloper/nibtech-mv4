@@ -262,7 +262,7 @@
                                                 @elseif ($order->order_type_id == 3)
                                                     <td>{{ $order->reference_id }}</td>
                                                 @endif
-                                                <td>{{ $order->customer->first_name." ".$order->customer->last_name }}</td>
+                                                <td><a title="Vendor Profile" href="{{url('edit-customer').'/'.$order->customer_id}}" target="_blank">{{ $order->customer->first_name." ".$order->customer->last_name }}</a></td>
                                                 <td>{{ $order->order_type->name }}</td>
                                                 <td>
                                                     @if ($item->variation ?? false)
