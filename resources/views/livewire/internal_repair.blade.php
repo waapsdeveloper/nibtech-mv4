@@ -336,6 +336,7 @@
                                     <th><small><b>No</b></small></th>
                                     <th><small><b>Variation</b></small></th>
                                     <th><small><b>IMEI</b></small></th>
+                                    <th><small><b>Vendor</b></small></th>
                                     <th><small><b>Reason</b></small></th>
                                     <th><small><b>Creation Date</b></small></th>
                                 </tr>
@@ -354,6 +355,7 @@
                                                 @endif
                                             </td>
                                             <td>{{$stock->imei.$stock->serial_number }}</td>
+                                            <td>{{$stock->order->customer->first_name." ".$stock->order->reference_id }}</td>
                                             <td>{{$stock->latest_operation->description }}</td>
                                             <td style="width:180px">{{ $stock->created_at."  ".$stock->updated_at }}</td>
                                         </tr>
