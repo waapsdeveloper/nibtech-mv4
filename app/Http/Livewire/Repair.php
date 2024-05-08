@@ -388,4 +388,59 @@ class Repair extends Component
         return view('livewire.internal_repair')->with($data);
 
     }
+    public function add_internal_repair_item(){
+        $repair = request('repair');
+        $description = $repair['description'];
+        if($repair['grade']){
+            session()->put('grade',$repair['grade']);
+        }
+        session()->put('description',$repair['description']);
+
+
+        if ($repair['stock_id']) {
+            $stock = Stock_model::find($repair['stock_id']);
+            if (!$stock || $stock->status != 1 || $stock->variation->grade != 8) {
+                session()->put('error', 'IMEI Invalid / Not Available in this Grade');
+                return redirect()->back();
+            }
+            $stock_id = $stock->id;
+
+            $product_id = $stock->variation->product_id;
+            $storage = $stock->variation->storage;
+            $color = $stock->variation->color;
+            $grade = $stock->variation->grade;
+
+            if($repair['grade'] != ''){
+                $grade = $repair['grade'];
+            }
+            $new_variation = Variation_model::firstOrNew([
+                'product_id' => $product_id,
+                'storage' => $storage,
+                'color' => $color,
+                'grade' => $grade,
+            ]);
+            $new_variation->status = 1;
+            if($new_variation->id && $stock->variation_id == $new_variation->id && $repair['price'] == null){
+                session()->put('error', 'Stock already exist in this variation');
+                return redirect()->back();
+
+            }
+            $new_variation->save();
+            $stock_operation = Stock_operations_model::create([
+                'stock_id' => $stock_id,
+                'old_variation_id' => $stock->variation_id,
+                'new_variation_id' => $new_variation->id,
+                'description' => $description,
+                'admin_id' => session('user_id'),
+            ]);
+            $stock->variation_id = $new_variation->id;
+            $stock->save();
+
+            // session()->put('added_imeis['.$grade.'][]', $stock_id);
+            // dd($orders);
+        }
+
+        return redirect()->back();
+
+    }
 }
