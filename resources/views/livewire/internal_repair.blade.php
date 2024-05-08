@@ -167,7 +167,7 @@
                                                 </td>
 
                                                 @endif
-                                                <td style="width:220px">{{ $repair->created_at}} <br> {{ $repair->processed_at." ".$repair->tracking_number }}</td>
+                                                {{-- <td style="width:220px">{{ $repair->created_at}} <br> {{ $repair->processed_at." ".$repair->tracking_number }}</td> --}}
                                             </tr>
                                         @php
                                             $i ++;
