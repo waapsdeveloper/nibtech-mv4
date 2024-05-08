@@ -299,8 +299,8 @@
                                                 @endif
                                             </td>
                                             <td><a href="{{url('repair/internal').'?imei='.$stock->imei.$stock->serial_number}}">{{$stock->imei.$stock->serial_number }}</a></td>
-                                            <td>{{$stock->latest_operation->description ?? null }}</td>
-                                            <td style="width:180px">{{ $stock->created_at."  ".$stock->updated_at }}</td>
+                                            <td>{{$r_stock->description ?? null }}</td>
+                                            <td style="width:180px">{{ $r_stock->created_at."  ".$r_stock->updated_at }}</td>
                                         </tr>
                                     @php
                                         $i ++;
@@ -357,7 +357,7 @@
                                             <td><a href="{{url('repair/internal').'?imei='.$stock->imei.$stock->serial_number}}">{{$stock->imei.$stock->serial_number }}</a></td>
                                             <td>{{$stock->order->customer->first_name." ".$stock->order->reference_id }}</td>
                                             <td>{{$stock->latest_operation->description }}</td>
-                                            <td style="width:180px">{{ $stock->created_at."  ".$stock->updated_at }}</td>
+                                            <td style="width:180px">{{ $stock->latest_operation->created_at."  ".$stock->latest_operation->updated_at }}</td>
                                         </tr>
                                         {{-- @php
                                             $j++;
