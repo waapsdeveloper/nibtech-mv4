@@ -229,6 +229,7 @@
                                     <tr>
                                         <th><small><b>No</b></small></th>
                                         <th><small><b>Order ID</b></small></th>
+                                        <th><small><b>Customer</b></small></th>
                                         <th><small><b>Type</b></small></th>
                                         <th><small><b>Product</b></small></th>
                                         <th><small><b>Qty</b></small></th>
@@ -261,6 +262,7 @@
                                                 @elseif ($order->order_type_id == 3)
                                                     <td>{{ $order->reference_id }}</td>
                                                 @endif
+                                                <td>{{ $order->customer->first_name." ".$order->customer->last_name }}</td>
                                                 <td>{{ $order->order_type->name }}</td>
                                                 <td>
                                                     @if ($item->variation ?? false)
