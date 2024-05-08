@@ -79,18 +79,14 @@ class IMEI extends Component
                 if($stock->status == 2){
                     $stock->status = 1;
                     $stock->save();
-                    session()->put('success', 'IMEI Available');
-                }else{
-                    session()->put('success', 'IMEI Sold');
                 }
+                    session()->put('success', 'IMEI Available');
             }else{
                 if($stock->status == 1){
                     $stock->status = 2;
                     $stock->save();
-                    session()->put('success', 'IMEI Sold');
-                }else{
-                    session()->put('success', 'IMEI Available');
                 }
+                    session()->put('success', 'IMEI Sold');
             }
             // print_r($last_item);
             $stock_id = $stock->id;
