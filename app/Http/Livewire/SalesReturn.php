@@ -181,9 +181,11 @@ class SalesReturn extends Component
                 $query->whereIn('order_type_id', [2,3,5]);
             })->first();
             if($check_old_sale != null){
+                if($stock->purchase_item != null){
+                    $check_old_sale->linked_id = $stock->purchase_item->id;
+                    $check_old_sale->save();
+                }
 
-                $check_old_sale->linked_id = $stock->purchase_item->id;
-                $check_old_sale->save();
             }
             $sale_status = Order_item_model::where(['stock_id'=>$stock->id,'linked_id'=>$stock->purchase_item->id])->first();
             if($stock->status == 1){
