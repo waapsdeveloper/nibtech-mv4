@@ -201,6 +201,22 @@
                             </h4>
 
                             <div class=" mg-b-0">
+
+                                @if (session('user')->hasPermission('add_refund_items') && isset($restock))
+                                    <form action="{{ url('move_inventory/change_grade').'/'.$order_id}}" method="POST" class="form-inline">
+                                        @csrf
+
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control pd-x-20" name="return[description]" placeholder="Reason" style="width: 270px;">
+                                            {{-- <input type="text" class="form-control" name="return[imei]" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset"> --}}
+                                            <label for="">Reason</label>
+                                        </div>
+
+                                        <input type="hidden" name="grade" value="8">
+                                        <input type="hidden" name="imei" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset">
+                                        <button class="btn btn-secondary pd-x-20" type="submit">Send to AfterSale Repair</button>
+                                    </form>
+                                @endif
                             </div>
 
                         </div>
