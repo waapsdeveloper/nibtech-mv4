@@ -382,7 +382,7 @@
                                             </td>
                                             <td>{{$stock->imei.$stock->serial_number }}</td>
                                             <td>{{$stock->latest_operation->description }}</td>
-                                            <td style="width:180px">{{ $stock->created_at."  ".$stock->updated_at }}</td>
+                                            <td style="width:180px">{{ $stock->latest_operation->created_at."  ".$stock->updated_at }}</td>
                                         </tr>
                                         {{-- @php
                                             $j++;

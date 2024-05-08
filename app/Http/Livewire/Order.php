@@ -1100,7 +1100,7 @@ class Order extends Component
     }
     public function correction(){
         $item = Order_item_model::find(request('correction')['item_id']);
-        // if($item->order->processed_at > Carbon::now()->subHour(2) || session('user_id') == 1){
+        if($item->order->processed_at > Carbon::now()->subHour(2) || session('user')->hasPermission('correction')){
 
             $imei = request('correction')['imei'];
             $serial_number = null;
@@ -1134,15 +1134,15 @@ class Order extends Component
             $message = "Hi, here is the correct IMEI/Serial number for this order. \n".$imei.$serial_number." ".$stock->tester."\n Regards, \n" . session('fname');
             session()->put('success', $message);
             session()->put('copy', $message);
-        // }else{
-        //     session()->put('error', 'Update deadline exceeded');
-        // }
+        }else{
+            session()->put('error', 'Update deadline exceeded');
+        }
         return redirect()->back();
     }
 
     public function replacement(){
         $item = Order_item_model::find(request('replacement')['item_id']);
-        // if(session('user_id') == 1){
+        if(session('user')->hasPermission('replacement')){
             if(!$item->stock->order){
                 session()->put('error', 'Stock not purchased');
                 return redirect()->back();
@@ -1236,9 +1236,9 @@ class Order extends Component
             $message = "Hi, here is the new IMEI/Serial number for this order. \n".$imei.$serial_number." ".$stock->tester."\n Regards, \n" . session('fname');
             session()->put('success', $message);
             session()->put('copy', $message);
-        // }else{
-        //     session()->put('error', 'Update deadline exceeded');
-        // }
+        }else{
+            session()->put('error', 'Unauthorized');
+        }
         return redirect()->back();
     }
 
