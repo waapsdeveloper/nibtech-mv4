@@ -50,7 +50,7 @@
                         <select name="repair[grade]" class="form-control form-select">
                             <option value="">Move to</option>
                             @foreach ($grades as $grade)
-                                @if($grade->id > 8)
+                                @if($grade->id > 7)
                                 <option value="{{ $grade->id }}">{{ $grade->name }}</option>
                                 @endif
                             @endforeach
