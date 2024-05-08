@@ -741,7 +741,7 @@ class Order extends Component
             $data = json_decode($issue->data);
             // echo $variation." ".$data->imei." ".$data->cost;
 
-            if($this->add_purchase_item($issue->order_id, $imei, $variation, $data->cost) == 1){
+            if($this->add_purchase_item($issue->order_id, $imei, $variation, $data->cost, 1) == 1){
                 $issue->delete();
             }
 
@@ -1143,7 +1143,10 @@ class Order extends Component
     public function replacement(){
         $item = Order_item_model::find(request('replacement')['item_id']);
         // if(session('user_id') == 1){
-
+            if(!$item->stock->order){
+                session()->put('error', 'Stock not purchased');
+                return redirect()->back();
+            }
             $imei = request('replacement')['imei'];
             $serial_number = null;
             if(!ctype_digit($imei)){
