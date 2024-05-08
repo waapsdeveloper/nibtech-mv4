@@ -399,7 +399,7 @@ class Repair extends Component
 
         if ($repair['stock_id']) {
             $stock = Stock_model::find($repair['stock_id']);
-            if (!$stock || $stock->status != 1 || $stock->variation->grade != 8) {
+            if (!$stock ||  $stock->variation->grade != 8) {
                 session()->put('error', 'IMEI Invalid / Not Available in this Grade');
                 return redirect()->back();
             }
