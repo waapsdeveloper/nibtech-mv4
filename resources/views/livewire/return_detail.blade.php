@@ -207,7 +207,7 @@
                                         @csrf
 
                                         <div class="form-floating">
-                                            <input type="text" class="form-control pd-x-20" name="return[description]" placeholder="Reason" style="width: 270px;">
+                                            <input type="text" class="form-control pd-x-20" name="description" placeholder="Reason" style="width: 270px;">
                                             {{-- <input type="text" class="form-control" name="return[imei]" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset"> --}}
                                             <label for="">Reason</label>
                                         </div>
