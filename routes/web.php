@@ -85,7 +85,7 @@ Route::get('delete_repair_item/{id}', [Repair::class,'delete_repair_item'])->nam
 Route::get('repair/detail/{id}', [Repair::class,'repair_detail'])->name('repair_detail');
 Route::post('repair/approve/{id}', [Repair::class,'repair_approve'])->name('repair_approve');
 Route::get('repair/internal', [Repair::class,'internal_repair'])->name('internal_repair');
-Route::post('add_internal_repair_item/{id}', [Repair::class,'add_internal_repair_item'])->name('add_internal_repair_item');
+Route::post('add_internal_repair_item/{id}', [Repair::class,'add_internal_repair_item'])->name('internal_repair');
 
 Route::get('wholesale', Wholesale::class)->name('view_wholesale');
 Route::post('add_wholesale', [Wholesale::class,'add_wholesale'])->name('add_wholesale');

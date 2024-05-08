@@ -266,6 +266,7 @@
                     <div class="d-flex justify-content-between">
                         <h4 class="card-title mg-b-0">Repaired</h4>
                         <div class=" mg-b-0">
+                            Count: {{ count($repaired_stocks)}}
                         </div>
 
                     </div>
@@ -323,6 +324,7 @@
                     <div class="d-flex justify-content-between">
                         <h4 class="card-title mg-b-0">Awaiting Repair</h4>
                         <div class=" mg-b-0">
+                            Count: {{ count($repair_stocks)}}
                         </div>
 
                     </div>
