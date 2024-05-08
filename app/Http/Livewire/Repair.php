@@ -309,4 +309,83 @@ class Repair extends Component
 
     }
 
+    public function internal_repair(){
+
+        $data['imei'] = request('imei');
+
+        $data['grades'] = Grade_model::all();
+
+
+        $repair_stocks = Stock_model::
+        whereHas('variation', function ($query) {
+            $query->where('grade', 8);
+        })->get();
+        $data['repair_stocks'] = $repair_stocks;
+
+        $repaired_stocks = Stock_operations_model::where('created_at','>=',now()->format('Y-m-d')." 00:00:00")->where('admin_id',session('user_id'))
+            ->whereHas('stock', function ($query) {
+                $query->where('status', 1);
+            })->orderBy('id','desc')->get();
+
+        $data['repaired_stocks'] = $repaired_stocks;
+
+        if (request('imei')) {
+            if (ctype_digit(request('imei'))) {
+                $i = request('imei');
+                $s = null;
+            } else {
+                $i = null;
+                $s = request('imei');
+            }
+
+            $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
+            if (request('imei') == '' || !$stock || $stock->status == null) {
+                session()->put('error', 'IMEI Invalid / Not Found in Repair');
+                // return redirect()->back(); // Redirect here is not recommended
+                return view('livewire.internal_repair', $data); // Return the Blade view instance with data
+            }
+            $data['stock_id'] = $stock->id;
+            $data['products'] = Products_model::orderBy('model','asc')->get();
+            $data['colors'] = Color_model::all();
+            $data['storages'] = Storage_model::all();
+
+            if (request('imei') == '' || !$stock || $stock->status == null) {
+                session()->put('error', 'IMEI Invalid / Not Found in Repair');
+                // return redirect()->back(); // Redirect here is not recommended
+                return view('livewire.internal_repair', $data); // Return the Blade view instance with data
+            }
+            $sale_status = Order_item_model::where(['stock_id'=>$stock->id,'linked_id'=>$stock->purchase_item->id])->first();
+            if($stock->status == 1){
+                if($sale_status != null){
+                    $stock->status = 2;
+                    $stock->save();
+                }else{
+                }
+            }
+            if($stock->status == 2){
+                if($sale_status == null){
+                    $stock->status = 1;
+                    $stock->save();
+                }else{
+                }
+            }
+            $stock_id = $stock->id;
+            $orders = Order_item_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
+            $data['stock'] = $stock;
+            $data['orders'] = $orders;
+            // dd($orders);
+
+            $stocks = Stock_operations_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
+            if($stocks->count() > 0){
+                $data['stocks'] = $stocks;
+            }
+
+        }
+
+
+        $data['all_variations'] = Variation_model::where('grade',9)->get();
+
+        return view('livewire.internal_repair')->with($data);
+
+    }
 }
