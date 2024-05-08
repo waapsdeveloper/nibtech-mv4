@@ -1122,6 +1122,13 @@ class Order extends Component
             }
             $stock->save();
 
+            $stock_operation = Stock_operations_model::create([
+                'stock_id' => $item->stock->id,
+                'old_variation_id' => $item->stock->variation_id,
+                'new_variation_id' => $item->stock->purchase_item->variation_id,
+                'description' => request('correction')['reason'],
+                'admin_id' => session('user_id'),
+            ]);
             if($item->stock->status == 2){
                 $item->stock->status = 1;
             }
