@@ -230,8 +230,20 @@ class Wholesale extends Component
         if(request('imei')){
             $imei = request('imei');
         }
+        if(ctype_digit($imei)){
+            $i = $imei;
+            $s = null;
+        }else{
+            $i = null;
+            $s = $imei;
+        }
+        $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
+
         if(request('variation')){
             $variation_id = request('variation');
+        }
+        if($variation_id > 0){}else{
+            $variation_id = $stock->variation_id;
         }
         $variation = Variation_model::find($variation_id);
 
@@ -243,14 +255,7 @@ class Wholesale extends Component
                 return 1;
             }
         }
-        if(ctype_digit($imei)){
-            $i = $imei;
-            $s = null;
-        }else{
-            $i = null;
-            $s = $imei;
-        }
-        $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
+
         if($imei == '' || !$stock || $stock->status == null){
             session()->put('error', 'IMEI Invalid / Not Found');
             if($back != 1){
