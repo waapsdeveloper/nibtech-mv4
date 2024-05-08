@@ -1230,7 +1230,7 @@ class Order extends Component
             $order_item->save();
 
 
-            $message = "Hi, here is the correct IMEI/Serial number for this order. \n".$imei.$serial_number." ".$stock->tester."\n Regards, \n" . session('fname');
+            $message = "Hi, here is the new IMEI/Serial number for this order. \n".$imei.$serial_number." ".$stock->tester."\n Regards, \n" . session('fname');
             session()->put('success', $message);
             session()->put('copy', $message);
         // }else{

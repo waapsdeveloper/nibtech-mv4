@@ -74,7 +74,9 @@ class Order_model extends Model
         if(isset($orderObj->order_id)){
             $customer_model = new Customer_model();
             $order = Order_model::firstOrNew(['reference_id' => $orderObj->order_id]);
-            $order->customer_id = $customer_model->updateCustomerInDB($orderObj, false, $currency_codes, $country_codes);
+            if($order->customer_id == null){
+                $order->customer_id = $customer_model->updateCustomerInDB($orderObj, false, $currency_codes, $country_codes);
+            }
             $order->status = $this->mapStateToStatus($orderObj);
             $order->currency = $currency_codes[$orderObj->currency];
             $order->order_type_id = 3;
