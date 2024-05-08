@@ -167,16 +167,6 @@
                                                 </td>
 
                                                 @endif
-                                                @if ($repair->status > 3)
-                                                <td style="width:240px" title="{{ $item->stock_id }}">
-                                                        <strong class="text-danger">{{ $repair->order_status->name }}</strong>
-                                                    @isset($item->stock->imei) {{ $item->stock->imei }}&nbsp; @endisset
-                                                    @isset($item->stock->serial_number) {{ $item->stock->serial_number }}&nbsp; @endisset
-
-                                                    @isset($repair->processed_by) | {{ $repair->admin->first_name[0] }} | @endisset
-                                                    @isset($item->stock->tester) ({{ $item->stock->tester }}) @endisset
-                                                </td>
-                                                @endif
                                                 <td style="width:220px">{{ $repair->created_at}} <br> {{ $repair->processed_at." ".$repair->tracking_number }}</td>
                                             </tr>
                                         @php
