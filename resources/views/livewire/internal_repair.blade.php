@@ -298,7 +298,7 @@
                                                     <strong>{{ $stock->variation->sku }}</strong>{{ " - " . $stock->variation->product->model . " - " . (isset($stock->variation->storage_id)?$stock->variation->storage_id->name . " - " : null) . (isset($stock->variation->color_id)?$stock->variation->color_id->name. " - ":null)}} <strong><u>{{ $stock->variation->grade_id->name }}</u></strong>
                                                 @endif
                                             </td>
-                                            <td><a href="{{url{'repair/internal'}.'?imei='.$stock->imei.$stock->serial_number}}">{{$stock->imei.$stock->serial_number }}</a></td>
+                                            <td><a href="{{url('repair/internal').'?imei='.$stock->imei.$stock->serial_number}}">{{$stock->imei.$stock->serial_number }}</a></td>
                                             <td>{{$stock->latest_operation->description ?? null }}</td>
                                             <td style="width:180px">{{ $stock->created_at."  ".$stock->updated_at }}</td>
                                         </tr>
@@ -354,7 +354,7 @@
                                                     <strong>{{ $stock->variation->sku }}</strong>{{ " - " . $stock->variation->product->model . " - " . (isset($stock->variation->storage_id)?$stock->variation->storage_id->name . " - " : null) . (isset($stock->variation->color_id)?$stock->variation->color_id->name. " - ":null)}} <strong><u>{{ $stock->variation->grade_id->name }}</u></strong>
                                                 @endif
                                             </td>
-                                            <td><a href="{{url{'repair/internal'}.'?imei='.$stock->imei.$stock->serial_number}}">{{$stock->imei.$stock->serial_number }}</a></td>
+                                            <td><a href="{{url('repair/internal').'?imei='.$stock->imei.$stock->serial_number}}">{{$stock->imei.$stock->serial_number }}</a></td>
                                             <td>{{$stock->order->customer->first_name." ".$stock->order->reference_id }}</td>
                                             <td>{{$stock->latest_operation->description }}</td>
                                             <td style="width:180px">{{ $stock->created_at."  ".$stock->updated_at }}</td>
