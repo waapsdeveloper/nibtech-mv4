@@ -20,7 +20,9 @@
         <!-- breadcrumb -->
             <div class="breadcrumb-header justify-content-between">
                 <div class="left-content">
-                <a href="{{url('add_repair')}}" class="btn btn-success float-right"><i class="mdi mdi-plus"></i> Add Repair </a>
+                {{-- <a href="{{url('add_repair')}}" class="btn btn-success float-right"><i class="mdi mdi-plus"></i> Add Repair </a> --}}
+                <a href="javascript:void(0);" class="btn btn-success float-right" data-bs-target="#modaldemo"
+                data-bs-toggle="modal"><i class="mdi mdi-plus"></i> Add Repair </a>
                 </div>
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
