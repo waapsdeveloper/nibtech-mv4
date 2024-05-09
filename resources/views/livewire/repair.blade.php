@@ -164,6 +164,7 @@
                                             <tr>
                                                     <td>{{ $i + 1 }}</td>
                                                     <td><a href="{{url(session('url').'repair/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                    <td>{{ $repairers[$order->customer_id] }}</td>
                                                 @if (session('user')->hasPermission('view_cost'))
                                                 <td>Є{{ number_format($order->total_price,2) }}</td>
                                                 @endif
