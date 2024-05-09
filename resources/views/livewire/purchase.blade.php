@@ -150,6 +150,7 @@
                                         <th><small><b>Cost</b></small></th>
                                         @endif
                                         <th><small><b>Qty</b></small></th>
+                                        <th><small><b>Issues</b></small></th>
                                         <th><small><b>Creation Date</b></small></th>
                                     </tr>
                                 </thead>
@@ -187,6 +188,10 @@
                                                 @endif
                                                 <td>{{ $order->available_stock."/".$order->total_quantity }} @if ($order->status < 3)
                                                     (Pending)
+                                                @endif</td>
+                                                <td>@if (count($order->order_issues) > 0)
+                                                {{count($order->order_issues)}}
+
                                                 @endif</td>
                                                 <td style="width:220px">{{ $order->created_at." ".$order->updated_at }}</td>
                                                 <td>
