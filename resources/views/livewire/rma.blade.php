@@ -76,6 +76,15 @@
         </div>
         <br>
 
+        <div class="d-flex justify-content-between">
+            <div>
+                <a href="{{url(session('url').'purchase')}}?status=2" class="btn btn-link">Pending</a>
+                <a href="{{url(session('url').'purchase')}}?status=3" class="btn btn-link">Shipped</a>
+                <a href="{{url(session('url').'purchase')}}" class="btn btn-link">All</a>
+            </div>
+            <div class="">
+            </div>
+        </div>
         @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <span class="alert-inner--icon"><i class="fe fe-thumbs-up"></i></span>

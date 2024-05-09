@@ -66,6 +66,9 @@ class RMA extends Component
             ->when(request('order_id') != '', function ($q) {
                 return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
             })
+            ->when(request('status') != '', function ($q) {
+                return $q->where('orders.status', request('status'));
+            })
             ->groupBy('orders.id', 'orders.reference_id', 'orders.customer_id', 'orders.currency', 'orders.created_at')
             ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
             ->paginate($per_page)
@@ -122,6 +125,15 @@ class RMA extends Component
         // $orderItem->forceDelete();
 
         session()->put('success', 'Stock deleted successfully');
+
+        return redirect()->back();
+    }
+    public function rma_approve($order_id){
+        $order = Order_model::find($order_id);
+        $order->reference = request('reference');
+        $order->tracking_number = request('tracking_number');
+        $order->status = 3;
+        $order->save();
 
         return redirect()->back();
     }
