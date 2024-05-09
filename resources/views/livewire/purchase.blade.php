@@ -76,6 +76,16 @@
         </div>
         <br>
 
+        <div class="d-flex justify-content-between">
+            <div>
+                <a href="{{url(session('url').'purchase')}}?status=2" class="btn btn-link">Pending</a>
+                <a href="{{url(session('url').'purchase')}}?status=3&stock=1" class="btn btn-link">Active</a>
+                <a href="{{url(session('url').'purchase')}}?status=3&stock=0" class="btn btn-link">Closed</a>
+                <a href="{{url(session('url').'purchase')}}" class="btn btn-link">All</a>
+            </div>
+            <div class="">
+            </div>
+        </div>
         @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <span class="alert-inner--icon"><i class="fe fe-thumbs-up"></i></span>
@@ -150,6 +160,13 @@
                                     @endphp
                                     @foreach ($orders as $index => $order)
                                         @php
+                                            // echo request('stock');
+                                            if (request('stock') != null){
+                                                if(request('stock') != 1 && $order->available_stock >= 1){
+                                                    continue;
+                                                }
+                                            }
+
                                             if(in_array($order->id,$id)){
                                                 continue;
                                             }else {

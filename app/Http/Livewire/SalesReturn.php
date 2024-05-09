@@ -262,6 +262,30 @@ class SalesReturn extends Component
 
         $data['variations'] = $variations;
 
+        $stock_operations = Stock_operations_model::with([
+            'stock' => function ($query) use ($order_id) {
+                $query->whereHas('order_item', function ($query) use ($order_id) {
+                    $query->where('order_id', $order_id);
+                });
+            },
+            'stock.order_item'
+        ])
+        ->whereHas('stock', function ($query) use ($order_id) {
+            $query->whereHas('order_item', function ($query) use ($order_id) {
+                $query->where('order_id', $order_id);
+            });
+        })
+        ->orderBy('description', 'asc')
+        ->get();
+        // print_r($stock_operations);
+        // die;
+        // Remove variations with no associated stocks
+        // $stock_operations = $stock_operations->filter(function ($operation) {
+        //     return $operation->stocks->isNotEmpty();
+        // });
+
+        $data['stock_operations'] = $stock_operations;
+
         $last_ten = Order_item_model::where('order_id',$order_id)->orderBy('id','desc')->limit(10)->get();
         $data['last_ten'] = $last_ten;
 

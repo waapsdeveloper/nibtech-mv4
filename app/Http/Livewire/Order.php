@@ -196,6 +196,17 @@ class Order extends Component
         ->when(request('order_id'), function ($q) {
             return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
         })
+        ->when(request('status'), function ($q) {
+            return $q->where('orders.status', request('status'));
+        })
+        ->when(request('stock'), function ($q) {
+            if (request('stock') == 0) {
+                return $q->havingRaw('COUNT(CASE WHEN stock.status = 1 THEN order_items.id END) = 0');
+            } else {
+                return $q->havingRaw('COUNT(CASE WHEN stock.status = 1 THEN order_items.id END) > 0');
+            }
+        })
+
         ->groupBy('orders.id', 'orders.reference_id', 'orders.customer_id', 'orders.status', 'orders.created_at')
         ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
         ->paginate($per_page)
@@ -535,94 +546,6 @@ class Order extends Component
         }
         return redirect(url('purchase/detail').'/'.$order->id);
     }
-    private function insert_purchase_item($products, $storages, $order, $n, $c, $i, $s, $g = null, $dr = null){
-
-        $names = explode(" ",$n);
-        $last = end($names);
-        if(in_array($last, $storages)){
-            $gb = array_search($last,$storages);
-            array_pop($names);
-            $n = implode(" ", $names);
-        }else{
-            $gb = 0;
-        }
-
-        $stock = Stock_model::firstOrNew(['imei' => $i, 'serial_number' => $s]);
-        if($stock->id != null){
-            if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
-            $issue['data']['row'] = $dr;
-            $issue['data']['name'] = $n;
-            $issue['data']['storage'] = $st;
-            $issue['data']['imei'] = $i.$s;
-            $issue['data']['cost'] = $c;
-            $issue['data']['stock_id'] = $stock->id;
-            if($stock->order_id == $order->id && $stock->status == 1){
-                $issue['message'] = 'Duplicate IMEI';
-            }else{
-                if($stock->status != 2){
-                    $issue['message'] = 'IMEI Available In Inventory';
-                }else{
-                    $issue['message'] = 'IMEI Repurchase';
-                }
-            }
-
-        }else{
-            if(in_array(strtolower($n), array_map('strtolower',$products)) && ($i != null || $s != null)){
-                $product = array_search(strtolower($n), array_map('strtolower',$products));
-                $storage = $gb;
-
-                // echo $product." ".$grade." ".$storage." | ";
-
-                $variation = Variation_model::firstOrNew(['product_id' => $product, 'grade' => 9, 'storage' => $storage]);
-
-                $variation->stock += 1;
-                $variation->status = 1;
-                $variation->save();
-
-                $stock->product_id = $product;
-                $stock->variation_id = $variation->id;
-                $stock->added_by = session('user_id');
-                $stock->order_id = $order->id;
-                $stock->status = 1;
-                $stock->save();
-
-                $order_item = Order_item_model::firstOrNew(['order_id' => $order->id, 'variation_id' => $variation->id, 'stock_id' => $stock->id]);
-                $order_item->quantity = 1;
-                $order_item->price = $c;
-                $order_item->status = 3;
-                $order_item->save();
-
-
-            }else{
-                if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
-                if($n != null){
-                    $error = $n . " " . $st . " " . $i.$s . " || ";
-                    $issue['data']['row'] = $dr;
-                    $issue['data']['name'] = $n;
-                    $issue['data']['storage'] = $st;
-                    $issue['data']['imei'] = $i.$s;
-                    $issue['data']['cost'] = $c;
-                    $issue['data']['stock_id'] = '';
-                    if($i == null && $s == null){
-                        $issue['message'] = 'IMEI Not Found';
-                    }else{
-                        $issue['message'] = 'Product Name Not Accepted';
-                    }
-
-                }
-            }
-        }
-
-
-        if($issue != []){
-            Order_issue_model::create([
-                'order_id' => $order->id,
-                'data' => json_encode($issue['data']),
-                'message' => $issue['message'],
-            ]);
-        }
-
-    }
     public function add_purchase_item($order_id, $imei = null, $variation_id = null, $price = null, $return = null){
         $issue = [];
         if(request('imei')){
@@ -648,9 +571,6 @@ class Order extends Component
             session()->put('error', 'Variation Not Found');
             return redirect()->back();
         }
-        $variation->stock += 1;
-        $variation->status = 1;
-        $variation->save();
 
         $stock = Stock_model::firstOrNew(['imei' => $i, 'serial_number' => $s]);
         if($stock->id && $stock->status != null){
@@ -669,6 +589,12 @@ class Order extends Component
             }
             // $stock->status = 2;
         }else{
+
+            $variation->stock += 1;
+            $variation->status = 1;
+            $variation->save();
+
+
             $stock->added_by = session('user_id');
             $stock->order_id = $order_id;
 
@@ -686,6 +612,15 @@ class Order extends Component
             $order_item->status = 3;
             $order_item->save();
 
+            $order = Order_model::find($order_id);
+            if($order->status == 3){
+
+                $issue['data']['variation'] = $variation_id;
+                $issue['data']['imei'] = $i.$s;
+                $issue['data']['cost'] = $price;
+                $issue['data']['stock_id'] = $stock->id;
+                $issue['message'] = 'Additional Item';
+            }
 
         }
 
