@@ -222,14 +222,8 @@
                                 @endforeach
                             </select>
                         </div>
-                        <input type="hidden" name="repair[status]" value="3">
+                        <input type="hidden" name="repair[status]" value="1">
 
-                        <div class="form-group">
-                            <label for="">Inventory Sheet</label>
-                            {{-- <input class="form-control" placeholder="Input Total Amount" name="repair[amount]" type="number"
-                                step="0.01" required> --}}
-                            <input type="file" class="form-control" name="repair[sheet]">
-                        </div>
                         <button class="btn btn-primary btn-block">{{ __('locale.Submit') }}</button>
                     </form>
                 </div>
