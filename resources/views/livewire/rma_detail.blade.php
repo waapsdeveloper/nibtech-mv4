@@ -39,7 +39,7 @@
                         <label for="tracking_number">Tracking Number</label>
                     </div>
                     <button type="submit" class="btn btn-success">Approve</button>
-                    <a class="btn btn-danger" href="{{url('delete_wholesale') . "/" . $order->id }}">Delete</a>
+                    <a class="btn btn-danger" href="{{url('delete_rma') . "/" . $order->id }}">Delete</a>
                 </form>
                 @else
                 Tracking Number: <a href="https://www.dhl.com/gb-en/home/tracking/tracking-express.html?submit=1&tracking-id={{$order->tracking_number}}" target="_blank"> {{$order->tracking_number}}</a>
