@@ -32,6 +32,8 @@
                         </div>
                         <button type="submit" class="btn btn-success">Ship</button>
                     </form>
+                    @else
+                    Tracking Number: {{$order->tracking_number}}
                     @endif
                 </div>
                 <div class="justify-content-center mt-2">
