@@ -613,7 +613,7 @@ class Order extends Component
             $order_item->save();
 
             $order = Order_model::find($order_id);
-            if($order->status == 3){
+            if($order->status == 3 && !in_array($order_id,[8441,1,5,8,9,12,13,14,185,263,4739])){
 
                 $issue['data']['variation'] = $variation_id;
                 $issue['data']['imei'] = $i.$s;
