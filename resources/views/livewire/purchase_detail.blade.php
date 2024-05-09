@@ -39,6 +39,8 @@
                     </form>
                     @else
                     Tracking Number: <a href="https://www.dhl.com/gb-en/home/tracking/tracking-express.html?submit=1&tracking-id={{$order->tracking_number}}" target="_blank"> {{$order->tracking_number}}</a>
+                    <br>
+                    V Reference: {{ $order->reference }}
                     @endif
 
                 </div>
@@ -53,7 +55,7 @@
         <div class="row">
             <div class="col-md-12 tx-center" style="border-bottom: 1px solid rgb(216, 212, 212);">
                 <center><h4>@if ($order->status == 2)<small>(Pending)</small>@endif Purchase Order Detail</h4></center>
-                <h5>Reference: {{ $order->reference_id }} | Vendor: {{ $order->customer->first_name }} | V Reference: {{ $order->reference }} | Total Items: {{ $order->order_items->count() }} | Total Cost: {{ $order->currency_id->sign.number_format($order->order_items->sum('price'),2) }}</h5>
+                <h5>Reference: {{ $order->reference_id }} | Vendor: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->count() }} | Total Cost: {{ $order->currency_id->sign.number_format($order->order_items->sum('price'),2) }}</h5>
             </div>
         </div>
         <br>
