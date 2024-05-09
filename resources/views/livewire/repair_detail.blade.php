@@ -133,14 +133,18 @@
                                     @php
                                         $i = 0;
                                     @endphp
-                                    @foreach ($last_ten as $item)
+                                    @foreach ($last_ten as $p_stock)
+                                        @php
+                                            $item = $p_stock->stock;
+                                        @endphp
+
                                         <tr>
                                             <td>{{ $i + 1 }}</td>
                                             <td>{{ $products[$item->variation->product_id]}} {{$storages[$item->variation->storage] ?? null}} {{$colors[$item->variation->color] ?? null}} {{$grades[$item->variation->grade] }}</td>
-                                            <td>{{ $item->stock->imei.$item->stock->serial_number }}</td>
-                                            <td>{{ $item->stock->order->customer->first_name }}</td>
+                                            <td>{{ $item->imei.$item->serial_number }}</td>
+                                            <td>{{ $item->order->customer->first_name }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
-                                            <td>{{ $currency.number_format($item->price,2) }}</td>
+                                            <td>{{ $currency.number_format($item->purchase_item->price,2) }}</td>
                                             @endif
                                             <td style="width:220px">{{ $item->created_at }}</td>
                                             <td><a href="{{ url('delete_repair_item').'/'.$item->id }}"><i class="fa fa-trash"></i></a></td>
@@ -206,23 +210,23 @@
 
                                     @foreach ($stocks as $item)
                                         {{-- @dd($item->sale_item) --}}
-                                        @if($item->stock_operation($process_id)->process_id == $process_id)
+                                        @if($item->process_stock($process_id)->process_id == $process_id)
                                         @php
                                             $i ++;
-                                            $total += $item->stock_operation($process_id)->price
+                                            $total += $item->purchase_item->price
                                         @endphp
                                         <tr>
                                             <td>{{ $i }}</td>
                                             {{-- <td>{{ $item->order->customer->first_name }}</td> --}}
                                             <td>{{ $item->imei.$item->serial_number }}</td>
                                             <td @if (session('user')->hasPermission('view_cost')) title="Cost Price: {{ $currency.$item->purchase_item->price }}" @endif>
-                                                {{ $item->order->customer->first_name }} {{ $currency.$item->stock_operation($process_id)->price }}
+                                                {{ $item->order->customer->first_name }} {{ $currency.$item->purchase_item->price }}
                                             </td>
 
                                             @if (session('user')->hasPermission('delete_repair_item'))
-                                            <td><a href="{{ url('delete_repair_item').'/'.$item->stock_operation($process_id)->id }}"><i class="fa fa-trash"></i></a></td>
+                                            <td><a href="{{ url('delete_repair_item').'/'.$item->process_stock($process_id)->id }}"><i class="fa fa-trash"></i></a></td>
                                             @endif
-                                            <input type="hidden" name="item_ids[]" value="{{ $item->stock_operation($process_id)->id }}">
+                                            <input type="hidden" name="item_ids[]" value="{{ $item->process_stock($process_id)->id }}">
                                         </tr>
                                         @endif
                                     @endforeach

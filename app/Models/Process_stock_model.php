@@ -17,7 +17,9 @@ class Process_stock_model extends Model
     protected $fillable = [
         // other fields...
         'stock_id',
-        'process_batch_id',
+        'process_id',
+        'admin_id',
+        'status',
     ];
     public function stock()
     {
@@ -30,9 +32,5 @@ class Process_stock_model extends Model
     public function admin()
     {
         return $this->hasOne(Admin_model::class, 'id', 'admin_id');
-    }
-    public function status_id()
-    {
-        return $this->hasOne(Multi_status_model::class, 'id', 'status');
     }
 }

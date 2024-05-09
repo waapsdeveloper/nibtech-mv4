@@ -350,6 +350,15 @@ class Repair extends Component
             }
         }
 
+        if($stock->variation->grade != 8){
+            session()->put('error', 'Stock not in Repair');
+            if($back != 1){
+                return redirect()->back();
+            }else{
+                return 1;
+            }
+        }
+
         if(request('bypass_check') == 1){
 
             $this->add_repair_item($process_id, $imei, $back);
@@ -378,11 +387,20 @@ class Repair extends Component
                     }
                 </script>";
                 exit;
+            }else{
+
+                $this->add_repair_item($process_id, $imei, $back);
+                if($back != 1){
+                    return redirect()->back();
+                }else{
+                    return 1;
+                }
             }
         }
 
     }
     public function add_repair_item($process_id, $imei = null, $back = null){
+        echo "Hello";
         if(request('imei')){
             $imei = request('imei');
         }
@@ -404,6 +422,11 @@ class Repair extends Component
 
         $variation = Variation_model::where(['id' => $stock->variation_id])->first();
 
+        $stock->status = 2;
+        $stock->save();
+
+        $variation->stock -= 1;
+        $variation->save();
 
         $process_stock = new Process_stock_model();
         $process_stock->process_id = $process_id;
@@ -424,11 +447,133 @@ class Repair extends Component
         // Storage::delete($filePath);
 
         if($back != 1){
-            return redirect(url('wholesale/detail').'/'.$process_id);
+            return redirect(url('repair/detail').'/'.$process_id);
         }else{
             return 1;
         }
         // return redirect()->back();
+    }
+    public function add_repair_sheet($process_id){
+        $issue = [];
+        $storages = Storage_model::pluck('name','id')->toArray();
+
+        $products = Products_model::pluck('model','id')->toArray();
+        request()->validate([
+            'sheet' => 'required|file|mimes:xlsx,xls',
+        ]);
+
+        // Store the uploaded file in a temporary location
+        $filePath = request()->file('sheet')->store('temp');
+
+        // // Perform operations on the Excel file
+        // $spreadsheet = IOFactory::load(storage_path('app/'.$filePath));
+        // // Perform your operations here...
+
+        // Replace 'your-excel-file.xlsx' with the actual path to your Excel file
+        $excelFilePath = storage_path('app/'.$filePath);
+
+        $data = Excel::toArray([], $excelFilePath)[0];
+        $dh = $data[0];
+        // print_r($dh);
+        unset($data[0]);
+        $arrayLower = array_map('strtolower', $dh);
+        $imei = array_search('imei', $arrayLower);
+        if(!$imei){
+            print_r($dh);
+            session()->put('error', "Heading not Found(imei)");
+            return redirect()->back();
+            // die;
+        }
+        // echo $name;
+        // echo $imei;
+
+
+        foreach($data as $dr => $d){
+            // $name = ;
+            // echo $dr." ";
+            // print_r($d);
+            if(ctype_digit($d[$imei])){
+                $i = $d[$imei];
+                $s = null;
+            }else{
+                $i = null;
+                $s = $d[$imei];
+            }
+            if(trim($d[$imei]) == ''){
+                continue;
+            }
+
+            if($i != null || $s != null){
+
+
+                $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
+                if($stock == null ){
+                    $issue[$dr]['data']['row'] = $dr;
+                    $issue[$dr]['data']['imei'] = $i.$s;
+                    $issue[$dr]['message'] = 'Stock Not Found';
+
+                    continue;
+
+
+                }
+                if($stock->order->status == 2){
+                    $issue[$dr]['data']['row'] = $dr;
+                    $issue[$dr]['data']['imei'] = $i.$s;
+                    $issue[$dr]['message'] = 'Stock Awaiting Approval';
+
+                    continue;
+                }
+                $variation = Variation_model::where(['id' => $stock->variation_id])->first();
+                if($stock->id != null && $stock->status == 2){
+                    $issue[$dr]['data']['row'] = $dr;
+                    $issue[$dr]['data']['imei'] = $i.$s;
+                    $issue[$dr]['message'] = 'Item Already Sold';
+
+
+                }elseif($stock->id == null ){
+                    $issue[$dr]['data']['row'] = $dr;
+                    $issue[$dr]['data']['imei'] = $i.$s;
+                    $issue[$dr]['message'] = 'Stock Not Found';
+
+
+
+                }else{
+                    $stock->status = 2;
+                    $stock->save();
+
+                    $variation->stock -= 1;
+                    $variation->save();
+
+                    $process_stock = Process_stock_model::firstOrNew(['process_id' =>$process_id, 'stock_id'=>$stock->id]);
+                    $process_stock->admin_id = session('user_id');
+                    $process_stock->status = 1;
+                    $process_stock->save();
+
+
+
+                }
+
+            }else{
+                    $issue[$dr]['data']['row'] = $dr;
+                    $issue[$dr]['data']['imei'] = $i.$s;
+                    $issue[$dr]['message'] = 'IMEI/Serial Not Found';
+
+            }
+
+        }
+
+
+        if($issue != []){
+            foreach($issue as $row => $datas){
+                Order_issue_model::create([
+                    'process_id' => $process_id,
+                    'data' => json_encode($datas['data']),
+                    'message' => $datas['message'],
+                ]);
+            }
+        }
+
+        return redirect()->back();
     }
     // public function add_repair_item($process_id){
     //     $repair = request('repair');
