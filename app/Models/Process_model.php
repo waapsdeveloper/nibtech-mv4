@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Http\Livewire\Customer;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -31,6 +32,9 @@ class Process_model extends Model
 
 
 
+    public function customer(){
+        return $this->hasOne(Customer_model::class, 'id', 'customer_id');
+    }
     public function order(){
         return $this->belongsTo(Order_model::class, 'order_id', 'id');
     }

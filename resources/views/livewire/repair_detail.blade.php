@@ -2,7 +2,7 @@
 
     @section('styles')
     <!-- INTERNAL Select2 css -->
-    {{-- <link href="{{asset('assets/plugins/select2/css/select2.min.css')}}" rel="stylesheet" /> --}}
+    <link href="{{asset('assets/plugins/select2/css/select2.min.css')}}" rel="stylesheet" />
         <style>
             .rows{
                 border: 1px solid #016a5949;
@@ -22,71 +22,66 @@
         <!-- breadcrumb -->
             <div class="breadcrumb-header justify-content-between">
                 <div class="left-content">
-                {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">Repair</span> --}}
-                    @if ($repair->status == 2)
-                    <form class="form-inline" method="POST" action="{{url('repair/approve').'/'.$repair->id}}">
-                        @csrf
-                        <div class="form-floating">
-                            <input type="text" class="form-control" id="tracking_number" name="tracking_number" placeholder="Enter Tracking Number" required>
-                            <label for="tracking_number">Tracking Number</label>
-                        </div>
-                        <button type="submit" class="btn btn-success">Approve</button>
-                        <a class="btn btn-danger" href="{{url('delete_order') . "/" . $repair->id }}">Delete</a>
-                    </form>
-                    @endif
+                    {{-- <span class="ms-3 form-check form-switch ms-4">
+                        <input type="checkbox" value="1" name="bypass_check" class="form-check-input" form="repair_item" @if (session('bypass_check') == 1) checked @endif>
+                        <label class="form-check-label" for="bypass_check">Bypass Repair check</label>
+                    </span> --}}
+                <span class="main-content-title mg-b-0 mg-b-lg-1">External Repair Order Detail</span>
                 </div>
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Repair Detail</li>
+                        <li class="breadcrumb-item active" aria-current="page">External Repair Detail</li>
                     </ol>
                 </div>
             </div>
         <!-- /breadcrumb -->
-        <div class="row">
-            <div class="col-md-12 tx-center" style="border-bottom: 1px solid rgb(216, 212, 212);">
-                <center><h4>@if ($repair->status == 1)<small>(Pending)</small>@endif @if ($repair->status == 2)<small>(Awaiting Approval)</small>@endif Repair Order Detail</h4></center>
-                <h5>Reference: {{ $repair->reference_id }} | Total Items: {{ $repair->process_stocks->count() }} </h5>
-            </div>
+        <div class="text-center" style="border-bottom: 1px solid rgb(216, 212, 212);">
+                {{-- <center><h4>External Repair Order Detail</h4></center> --}}
+                <h5>Reference: {{ $process->reference_id }} | Repairer: {{ $process->customer->first_name }} | Total Items: {{ $process->process_stocks->count() }} | Total Price: {{ $currency.number_format($process->process_stocks->sum('price'),2) }}</h5>
+
         </div>
         <br>
 
         <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
 
             <div class="p-2">
-                <form action="" method="GET" id="search" class="form-inline">
-                    <div class="form-floating">
-                        <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset">
-                        <label for="">IMEI</label>
-                    </div>
-                        <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
+                <h4>Add External Repair Item</h4>
+                {{-- <span class="form-check form-switch ms-4 p-2" title="Bypass Repair check" onclick="$('#bypass_check').check()">
+                    <input type="checkbox" value="1" id="bypass_check" name="bypass_check" class="form-check-input" form="repair_item" @if (session('bypass_check') == 1) checked @endif>
+                    <label class="form-check-label" for="bypass_check">Bypass check</label>
+                </span> --}}
+
+            </div>
+            <div class="p-1">
+                <form class="form-inline" action="{{ url('check_repair_item').'/'.$process_id }}" method="POST" id="repair_item">
+                    @csrf
+                    <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
+                    <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
+                    <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
+
                 </form>
             </div>
-            @if (session('user')->hasPermission('add_repair_item') && isset($stock) && $stock->variation->grade == 8)
-                <div class="p-2">
-                    <form action="{{ url('add_repair_item').'/'.$repair_id}}" method="POST" class="form-inline">
-                        @csrf
-                        <select name="repair[grade]" class="form-control form-select">
-                            <option value="">Move to</option>
-                            @foreach ($grades as $grade)
-                                @if($grade->id > 7)
-                                <option value="{{ $grade->id }}">{{ $grade->name }}</option>
-                                @endif
-                            @endforeach
-                        </select>
+            <div class="p-2 tx-right">
+                <form method="POST" enctype="multipart/form-data" action="{{ url('repair/add_repair_sheet').'/'.$process_id}}" class="form-inline p-1">
+                    @csrf
+                    <input type="file" class="form-control form-control-sm" name="sheet">
+                    <button type="submit" class="btn btn-sm btn-primary">Upload Sheet</button>
+                </form>
+                <a href="{{url(session('url').'repair_email')}}/{{ $process->id }}" target="_blank"><button class="btn-sm btn-secondary">Send Email</button></a>
+                <a href="{{url(session('url').'export_repair_invoice')}}/{{ $process->id }}" target="_blank"><button class="btn-sm btn-secondary">Invoice</button></a>
 
-                        <div class="form-floating">
-                            <input type="text" class="form-control pd-x-20" name="repair[description]" placeholder="Reason" style="width: 270px;">
-                            {{-- <input type="text" class="form-control" name="repair[imei]" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset"> --}}
-                            <label for="">Reason</label>
-                        </div>
-                        <input type="hidden" name="repair[stock_id]" value="{{$stock_id}}">
-                        <button class="btn btn-secondary pd-x-20" type="submit">Move</button>
-                    </form>
+                <div class="btn-group p-1" role="group">
+                    <button type="button" class="btn-sm btn-secondary dropdown-toggle" id="pack_sheet" data-bs-toggle="dropdown" aria-expanded="false">
+                    Pack Sheet
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="pack_sheet">
+                        <li><a class="dropdown-item" href="{{url(session('url').'export_repair_invoice')}}/{{ $process->id }}?packlist=2&id={{ $process->id }}">.xlsx</a></li>
+                        <li><a class="dropdown-item" href="{{url(session('url').'export_repair_invoice')}}/{{ $process->id }}?packlist=1" target="_blank">.pdf</a></li>
+                    </ul>
                 </div>
-            @endif
+            </div>
         </div>
-        <hr style="border-bottom: 1px solid rgb(62, 45, 45);">
         <br>
         @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -111,305 +106,148 @@
         @endphp
         @endif
 
-        @if (isset($stock))
-
         <div class="row">
             <div class="col-xl-12">
                 <div class="card">
                     <div class="card-header pb-0">
                         <div class="d-flex justify-content-between">
-                            <h4 class="card-title mg-b-0">
-                                External Movement
-                            </h4>
-
-                            <div class=" mg-b-0">
-                            </div>
-
+                            <h4 class="card-title mg-b-0">Latest Added Items</h4>
                         </div>
                     </div>
-                    <div class="card-body"><div class="table-responsive">
-                        @if (isset($orders))
-
+                    <div class="card-body"><div class="table-responsive" style="max-height: 250px">
                             <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                                 <thead>
                                     <tr>
                                         <th><small><b>No</b></small></th>
-                                        <th><small><b>Order ID</b></small></th>
-                                        <th><small><b>Type</b></small></th>
-                                        <th><small><b>Product</b></small></th>
-                                        <th><small><b>Qty</b></small></th>
-                                        <th><small><b>IMEI</b></small></th>
-                                        <th><small><b>Creation Date | TN</b></small></th>
+                                        <th><small><b>Variation</b></small></th>
+                                        <th><small><b>IMEI | Serial Number</b></small></th>
+                                        <th><small><b>Vendor</b></small></th>
+                                        @if (session('user')->hasPermission('view_cost'))
+                                        <th><small><b>Cost</b></small></th>
+                                        @endif
+                                        <th><small><b>Creation Date</b></small></th>
+                                        <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    @php
+                                        $i = 0;
+                                    @endphp
+                                    @foreach ($last_ten as $item)
+                                        <tr>
+                                            <td>{{ $i + 1 }}</td>
+                                            <td>{{ $products[$item->variation->product_id]}} {{$storages[$item->variation->storage] ?? null}} {{$colors[$item->variation->color] ?? null}} {{$grades[$item->variation->grade] }}</td>
+                                            <td>{{ $item->stock->imei.$item->stock->serial_number }}</td>
+                                            <td>{{ $item->stock->order->customer->first_name }}</td>
+                                            @if (session('user')->hasPermission('view_cost'))
+                                            <td>{{ $currency.number_format($item->price,2) }}</td>
+                                            @endif
+                                            <td style="width:220px">{{ $item->created_at }}</td>
+                                            <td><a href="{{ url('delete_repair_item').'/'.$item->id }}"><i class="fa fa-trash"></i></a></td>
+                                        </tr>
+                                        @php
+                                            $i ++;
+                                        @endphp
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        <br>
+                    </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br>
+
+        <div class="row">
+
+            @foreach ($variations as $variation)
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header pb-0">
+                        @php
+                            isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
+                            isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
+                        @endphp
+                        {{ $variation->product->model." ".$storage." ".$color." ".$variation->grade_id->name }}
+                    </div>
+                            {{-- {{ $variation }} --}}
+                    <div class="card-body"><div class="table-responsive" style="max-height: 400px">
+
+                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th><small><b>#</b></small></th>
+                                        {{-- <th><small><b>Vendor</b></small></th> --}}
+                                        <th><small><b>IMEI/Serial</b></small></th>
+                                        {{-- @if (session('user')->hasPermission('view_cost')) --}}
+                                        <th><small><b>Vendor Price</b></small></th>
+                                        {{-- @endif --}}
+                                        @if (session('user')->hasPermission('delete_repair_item'))
+                                        <th></th>
+                                        @endif
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <form method="POST" action="{{url(session('url').'repair')}}/update_prices" id="update_prices_{{ $variation->id }}">
+                                        @csrf
                                     @php
                                         $i = 0;
                                         $id = [];
                                     @endphp
-                                    @foreach ($orders as $index => $item)
-                                        @php
-                                            $order = $item->order;
-                                            $j = 0;
-                                        @endphp
-
-                                            <tr>
-                                                <td title="{{ $item->id }}">{{ $i + 1 }}</td>
-                                                @if ($order->order_type_id == 1)
-
-                                                    <td><a href="{{url(session('url').'purchase/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
-                                                @elseif ($order->order_type_id == 2)
-                                                    <td><a href="{{url(session('url').'rma/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
-                                                @elseif ($order->order_type_id == 4)
-                                                    <td><a href="{{url(session('url').'order/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
-                                                @elseif ($order->order_type_id == 5)
-                                                    <td><a href="{{url(session('url').'wholesale/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
-                                                @elseif ($order->order_type_id == 3)
-                                                    <td>{{ $order->reference_id }}</td>
-                                                @endif
-                                                <td>{{ $order->order_type->name }}</td>
-                                                <td>
-                                                    @if ($item->variation ?? false)
-                                                        <strong>{{ $item->variation->sku }}</strong>{{ " - " . $item->variation->product->model . " - " . (isset($item->variation->storage_id)?$item->variation->storage_id->name . " - " : null) . (isset($item->variation->color_id)?$item->variation->color_id->name. " - ":null)}} <strong><u>{{ $item->variation->grade_id->name }}</u></strong>
-                                                    @endif
-                                                    @if ($item->care_id != null)
-                                                        <a class="" href="https://backmarket.fr/bo_merchant/customer-request/{{ $item->care_id }}" target="_blank"><strong class="text-danger">Conversation</strong></a>
-                                                    @endif
-                                                </td>
-                                                <td>{{ $item->quantity }}</td>
-                                                @if ($order->status <= 3)
-                                                <td style="width:240px" class="text-success text-uppercase" title="{{ $item->stock_id }}" id="copy_imei_{{ $repair->id }}">
-                                                    @isset($item->stock->imei) {{ $item->stock->imei }}&nbsp; @endisset
-                                                    @isset($item->stock->serial_number) {{ $item->stock->serial_number }}&nbsp; @endisset
-                                                    @isset($repair->processed_by) | {{ $repair->admin->first_name[0] }} | @endisset
-                                                    @isset($item->stock->tester) ({{ $item->stock->tester }}) @endisset
-                                                </td>
-
-                                                @endif
-                                                @if ($repair->status > 3)
-                                                <td style="width:240px" title="{{ $item->stock_id }}">
-                                                        <strong class="text-danger">{{ $repair->order_status->name }}</strong>
-                                                    @isset($item->stock->imei) {{ $item->stock->imei }}&nbsp; @endisset
-                                                    @isset($item->stock->serial_number) {{ $item->stock->serial_number }}&nbsp; @endisset
-
-                                                    @isset($repair->processed_by) | {{ $repair->admin->first_name[0] }} | @endisset
-                                                    @isset($item->stock->tester) ({{ $item->stock->tester }}) @endisset
-                                                </td>
-                                                @endif
-                                                <td style="width:220px">{{ $repair->created_at}} <br> {{ $repair->processed_at." ".$repair->tracking_number }}</td>
-                                            </tr>
-                                        @php
-                                            $i ++;
-                                        @endphp
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        @endif
-                        <br>
-                    </div>
-
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        @endif
-        @if (isset($stocks))
-
-        <div class="row">
-            <div class="col-xl-12">
-                <div class="card">
-                    <div class="card-header pb-0">
-                        <div class="d-flex justify-content-between">
-                            <h4 class="card-title mg-b-0">
-                                Internal Movement
-                            </h4>
-
-                            <div class=" mg-b-0">
-                                Today's count: {{ count($stocks) }}
-                            </div>
-
-                        </div>
-                    </div>
-                    <div class="card-body"><div class="table-responsive">
-
-                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
-                                <thead>
-                                    <tr>
-                                        <th><small><b>No</b></small></th>
-                                        <th><small><b>Old Variation</b></small></th>
-                                        <th><small><b>New Variation</b></small></th>
-                                        <th><small><b>IMEI</b></small></th>
-                                        <th><small><b>Vendor | Lot</b></small></th>
-                                        <th><small><b>Reason</b></small></th>
-                                        <th><small><b>DateTime</b></small></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
                                     @php
-                                        $i = 0;
+                                        $stocks = $variation->stocks;
+                                        // $items = $stocks->order_item;
+                                        $j = 0;
+                                        $total = 0;
+                                        // print_r($variation);
                                     @endphp
-                                    @foreach ($stocks as $operation)
 
-                                            <tr>
-                                                <td title="{{ $operation->id }}">{{ $i + 1 }}</td>
-                                                <td>
-                                                    @if ($operation->old_variation ?? false)
-                                                        <strong>{{ $operation->old_variation->sku }}</strong>{{ " - " . $operation->old_variation->product->model . " - " . (isset($operation->old_variation->storage_id)?$operation->old_variation->storage_id->name . " - " : null) . (isset($operation->old_variation->color_id)?$operation->old_variation->color_id->name. " - ":null)}} <strong><u>{{ (isset($operation->old_variation->grade_id)?$operation->old_variation->grade_id->name:null)}} </u></strong>
-                                                    @endif
-                                                </td>
-                                                <td>
-                                                    @if ($operation->new_variation ?? false)
-                                                        <strong>{{ $operation->new_variation->sku }}</strong>{{ " - " . $operation->new_variation->product->model . " - " . (isset($operation->new_variation->storage_id)?$operation->new_variation->storage_id->name . " - " : null) . (isset($operation->new_variation->color_id)?$operation->new_variation->color_id->name. " - ":null)}} <strong><u>{{ $operation->new_variation->grade_id->name }}</u></strong>
-                                                    @endif
-                                                </td>
-                                                <td>{{ $operation->stock->imei.$operation->stock->serial_number }}</td>
-                                                <td>{{ $operation->stock->order->customer->first_name." | ".$operation->stock->order->reference_id }}</td>
-                                                <td>{{ $operation->description }}</td>
-                                                <td>{{ $operation->created_at }}</td>
-                                            </tr>
+                                    @foreach ($stocks as $item)
+                                        {{-- @dd($item->sale_item) --}}
+                                        @if($item->stock_operation($process_id)->process_id == $process_id)
                                         @php
                                             $i ++;
+                                            $total += $item->stock_operation($process_id)->price
                                         @endphp
+                                        <tr>
+                                            <td>{{ $i }}</td>
+                                            {{-- <td>{{ $item->order->customer->first_name }}</td> --}}
+                                            <td>{{ $item->imei.$item->serial_number }}</td>
+                                            <td @if (session('user')->hasPermission('view_cost')) title="Cost Price: {{ $currency.$item->purchase_item->price }}" @endif>
+                                                {{ $item->order->customer->first_name }} {{ $currency.$item->stock_operation($process_id)->price }}
+                                            </td>
+
+                                            @if (session('user')->hasPermission('delete_repair_item'))
+                                            <td><a href="{{ url('delete_repair_item').'/'.$item->stock_operation($process_id)->id }}"><i class="fa fa-trash"></i></a></td>
+                                            @endif
+                                            <input type="hidden" name="item_ids[]" value="{{ $item->stock_operation($process_id)->id }}">
+                                        </tr>
+                                        @endif
                                     @endforeach
+                                    </form>
                                 </tbody>
                             </table>
                         <br>
                     </div>
-
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        @endif
-
-
-        <br>
-
-        <div class="row">
-            <div class="col-xl-12">
-
-            <div class="card">
-                <div class="card-header pb-0">
                     <div class="d-flex justify-content-between">
-                        <h4 class="card-title mg-b-0">Repaired</h4>
-                        <div class=" mg-b-0">
+                        <div>
+                            <label for="unit-price" class="">Change Unit Price: </label>
+                            <input type="number" name="unit_price" id="unit_price" step="0.01" class="w-50 border-0" placeholder="Input Unit price" form="update_prices_{{ $variation->id }}">
                         </div>
-
+                        <div>Average: {{$total/$i }}</div>
+                        <div>Total: {{$i }}</div>
+                    </div>
                     </div>
                 </div>
-                <div class="card-body"><div class="table-responsive">
-                        <table class="table table-bordered table-hover mb-0 text-md-nowrap">
-                            <thead>
-                                <tr>
-                                    <th><small><b>No</b></small></th>
-                                    <th><small><b>Variation</b></small></th>
-                                    <th><small><b>IMEI</b></small></th>
-                                    <th><small><b>Reason</b></small></th>
-                                    <th><small><b>Creation Date</b></small></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @php
-                                    $i = 0;
-                                    $id = [];
-                                @endphp
-                                @foreach ($repaired_stocks as $r_stock)
-                                    @php
-                                        $stock = $r_stock->stock;
-                                    @endphp
-                                        <tr>
-                                            <td>{{ $i + 1 }}</td>
-                                            <td>
-                                                @if ($stock->variation ?? false)
-                                                    <strong>{{ $stock->variation->sku }}</strong>{{ " - " . $stock->variation->product->model . " - " . (isset($stock->variation->storage_id)?$stock->variation->storage_id->name . " - " : null) . (isset($stock->variation->color_id)?$stock->variation->color_id->name. " - ":null)}} <strong><u>{{ $stock->variation->grade_id->name }}</u></strong>
-                                                @endif
-                                            </td>
-                                            <td>{{$stock->imei.$stock->serial_number }}</td>
-                                            <td>{{$stock->latest_operation->description }}</td>
-                                            <td style="width:180px">{{ $stock->created_at."  ".$stock->updated_at }}</td>
-                                        </tr>
-                                    @php
-                                        $i ++;
-                                    @endphp
-                                @endforeach
-                            </tbody>
-                        </table>
-                    <br>
-                </div>
-
             </div>
-        </div>
-
-        <br>
-
-        <div class="row">
-            <div class="col-xl-12">
-
-            <div class="card">
-                <div class="card-header pb-0">
-                    <div class="d-flex justify-content-between">
-                        <h4 class="card-title mg-b-0">Awaiting Repair</h4>
-                        <div class=" mg-b-0">
-                        </div>
-
-                    </div>
-                </div>
-                <div class="card-body"><div class="table-responsive">
-                        <table class="table table-bordered table-hover mb-0 text-md-nowrap">
-                            <thead>
-                                <tr>
-                                    <th><small><b>No</b></small></th>
-                                    <th><small><b>Variation</b></small></th>
-                                    <th><small><b>IMEI</b></small></th>
-                                    <th><small><b>Reason</b></small></th>
-                                    <th><small><b>Creation Date</b></small></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @php
-                                    $i = 0;
-                                    $id = [];
-                                @endphp
-                                @foreach ($repair_stocks as $stock)
-                                        <tr>
-                                            <td>{{ $i + 1 }}</td>
-                                            <td>
-                                                @if ($stock->variation ?? false)
-                                                    <strong>{{ $stock->variation->sku }}</strong>{{ " - " . $stock->variation->product->model . " - " . (isset($stock->variation->storage_id)?$stock->variation->storage_id->name . " - " : null) . (isset($stock->variation->color_id)?$stock->variation->color_id->name. " - ":null)}} <strong><u>{{ $stock->variation->grade_id->name }}</u></strong>
-                                                @endif
-                                            </td>
-                                            <td>{{$stock->imei.$stock->serial_number }}</td>
-                                            <td>{{$stock->latest_operation->description }}</td>
-                                            <td style="width:180px">{{ $stock->latest_operation->created_at."  ".$stock->updated_at }}</td>
-                                        </tr>
-                                        {{-- @php
-                                            $j++;
-                                        @endphp
-                                    @endforeach --}}
-                                    @php
-                                        $i ++;
-                                    @endphp
-                                @endforeach
-                            </tbody>
-                        </table>
-                    <br>
-                </div>
-
-                </div>
-            </div>
+            @endforeach
         </div>
 
     @endsection
 
     @section('scripts')
-        <script>
-            $(document).ready(function() {
-                $('.test').select2();
-            });
-
-        </script>
 		<!--Internal Sparkline js -->
 		<script src="{{asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js')}}"></script>
 
@@ -420,6 +258,6 @@
 		<script src="{{asset('assets/plugins/chartjs/Chart.bundle.min.js')}}"></script>
 
 		<!-- INTERNAL Select2 js -->
-		{{-- <script src="{{asset('assets/plugins/select2/js/select2.full.min.js')}}"></script>
-		<script src="{{asset('assets/js/select2.js')}}"></script> --}}
+		<script src="{{asset('assets/plugins/select2/js/select2.full.min.js')}}"></script>
+		<script src="{{asset('assets/js/select2.js')}}"></script>
     @endsection

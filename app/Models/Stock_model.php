@@ -30,9 +30,22 @@ class Stock_model extends Model
     {
         return $this->hasMany(Order_item_model::class, 'stock_id', 'id');
     }
+    public function process_stocks()
+    {
+        return $this->hasMany(Process_stock_model::class, 'stock_id', 'id');
+    }
+    public function stock_operations()
+    {
+        return $this->hasMany(Stock_operations_model::class, 'stock_id', 'id');
+    }
     public function latest_operation()
     {
         return $this->hasOne(Stock_operations_model::class, 'stock_id', 'id')->where('new_variation_id', $this->variation_id)->orderBy('id','desc');
+    }
+    public function stock_operation($process_id)
+    {
+        // Define a custom method to retrieve only one order item
+        return $this->hasOne(Stock_operations_model::class, 'stock_id', 'id')->where('process_id', $process_id)->orderBy('id','desc')->first();
     }
     public function order()
     {

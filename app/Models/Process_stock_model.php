@@ -23,9 +23,9 @@ class Process_stock_model extends Model
     {
         return $this->hasOne(Stock_model::class, 'id', 'stock_id');
     }
-    public function process_batch()
+    public function process()
     {
-        return $this->belongsTo(Process_batch_model::class, 'process_batch_id', 'id');
+        return $this->belongsTo(Process_model::class, 'process_batch_id', 'id');
     }
     public function admin()
     {
