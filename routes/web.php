@@ -78,7 +78,7 @@ Route::get('return/detail/{id}', [SalesReturn::class,'return_detail'])->name('re
 Route::post('return/approve/{id}', [SalesReturn::class,'return_approve'])->name('return_approve');
 
 Route::get('repair', Repair::class)->name('view_repair');
-Route::get('add_repair', [Repair::class,'add_repair'])->name('add_repair');
+Route::post('add_repair', [Repair::class,'add_repair'])->name('add_repair');
 Route::post('check_repair_item/{id}', [Repair::class,'check_repair_item'])->name('add_repair_item');
 Route::post('add_repair_item/{id}', [Repair::class,'add_repair_item'])->name('add_repair_item');
 Route::get('delete_repair/{id}', [Repair::class,'delete_repair'])->name('delete_repair');
