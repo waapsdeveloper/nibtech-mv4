@@ -107,25 +107,23 @@ class Repair extends Component
         return redirect()->back();
 
     }
-    public function delete_repair_item($item_id){
+    public function delete_repair_item($process_stock_id){
 
-        $orderItem = Order_item_model::find($item_id);
+        $process_stock = Process_stock_model::find($process_stock_id);
 
-        if($orderItem->stock->status == 2){
-            session()->put('error', "Order Item cannot be deleted");
-            return redirect()->back();
-        }
-        // Access the variation through orderItem->stock->variation
-        $variation = $orderItem->stock->variation;
+        // Access the variation through process_stock->stock->variation
+        $variation = $process_stock->stock->variation;
 
-        $variation->stock -= 1;
+        $process_stock->stock->status = 1;
+        $process_stock->stock->save();
+
+        $variation->stock += 1;
         $variation->save();
 
         // No variation record found or product_id and sku are both null, delete the order item
 
-        // $orderItem->stock->delete();
-        Stock_model::find($orderItem->stock_id)->update(['status'=>2]);
-        $orderItem->delete();
+        // $process_stock->stock->delete();
+        $process_stock->delete();
         // $orderItem->forceDelete();
 
         session()->put('success', 'Stock deleted successfully');
