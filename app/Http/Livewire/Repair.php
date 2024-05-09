@@ -96,8 +96,8 @@ class Repair extends Component
             }
             $orderItem->delete();
         }
-        Order_model::where('id',$process_id)->delete();
-        Order_issue_model::where('process_id',$process_id)->delete();
+        Process_model::where('id',$process_id)->delete();
+        Process_stock_model::where('process_id',$process_id)->delete();
         session()->put('success', 'Order deleted successfully');
         return redirect()->back();
 
