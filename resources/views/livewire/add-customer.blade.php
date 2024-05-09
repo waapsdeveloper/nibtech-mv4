@@ -142,8 +142,8 @@
                                                         <label class="form-check-label" for="purchaser">BulkSale Purchaser</label>
                                                     </div>
                                                     <div class="form-check-inline">
-                                                        <input class="form-check-input" name="customer[is_vendor]" value="3" type="radio" id="purchaser">
-                                                        <label class="form-check-label" for="purchaser">Repairer</label>
+                                                        <input class="form-check-input" name="customer[is_vendor]" value="3" type="radio" id="repairer">
+                                                        <label class="form-check-label" for="repairer">Repairer</label>
                                                     </div>
                                                 </div>
                                             </div>
