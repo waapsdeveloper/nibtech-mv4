@@ -209,8 +209,8 @@
                         <input type="hidden" name="repair[type]" id="" value="1">
                         <div class="form-group">
                             <label for="">Reference ID</label>
-                            {{-- {{ $latest_reference + 1}} --}}
-                            <input class="form-control" placeholder="input Reference No" name="repair[reference_id]" value="" type="text" required readonly>
+
+                            <input class="form-control" placeholder="input Reference No" name="repair[reference_id]" value="{{ $latest_reference + 1}}" type="text" required readonly>
                         </div>
                         <div class="form-group">
                             <label for="">Repairer</label>

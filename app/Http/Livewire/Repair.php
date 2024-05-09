@@ -45,7 +45,7 @@ class Repair extends Component
     public function render()
     {
 
-        // $data['latest_reference'] = Order_model::where('order_type_id',4)->orderBy('reference_id','DESC')->first()->reference_id;
+        $data['latest_reference'] = Process_model::where('process_type_id',9)->orderBy('reference_id','DESC')->first()->reference_id;
         $data['repairers'] = Customer_model::where('is_vendor',3)->pluck('first_name','id');
         if(request('per_page') != null){
             $per_page = request('per_page');
