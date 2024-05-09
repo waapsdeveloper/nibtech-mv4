@@ -123,6 +123,14 @@ class Wholesale extends Component
 
         return redirect()->back();
     }
+    public function wholesale_approve($order_id){
+        $order = Order_model::find($order_id);
+        $order->tracking_number = request('tracking_number');
+        $order->status = 3;
+        $order->save();
+
+        return redirect()->back();
+    }
     public function wholesale_detail($order_id){
 
         // $data['imeis'] = Stock_model::whereIn('status',[1,3])->orderBy('serial_number','asc')->orderBy('imei','asc')->get();

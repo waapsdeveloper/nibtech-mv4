@@ -38,7 +38,7 @@
                         <a class="btn btn-danger" href="{{url('delete_order') . "/" . $order->id }}">Delete</a>
                     </form>
                     @else
-                    Tracking Number: {{$order->tracking_number}}
+                    Tracking Number: <a href="https://www.dhl.com/gb-en/home/tracking/tracking-express.html?submit=1&tracking-id={{$order->tracking_number}}" target="_blank"> {{$order->tracking_number}}</a>
                     @endif
 
                 </div>

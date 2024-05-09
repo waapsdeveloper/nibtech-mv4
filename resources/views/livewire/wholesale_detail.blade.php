@@ -27,6 +27,24 @@
                         <label class="form-check-label" for="bypass_check">Bypass Wholesale check</label>
                     </span> --}}
                 <span class="main-content-title mg-b-0 mg-b-lg-1">BulkSale Order Detail</span>
+                @if ($order->status == 2)
+                <form class="form-inline" method="POST" action="{{url('wholesale/approve').'/'.$order->id}}">
+                    @csrf
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="reference" name="reference" placeholder="Enter Vendor Reference" required>
+                        <label for="reference">Vendor Reference</label>
+                    </div>
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="tracking_number" name="tracking_number" placeholder="Enter Tracking Number" required>
+                        <label for="tracking_number">Tracking Number</label>
+                    </div>
+                    <button type="submit" class="btn btn-success">Approve</button>
+                    <a class="btn btn-danger" href="{{url('delete_wholesale') . "/" . $order->id }}">Delete</a>
+                </form>
+                @else
+                Tracking Number: <a href="https://www.dhl.com/gb-en/home/tracking/tracking-express.html?submit=1&tracking-id={{$order->tracking_number}}" target="_blank"> {{$order->tracking_number}}</a>
+                @endif
+
                 </div>
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
