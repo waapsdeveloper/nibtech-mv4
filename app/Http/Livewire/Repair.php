@@ -291,13 +291,23 @@ class Repair extends Component
     }
     public function add_repair(){
 
+        $repair = (object) request('repair');
+        $error = "";
+
         $order = Process_model::create([
             'reference_id' => 20001,
             'process_type_id' => 9,
             'status' => 1,
         ]);
+        $process = Process_model::firstOrNew(['reference_id' => $repair->reference_id, 'process_type_id' => 5 ]);
+        $process->customer_id = $repair->repairer;
+        $process->status = 1;
+        $process->currency = 4;
+        $process->process_type_id = 9;
+        $process->save();
 
-        return redirect(url('repair/detail').'/'.$order->id);
+
+        return redirect(url('repair/detail').'/'.$process->id);
     }
 
     public function check_repair_item($process_id, $imei = null, $back = null){

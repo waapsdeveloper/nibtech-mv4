@@ -213,7 +213,6 @@ class Wholesale extends Component
         $order->currency = 4;
         $order->order_type_id = 5;
         $order->processed_by = session('user_id');
-        $order->created_at = now()->format('Y-m-d H:i:s');
         $order->save();
 
         // Delete the temporary file
