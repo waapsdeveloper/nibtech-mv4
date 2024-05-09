@@ -135,6 +135,7 @@
                                     <tr>
                                         <th><small><b>No</b></small></th>
                                         <th><small><b>Order ID</b></small></th>
+                                        <th><small><b>Repairer</b></small></th>
                                         @if (session('user')->hasPermission('view_cost'))
                                         <th><small><b>Cost</b></small></th>
                                         @endif

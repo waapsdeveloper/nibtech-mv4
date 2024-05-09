@@ -80,29 +80,24 @@ class Repair extends Component
 
         return redirect()->back();
     }
-    public function delete_repair($order_id){
+    public function delete_repair($process_id){
 
-        $stock = Stock_model::where(['order_id'=>$order_id,'status'=>2])->first();
-        if($stock != null){
-            session()->put('error', "Order cannot be deleted");
-            return redirect()->back();
+
+        $items = Process_stock_model::where('process_id',$process_id)->get();
+        foreach($items as $orderItem){
+            if($orderItem->stock){
+                // Access the variation through orderItem->stock->variation
+                $variation = $orderItem->stock->variation;
+
+                $variation->stock += 1;
+                Stock_model::find($orderItem->stock_id)->update([
+                    'status' => 1
+                ]);
+            }
+            $orderItem->delete();
         }
-
-        // $items = Order_item_model::where('order_id',$order_id)->get();
-        // foreach($items as $orderItem){
-        //     if($orderItem->stock){
-        //         // Access the variation through orderItem->stock->variation
-        //         $variation = $orderItem->stock->variation;
-
-        //         $variation->stock += 1;
-        //         Stock_model::find($orderItem->stock_id)->update([
-        //             'status' => 2
-        //         ]);
-        //     }
-        //     $orderItem->delete();
-        // }
-        // Order_model::where('id',$order_id)->delete();
-        // Order_issue_model::where('order_id',$order_id)->delete();
+        Order_model::where('id',$process_id)->delete();
+        Order_issue_model::where('process_id',$process_id)->delete();
         session()->put('success', 'Order deleted successfully');
         return redirect()->back();
 
