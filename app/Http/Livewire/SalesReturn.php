@@ -284,7 +284,7 @@ class SalesReturn extends Component
             )
         ->groupBy('variation.grade')
         ->orderBy('variation.grade', 'asc')
-        ->orderBy('stock_operations.description', 'asc')
+        // ->orderBy('stock_operations.description', 'asc')
         ->get();
 
         $a_stocks = Stock_model::whereHas('order_item', function ($query) use ($order_id) {
