@@ -78,10 +78,10 @@
 
         <div class="d-flex justify-content-between">
             <div>
-                <a href="{{url(session('url').'purchase')}}?status=2" class="btn btn-link">Pending</a>
-                <a href="{{url(session('url').'purchase')}}?status=3&stock=1" class="btn btn-link">Active</a>
-                <a href="{{url(session('url').'purchase')}}?status=3&stock=0" class="btn btn-link">Closed</a>
-                <a href="{{url(session('url').'purchase')}}" class="btn btn-link">All</a>
+                <a href="{{url(session('url').'purchase')}}?status=2" class="btn btn-link @if (request('status') == 2) bg-white @endif ">Pending</a>
+                <a href="{{url(session('url').'purchase')}}?status=3&stock=1" class="btn btn-link @if (request('status') == 3 && request('stock') == 1) bg-white @endif " >Active</a>
+                <a href="{{url(session('url').'purchase')}}?status=3&stock=0" class="btn btn-link @if (request('status') == 3 && request('stock') == 0) bg-white @endif " >Closed</a>
+                <a href="{{url(session('url').'purchase')}}" class="btn btn-link @if (!request('status')) bg-white @endif " >All</a>
             </div>
             <div class="">
             </div>

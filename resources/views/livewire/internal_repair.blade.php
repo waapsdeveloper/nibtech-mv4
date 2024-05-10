@@ -316,6 +316,15 @@
 
         <br>
 
+        <div class="d-flex justify-content-between">
+            <div>
+                <a href="{{url(session('url').'repair/internal')}}?stock_status=1" class="btn btn-link @if (request('stock_status') == 1) bg-white @endif ">Inventory</a>
+                <a href="{{url(session('url').'repair/internal')}}?stock_status=2" class="btn btn-link @if (request('stock_status') == 2) bg-white @endif ">AfterSale</a>
+                <a href="{{url(session('url').'repair/internal')}}" class="btn btn-link @if (!request('status')) bg-white @endif ">All</a>
+            </div>
+            <div class="">
+            </div>
+        </div>
         <div class="row">
             <div class="col-xl-12">
 

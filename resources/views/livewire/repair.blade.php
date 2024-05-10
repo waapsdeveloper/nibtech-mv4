@@ -76,6 +76,16 @@
         </div>
         <br>
 
+        <div class="d-flex justify-content-between">
+            <div>
+                <a href="{{url(session('url').'repair')}}?status=1" class="btn btn-link @if (request('status') == 1) bg-white @endif ">Pending</a>
+                <a href="{{url(session('url').'repair')}}?status=2" class="btn btn-link @if (request('status') == 2) bg-white @endif ">Shipped</a>
+                <a href="{{url(session('url').'repair')}}?status=3" class="btn btn-link @if (request('status') == 3) bg-white @endif ">Closed</a>
+                <a href="{{url(session('url').'repair')}}" class="btn btn-link @if (!request('status')) bg-white @endif ">All</a>
+            </div>
+            <div class="">
+            </div>
+        </div>
         @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <span class="alert-inner--icon"><i class="fe fe-thumbs-up"></i></span>
