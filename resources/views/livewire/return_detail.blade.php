@@ -445,7 +445,7 @@
         <div class="row">
 
             @foreach ($stock_operations as $stock_operation)
-            <div class="col-md-6">
+            <div class="col-md-12">
                 <div class="card">
                     <div class="card-header pb-0">
                         {{-- @php
@@ -453,10 +453,10 @@
                             isset($stock_operation->storage)?$storage = $storages[$stock_operation->storage]:$storage = null;
                         @endphp
                         {{ $stock_operation->product->model." ".$storage." ".$color." ".$stock_operation->grade_id->name }} --}}
-                        {{ $grades[$stock_operation->grade]." | ".$stock_operation->description}}
+                        {{ $grades[$stock_operation->grade]}}
                     </div>
                             {{-- {{ $stock_operation }} --}}
-                    <div class="card-body"><div class="table-responsive" style="max-height: 400px">
+                    <div class="card-body"><div class="table-responsive">
 
                             <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                                 <thead>
@@ -467,6 +467,7 @@
                                         @if (session('user')->hasPermission('view_cost'))
                                         <th><small><b>Cost</b></small></th>
                                         @endif
+                                        <th><small><b>Reason</b></small></th>
                                         <th><small><b>Date</b></small></th>
                                         @if (session('user')->hasPermission('delete_return_item'))
                                         <th></th>
@@ -517,6 +518,7 @@
                                             @if (session('user')->hasPermission('view_cost'))
                                             <td>{{ $currency.$stock->sale_item($order_id)->price }}</td>
                                             @endif
+                                            <td>{{ $row->description }}</td>
                                             <td>{{ $row->updated_at }}</td>
                                             @if (session('user')->hasPermission('delete_return_item'))
                                             <td><a href="{{ url('delete_return_item').'/'.$stock->sale_item($order_id)->id }}"><i class="fa fa-trash"></i></a></td>

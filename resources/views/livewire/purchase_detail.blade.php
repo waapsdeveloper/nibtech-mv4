@@ -65,7 +65,7 @@
             <div class="row">
                 <div class="col-md col-sm-6">
                     <div class="form-floating">
-                        <input type="text" list="variations" id="variation" name="variation" class="form-control" required>
+                        <input type="text" list="variations" id="variation" name="variation" class="form-control" onload="this.focus()" required autofocus>
                         <datalist id="variations">
                             <option value="">Select</option>
                             @foreach ($all_variations as $variation)
@@ -82,6 +82,11 @@
                         <label for="variation">Variation</label>
                     </div>
                 </div>
+                <script>
+                    window.onload = function() {
+                        document.getElementById('variation').focus();
+                    };
+                </script>
                 <div class="col-md col-sm-6">
                     <div class="form-floating">
                         <input type="text" class="form-control" id="imei" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" required>

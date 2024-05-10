@@ -277,12 +277,12 @@ class SalesReturn extends Component
         })
         ->join('variation', 'stock_operations.new_variation_id', '=', 'variation.id')
         ->select(
-            'stock_operations.description',
+            // 'stock_operations.description',
             'variation.grade',
             DB::raw('COUNT(stock_operations.id) as count'),
-            DB::raw('GROUP_CONCAT(JSON_OBJECT("id", stock_operations.id, "stock_id", stock_operations.stock_id, "updated_at", stock_operations.updated_at)) AS all_rows')
+            DB::raw('GROUP_CONCAT(JSON_OBJECT("id", stock_operations.id, "stock_id", stock_operations.stock_id, "description", stock_operations.description, "updated_at", stock_operations.updated_at)) AS all_rows')
             )
-        ->groupBy('stock_operations.description', 'variation.grade')
+        ->groupBy('variation.grade')
         ->orderBy('variation.grade', 'asc')
         ->orderBy('stock_operations.description', 'asc')
         ->get();
