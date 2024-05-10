@@ -494,14 +494,13 @@
                                         @php
                                         $i ++;
                                         $row = json_decode($row);
-                                        // if($row == null){
-                                        //     continue;
-                                        // }
+                                        if($row == null){
+                                            continue;
+                                        }
                                         $stock = $a_stocks->find($row->stock_id);
-                                        // if($stock == null){
-                                        //     echo $row->stock_id." | ";
-                                        //     continue;
-                                        // }
+                                        if($stock == null){
+                                            continue;
+                                        }
                                         // print_r($stock);
                                         // $prices[] = $item->sale_item($order_id)->price;
                                     @endphp
