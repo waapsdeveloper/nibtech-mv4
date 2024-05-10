@@ -275,9 +275,22 @@ class SalesReturn extends Component
                 $query->where('order_id', $order_id);
             });
         })
+        ->select(
+            'description',
+            DB::raw('COUNT(*) as count'),
+            DB::raw('GROUP_CONCAT(JSON_OBJECT("id", id, "stock_id", stock_id, "created_at", created_at, "updated_at", updated_at)) AS all_rows')
+            )
+        ->groupBy('description')
         ->orderBy('description', 'asc')
         ->get();
+
+        $a_stocks = Stock_model::whereHas('order_item', function ($query) use ($order_id) {
+                $query->where('order_id', $order_id);
+            })->get();
+        $data['a_stocks'] = $a_stocks;
+        // echo "<pre>";
         // print_r($stock_operations);
+        // echo "</pre>";
         // die;
         // Remove variations with no associated stocks
         // $stock_operations = $stock_operations->filter(function ($operation) {

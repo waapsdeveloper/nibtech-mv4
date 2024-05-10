@@ -444,30 +444,34 @@
         </div>
         <div class="row">
 
-            @foreach ($variations as $variation)
-            <div class="col-md-4">
+            @foreach ($stock_operations as $stock_operation)
+            <div class="col-md-6">
                 <div class="card">
                     <div class="card-header pb-0">
-                        @php
-                            isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
-                            isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
+                        {{-- @php
+                            isset($stock_operation->color_id)?$color = $stock_operation->color_id->name:$color = null;
+                            isset($stock_operation->storage)?$storage = $storages[$stock_operation->storage]:$storage = null;
                         @endphp
-                        {{ $variation->product->model." ".$storage." ".$color." ".$variation->grade_id->name }}
+                        {{ $stock_operation->product->model." ".$storage." ".$color." ".$stock_operation->grade_id->name }} --}}
+                        {{ $stock_operation->description}}
                     </div>
-                            {{-- {{ $variation }} --}}
+                            {{-- {{ $stock_operation }} --}}
                     <div class="card-body"><div class="table-responsive" style="max-height: 400px">
 
                             <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                                 <thead>
                                     <tr>
                                         <th><small><b>No</b></small></th>
+                                        <th><small><b>Variation</b></small></th>
                                         <th><small><b>IMEI/Serial</b></small></th>
                                         @if (session('user')->hasPermission('view_cost'))
                                         <th><small><b>Cost</b></small></th>
                                         @endif
+                                        <th><small><b>Date</b></small></th>
                                         @if (session('user')->hasPermission('delete_return_item'))
                                         <th></th>
                                         @endif
+
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -476,28 +480,47 @@
                                         $id = [];
                                     @endphp
                                     @php
-                                        $stocks = $variation->stocks;
+                                        $all_rows = preg_split('/(?<=\}),(?=\{)/', $stock_operation->all_rows);
+                                        // $stocks = $stock_operation->stocks;
                                         // $items = $stocks->order_item;
                                         $j = 0;
                                         $prices = [];
                                         // print_r($stocks);
                                     @endphp
 
-                                    @foreach ($stocks as $item)
+                                    @foreach ($all_rows as $row)
                                         {{-- @dd($item) --}}
                                         {{-- @if($item->order_item[0]->order_id == $order_id) --}}
                                         @php
                                         $i ++;
-                                        $prices[] = $item->sale_item($order_id)->price;
+                                        $row = json_decode($row);
+                                        // if($row == null){
+                                        //     continue;
+                                        // }
+                                        $stock = $a_stocks->find($row->stock_id);
+                                        // if($stock == null){
+                                        //     echo $row->stock_id." | ";
+                                        //     continue;
+                                        // }
+                                        // print_r($stock);
+                                        // $prices[] = $item->sale_item($order_id)->price;
                                     @endphp
+                        @php
+                        $variation = $stock->variation;
+                            isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
+                            isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
+                        @endphp
+
                                         <tr>
                                             <td>{{ $i }}</td>
-                                            <td data-stock="{{ $item->id }}">{{ $item->imei.$item->serial_number }}</td>
+                                            <td>{{ $variation->product->model." ".$storage." ".$color." ".$variation->grade_id->name }}</td>
+                                            <td data-stock="{{ $stock->id }}">{{ $stock->imei.$stock->serial_number }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
-                                            <td>{{ $currency.$item->sale_item($order_id)->price }}</td>
+                                            <td>{{ $currency.$stock->sale_item($order_id)->price }}</td>
                                             @endif
+                                            <td>{{ $row->updated_at }}</td>
                                             @if (session('user')->hasPermission('delete_return_item'))
-                                            <td><a href="{{ url('delete_return_item').'/'.$item->sale_item($order_id)->id }}"><i class="fa fa-trash"></i></a></td>
+                                            <td><a href="{{ url('delete_return_item').'/'.$stock->sale_item($order_id)->id }}"><i class="fa fa-trash"></i></a></td>
                                             @endif
                                         </tr>
                                         {{-- @endif --}}
@@ -506,7 +529,7 @@
                             </table>
                         <br>
                     </div>
-                    <div class="text-end">Average Cost: {{array_sum($prices)/count($prices) }} &nbsp;&nbsp;&nbsp; Total: {{$i }}</div>
+                    {{-- <div class="text-end">Average Cost: {{array_sum($prices)/count($prices) }} &nbsp;&nbsp;&nbsp; Total: {{$i }}</div> --}}
                     </div>
                 </div>
             </div>

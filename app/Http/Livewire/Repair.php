@@ -183,105 +183,7 @@ class Repair extends Component
 
         $data['process_id'] = $process_id;
 
-        // $repair_stocks = Stock_model::
-        // whereHas('variation', function ($query) {
-        //     $query->where('grade', 8);
-        // })->get();
-        // $data['repair_stocks'] = $repair_stocks;
 
-        // $repaired_stocks = Stock_operations_model::where('created_at','>=',now()->format('Y-m-d')." 00:00:00")->where('admin_id',session('user_id'))
-        //     ->whereHas('stock', function ($query) {
-        //         $query->where('status', 1);
-        //     })->orderBy('id','desc')->get();
-
-        // $data['repaired_stocks'] = $repaired_stocks;
-
-        // if (request('imei')) {
-        //     if (ctype_digit(request('imei'))) {
-        //         $i = request('imei');
-        //         $s = null;
-        //     } else {
-        //         $i = null;
-        //         $s = request('imei');
-        //     }
-
-        //     $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
-        //     if (request('imei') == '' || !$stock || $stock->status == null) {
-        //         session()->put('error', 'IMEI Invalid / Not Found in Repair');
-        //         // return redirect()->back(); // Redirect here is not recommended
-        //         return view('livewire.repair_detail', $data); // Return the Blade view instance with data
-        //     }
-        //     $data['stock_id'] = $stock->id;
-        //     $data['products'] = Products_model::orderBy('model','asc')->get();
-        //     $data['colors'] = Color_model::all();
-        //     $data['storages'] = Storage_model::all();
-
-        //     if (request('imei') == '' || !$stock || $stock->status == null) {
-        //         session()->put('error', 'IMEI Invalid / Not Found in Repair');
-        //         // return redirect()->back(); // Redirect here is not recommended
-        //         return view('livewire.repair_detail', $data); // Return the Blade view instance with data
-        //     }
-        //     $sale_status = Order_item_model::where(['stock_id'=>$stock->id,'linked_id'=>$stock->purchase_item->id])->first();
-        //     if($stock->status == 1){
-        //         if($sale_status != null){
-        //             $stock->status = 2;
-        //             $stock->save();
-        //         }else{
-        //         }
-        //     }
-        //     if($stock->status == 2){
-        //         if($sale_status == null){
-        //             $stock->status = 1;
-        //             $stock->save();
-        //         }else{
-        //         }
-        //     }
-        //     $stock_id = $stock->id;
-        //     $orders = Order_item_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
-        //     $data['stock'] = $stock;
-        //     $data['orders'] = $orders;
-        //     // dd($orders);
-
-        //     $stocks = Stock_operations_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
-        //     if($stocks->count() > 0){
-        //         $data['stocks'] = $stocks;
-        //     }
-
-        // }
-
-        // $variations = Variation_model::with([
-        //     'stocks' => function ($query) use ($process_id) {
-        //         $query->whereHas('order_item', function ($query) use ($process_id) {
-        //             $query->where('order_id', $process_id);
-        //         });
-        //     },
-        //     'stocks.order_item'
-        // ])
-        // ->whereHas('stocks', function ($query) use ($process_id) {
-        //     $query->whereHas('order_item', function ($query) use ($process_id) {
-        //         $query->where('order_id', $process_id);
-        //     });
-        // })
-        // ->orderBy('grade', 'desc')
-        // ->get();
-
-        // // Remove variations with no associated stocks
-        // $variations = $variations->filter(function ($variation) {
-        //     return $variation->stocks->isNotEmpty();
-        // });
-
-        // $data['variations'] = $variations;
-
-        // $data['all_variations'] = Variation_model::where('grade',9)->get();
-        // $data['repair_id'] = $process_id;
-
-
-        // echo "<pre>";
-        // // print_r($items->stocks);
-        // print_r($items);
-
-        // echo "</pre>";
-        // dd($data['variations']);
         return view('livewire.repair_detail')->with($data);
 
     }
@@ -356,16 +258,16 @@ class Repair extends Component
             }
         }
 
-        if($stock->variation->grade != 8){
-            session()->put('error', 'Stock not in Repair');
-            if($back != 1){
-                return redirect()->back();
-            }else{
-                return 1;
-            }
-        }
+        // if($stock->variation->grade != 8){
+        //     session()->put('error', 'Stock not in Repair');
+        //     if($back != 1){
+        //         return redirect()->back();
+        //     }else{
+        //         return 1;
+        //     }
+        // }
 
-        if(request('bypass_check') == 1){
+        // if(request('bypass_check') == 1){
 
             $this->add_repair_item($process_id, $imei, $back);
             session()->put('bypass_check', 1);
@@ -375,34 +277,34 @@ class Repair extends Component
             }else{
                 return 1;
             }
-        }else{
-            session()->forget('bypass_check');
-            // request()->merge(['bypass_check' => null]);
-            if($stock->variation->grade != 8){
-                echo "<p>This IMEI does not belong to Repair. Do you want to continue?</p>";
-                echo "<form id='continueForm' action='" . url('add_repair_item') . "/" . $process_id . "' method='POST'>";
-                echo "<input type='hidden' name='_token' value='" . csrf_token() . "'>";
-                echo "<input type='hidden' name='process_id' value='" . $process_id . "'>";
-                echo "<input type='hidden' name='imei' value='" . $imei . "'>";
-                echo "</form>";
-                echo "<a href='javascript:history.back()'>Cancel</a> ";
-                echo "<button onclick='submitForm()'>Continue</button>";
-                echo "<script>
-                    function submitForm() {
-                        document.getElementById('continueForm').submit();
-                    }
-                </script>";
-                exit;
-            }else{
+        // }else{
+        //     session()->forget('bypass_check');
+        //     // request()->merge(['bypass_check' => null]);
+        //     if($stock->variation->grade != 8){
+        //         echo "<p>This IMEI does not belong to Repair. Do you want to continue?</p>";
+        //         echo "<form id='continueForm' action='" . url('add_repair_item') . "/" . $process_id . "' method='POST'>";
+        //         echo "<input type='hidden' name='_token' value='" . csrf_token() . "'>";
+        //         echo "<input type='hidden' name='process_id' value='" . $process_id . "'>";
+        //         echo "<input type='hidden' name='imei' value='" . $imei . "'>";
+        //         echo "</form>";
+        //         echo "<a href='javascript:history.back()'>Cancel</a> ";
+        //         echo "<button onclick='submitForm()'>Continue</button>";
+        //         echo "<script>
+        //             function submitForm() {
+        //                 document.getElementById('continueForm').submit();
+        //             }
+        //         </script>";
+        //         exit;
+        //     }else{
 
-                $this->add_repair_item($process_id, $imei, $back);
-                if($back != 1){
-                    return redirect()->back();
-                }else{
-                    return 1;
-                }
-            }
-        }
+        //         $this->add_repair_item($process_id, $imei, $back);
+        //         if($back != 1){
+        //             return redirect()->back();
+        //         }else{
+        //             return 1;
+        //         }
+        //     }
+        // }
 
     }
     public function add_repair_item($process_id, $imei = null, $back = null){
@@ -581,62 +483,6 @@ class Repair extends Component
 
         return redirect()->back();
     }
-    // public function add_repair_item($process_id){
-    //     $repair = request('repair');
-    //     $description = $repair['description'];
-    //     if($repair['grade']){
-    //         session()->put('grade',$repair['grade']);
-    //     }
-    //     session()->put('description',$repair['description']);
-
-
-    //     if ($repair['stock_id']) {
-    //         $stock = Stock_model::find($repair['stock_id']);
-    //         if (!$stock || $stock->status != 1 || $stock->variation->grade != 8) {
-    //             session()->put('error', 'IMEI Invalid / Not Available in this Grade');
-    //             return redirect()->back();
-    //         }
-    //         $stock_id = $stock->id;
-
-    //         $product_id = $stock->variation->product_id;
-    //         $storage = $stock->variation->storage;
-    //         $color = $stock->variation->color;
-    //         $grade = $stock->variation->grade;
-
-    //         if($repair['grade'] != ''){
-    //             $grade = $repair['grade'];
-    //         }
-    //         $new_variation = Variation_model::firstOrNew([
-    //             'product_id' => $product_id,
-    //             'storage' => $storage,
-    //             'color' => $color,
-    //             'grade' => $grade,
-    //         ]);
-    //         $new_variation->status = 1;
-    //         if($new_variation->id && $stock->variation_id == $new_variation->id && $repair['price'] == null){
-    //             session()->put('error', 'Stock already exist in this variation');
-    //             return redirect()->back();
-
-    //         }
-    //         $new_variation->save();
-    //         $stock_operation = Stock_operations_model::create([
-    //             'process_id' => $process_id,
-    //             'stock_id' => $stock_id,
-    //             'old_variation_id' => $stock->variation_id,
-    //             'new_variation_id' => $new_variation->id,
-    //             'description' => $description,
-    //             'admin_id' => session('user_id'),
-    //         ]);
-    //         $stock->variation_id = $new_variation->id;
-    //         $stock->save();
-
-    //         // session()->put('added_imeis['.$grade.'][]', $stock_id);
-    //         // dd($orders);
-    //     }
-
-    //     return redirect()->back();
-
-    // }
 
     public function internal_repair(){
 
