@@ -268,20 +268,23 @@ class SalesReturn extends Component
                     $query->where('order_id', $order_id);
                 });
             },
-            'stock.order_item'
+            'new_variation'
         ])
         ->whereHas('stock', function ($query) use ($order_id) {
             $query->whereHas('order_item', function ($query) use ($order_id) {
                 $query->where('order_id', $order_id);
             });
         })
+        ->join('variation', 'stock_operations.new_variation_id', '=', 'variation.id')
         ->select(
-            'description',
-            DB::raw('COUNT(*) as count'),
-            DB::raw('GROUP_CONCAT(JSON_OBJECT("id", id, "stock_id", stock_id, "created_at", created_at, "updated_at", updated_at)) AS all_rows')
+            'stock_operations.description',
+            'variation.grade',
+            DB::raw('COUNT(stock_operations.id) as count'),
+            DB::raw('GROUP_CONCAT(JSON_OBJECT("id", stock_operations.id, "stock_id", stock_operations.stock_id, "updated_at", stock_operations.updated_at)) AS all_rows')
             )
-        ->groupBy('description')
-        ->orderBy('description', 'asc')
+        ->groupBy('stock_operations.description', 'variation.grade')
+        ->orderBy('variation.grade', 'asc')
+        ->orderBy('stock_operations.description', 'asc')
         ->get();
 
         $a_stocks = Stock_model::whereHas('order_item', function ($query) use ($order_id) {

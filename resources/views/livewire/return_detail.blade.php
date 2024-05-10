@@ -453,7 +453,7 @@
                             isset($stock_operation->storage)?$storage = $storages[$stock_operation->storage]:$storage = null;
                         @endphp
                         {{ $stock_operation->product->model." ".$storage." ".$color." ".$stock_operation->grade_id->name }} --}}
-                        {{ $stock_operation->description}}
+                        {{ $grades[$stock_operation->grade]." | ".$stock_operation->description}}
                     </div>
                             {{-- {{ $stock_operation }} --}}
                     <div class="card-body"><div class="table-responsive" style="max-height: 400px">
