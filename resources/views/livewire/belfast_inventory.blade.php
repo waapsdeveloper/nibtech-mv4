@@ -82,17 +82,6 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-3 col-sm-2">
-                    {{-- <div class="card-header">
-                        <h4 class="card-title mb-1">Grade</h4>
-                    </div> --}}
-                    <select name="grade[]" class="form-control form-select select2" multiple>
-                        <option value="">Grade</option>
-                        @foreach ($grades as $id=>$name)
-                            <option value="{{ $id }}" @if(isset($_GET['grade']) && in_array($id,$_GET['grade'])) {{'selected'}}@endif>{{ $name }}</option>
-                        @endforeach
-                    </select>
-                </div>
                 <div class="col-md col-sm-2">
                     <select name="vendor" class="form-control form-select">
                         <option value="">Vendor</option>
