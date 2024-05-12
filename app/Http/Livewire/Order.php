@@ -1150,31 +1150,33 @@ class Order extends Component
         $country_codes = Country_model::pluck('id','code');
 
         $orderObj = $bm->getOneOrder($order_id);
+        if(!$orderObj->orderlines){
 
-        $order_model->updateOrderInDB($orderObj, $invoice, $bm, $currency_codes, $country_codes);
+        }else{
+            $order_model->updateOrderInDB($orderObj, $invoice, $bm, $currency_codes, $country_codes);
 
-        $order_item_model->updateOrderItemsInDB($orderObj, $tester, $bm);
-        if($refresh == true){
-            $order = Order_model::where('reference_id',$order_id)->first();
+            $order_item_model->updateOrderItemsInDB($orderObj, $tester, $bm);
+            if($refresh == true){
+                $order = Order_model::where('reference_id',$order_id)->first();
 
-            $invoice_url = url(session('url').'export_invoice').'/'.$order->id;
-             // JavaScript to open two tabs and print
-            echo '<script>
-            var newTab2 = window.open("'.$invoice_url.'", "_blank");
-            var newTab1 = window.open("'.$order->delivery_note_url.'", "_blank");
+                $invoice_url = url(session('url').'export_invoice').'/'.$order->id;
+                // JavaScript to open two tabs and print
+                echo '<script>
+                var newTab2 = window.open("'.$invoice_url.'", "_blank");
+                var newTab1 = window.open("'.$order->delivery_note_url.'", "_blank");
 
-            newTab1.onload = function() {
-                newTab1.print();
-            };
+                newTab1.onload = function() {
+                    newTab1.print();
+                };
 
-            newTab2.onload = function() {
-                newTab2.print();
-            };
+                newTab2.onload = function() {
+                    newTab2.print();
+                };
 
-            window.close();
-            </script>';
+                window.close();
+                </script>';
+            }
         }
-
 
         // return redirect()->back();
 
