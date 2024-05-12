@@ -819,7 +819,7 @@ class Order extends Component
                     session()->put('error', "Product Model not matched");
                     return redirect()->back();
                 }
-                if(($stock[$i]->variation->storage == $variant->storage) || ($variant->storage == 5 && in_array($stock[$i]->variation->storage,[0,6]) && $variant->product->brand == 2) || (in_array($variant->product_id, [78,58]) && $variant->storage == 4 && $stock[$i]->variation->storage == 5)){
+                if(($stock[$i]->variation->storage == $variant->storage) || ($variant->storage == 5 && in_array($stock[$i]->variation->storage,[0,6]) && $variant->product->brand == 2) || (in_array($variant->product_id, [78,58]) && $variant->storage == 4 && in_array($stock[$i]->variation->storage,[0,5]))){
                 }else{
                     session()->put('error', "Product Storage not matched");
                     return redirect()->back();
