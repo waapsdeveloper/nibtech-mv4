@@ -78,23 +78,32 @@ class Order_item_model extends Model
             }
             if($orderItem->stock_id == null){
                 if($itemObj->imei != null || $itemObj->serial_number != null){
-
-
-                    $stock = Stock_model::firstOrNew(['imei'=>$itemObj->imei, 'serial_number'=>$itemObj->serial_number]);
-
-                    if($itemObj->serial_number != null && strlen($itemObj->serial_number) > 20){
-                        continue;
-                    }
-
-                    if($stock->id != null){
-                        $stock->status = 2;
-
-                        $last_item = Order_item_model::find($stock->purchase_item->id);
-                        while(Order_item_model::where('linked_id',$last_item->id)->first()){
-                            $last_item = Order_item_model::where('linked_id',$last_item->id)->first();
+                    if($itemObj->imei != null){
+                        $stock = Stock_model::firstOrNew(['imei' => $itemObj->imei]);
+                        $stock->imei = $itemObj->imei;
+                        if($stock->id != null){
+                            $stock->status = 2;
+                            $last_item = Order_item_model::find($stock->purchase_item->id);
+                            while(Order_item_model::where('linked_id',$last_item->id)->first()){
+                                $last_item = Order_item_model::where('linked_id',$last_item->id)->first();
+                            }
+                            $orderItem->linked_id = $last_item->id;
                         }
-
-                        $orderItem->linked_id = $last_item->id;
+                    }
+                    if($itemObj->serial_number != null){
+                        $stock = Stock_model::firstOrNew(['serial_number' => $itemObj->serial_number,]);
+                        if(strlen($itemObj->serial_number) > 20){
+                            continue;
+                        }
+                        $stock->serial_number = $itemObj->serial_number;
+                        if($stock->id != null){
+                            $stock->status = 2;
+                            $last_item = Order_item_model::find($stock->purchase_item->id);
+                            while(Order_item_model::where('linked_id',$last_item->id)->first()){
+                                $last_item = Order_item_model::where('linked_id',$last_item->id)->first();
+                            }
+                            $orderItem->linked_id = $last_item->id;
+                        }
                     }
 
                     $stock->variation_id = $variation->id;
