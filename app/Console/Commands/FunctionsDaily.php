@@ -61,23 +61,17 @@ class FunctionsDaily extends Command
         $stocks = Stock_model::all();
         foreach($stocks as $stock){
 
-            if($stock->status == 1){
-                $sale_status = Order_item_model::where(['stock_id'=>$stock->id,'linked_id'=>$stock->purchase_item->id])->first();
-                // print_r($sale_status);
-                if($sale_status != null){
-                    $stock->status = 2;
-                    $stock->save();
-                }
-            }
-            if($stock->status == 2){
-                $sale_status = Order_item_model::where(['stock_id'=>$stock->id,'linked_id'=>$stock->purchase_item->id])->first();
-                // print_r($sale_status);
-                if($sale_status == null){
-                    $stock->status = 1;
-                    $stock->save();
-                }
+            $item = $stock->last_item();
+            if(in_array($item->order->order_type_id,[1,4])){
+                $stock->status = 1;
+                $stock->save();
+            }else{
+                $stock->status = 2;
+                $stock->save();
+
             }
         }
+
 
 
 
