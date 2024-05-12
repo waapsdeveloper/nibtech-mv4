@@ -303,7 +303,6 @@
                         </div>
                     </div>
 
-                    </div>
                 </div>
             </div>
         </div>
@@ -445,7 +444,80 @@
             </div>
             @endforeach
         </div>
+        <br>
+        @if (count($sold_stocks)>0)
 
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-header pb-0">
+                        <div class="d-flex justify-content-between">
+                            <h4 class="card-title mg-b-0">Sold Stock Items</h4>
+                            <h5>Total: {{count($sold_stocks)}}</h5>
+                        </div>
+                    </div>
+                    <div class="card-body"><div class="table-responsive">
+                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th><small><b>No</b></small></th>
+                                        <th><small><b>Variation</b></small></th>
+                                        <th><small><b>IMEI | Serial Number</b></small></th>
+                                        <th><small><b>Customer</b></small></th>
+                                        @if (session('user')->hasPermission('view_cost'))
+                                        <th><small><b>Cost</b></small></th>
+                                        @endif
+                                        @if (session('user')->hasPermission('view_price'))
+                                        <th><small><b>Price</b></small></th>
+                                        @endif
+                                        <th><small><b>Creation Date</b></small></th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @php
+                                        $i = 0;
+                                    @endphp
+                                    @foreach ($sold_stocks as $stock)
+                                        @php
+                                            $item = $stock->last_item();
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $i + 1 }}</td>
+                                            <td>
+
+                                                @php
+                                                isset($item->variation->color_id)?$color = $item->variation->color_id->name:$color = null;
+                                                isset($item->variation->storage)?$storage = $storages[$item->variation->storage]:$storage = null;
+                                                @endphp
+                                                {{ $item->variation->product->model." ".$storage." ".$color." ".$item->variation->grade_id->name }}
+                                            </td>
+                                            <td data-stock="{{ $item->stock_id }}">{{ $item->stock->imei.$item->stock->serial_number }}</td>
+                                            <td>{{ $item->stock->order->customer->first_name }}</td>
+                                            @if (session('user')->hasPermission('view_cost'))
+                                            <td>{{ $currency.number_format($stock->purchase_item->price,2) }}</td>
+                                            @endif
+                                            @if (session('user')->hasPermission('view_cost'))
+                                            <td>{{ $currency.number_format($item->price,2) }}</td>
+                                            @endif
+                                            <td style="width:220px">{{ $item->created_at }}</td>
+                                            <td><a href="{{ url('delete_rma_item').'/'.$item->id }}"><i class="fa fa-trash"></i></a></td>
+                                        </tr>
+                                        @php
+                                            $i ++;
+                                        @endphp
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        <br>
+                    </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @endif
     @endsection
 
     @section('scripts')

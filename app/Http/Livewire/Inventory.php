@@ -294,7 +294,8 @@ class Inventory extends Component
         // ->pluck('average_price')
         ->first();
 
-        $data['vendor_average_cost'] = Stock_model::where('stock.deleted_at',null)->where('order_items.deleted_at',null)->where('orders.deleted_at',null)
+        $data['vendor_average_cost'] = Stock_model::where('stock.deleted_at',null)
+        // ->where('order_items.deleted_at',null)->where('orders.deleted_at',null)
 
         ->when(request('vendor') != '', function ($q) {
             return $q->whereHas('order', function ($q) {

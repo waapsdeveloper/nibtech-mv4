@@ -303,12 +303,13 @@ class Order extends Component
             $query->where('order_id', $order_id);
         }])
         ->whereHas('stocks', function ($query) use ($order_id) {
-            $query->where('order_id', $order_id);
+            $query->where(['order_id'=> $order_id, 'status'=>1]);
         })
-        // ->whereHas('stocks.order_item', function ($query) use ($order_id) {
-        //     $query->where('order_id', $order_id);
-        // })
         ->orderBy('grade', 'desc')
+        ->get();
+
+        $data['sold_stocks'] = Stock_model::where(['order_id'=> $order_id, 'status'=>2])
+        ->orderBy('variation_id', 'asc')
         ->get();
 
         $data['missing_stock'] = Order_item_model::where('order_id',$order_id)->whereHas('stock',function ($q) {
@@ -1122,7 +1123,7 @@ class Order extends Component
             $order_item->price = $item->price;
             $order_item->status = 3;
             $order_item->linked_id = $stock->purchase_item->id;
-            $return_item->admin_id = session('user_id');
+            $order_item->admin_id = session('user_id');
             $order_item->save();
 
 

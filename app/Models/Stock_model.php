@@ -61,6 +61,14 @@ class Stock_model extends Model
         // Define a custom method to retrieve only one order item
         return $this->hasOne(Order_item_model::class, 'stock_id', 'id')->where('order_id', $this->order_id);
     }
+    public function last_item(){
+
+        $last_item = $this->purchase_item;
+        while(Order_item_model::where('linked_id',$last_item->id)->first()){
+            $last_item = Order_item_model::where('linked_id',$last_item->id)->first();
+        }
+        return $last_item;
+    }
     public function sale_item($order_id)
     {
         // Define a custom method to retrieve only one order item
