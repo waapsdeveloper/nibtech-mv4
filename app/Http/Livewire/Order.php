@@ -117,12 +117,12 @@ class Order extends Component
             });
         })
         ->when(request('tracking_number') != '', function ($q) {
-            // if(strlen(request('tracking_number')) == 21){
-            //     $tracking = substr(request('tracking_number'),1);
-            // }
-            return $q->whereHas('order_items.stock', function ($q) {
-                $q->where('tracking_number', 'LIKE', '%' . request('tracking_number') . '%');
-            });
+            if(strlen(request('tracking_number')) == 21){
+                $tracking = substr(request('tracking_number'),1);
+            }else{
+                $tracking = request('tracking_number');
+            }
+            return $q->where('tracking_number', 'LIKE', '%' . $tracking . '%');
         })
         ->orderBy($sort, $by) // Order by variation name
         ->when(request('sort') == 4, function ($q) {
