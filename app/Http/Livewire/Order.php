@@ -117,11 +117,11 @@ class Order extends Component
             });
         })
         ->when(request('tracking_number') != '', function ($q) {
-            if(strlen(request('tracking_number')) == 21){
-                $tracking = substr(request('tracking_number'),1);
-            }else{
+            // if(strlen(request('tracking_number')) == 21){
+            //     $tracking = substr(request('tracking_number'),1);
+            // }else{
                 $tracking = request('tracking_number');
-            }
+            // }
             // dd($tracking);
             return $q->whereHas('order_items.stock', function ($q) use ($tracking) {
                 $q->where('tracking_number', $tracking);
