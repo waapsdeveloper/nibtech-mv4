@@ -260,9 +260,7 @@ class Inventory extends Component
             });
         })
         ->when(request('status') != '', function ($q) {
-            return $q->whereHas('order', function ($q) {
-                $q->where('status', request('status'));
-            });
+            return $q->where('status', request('status'));
         })
         ->when(request('storage') != '', function ($q) {
             return $q->whereHas('variation', function ($q) {
@@ -295,7 +293,7 @@ class Inventory extends Component
         ->first();
 
         $data['vendor_average_cost'] = Stock_model::where('stock.deleted_at',null)
-        // ->where('order_items.deleted_at',null)->where('orders.deleted_at',null)
+        ->where('order_items.deleted_at',null)->where('orders.deleted_at',null)
 
         ->when(request('vendor') != '', function ($q) {
             return $q->whereHas('order', function ($q) {
@@ -303,9 +301,7 @@ class Inventory extends Component
             });
         })
         ->when(request('status') != '', function ($q) {
-            return $q->whereHas('order', function ($q) {
-                $q->where('status', request('status'));
-            });
+            return $q->where('status', request('status'));
         })
         ->when(request('storage') != '', function ($q) {
             return $q->whereHas('variation', function ($q) {
