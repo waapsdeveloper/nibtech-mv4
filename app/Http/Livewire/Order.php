@@ -122,8 +122,9 @@ class Order extends Component
             }else{
                 $tracking = request('tracking_number');
             }
+            // dd($tracking);
             return $q->whereHas('order_items.stock', function ($q) use ($tracking) {
-                $q->where('tracking_number', 'LIKE', '%' . $tracking . '%');
+                $q->where('tracking_number', $tracking);
             });
         })
         ->orderBy($sort, $by) // Order by variation name
