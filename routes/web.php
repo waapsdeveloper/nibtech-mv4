@@ -146,6 +146,7 @@ Route::get('inventory', Inventory::class)->name('view_inventory');
 Route::get('inventory/get_products', [Inventory::class,'get_products'])->name('view_inventory');
 Route::get('inventory/get_variations/{id}', [Inventory::class,'get_variations'])->name('view_inventory');
 Route::post('inventory/export', [Inventory::class,'export'])->name('view_inventory');
+Route::get('belfast_inventory', [Inventory::class,'belfast_inventory'])->name('view_belfast_inventory');
 
 Route::get('product', Product::class)->name('view_product');
 Route::post('add_product', [Product::class,'add_product'])->name('add_product');

@@ -184,35 +184,11 @@
         @endif
         <div class="d-flex justify-content-between">
             <div>
-
-                <a href="{{url(session('url').'inventory')}}?status=3&grade[]=2&grade[]=3&grade[]=5&grade[]=7&grade[]=9" class="btn btn-link">RTG</a>
-                <a href="{{url(session('url').'inventory')}}?status=3" class="btn btn-link">Active</a>
-                <a href="{{url(session('url').'inventory')}}?status=2" class="btn btn-link">Pending</a>
-                <a href="{{url(session('url').'inventory')}}" class="btn btn-link">All</a>
-            </div>
-            <div class="">
-                @if (session('user')->hasPermission('view_cost'))
-                <button class="btn btn-sm btn-secondary pd-x-20 " type="submit" form="export" name="inventorysheet" value="1">Export Sheet</button>
-
-                @endif
+                <a href="{{url('belfast_inventory')}}?status=1" class="btn btn-link">Active</a>
+                <a href="{{url('belfast_inventory')}}?status=2" class="btn btn-link">AfterSale</a>
+                <a href="{{url('belfast_inventory')}}" class="btn btn-link">All</a>
             </div>
         </div>
-        <form id="export" method="POST" target="_blank" action="{{url(session('url').'inventory/export')}}">
-            @csrf
-            <input type="hidden" name="category" value="{{ Request::get('category') }}">
-            <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
-            <input type="hidden" name="product" value="{{ Request::get('product') }}">
-            <input type="hidden" name="storage" value="{{ Request::get('storage') }}">
-            @if (Request::get('grade'))
-
-            @foreach (Request::get('grade') as $grd)
-
-                <input type="hidden" name="grade[]" value="{{ $grd }}">
-            @endforeach
-            @endif
-            <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
-            <input type="hidden" name="status" value="{{ Request::get('status') }}">
-        </form>
         <br>
         <div class="row">
             <div class="col-xl-12">
