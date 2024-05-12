@@ -189,6 +189,14 @@
                                                     <button class="btn btn-sm btn-danger m-0" name="remove_entries" value="1">Remove Entries</button>
 
                                                         @break
+                                                    @case("Duplicate IMEI")
+                                                    <button class="btn btn-sm btn-danger m-0" name="remove_entries" value="1">Remove Entries</button>
+
+                                                        @break
+                                                    @case("IMEI Available In Inventory")
+                                                    <button class="btn btn-sm btn-danger m-0" name="remove_entries" value="1">Remove Entries</button>
+
+                                                        @break
                                                     @case("Product Name Not Found")
 
                                                     <div class="form-floating">
