@@ -1007,7 +1007,7 @@ class Order extends Component
                 'stock_id' => $item->stock->id,
                 'old_variation_id' => $item->stock->variation_id,
                 'new_variation_id' => $item->stock->variation_id,
-                'description' => request('correction')['reason']." ".$item->order->reference_id,
+                'description' => request('correction')['reason']." ".$item->order->reference_id." ".$imei.$serial_number,
                 'admin_id' => session('user_id'),
             ]);
             if($item->stock->purchase_item){
