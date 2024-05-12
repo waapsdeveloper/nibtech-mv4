@@ -277,6 +277,15 @@ class Wholesale extends Component
 
         }
 
+        if($stock->variation->grade == 17){
+            session()->put('error', "IMEI Flagged | Contact Admin");
+            if($back != 1){
+                return redirect()->back();
+            }else{
+                return 1;
+            }
+        }
+
         if($stock->status != 1){
             session()->put('error', "Stock Already Sold");
             if($back != 1){
@@ -504,6 +513,17 @@ class Wholesale extends Component
                     continue;
 
 
+                }
+
+                if($stock->variation->grade == 17){
+                    if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
+                    $issue[$dr]['data']['row'] = $dr;
+                    $issue[$dr]['data']['name'] = $n;
+                    $issue[$dr]['data']['storage'] = $st;
+                    $issue[$dr]['data']['imei'] = $i.$s;
+                    $issue[$dr]['message'] = 'IMEI Flagged | COntact Admin';
+
+                    continue;
                 }
                 if($stock->order->status == 2){
                     if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
