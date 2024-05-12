@@ -489,6 +489,11 @@
                                     @foreach ($sold_stocks as $stock)
                                         @php
                                             $item = $stock->last_item();
+                                            if(in_array($item->order->order_type_id,[1,4])){
+                                                $stock->status = 1;
+                                                $stock->save();
+                                                continue;
+                                            }
                                         @endphp
                                         <tr>
                                             <td>{{ $i + 1 }}</td>
