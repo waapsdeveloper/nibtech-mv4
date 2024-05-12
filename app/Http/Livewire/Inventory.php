@@ -260,7 +260,7 @@ class Inventory extends Component
             });
         })
         ->when(request('status') != '', function ($q) {
-            return $q->where('status', request('status'));
+            return $q->where('stock.status', request('status'));
         })
         ->when(request('storage') != '', function ($q) {
             return $q->whereHas('variation', function ($q) {
@@ -301,7 +301,7 @@ class Inventory extends Component
             });
         })
         ->when(request('status') != '', function ($q) {
-            return $q->where('status', request('status'));
+            return $q->where('stock.status', request('status'));
         })
         ->when(request('storage') != '', function ($q) {
             return $q->whereHas('variation', function ($q) {
