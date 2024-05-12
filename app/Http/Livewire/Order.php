@@ -1150,7 +1150,7 @@ class Order extends Component
         $country_codes = Country_model::pluck('id','code');
 
         $orderObj = $bm->getOneOrder($order_id);
-        if(!$orderObj->orderlines){
+        if(!isset($orderObj->orderlines)){
 
         }else{
             $order_model->updateOrderInDB($orderObj, $invoice, $bm, $currency_codes, $country_codes);
