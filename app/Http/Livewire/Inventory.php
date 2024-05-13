@@ -42,9 +42,11 @@ class Inventory extends Component
         ->when(request('status') != '', function ($q) {
             return $q->whereHas('order', function ($q) {
                 $q->where('status', request('status'));
-            })
-            ->whereHas('last_item.order', function ($q) {
-                $q->where('status', request('status'));
+            // })
+            // ->whereHas('last_item', function ($q) {
+            //     $q->whereHas('order', function ($q) {
+            //         $q->where('status', request('status'));
+            //     });
             });
         })
         ->when(request('storage') != '', function ($q) {
