@@ -207,13 +207,13 @@ class SalesReturn extends Component
                     }
                         session()->put('success', 'IMEI Sold');
                 }
-            }
             if($stock->status == 2){
                     $data['restock']['order_id'] = $order_id;
                     $data['restock']['reference_id'] = $last_item->order->reference_id;
                     $data['restock']['stock_id'] = $stock->id;
                     $data['restock']['price'] = $last_item->price;
                     $data['restock']['linked_id'] = $last_item->id;
+            }
             }
             $stock_id = $stock->id;
             $orders = Order_item_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
