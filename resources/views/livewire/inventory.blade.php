@@ -212,6 +212,7 @@
             @endif
             <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
             <input type="hidden" name="status" value="{{ Request::get('status') }}">
+            <input type="hidden" name="vendor" value="{{ Request::get('vendor') }}">
         </form>
         <br>
         <div class="row">
@@ -238,6 +239,7 @@
                                     <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
                                     <input type="hidden" name="product" value="{{ Request::get('product') }}">
                                     <input type="hidden" name="storage" value="{{ Request::get('storage') }}">
+                                    <input type="hidden" name="vendor" value="{{ Request::get('vendor') }}">
                                     @if (Request::get('grade'))
                                     @foreach (Request::get('grade') as $grd)
 

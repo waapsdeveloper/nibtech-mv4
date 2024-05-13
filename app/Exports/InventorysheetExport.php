@@ -48,6 +48,11 @@ class InventorysheetExport implements FromCollection, WithHeadings
         ->where('order_items.deleted_at',null)
         ->where('stock.deleted_at',null)
 
+        ->when(request('vendor') != '', function ($q) {
+            return $q->whereHas('order', function ($q) {
+                $q->where('customer_id', request('vendor'));
+            });
+        })
         ->when(request('storage') != '', function ($q) {
             $q->where('variation.storage', request('storage'));
         })
