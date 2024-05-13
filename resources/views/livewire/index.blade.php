@@ -259,7 +259,7 @@
                                         <div class="card-header">
                                             <h4 class="card-title mb-1">Orders</h4>
                                         </div>
-                                        <div class="card-body">
+                                        <div class="card-body py-2">
                                             <table class="w-100">
                                                 <tr>
                                                     <td>Total:</td>
@@ -272,6 +272,10 @@
                                                 <tr>
                                                     <td>Conversation:</td>
                                                     <td class="tx-right"><a href="{{url(session('url').'order')}}?care=1&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ $total_conversations }}</a></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Invoiced:</td>
+                                                    <td class="tx-right"><a href="{{url(session('url').'order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ $invoiced_orders }}</a></td>
                                                 </tr>
                                             </table>
 

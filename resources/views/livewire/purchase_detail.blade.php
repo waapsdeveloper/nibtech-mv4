@@ -130,6 +130,7 @@
         session()->forget('error');
         @endphp
         @endif
+        @if (session('user')->hasPermission('view_issues'))
         @if (count($order_issues)>0)
 
         <div class="row">
@@ -315,6 +316,7 @@
             </div>
         </div>
 
+        @endif
         @endif
         <br>
         @if (count($missing_stock)>0)
