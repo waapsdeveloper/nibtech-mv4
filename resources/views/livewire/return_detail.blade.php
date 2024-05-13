@@ -143,6 +143,12 @@
             </div>
 
 
+        @php
+        session()->forget('error');
+        @endphp
+        @endif
+        @if (!$stock->purchase_item)
+
         <form action="{{ url('add_purchase_item').'/8441' }}" method="POST">
             @csrf
             <div class="row">
@@ -185,9 +191,6 @@
             </div>
         </form>
         <br>
-        @php
-        session()->forget('error');
-        @endphp
         @endif
 
         @if (isset($stock))
