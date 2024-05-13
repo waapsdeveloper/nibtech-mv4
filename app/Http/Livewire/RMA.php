@@ -248,8 +248,6 @@ class RMA extends Component
                 exit;
             }else{
                 $this->add_rma_item($order_id);
-                session()->put('bypass_check', 1);
-                request()->merge(['bypass_check'=> 1]);
                 return redirect()->back();
 
             }
