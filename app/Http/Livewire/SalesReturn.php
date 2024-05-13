@@ -187,23 +187,26 @@ class SalesReturn extends Component
                 }
 
             }
-            $last_item = Order_item_model::find($stock->purchase_item->id);
-            while(Order_item_model::where('linked_id',$last_item->id)->first()){
-                $last_item = Order_item_model::where('linked_id',$last_item->id)->first();
-            }
-            if(in_array($last_item->order->order_type_id,[1,4])){
+            if($stock->purchase_item){
 
-                if($stock->status == 2){
-                    $stock->status = 1;
-                    $stock->save();
+                $last_item = Order_item_model::find($stock->purchase_item->id);
+                while(Order_item_model::where('linked_id',$last_item->id)->first()){
+                    $last_item = Order_item_model::where('linked_id',$last_item->id)->first();
                 }
-                    session()->put('success', 'IMEI Available');
-            }else{
-                if($stock->status == 1){
-                    $stock->status = 2;
-                    $stock->save();
+                if(in_array($last_item->order->order_type_id,[1,4])){
+
+                    if($stock->status == 2){
+                        $stock->status = 1;
+                        $stock->save();
+                    }
+                        session()->put('success', 'IMEI Available');
+                }else{
+                    if($stock->status == 1){
+                        $stock->status = 2;
+                        $stock->save();
+                    }
+                        session()->put('success', 'IMEI Sold');
                 }
-                    session()->put('success', 'IMEI Sold');
             }
             if($stock->status == 2){
                     $data['restock']['order_id'] = $order_id;
