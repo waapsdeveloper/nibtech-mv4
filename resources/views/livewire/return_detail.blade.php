@@ -147,7 +147,7 @@
         session()->forget('error');
         @endphp
         @endif
-        @if (!$stock->purchase_item)
+        @if (!$stock || !$stock->purchase_item)
 
         <form action="{{ url('add_purchase_item').'/8441' }}" method="POST">
             @csrf
