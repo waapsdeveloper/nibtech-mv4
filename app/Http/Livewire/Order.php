@@ -301,7 +301,7 @@ class Order extends Component
 
         $data['storages'] = Storage_model::pluck('name','id');
         $data['variations'] = Variation_model::with(['stocks' => function ($query) use ($order_id) {
-            $query->where('order_id', $order_id);
+            $query->where(['order_id'=> $order_id, 'status'=>1]);
         }, 'stocks.order_item' => function ($query) use ($order_id) {
             $query->where('order_id', $order_id);
         }])
