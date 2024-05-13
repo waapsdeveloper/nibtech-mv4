@@ -187,21 +187,6 @@ class SalesReturn extends Component
                 }
 
             }
-            $sale_status = Order_item_model::where(['stock_id'=>$stock->id,'linked_id'=>$stock->purchase_item->id])->first();
-            if($stock->status == 1){
-                if($sale_status != null){
-                    $stock->status = 2;
-                    $stock->save();
-                }else{
-                }
-            }
-            if($stock->status == 2){
-                if($sale_status == null){
-                    $stock->status = 1;
-                    $stock->save();
-                }else{
-                }
-            }
             $last_item = Order_item_model::find($stock->purchase_item->id);
             while(Order_item_model::where('linked_id',$last_item->id)->first()){
                 $last_item = Order_item_model::where('linked_id',$last_item->id)->first();
