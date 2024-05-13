@@ -455,7 +455,7 @@
             @endforeach
         </div>
         <br>
-        @if (count($sold_stocks)>0)
+        {{-- @if (count($sold_stocks)>0) --}}
 
         {{-- <div class="row">
             <div class="col-xl-12">
@@ -532,7 +532,7 @@
             </div>
         </div> --}}
 
-        @endif
+        {{-- @endif --}}
     @endsection
 
     @section('scripts')
