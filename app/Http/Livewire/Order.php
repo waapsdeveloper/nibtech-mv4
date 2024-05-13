@@ -311,9 +311,9 @@ class Order extends Component
         ->orderBy('grade', 'desc')
         ->get();
 
-        $data['sold_stocks'] = Stock_model::where(['order_id'=> $order_id, 'status'=>2])
-        ->orderBy('variation_id', 'asc')
-        ->get();
+        // $data['sold_stocks'] = Stock_model::where(['order_id'=> $order_id, 'status'=>2])
+        // ->orderBy('variation_id', 'asc')
+        // ->get();
 
         $data['missing_stock'] = Order_item_model::where('order_id',$order_id)->whereHas('stock',function ($q) {
             $q->where(['imei'=>null,'serial_number'=>null]);

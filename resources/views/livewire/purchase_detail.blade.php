@@ -457,7 +457,7 @@
         <br>
         @if (count($sold_stocks)>0)
 
-        <div class="row">
+        {{-- <div class="row">
             <div class="col-xl-12">
                 <div class="card">
                     <div class="card-header pb-0">
@@ -530,7 +530,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
         @endif
     @endsection

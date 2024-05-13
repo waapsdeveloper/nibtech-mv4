@@ -123,9 +123,9 @@ class Index extends Component
         })
         ->count();
         $data['invoiced_orders'] = Order_model::where('processed_at', '>=', $start_date)->where('processed_at', '<=', $end_date)->where('order_type_id',3)->where('status',3)
-        ->whereHas('admin', function ($q) {
-                $q->where('role_id', '<=', 5);
-        })
+        // ->whereHas('admin', function ($q) {
+        //     $q->where('role_id', '<=', 5);
+        // })
         ->when(request('product') != '', function ($q) {
             return $q->whereHas('variation', function ($q) {
                 $q->where('product_id', '=', request('product'));
