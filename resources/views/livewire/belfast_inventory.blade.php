@@ -231,6 +231,7 @@
                                         @if (session('user')->hasPermission('view_cost'))
                                         <th><small><b>Cost</b></small></th>
                                         @endif
+                                        <th><small><b>Added By</b></small></th>
                                         <th><small><b>Datetime</b></small></th>
                                     </tr>
                                 </thead>
@@ -249,6 +250,7 @@
                                             @if (session('user')->hasPermission('view_cost'))
                                             <td>{{ $stock->order->currency_id->sign ?? null }}{{$stock->purchase_item->price ?? null }}</td>
                                             @endif
+                                            <td>{{ $stock->latest_operation->admin->first_name }}</td>
                                             <td>{{ $stock->updated_at }}</td>
                                             @if ($stock->latest_operation)<td>
                                                 {{ $stock->latest_operation->description }}
