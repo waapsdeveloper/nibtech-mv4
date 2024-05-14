@@ -70,11 +70,7 @@ class IMEI extends Component
             //         session()->put('success', 'IMEI Sold');
             //     }
             // }
-            $last_item = Order_item_model::find($stock->purchase_item->id);
-            while(Order_item_model::where(['linked_id'=>$last_item->id, 'stock_id'=>$stock->id])->first()){
-                $last_item = Order_item_model::where(['linked_id'=>$last_item->id, 'stock_id'=>$stock->id])->first();
-                // print_r($last_item);
-            }
+            $last_item = $stock->last_item();
                 // if(session('user_id') == 1){
                 //     dd($last_item);
                 // }
