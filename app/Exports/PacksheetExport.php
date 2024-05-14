@@ -33,7 +33,7 @@ class PacksheetExport implements FromCollection, WithHeadings
             'grade.name as grade_name',
             'stock.imei as imei',
             'stock.serial_number as serial_number',
-            'stock_operation.description as issue',
+            'stock_operations.description as issue',
             'order_items.price as price'
         )
         ->where('orders.id', request('id'))
