@@ -134,7 +134,7 @@
                                             <tr>
                                                 <td title="{{ $item->id }}">{{ $i + 1 }}</td>
                                                 @if ($order->order_type_id == 1)
-                                                    <td><a href="{{url(session('url').'purchase/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                    <td><a href="{{url(session('url').'purchase/detail/'.$order->id)}}?status=1">{{ $order->reference_id }}</a></td>
                                                 @elseif ($order->order_type_id == 2)
                                                     <td><a href="{{url(session('url').'rma/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
                                                 @elseif ($order->order_type_id == 5)

@@ -181,7 +181,7 @@
                                         {{-- @foreach ($items as $itemIndex => $item) --}}
                                             <tr>
                                                     <td>{{ $i + 1 }}</td>
-                                                    <td><a href="{{url(session('url').'purchase/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                    <td><a href="{{url(session('url').'purchase/detail/'.$order->id)}}?status=1">{{ $order->reference_id }}</a></td>
                                                 <td>{{ $vendors[$order->customer_id] }}</td>
                                                 @if (session('user')->hasPermission('view_cost'))
                                                 <td>Є{{ number_format($order->total_price,2) }}</td>
