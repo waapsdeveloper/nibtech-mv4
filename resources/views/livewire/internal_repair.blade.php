@@ -364,7 +364,13 @@
                                                 @endif
                                             </td>
                                             <td><a href="{{url('repair/internal').'?imei='.$stock->imei.$stock->serial_number}}">{{$stock->imei.$stock->serial_number }}</a></td>
-                                            <td>{{$stock->order->customer->first_name." ".$stock->order->reference_id }}</td>
+                                            <td>
+                                                @if ($stock->order_id != null)
+                                                    {{$stock->order->customer->first_name." ".$stock->order->reference_id }}
+                                                @else
+                                                    Item Not Purchased Yet
+                                                @endif
+                                            </td>
                                             <td>{{$stock->latest_operation->description }}</td>
                                             <td style="width:180px">{{ $stock->latest_operation->created_at."  ".$stock->latest_operation->updated_at }}</td>
                                         </tr>
