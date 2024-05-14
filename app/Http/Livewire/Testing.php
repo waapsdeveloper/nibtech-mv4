@@ -28,7 +28,9 @@ class Testing extends Component
     public function render()
     {
 
-        $requests = Api_request_model::where('status',null)->get();
+        $requests = Api_request_model::where('status',null)->select(
+            DB::raw('GROUP_CONCAT(JSON_OBJECT("Imei", Imei, "Imei2", Imei2, "Serial", Serial)) AS all_rows')
+        )->get();
         foreach($requests as $request){
             $data = $request->request;
             // $stock = Stock_model::where('imei',$data->Imei)->orWhere('imei',$data->Imei2)->orWhere('serial_number',$data->Serial)->first();
