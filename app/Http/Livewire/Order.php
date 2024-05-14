@@ -301,6 +301,7 @@ class Order extends Component
     public function purchase_detail($order_id){
 
         $data['storages'] = Storage_model::pluck('name','id');
+        $data['colors'] = Color_model::pluck('name','id');
 
         if (!request('status') || request('status') == 1){
             $data['variations'] = Variation_model::with(['stocks' => function ($query) use ($order_id) {
