@@ -479,14 +479,15 @@ class Order extends Component
 
                 $variation = Variation_model::firstOrNew(['product_id' => $product, 'grade' => $grade, 'storage' => $storage]);
                 $stock = Stock_model::firstOrNew(['imei' => $i, 'serial_number' => $s]);
-                if($stock->id != null && $stock->status == 1){
+
+                if($stock->id && $stock->status != null && $stock->order_id != null){
                     if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
                     $issue[$dr]['data']['row'] = $dr;
                     $issue[$dr]['data']['name'] = $n;
                     $issue[$dr]['data']['storage'] = $st;
                     $issue[$dr]['data']['imei'] = $i.$s;
                     $issue[$dr]['data']['cost'] = $c;
-                    if($stock->order_id == $order->id){
+                    if($stock->order_id == $order->id && $stock->status == 1){
                         $issue[$dr]['message'] = 'Item already added in this order';
                     }else{
                         if($stock->status != 2){
@@ -496,7 +497,6 @@ class Order extends Component
                         }
 
                     }
-
 
                 }else{
                     $variation->stock += 1;
