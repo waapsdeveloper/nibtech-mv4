@@ -31,7 +31,7 @@ class Testing extends Component
         $requests = Api_request_model::where('status',null)->get();
         foreach($requests as $request){
             $data = $request->request;
-            $datas = json_decode(json_decode(preg_split('/(?<=\}),(?=\{)/', $data))->data);
+            $datas = json_decode(preg_split('/(?<=\}),(?=\{)/', $data));
             // $stock = Stock_model::where('imei',$data->Imei)->orWhere('imei',$data->Imei2)->orWhere('serial_number',$data->Serial)->first();
         echo "<pre>";
 
