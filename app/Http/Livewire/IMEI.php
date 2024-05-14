@@ -73,6 +73,7 @@ class IMEI extends Component
             $last_item = Order_item_model::find($stock->purchase_item->id);
             while(Order_item_model::where('linked_id',$last_item->id)->first()){
                 $last_item = Order_item_model::where('linked_id',$last_item->id)->first();
+                print_r($last_item);
             }
                 if(session('user_id') == 1){
                     dd($last_item);
