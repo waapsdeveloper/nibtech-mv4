@@ -216,7 +216,7 @@
                     <div class="card-header pb-0">
                         <div class="d-flex justify-content-between">
                             <h4 class="card-title mg-b-0">
-                                Internal MOvement
+                                Internal Movement
                             </h4>
 
                             <div class=" mg-b-0">
@@ -236,6 +236,7 @@
                                         <th><small><b>IMEI</b></small></th>
                                         <th><small><b>Vendor | Lot</b></small></th>
                                         <th><small><b>Reason</b></small></th>
+                                        <th><small><b>Added By</b></small></th>
                                         <th><small><b>DateTime</b></small></th>
                                     </tr>
                                 </thead>
@@ -260,6 +261,7 @@
                                                 <td>{{ $operation->stock->imei.$operation->stock->serial_number }}</td>
                                                 <td>{{ $operation->stock->order->customer->first_name." | ".$operation->stock->order->reference_id }}</td>
                                                 <td>{{ $operation->description }}</td>
+                                                <td>{{ $operation->admin->first_name }}</td>
                                                 <td>{{ $operation->created_at }}</td>
                                             </tr>
                                         @php
