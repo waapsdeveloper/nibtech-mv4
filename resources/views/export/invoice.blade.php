@@ -295,7 +295,7 @@
 
             <h3>Store Policy</h3>
             <hr>
-            <h4>Stock Sold on Marginal VAT Scheme.</h4>
+            <h4>Stock Sold on Marginal VAT Scheme. VAT Number: GB972500428</h4>
         </div>
     </div>
 </body>

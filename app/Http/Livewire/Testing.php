@@ -13,7 +13,7 @@ use App\Models\Stock_operations_model;
 use App\Models\Storage_model;
 use App\Models\Variation_model;
 use Carbon\Carbon;
-
+use Illuminate\Support\Facades\DB;
 
 class Testing extends Component
 {
