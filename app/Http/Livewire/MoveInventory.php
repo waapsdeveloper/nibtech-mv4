@@ -75,6 +75,10 @@ class MoveInventory extends Component
                 session()->put('error', 'IMEI Invalid / Not Available');
                 return redirect()->back();
             }
+            if ($stock->order_id == null) {
+                session()->put('error', 'Stock Not Purchased');
+                return redirect()->back();
+            }
             $stock_id = $stock->id;
 
             $product_id = $stock->variation->product_id;

@@ -75,8 +75,13 @@
                                     }else{
                                         $storage = null;
                                     }
+                                    if($variation->color){
+                                        $color = $colors[$variation->color];
+                                    }else{
+                                        $color = null;
+                                    }
                                 @endphp
-                                <option value="{{$variation->id}}" @if(isset($_GET['variation']) && $variation->id == $_GET['variation']) {{'selected'}}@endif>{{$variation->product->model." ".$storage}}</option>
+                                <option value="{{$variation->id}}" @if(isset($_GET['variation']) && $variation->id == $_GET['variation']) {{'selected'}}@endif>{{$variation->product->model." ".$storage." ".$color}}</option>
                             @endforeach
                         </datalist>
                         <label for="variation">Variation</label>

@@ -24,6 +24,7 @@ namespace App\Http\Livewire;
     use Maatwebsite\Excel\Facades\Excel;
     use TCPDF;
     use App\Mail\InvoiceMail;
+use App\Models\Color_model;
 use App\Models\Grade_model;
 use App\Models\Order_issue_model;
 use App\Models\Stock_operations_model;
@@ -389,6 +390,7 @@ class Order extends Component
         $imei = array_search('imei', $arrayLower);
         // echo $imei;
         $cost = array_search('cost', $arrayLower);
+        $color = array_search('color', $arrayLower);
         // echo $cost;
         $grade = 9;
 
@@ -402,6 +404,7 @@ class Order extends Component
         $order->save();
 
         $storages = Storage_model::pluck('name','id')->toArray();
+        $colors = Color_model::pluck('name','id')->toArray();
 
         $products = Products_model::pluck('model','id')->toArray();
 
@@ -429,12 +432,16 @@ class Order extends Component
             }else{
                 $gb = null;
             }
+
             if(trim($d[$imei]) == ''){
                 if(trim($n) != '' || trim($c) != ''){
                     if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
                     $issue[$dr]['data']['row'] = $dr;
                     $issue[$dr]['data']['name'] = $n;
                     $issue[$dr]['data']['storage'] = $st;
+                    if($color){
+                        $issue[$dr]['data']['color'] = $d[$color];
+                    }
                     $issue[$dr]['data']['imei'] = $i.$s;
                     $issue[$dr]['data']['cost'] = $c;
                     $issue[$dr]['message'] = 'IMEI not Provided';
@@ -447,6 +454,9 @@ class Order extends Component
                     $issue[$dr]['data']['row'] = $dr;
                     $issue[$dr]['data']['name'] = $n;
                     $issue[$dr]['data']['storage'] = $st;
+                    if($color){
+                        $issue[$dr]['data']['color'] = $d[$color];
+                    }
                     $issue[$dr]['data']['imei'] = $i.$s;
                     $issue[$dr]['data']['cost'] = $c;
                     $issue[$dr]['message'] = 'Name not Provided';
@@ -459,6 +469,9 @@ class Order extends Component
                 $issue[$dr]['data']['row'] = $dr;
                 $issue[$dr]['data']['name'] = $n;
                 $issue[$dr]['data']['storage'] = $st;
+                    if($color){
+                        $issue[$dr]['data']['color'] = $d[$color];
+                    }
                 $issue[$dr]['data']['imei'] = $i.$s;
                 $issue[$dr]['data']['cost'] = $c;
                 $issue[$dr]['message'] = 'Cost not Provided';
@@ -473,10 +486,34 @@ class Order extends Component
             if(in_array(strtolower($n), array_map('strtolower',$products)) && ($i != null || $s != null)){
                 $product = array_search(strtolower($n), array_map('strtolower',$products));
                 $storage = $gb;
+                if ($color) {
+                    // Convert each color name to lowercase
+                    $lowercaseColors = array_map('strtolower', $colors);
+
+                    $colorName = strtolower($d[$color]); // Convert color name to lowercase
+
+                    if (in_array($colorName, $lowercaseColors)) {
+                        // If the color exists in the predefined colors array,
+                        // retrieve its index
+                        $clr = array_search($colorName, $lowercaseColors);
+                    } else {
+                        // If the color doesn't exist in the predefined colors array,
+                        // create a new color record in the database
+                        $newColor = Color_model::create([
+                            'name' => $colorName
+                        ]);
+                        // Retrieve the ID of the newly created color
+                        $clr = $newColor->id;
+                    }
+                $variation = Variation_model::firstOrNew(['product_id' => $product, 'grade' => $grade, 'storage' => $storage, 'color' => $clr]);
+
+                }else{
+
+                $variation = Variation_model::firstOrNew(['product_id' => $product, 'grade' => $grade, 'storage' => $storage]);
+                }
 
                 // echo $product." ".$grade." ".$storage." | ";
 
-                $variation = Variation_model::firstOrNew(['product_id' => $product, 'grade' => $grade, 'storage' => $storage]);
                 $stock = Stock_model::firstOrNew(['imei' => $i, 'serial_number' => $s]);
 
                 if($stock->id && $stock->status != null && $stock->order_id != null){
@@ -484,6 +521,9 @@ class Order extends Component
                     $issue[$dr]['data']['row'] = $dr;
                     $issue[$dr]['data']['name'] = $n;
                     $issue[$dr]['data']['storage'] = $st;
+                    if($color){
+                        $issue[$dr]['data']['color'] = $d[$color];
+                    }
                     $issue[$dr]['data']['imei'] = $i.$s;
                     $issue[$dr]['data']['cost'] = $c;
                     if($stock->order_id == $order->id && $stock->status == 1){
@@ -524,6 +564,9 @@ class Order extends Component
                     $issue[$dr]['data']['row'] = $dr;
                     $issue[$dr]['data']['name'] = $n;
                     $issue[$dr]['data']['storage'] = $st;
+                    if($color){
+                        $issue[$dr]['data']['color'] = $d[$color];
+                    }
                     $issue[$dr]['data']['imei'] = $i.$s;
                     $issue[$dr]['data']['cost'] = $c;
                     if($i == null && $s == null){
