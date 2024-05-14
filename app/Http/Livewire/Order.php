@@ -300,20 +300,26 @@ class Order extends Component
     public function purchase_detail($order_id){
 
         $data['storages'] = Storage_model::pluck('name','id');
-        $data['variations'] = Variation_model::with(['stocks' => function ($query) use ($order_id) {
-            $query->where(['order_id'=> $order_id, 'status'=>1]);
-        }, 'stocks.order_item' => function ($query) use ($order_id) {
-            $query->where('order_id', $order_id);
-        }])
-        ->whereHas('stocks', function ($query) use ($order_id) {
-            $query->where(['order_id'=> $order_id, 'status'=>1]);
-        })
-        ->orderBy('grade', 'desc')
-        ->get();
 
-        // $data['sold_stocks'] = Stock_model::where(['order_id'=> $order_id, 'status'=>2])
-        // ->orderBy('variation_id', 'asc')
-        // ->get();
+        if (!request('status') || request('status') == 1){
+            $data['variations'] = Variation_model::with(['stocks' => function ($query) use ($order_id) {
+                $query->where(['order_id'=> $order_id, 'status'=>1]);
+            }, 'stocks.order_item' => function ($query) use ($order_id) {
+                $query->where('order_id', $order_id);
+            }])
+            ->whereHas('stocks', function ($query) use ($order_id) {
+                $query->where(['order_id'=> $order_id, 'status'=>1]);
+            })
+            ->orderBy('grade', 'desc')
+            ->get();
+        }
+
+        if (!request('status') || request('status') == 2){
+
+            $data['sold_stocks'] = Stock_model::where(['order_id'=> $order_id, 'status'=>2])
+            ->orderBy('variation_id', 'asc')
+            ->get();
+        }
 
         $data['missing_stock'] = Order_item_model::where('order_id',$order_id)->whereHas('stock',function ($q) {
             $q->where(['imei'=>null,'serial_number'=>null]);
@@ -797,8 +803,25 @@ class Order extends Component
 
                 }
                 if($stock[$i]->status != 1){
-                    session()->put('error', "Stock Already Sold");
-                    return redirect()->back();
+
+                    $last_item = $stock[$i]->last_item();
+                    // if(session('user_id') == 1){
+                    //     dd($last_item);
+                    // }
+                    if(in_array($last_item->order->order_type_id,[1,4])){
+
+                        if($stock[$i]->status == 2){
+                            $stock[$i]->status = 1;
+                            $stock[$i]->save();
+                        }
+                    }else{
+                        if($stock[$i]->status == 1){
+                            $stock[$i]->status = 2;
+                            $stock[$i]->save();
+                        }
+                        session()->put('error', "Stock Already Sold");
+                        return redirect()->back();
+                    }
                 }
                 if($stock[$i]->order->status < 3){
                     session()->put('error', "Stock List Awaiting Approval");

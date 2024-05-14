@@ -130,6 +130,17 @@
         session()->forget('error');
         @endphp
         @endif
+
+        <div class="d-flex justify-content-between">
+            <div>
+                <a href="{{url('purchase/detail')."/".$order->id}}?status=1" class="btn btn-link @if (request('status') == 1) bg-white @endif ">Available</a>
+                <a href="{{url('purchase/detail')."/".$order->id}}?status=2" class="btn btn-link @if (request('status') == 2) bg-white @endif ">Sold</a>
+                <a href="{{url('purchase/detail')."/".$order->id}}" class="btn btn-link @if (!request('status')) bg-white @endif " >All</a>
+            </div>
+            <div class="">
+            </div>
+        </div>
+
         @if (session('user')->hasPermission('view_issues'))
         @if (count($order_issues)>0)
 
@@ -318,7 +329,6 @@
 
         @endif
         @endif
-        <br>
         @if (count($missing_stock)>0)
 
         <div class="row">
@@ -382,8 +392,8 @@
         </div>
 
         @endif
-        <br>
 
+        @if (isset($variations) && (!request('status') || request('status') == 1))
         <div class="row">
 
             @foreach ($variations as $variation)
@@ -454,10 +464,10 @@
             </div>
             @endforeach
         </div>
-        <br>
-        {{-- @if (count($sold_stocks)>0) --}}
+        @endif
+        @if (isset($sold_stocks) && count($sold_stocks)>0 && (!request('status') || request('status') == 2))
 
-        {{-- <div class="row">
+        <div class="row">
             <div class="col-xl-12">
                 <div class="card">
                     <div class="card-header pb-0">
@@ -481,7 +491,6 @@
                                         <th><small><b>Price</b></small></th>
                                         @endif
                                         <th><small><b>Creation Date</b></small></th>
-                                        <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -516,7 +525,6 @@
                                             <td>{{ $currency.number_format($item->price,2) }}</td>
                                             @endif
                                             <td style="width:220px">{{ $item->created_at }}</td>
-                                            <td><a href="{{ url('delete_rma_item').'/'.$item->id }}"><i class="fa fa-trash"></i></a></td>
                                         </tr>
                                         @php
                                             $i ++;
@@ -530,9 +538,9 @@
                     </div>
                 </div>
             </div>
-        </div> --}}
+        </div>
 
-        {{-- @endif --}}
+        @endif
     @endsection
 
     @section('scripts')
