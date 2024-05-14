@@ -83,10 +83,7 @@ class Order_item_model extends Model
                         $stock->imei = $itemObj->imei;
                         if($stock->id != null){
                             $stock->status = 2;
-                            $last_item = Order_item_model::find($stock->purchase_item->id);
-                            while(Order_item_model::where('linked_id',$last_item->id)->first()){
-                                $last_item = Order_item_model::where('linked_id',$last_item->id)->first();
-                            }
+                            $last_item = $stock->last_item();
                             $orderItem->linked_id = $last_item->id;
                         }
                     }
@@ -98,10 +95,7 @@ class Order_item_model extends Model
                         $stock->serial_number = $itemObj->serial_number;
                         if($stock->id != null){
                             $stock->status = 2;
-                            $last_item = Order_item_model::find($stock->purchase_item->id);
-                            while(Order_item_model::where('linked_id',$last_item->id)->first()){
-                                $last_item = Order_item_model::where('linked_id',$last_item->id)->first();
-                            }
+                            $last_item = $stock->last_item();
                             $orderItem->linked_id = $last_item->id;
                         }
                     }
