@@ -72,40 +72,40 @@ class Order extends Component
             case 4: $sort = "products.model"; $by = "ASC"; break;
             default: $sort = "orders.reference_id"; $by = "DESC";
         }
-        $orders = Order_model::join('order_items', 'orders.id', '=', 'order_items.order_id')
-        ->join('variation', 'order_items.variation_id', '=', 'variation.id')
-        ->join('products', 'variation.product_id', '=', 'products.id')
-        ->with(['order_items.variation', 'order_items.variation.grade_id', 'order_items.stock'])
-        ->where('orders.order_type_id',3)
+
+        $orders = Order_model::with(['order_items','order_items.variation', 'order_items.variation.grade_id', 'order_items.stock'])
+        ->where('order_type_id',3)
         ->when(request('start_date') != '', function ($q) {
             if(request('adm') > 0){
-                return $q->where('orders.processed_at', '>=', request('start_date', 0));
+                return $q->where('processed_at', '>=', request('start_date', 0));
             }else{
-                return $q->where('orders.created_at', '>=', request('start_date', 0));
+                return $q->where('created_at', '>=', request('start_date', 0));
 
             }
         })
         ->when(request('end_date') != '', function ($q) {
             if(request('adm') > 0){
-                return $q->where('orders.processed_at', '<=', request('end_date', 0) . " 23:59:59")->orderBy('orders.processed_at','desc');
+                return $q->where('processed_at', '<=', request('end_date', 0) . " 23:59:59")->orderBy('processed_at','desc');
             }else{
-                return $q->where('orders.created_at', '<=', request('end_date', 0) . " 23:59:59");
+                return $q->where('created_at', '<=', request('end_date', 0) . " 23:59:59");
             }
         })
         ->when(request('status') != '', function ($q) {
-            return $q->where('orders.status', request('status'));
+            return $q->where('status', request('status'));
         })
         ->when(request('adm') != '', function ($q) {
             if(request('adm') == 0){
-                return $q->where('orders.processed_by', null);
+                return $q->where('processed_by', null);
             }
-            return $q->where('orders.processed_by', request('adm'));
+            return $q->where('processed_by', request('adm'));
         })
         ->when(request('care') != '', function ($q) {
-            return $q->where('order_items.care_id', '!=', null);
+            return $q->whereHas('order_items', function ($query) {
+                $query->where('care_id', '!=', null);
+            });
         })
         ->when(request('order_id') != '', function ($q) {
-            return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
+            return $q->where('reference_id', 'LIKE', request('order_id') . '%');
         })
         ->when(request('sku') != '', function ($q) {
             return $q->whereHas('order_items.variation', function ($q) {
@@ -127,15 +127,85 @@ class Order extends Component
         })
         ->orderBy($sort, $by) // Order by variation name
         ->when(request('sort') == 4, function ($q) {
-            return $q
-            ->orderBy('products.model', 'ASC')
-            ->orderBy('variation.storage', 'ASC')
-            ->orderBy('variation.color', 'ASC')
-            ->orderBy('variation.grade', 'ASC');
+            return $q->whereHas('order_items.variation.product', function ($q) {
+                $q->orderBy('model', 'ASC');
+            })->whereHas('order_items.variation', function ($q) {
+                $q->orderBy('variation.storage', 'ASC');
+            })->whereHas('order_items.variation', function ($q) {
+                $q->orderBy('variation.color', 'ASC');
+            })->whereHas('order_items.variation', function ($q) {
+                $q->orderBy('variation.grade', 'ASC');
+            });
+
         })
-        ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
+        ->orderBy('reference_id', 'desc'); // Secondary order by reference_id
         // ->orderBy('order_items.quantity', 'desc') // Secondary order by reference_id
-        ->select('orders.*');
+        // ->select('orders.*');
+
+        // $orders = Order_model::join('order_items', 'orders.id', '=', 'order_items.order_id')
+        // ->join('variation', 'order_items.variation_id', '=', 'variation.id')
+        // ->join('products', 'variation.product_id', '=', 'products.id')
+        // ->with(['order_items.variation', 'order_items.variation.grade_id', 'order_items.stock'])
+        // ->where('orders.order_type_id',3)
+        // ->when(request('start_date') != '', function ($q) {
+        //     if(request('adm') > 0){
+        //         return $q->where('orders.processed_at', '>=', request('start_date', 0));
+        //     }else{
+        //         return $q->where('orders.created_at', '>=', request('start_date', 0));
+
+        //     }
+        // })
+        // ->when(request('end_date') != '', function ($q) {
+        //     if(request('adm') > 0){
+        //         return $q->where('orders.processed_at', '<=', request('end_date', 0) . " 23:59:59")->orderBy('orders.processed_at','desc');
+        //     }else{
+        //         return $q->where('orders.created_at', '<=', request('end_date', 0) . " 23:59:59");
+        //     }
+        // })
+        // ->when(request('status') != '', function ($q) {
+        //     return $q->where('orders.status', request('status'));
+        // })
+        // ->when(request('adm') != '', function ($q) {
+        //     if(request('adm') == 0){
+        //         return $q->where('orders.processed_by', null);
+        //     }
+        //     return $q->where('orders.processed_by', request('adm'));
+        // })
+        // ->when(request('care') != '', function ($q) {
+        //     return $q->where('order_items.care_id', '!=', null);
+        // })
+        // ->when(request('order_id') != '', function ($q) {
+        //     return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
+        // })
+        // ->when(request('sku') != '', function ($q) {
+        //     return $q->whereHas('order_items.variation', function ($q) {
+        //         $q->where('sku', 'LIKE', '%' . request('sku') . '%');
+        //     });
+        // })
+        // ->when(request('imei') != '', function ($q) {
+        //     return $q->whereHas('order_items.stock', function ($q) {
+        //         $q->where('imei', 'LIKE', '%' . request('imei') . '%');
+        //     });
+        // })
+        // ->when(request('tracking_number') != '', function ($q) {
+        //     if(strlen(request('tracking_number')) == 21){
+        //         $tracking = substr(request('tracking_number'),1);
+        //     }else{
+        //         $tracking = request('tracking_number');
+        //     }
+        //     return $q->where('tracking_number', 'LIKE', '%' . $tracking . '%');
+        // })
+        // ->orderBy($sort, $by) // Order by variation name
+        // ->when(request('sort') == 4, function ($q) {
+        //     return $q
+        //     ->orderBy('products.model', 'ASC')
+        //     ->orderBy('variation.storage', 'ASC')
+        //     ->orderBy('variation.color', 'ASC')
+        //     ->orderBy('variation.grade', 'ASC');
+        // })
+        // ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
+        // // ->orderBy('order_items.quantity', 'desc') // Secondary order by reference_id
+        // ->select('orders.*');
 
 
         if(request('bulk_invoice') && request('bulk_invoice') == 1){
