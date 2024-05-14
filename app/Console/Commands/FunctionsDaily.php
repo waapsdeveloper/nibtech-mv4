@@ -23,7 +23,7 @@ class FunctionsDaily extends Command
      *
      * @var string
      */
-    protected $signature = 'Functions:daily';
+    protected $signature = 'functions:daily';
 
     /**
      * The console command description.

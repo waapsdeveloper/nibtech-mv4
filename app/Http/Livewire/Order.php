@@ -399,7 +399,6 @@ class Order extends Component
         $order->currency = 4;
         $order->order_type_id = $purchase->type;
         $order->processed_by = session('user_id');
-        $order->created_at = now()->format('Y-m-d H:i:s');
         $order->save();
 
         $storages = Storage_model::pluck('name','id')->toArray();
