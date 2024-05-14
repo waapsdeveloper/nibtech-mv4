@@ -28,6 +28,7 @@ use App\Http\Livewire\Repair;
 use App\Http\Livewire\RMA;
 use App\Http\Livewire\SalesReturn;
 use App\Http\Livewire\Team;
+use App\Http\Livewire\Testing;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\GetAllowedRoutesMiddleware;
 
@@ -122,6 +123,7 @@ Route::post('move_inventory/change_grade', [MoveInventory::class,'change_grade']
 Route::post('move_inventory/delete_move', [MoveInventory::class,'delete_move'])->name('move_inventory');
 Route::post('move_inventory/delete_multiple_moves', [MoveInventory::class,'delete_multiple_moves'])->name('move_inventory');
 
+Route::get('testing', Testing::class)->name('testing');
 
 Route::get('order', Order::class)->name('view_order');
 Route::get('check_new/{return?}', [Order::class,'updateBMOrdersNew'])->name('view_order');
