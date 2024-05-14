@@ -122,7 +122,7 @@ class Index extends Component
             });
         })
         ->count();
-        $data['invoiced_orders'] = Order_model::where('processed_at', '>=', $start_date)->where('processed_at', '<=', $end_date)->where('order_type_id',3)->where('status',3)
+        $data['invoiced_orders'] = Order_model::where('processed_at', '>=', $start_date)->where('processed_at', '<=', $end_date)->where('order_type_id',3)
         // ->whereHas('admin', function ($q) {
         //     $q->where('role_id', '<=', 5);
         // })
