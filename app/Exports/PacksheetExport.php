@@ -24,8 +24,9 @@ class PacksheetExport implements FromCollection, WithHeadings
         ->leftJoin('grade', 'variation.grade', '=', 'grade.id')
         ->leftJoin('stock_operations', function ($join) {
             $join->on('stock.id', '=', 'stock_operations.stock_id')
-                 ->where('stock_operations.new_variation_id', 'variation.id'); // Additional where condition
+                 ->where('stock_operations.new_variation_id', '=', DB::raw('variation.id'));
         })
+
         ->select(
             'products.model',
             'storage.name as storage',
