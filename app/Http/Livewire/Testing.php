@@ -30,7 +30,10 @@ class Testing extends Component
 
         $requests = Api_request_model::where('status',null)->get();
         echo "<pre>";
-        print_r(json_decode($requests->request));
+        foreach($requests as $request){
+            print_r(json_decode($request->request));
+        }
+
         echo "</pre>";
 
 
