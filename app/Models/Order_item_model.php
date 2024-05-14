@@ -101,14 +101,12 @@ class Order_item_model extends Model
                     }
 
                     $stock->variation_id = $variation->id;
-                    $stock->created_at = Carbon::parse($itemObj->date_creation)->format('Y-m-d H:i:s');
                     $stock->save();
                     $orderItem->stock_id = $stock->id;
 
                 }
             }
             $orderItem->order_id = Order_model::where(['reference_id' => $orderObj->order_id])->first()->id;
-            $orderItem->created_at = Carbon::parse($itemObj->date_creation)->format('Y-m-d H:i:s');
             $orderItem->variation_id = $variation->id;
             $orderItem->reference_id = $itemObj->id;
             if($orderItem->price == null){
