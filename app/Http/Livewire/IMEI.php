@@ -80,7 +80,7 @@ class IMEI extends Component
                     $stock->status = 1;
                     $stock->save();
                 }
-                    session()->put('success', 'IMEI Available');
+                    session()->put('success', 'IMEI is Available');
             }else{
                 if($stock->status == 1){
                     $stock->status = 2;
