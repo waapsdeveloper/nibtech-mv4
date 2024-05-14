@@ -66,8 +66,9 @@ class Stock_model extends Model
         $last_item = $this->purchase_item;
         if($last_item != null){
 
-            while(Order_item_model::where('linked_id',$last_item->id)->first()){
-                $last_item = Order_item_model::where('linked_id',$last_item->id)->first();
+            while(Order_item_model::where(['linked_id'=>$last_item->id, 'stock_id'=>$this->id])->first()){
+                $last_item = Order_item_model::where(['linked_id'=>$last_item->id, 'stock_id'=>$this->id])->first();
+                // print_r($last_item);
             }
         }
         return $last_item;

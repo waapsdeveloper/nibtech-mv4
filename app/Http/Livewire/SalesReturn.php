@@ -190,8 +190,9 @@ class SalesReturn extends Component
             if($stock->purchase_item){
 
                 $last_item = Order_item_model::find($stock->purchase_item->id);
-                while(Order_item_model::where('linked_id',$last_item->id)->first()){
-                    $last_item = Order_item_model::where('linked_id',$last_item->id)->first();
+                while(Order_item_model::where(['linked_id'=>$last_item->id, 'stock_id'=>$stock->id])->first()){
+                    $last_item = Order_item_model::where(['linked_id'=>$last_item->id, 'stock_id'=>$stock->id])->first();
+                    // print_r($last_item);
                 }
                 if(in_array($last_item->order->order_type_id,[1,4])){
 
