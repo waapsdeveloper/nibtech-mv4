@@ -178,7 +178,7 @@
                                                 @if (session('user')->hasPermission('view_cost'))
                                                 <td>Є{{ number_format($order->total_price,2) }}</td>
                                                 @endif
-                                                <td>{{ $order->available_stock."/".$items->count() }}@if ($order->status == 2)
+                                                <td>{{ $items->where('status',1)->count()."/".$items->count() }}@if ($order->status == 2)
                                                     (Pending)
                                                 @endif</td>
                                                 <td style="width:220px">{{ $order->created_at." ".$order->updated_at }}</td>
