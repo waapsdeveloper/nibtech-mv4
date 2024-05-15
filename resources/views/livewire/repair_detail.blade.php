@@ -38,6 +38,7 @@
                     <a class="btn btn-danger" href="{{url('delete_repair') . "/" . $process->id }}">Delete</a>
                 </form>
                 @else
+                <br>
                 Tracking Number: <a href="https://www.dhl.com/gb-en/home/tracking/tracking-express.html?submit=1&tracking-id={{$process->descripton}}" target="_blank"> {{$process->descripton}}</a>
                 @endif
                 </div>
@@ -67,17 +68,23 @@
 
             </div>
             <div class="p-1">
-                {{-- @if ($process->status == 1) --}}
+                @if ($process->status == 1)
                 <form class="form-inline" action="{{ url('check_repair_item').'/'.$process_id }}" method="POST" id="repair_item">
-                {{-- @else
-                <form class="form-inline" action="{{ url('check_repair_item').'/'.$process_id }}" method="POST" id="repair_item">
-                @endif --}}
                     @csrf
                     <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
                     <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
                     <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
 
                 </form>
+                @else
+                <form class="form-inline" action="{{ url('receive_repair_item').'/'.$process_id }}" method="POST" id="repair_item">
+                    @csrf
+                    <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
+                    <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
+                    <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
+
+                </form>
+                @endif
             </div>
             <div class="p-2 tx-right">
                 <form method="POST" enctype="multipart/form-data" action="{{ url('repair/add_repair_sheet').'/'.$process_id}}" class="form-inline p-1">
