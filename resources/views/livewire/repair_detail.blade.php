@@ -311,7 +311,7 @@
                                         <th><small><b>Name</b></small></th>
                                         {{-- @endif --}}
                                         @if (session('user')->hasPermission('delete_repair_item'))
-                                        <th></th>
+                                        {{-- <th></th> --}}
                                         @endif
                                     </tr>
                                 </thead>
