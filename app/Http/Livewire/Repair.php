@@ -171,8 +171,8 @@ class Repair extends Component
         $data['variations'] = $variations;
         $last_ten = Process_stock_model::where('process_id',$process_id)->orderBy('id','desc')->limit(10)->get();
         $data['last_ten'] = $last_ten;
-        $processed_stock = Process_stock_model::where(['process_id'=>$process_id,'status'=>2])->get();
-        $data['processed_stock'] = $processed_stock;
+        $processed_stocks = Process_stock_model::where(['process_id'=>$process_id,'status'=>2])->get();
+        $data['processed_stocks'] = $processed_stocks;
 
         $data['all_variations'] = Variation_model::where('grade',9)->get();
         $data['process'] = Order_model::find($process_id);

@@ -292,6 +292,82 @@
             @if ($process->status == 1)
             @else
             </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header pb-0">
+                        Received Items
+                    </div>
+                            {{-- {{ $variation }} --}}
+                    <div class="card-body"><div class="table-responsive" style="max-height: 400px">
+
+                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th><small><b>#</b></small></th>
+                                        {{-- <th><small><b>Vendor</b></small></th> --}}
+                                        <th><small><b>IMEI/Serial</b></small></th>
+                                        {{-- @if (session('user')->hasPermission('view_cost')) --}}
+                                        <th><small><b>Name</b></small></th>
+                                        {{-- @endif --}}
+                                        @if (session('user')->hasPermission('delete_repair_item'))
+                                        <th></th>
+                                        @endif
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{-- <form method="POST" action="{{url(session('url').'repair')}}/update_prices" id="update_prices_{{ $variation->id }}"> --}}
+                                        @csrf
+                                    @php
+                                        $i = 0;
+                                        $id = [];
+                                    @endphp
+                                    @php
+                                        $stocks = $variation->stocks;
+                                        // $items = $stocks->order_item;
+                                        $j = 0;
+                                        $total = 0;
+                                        // print_r($variation);
+                                    @endphp
+
+                                    @foreach ($processed_stocks as $processed_stock)
+                                        {{-- @dd($item->sale_item) --}}
+                                        @if($item->process_stock($process_id)->process_id == $process_id)
+                                        @php
+                                            $i ++;
+                                            $total += $item->purchase_item->price
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $i }}</td>
+                                            {{-- <td>{{ $item->order->customer->first_name }}</td> --}}
+                                            <td>{{ $item->imei.$item->serial_number }}</td>
+                                            <td @if (session('user')->hasPermission('view_cost')) title="Cost Price: {{ $currency.$item->purchase_item->price }}" @endif>
+                                                {{ $item->order->customer->first_name }} {{ $currency.$item->purchase_item->price }}
+                                            </td>
+
+                                            @if (session('user')->hasPermission('delete_repair_item'))
+                                            {{-- <td><a href="{{ url('delete_repair_item').'/'.$item->process_stock($process_id)->id }}"><i class="fa fa-trash"></i></a></td> --}}
+                                            @endif
+                                            <input type="hidden" name="item_ids[]" value="{{ $item->process_stock($process_id)->id }}">
+                                        </tr>
+                                        @endif
+                                    @endforeach
+                                    </form>
+                                </tbody>
+                            </table>
+                        <br>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <label for="unit-price" class="">Change Unit Price: </label>
+                            <input type="number" name="unit_price" id="unit_price" step="0.01" class="w-50 border-0" placeholder="Input Unit price" form="update_prices_{{ $variation->id }}">
+                        </div>
+                        <div>Average: {{$total/$i }}</div>
+                        <div>Total: {{$i }}</div>
+                    </div>
+                    </div>
+                </div>
+            </div>
             @endif
 
 
