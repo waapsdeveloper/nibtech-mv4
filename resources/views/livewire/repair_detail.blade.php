@@ -214,10 +214,7 @@
         @endif
 
         <div class="row">
-        @if ($process->status == 1)
-        @else
-            <div class="col-md-8 row">
-        @endif
+            <div @if ($process->status != 1) class="col-md-8 row" @endif>
 
             @foreach ($variations as $variation)
             <div @if ($process->status == 1) class="col-md-4" @else class="col-md-6" @endif>
@@ -296,9 +293,9 @@
             </div>
             @endforeach
 
+            </div>
             @if ($process->status == 1)
             @else
-            </div>
 
             <div class="col-md-4">
                 <div class="card">
