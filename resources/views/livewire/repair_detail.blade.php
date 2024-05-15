@@ -39,7 +39,7 @@
                 </form>
                 @else
                 <br>
-                Tracking Number: <a href="https://www.dhl.com/gb-en/home/tracking/tracking-express.html?submit=1&tracking-id={{$process->descripton}}" target="_blank"> {{$process->descripton}}</a>
+                Tracking Number: <a href="https://www.dhl.com/gb-en/home/tracking/tracking-express.html?submit=1&tracking-id={{$process->description}}" target="_blank"> {{$process->description}}</a>
                 @endif
                 </div>
                 <div class="justify-content-center mt-2">
