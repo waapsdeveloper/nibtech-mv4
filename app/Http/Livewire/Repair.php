@@ -249,7 +249,7 @@ class Repair extends Component
         $product_id = $stock->variation->product_id;
         $storage = $stock->variation->storage;
         $color = $stock->variation->color;
-        $grade = $stock->variation->grade;
+        $grade = 9;
 
         $new_variation = Variation_model::firstOrNew([
             'product_id' => $product_id,
