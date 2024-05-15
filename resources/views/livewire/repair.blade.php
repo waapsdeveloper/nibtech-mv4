@@ -146,10 +146,10 @@
                                         <th><small><b>No</b></small></th>
                                         <th><small><b>Order ID</b></small></th>
                                         <th><small><b>Repairer</b></small></th>
-                                        @if (session('user')->hasPermission('view_cost'))
+                                        @if ((!request('status') || request('status') == 3) && session('user')->hasPermission('view_cost'))
                                         <th><small><b>Cost</b></small></th>
                                         @endif
-                                        <th><small><b>Qty</b></small></th>
+                                        <th><small><b>Remaining Qty</b></small></th>
                                         <th><small><b>Creation Date</b></small></th>
                                     </tr>
                                 </thead>
@@ -175,7 +175,7 @@
                                                     <td>{{ $i + 1 }}</td>
                                                     <td><a href="{{url(session('url').'repair/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
                                                     <td>{{ $repairers[$order->customer_id] }}</td>
-                                                @if (session('user')->hasPermission('view_cost'))
+                                                @if ((!request('status') || request('status') == 3) && session('user')->hasPermission('view_cost'))
                                                 <td>Є{{ number_format($order->total_price,2) }}</td>
                                                 @endif
                                                 <td>{{ $items->where('status',1)->count()."/".$items->count() }}@if ($order->status == 2)
