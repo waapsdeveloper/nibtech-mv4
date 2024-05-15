@@ -69,7 +69,7 @@ class Testing extends Component
         //     }
         // }
 
-
+        $data['requests'] = $requests;
 
 
 

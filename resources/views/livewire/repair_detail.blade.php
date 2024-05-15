@@ -27,6 +27,13 @@
                         <label class="form-check-label" for="bypass_check">Bypass Repair check</label>
                     </span> --}}
                 <span class="main-content-title mg-b-0 mg-b-lg-1">External Repair Order Detail</span>
+                @if ($process->status == 1)
+                <form class="form-inline" method="POST" action="{{url('repair/ship').'/'.$process->id}}">
+                    @csrf
+                    <button type="submit" class="btn btn-success">Ship</button>
+                    <a class="btn btn-danger" href="{{url('delete_repair') . "/" . $process->id }}">Delete</a>
+                </form>
+                @endif
                 </div>
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">

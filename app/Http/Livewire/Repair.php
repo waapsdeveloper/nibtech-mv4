@@ -75,10 +75,10 @@ class Repair extends Component
         // dd($data['orders']);
         return view('livewire.repair')->with($data);
     }
-    public function repair_approve($repair_id){
+    public function repair_ship($repair_id){
         $repair = Process_model::find($repair_id);
         $repair->tracking_number = request('tracking_number');
-        $repair->status = 3;
+        $repair->status = 2;
         $repair->save();
 
         return redirect()->back();
