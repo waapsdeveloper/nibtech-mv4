@@ -60,7 +60,11 @@
         <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
 
             <div class="p-2">
+                @if ($process->status == 1)
                 <h4>Add External Repair Item</h4>
+                @else
+                <h4>Receive External Repair Item</h4>
+                @endif
                 {{-- <span class="form-check form-switch ms-4 p-2" title="Bypass Repair check" onclick="$('#bypass_check').check()">
                     <input type="checkbox" value="1" id="bypass_check" name="bypass_check" class="form-check-input" form="repair_item" @if (session('bypass_check') == 1) checked @endif>
                     <label class="form-check-label" for="bypass_check">Bypass check</label>
