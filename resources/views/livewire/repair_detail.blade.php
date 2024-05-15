@@ -37,6 +37,8 @@
                     <button type="submit" class="btn btn-success">Ship</button>
                     <a class="btn btn-danger" href="{{url('delete_repair') . "/" . $process->id }}">Delete</a>
                 </form>
+                @else
+                Tracking Number: <a href="https://www.dhl.com/gb-en/home/tracking/tracking-express.html?submit=1&tracking-id={{$process->descripton}}" target="_blank"> {{$process->descripton}}</a>
                 @endif
                 </div>
                 <div class="justify-content-center mt-2">

@@ -25,7 +25,7 @@ class Process_model extends Model
         // 'taken_by_id',
         'process_type_id',
         // 'grade',
-        // 'color',
+        'description',
         'status',
     ];
 

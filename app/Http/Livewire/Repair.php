@@ -77,7 +77,7 @@ class Repair extends Component
     }
     public function repair_ship($repair_id){
         $repair = Process_model::find($repair_id);
-        $repair->tracking_number = request('tracking_number');
+        $repair->description = request('tracking_number');
         $repair->status = 2;
         $repair->save();
 
