@@ -73,34 +73,8 @@ class Testing extends Component
 
 
 
-        die;
 
-
-
-        $data['products'] = Products_model::orderBy('model','asc')->get();
-        $data['colors'] = Color_model::pluck('name','id');
-        $data['storages'] = Storage_model::pluck('name','id');
-        $data['grades'] = Grade_model::all();
-
-        if(request('grade')){
-            session()->put('grade',request('grade'));
-            session()->put('success',request('grade'));
-
-        }
-        $grade = session('grade');
-        if(request('description')){
-            session()->put('description',request('description'));
-        }
-
-
-        $stocks = Stock_operations_model::where('created_at','>=',now()->format('Y-m-d')." 00:00:00")
-            ->whereHas('stock', function ($query) {
-                $query->where('status', 1);
-            })->orderBy('id','desc')->get();
-        $data['stocks'] = $stocks;
-        $data['grade'] = Grade_model::find($grade);
-
-        return view('livewire.move_inventory', $data); // Return the Blade view instance with data
+        return view('livewire.testing', $data); // Return the Blade view instance with data
     }
 
     public function change_grade(){
