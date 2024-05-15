@@ -288,7 +288,6 @@
                     <div class="d-flex justify-content-between">
                         <div>Total: {{$i }}</div>
                     </div>
-                    </div>
                 </div>
             </div>
             @endforeach
