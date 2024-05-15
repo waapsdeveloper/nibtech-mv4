@@ -59,7 +59,7 @@ class Testing extends Component
                 // Retrieve the ID of the newly created color
                 $color = $newColor->id;
             }
-            if($stock->variation->storage != $storage){
+            if($stock != null && $stock->variation->storage != $storage){
 
                 echo "<pre>";
 
