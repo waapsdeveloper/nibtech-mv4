@@ -38,6 +38,7 @@
                     <a class="btn btn-danger" href="{{url('delete_repair') . "/" . $process->id }}">Delete</a>
                 </form>
                 @else
+                <br>
                 Tracking Number: <a href="https://www.dhl.com/gb-en/home/tracking/tracking-express.html?submit=1&tracking-id={{$process->descripton}}" target="_blank"> {{$process->descripton}}</a>
                 @endif
                 </div>
@@ -59,6 +60,7 @@
         <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
 
             <div class="p-2">
+                @if ($process->status == 1)
                 <h4>Add External Repair Item</h4>
                 {{-- <span class="form-check form-switch ms-4 p-2" title="Bypass Repair check" onclick="$('#bypass_check').check()">
                     <input type="checkbox" value="1" id="bypass_check" name="bypass_check" class="form-check-input" form="repair_item" @if (session('bypass_check') == 1) checked @endif>
