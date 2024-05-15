@@ -59,20 +59,11 @@
 
         <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
 
+            @if ($process->status == 1)
             <div class="p-2">
-                @if ($process->status == 1)
                 <h4>Add External Repair Item</h4>
-                @else
-                <h4>Receive External Repair Item</h4>
-                @endif
-                {{-- <span class="form-check form-switch ms-4 p-2" title="Bypass Repair check" onclick="$('#bypass_check').check()">
-                    <input type="checkbox" value="1" id="bypass_check" name="bypass_check" class="form-check-input" form="repair_item" @if (session('bypass_check') == 1) checked @endif>
-                    <label class="form-check-label" for="bypass_check">Bypass check</label>
-                </span> --}}
-
             </div>
             <div class="p-1">
-                @if ($process->status == 1)
                 <form class="form-inline" action="{{ url('check_repair_item').'/'.$process_id }}" method="POST" id="repair_item">
                     @csrf
                     <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
@@ -80,15 +71,6 @@
                     <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
 
                 </form>
-                @else
-                <form class="form-inline" action="{{ url('receive_repair_item').'/'.$process_id }}" method="POST" id="repair_item">
-                    @csrf
-                    <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
-                    <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
-                    <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
-
-                </form>
-                @endif
             </div>
             <div class="p-2 tx-right">
                 <form method="POST" enctype="multipart/form-data" action="{{ url('repair/add_repair_sheet').'/'.$process_id}}" class="form-inline p-1">
@@ -109,6 +91,25 @@
                     </ul>
                 </div>
             </div>
+
+            @else
+
+            <div class="p-2">
+                <h4>Receive External Repair Item</h4>
+
+            </div>
+            <div class="p-1">
+                <form class="form-inline" action="{{ url('receive_repair_item').'/'.$process_id }}" method="POST" id="repair_item">
+                    @csrf
+                    <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
+                    <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
+                    <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
+
+                </form>
+            </div>
+
+
+            @endif
         </div>
         <br>
         @if (session('success'))
