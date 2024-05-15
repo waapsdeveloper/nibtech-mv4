@@ -53,6 +53,7 @@
                 </form>
 
                 @endif
+                @endif
                 </div>
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
@@ -369,7 +370,6 @@
                 </div>
             </div>
 
-            @endif
             @endif
 
 
