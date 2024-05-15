@@ -59,7 +59,6 @@
         <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
 
             <div class="p-2">
-                @if ($process->status == 1)
                 <h4>Add External Repair Item</h4>
                 {{-- <span class="form-check form-switch ms-4 p-2" title="Bypass Repair check" onclick="$('#bypass_check').check()">
                     <input type="checkbox" value="1" id="bypass_check" name="bypass_check" class="form-check-input" form="repair_item" @if (session('bypass_check') == 1) checked @endif>
@@ -68,11 +67,11 @@
 
             </div>
             <div class="p-1">
-                @if ($process->status == 1)
+                {{-- @if ($process->status == 1) --}}
                 <form class="form-inline" action="{{ url('check_repair_item').'/'.$process_id }}" method="POST" id="repair_item">
-                @else
-                <form class="form-inline" action="{{ url('receive_repair_item').'/'.$process_id }}" method="POST" id="repair_item">
-                @endif
+                {{-- @else
+                <form class="form-inline" action="{{ url('check_repair_item').'/'.$process_id }}" method="POST" id="repair_item">
+                @endif --}}
                     @csrf
                     <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
                     <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
