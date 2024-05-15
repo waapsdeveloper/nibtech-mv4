@@ -242,6 +242,14 @@ class Repair extends Component
                 return 1;
             }
         }
+        if($process_stock->status == 2){
+            session()->put('error', "Stock already added");
+            if($back != 1){
+                return redirect()->back();
+            }else{
+                return 1;
+            }
+        }
         $process_stock->status = 2;
         $process_stock->save();
 
