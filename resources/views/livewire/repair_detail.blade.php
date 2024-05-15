@@ -332,17 +332,21 @@
 
                                     @foreach ($processed_stocks as $processed_stock)
                                         {{-- @dd($item->sale_item) --}}
-                                        @if($item->process_stock($process_id)->process_id == $process_id)
                                         @php
+                                            $item = $processed_stock->stock;
+                                            $variation = $item->variation;
                                             $i ++;
-                                            $total += $item->purchase_item->price
+
+                                            isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
+                                            isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
+
                                         @endphp
                                         <tr>
                                             <td>{{ $i }}</td>
                                             {{-- <td>{{ $item->order->customer->first_name }}</td> --}}
                                             <td>{{ $item->imei.$item->serial_number }}</td>
-                                            <td @if (session('user')->hasPermission('view_cost')) title="Cost Price: {{ $currency.$item->purchase_item->price }}" @endif>
-                                                {{ $item->order->customer->first_name }} {{ $currency.$item->purchase_item->price }}
+                                            <td>
+                                                {{ $variation->product->model." ".$storage." ".$color." ".$variation->grade_id->name }}
                                             </td>
 
                                             @if (session('user')->hasPermission('delete_repair_item'))
@@ -350,7 +354,6 @@
                                             @endif
                                             <input type="hidden" name="item_ids[]" value="{{ $item->process_stock($process_id)->id }}">
                                         </tr>
-                                        @endif
                                     @endforeach
                                     </form>
                                 </tbody>

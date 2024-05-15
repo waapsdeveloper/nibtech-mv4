@@ -246,6 +246,31 @@ class Repair extends Component
         $process_stock->save();
 
 
+        $product_id = $stock->variation->product_id;
+        $storage = $stock->variation->storage;
+        $color = $stock->variation->color;
+        $grade = $stock->variation->grade;
+
+        $new_variation = Variation_model::firstOrNew([
+            'product_id' => $product_id,
+            'storage' => $storage,
+            'color' => $color,
+            'grade' => $grade,
+        ]);
+        $new_variation->save();
+        $stock_operation = Stock_operations_model::create([
+            'stock_id' => $stock->id,
+            'old_variation_id' => $stock->variation_id,
+            'new_variation_id' => $new_variation->id,
+            'description' => "Repaired Externally",
+            'admin_id' => session('user_id'),
+        ]);
+        $stock->variation_id = $new_variation->id;
+
+        $stock->status = 1;
+        $stock->save();
+
+
     }
     public function check_repair_item($process_id, $imei = null, $back = null){
         $issue = [];
