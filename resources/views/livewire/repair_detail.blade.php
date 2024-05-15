@@ -124,12 +124,12 @@
 
             @endif
 
+        </div>
             <script>
                 window.onload = function() {
                     document.getElementById('imei').focus();
                 };
             </script>
-        </div>
         <br>
         @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -290,6 +290,7 @@
                     <div class="d-flex justify-content-between">
                         <div>Total: {{$i }}</div>
                     </div>
+                </div>
                 </div>
             </div>
             @endforeach
