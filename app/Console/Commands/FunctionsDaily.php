@@ -62,7 +62,10 @@ class FunctionsDaily extends Command
             $query->where('order_type_id', '!=', 1);
         })->get();
         foreach($items as $item){
-            $item->linked_id = $item->stock->last_item()->id;
+            $litem = $item->stock->last_item();
+            if($litem != null){
+            $item->linked_id = $litem->id;
+            }
         }
         $stocks = Stock_model::all();
         foreach($stocks as $stock){
