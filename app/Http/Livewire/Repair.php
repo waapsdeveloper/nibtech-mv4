@@ -271,6 +271,11 @@ class Repair extends Component
         $stock->save();
 
 
+        if($back != 1){
+            return redirect(url('repair/detail').'/'.$process_id);
+        }else{
+            return 1;
+        }
     }
     public function check_repair_item($process_id, $imei = null, $back = null){
         $issue = [];
