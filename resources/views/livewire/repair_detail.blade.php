@@ -294,8 +294,7 @@
             @endforeach
 
             </div>
-            @if ($process->status == 1)
-            @else
+            @if ($process->status != 1)
 
             <div class="col-md-4">
                 <div class="card">
