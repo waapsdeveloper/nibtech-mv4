@@ -68,6 +68,7 @@ class Testing extends Component
                 echo "</pre>";
             }
         }
+        die;
 
         // $data['requests'] = $requests;
 
