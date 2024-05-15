@@ -139,14 +139,14 @@ class Repair extends Component
         $variations = Variation_model::with([
             'stocks' => function ($query) use ($process_id) {
                 $query->whereHas('process_stocks', function ($query) use ($process_id) {
-                    $query->where('process_id', $process_id);
+                    $query->where(['process_id'=> $process_id,'status'=>1]);
                 });
             },
             'stocks.process_stocks'
         ])
         ->whereHas('stocks', function ($query) use ($process_id) {
             $query->whereHas('process_stocks', function ($query) use ($process_id) {
-                $query->where('process_id', $process_id);
+                $query->where(['process_id'=> $process_id,'status'=>1]);
             });
         })
         ->orderBy('grade', 'desc')
@@ -168,10 +168,12 @@ class Repair extends Component
         // // dd($order_issues);
 
         // $data['order_issues'] = $order_issues;
-
         $data['variations'] = $variations;
         $last_ten = Process_stock_model::where('process_id',$process_id)->orderBy('id','desc')->limit(10)->get();
         $data['last_ten'] = $last_ten;
+        $processed_stock = Process_stock_model::where(['process_id'=>$process_id,'status'=>2])->get();
+        $data['processed_stock'] = $processed_stock;
+
         $data['all_variations'] = Variation_model::where('grade',9)->get();
         $data['process'] = Order_model::find($process_id);
         $data['currency'] = $data['process']->currency_id->sign;
@@ -208,6 +210,43 @@ class Repair extends Component
         return redirect(url('repair/detail').'/'.$process->id);
     }
 
+    public function receive_repair_item($process_id, $imei = null, $back = null){
+
+        if(request('imei')){
+            $imei = request('imei');
+        }
+        if(ctype_digit($imei)){
+            $i = $imei;
+            $s = null;
+        }else{
+            $i = null;
+            $s = $imei;
+        }
+        $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
+
+        if($imei == '' || !$stock || $stock->status == null){
+            session()->put('error', 'IMEI Invalid / Not Found');
+            if($back != 1){
+                return redirect()->back();
+            }else{
+                return 1;
+            }
+
+        }
+        $process_stock = Process_stock_model::where(['process_id'=>$process_id,'stock_id'=>$stock->id])->first();
+        if(!$process_stock){
+            session()->put('error', "Stock not found in this sheet");
+            if($back != 1){
+                return redirect()->back();
+            }else{
+                return 1;
+            }
+        }
+        $process_stock->status = 2;
+        $process_stock->save();
+
+
+    }
     public function check_repair_item($process_id, $imei = null, $back = null){
         $issue = [];
         if(request('imei')){
@@ -308,7 +347,6 @@ class Repair extends Component
 
     }
     public function add_repair_item($process_id, $imei = null, $back = null){
-        echo "Hello";
         if(request('imei')){
             $imei = request('imei');
         }
