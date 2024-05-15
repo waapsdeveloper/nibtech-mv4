@@ -202,9 +202,13 @@
         @endif
 
         <div class="row">
+        @if ($process->status == 1)
+        @else
+            <div class="col-md-8">
+        @endif
 
             @foreach ($variations as $variation)
-            <div class="col-md-4">
+            <div @if ($process->status == 1) class="col-md-4" @else class="col-md-6" @endif>
                 <div class="card">
                     <div class="card-header pb-0">
                         @php
@@ -284,6 +288,14 @@
                 </div>
             </div>
             @endforeach
+
+            @if ($process->status == 1)
+            @else
+            </div>
+            @endif
+
+
+
         </div>
 
     @endsection
