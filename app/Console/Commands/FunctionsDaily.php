@@ -58,6 +58,12 @@ class FunctionsDaily extends Command
 
     private function check_stock_status(){
 
+        $items = Order_item_model::where('linked_id',null)->whereHas('order', function ($query) {
+            $query->where('order_type_id', '!=', 1);
+        })->get();
+        foreach($items as $item){
+            $item->linked_id = $item->stock->last_item()->id;
+        }
         $stocks = Stock_model::all();
         foreach($stocks as $stock){
 
