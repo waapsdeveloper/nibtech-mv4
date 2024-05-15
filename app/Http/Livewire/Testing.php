@@ -36,16 +36,20 @@ class Testing extends Component
             $data = $request->request;
             $datas = json_decode(json_decode(preg_split('/(?<=\}),(?=\{)/', $data)[0]));
             $stock = Stock_model::where('imei',$datas->Imei)->orWhere('imei',$datas->Imei2)->orWhere('serial_number',$datas->Serial)->first();
-            $color = $datas->Color;
+
+            if(in_array($datas->Memory, $storages)){
+                $storage = array_search($datas->Memory,$storages);
+            }
+
             // Convert each color name to lowercase
             $lowercaseColors = array_map('strtolower', $colors);
 
-            $colorName = strtolower($color); // Convert color name to lowercase
+            $colorName = strtolower($datas->Color); // Convert color name to lowercase
 
             if (in_array($colorName, $lowercaseColors)) {
                 // If the color exists in the predefined colors array,
                 // retrieve its index
-                $clr = array_search($colorName, $lowercaseColors);
+                $color = array_search($colorName, $lowercaseColors);
             } else {
                 // If the color doesn't exist in the predefined colors array,
                 // create a new color record in the database
@@ -53,9 +57,9 @@ class Testing extends Component
                     'name' => $colorName
                 ]);
                 // Retrieve the ID of the newly created color
-                $clr = $newColor->id;
+                $color = $newColor->id;
             }
-            if($stock == null){
+            if($stock->variation->storage != $storage){
 
                 echo "<pre>";
 
