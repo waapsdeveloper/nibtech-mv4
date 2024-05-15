@@ -204,7 +204,7 @@
         <div class="row">
         @if ($process->status == 1)
         @else
-            <div class="col-md-8">
+            <div class="col-md-8 row">
         @endif
 
             @foreach ($variations as $variation)
