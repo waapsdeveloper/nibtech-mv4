@@ -110,6 +110,12 @@
 
 
             @endif
+
+            <script>
+                window.onload = function() {
+                    document.getElementById('imei').focus();
+                };
+            </script>
         </div>
         <br>
         @if (session('success'))
