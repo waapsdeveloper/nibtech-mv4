@@ -154,6 +154,7 @@
         @endif
 
         @if ($process->status == 1)
+
         <div class="row">
             <div class="col-xl-12">
                 <div class="card">
@@ -367,6 +368,8 @@
                     </div>
                 </div>
             </div>
+
+            @endif
             @endif
 
 
