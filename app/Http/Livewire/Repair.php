@@ -19,7 +19,8 @@ namespace App\Http\Livewire;
     use App\Exports\LabelsExport;
     use App\Exports\DeliveryNotesExport;
     use App\Exports\OrdersheetExport;
-    use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\RepairsheetExport;
+use Maatwebsite\Excel\Facades\Excel;
     use TCPDF;
     use App\Mail\InvoiceMail;
 use App\Models\Color_model;
@@ -560,6 +561,89 @@ class Repair extends Component
         return redirect()->back();
     }
 
+
+    public function export_repair_invoice($process_id)
+    {
+
+        // Find the order
+        $process = Process_model::with('customer', 'process_stock')->find($process_id);
+
+        $process_stock = Process_stock_model::
+            join('stock', 'process_stock.stock_id', '=', 'stock.id')
+            ->join('variation', 'stock.variation_id', '=', 'variation.id')
+            ->join('products', 'variation.product_id', '=', 'products.id')
+            ->select(
+                'variation.id as variation_id',
+                'products.model',
+                'variation.color',
+                'variation.storage',
+                'variation.grade',
+                DB::raw('AVG(process_stock.price) as average_price'),
+                DB::raw('SUM(process_stock.quantity) as total_quantity'),
+                DB::raw('SUM(process_stock.price) as total_price')
+            )
+            ->where('process_stock.process_id',$process_id)
+            ->groupBy('variation.id','products.model', 'variation.color', 'variation.storage', 'variation.grade')
+            ->orderBy('products.model', 'ASC')
+            ->get();
+
+            // dd($order);
+        // Generate PDF for the invoice content
+        $data = [
+            'process' => $process,
+            'customer' => $process->customer,
+            'process_stock' =>$process_stock
+        ];
+        $data['storages'] = Storage_model::pluck('name','id');
+        $data['grades'] = Grade_model::pluck('name','id');
+        $data['colors'] = Color_model::pluck('name','id');
+
+        // Create a new TCPDF instance
+        $pdf = new TCPDF();
+
+        // Set document inforepairtion
+        $pdf->SetCreator(PDF_CREATOR);
+        $pdf->SetTitle('Invoice');
+        // $pdf->SetHeaderData('', 0, 'Invoice', '');
+
+        // Add a page
+        $pdf->AddPage();
+
+        // Set font
+        $pdf->SetFont('times', '', 12);
+
+        // Additional content from your view
+        if(request('packlist') == 1){
+
+            $html = view('export.repair_packlist', $data)->render();
+        }elseif(request('packlist') == 2){
+
+            return Excel::download(new RepairsheetExport, 'repairs.xlsx');
+        }else{
+            $html = view('export.repair_invoice', $data)->render();
+        }
+
+        $pdf->writeHTML($html, true, false, true, false, '');
+
+        // dd($pdfContent);
+        // Send the invoice via email
+        // Mail::to($order->customer->email)->send(new InvoiceMail($data));
+
+        // Optionally, save the PDF locally
+        // file_put_contents('invoice.pdf', $pdfContent);
+
+        // Get the PDF content
+        $pdf->Output('', 'I');
+
+        // $pdfContent = $pdf->Output('', 'S');
+        // Return a response or redirect
+
+        // Pass the PDF content to the view
+        // return view('livewire.show_pdf')->with(['pdfContent'=> $pdfContent, 'delivery_note'=>$order->delivery_note_url]);
+    }
+
+
+
     public function internal_repair(){
 
         $data['imei'] = request('imei');
@@ -577,7 +661,7 @@ class Repair extends Component
         ->orderBy('updated_at','desc')->get();
         $data['repair_stocks'] = $repair_stocks;
 
-        $repaired_stocks = Stock_operations_model::where('created_at','>=',now()->format('Y-m-d')." 00:00:00")->where('admin_id',session('user_id'))->orderBy('id','desc')->get();
+        $repaired_stocks = Stock_operations_model::where('created_at','>=',now()->forepairt('Y-m-d')." 00:00:00")->where('admin_id',session('user_id'))->orderBy('id','desc')->get();
 
         $data['repaired_stocks'] = $repaired_stocks;
 
