@@ -215,8 +215,8 @@
         <br>
         @endif
 
-        <div class="row">
-            <div @if ($process->status != 1) class="col-md-8 row" @endif>
+        <div @if ($process->status != 1)  class="row" @endif>
+            <div @if ($process->status != 1) class="col-md-8 row" @else class="row" @endif>
 
             @foreach ($variations as $variation)
             <div @if ($process->status == 1) class="col-md-4" @else class="col-md-6" @endif>
