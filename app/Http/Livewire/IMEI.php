@@ -115,7 +115,7 @@ class IMEI extends Component
                     }
                 }
             }
-            $items5 = Order_item_model::where(['stock_id'=>$stock->id,'limnked_id'=>null])->whereHas('order', function ($query) {
+            $items5 = Order_item_model::where(['stock_id'=>$stock->id,'linked_id'=>null])->whereHas('order', function ($query) {
                 $query->whereIn('order_type_id', [2,3,4,5]);
             })->orderBy('id','asc')->get();
             if($items5->count() == 1){
