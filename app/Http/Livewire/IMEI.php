@@ -86,8 +86,6 @@ class IMEI extends Component
                         $item2->delete();
                     }
                 }
-                $item2->linked_id = $last_item->id;
-                $item2->save();
                 $last_item = $stock->last_item();
             }
 
