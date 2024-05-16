@@ -72,11 +72,20 @@ class IMEI extends Component
             // }
             $last_item = $stock->last_item();
 
-            $item2 = Order_item_model::where(['stock_id'=>$stock->id,'linked_id'=>null])->whereHas('order', function ($query) {
-                $query->where('order_type_id', 2);
-            })->first();
-            if($item2){
-
+            $items2 = Order_item_model::where(['stock_id'=>$stock->id,'linked_id'=>null])->whereHas('order', function ($query) {
+                $query->where('order_type_id', 1)->where('reference_id','<=',10009);
+            })->orderBy('id','asc')->get();
+            if($items2->count() > 1){
+                $i = 0;
+                foreach($items2 as $item2){
+                    $i ++;
+                    if($i == 1){
+                        $stock->order_id = $item2->order_id;
+                        $stock->save();
+                    }else{
+                        $item2->delete();
+                    }
+                }
                 $item2->linked_id = $last_item->id;
                 $item2->save();
                 $last_item = $stock->last_item();
