@@ -1,9 +1,7 @@
 <?php
 
 namespace App\Http\Livewire;
-    use App\Http\Controllers\BackMarketAPIController;
     use Livewire\Component;
-    use App\Models\Admin_model;
     use App\Models\Variation_model;
     use App\Models\Products_model;
     use App\Models\Stock_model;
@@ -11,24 +9,11 @@ namespace App\Http\Livewire;
     use App\Models\Order_item_model;
     use App\Models\Order_status_model;
     use App\Models\Customer_model;
-    use App\Models\Currency_model;
-    use App\Models\Country_model;
     use App\Models\Storage_model;
-    use Carbon\Carbon;
-    use App\Exports\OrdersExport;
-    use App\Exports\PickListExport;
-    use App\Exports\LabelsExport;
-    use App\Exports\DeliveryNotesExport;
-    use App\Exports\OrdersheetExport;
-    use Illuminate\Support\Facades\DB;
-    use Maatwebsite\Excel\Facades\Excel;
-    use TCPDF;
-    use App\Mail\InvoiceMail;
 use App\Models\Color_model;
 use App\Models\Grade_model;
 use App\Models\Order_issue_model;
 use App\Models\Stock_operations_model;
-use Illuminate\Support\Facades\Mail;
 
 
 class SalesReturn extends Component
