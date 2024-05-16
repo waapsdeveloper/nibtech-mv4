@@ -910,7 +910,7 @@ class Order extends Component
 
                 $stock[$i] = Stock_model::where(['imei'=>$imei, 'serial_number'=>$serial_number])->first();
 
-                if(!$stock[$i]){
+                if(!$stock[$i] || $stock[$i]->status == null){
                     session()->put('error', "Stock not Found");
                     return redirect()->back();
 

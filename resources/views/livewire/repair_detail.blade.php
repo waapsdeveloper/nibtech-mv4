@@ -337,7 +337,6 @@
                                         $id = [];
                                     @endphp
                                     @php
-                                        $stocks = $variation->stocks;
                                         // $items = $stocks->order_item;
                                         $j = 0;
                                         $total = 0;
