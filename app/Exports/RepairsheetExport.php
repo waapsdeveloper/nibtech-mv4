@@ -14,7 +14,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
     {
 
         $data = DB::table('process')
-        ->leftJoin('process_stock', 'process.id', '=', 'process_stock.order_id')
+        ->leftJoin('process_stock', 'process.id', '=', 'process_stock.process_id')
         ->leftJoin('admin', 'process_stock.admin_id', '=', 'admin.id')
         ->leftJoin('stock', 'process_stock.stock_id', '=', 'stock.id')
         ->leftJoin('variation', 'stock.variation_id', '=', 'variation.id')
