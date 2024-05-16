@@ -579,7 +579,7 @@ class Repair extends Component
                 'variation.storage',
                 'variation.grade',
                 DB::raw('AVG(process_stock.price) as average_price'),
-                DB::raw('SUM(process_stock.quantity) as total_quantity'),
+                DB::raw('COUNT(process_stock.id) as total_quantity'),
                 DB::raw('SUM(process_stock.price) as total_price')
             )
             ->where('process_stock.process_id',$process_id)
