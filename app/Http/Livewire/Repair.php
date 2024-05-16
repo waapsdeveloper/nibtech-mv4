@@ -566,7 +566,7 @@ class Repair extends Component
     {
 
         // Find the order
-        $process = Process_model::with('customer', 'process_stock')->find($process_id);
+        $process = Process_model::with('customer', 'process_stocks')->find($process_id);
 
         $process_stock = Process_stock_model::
             join('stock', 'process_stock.stock_id', '=', 'stock.id')
