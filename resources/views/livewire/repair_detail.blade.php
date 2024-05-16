@@ -291,8 +291,6 @@
                         <div>Total: {{$i }}</div>
                     </div>
                 </div>
-                </div>
-            </div>
             </div>
             @endforeach
 
