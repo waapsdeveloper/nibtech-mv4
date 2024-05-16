@@ -183,7 +183,7 @@
                                                     @isset($item->stock->tester) ({{ $item->stock->tester }}) @endisset
                                                 </td>
                                                 @endif
-                                                <td style="width:220px">{{ $order->created_at}} <br> {{ $order->processed_at." ".$order->tracking_number }}</td>
+                                                <td style="width:220px">{{ $item->created_at}} <br> {{ $order->processed_at." ".$order->tracking_number }}</td>
                                             </tr>
                                         @php
                                             $i ++;

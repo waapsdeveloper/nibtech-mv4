@@ -90,7 +90,7 @@ class IMEI extends Component
             }
 
             $items3 = Order_item_model::where(['stock_id'=>$stock->id, 'linked_id' => $stock->purchase_item->id])->whereHas('order', function ($query) {
-                $query->where('order_type_id', 3);
+                $query->whereIn('order_type_id', [5,3]);
             })->orderBy('id','asc')->get();
             if($items3->count() > 1){
                 $i = 0;
