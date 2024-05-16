@@ -52,6 +52,7 @@ class PacksheetExport implements FromCollection, WithHeadings
     public function headings(): array
     {
         return [
+            'No',
             'Model',
             'Storage',
             'Color',
