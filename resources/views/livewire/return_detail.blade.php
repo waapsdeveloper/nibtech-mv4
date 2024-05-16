@@ -390,7 +390,7 @@
 
 
         <br>
-        @if (isset($variations))
+        @if (isset($graded_stocks))
 
 
         <div class="row">
@@ -447,16 +447,12 @@
         </div>
         <div class="row">
 
-            @foreach ($stock_operations as $stock_operation)
+            @foreach ($graded_stocks as $graded_stock)
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header pb-0">
-                        {{-- @php
-                            isset($stock_operation->color_id)?$color = $stock_operation->color_id->name:$color = null;
-                            isset($stock_operation->storage)?$storage = $storages[$stock_operation->storage]:$storage = null;
-                        @endphp
-                        {{ $stock_operation->product->model." ".$storage." ".$color." ".$stock_operation->grade_id->name }} --}}
-                        {{ $grades[$stock_operation->grade]}}
+                        {{ $graded_stock->name}}
+
                     </div>
                             {{-- {{ $stock_operation }} --}}
                     <div class="card-body"><div class="table-responsive">
@@ -484,7 +480,6 @@
                                         $id = [];
                                     @endphp
                                     @php
-                                        $all_rows = preg_split('/(?<=\}),(?=\{)/', $stock_operation->all_rows);
                                         // $stocks = $stock_operation->stocks;
                                         // $items = $stocks->order_item;
                                         $j = 0;
@@ -492,28 +487,17 @@
                                         // print_r($stocks);
                                     @endphp
 
-                                    @foreach ($all_rows as $row)
-                                        {{-- @dd($item) --}}
-                                        {{-- @if($item->order_item[0]->order_id == $order_id) --}}
-                                        @php
-                                        $i ++;
-                                        $row = json_decode($row);
-                                        if($row == null){
-                                            continue;
-                                        }
-                                        $stock = $a_stocks->find($row->stock_id);
-                                        if($stock == null){
-                                            continue;
-                                        }
-                                        // print_r($stock);
-                                        // $prices[] = $item->sale_item($order_id)->price;
-                                    @endphp
+                                    @foreach ($graded_stock->variations as $variation)
                         @php
-                        $variation = $stock->variation;
                             isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
                             isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
                         @endphp
 
+                                    @foreach ($variation->stocks as $stock)
+                                        @php
+                                        $row = $stock->latest_operation;
+                                        $i ++;
+                                    @endphp
                                         <tr>
                                             <td>{{ $i }}</td>
                                             <td>{{ $variation->product->model." ".$storage." ".$color." ".$variation->grade_id->name }}</td>
@@ -521,19 +505,20 @@
                                             @if (session('user')->hasPermission('view_cost'))
                                             <td>{{ $currency.$stock->sale_item($order_id)->price }}</td>
                                             @endif
-                                            <td>{{ $row->description }}</td>
-                                            <td>{{ $row->updated_at }}</td>
+                                            <td>{{ $row->description ?? null }}</td>
+                                            <td>{{ $row->updated_at ?? null }}</td>
                                             @if (session('user')->hasPermission('delete_return_item'))
                                             <td><a href="{{ url('delete_return_item').'/'.$stock->sale_item($order_id)->id }}"><i class="fa fa-trash"></i></a></td>
                                             @endif
                                         </tr>
                                         {{-- @endif --}}
                                     @endforeach
+                                    @endforeach
                                 </tbody>
                             </table>
                         <br>
                     </div>
-                    {{-- <div class="text-end">Average Cost: {{array_sum($prices)/count($prices) }} &nbsp;&nbsp;&nbsp; Total: {{$i }}</div> --}}
+                    <div class="text-end"> Total: {{$i }}</div>
                     </div>
                 </div>
             </div>

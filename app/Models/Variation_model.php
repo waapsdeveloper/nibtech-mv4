@@ -46,7 +46,7 @@ class Variation_model extends Model
     }
     public function grade_id()
     {
-        return $this->hasOne(Grade_model::class, 'id', 'grade');
+        return $this->belongsTo(Grade_model::class, 'grade', 'id');
     }
     public function stocks()
     {

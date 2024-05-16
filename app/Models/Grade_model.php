@@ -16,5 +16,9 @@ class Grade_model extends Model
         // other fields...
         // 'reference_id',
     ];
+    public function variations()
+    {
+        return $this->hasMany(Variation_model::class, 'grade', 'id');
+    }
 
 }

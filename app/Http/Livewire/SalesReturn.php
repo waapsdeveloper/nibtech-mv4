@@ -228,58 +228,72 @@ class SalesReturn extends Component
             }
 
         }
-        $variations = Variation_model::with([
-            'stocks' => function ($query) use ($order_id) {
-                $query->whereHas('order_item', function ($query) use ($order_id) {
+        $graded_stocks = Grade_model::with([
+            'variations.stocks' => function ($query) use ($order_id) {
+                $query->whereHas('order_items', function ($query) use ($order_id) {
                     $query->where('order_id', $order_id);
                 });
-            },
-            'stocks.order_item'
+            }
         ])
-        ->whereHas('stocks', function ($query) use ($order_id) {
-            $query->whereHas('order_item', function ($query) use ($order_id) {
-                $query->where('order_id', $order_id);
-            });
+        ->whereHas('variations.stocks.order_items', function ($query) use ($order_id) {
+            $query->where('order_id', $order_id);
         })
-        ->orderBy('grade', 'desc')
+        ->orderBy('id', 'asc')
         ->get();
+        // dd($graded_stock);
+        $data['graded_stocks'] = $graded_stocks;
+        // $variations = Variation_model::with([
+        //     'stocks' => function ($query) use ($order_id) {
+        //         $query->whereHas('order_item', function ($query) use ($order_id) {
+        //             $query->where('order_id', $order_id);
+        //         });
+        //     },
+        //     'stocks.order_item'
+        // ])
+        // ->whereHas('stocks', function ($query) use ($order_id) {
+        //     $query->whereHas('order_item', function ($query) use ($order_id) {
+        //         $query->where('order_id', $order_id);
+        //     });
+        // })
+        // ->orderBy('grade', 'desc')
+        // ->get();
 
-        // Remove variations with no associated stocks
-        $variations = $variations->filter(function ($variation) {
-            return $variation->stocks->isNotEmpty();
-        });
+        // // Remove variations with no associated stocks
+        // $variations = $variations->filter(function ($variation) {
+        //     return $variation->stocks->isNotEmpty();
+        // });
 
-        $data['variations'] = $variations;
+        // $data['variations'] = $variations;
 
-        $stock_operations = Stock_operations_model::with([
-            'stock' => function ($query) use ($order_id) {
-                $query->whereHas('order_item', function ($query) use ($order_id) {
-                    $query->where('order_id', $order_id);
-                });
-            },
-            'new_variation'
-        ])
-        ->whereHas('stock', function ($query) use ($order_id) {
-            $query->whereHas('order_item', function ($query) use ($order_id) {
-                $query->where('order_id', $order_id);
-            });
-        })
-        ->join('variation', 'stock_operations.new_variation_id', '=', 'variation.id')
-        ->select(
-            // 'stock_operations.description',
-            'variation.grade',
-            DB::raw('COUNT(stock_operations.id) as count'),
-            DB::raw('GROUP_CONCAT(JSON_OBJECT("id", stock_operations.id, "stock_id", stock_operations.stock_id, "description", stock_operations.description, "updated_at", stock_operations.updated_at)) AS all_rows')
-            )
-        ->groupBy('variation.grade')
-        ->orderBy('variation.grade', 'asc')
-        // ->orderBy('stock_operations.description', 'asc')
-        ->get();
+        // $stock_operations = Stock_operations_model::with([
+        //     'stock' => function ($query) use ($order_id) {
+        //         $query->whereHas('order_item', function ($query) use ($order_id) {
+        //             $query->where('order_id', $order_id);
+        //         });
+        //     },
+        //     'new_variation'
+        // ])
+        // ->whereHas('stock', function ($query) use ($order_id) {
+        //     $query->whereHas('order_item', function ($query) use ($order_id) {
+        //         $query->where('order_id', $order_id);
+        //     });
+        // })
+        // ->join('variation', 'stock_operations.new_variation_id', '=', 'variation.id')
+        // ->select(
+        //     // 'stock_operations.description',
+        //     'variation.grade',
+        //     DB::raw('COUNT(stock_operations.id) as count'),
+        //     DB::raw('GROUP_CONCAT(JSON_OBJECT("id", stock_operations.id, "stock_id", stock_operations.stock_id, "description", stock_operations.description, "updated_at", stock_operations.updated_at)) AS all_rows')
+        //     )
+        // ->groupBy('variation.grade')
+        // ->orderBy('variation.grade', 'asc')
+        // // ->orderBy('stock_operations.description', 'asc')
+        // ->get();
 
-        $a_stocks = Stock_model::whereHas('order_item', function ($query) use ($order_id) {
-                $query->where('order_id', $order_id);
-            })->get();
-        $data['a_stocks'] = $a_stocks;
+        // $a_stocks = Stock_model::whereHas('order_item', function ($query) use ($order_id) {
+        //         $query->where('order_id', $order_id);
+        //     })->get();
+        // $data['a_stocks'] = $a_stocks;
         // echo "<pre>";
         // print_r($stock_operations);
         // echo "</pre>";
@@ -289,7 +303,7 @@ class SalesReturn extends Component
         //     return $operation->stocks->isNotEmpty();
         // });
 
-        $data['stock_operations'] = $stock_operations;
+        // $data['stock_operations'] = $stock_operations;
 
         $last_ten = Order_item_model::where('order_id',$order_id)->orderBy('id','desc')->limit(10)->get();
         $data['last_ten'] = $last_ten;

@@ -30,6 +30,10 @@ class Stock_model extends Model
     {
         return $this->hasMany(Order_item_model::class, 'stock_id', 'id');
     }
+    public function order_items()
+    {
+        return $this->hasMany(Order_item_model::class, 'stock_id', 'id');
+    }
     public function process_stocks()
     {
         return $this->hasMany(Process_stock_model::class, 'stock_id', 'id');
