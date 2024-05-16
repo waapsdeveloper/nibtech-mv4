@@ -70,9 +70,66 @@ class FunctionsDaily extends Command
                 }
             }
         }
+
+
         $stocks = Stock_model::all();
         foreach($stocks as $stock){
 
+            $last_item = $stock->last_item();
+
+            $items2 = Order_item_model::where(['stock_id'=>$stock->id,'linked_id'=>null])->whereHas('order', function ($query) {
+                $query->where('order_type_id', 1)->where('reference_id','<=',10009);
+            })->orderBy('id','asc')->get();
+            if($items2->count() > 1){
+                $i = 0;
+                foreach($items2 as $item2){
+                    $i ++;
+                    if($i == 1){
+                        $stock->order_id = $item2->order_id;
+                        $stock->save();
+                    }else{
+                        $item2->delete();
+                    }
+                }
+            }
+
+            $items3 = Order_item_model::where(['stock_id'=>$stock->id, 'linked_id' => $stock->purchase_item->id])->whereHas('order', function ($query) {
+                $query->whereIn('order_type_id', [5,3]);
+            })->orderBy('id','asc')->get();
+            if($items3->count() > 1){
+                $i = 0;
+                foreach($items3 as $item3){
+                    $i ++;
+                    if($i == 1){
+                    }else{
+                        $item3->linked_id = null;
+                        $item3->save();
+                    }
+                }
+            }
+
+            $items4 = Order_item_model::where(['stock_id'=>$stock->id])->whereHas('order', function ($query) {
+                $query->whereIn('order_type_id', [5,3]);
+            })->orderBy('id','asc')->get();
+            if($items4->count() == 1){
+                foreach($items4 as $item4){
+                    if($item4->linked_id != $stock->purchase_item->id && $item4->linked_id != null){
+                        $item4->linked_id = $stock->purchase_item->id;
+                        $item4->save();
+                    }
+                }
+            }
+            $items5 = Order_item_model::where(['stock_id'=>$stock->id,'linked_id'=>null])->whereHas('order', function ($query) {
+                $query->whereIn('order_type_id', [2,3,4,5]);
+            })->orderBy('id','asc')->get();
+            if($items5->count() == 1){
+                foreach($items5 as $item5){
+                    $last_item = $stock->last_item();
+                    $item5->linked_id = $last_item->id;
+                    $item5->save();
+                }
+                    $last_item = $stock->last_item();
+            }
             $item = $stock->last_item();
             if($item != null){
 
