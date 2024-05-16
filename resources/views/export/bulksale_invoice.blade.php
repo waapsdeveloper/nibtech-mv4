@@ -207,6 +207,7 @@
                             <table cellpadding="5">
                                     <tr>
                                         <td>Sub Total:</td>
+                                        <td>Qty: {{$totalQty}}</td>
                                         <td align="right"> <strong>{{ $order->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td>
                                     </tr>
                                     <br>
@@ -214,6 +215,7 @@
                                     <hr>
                                     <tr>
                                         <td>Amount Due:</td>
+                                        <td></td>
                                         <td align="right"> <strong>{{ $order->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td>
                                     </tr>
                                     {{-- <tr>
