@@ -58,18 +58,18 @@ class FunctionsDaily extends Command
 
     private function check_stock_status(){
 
-        $items = Order_item_model::where('linked_id',null)->where('stock_id','!=',null)->whereHas('order', function ($query) {
-            $query->where('order_type_id', '!=', 1);
-        })->get();
-        foreach($items as $item){
-            if($item->stock != null){
+        // $items = Order_item_model::where('linked_id',null)->where('stock_id','!=',null)->whereHas('order', function ($query) {
+        //     $query->where('order_type_id', '!=', 1);
+        // })->get();
+        // foreach($items as $item){
+        //     if($item->stock != null){
 
-                $litem = $item->stock->last_item();
-                if($litem != null){
-                $item->linked_id = $litem->id;
-                }
-            }
-        }
+        //         $litem = $item->stock->last_item();
+        //         if($litem != null){
+        //         $item->linked_id = $litem->id;
+        //         }
+        //     }
+        // }
 
 
         $stocks = Stock_model::all();
