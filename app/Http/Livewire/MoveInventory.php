@@ -46,7 +46,8 @@ class MoveInventory extends Component
         $stocks = Stock_operations_model::where('created_at','>=',now()->format('Y-m-d')." 00:00:00")
             ->whereHas('stock', function ($query) {
                 $query->where('status', 1);
-            })->orderBy('id','desc')->get();
+            })
+            ->orderBy('id','desc')->get();
         $data['stocks'] = $stocks;
         $data['grade'] = Grade_model::find($grade);
 

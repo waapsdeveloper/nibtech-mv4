@@ -1153,6 +1153,7 @@ class Order extends Component
             if($item->stock->purchase_item){
                 $stock_operation->new_variation_id = $item->stock->purchase_item->variation_id;
                 $stock_operation->save();
+                $item->stock->variation_id = $item->stock->purchase_item->variation_id;
             }
 
             if($item->stock->status == 2){
