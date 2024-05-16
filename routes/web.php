@@ -88,6 +88,7 @@ Route::get('delete_repair/{id}', [Repair::class,'delete_repair'])->name('delete_
 Route::get('delete_repair_item/{id}', [Repair::class,'delete_repair_item'])->name('delete_repair_item');
 Route::get('repair/detail/{id}', [Repair::class,'repair_detail'])->name('repair_detail');
 Route::post('repair/ship/{id}', [Repair::class,'repair_ship'])->name('repair_ship');
+Route::get('export_repair_invoice/{id}', [Repair::class,'export_repair_invoice'])->name('repair_detail');
 Route::get('repair/internal', [Repair::class,'internal_repair'])->name('internal_repair');
 Route::post('add_internal_repair_item', [Repair::class,'add_internal_repair_item'])->name('internal_repair');
 
