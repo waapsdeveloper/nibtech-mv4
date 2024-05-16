@@ -121,6 +121,15 @@
                 </form>
             </div>
 
+            <div class="btn-group p-1" role="group">
+                <button type="button" class="btn-sm btn-secondary dropdown-toggle" id="pack_sheet" data-bs-toggle="dropdown" aria-expanded="false">
+                Pack Sheet
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="pack_sheet">
+                    <li><a class="dropdown-item" href="{{url(session('url').'export_repair_invoice')}}/{{ $process->id }}?packlist=2&id={{ $process->id }}">.xlsx</a></li>
+                    <li><a class="dropdown-item" href="{{url(session('url').'export_repair_invoice')}}/{{ $process->id }}?packlist=1" target="_blank">.pdf</a></li>
+                </ul>
+            </div>
 
             @endif
 
