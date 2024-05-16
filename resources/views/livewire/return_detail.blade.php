@@ -100,7 +100,7 @@
                         <select name="return[grade]" class="form-control form-select">
                             <option value="">Move to</option>
                             @foreach ($grades as $id => $name)
-                                @if($id > 7)
+                                @if($id > 5)
                                 <option value="{{ $id }}">{{ $name }}</option>
                                 @endif
                             @endforeach

@@ -12,6 +12,7 @@ use App\Models\Grade_model;
 use App\Models\Products_model;
 use App\Models\Stock_operations_model;
 use App\Models\Storage_model;
+use App\Models\Variation_model;
 use Carbon\Carbon;
 
 
@@ -175,6 +176,46 @@ class IMEI extends Component
 
     }
 
+
+
+    public function restock($stock_id){
+        $stock = Stock_model::find($stock_id);
+        if(!$stock){
+            session()->put('error', 'Stock not found');
+            return redirect()->back();
+        }
+        $item = $stock->last_item;
+
+        $variation = Variation_model::firstOrNew(['product_id' => $item->variation->product_id, 'storage' => $item->variation->storage, 'color' => $item->variation->color, 'grade' => 9]);
+
+        $variation->stock += 1;
+        $variation->status = 1;
+        $variation->save();
+
+
+
+        $stock_operation = Stock_operations_model::create([
+            'stock_id' => $stock->id,
+            'old_variation_id' => $stock->variation_id,
+            'new_variation_id' => $variation->id,
+            'description' => request('replacement')['reason'],
+            'admin_id' => session('user_id'),
+        ]);
+
+        $order_item = new Order_item_model();
+        $order_item->order_id = 8827;
+        $order_item->reference_id = $item->order->reference_id;
+        $order_item->variation_id = $item->variation_id;
+        $order_item->stock_id = $stock->id;
+        $order_item->quantity = 1;
+        $order_item->price = $item->price;
+        $order_item->status = 3;
+        $order_item->linked_id = $stock->purchase_item->id;
+        $order_item->admin_id = session('user_id');
+        $order_item->save();
+
+
+    }
 
 
 }
