@@ -29,7 +29,6 @@ class PacksheetExport implements FromCollection, WithHeadings
         })
 
         ->select(
-            DB::raw('(@rn:=@rn + 1) AS row_number'),
             'products.model',
             'storage.name as storage',
             'color.name as color',
@@ -39,7 +38,6 @@ class PacksheetExport implements FromCollection, WithHeadings
             'stock_operations.description as issue',
             'order_items.price as price'
         )
-        ->crossJoin(DB::raw('(SELECT @rn := 0) AS init'))
         ->where('orders.id', request('id'))
         ->where('orders.deleted_at',null)
         ->where('order_items.deleted_at', null)
@@ -52,7 +50,6 @@ class PacksheetExport implements FromCollection, WithHeadings
     public function headings(): array
     {
         return [
-            'No',
             'Model',
             'Storage',
             'Color',
