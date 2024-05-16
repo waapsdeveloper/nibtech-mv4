@@ -206,8 +206,7 @@
                 </tbody>
                 <tfoot>
                     <tr style="border-top: 1px solid Black" >
-                        <td></td>
-                        <td colspan="3">
+                        <td colspan="4">
                             <table cellpadding="5">
                                     <tr>
                                         <td>Sub Total:</td>
