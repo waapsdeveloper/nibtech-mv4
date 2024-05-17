@@ -558,8 +558,8 @@
                                 <label for="">Move to</label>
                                 <select name="replacement[grade]" class="form-control form-select" required>
                                     <option value="">Move to</option>
-                                    @foreach ($grades as $grade)
-                                        <option value="{{ $grade->id }}">{{ $grade->name }}</option>
+                                    @foreach ($grades as $id=>$name)
+                                        <option value="{{ $id }}">{{ $name }}</option>
                                     @endforeach
                                 </select>
                             </div>
