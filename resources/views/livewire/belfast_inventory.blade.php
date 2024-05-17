@@ -24,7 +24,7 @@
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Products</li>
+                        <li class="breadcrumb-item active" aria-current="page">Belfast Inventory</li>
                     </ol>
                 </div>
             </div>
@@ -154,23 +154,11 @@
 
         <div class="row">
             <div class="col-md-12" style="border-bottom: 1px solid rgb(216, 212, 212);">
-                <center><h4>Inventory</h4></center>
+                <center><h4>Belfast Inventory</h4></center>
             </div>
         </div>
         <br>
 
-        @if (session('user')->hasPermission('view_cost'))
-            <div class="">
-                Vendor wise average:
-                @foreach ($vendor_average_cost as $v_cost)
-                    {{ $vendors[$v_cost->customer_id] }}:
-                    {{ number_format($v_cost->average_price,2) }} x
-                    {{ $v_cost->total_qty }} =
-                    {{ number_format($v_cost->total_price,2) }} ({{number_format($v_cost->total_qty/$stocks->total()*100,2)}}%) ||
-
-                @endforeach
-            </div>
-        @endif
         <div class="d-flex justify-content-between">
             <div>
                 <a href="{{url('belfast_inventory')}}?status=1" class="btn btn-link">Active</a>
@@ -186,9 +174,6 @@
                         <div class="d-flex justify-content-between">
                             <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$stocks->firstItem()}} {{ __('locale.To') }} {{$stocks->lastItem()}} {{ __('locale.Out Of') }} {{$stocks->total()}} </h5>
 
-                            @if (session('user')->hasPermission('view_cost'))
-                            <h5>Average Cost: {{ number_format($average_cost->average_price,2) }} | Total Cost: {{ number_format($average_cost->total_price,2) }}</h5>
-                            @endif
                             <div class=" mg-b-0">
                                 <form method="get" action="" class="row form-inline">
                                     <label for="perPage" class="card-title inline">per page:</label>
@@ -233,6 +218,7 @@
                                         <th><small><b>Operator</b></small></th>
                                         <th><small><b>Reason</b></small></th>
                                         <th><small><b>Datetime</b></small></th>
+                                        <th><small><b>Action</b></small></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -254,6 +240,28 @@
                                             <td> {{ $stock->latest_operation->description }} </td>
                                             <td>{{ $stock->latest_operation->updated_at }}</td>
                                             @endif
+                                            <td>
+
+                                                <form action="{{url('belfast_inventory/aftersale_action/').'/'.$stock->id}}" method="POST" id="aftersale_action" class="form-inline">
+                                                    <div class="form-floating">
+                                                        <input type="text" class="form-control" name="description" placeholder="Enter Reason">
+                                                        <label for="">Reason</label>
+                                                    </div>
+                                                    <input id="action" name="action" type="hidden">
+                                                    <div class="btn-group">
+                                                        <button class="btn btn-secondary dropdown-toggle" data-toggle="dropdown">
+                                                            Send to
+                                                            <span class="caret"></span>
+                                                        <ul class="dropdown-menu">
+                                                            <li class="dropdown-item" onclick="$('#action').val('resend'); $('#aftersale_action').submit()">Customer</li>
+                                                            <li class="dropdown-item" onclick="$('#action').val('aftersale_repair'); $('#aftersale_action').submit()">Aftersale Repair</li>
+                                                            <li class="dropdown-item" onclick="$('#action').val('return'); $('#aftersale_action').submit()">Return Batch</li>
+                                                            <li class="dropdown-item" onclick="$('#action').val('rma'); $('#aftersale_action').submit()">RMA</li>
+                                                        </ul>
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </td>
                                         </tr>
 
                                         @php

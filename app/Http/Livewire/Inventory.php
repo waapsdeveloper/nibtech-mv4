@@ -364,7 +364,7 @@ class Inventory extends Component
 
         }elseif($action == 'aftersale_repair'){
             $grade = 8;
-        }elseif($action == 'refund_rma'){
+        }elseif($action == 'rma'){
             $grade = 10;
         }
         $new_variation = Variation_model::firstOrNew([

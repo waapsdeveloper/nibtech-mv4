@@ -643,7 +643,7 @@
                             type="button"><span aria-hidden="true">&times;</span></button>
                         <h3 class="modal-title mg-b-5">Update Order</h3>
                         <hr>
-                        <form action="{{ url('order/replacement') }}" method="POST">
+                        <form action="{{ url('order/replacement/8827') }}" method="POST">
                             @csrf
                             <div class="form-group">
                                 <label for="">Order Number</label>

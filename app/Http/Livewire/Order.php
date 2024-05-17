@@ -1174,7 +1174,7 @@ class Order extends Component
         return redirect()->back();
     }
 
-    public function replacement(){
+    public function replacement($order_id = 8974){
         $item = Order_item_model::find(request('replacement')['item_id']);
         if(session('user')->hasPermission('replacement')){
             if(!$item->stock->order){
@@ -1255,7 +1255,7 @@ class Order extends Component
 
 
             $order_item = new Order_item_model();
-            $order_item->order_id = 8974;
+            $order_item->order_id = $order_id;
             $order_item->reference_id = $item->order->reference_id;
             $order_item->variation_id = $item->variation_id;
             $order_item->stock_id = $stock->id;
