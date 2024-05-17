@@ -226,7 +226,7 @@
                             <div>
 
                                 @if (session('user')->hasPermission('add_refund_items') && isset($restock))
-                                <a class="Btn btn-primary" id="replacement" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $restock['reference_id'] }}" data-bs-item="{{ $restock['linked_id'] }}"> Replacement </a>
+                                <a class="btn btn-primary" id="replacement" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $restock['reference_id'] }}" data-bs-item="{{ $restock['linked_id'] }}"> Replacement </a>
                                 @endif
                             </div>
 
