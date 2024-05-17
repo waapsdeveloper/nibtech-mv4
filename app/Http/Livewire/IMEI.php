@@ -178,7 +178,7 @@ class IMEI extends Component
 
 
 
-    public function restock($stock_id){
+    public function refund($stock_id){
         $stock = Stock_model::find($stock_id);
         if(!$stock){
             session()->put('error', 'Stock not found');
@@ -215,6 +215,8 @@ class IMEI extends Component
         $order_item->save();
 
 
+        session()->put('success', 'Stock Refunded Successfully');
+        return redirect()->back();
     }
 
 

@@ -117,6 +117,7 @@ Route::post('rma/update_prices', [RMA::class,'update_prices'])->name('update_rma
 Route::get('export_rma_invoice/{id}', [RMA::class,'export_rma_invoice'])->name('rma_detail');
 
 Route::get('imei', IMEI::class)->name('view_imei');
+Route::get('imei/refund/{id}', [IMEI::class,'refund'])->name('refund_imei');
 
 Route::get('issue', Issue::class)->name('view_issue');
 

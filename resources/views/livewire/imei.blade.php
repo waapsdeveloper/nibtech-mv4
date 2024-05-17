@@ -54,8 +54,8 @@
                     document.getElementById('imeiInput').focus();
                 };
             </script>
-            @if (session('user')->hasPermission('delete'))
-                {{-- <a href="{{ url('imei')}}?imei={{$imei}}&delete=YES">DELETE</a> --}}
+            @if (session('user')->hasPermission('refund_imei'))
+                <a href="{{ url('imei/refund').'/'.$stock->id}}">Refund</a>
             @endif
         </div>
         <br>
