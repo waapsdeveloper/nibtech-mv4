@@ -45,7 +45,7 @@ class Order_model extends Model
     }
     public function exchange_items()
     {
-        return $this->hasMany(Order_item_model::class, 'reference_id', 'reference_id')->where('order_id', 8974);
+        return $this->hasMany(Order_item_model::class, 'reference_id', 'reference_id')->whereIn('order_id', [8974,8827]);
     }
     public function order_issues()
     {
