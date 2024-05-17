@@ -225,12 +225,12 @@
                                     <tr>
                                         <th><small><b>No</b></small></th>
                                         <th><small><b>Product</b></small></th>
-                                        <th><small><b>IMEI / Serial</b></small></th>
+                                        <th><small><b>IMEI / Serial </b></small></th>
                                         <th><small><b>Vendor</b></small></th>
                                         @if (session('user')->hasPermission('view_cost'))
                                         <th><small><b>Cost</b></small></th>
                                         @endif
-                                        <th><small><b>Added By</b></small></th>
+                                        <th><small><b>Operator</b></small></th>
                                         <th><small><b>Reason</b></small></th>
                                         <th><small><b>Datetime</b></small></th>
                                     </tr>
