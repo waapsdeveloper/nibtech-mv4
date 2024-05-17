@@ -195,11 +195,6 @@ class Repair extends Component
         $repair = (object) request('repair');
         $error = "";
 
-        $order = Process_model::create([
-            'reference_id' => 20001,
-            'process_type_id' => 9,
-            'status' => 1,
-        ]);
         $process = Process_model::firstOrNew(['reference_id' => $repair->reference_id, 'process_type_id' => 5 ]);
         $process->customer_id = $repair->repairer;
         $process->status = 1;
