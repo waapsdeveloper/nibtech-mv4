@@ -210,7 +210,7 @@ class IMEI extends Component
         $order_item->quantity = 1;
         $order_item->price = $item->price;
         $order_item->status = 3;
-        $order_item->linked_id = $stock->purchase_item->id;
+        $order_item->linked_id = $item->id;
         $order_item->admin_id = session('user_id');
         $order_item->save();
 
