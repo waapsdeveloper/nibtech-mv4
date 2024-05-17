@@ -12,6 +12,7 @@ use App\Models\Brand_model;
 use App\Models\Customer_model;
 use App\Models\Stock_model;
 use App\Models\Products_model;
+use App\Models\Stock_operations_model;
 use App\Models\Variation_model;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -344,6 +345,34 @@ class Inventory extends Component
         // dd($data['vendor_average_cost']);
 
         return view('livewire.belfast_inventory')->with($data);
+    }
+
+    public function aftersale_action($stock_id, $action){
+        $stock = Stock_model::find($stock_id);
+        $product_id = $stock->variation->product_id;
+        $storage = $stock->variation->storage;
+        $color = $stock->variation->color;
+        $grade = $stock->variation->grade;
+
+        if($action == 'resend'){
+            // $variation_id = $stock->last_item->variation_id;
+        }elseif($action == 'aftersale_repair'){
+
+        }
+        $new_variation = Variation_model::firstOrNew([
+            'product_id' => $product_id,
+            'storage' => $storage,
+            'color' => $color,
+            'grade' => $grade,
+        ]);
+        $new_variation->status = 1;
+        $stock_operation = Stock_operations_model::create([
+            'stock_id' => $stock_id,
+            'old_variation_id' => $stock->variation_id,
+            'new_variation_id' => $new_variation->id,
+            'description' => request('description'),
+            'admin_id' => session('user_id'),
+        ]);
     }
 }
 

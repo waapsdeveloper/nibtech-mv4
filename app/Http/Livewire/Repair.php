@@ -84,6 +84,15 @@ class Repair extends Component
 
         return redirect()->back();
     }
+    public function repair_approve($repair_id){
+        $repair = Process_model::find($repair_id);
+        $item_count = $repair->process_stocks->count();
+        $repair->description = request('tracking_number');
+        $repair->status = 3;
+        $repair->save();
+
+        return redirect()->back();
+    }
     public function delete_repair($process_id){
 
 
