@@ -55,7 +55,15 @@
                 };
             </script>
             @if (session('user')->hasPermission('refund_imei') && isset($stock))
-                <a href="{{ url('imei/refund').'/'.$stock->id}}">Refund</a>
+            <div class="p-2">
+                <form action="{{ url('imei/refund').'/'.$stock->id}}" method="POST" id="refund" class="form-inline">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" name="description" placeholder="Enter Reason" id="description" required>
+                        <label for="description">Reason</label>
+                    </div>
+                        <button class="btn btn-primary pd-x-20" type="submit">Refund</button>
+                </form>
+            </div>
             @endif
         </div>
         <br>
