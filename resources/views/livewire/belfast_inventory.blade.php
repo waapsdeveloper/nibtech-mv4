@@ -252,15 +252,23 @@
                                                         <button class="btn btn-secondary dropdown-toggle" data-toggle="dropdown">
                                                             Send to
                                                             <span class="caret"></span>
-                                                        <ul class="dropdown-menu">
-                                                            <li class="dropdown-item" onclick="$('#action').val('resend'); $('#aftersale_action').submit()">Customer</li>
-                                                            <li class="dropdown-item" onclick="$('#action').val('aftersale_repair'); $('#aftersale_action').submit()">Aftersale Repair</li>
-                                                            <li class="dropdown-item" onclick="$('#action').val('return'); $('#aftersale_action').submit()">Return Batch</li>
-                                                            <li class="dropdown-item" onclick="$('#action').val('rma'); $('#aftersale_action').submit()">RMA</li>
-                                                        </ul>
                                                         </button>
+                                                        <ul class="dropdown-menu">
+                                                            <li class="dropdown-item" onclick="setActionAndSubmit('resend')">Customer</li>
+                                                            <li class="dropdown-item" onclick="setActionAndSubmit('aftersale_repair')">Aftersale Repair</li>
+                                                            <li class="dropdown-item" onclick="setActionAndSubmit('return')">Return Batch</li>
+                                                            <li class="dropdown-item" onclick="setActionAndSubmit('rma')">RMA</li>
+                                                        </ul>
                                                     </div>
                                                 </form>
+
+                                                <script>
+                                                    function setActionAndSubmit(action) {
+                                                        $('#action').val(action);
+                                                        $('#aftersale_action').submit();
+                                                    }
+                                                </script>
+
                                             </td>
                                         </tr>
 
