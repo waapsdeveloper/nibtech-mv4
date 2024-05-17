@@ -184,7 +184,7 @@ class IMEI extends Component
             session()->put('error', 'Stock not found');
             return redirect()->back();
         }
-        $item = $stock->last_item;
+        $item = $stock->last_item();
 
         $variation = Variation_model::firstOrNew(['product_id' => $item->variation->product_id, 'storage' => $item->variation->storage, 'color' => $item->variation->color, 'grade' => 9]);
 
