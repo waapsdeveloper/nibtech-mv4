@@ -355,9 +355,17 @@ class Inventory extends Component
         $grade = $stock->variation->grade;
 
         if($action == 'resend'){
-            // $variation_id = $stock->last_item->variation_id;
-        }elseif($action == 'aftersale_repair'){
+            $variation = $stock->last_item->variation;
 
+            $product_id = $variation->product_id;
+            $storage = $variation->storage;
+            $color = $variation->color;
+            $grade = $variation->grade;
+
+        }elseif($action == 'aftersale_repair'){
+            $grade = 8;
+        }elseif($action == 'refund_rma'){
+            $grade = 10;
         }
         $new_variation = Variation_model::firstOrNew([
             'product_id' => $product_id,
