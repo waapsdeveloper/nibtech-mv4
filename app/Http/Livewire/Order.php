@@ -573,6 +573,8 @@ class Order extends Component
                         $newColor = Color_model::create([
                             'name' => $colorName
                         ]);
+                        $colors = Color_model::pluck('name','id')->toArray();
+                        $lowercaseColors = array_map('strtolower', $colors);
                         // Retrieve the ID of the newly created color
                         $clr = $newColor->id;
                     }
