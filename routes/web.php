@@ -139,7 +139,6 @@ Route::get('order/delete_item/{id}', [Order::class,'delete_item'])->name('delete
 Route::post('order/correction', [Order::class,'correction'])->name('dispatch_order');
 Route::post('order/replacement', [Order::class,'replacement'])->name('dispatch_order');
 Route::get('order/recheck/{id}/{refresh?}', [Order::class,'recheck'])->name('view_order');
-Route::get('import', [Order::class,'import'])->name('');
 Route::post('export_order', [Order::class,'export'])->name('dispatch_order');
 Route::get('export_note', [Order::class,'export_note'])->name('dispatch_order');
 Route::post('export_label', [Order::class,'export_label'])->name('dispatch_order');

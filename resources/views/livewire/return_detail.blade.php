@@ -223,6 +223,12 @@
                                     </form>
                                 @endif
                             </div>
+                            <div>
+
+                                @if (session('user')->hasPermission('add_refund_items') && isset($restock))
+                                <a class="Btn btn-primary" id="replacement" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $restock['reference_id'] }}" data-bs-item="{{ $restock['linked_id'] }}"> Replacement </a>
+                                @endif
+                            </div>
 
                         </div>
                     </div>
@@ -530,6 +536,54 @@
         </div>
 
         @endif
+
+
+
+        <div class="modal" id="replacement_model">
+            <div class="modal-dialog wd-xl-400" role="document">
+                <div class="modal-content">
+                    <div class="modal-body pd-sm-40">
+                        <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
+                            type="button"><span aria-hidden="true">&times;</span></button>
+                        <h3 class="modal-title mg-b-5">Update Order</h3>
+                        <hr>
+                        <form action="{{ url('return/replacement') }}" method="POST">
+                            @csrf
+                            <div class="form-group">
+                                <label for="">Order Number</label>
+                                <input class="form-control" name="replacement[id]" type="text" id="order_reference" readonly>
+                            </div>
+                            <h4>Replace</h4>
+                            <div class="form-group">
+                                <label for="">Move to</label>
+                                <select name="replacement[grade]" class="form-control form-select" required>
+                                    <option value="">Move to</option>
+                                    @foreach ($grades as $grade)
+                                        <option value="{{ $grade->id }}">{{ $grade->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="">Reason</label>
+                                <textarea class="form-control" name="replacement[reason]"></textarea>
+                            </div>
+                            <h4>With</h4>
+                            <div class="form-group">
+                                <label for="">Tester</label>
+                                <input class="form-control" placeholder="input Tester Initial" name="replacement[tester]" type="text">
+                            </div>
+                            <div class="form-group">
+                                <label for="">IMEI / Serial Number</label>
+                                <input class="form-control" placeholder="input IMEI / Serial Number" name="replacement[imei]" type="text" required>
+                            </div>
+                            <input type="hidden" id="item_id" name="replacement[item_id]" value="">
+
+                            <button class="btn btn-primary btn-block">{{ __('locale.Submit') }}</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     @endsection
 
     @section('scripts')
@@ -539,6 +593,19 @@
             });
 
         </script>
+    <script>
+
+        $('#replacement_model').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget) // Button that triggered the modal
+            var reference = button.data('bs-reference') // Extract info from data-* attributesv
+            var item = button.data('bs-item') // Extract info from data-* attributes
+            // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+            // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+            var modal = $(this)
+            modal.find('.modal-body #order_reference').val(reference)
+            modal.find('.modal-body #item_id').val(item)
+            })
+    </script>
 		<!--Internal Sparkline js -->
 		<script src="{{asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js')}}"></script>
 
