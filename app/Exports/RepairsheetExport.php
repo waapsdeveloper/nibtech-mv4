@@ -22,6 +22,10 @@ class RepairsheetExport implements FromCollection, WithHeadings
         ->leftJoin('color', 'variation.color', '=', 'color.id')
         ->leftJoin('storage', 'variation.storage', '=', 'storage.id')
         ->leftJoin('grade', 'variation.grade', '=', 'grade.id')
+        ->leftJoin('order_items', function ($join) {
+            $join->on('stock.id', '=', 'order_items.stock_id')
+                 ->where('order_items.order_id', '=', DB::raw('stock.order_id'));
+        })
         ->leftJoin('stock_operations', function ($join) {
             $join->on('stock.id', '=', 'stock_operations.stock_id')
                  ->where('stock_operations.new_variation_id', '=', DB::raw('variation.id'))
@@ -36,7 +40,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
             'stock.imei as imei',
             'stock.serial_number as serial_number',
             'stock_operations.description as issue',
-            'process_stock.price as price'
+            'order_items.price as price'
         )
         ->where('process.id', request('id'))
         ->where('process.deleted_at',null)
