@@ -202,8 +202,9 @@
                                                 <form id="order_issues_{{$j+=1}}" method="POST" action="{{ url('purchase/remove_issues') }}" class="form-inline">
                                                     @csrf
                                                 @switch($grouped_issue->message)
+                                                    @case("Additional Item")
+                                                        @break
                                                     @case("Product Name Not Found")
-
                                                     <div class="form-floating">
                                                         <input type="text" list="variations" id="variation" name="variation" class="form-control" value="{{ $grouped_issue->name }}" required>
                                                         <datalist id="variations">
