@@ -1336,9 +1336,16 @@ class Order extends Component
 
                 $stock_operation = Stock_operations_model::create([
                     'stock_id' => $item->stock_id,
-                    'old_variation_id' => $stock->variation_id,
+                    'old_variation_id' => $item->variation_id,
                     'new_variation_id' => $variation->id,
                     'description' => request('replacement')['reason']." | Order: ".$item->order->reference_id." | New IMEI: ".$imei.$serial_number,
+                    'admin_id' => session('user_id'),
+                ]);
+                $stock_operation_2 = Stock_operations_model::create([
+                    'stock_id' => $stock->id,
+                    'old_variation_id' => $stock->variation_id,
+                    'new_variation_id' => $item->variation_id,
+                    'description' => "Replacement | Order: ".$item->order->reference_id." | Old IMEI: ".$item->stock->imei.$item->stock->serial_number,
                     'admin_id' => session('user_id'),
                 ]);
 
