@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Http\Livewire\Variation;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -21,4 +22,8 @@ class Grade_model extends Model
         return $this->hasMany(Variation_model::class, 'grade', 'id');
     }
 
+    public function stocks()
+    {
+        return $this->hasManyThrough(Stock_model::class, Variation_model::class, 'grade', 'id', 'variation_id', 'id');
+    }
 }
