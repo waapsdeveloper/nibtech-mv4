@@ -27,6 +27,12 @@ class Order_item_model extends Model
         'linked_id',
         'admin_id'
     ];
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+
+        $this->attributes['admin_id'] = session('user_id');
+    }
     public function variation()
     {
         return $this->hasOne(Variation_model::class, 'id', 'variation_id');
