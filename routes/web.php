@@ -137,7 +137,7 @@ Route::post('order/dispatch/{id}', [Order::class,'dispatch'])->name('dispatch_or
 Route::get('order/track/{id}', [Order::class,'track_order'])->name('view_order');
 Route::get('order/delete_item/{id}', [Order::class,'delete_item'])->name('delete_order');
 Route::post('order/correction', [Order::class,'correction'])->name('dispatch_order');
-Route::post('order/replacement', [Order::class,'replacement'])->name('dispatch_order');
+Route::post('order/replacement/{london?}', [Order::class,'replacement'])->name('dispatch_order');
 Route::get('order/recheck/{id}/{refresh?}', [Order::class,'recheck'])->name('view_order');
 Route::post('export_order', [Order::class,'export'])->name('dispatch_order');
 Route::get('export_note', [Order::class,'export_note'])->name('dispatch_order');
