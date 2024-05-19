@@ -179,17 +179,17 @@ class Index extends Component
         ->orderBy('grade_id')
         ->get();
         mail('haleem.shahhs@gmail.com', 'Hello', 'Hello, World!', 'haleem@gmail.com');
-        $data['graded_available_inventory'] = Grade_model::with('stocks', function($q){
-            $q->where('status',1);
-        })->whereHas('stocks', function($q) {
-            $q->where('status',1);
-        })->get();
+        // $data['graded_available_inventory'] = Grade_model::with('stocks', function($q){
+        //     $q->where('status',1);
+        // })->whereHas('stocks', function($q) {
+        //     $q->where('status',1);
+        // })->get();
 
-        $data['graded_aftersale_inventory'] = Grade_model::whereIn()->with('stocks', function($q){
-            $q->where('status',2);
-        })->whereHas('stocks', function($q) {
-            $q->where('status',2);
-        })->get();
+        // $data['graded_aftersale_inventory'] = Grade_model::whereIn()->with('stocks', function($q){
+        //     $q->where('status',2);
+        // })->whereHas('stocks', function($q) {
+        //     $q->where('status',2);
+        // })->get();
 
         $order = [];
         $dates = [];
