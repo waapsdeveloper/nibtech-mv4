@@ -676,6 +676,9 @@ class Order extends Component
         if(request('imei')){
             $imei = request('imei');
         }
+        if(request('order')){
+            $order_id = request('order');
+        }
         if(request('variation')){
             $variation_id = request('variation');
         }
@@ -1201,10 +1204,6 @@ class Order extends Component
                 session()->put('error', 'No Active Return Order Found');
                 return redirect()->back();
             }
-
-            $item->variation->stock -= 1;
-            $item->variation->status = 1;
-            $item->variation->save();
 
 
             $variation = Variation_model::firstOrNew(['product_id' => $item->variation->product_id, 'storage' => $item->variation->storage, 'color' => $item->variation->color, 'grade' => request('replacement')['grade']]);

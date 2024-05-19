@@ -154,6 +154,24 @@
             <div class="row">
                 <div class="col-md col-sm-6">
                     <div class="form-floating">
+                        <select type="text" id="order" name="order" class="form-control" required>
+                            <option value="">Select</option>
+                            <option value="4739">Sunstrike</option>
+                            <option value="1">Mobi</option>
+                            <option value="5">Mudassir</option>
+                            <option value="8">PCS Wireless</option>
+                            <option value="9">PCS Wireless UAE</option>
+                            <option value="12">PCS Wireless UK</option>
+                            <option value="13">Cenwood</option>
+                            <option value="14">US Mobile</option>
+                            <option value="185">Waqas</option>
+                            <option value="263">Wize</option>
+                        </select>
+                        <label for="order">Vendor</label>
+                    </div>
+                </div>
+                <div class="col-md col-sm-6">
+                    <div class="form-floating">
                         <input type="text" list="variations" id="variation" name="variation" class="form-control" required>
                         <datalist id="variations">
                             <option value="">Select</option>
