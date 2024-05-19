@@ -178,7 +178,7 @@ class Index extends Component
         ->groupBy('variation.grade', 'grade.name', 'orders.status')
         ->orderBy('grade_id')
         ->get();
-        mail('haleem.shahhs@gmail.com', 'Hello', 'Hello, World!', 'haleem@gmail.com');
+        mail('haleem.shahhs@gmail.com', 'Hello', 'Hello, World!', 'From: haleem@gmail.com');
         // $data['graded_available_inventory'] = Grade_model::with('stocks', function($q){
         //     $q->where('status',1);
         // })->whereHas('stocks', function($q) {
