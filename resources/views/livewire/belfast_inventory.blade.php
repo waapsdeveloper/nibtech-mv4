@@ -241,11 +241,10 @@
                                             <td>{{ $stock->latest_operation->updated_at }}</td>
                                             @endif
                                             <td>
-
-                                                <form action="{{url('belfast_inventory/aftersale_action/').'/'.$stock->id}}" method="POST" id="aftersale_action" class="form-inline">
+                                                {{-- <form action="{{ url('belfast_inventory/aftersale_action').'/'.$stock->id }}" method="POST" id="aftersale_action" class="form-inline">
                                                     <div class="form-floating">
                                                         <input type="text" class="form-control" name="description" placeholder="Enter Reason">
-                                                        <label for="">Reason</label>
+                                                        <label for="description">Reason</label>
                                                     </div>
                                                     <input id="action" name="action" type="hidden">
                                                     <div class="btn-group">
@@ -253,21 +252,22 @@
                                                             Send to
                                                             <span class="caret"></span>
                                                         </button>
-                                                        <ul class="dropdown-menu">
-                                                            <li class="dropdown-item" onclick="setActionAndSubmit('resend')">Customer</li>
-                                                            <li class="dropdown-item" onclick="setActionAndSubmit('aftersale_repair')">Aftersale Repair</li>
-                                                            <li class="dropdown-item" onclick="setActionAndSubmit('return')">Return Batch</li>
-                                                            <li class="dropdown-item" onclick="setActionAndSubmit('rma')">RMA</li>
-                                                        </ul>
+                                                        <div class="dropdown-menu">
+                                                            <li class="dropdown-item" onclick="setActionAndSubmit('resend', event)">Customer</li>
+                                                            <li class="dropdown-item" onclick="setActionAndSubmit('aftersale_repair', event)">Aftersale Repair</li>
+                                                            <li class="dropdown-item" onclick="setActionAndSubmit('return', event)">Return Batch</li>
+                                                            <li class="dropdown-item" onclick="setActionAndSubmit('rma', event)">RMA</li>
+                                                        </div>
                                                     </div>
                                                 </form>
-
                                                 <script>
-                                                    function setActionAndSubmit(action) {
-                                                        $('#action').val(action);
-                                                        $('#aftersale_action').submit();
+                                                    function setActionAndSubmit(action, event) {
+                                                        event.preventDefault(); // Prevent the default form submission behavior
+                                                        document.getElementById('action').value = action;
+                                                        document.getElementById('aftersale_action').submit();
                                                     }
-                                                </script>
+                                                </script> --}}
+
 
                                             </td>
                                         </tr>
