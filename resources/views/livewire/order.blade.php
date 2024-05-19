@@ -575,7 +575,7 @@
                                                                 @isset($itm->stock->serial_number) {{ $itm->stock->serial_number }}&nbsp; @endisset
                                                             </td>
 
-                                                            <td>{{ $order->created_at }}</td>
+                                                            <td title="{{$itm->id}}">{{ $itm->created_at }}</td>
                                                             <td>
                                                                 <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical text-white tx-18"></i></a>
                                                                 <div class="dropdown-menu">
