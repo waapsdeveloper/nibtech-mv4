@@ -59,6 +59,7 @@ class Order_item_model extends Model
     {
         return $this->hasOne(Purchase_grade_model::class, 'order_item_id', 'id');
     }
+
     public function updateOrderItemsInDB($orderObj, $tester = null, $bm)
     {
         // Your implementation here
