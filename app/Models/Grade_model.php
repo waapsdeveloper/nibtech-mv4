@@ -24,6 +24,14 @@ class Grade_model extends Model
 
     public function stocks()
     {
-        return $this->hasManyThrough(Stock_model::class, Variation_model::class, 'grade', 'id', 'variation_id', 'id');
+        return $this->hasManyThrough(Stock_model::class, Variation_model::class, 'grade', 'variation_id', 'id', 'id');
     }
+    public function stocksCount()
+    {
+        return $this->hasManyThrough(Stock_model::class, Variation_model::class, 'grade', 'variation_id', 'id', 'id')
+                    ->selectRaw('count(id) as count')
+                    ->groupBy('grade');
+    }
+
+
 }
