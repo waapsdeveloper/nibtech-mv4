@@ -202,18 +202,6 @@
                                                 <form id="order_issues_{{$j+=1}}" method="POST" action="{{ url('purchase/remove_issues') }}" class="form-inline">
                                                     @csrf
                                                 @switch($grouped_issue->message)
-                                                    @case("Item Already added in this order")
-                                                    <button class="btn btn-sm btn-danger m-0" name="remove_entries" value="1">Remove Entries</button>
-
-                                                        @break
-                                                    @case("Duplicate IMEI")
-                                                    <button class="btn btn-sm btn-danger m-0" name="remove_entries" value="1">Remove Entries</button>
-
-                                                        @break
-                                                    @case("IMEI Available In Inventory")
-                                                    <button class="btn btn-sm btn-danger m-0" name="remove_entries" value="1">Remove Entries</button>
-
-                                                        @break
                                                     @case("Product Name Not Found")
 
                                                     <div class="form-floating">
@@ -239,6 +227,9 @@
 
                                                     @default
 
+                                                    <button class="btn btn-sm btn-danger m-0" name="remove_entries" value="1">Remove Entries</button>
+
+                                                        @break
                                                 @endswitch
                                                 </form>
                                             </td>
