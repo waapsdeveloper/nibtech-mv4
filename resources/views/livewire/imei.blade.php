@@ -47,9 +47,9 @@
                         <label for="">IMEI</label>
                     </div>
                         <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
-            @if (isset($stock))
-                Current Variation: {{ $stock->variation->product->model . " - " . (isset($stock->variation->storage_id)?$stock->variation->storage_id->name . " - " : null) . (isset($stock->variation->color_id)?$stock->variation->color_id->name. " - ":null)}} <strong><u>{{ $stock->variation->grade_id->name }}</u></strong>
-            @endif
+                    @if (isset($stock))
+                        &nbsp;&nbsp;&nbsp;&nbsp;Current Variation: {{ $stock->variation->product->model . " - " . (isset($stock->variation->storage_id)?$stock->variation->storage_id->name . " - " : null) . (isset($stock->variation->color_id)?$stock->variation->color_id->name. " - ":null)}} <strong><u>{{ $stock->variation->grade_id->name }}</u></strong>
+                    @endif
                 </form>
             </div>
             <script>
