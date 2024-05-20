@@ -48,18 +48,16 @@
                     </div>
                         <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
                 </form>
+            @if (isset($stock))
+
+                <h5>Current Variation: {{ $stock->variation->product->model . " - " . (isset($stock->variation->storage_id)?$stock->variation->storage_id->name . " - " : null) . (isset($stock->variation->color_id)?$stock->variation->color_id->name. " - ":null)}} <strong><u>{{ $stock->variation->grade_id->name }}</u></strong></h5>
+            @endif
             </div>
             <script>
                 window.onload = function() {
                     document.getElementById('imeiInput').focus();
                 };
             </script>
-            @if (isset($stock))
-            <div class="p-2">
-
-                <h5>Current Variation: {{ $stock->variation->product->model . " - " . (isset($stock->variation->storage_id)?$stock->variation->storage_id->name . " - " : null) . (isset($stock->variation->color_id)?$stock->variation->color_id->name. " - ":null)}} <strong><u>{{ $stock->variation->grade_id->name }}</u></strong></h5>
-            </div>
-            @endif
             @if (session('user')->hasPermission('refund_imei') && isset($stock))
             <div class="p-2">
                 <form action="{{ url('imei/refund').'/'.$stock->id}}" method="POST" id="refund" class="form-inline">
