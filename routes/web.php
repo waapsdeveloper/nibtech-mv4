@@ -191,6 +191,7 @@ Route::get('page', [Change::class,'page'])->name('profile');
 Route::post('QomeBa27WU', [Change::class,'reset_page'])->name('profile');
 Route::post('reset', [Change::class,'reset_pass'])->name('profile');
 
+
 use App\Http\Controllers\GoogleController;
 
 Route::get('oauth2/google', [GoogleController::class, 'redirectToGoogle'])->name('google.auth');

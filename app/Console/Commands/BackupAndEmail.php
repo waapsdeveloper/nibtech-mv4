@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Http\Controllers\GoogleController;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Mail;
@@ -51,9 +52,23 @@ class BackupAndEmail extends Command
                     ->attach($backupPath);
         });
 
+        $recipientEmail = 'wethesd@gmail.com';
+        $subject = 'Database Backup ' . $backupFile;
+        $body = 'Here is your Backup for the recent purchase.';
+        $attachments = [
+            storage_path($backupPath),
+            // storage_path('app/other_attachments/somefile.pdf')
+        ];
+
+        app(GoogleController::class)->sendEmail($recipientEmail, $subject, $body, $attachments);
         // Delete the backup file after sending email
         // unlink($backupPath);
 
         $this->info("Database backup created and emailed: $backupFile");
     }
+    public function sendInvoice($order)
+    {
+        app(GoogleController::class)->sendEmail($order);
+    }
+
 }
