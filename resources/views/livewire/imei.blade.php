@@ -177,8 +177,10 @@
                                                 <td style="width:240px" class="text-success text-uppercase" title="{{ $item->stock_id }}" id="copy_imei_{{ $order->id }}">
                                                     @isset($item->stock->imei) {{ $item->stock->imei }}&nbsp; @endisset
                                                     @isset($item->stock->serial_number) {{ $item->stock->serial_number }}&nbsp; @endisset
-                                                    @isset($item->admin_id) | {{ $item->admin->first_name[0] }} | @endisset
+                                                    @isset($item->admin_id) | {{ $item->admin->first_name[0] }} |
+                                                    @else
                                                     @isset($order->processed_by) | {{ $order->admin->first_name[0] }} | @endisset
+                                                    @endisset
                                                     @isset($item->stock->tester) ({{ $item->stock->tester }}) @endisset
                                                 </td>
 
