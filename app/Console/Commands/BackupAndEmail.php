@@ -1,74 +1,143 @@
 <?php
-
 namespace App\Console\Commands;
 
-use App\Http\Controllers\GoogleController;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
+use ZipArchive;
 
 class BackupAndEmail extends Command
 {
     protected $signature = 'backup:email';
-    protected $description = 'Backup the database and email';
+    protected $description = 'Backup the database in chunks and email';
+
+    private $maxChunkSize = 25 * 1024 * 1024; // 25MB in bytes
 
     public function handle()
     {
-        // Get the current timestamp
-        $timestamp = Carbon::now()->format('Y-m-d_H-i-s');
+        try {
+            // Get the current timestamp
+            $timestamp = Carbon::now()->format('Y-m-d_H-i-s');
+            $backupDir = storage_path("app/backups/$timestamp");
+            if (!is_dir($backupDir)) {
+                mkdir($backupDir, 0755, true);
+            }
 
-        // File path for the backup SQL file
-        $backupFile = "backup_$timestamp.sql";
-        $backupPath = storage_path("app/backups/$backupFile");
+            // Get all table names
+            $tables = DB::connection()->getDoctrineSchemaManager()->listTableNames();
 
-        // Prepare the mysqldump command
-        $command = sprintf(
-            'mysqldump --column-statistics=0 --user=%s --password=%s --host=%s --port=%s %s > %s',
-            escapeshellarg(env('DB_USERNAME')),
-            escapeshellarg(env('DB_PASSWORD')),
-            escapeshellarg(env('DB_HOST')),
-            escapeshellarg(env('DB_PORT')),
-            escapeshellarg(env('DB_DATABASE')),
-            $backupPath
-        );
+            // Backup each table
+            foreach ($tables as $table) {
+                $this->backupTableInChunks($table, $backupDir);
+            }
 
-        // Execute the command
-        // dd($command);
-        $result = shell_exec($command);
-        // if($result == null){
-        //     // Delete the backup file after sending email
+            // Send email with all compressed backups
+            $this->emailBackups($backupDir);
 
-        //     $this->info("Incorrect Path $backupFile");
-        //     unlink($backupPath);
+            // Clean up backup directory
+            $this->cleanUp($backupDir);
 
-        //     die;
-        // }
-
-        // Send email with the backup file attached
-        Mail::raw('Database Backup', function ($message) use ($backupFile, $backupPath) {
-            $message->to('wethesd@gmail.com')
-                    ->subject('Database Backup ' . $backupFile)
-                    ->attach($backupPath);
-        });
-
-        $recipientEmail = 'wethesd@gmail.com';
-        $subject = 'Database Backup ' . $backupFile;
-        $body = 'Here is your Backup for the recent purchase.';
-        $attachments = [
-            $backupPath,
-            // storage_path('app/other_attachments/somefile.pdf')
-        ];
-
-        app(GoogleController::class)->sendEmail($recipientEmail, $subject, $body, $attachments);
-        // Delete the backup file after sending email
-        // unlink($backupPath);
-
-        $this->info("Database backup created and emailed: $backupFile");
+            $this->info("Database backup created in chunks and emailed.");
+        } catch (\Exception $e) {
+            $this->error("Error occurred: " . $e->getMessage());
+        }
     }
-    public function sendInvoice($order)
+
+    private function backupTableInChunks($table, $backupDir)
     {
-        app(GoogleController::class)->sendEmail($order);
+        // Get table row count
+        $rowCount = DB::table($table)->count();
+        $chunkSize = 10000; // Adjust the chunk size as necessary
+
+        for ($offset = 0; $offset < $rowCount; $offset += $chunkSize) {
+            $backupFile = "{$table}_chunk_{$offset}.sql";
+            $backupPath = "$backupDir/$backupFile";
+
+            $command = sprintf(
+                'mysqldump --column-statistics=0 --user=%s --password=%s --host=%s --port=%s %s %s --where="1 LIMIT %d OFFSET %d" > %s',
+                escapeshellarg(config('database.connections.mysql.username')),
+                escapeshellarg(config('database.connections.mysql.password')),
+                escapeshellarg(config('database.connections.mysql.host')),
+                escapeshellarg(config('database.connections.mysql.port')),
+                escapeshellarg(config('database.connections.mysql.database')),
+                escapeshellarg($table),
+                $chunkSize,
+                $offset,
+                escapeshellarg($backupPath)
+            );
+
+            $result = shell_exec($command);
+            if ($result === null) {
+                throw new \Exception("Backup for table $table chunk $offset failed.");
+            }
+
+            // Compress the backup file
+            $zip = new ZipArchive();
+            $zipPath = "$backupDir/{$table}_chunk_{$offset}.zip";
+            if ($zip->open($zipPath, ZipArchive::CREATE) === true) {
+                $zip->addFile($backupPath, $backupFile);
+                $zip->close();
+                unlink($backupPath); // Delete the uncompressed file
+
+                // Check if the zip file is larger than the max size
+                if (filesize($zipPath) > $this->maxChunkSize) {
+                    throw new \Exception("Chunk size exceeds 25MB for table $table chunk $offset.");
+                }
+            } else {
+                throw new \Exception("Could not create zip file for $table chunk $offset.");
+            }
+        }
     }
 
+    private function emailBackups($backupDir)
+    {
+        $files = scandir($backupDir);
+        $attachments = [];
+        $currentEmailSize = 0;
+
+        foreach ($files as $file) {
+            if (pathinfo($file, PATHINFO_EXTENSION) === 'zip') {
+                $filePath = "$backupDir/$file";
+                $fileSize = filesize($filePath);
+
+                // Check if adding this file exceeds the max email size
+                if ($currentEmailSize + $fileSize > $this->maxChunkSize) {
+                    // Send current attachments
+                    $this->sendEmailWithAttachments($attachments);
+                    $attachments = [];
+                    $currentEmailSize = 0;
+                }
+
+                $attachments[] = $filePath;
+                $currentEmailSize += $fileSize;
+            }
+        }
+
+        // Send remaining attachments
+        if (!empty($attachments)) {
+            $this->sendEmailWithAttachments($attachments);
+        }
+    }
+
+    private function sendEmailWithAttachments($attachments)
+    {
+        Mail::raw('Database Backup', function ($message) use ($attachments) {
+            $message->to('wethesd@gmail.com')
+                    ->subject('Database Backup')
+                    ->attachMultiple($attachments);
+        });
+    }
+
+    private function cleanUp($backupDir)
+    {
+        $files = scandir($backupDir);
+        foreach ($files as $file) {
+            $filePath = "$backupDir/$file";
+            if (is_file($filePath)) {
+                unlink($filePath);
+            }
+        }
+        rmdir($backupDir);
+    }
 }
