@@ -57,7 +57,7 @@ class BackupAndEmail extends Command
 
             $command = sprintf(
                 'mysqldump --defaults-extra-file=%s --column-statistics=0 %s %s --where="1 LIMIT %d OFFSET %d" > %s 2>&1',
-                escapeshellarg('/root/.my.cnf'), // Update to the correct path to your .my.cnf file
+                escapeshellarg(base_path('.my.cnf')), // Update to the correct path to your .my.cnf file
                 escapeshellarg(config('database.connections.mysql.database')),
                 escapeshellarg($table),
                 $chunkSize,
