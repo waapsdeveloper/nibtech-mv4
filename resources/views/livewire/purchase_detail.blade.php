@@ -206,6 +206,8 @@
                                                         @break
                                                     @case("IMEI not Provided")
                                                         @break
+                                                    @case("IMEI/Serial Not Found")
+                                                        @break
                                                     @case("Product Name Not Found")
                                                     <div class="form-floating">
                                                         <input type="text" list="variations" id="variation" name="variation" class="form-control" value="{{ $grouped_issue->name }}" required>
@@ -263,7 +265,7 @@
                                                     <td title="{{ $key }}">{{ $value }}</td>
                                                 @endforeach
                                                 <td>
-                                                    @if ($row->message == "IMEI not Provided")
+                                                    @if ($row->message == "IMEI not Provided" || $row->message == "IMEI/Serial Not Found")
                                                     <form id="order_issues_{{$i}}" method="POST" action="{{ url('purchase/remove_issues') }}" class="form-inline">
                                                         @csrf
                                                         <input type="hidden" name="id" value="{{$row->id}}">
