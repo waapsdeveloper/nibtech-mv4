@@ -64,7 +64,7 @@ class BackupAndEmail extends Command
                 $offset,
                 escapeshellarg($backupPath)
             );
-
+            dd($command);
             $output = shell_exec($command);
             if ($output === null || $output !== '') {
                 throw new \Exception("Backup for table $table chunk $offset failed. Error: $output");
