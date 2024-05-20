@@ -1,9 +1,10 @@
 <?php
+
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
+use App\Http\Controllers\GoogleController;
 use Carbon\Carbon;
 use ZipArchive;
 
@@ -122,11 +123,11 @@ class BackupAndEmail extends Command
 
     private function sendEmailWithAttachments($attachments)
     {
-        Mail::raw('Database Backup', function ($message) use ($attachments) {
-            $message->to('wethesd@gmail.com')
-                    ->subject('Database Backup')
-                    ->attachMultiple($attachments);
-        });
+        $recipientEmail = 'wethesd@gmail.com';
+        $subject = 'Database Backup';
+        $body = 'Here are the database backup files.';
+
+        app(GoogleController::class)->sendEmail($recipientEmail, $subject, $body, $attachments);
     }
 
     private function cleanUp($backupDir)
