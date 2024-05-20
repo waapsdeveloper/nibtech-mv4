@@ -10,6 +10,7 @@
         "barryvdh/laravel-dompdf": "^2.0",
         "endroid/qr-code": "^5.0",
         "fruitcake/laravel-cors": "^2.0.5",
+        "google/apiclient": "^2.16",
         "guzzlehttp/guzzle": "^7.8",
         "illuminate/mail": "*",
         "intervention/image": "^3.4",
