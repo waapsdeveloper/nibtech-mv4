@@ -57,7 +57,7 @@
             @if (isset($stock))
             <div class="p-2">
 
-                <h4>Current Variation: {{ $stock->variation->product->model . " - " . (isset($stock->variation->storage_id)?$stock->variation->storage_id->name . " - " : null) . (isset($stock->variation->color_id)?$stock->variation->color_id->name. " - ":null)}} <strong><u>{{ $stock->variation->grade_id->name }}</u></strong></h4>
+                <h5>Current Variation: {{ $stock->variation->product->model . " - " . (isset($stock->variation->storage_id)?$stock->variation->storage_id->name . " - " : null) . (isset($stock->variation->color_id)?$stock->variation->color_id->name. " - ":null)}} <strong><u>{{ $stock->variation->grade_id->name }}</u></strong></h5>
             </div>
             @endif
             @if (session('user')->hasPermission('refund_imei') && isset($stock))
