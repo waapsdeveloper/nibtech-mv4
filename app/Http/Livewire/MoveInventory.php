@@ -34,6 +34,13 @@ class MoveInventory extends Component
         $data['storages'] = Storage_model::pluck('name','id');
         $data['grades'] = Grade_model::all();
 
+        $start_date = Carbon::now()->startOfDay();
+        $end_date = date('Y-m-d 23:59:59');
+        if (request('start_date') != NULL && request('end_date') != NULL) {
+            $start_date = request('start_date') . " 00:00:00";
+            $end_date = request('end_date') . " 23:59:59";
+        }
+
         if(request('grade')){
             session()->put('grade',request('grade'));
             session()->put('success',request('grade'));
@@ -46,14 +53,9 @@ class MoveInventory extends Component
 
 
         $stocks = Stock_operations_model::
-        where('created_at','>=',now()->format('Y-m-d')." 00:00:00")
+        where('created_at','>=',$start_date)
+        ->where('created_at','<=',$end_date)
 
-        ->when(request('start_date') != '', function ($q) {
-            return $q->where('created_at', '>=', request('start_date', 0));
-        })
-        ->when(request('end_date') != '', function ($q) {
-            return $q->where('created_at', '<=', request('end_date', 0) . " 23:59:59");
-        })
         ->when(request('adm') != '', function ($q) {
             return $q->where('admin_id', request('adm'));
         })
