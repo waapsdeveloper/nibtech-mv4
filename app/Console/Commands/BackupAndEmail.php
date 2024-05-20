@@ -56,11 +56,8 @@ class BackupAndEmail extends Command
             $backupPath = "$backupDir/$backupFile";
 
             $command = sprintf(
-                'mysqldump --column-statistics=0 --user=%s --password=%s --host=%s --port=%s %s %s --where="1 LIMIT %d OFFSET %d" > %s',
-                escapeshellarg(config('database.connections.mysql.username')),
-                escapeshellarg(config('database.connections.mysql.password')),
-                escapeshellarg(config('database.connections.mysql.host')),
-                escapeshellarg(config('database.connections.mysql.port')),
+                'mysqldump --defaults-extra-file=%s --column-statistics=0 %s %s --where="1 LIMIT %d OFFSET %d" > %s',
+                escapeshellarg('/path/to/.my.cnf'),
                 escapeshellarg(config('database.connections.mysql.database')),
                 escapeshellarg($table),
                 $chunkSize,
@@ -70,7 +67,8 @@ class BackupAndEmail extends Command
 
             $result = shell_exec($command);
             if ($result === null) {
-                throw new \Exception("Backup for table $table chunk $offset failed.");
+                $output = shell_exec($command . ' 2>&1'); // Capture the error output
+                throw new \Exception("Backup for table $table chunk $offset failed. Error: $output");
             }
 
             // Compress the backup file
