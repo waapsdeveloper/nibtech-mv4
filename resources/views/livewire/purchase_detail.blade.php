@@ -204,6 +204,8 @@
                                                 @switch($grouped_issue->message)
                                                     @case("Additional Item")
                                                         @break
+                                                    @case("IMEI not Provided")
+                                                        @break
                                                     @case("Product Name Not Found")
                                                     <div class="form-floating">
                                                         <input type="text" list="variations" id="variation" name="variation" class="form-control" value="{{ $grouped_issue->name }}" required>
