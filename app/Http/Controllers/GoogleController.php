@@ -30,7 +30,7 @@ class GoogleController extends Controller
         $client->authenticate($request->input('code'));
 
         $token = $client->getAccessToken();
-
+        dd($token);
         GoogleToken::updateOrCreate(
             ['user_id' => auth()->id()],
             [
