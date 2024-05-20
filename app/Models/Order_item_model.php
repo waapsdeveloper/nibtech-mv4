@@ -38,6 +38,11 @@ class Order_item_model extends Model
         return $this->hasOne(Variation_model::class, 'id', 'variation_id');
     }
 
+    public function admin()
+    {
+        return $this->hasOne(Admin_model::class, 'id', 'admin_id');
+    }
+
     public function order()
     {
         return $this->belongsTo(Order_model::class, 'order_id', 'id');
