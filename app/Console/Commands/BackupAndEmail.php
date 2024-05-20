@@ -66,9 +66,9 @@ class BackupAndEmail extends Command
             );
 
             $output = shell_exec($command);
-            if ($output === null || $output !== '') {
-                throw new \Exception("Backup for table $table chunk $offset failed. Error: $output");
-            }
+            // if ($output === null || $output !== '') {
+            //     throw new \Exception("Backup for table $table chunk $offset failed. Error: $output");
+            // }
 
             // Compress the backup file
             $zip = new ZipArchive();
