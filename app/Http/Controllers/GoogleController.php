@@ -29,13 +29,13 @@ class GoogleController extends Controller
         $client->setRedirectUri(config('services.google.redirect_uri'));
         $client->authenticate($request->input('code'));
 
-        $token = $client->getAccessToken();
+        $token = $client->getRefreshToken();
         dd($token);
         GoogleToken::updateOrCreate(
             ['user_id' => auth()->id()],
             [
                 'access_token' => $token['access_token'],
-                'refresh_token' => $token['refresh_token'],
+                // 'refresh_token' => $token['refresh_token'],
             ]
         );
 
