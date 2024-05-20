@@ -56,7 +56,7 @@ class BackupAndEmail extends Command
         $subject = 'Database Backup ' . $backupFile;
         $body = 'Here is your Backup for the recent purchase.';
         $attachments = [
-            storage_path($backupPath),
+            $backupPath,
             // storage_path('app/other_attachments/somefile.pdf')
         ];
 
