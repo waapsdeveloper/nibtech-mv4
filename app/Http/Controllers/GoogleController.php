@@ -32,7 +32,7 @@ class GoogleController extends Controller
         $token = $client->getAccessToken();
         // dd($token);
         GoogleToken::updateOrCreate(
-            ['user_id' => auth()->id()],
+            ['user_id' => session('user_id')],
             [
                 'access_token' => $token['access_token'],
                 // 'refresh_token' => $token['refresh_token'],
@@ -44,7 +44,7 @@ class GoogleController extends Controller
 
     public function sendEmail($recipientEmail, $subject, $body, $attachments = [])
     {
-        $googleToken = GoogleToken::where('user_id', auth()->id())->first();
+        $googleToken = GoogleToken::where('user_id', session('user_id'))->first();
 
         if (!$googleToken) {
             return redirect()->route('google.auth')->with('error', 'You need to authenticate with Google first.');
