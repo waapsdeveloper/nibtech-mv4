@@ -29,8 +29,8 @@ class GoogleController extends Controller
         $client->setRedirectUri(config('services.google.redirect_uri'));
         $client->authenticate($request->input('code'));
 
-        $token = $client->getRefreshToken();
-        dd($token);
+        $token = $client->getAccessToken();
+        // dd($token);
         GoogleToken::updateOrCreate(
             ['user_id' => auth()->id()],
             [
