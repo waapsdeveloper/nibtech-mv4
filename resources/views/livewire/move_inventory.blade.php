@@ -211,7 +211,27 @@
                             </h4>
 
                             <div class=" mg-b-0">
-                                Today's count: {{ count($stocks) }}
+                                Movement Count: {{ count($stocks) }}
+                            </div>
+                            <div class=" mg-b-0">
+
+                                <form method="get" action="" class="row form-inline">
+
+                                    <div class="form-floating">
+                                        <input class="form-control" id="start_date_input" name="start_date" id="datetimepicker" type="date" value="@isset($_GET['start_date']){{$_GET['start_date']}}@endisset" oninput="this.form.submit()">
+                                        <label for="start_date_input">{{ __('locale.Start Date') }}</label>
+                                    </div>
+                                    <div class="form-floating">
+                                        <input class="form-control" id="end_date_input" name="end_date" id="datetimepicker" type="date" value="@isset($_GET['end_date']){{$_GET['end_date']}}@endisset" oninput="this.form.submit()">
+                                        <label for="end_date_input">{{ __('locale.End Date') }}</label>
+                                    </div>
+                                    <select id="adm_input" name="adm" class="form-control form-select form-select-sm" data-bs-placeholder="Select Processed By" title="Processed by" onchange="this.form.submit()">
+                                        <option value="">All</option>
+                                        @foreach ($admins as $adm)
+                                            <option value="{{$adm->id}}" @if(isset($_GET['adm']) && $adm->id == $_GET['adm']) {{'selected'}}@endif>{{$adm->first_name." ".$adm->last_name}}</option>
+                                        @endforeach
+                                    </select>
+                                </form>
                             </div>
 
                         </div>

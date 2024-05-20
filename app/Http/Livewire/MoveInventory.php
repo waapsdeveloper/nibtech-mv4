@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Models\Admin_model;
 use App\Models\Color_model;
 use Livewire\Component;
 use App\Models\Stock_model;
@@ -27,6 +28,7 @@ class MoveInventory extends Component
     public function render()
     {
 
+        $data['admins'] = Admin_model::where('id','!=',1)->get();
         $data['products'] = Products_model::orderBy('model','asc')->get();
         $data['colors'] = Color_model::pluck('name','id');
         $data['storages'] = Storage_model::pluck('name','id');
@@ -43,7 +45,18 @@ class MoveInventory extends Component
         }
 
 
-        $stocks = Stock_operations_model::where('created_at','>=',now()->format('Y-m-d')." 00:00:00")
+        $stocks = Stock_operations_model::
+        where('created_at','>=',now()->format('Y-m-d')." 00:00:00")
+
+        ->when(request('start_date') != '', function ($q) {
+            return $q->where('created_at', '>=', request('start_date', 0));
+        })
+        ->when(request('end_date') != '', function ($q) {
+            return $q->where('created_at', '<=', request('end_date', 0) . " 23:59:59");
+        })
+        ->when(request('adm') != '', function ($q) {
+            return $q->where('admin_id', request('adm'));
+        })
             ->whereHas('stock', function ($query) {
                 $query->where('status', 1);
             })
