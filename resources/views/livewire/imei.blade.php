@@ -48,7 +48,7 @@
                     </div>
                         <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
                     @if (isset($stock))
-                        <h5>&nbsp;&nbsp;&nbsp;&nbsp;Current Variation: {{ $stock->variation->product->model . " - " . (isset($stock->variation->storage_id)?$stock->variation->storage_id->name . " - " : null) . (isset($stock->variation->color_id)?$stock->variation->color_id->name. " - ":null)}} <strong><u>{{ $stock->variation->grade_id->name }}</u></strong></h5>
+                        &nbsp;&nbsp;&nbsp;&nbsp;Current Variation: <h5 class="mb-0">{{ $stock->variation->product->model . " - " . (isset($stock->variation->storage_id)?$stock->variation->storage_id->name . " - " : null) . (isset($stock->variation->color_id)?$stock->variation->color_id->name. " - ":null)}} <strong><u>{{ $stock->variation->grade_id->name }}</u></strong></h5>
                     @endif
                 </form>
             </div>
