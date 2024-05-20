@@ -130,8 +130,10 @@ class BackupAndEmail extends Command
         // print_r($email);
         Mail::raw('Database Backup', function ($message) use ($attachments) {
             $message->to('wethesd@gmail.com')
-                    ->subject('Database Backup')
-                    ->attach($attachments);
+                    ->subject('Database Backup');
+            foreach ($attachments as $attachment) {
+                $message->attach($attachment);
+            }
         });
 
     }
