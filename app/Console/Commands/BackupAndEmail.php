@@ -129,13 +129,13 @@ class BackupAndEmail extends Command
 
     private function cleanUp($backupDir)
     {
-        $files = scandir($backupDir);
-        foreach ($files as $file) {
-            $filePath = "$backupDir/$file";
-            if (is_file($filePath)) {
-                unlink($filePath);
-            }
-        }
-        rmdir($backupDir);
+        // $files = scandir($backupDir);
+        // foreach ($files as $file) {
+        //     $filePath = "$backupDir/$file";
+        //     if (is_file($filePath)) {
+        //         unlink($filePath);
+        //     }
+        // }
+        // rmdir($backupDir);
     }
 }
