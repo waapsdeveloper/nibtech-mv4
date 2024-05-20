@@ -39,7 +39,7 @@ class GoogleController extends Controller
             ]
         );
 
-        return redirect()->route('home')->with('success', 'Google OAuth Token stored successfully!');
+        return redirect()->route('index')->with('success', 'Google OAuth Token stored successfully!');
     }
 
     public function sendEmail($recipientEmail, $subject, $body, $attachments = [])
