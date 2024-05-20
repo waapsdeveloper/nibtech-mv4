@@ -124,7 +124,9 @@ class BackupAndEmail extends Command
         $subject = 'Database Backup';
         $body = 'Here are the database backup files.';
 
-        app(GoogleController::class)->sendEmail($recipientEmail, $subject, $body, $attachments);
+        $email = app(GoogleController::class)->sendEmail($recipientEmail, $subject, $body, $attachments);
+
+        print_r($email);
     }
 
     private function cleanUp($backupDir)
