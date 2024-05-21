@@ -393,14 +393,13 @@
                                             }
                                             $total += $price;
                                         @endphp
-                                        <tr>
+                                        <tr @if($item->purchase_item->price != $price) style="background: LightGreen" @endif>
                                             <td>{{ $i }}</td>
                                             {{-- <td>{{ $item->order->customer->first_name }}</td> --}}
                                             <td>{{ $item->imei.$item->serial_number }}</td>
-                                            <td @if (session('user')->hasPermission('view_cost')) title="Cost Price: {{ $currency.$item->purchase_item->price }}" @endif @if($item->purchase_item->price != $price) class="bg-success" @endif>
+                                            <td @if (session('user')->hasPermission('view_cost')) title="Cost Price: {{ $currency.$item->purchase_item->price }}" @endif>
                                                 {{ $item->order->customer->first_name }} {{ $currency.$price }}
                                             </td>
-
                                             @if (session('user')->hasPermission('delete_wholesale_item'))
                                             <td><a href="{{ url('delete_wholesale_item').'/'.$item->sale_item($order_id)->id }}"><i class="fa fa-trash"></i></a></td>
                                             @endif
