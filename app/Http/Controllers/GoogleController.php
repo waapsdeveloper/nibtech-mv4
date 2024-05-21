@@ -41,7 +41,7 @@ class GoogleController extends Controller
             ['user_id' => session('user_id')],
             [
                 'access_token' => $token['access_token'],
-                // 'refresh_token' => $token['refresh_token'],
+                'refresh_token' => $token['refresh_token'],
             ]
         );
 
