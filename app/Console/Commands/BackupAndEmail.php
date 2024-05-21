@@ -121,20 +121,20 @@ class BackupAndEmail extends Command
 
     private function sendEmailWithAttachments($attachments)
     {
-        // $recipientEmail = 'wethesd@gmail.com';
-        // $subject = 'Database Backup';
-        // $body = 'Here are the database backup files.';
+        $recipientEmail = 'wethesd@gmail.com';
+        $subject = 'Database Backup';
+        $body = 'Here are the database backup files.';
 
-        // $email = app(GoogleController::class)->sendEmail($recipientEmail, $subject, $body, $attachments);
+        $email = app(GoogleController::class)->sendEmail($recipientEmail, $subject, $body, $attachments);
 
-        // print_r($email);
-        Mail::raw('Database Backup', function ($message) use ($attachments) {
-            $message->to('wethesd@gmail.com')
-                    ->subject('Database Backup');
-            foreach ($attachments as $attachment) {
-                $message->attach($attachment);
-            }
-        });
+        print_r($email);
+        // Mail::raw('Database Backup', function ($message) use ($attachments) {
+        //     $message->to('wethesd@gmail.com')
+        //             ->subject('Database Backup');
+        //     foreach ($attachments as $attachment) {
+        //         $message->attach($attachment);
+        //     }
+        // });
 
     }
 
