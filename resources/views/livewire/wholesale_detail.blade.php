@@ -397,7 +397,7 @@
                                             <td>{{ $i }}</td>
                                             {{-- <td>{{ $item->order->customer->first_name }}</td> --}}
                                             <td>{{ $item->imei.$item->serial_number }}</td>
-                                            <td @if (session('user')->hasPermission('view_cost')) title="Cost Price: {{ $currency.$item->purchase_item->price }}" @endif>
+                                            <td @if (session('user')->hasPermission('view_cost')) title="Cost Price: {{ $currency.$item->purchase_item->price }}" @endif @if($item->purchase_item->price != $price) class="bg-success" @endif>
                                                 {{ $item->order->customer->first_name }} {{ $currency.$price }}
                                             </td>
 
