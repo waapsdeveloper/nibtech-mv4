@@ -44,19 +44,6 @@
                         <label for="rate">Exchange Rate</label>
                     </div>
                     <div class="form-floating">
-                        <input type="text" list="currencies" id="currency" name="currency" class="form-control">
-                        <datalist id="currencies">
-                            @foreach ($exchange_rates as $rate => $currency)
-                                <option value="{{$currency}}" data-rate="{{$rate}}"></option>
-                            @endforeach
-                        </datalist>
-                        <label for="currency">Currency</label>
-                    </div>
-                    <div class="form-floating">
-                        <input type="text" class="form-control" id="rate" name="rate" placeholder="Enter Exchange Rate" required>
-                        <label for="rate">Exchange Rate</label>
-                    </div>
-                    <div class="form-floating">
                         <input type="text" class="form-control" id="reference" name="reference" placeholder="Enter Reference" required>
                         <label for="reference">Reference</label>
                     </div>
@@ -73,19 +60,6 @@
                 Reference: {{ $order->reference }}
                 @endif
 
-                <script>
-                    $(document).ready(function() {
-                        $('#currency').on('input', function() {
-                            var selectedCurrency = $(this).val();
-                            var rate = $('#currencies').find('option[value="' + selectedCurrency + '"]').data('rate');
-                            if (rate !== undefined) {
-                                $('#rate').val(rate);
-                            } else {
-                                $('#rate').val('nan'); // Clear the rate field if the currency is not in the list
-                            }
-                        });
-                    });
-                </script>
                 </div>
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
@@ -452,6 +426,20 @@
     @endsection
 
     @section('scripts')
+
+    <script>
+        $(document).ready(function() {
+            $('#currency').on('input', function() {
+                var selectedCurrency = $(this).val();
+                var rate = $('#currencies').find('option[value="' + selectedCurrency + '"]').data('rate');
+                if (rate !== undefined) {
+                    $('#rate').val(rate);
+                } else {
+                    $('#rate').val('nan'); // Clear the rate field if the currency is not in the list
+                }
+            });
+        });
+    </script>
 		<!--Internal Sparkline js -->
 		<script src="{{asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js')}}"></script>
 
