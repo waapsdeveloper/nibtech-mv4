@@ -57,7 +57,7 @@
                     document.getElementById('imeiInput').focus();
                 };
             </script>
-            @if (session('user')->hasPermission('refund_imei') && isset($stock))
+            @if (session('user')->hasPermission('refund_imei') && isset($stock) && $stock->status == 2)
             <div class="p-2">
                 <form action="{{ url('imei/refund').'/'.$stock->id}}" method="POST" id="refund" class="form-inline">
                     @csrf
