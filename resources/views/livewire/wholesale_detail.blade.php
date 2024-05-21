@@ -31,8 +31,21 @@
                 <form class="form-inline" method="POST" action="{{url('wholesale/approve').'/'.$order->id}}">
                     @csrf
                     <div class="form-floating">
-                        <input type="text" class="form-control" id="reference" name="reference" placeholder="Enter Vendor Reference" required>
-                        <label for="reference">Vendor Reference</label>
+                        <input type="text" list="currencies" id="currency" name="currency" class="form-control">
+                        <datalist id="currencies">
+                            @foreach ($exchange_rates as $target_currency => $rate)
+                                <option value="{{$target_currency}}" data-bs-rate="{{$rate}}"></option>
+                            @endforeach
+                        </datalist>
+                        <label for="currency">Currency</label>
+                    </div>
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="rate" name="rate" placeholder="Enter Exchange Rate" required>
+                        <label for="rate">Exchange Rate</label>
+                    </div>
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="reference" name="reference" placeholder="Enter Reference" required>
+                        <label for="reference">Reference</label>
                     </div>
                     <div class="form-floating">
                         <input type="text" class="form-control" id="tracking_number" name="tracking_number" placeholder="Enter Tracking Number" required>

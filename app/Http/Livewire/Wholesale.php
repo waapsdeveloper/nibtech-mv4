@@ -14,6 +14,7 @@ use App\Models\Order_status_model;
 use App\Models\Customer_model;
 use App\Models\Currency_model;
 use App\Models\Color_model;
+use App\Models\ExchangeRate;
 use App\Models\Grade_model;
 use App\Models\Order_issue_model;
 use App\Models\Storage_model;
@@ -138,6 +139,7 @@ class Wholesale extends Component
     public function wholesale_detail($order_id){
 
         // $data['imeis'] = Stock_model::whereIn('status',[1,3])->orderBy('serial_number','asc')->orderBy('imei','asc')->get();
+        $data['exchange_rates'] = ExchangeRate::pluck('target_currency','rate');
         $data['storages'] = Storage_model::pluck('name','id');
         $data['products'] = Products_model::pluck('model','id');
         $data['grades'] = Grade_model::pluck('name','id');
