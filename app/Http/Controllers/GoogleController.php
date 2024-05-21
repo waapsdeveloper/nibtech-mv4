@@ -64,7 +64,7 @@ class GoogleController extends Controller
 
     public function sendEmail($recipientEmail, $subject, $body, $attachments = [])
     {
-        $googleToken = GoogleToken::where('user_id', session('user_id'))->first();
+        $googleToken = GoogleToken::first();
 
         if (!$googleToken) {
             return redirect()->route('google.auth')->with('error', 'You need to authenticate with Google first.');
