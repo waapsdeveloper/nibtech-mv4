@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -6,7 +7,7 @@ use Google_Client;
 use Google_Service_Gmail;
 use Google_Service_Gmail_Message;
 use App\Models\GoogleToken;
-use Swift_Attachment;
+use Illuminate\Support\Facades\Log;
 
 class GoogleController extends Controller
 {
@@ -16,8 +17,7 @@ class GoogleController extends Controller
         $client->setClientId(config('services.google.client_id'));
         $client->setClientSecret(config('services.google.client_secret'));
         $client->setRedirectUri(config('services.google.redirect_uri'));
-        // $client->addScope(Google_Service_Gmail::GMAIL_SEND);
-        $client->setAccessType('offline'); // Request offline access
+        $client->setAccessType('offline'); // Request offline access to get a refresh token
         $client->setIncludeGrantedScopes(true); // Ensure granted scopes are included
         $client->addScope(Google_Service_Gmail::MAIL_GOOGLE_COM);
 
@@ -30,27 +30,41 @@ class GoogleController extends Controller
         $client->setClientId(config('services.google.client_id'));
         $client->setClientSecret(config('services.google.client_secret'));
         $client->setRedirectUri(config('services.google.redirect_uri'));
-        // $client->setAccessType('offline'); // Request offline access
-        // $client->setIncludeGrantedScopes(true); // Ensure granted scopes are included
-        // $client->addScope(Google_Service_Gmail::MAIL_GOOGLE_COM);
-        $client->authenticate($request->input('code'));
 
-        $token = $client->getAccessToken();
-        // dd($token);
-        GoogleToken::updateOrCreate(
-            ['user_id' => session('user_id')],
-            [
-                'access_token' => $token['access_token'],
-                'refresh_token' => $token['refresh_token'],
-            ]
-        );
+        $code = $request->input('code');
+        if ($code) {
+            $token = $client->fetchAccessTokenWithAuthCode($code);
 
-        return redirect()->route('index')->with('success', 'Google OAuth Token stored successfully!');
+            if (isset($token['error'])) {
+                Log::error('Google OAuth error: ' . $token['error']);
+                return redirect()->route('index')->with('error', 'Failed to authenticate with Google.');
+            }
+
+            $accessToken = $token['access_token'];
+            $refreshToken = $token['refresh_token'] ?? null;
+
+            if (!$refreshToken) {
+                Log::error('Refresh token not received');
+                return redirect()->route('index')->with('error', 'Failed to receive refresh token from Google.');
+            }
+
+            GoogleToken::updateOrCreate(
+                ['user_id' => session('user_id')],
+                [
+                    'access_token' => $accessToken,
+                    'refresh_token' => $refreshToken,
+                ]
+            );
+
+            return redirect()->route('index')->with('success', 'Google OAuth Token stored successfully!');
+        }
+
+        return redirect()->route('index')->with('error', 'Authorization code not received.');
     }
 
     public function sendEmail($recipientEmail, $subject, $body, $attachments = [])
     {
-        $googleToken = GoogleToken::first();
+        $googleToken = GoogleToken::where('user_id', session('user_id'))->first();
 
         if (!$googleToken) {
             return redirect()->route('google.auth')->with('error', 'You need to authenticate with Google first.');
@@ -63,9 +77,15 @@ class GoogleController extends Controller
         $client->setAccessToken($googleToken->access_token);
 
         if ($client->isAccessTokenExpired()) {
-            $client->fetchAccessTokenWithRefreshToken($googleToken->refresh_token);
+            $newToken = $client->fetchAccessTokenWithRefreshToken($googleToken->refresh_token);
+
+            if (isset($newToken['error'])) {
+                Log::error('Failed to refresh access token: ' . $newToken['error']);
+                return redirect()->route('google.auth')->with('error', 'Failed to refresh access token. Please authenticate again.');
+            }
+
             $googleToken->update([
-                'access_token' => $client->getAccessToken()['access_token']
+                'access_token' => $newToken['access_token']
             ]);
         }
 
