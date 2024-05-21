@@ -197,3 +197,6 @@ use App\Http\Controllers\GoogleController;
 Route::get('oauth2/google', [GoogleController::class, 'redirectToGoogle'])->name('google.auth');
 Route::get('oauth2/callback', [GoogleController::class, 'handleGoogleCallback'])->name('google.callback');
 
+use App\Http\Controllers\ExchangeRateController;
+
+Route::get('/exchange-rates', [ExchangeRateController::class, 'index']);
