@@ -166,6 +166,12 @@
                                             }
                                             $items = $order->order_items;
                                             $j = 0;
+
+                                            $price = $order->order_items->sum('price');
+
+                                            if($order->exchange_rate != null){
+                                                $price = $price * $order->exchange_rate;
+                                            }
                                             // print_r($order);
                                         @endphp
 
@@ -175,7 +181,7 @@
                                                     <td><a href="{{url(session('url').'wholesale/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
                                                 <td>{{ $vendors[$order->customer_id] }}</td>
                                                 @if (session('user')->hasPermission('view_price'))
-                                                <td>{{ $currencies[$order->currency] . number_format($order->order_items->sum('price'),2) }}</td>
+                                                <td>{{ $currencies[$order->currency] . number_format($price,2) }}</td>
                                                 @endif
                                                 <td>{{ $order->order_items->count() }}</td>
                                                 <td style="width:220px">{{ $order->created_at }}</td>
