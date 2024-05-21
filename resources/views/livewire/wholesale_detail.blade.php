@@ -60,6 +60,19 @@
                 Reference: {{ $order->reference }}
                 @endif
 
+                <script>
+                    $(document).ready(function() {
+                        $('#currency').on('input', function() {
+                            var selectedCurrency = $(this).val();
+                            var rate = $('#currencies').find('option[value="' + selectedCurrency + '"]').data('rate');
+                            if (rate !== undefined) {
+                                $('#rate').val(rate);
+                            } else {
+                                $('#rate').val(''); // Clear the rate field if the currency is not in the list
+                            }
+                        });
+                    });
+                </script>
                 </div>
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
