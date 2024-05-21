@@ -27,11 +27,11 @@ class Index extends Component
     {
 
 
-        $recipientEmail = 'wethesd@gmail.com';
-        $subject = 'Database Backup';
-        $body = 'Here are the database backup files.';
+        // $recipientEmail = 'wethesd@gmail.com';
+        // $subject = 'Database Backup';
+        // $body = 'Here are the database backup files.';
 
-        $email = app(GoogleController::class)->sendEmail($recipientEmail, $subject, $body);
+        // $email = app(GoogleController::class)->sendEmail($recipientEmail, $subject, $body);
 
         // dd('Hello2');
         $user_id = session('user_id');
