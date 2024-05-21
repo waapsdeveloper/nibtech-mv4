@@ -435,7 +435,7 @@
                 if (rate !== undefined) {
                     $('#rate').val(rate);
                 } else {
-                    $('#rate').val('nan'); // Clear the rate field if the currency is not in the list
+                    $('#rate').val(''); // Clear the rate field if the currency is not in the list
                 }
             });
         });
