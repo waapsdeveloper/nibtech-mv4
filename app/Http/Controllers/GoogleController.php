@@ -20,6 +20,7 @@ class GoogleController extends Controller
         $client->setAccessType('offline'); // Request offline access to get a refresh token
         $client->setIncludeGrantedScopes(true); // Ensure granted scopes are included
         $client->addScope(Google_Service_Gmail::MAIL_GOOGLE_COM);
+        $client->setPrompt('consent'); // Force consent screen to get refresh token
 
         return redirect($client->createAuthUrl());
     }
