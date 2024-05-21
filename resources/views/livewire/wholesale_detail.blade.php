@@ -34,7 +34,7 @@
                         <input type="text" list="currencies" id="currency" name="currency" class="form-control">
                         <datalist id="currencies">
                             @foreach ($exchange_rates as $rate => $currency)
-                                <option value="{{$currency}}" data-bs-rate="{{$rate}}"></option>
+                                <option value="{{$currency}}" data-rate="{{$rate}}"></option>
                             @endforeach
                         </datalist>
                         <label for="currency">Currency</label>
