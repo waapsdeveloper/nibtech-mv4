@@ -12,5 +12,6 @@ class ExchangeRate extends Model
         // other fields...
         'base_currency',
         'target_currency',
+        'rate',
     ];
 }
