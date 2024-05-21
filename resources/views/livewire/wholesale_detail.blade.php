@@ -40,7 +40,7 @@
                         <label for="currency">Currency</label>
                     </div>
                     <div class="form-floating">
-                        <input type="text" class="form-control" id="rate" name="rate" placeholder="Enter Exchange Rate" required>
+                        <input type="text" class="form-control" id="rate" name="rate" placeholder="Enter Exchange Rate" >
                         <label for="rate">Exchange Rate</label>
                     </div>
                     <div class="form-floating">
@@ -68,7 +68,7 @@
                             if (rate !== undefined) {
                                 $('#rate').val(rate);
                             } else {
-                                $('#rate').val(''); // Clear the rate field if the currency is not in the list
+                                $('#rate').val('nan'); // Clear the rate field if the currency is not in the list
                             }
                         });
                     });
