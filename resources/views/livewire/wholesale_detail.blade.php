@@ -387,14 +387,18 @@
                                         @if($item->sale_item($order_id)->order_id == $order_id)
                                         @php
                                             $i ++;
-                                            $total += $item->sale_item($order_id)->price
+                                            $price = $item->sale_item($order_id)->price;
+                                            if($order->exchange_rate != null){
+                                                $price = $price * $order->exchange_rate;
+                                            }
+                                            $total += $price;
                                         @endphp
                                         <tr>
                                             <td>{{ $i }}</td>
                                             {{-- <td>{{ $item->order->customer->first_name }}</td> --}}
                                             <td>{{ $item->imei.$item->serial_number }}</td>
                                             <td @if (session('user')->hasPermission('view_cost')) title="Cost Price: {{ $currency.$item->purchase_item->price }}" @endif>
-                                                {{ $item->order->customer->first_name }} {{ $currency.$item->sale_item($order_id)->price }}
+                                                {{ $item->order->customer->first_name }} {{ $currency.$price }}
                                             </td>
 
                                             @if (session('user')->hasPermission('delete_wholesale_item'))

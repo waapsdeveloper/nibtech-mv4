@@ -129,8 +129,9 @@ class Wholesale extends Component
     }
     public function wholesale_approve($order_id){
         $order = Order_model::find($order_id);
-        $order->currency = Currency_model::where('code',request('currency'))->first()->id;
-        if($order->currency != 4){
+        $currency = Currency_model::where('code',request('currency'))->first();
+        if($currency != null && $currency->id != 4){
+            $order->currency = $currency->id;
             $order->exchange_rate = request('rate');
         }
         $order->reference = request('reference');
