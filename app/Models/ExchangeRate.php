@@ -11,5 +11,6 @@ class ExchangeRate extends Model
     protected $fillable = [
         // other fields...
         'base_currency',
+        'target_currency',
     ];
 }
