@@ -44,6 +44,19 @@
                         <label for="rate">Exchange Rate</label>
                     </div>
                     <div class="form-floating">
+                        <input type="text" list="currencies" id="currency" name="currency" class="form-control">
+                        <datalist id="currencies">
+                            @foreach ($exchangeRates as $exchangeRate)
+                                <option value="{{ $exchangeRate->target_currency }}" data-rate="{{ $exchangeRate->rate }}"></option>
+                            @endforeach
+                        </datalist>
+                        <label for="currency">Currency</label>
+                    </div>
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="rate" name="rate" placeholder="Enter Exchange Rate" required>
+                        <label for="rate">Exchange Rate</label>
+                    </div>
+                    <div class="form-floating">
                         <input type="text" class="form-control" id="reference" name="reference" placeholder="Enter Reference" required>
                         <label for="reference">Reference</label>
                     </div>
