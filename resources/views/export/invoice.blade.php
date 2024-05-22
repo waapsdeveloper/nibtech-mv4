@@ -239,6 +239,9 @@
                             }else {
                                 $color = null;
                             }
+                            @if ($order->exchange_items->count() > 0){
+                                $item = $order->exchange_items[0];
+                            }
                         @endphp
                         <tr>
                             <td width="320">{{ $item->variation->product->model . " - " . $storage . $color }} <br> {{  $item->stock->imei . $item->stock->serial_number . " - " . $item->stock->tester }}</td>
