@@ -43,7 +43,7 @@
 
                 @endif
                     @if ($process->status == 2 && $variations->count() == 0)
-                    <form class="form-inline" method="POST" action="{{url('repair/ship').'/'.$process->id}}">
+                    <form class="form-inline" method="POST" action="{{url('repair/approve').'/'.$process->id}}">
                         @csrf
                         <div class="form-floating">
                             <input type="text" class="form-control" id="cost" name="cost" placeholder="Enter Total Cost" required>

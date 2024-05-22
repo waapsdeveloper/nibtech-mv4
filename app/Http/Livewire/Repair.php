@@ -87,7 +87,12 @@ class Repair extends Component
     public function repair_approve($repair_id){
         $repair = Process_model::find($repair_id);
         $item_count = $repair->process_stocks->count();
-        $repair->description = request('tracking_number');
+        $cost = request('cost');
+        $unit_cost = $cost/$item_count;
+        foreach($repair->process_stocks as $item){
+            $item->price = $unit_cost;
+            $item->save();
+        }
         $repair->status = 3;
         $repair->save();
 
