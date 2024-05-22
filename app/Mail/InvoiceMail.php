@@ -40,7 +40,8 @@ class InvoiceMail extends Mailable
         $pdf->writeHTML($html, true, false, true, false, '');
 
         // Get the TCPDF output as a string
-        $pdfOutput = $pdf->getPdfData();
+        // $pdfOutput = $pdf->getPdfData();
+        $pdfOutput = $pdf->Output('invoice.pdf', 'S'); // Get the PDF output as a string
         // $pdf = PDF::loadView('export.invoice', $this->data);
 
         return $this->view('email.invoice')
