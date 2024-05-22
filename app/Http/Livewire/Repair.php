@@ -587,6 +587,7 @@ class Repair extends Component
                 DB::raw('SUM(process_stock.price) as total_price')
             )
             ->where('process_stock.process_id',$process_id)
+            ->where('process_stock.deleted_at',null)
             ->groupBy('variation.id','products.model', 'variation.color', 'variation.storage', 'variation.grade')
             ->orderBy('products.model', 'ASC')
             ->get();
