@@ -163,7 +163,7 @@
                     @php
                         $totalAmount = 0;
                         $totalQty = 0;
-                        $items = $process->process_stock
+                        $items = $process->process_stocks
                     @endphp
                     @foreach ($process_stock as $item)
                         @php
@@ -188,11 +188,11 @@
                             <td width="40">{{ $item->total_quantity }}</td>
                             <td width="90" align="right">{{ $process->currency_id->sign }}{{ number_format($item->total_price,2) }}</td>
                         </tr>
-                        @foreach ($items as $process_item)
-                            @if($process_item->variation_id == $item->variation_id)
+                        @foreach ($process_stocks as $process_stock)
+                            @if($process_stock->variation_id == $item->variation_id)
                             <tr class="font-sm">
-                                <td width="320" style="font-size: 10px" align="right">{{ $process_item->stock->imei.$process_item->stock->serial_number }}</td>
-                                <td width="80" style="font-size: 10px" align="right">{{ $process->currency_id->sign }}{{ number_format($process_item->price,2) }}</td>
+                                <td width="320" style="font-size: 10px" align="right">{{ $process_stock->stock->imei.$process_stock->stock->serial_number }}</td>
+                                <td width="80" style="font-size: 10px" align="right">{{ $process->currency_id->sign }}{{ number_format($process_stock->price,2) }}</td>
                                 <td width="40"></td>
                                 <td width="90" align="right"></td>
                             </tr>

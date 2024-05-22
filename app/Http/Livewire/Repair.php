@@ -572,7 +572,7 @@ class Repair extends Component
         // Find the order
         $process = Process_model::with('customer', 'process_stocks')->find($process_id);
 
-        $process_stock = Process_stock_model::
+        $process_stocks = Process_stock_model::
             join('stock', 'process_stock.stock_id', '=', 'stock.id')
             ->join('variation', 'stock.variation_id', '=', 'variation.id')
             ->join('products', 'variation.product_id', '=', 'products.id')
@@ -596,7 +596,7 @@ class Repair extends Component
         $data = [
             'process' => $process,
             'customer' => $process->customer,
-            'process_stock' =>$process_stock
+            'process_stocks' =>$process_stocks
         ];
         $data['storages'] = Storage_model::pluck('name','id');
         $data['grades'] = Grade_model::pluck('name','id');
