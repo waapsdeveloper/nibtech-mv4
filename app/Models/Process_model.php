@@ -31,6 +31,10 @@ class Process_model extends Model
 
 
 
+    public function currency_id()
+    {
+        return $this->hasOne(Currency_model::class, 'id', 'currency');
+    }
 
     public function customer(){
         return $this->hasOne(Customer_model::class, 'id', 'customer_id');
