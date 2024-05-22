@@ -20,7 +20,8 @@ namespace App\Http\Livewire;
     use App\Exports\LabelsExport;
     use App\Exports\DeliveryNotesExport;
     use App\Exports\OrdersheetExport;
-    use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\GoogleController;
+use Illuminate\Support\Facades\DB;
     use Maatwebsite\Excel\Facades\Excel;
     use TCPDF;
     use App\Mail\InvoiceMail;
@@ -847,6 +848,10 @@ class Order extends Component
         // Send the invoice via email
         Mail::to($order->customer->email)->send(new InvoiceMail($data));
 
+        $recipientEmail = 'wethesd@gmail.com';
+        $subject = 'Invoice for Your Recent Purchase';
+
+        $email = app(GoogleController::class)->sendEmailInvoice($recipientEmail, $subject, new InvoiceMail($data));
         // Optionally, save the PDF locally
         // file_put_contents('invoice.pdf', $pdfContent);
 
