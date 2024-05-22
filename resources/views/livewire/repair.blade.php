@@ -176,7 +176,7 @@
                                                     <td><a href="{{url(session('url').'repair/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
                                                     <td>{{ $repairers[$order->customer_id] ?? null }}</td>
                                                 @if ((!request('status') || request('status') == 3) && session('user')->hasPermission('view_cost'))
-                                                <td>Є{{ number_format($order->total_price,2) }}</td>
+                                                <td>Є{{ number_format($order->process_stocks->sum('price'),2) }}</td>
                                                 @endif
                                                 <td>{{ $items->where('status',1)->count()."/".$items->count() }}@if ($order->status == 2)
                                                     (Pending)
