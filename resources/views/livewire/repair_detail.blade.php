@@ -323,6 +323,10 @@
                                         {{-- @if (session('user')->hasPermission('view_cost')) --}}
                                         <th><small><b>Name</b></small></th>
                                         {{-- @endif --}}
+                                        @if ($process->status == 3 && session('user')->hasPermission('view_cost'))
+                                        <th><small><b>Cost</b></small></th>
+                                        @endif
+
                                         @if (session('user')->hasPermission('delete_repair_item'))
                                         {{-- <th></th> --}}
                                         @endif
@@ -361,6 +365,9 @@
                                                 {{ $variation->product->model." ".$storage." ".$color." ".$variation->grade_id->name }}
                                             </td>
 
+                                            @if ($process->status == 3 && session('user')->hasPermission('view_cost'))
+                                            <td>{{$item->price}}</td>
+                                            @endif
                                             @if (session('user')->hasPermission('delete_repair_item'))
                                             {{-- <td><a href="{{ url('delete_repair_item').'/'.$item->process_stock($process_id)->id }}"><i class="fa fa-trash"></i></a></td> --}}
                                             @endif
