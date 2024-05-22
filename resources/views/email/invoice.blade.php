@@ -18,5 +18,7 @@
 
     <p>Best regards,</p>
     <p>Britain Tech Ltd.</p>
+
+    <p><strong>Note: This is an automated message, please do not reply to this email.</strong></p>
 </body>
 </html>

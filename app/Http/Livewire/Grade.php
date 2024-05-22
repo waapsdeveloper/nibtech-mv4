@@ -15,13 +15,6 @@ class Grade extends Component
     public function render()
     {
 
-
-        $recipientEmail = 'wethesd@gmail.com';
-        $subject = 'Database Backup';
-        $body = 'Here are the database backup files.';
-
-        $email = app(GoogleController::class)->sendEmail($recipientEmail, $subject, $body);
-
         $data['grades'] = Grade_model::all();
 
         // foreach($data['grades'] as $grade){
