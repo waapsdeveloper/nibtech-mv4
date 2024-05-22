@@ -46,11 +46,10 @@
                     <form class="form-inline" method="POST" action="{{url('repair/ship').'/'.$process->id}}">
                         @csrf
                         <div class="form-floating">
-                            <input type="text" class="form-control" id="tracking_number" name="tracking_number" placeholder="Enter Tracking Number" required>
-                            <label for="tracking_number">Tracking Number</label>
+                            <input type="text" class="form-control" id="cost" name="cost" placeholder="Enter Total Cost" required>
+                            <label for="cost">Total Cost</label>
                         </div>
-                        <button type="submit" class="btn btn-success">Ship</button>
-                        <a class="btn btn-danger" href="{{url('delete_repair') . "/" . $process->id }}">Delete</a>
+                        <button type="submit" class="btn btn-success">Close</button>
                     </form>
 
                     @endif
