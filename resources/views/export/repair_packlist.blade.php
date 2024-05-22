@@ -165,7 +165,7 @@
                         $totalQty = 0;
                         $items = $process->process_stocks
                     @endphp
-                    @foreach ($process_stock as $item)
+                    @foreach ($process_stocks as $item)
                         @php
                             // $itemTotal = $item->quantity * $item->price;
                             $totalAmount += $item->total_price;
