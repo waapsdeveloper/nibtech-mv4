@@ -42,7 +42,7 @@
                 Tracking Number: <a href="https://www.dhl.com/gb-en/home/tracking/tracking-express.html?submit=1&tracking-id={{$process->description}}" target="_blank"> {{$process->description}}</a>
 
                 @endif
-                    @if ($process->status == 3)
+                    @if ($process->status == 2 && $variations->count() > 0)
                     <form class="form-inline" method="POST" action="{{url('repair/ship').'/'.$process->id}}">
                         @csrf
                         <div class="form-floating">
@@ -105,7 +105,7 @@
                 </div>
             </div>
 
-            @else
+            @elseif ($process->status == 2)
 
             <div class="p-2">
                 <h4>Receive External Repair Item</h4>
