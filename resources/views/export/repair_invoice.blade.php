@@ -65,63 +65,6 @@
     {{-- <iframe src="{{ $order->delivery_note_url }}"></iframe> --}}
     <div class="invoice-container">
         <!-- Company Information -->
-        {{-- <table border="0">
-            <tr style="text-align: center;">
-                <td style="text-align: center; padding:0; margin:0; line-height:10px">
-
-                        <img src="{{ public_path('assets/img/brand/logo1.png') }}" alt="" height="60">
-                        <h2><strong>(NI) Britain Tech Ltd</strong></h2>
-                        <h4>Cromac Square, Forsyth House</h4>
-                        <h4>Belfast, BT2 8LA</h4>
-
-                </td>
-                <td width="150"></td>
-                <td style="text-align: center; padding:0; margin:0; line-height:10px" width="225">
-                    <h1 style="font-size: 32px">INVOICE</h1>
-                    <table cellspacing="4">
-
-                        <tr>
-                            <td style="text-align: left; margin-top:5px;"><h4><strong>Order ID:</strong></h4></td>
-                            <td colspan="2"><h4 style="font-weight: 400">{{ $order->reference_id }}</h4></td>
-                        </tr>
-                        @if ($order->admin)
-
-                        <tr>
-                            <td style="text-align: left; margin-top:5px;"><h4><strong>Sales Rep:</strong></h4></td>
-                            <td colspan="2"><h4 style="font-weight: 400">{{ $order->admin->first_name }}</h4></td>
-                        </tr>
-                        @endif
-                        <tr>
-                            <td style="text-align: left; margin-top:5px;"><h4><strong>Order Date:</strong></h4></td>
-                            <td colspan="2"><h4 style="font-weight: 400">{{ \Carbon\Carbon::parse($order->created_at)->format('d/m/Y') }} {{ \Carbon\Carbon::parse($order->created_at)->format('H:m:s') }}</h4></td>
-                        </tr>
-                        <tr>
-                            <td style="text-align: left; margin-top:5px;"><h4><strong>Invoice Date:</strong></h4></td>
-                            <td colspan="2"><h4 style="font-weight: 400">{{ \Carbon\Carbon::parse($order->processed_at)->format('d/m/Y') }} {{ \Carbon\Carbon::parse($order->updated_at)->format('H:m:s') }}</h4></td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <div class="customer-details" style="line-height:10px; ">
-                        <br>
-                        <h3 style="margin:0px; ">Billing Details:</h3>
-                        <h5>{{ $customer->company }}</h5>
-                        <h5>{{ $customer->first_name." ".$customer->last_name }},</h5>
-                        <h5>{{ $customer->street }}, {{ $customer->street2 }}</h5>
-                        <h5>{{ $customer->postal_code }}, {{ $customer->city }}, </h5>
-                        <h5>{{ $customer->country_id->title }}</h5>
-                        <h5>{{ $customer->phone }}</h5>
-                        <!-- Add more customer details as needed -->
-                    </div>
-
-                </td>
-                <td></td>
-                <td></td>
-            </tr>
-        </table> --}}
-
         <table border="0">
             <tr style="text-align: right; padding:0; margin:0;">
                 <td style="text-align: left; padding:0; margin:0; line-height:10px">
@@ -139,7 +82,7 @@
                         <h4>Cromac Square,</h4>
                         <h4>Forsyth House,</h4>
                         <h4>Belfast, BT2 8LA</h4>
-                        {{-- <h4>invoice@nibritaintech.com</h4> --}}
+                        <h4>invoice@nibritaintech.com</h4>
 
                 </td>
 
@@ -154,11 +97,11 @@
                     </tr>
                     <tr>
                         <td width="10"></td>
-                        <td width="">
-                            <div style="line-height:10px; margin:0; padding:0;">
+                        <td>
+                            <div style="line-height:10px;">
                                 <h5>{{ $customer->company }}</h5>
                                 <h5>{{ $customer->first_name." ".$customer->last_name }}</h5>
-                                {{-- <h5>{{ $customer->email }}</h5> --}}
+                                <h5>{{ $customer->email }}</h5>
                                 <h5>{{ $customer->phone }}</h5>
                                 <h5>{{ $customer->street }} {{ $customer->street2 }}, {{ $customer->city }}</h5>
                                 <h5>{{ $customer->postal_code }} {{ $customer->country_id->title ?? null }}</h5>
@@ -206,9 +149,11 @@
             </tr>
         </table>
 
+
         <!-- Order Items -->
         <div class="order-items">
-            <h3>Order Items</h3>
+            <br>
+            {{-- <h3>Order Items</h3> --}}
             <table cellpadding="5">
                 <thead border="1">
                     <tr border="1">
@@ -223,39 +168,36 @@
                         $totalAmount = 0;
                         $totalQty = 0;
                     @endphp
-                    @foreach ($orderItems as $item)
+                    @foreach ($order_items as $item)
                         @php
-                            $itemTotal = $item->price;
-                            $totalAmount += $itemTotal;
-                            $totalQty += 1;
+                            // $itemTotal = $item->quantity * $item->price;
+                            $totalAmount += $item->total_price;
+                            $totalQty += $item->total_quantity;
 
-                            if($item->variation->storage_id){
-                                $storage = $item->variation->storage_id->name . " - " ;
+                            if($item->storage){
+                                $storage = $storages[$item->storage] . " - " ;
                             }else {
                                 $storage = null;
                             }
-                            if($item->variation->color_id){
-                                $color = $item->variation->color_id->name . " - " ;
+                            if($item->color){
+                                $color = $colors[$item->color] . " - " ;
                             }else {
                                 $color = null;
                             }
-                            if ($order->exchange_items->count() > 0){
-                                $item = $order->exchange_items[0];
-                            }
                         @endphp
                         <tr>
-                            <td width="320">{{ $item->variation->product->model . " - " . $storage . $color }} <br> {{  $item->stock->imei . $item->stock->serial_number . " - " . $item->stock->tester }}</td>
-                            <td width="80" align="right">{{ $order->currency_id->sign }}{{ number_format($item->price,2) }}</td>
-                            <td width="40"> 1 </td>
-                            <td width="90" align="right">{{ $order->currency_id->sign }}{{ number_format($item->price,2) }}</td>
+                            <td width="320">{{ $item->model . " - " . $storage . $color . $grades[$item->grade] }}</td>
+                            <td width="80" align="right">{{ $order->currency_id->sign }}{{ number_format($item->average_price,2) }}</td>
+                            <td width="40">{{ $item->total_quantity }}</td>
+                            <td width="90" align="right">{{ $order->currency_id->sign }}{{ number_format($item->total_price,2) }}</td>
                         </tr>
                     @endforeach
-                        <tr>
+                        {{-- <tr>
                             <td width="320">Accessories</td>
                             <td width="80" align="right">{{ $order->currency_id->sign }}0.00</td>
                             <td width="40">{{ $totalQty }}</td>
                             <td width="90" align="right">{{ $order->currency_id->sign }}0.00</td>
-                        </tr>
+                        </tr> --}}
                     <hr>
                 </tbody>
                 <tfoot>
@@ -263,18 +205,22 @@
                         <td></td>
                         <td colspan="3">
                             <table cellpadding="5">
-                                    <tr>
-                                        <td>Sub Total:</td>
-                                        <td align="right"> <strong>{{ $order->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td>
-                                    </tr>
-                                    <br>
+                                <tr>
+                                    <td>Sub Total:</td>
+                                    {{-- <td>{{$totalQty}}</td> --}}
+                                    <td align="right"> <strong>{{ $order->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>Qty:</td>
+                                    <td align="right"> <strong>{{$totalQty}} </strong></td>
+                                </tr>
                                     <br>
                                     <hr>
                                     <tr>
                                         <td>Amount Due:</td>
                                         <td align="right"> <strong>{{ $order->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td>
                                     </tr>
-                                    <tr>
+                                    {{-- <tr>
                                         <td>Back Market:</td>
                                         <td align="right"> <strong>{{ $order->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td>
                                     </tr>
@@ -282,7 +228,7 @@
                                     <tr>
                                         <td>Change:</td>
                                         <td align="right"> <strong>{{ $order->currency_id->sign }}0.00</strong></td>
-                                    </tr>
+                                    </tr> --}}
                             </table>
 
 
@@ -298,7 +244,7 @@
 
             <h3>Store Policy</h3>
             <hr>
-            <h4>Stock Sold on Marginal VAT Scheme. VAT Number: GB972500428</h4>
+            <h4>Stock Sold on Marginal VAT Scheme.</h4>
         </div>
     </div>
 </body>
