@@ -158,7 +158,7 @@ class GoogleController extends Controller
         $rawMessageString .= $mailable->render() . "\r\n\r\n"; // Get the HTML content from the mailable
 
         // Attach the PDF
-        // dd($mailable->build());
+        dd($mailable->build());
         $pdfData = $mailable->build()->rawAttachments[0]['data'];
         $fileName = $mailable->build()->rawAttachments[0]['as'];
         $fileType = $mailable->build()->rawAttachments[0]['mime'];
