@@ -9,6 +9,7 @@ use App\Models\Stock_model;
     use App\Models\Currency_model;
     use App\Models\Country_model;
 use App\Models\Grade_model;
+use App\Models\Process_stock_model;
 use App\Models\Products_model;
 use App\Models\Stock_operations_model;
 use App\Models\Storage_model;
@@ -150,6 +151,11 @@ class IMEI extends Component
             $data['stock'] = $stock;
             $data['orders'] = $orders;
             // dd($orders);
+
+            $process_stocks = Process_stock_model::where('stock_id', $stock_id)->whereHas('process', function ($query) {
+                $query->where('process_type_id', 9);
+            })->orderBy('id','desc')->get();
+            $data['process_stocks'] = $process_stocks;
 
             $stocks = Stock_operations_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
             $data['stocks'] = $stocks;
