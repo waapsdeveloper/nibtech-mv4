@@ -495,6 +495,11 @@ class SalesReturn extends Component
                 return redirect()->back();
             }
 
+            if(!$return_order){
+                session()->put('error', 'No Active Return Order Found');
+                return redirect()->back();
+            }
+
             $variation = Variation_model::firstOrNew(['product_id' => $item->variation->product_id, 'storage' => $item->variation->storage, 'color' => $item->variation->color, 'grade' => request('replacement')['grade']]);
 
             $variation->stock += 1;
