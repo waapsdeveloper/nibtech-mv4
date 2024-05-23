@@ -262,19 +262,21 @@
 
                                                 <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical tx-18"></i></a>
                                                 <div class="dropdown-menu">
-
+                                                    @php
+                                                        $item = $stock->last_item();
+                                                    @endphp
                                                     <a class="dropdown-item" id="action_{{ $stock->id }}" href="javascript:void(0);"
                                                         data-bs-target="#action_model"
                                                         data-bs-toggle="modal"
                                                         data-bs-reference="Send Back to Customer"
-                                                        data-bs-product="{{ $stock->last_item()->variation->product_id }}"
-                                                        data-bs-storage="{{ $stock->last_item()->variation->storage }}"
-                                                        data-bs-color="{{ $stock->last_item()->variation->color }}"
-                                                        data-bs-grade="{{ $stock->last_item()->variation->grade }}"
-                                                        data-bs-reference_id="{{ $stock->last_item()->order->reference_id }}"
+                                                        data-bs-product="{{ $item->variation->product_id }}"
+                                                        data-bs-storage="{{ $item->variation->storage }}"
+                                                        data-bs-color="{{ $item->variation->color }}"
+                                                        data-bs-grade="{{ $item->variation->grade }}"
+                                                        data-bs-reference_id="{{ $item->order->reference_id }}"
                                                         data-bs-stock_id="{{ $stock->id }}"
-                                                        data-bs-price="{{ $stock->last_item()->price }}"
-                                                        data-bs-linked_id="{{ $stock->last_item()->id }}"
+                                                        data-bs-price="{{ $item->price }}"
+                                                        data-bs-linked_id="{{ $item->id }}"
                                                         data-bs-action="{{ url('belfast_inventory/aftersale_action').'/'.$stock->id.'/resend' }}"
                                                         > Send Back to Customer </a>
 
@@ -282,14 +284,14 @@
                                                         data-bs-target="#action_model"
                                                         data-bs-toggle="modal"
                                                         data-bs-reference="Send for Aftersale Repair"
-                                                        data-bs-product="{{ $stock->last_item()->variation->product_id }}"
-                                                        data-bs-storage="{{ $stock->last_item()->variation->storage }}"
-                                                        data-bs-color="{{ $stock->last_item()->variation->color }}"
+                                                        data-bs-product="{{ $item->variation->product_id }}"
+                                                        data-bs-storage="{{ $item->variation->storage }}"
+                                                        data-bs-color="{{ $item->variation->color }}"
                                                         data-bs-grade="8"
-                                                        data-bs-reference_id="{{ $stock->last_item()->order->reference_id }}"
+                                                        data-bs-reference_id="{{ $item->order->reference_id }}"
                                                         data-bs-stock_id="{{ $stock->id }}"
-                                                        data-bs-price="{{ $stock->last_item()->price }}"
-                                                        data-bs-linked_id="{{ $stock->last_item()->id }}"
+                                                        data-bs-price="{{ $item->price }}"
+                                                        data-bs-linked_id="{{ $item->id }}"
                                                         data-bs-action="{{ url('belfast_inventory/aftersale_action').'/'.$stock->id.'/aftersale_repair' }}"
                                                         > Send for Aftersale Repair </a>
 
@@ -297,14 +299,14 @@
                                                         data-bs-target="#action_model"
                                                         data-bs-toggle="modal"
                                                         data-bs-reference="Return as RMA"
-                                                        data-bs-product="{{ $stock->last_item()->variation->product_id }}"
-                                                        data-bs-storage="{{ $stock->last_item()->variation->storage }}"
-                                                        data-bs-color="{{ $stock->last_item()->variation->color }}"
+                                                        data-bs-product="{{ $item->variation->product_id }}"
+                                                        data-bs-storage="{{ $item->variation->storage }}"
+                                                        data-bs-color="{{ $item->variation->color }}"
                                                         data-bs-grade="10"
-                                                        data-bs-reference_id="{{ $stock->last_item()->order->reference_id }}"
+                                                        data-bs-reference_id="{{ $item->order->reference_id }}"
                                                         data-bs-stock_id="{{ $stock->id }}"
-                                                        data-bs-price="{{ $stock->last_item()->price }}"
-                                                        data-bs-linked_id="{{ $stock->last_item()->id }}"
+                                                        data-bs-price="{{ $item->price }}"
+                                                        data-bs-linked_id="{{ $item->id }}"
                                                         data-bs-action="{{ url('add_return_item').'/'.$return_order->id}}"
                                                         > Return as RMA </a>
 
@@ -312,14 +314,14 @@
                                                         data-bs-target="#action_model"
                                                         data-bs-toggle="modal"
                                                         data-bs-reference="Return as WIP"
-                                                        data-bs-product="{{ $stock->last_item()->variation->product_id }}"
-                                                        data-bs-storage="{{ $stock->last_item()->variation->storage }}"
-                                                        data-bs-color="{{ $stock->last_item()->variation->color }}"
+                                                        data-bs-product="{{ $item->variation->product_id }}"
+                                                        data-bs-storage="{{ $item->variation->storage }}"
+                                                        data-bs-color="{{ $item->variation->color }}"
                                                         data-bs-grade="9"
-                                                        data-bs-reference_id="{{ $stock->last_item()->order->reference_id }}"
+                                                        data-bs-reference_id="{{ $item->order->reference_id }}"
                                                         data-bs-stock_id="{{ $stock->id }}"
-                                                        data-bs-price="{{ $stock->last_item()->price }}"
-                                                        data-bs-linked_id="{{ $stock->last_item()->id }}"
+                                                        data-bs-price="{{ $item->price }}"
+                                                        data-bs-linked_id="{{ $item->id }}"
                                                         data-bs-action="{{ url('add_return_item').'/'.$return_order->id}}"
                                                         > Return as WIP </a>
 
