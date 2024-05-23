@@ -219,6 +219,90 @@
 
         @endif
 
+        @if ($process_stocks->count() > 0)
+
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-header pb-0">
+                        <div class="d-flex justify-content-between">
+                            <h4 class="card-title mg-b-0">
+                                Repair History
+                            </h4>
+
+                            <div class=" mg-b-0">
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="card-body"><div class="table-responsive">
+
+                        <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                            <thead>
+                                <tr>
+                                    <th><small><b>No</b></small></th>
+                                    <th><small><b>Reference ID</b></small></th>
+                                    <th><small><b>Repairer</b></small></th>
+                                    <th><small><b>Product</b></small></th>
+                                    <th><small><b>Price</b></small></th>
+                                    <th><small><b>IMEI</b></small></th>
+                                    <th><small><b>Creation Date | TN</b></small></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php
+                                    $i = 0;
+                                    $id = [];
+                                @endphp
+                                @foreach ($process_stocks as $index => $p_stock)
+                                    @php
+                                        $process = $p_stock->order;
+                                        $j = 0;
+                                    @endphp
+
+                                        <tr>
+                                            <td title="{{ $p_stock->id }}">{{ $i + 1 }}</td>
+                                            <td><a href="{{url(session('url').'repair/detail/'.$process->id)}}?status=1">{{ $process->reference_id }}</a></td>
+                                            <td>@if ($process->customer)
+                                                {{ $process->customer->first_name." ".$process->customer->last_name }}
+                                            @endif</td>
+                                            <td>
+                                                @if ($p_stock->variation ?? false)
+                                                    <strong>{{ $p_stock->variation->sku }}</strong>{{ " - " . $p_stock->variation->product->model . " - " . (isset($p_stock->variation->storage_id)?$p_stock->variation->storage_id->name . " - " : null) . (isset($p_stock->variation->color_id)?$p_stock->variation->color_id->name. " - ":null)}} <strong><u>{{ $p_stock->variation->grade_id->name }}</u></strong>
+                                                @endif
+                                                @if ($p_stock->care_id != null)
+                                                    <a class="" href="https://backmarket.fr/bo_merchant/customer-request/{{ $p_stock->care_id }}" target="_blank"><strong class="text-danger">Conversation</strong></a>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                {{ $process->currency_id->sign.number_format($p_stock->price,2) }}
+                                            </td>
+                                            <td style="width:240px" class="text-success text-uppercase" title="{{ $p_stock->stock_id }}" id="copy_imei_{{ $process->id }}">
+                                                @isset($p_stock->stock->imei) {{ $p_stock->stock->imei }}&nbsp; @endisset
+                                                @isset($p_stock->stock->serial_number) {{ $p_stock->stock->serial_number }}&nbsp; @endisset
+                                                @isset($p_stock->admin_id) | {{ $p_stock->admin->first_name }} |
+                                                @else
+                                                @isset($process->processed_by) | {{ $process->admin->first_name }} | @endisset
+                                                @endisset
+                                            </td>
+                                            <td style="width:220px">{{ $p_stock->created_at}} <br> {{ $process->tracking_number }}</td>
+                                        </tr>
+                                    @php
+                                        $i ++;
+                                    @endphp
+                                @endforeach
+                            </tbody>
+                        </table>
+                        <br>
+                    </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @endif
+
         @if (isset($stocks))
         <div class="row">
             <div class="col-md-12" style="border-bottom: 1px solid rgb(216, 212, 212);">
