@@ -972,7 +972,7 @@ class Order extends Component
         Mail::to($order->customer->email)->send(new InvoiceMail($data));
         if(session('user_id') == 1){
 
-            $recipientEmail = 'wethesd@gmail.com';
+            $recipientEmail = $order->customer->email;
             $subject = 'Invoice for Your Recent Purchase';
 
             $email = app(GoogleController::class)->sendEmailInvoice($recipientEmail, $subject, new InvoiceMail($data));
