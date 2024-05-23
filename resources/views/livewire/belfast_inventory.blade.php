@@ -212,6 +212,7 @@
                                         <th><small><b>Product</b></small></th>
                                         <th><small><b>IMEI / Serial </b></small></th>
                                         <th><small><b>Vendor</b></small></th>
+                                        <th><small><b>Order</b></small></th>
                                         @if (session('user')->hasPermission('view_cost'))
                                         <th><small><b>Cost</b></small></th>
                                         @endif
@@ -224,6 +225,7 @@
                                 <tbody>
                                     @php
                                         $i = $stocks->firstItem() - 1;
+                                        $item = $stock->last_item();
                                     @endphp
                                     @foreach ($stocks as $index => $stock)
                                         <tr>
@@ -232,6 +234,7 @@
                                                 (isset($stock->variation->storage_id) ? $stock->variation->storage_id->name . " " : null) . " " . $stock->variation->grade_id->name }} </a></td>
                                             <td><a title="Search Serial" href="{{url('imei')."?imei=".$stock->imei.$stock->serial_number}}" target="_blank"> {{$stock->imei.$stock->serial_number }} </a></td>
                                             <td><a title="Vendor Profile" href="{{url('edit-customer').'/'.$stock->order->customer_id}}" target="_blank"> {{ $stock->order->customer->first_name ?? null}} </a> <br> <a title="Purchase Order Details" href="{{url('purchase/detail').'/'.$stock->order_id}}" target="_blank"> {{ $stock->order->reference_id }} </a></td>
+                                            <td><a href="https://www.backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}">{{ $order->reference_id }}</a></td>
                                             @if (session('user')->hasPermission('view_cost'))
                                             <td>{{ $stock->order->currency_id->sign ?? null }}{{$stock->purchase_item->price ?? null }}</td>
                                             @endif
@@ -262,9 +265,6 @@
 
                                                 <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical tx-18"></i></a>
                                                 <div class="dropdown-menu">
-                                                    @php
-                                                        $item = $stock->last_item();
-                                                    @endphp
                                                     <a class="dropdown-item" id="action_{{ $stock->id }}" href="javascript:void(0);"
                                                         data-bs-target="#action_model"
                                                         data-bs-toggle="modal"
