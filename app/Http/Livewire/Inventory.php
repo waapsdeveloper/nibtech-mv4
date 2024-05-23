@@ -384,6 +384,8 @@ class Inventory extends Component
         $new_variation->save();
         $stock->variation_id = $new_variation->id;
         $stock->save();
+
+        return redirect()->back();
     }
 }
 
