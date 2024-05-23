@@ -299,15 +299,6 @@
                             </div>
                             <h4>Replace</h4>
                             <div class="form-group">
-                                <label for="">Move to</label>
-                                <select name="action[grade]" class="form-control form-select" required>
-                                    <option value="">Move to</option>
-                                    @foreach ($grades as $grade)
-                                        <option value="{{ $grade->id }}">{{ $grade->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="form-group">
                                 <label for="">Reason</label>
                                 <textarea class="form-control" name="action[reason]"></textarea>
                             </div>
