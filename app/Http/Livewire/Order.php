@@ -975,7 +975,7 @@ class Order extends Component
             $recipientEmail = $order->customer->email;
             $subject = 'Invoice for Your Recent Purchase';
 
-            $email = app(GoogleController::class)->sendEmailInvoice($recipientEmail, $subject, new InvoiceMail($data));
+            app(GoogleController::class)->sendEmailInvoice($recipientEmail, $subject, new InvoiceMail($data));
         // }
         // Optionally, save the PDF locally
         // file_put_contents('invoice.pdf', $pdfContent);
