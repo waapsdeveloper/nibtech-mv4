@@ -219,7 +219,7 @@
 
         @endif
 
-        @if ($process_stocks->count() > 0)
+        @if (isset($process_stocks) && $process_stocks->count() > 0)
 
         <div class="row">
             <div class="col-xl-12">
