@@ -239,34 +239,26 @@
                                             <td>{{ $stock->latest_operation->admin->first_name }}</td>
                                             <td> {{ $stock->latest_operation->description }} </td>
                                             <td>{{ $stock->latest_operation->updated_at }}</td>
+                                            @else
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
                                             @endif
                                             <td>
-                                                {{-- <form action="{{ url('belfast_inventory/aftersale_action').'/'.$stock->id }}" method="POST" id="aftersale_action" class="form-inline">
+                                                <form action="{{ url('belfast_inventory/aftersale_action').'/'.$stock->id }}" method="POST" id="aftersale_action" class="form-inline">
                                                     <div class="form-floating">
                                                         <input type="text" class="form-control" name="description" placeholder="Enter Reason">
                                                         <label for="description">Reason</label>
                                                     </div>
-                                                    <input id="action" name="action" type="hidden">
-                                                    <div class="btn-group">
-                                                        <button class="btn btn-secondary dropdown-toggle" data-toggle="dropdown">
-                                                            Send to
-                                                            <span class="caret"></span>
-                                                        </button>
-                                                        <div class="dropdown-menu">
-                                                            <li class="dropdown-item" onclick="setActionAndSubmit('resend', event)">Customer</li>
-                                                            <li class="dropdown-item" onclick="setActionAndSubmit('aftersale_repair', event)">Aftersale Repair</li>
-                                                            <li class="dropdown-item" onclick="setActionAndSubmit('return', event)">Return Batch</li>
-                                                            <li class="dropdown-item" onclick="setActionAndSubmit('rma', event)">RMA</li>
-                                                        </div>
-                                                    </div>
+                                                    <select name="send" class="form-control form-select">
+                                                        <option value="">Send to</option>
+                                                        <option value="resend">Customer</option>
+                                                        <option value="aftersale_repair">Aftersale Repair</option>
+                                                        <option value="return">Return Batch</option>
+                                                        <option value="rma">RMA</option>
+                                                    </select>
+                                                    <button class="btn btn-secondary">Send</button>
                                                 </form>
-                                                <script>
-                                                    function setActionAndSubmit(action, event) {
-                                                        event.preventDefault(); // Prevent the default form submission behavior
-                                                        document.getElementById('action').value = action;
-                                                        document.getElementById('aftersale_action').submit();
-                                                    }
-                                                </script> --}}
 
 
                                             </td>
