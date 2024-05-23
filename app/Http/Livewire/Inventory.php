@@ -356,7 +356,7 @@ class Inventory extends Component
         $grade = $stock->variation->grade;
 
         if($action == 'resend'){
-            $variation = $stock->last_item->variation;
+            $variation = $stock->last_item()->variation;
 
             $product_id = $variation->product_id;
             $storage = $variation->storage;
