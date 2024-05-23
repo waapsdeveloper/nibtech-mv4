@@ -262,7 +262,10 @@
 
                                                 <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                                 <div class="dropdown-menu">
-                                                    <a class="dropdown-item" id="action_{{ $stock->id }}" href="javascript:void(0);" data-bs-target="#action_model" data-bs-toggle="modal" data-bs-reference="" data-bs-item=""> Action </a>
+                                                    <a class="dropdown-item" id="action_{{ $stock->id }}" href="javascript:void(0);" data-bs-target="#action_model" data-bs-toggle="modal" data-bs-reference="Send Back to Customer" data-bs-item=""> Send Back to Customer </a>
+                                                    <a class="dropdown-item" id="action_{{ $stock->id }}" href="javascript:void(0);" data-bs-target="#action_model" data-bs-toggle="modal" data-bs-reference="Send for Aftersale Repair" data-bs-item=""> Send for Aftersale Repair </a>
+                                                    <a class="dropdown-item" id="action_{{ $stock->id }}" href="javascript:void(0);" data-bs-target="#action_model" data-bs-toggle="modal" data-bs-reference="Return as RMA" data-bs-item=""> Return as RMA </a>
+                                                    <a class="dropdown-item" id="action_{{ $stock->id }}" href="javascript:void(0);" data-bs-target="#action_model" data-bs-toggle="modal" data-bs-reference="Return as WIP" data-bs-item=""> Return as WIP </a>
                                                 </div>
 
                                             </td>
@@ -289,31 +292,21 @@
                     <div class="modal-body pd-sm-40">
                         <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
                             type="button"><span aria-hidden="true">&times;</span></button>
-                        <h3 class="modal-title mg-b-5">Update Order</h3>
+                        <h3 class="modal-title mg-b-5">Update Stock Status</h3>
                         <hr>
                         <form action="{{ 'sad' }}" method="POST">
                             @csrf
                             <div class="form-group">
-                                <label for="">Order Number</label>
+                                <label for="">Action</label>
                                 <input class="form-control" name="action[id]" type="text" id="order_reference" readonly>
                             </div>
-                            <h4>Replace</h4>
                             <div class="form-group">
                                 <label for="">Reason</label>
                                 <textarea class="form-control" name="action[reason]"></textarea>
                             </div>
-                            <h4>With</h4>
-                            <div class="form-group">
-                                <label for="">Tester</label>
-                                <input class="form-control" placeholder="input Tester Initial" name="action[tester]" type="text">
-                            </div>
-                            <div class="form-group">
-                                <label for="">IMEI / Serial Number</label>
-                                <input class="form-control" placeholder="input IMEI / Serial Number" name="action[imei]" type="text" required>
-                            </div>
                             <input type="hidden" id="item_id" name="action[item_id]" value="">
 
-                            <button class="btn btn-primary btn-block">{{ __('locale.Submit') }}</button>
+                            <button class="btn btn-primary btn-block">Send</button>
                         </form>
                     </div>
                 </div>
