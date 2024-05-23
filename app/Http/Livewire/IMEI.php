@@ -131,11 +131,22 @@ class IMEI extends Component
                 // if(session('user_id') == 1){
                 //     dd($last_item);
                 // }
+
+
+            $process_stocks = Process_stock_model::where('stock_id', $stock_id)->whereHas('process', function ($query) {
+                $query->where('process_type_id', 9);
+            })->orderBy('id','desc')->get();
+            $data['process_stocks'] = $process_stocks;
+
+
             if(in_array($last_item->order->order_type_id,[1,4])){
 
                 if($stock->status == 2){
-                    $stock->status = 1;
-                    $stock->save();
+                    if($process_stocks->where('status',1)->count() == 0){
+
+                        $stock->status = 1;
+                        $stock->save();
+                    }
                 }
                     session()->put('success', 'IMEI is Available');
             }else{
@@ -152,10 +163,6 @@ class IMEI extends Component
             $data['orders'] = $orders;
             // dd($orders);
 
-            $process_stocks = Process_stock_model::where('stock_id', $stock_id)->whereHas('process', function ($query) {
-                $query->where('process_type_id', 9);
-            })->orderBy('id','desc')->get();
-            $data['process_stocks'] = $process_stocks;
 
             $stocks = Stock_operations_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
             $data['stocks'] = $stocks;
