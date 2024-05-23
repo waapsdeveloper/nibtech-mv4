@@ -135,7 +135,7 @@ class Order_item_model extends Model
                 case 4: $state = 4; break;
                 case 5: $state = 5; break;
                 case 6: $state = 6; break;
-                case 7: $state = 0; break;
+                default: $state = 0; break;
             }
             $orderItem->status = $state;
             // ... other fields

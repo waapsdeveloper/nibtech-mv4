@@ -260,12 +260,69 @@
                                                     <button class="btn btn-secondary">Send</button>
                                                 </form> --}}
 
-                                                <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
+                                                <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical tx-18"></i></a>
                                                 <div class="dropdown-menu">
-                                                    <a class="dropdown-item" id="action_{{ $stock->id }}" href="javascript:void(0);" data-bs-target="#action_model" data-bs-toggle="modal" data-bs-reference="Send Back to Customer" data-bs-item="{{ $stock->id }}"> Send Back to Customer </a>
-                                                    <a class="dropdown-item" id="action_{{ $stock->id }}" href="javascript:void(0);" data-bs-target="#action_model" data-bs-toggle="modal" data-bs-reference="Send for Aftersale Repair" data-bs-item="{{ $stock->id }}"> Send for Aftersale Repair </a>
-                                                    <a class="dropdown-item" id="action_{{ $stock->id }}" href="javascript:void(0);" data-bs-target="#action_model" data-bs-toggle="modal" data-bs-reference="Return as RMA" data-bs-item="{{ $stock->id }}"> Return as RMA </a>
-                                                    <a class="dropdown-item" id="action_{{ $stock->id }}" href="javascript:void(0);" data-bs-target="#action_model" data-bs-toggle="modal" data-bs-reference="Return as WIP" data-bs-item="{{ $stock->id }}"> Return as WIP </a>
+
+                                                    <a class="dropdown-item" id="action_{{ $stock->id }}" href="javascript:void(0);"
+                                                        data-bs-target="#action_model"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-reference="Send Back to Customer"
+                                                        data-bs-product="{{ $stock->last_item()->variation->product_id }}"
+                                                        data-bs-storage="{{ $stock->last_item()->variation->storage }}"
+                                                        data-bs-color="{{ $stock->last_item()->variation->color }}"
+                                                        data-bs-grade="{{ $stock->last_item()->variation->grade }}"
+                                                        data-bs-reference_id="{{ $stock->last_item()->order->reference_id }}"
+                                                        data-bs-stock_id="{{ $stock->id }}"
+                                                        data-bs-price="{{ $stock->last_item()->price }}"
+                                                        data-bs-linked_id="{{ $stock->last_item()->id }}"
+                                                        data-bs-action="{{ url('belfast_inventory/aftersale_action').'/'.$stock->id.'/resend' }}"
+                                                        > Send Back to Customer </a>
+
+                                                    <a class="dropdown-item" id="action_{{ $stock->id }}" href="javascript:void(0);"
+                                                        data-bs-target="#action_model"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-reference="Send for Aftersale Repair"
+                                                        data-bs-product="{{ $stock->last_item()->variation->product_id }}"
+                                                        data-bs-storage="{{ $stock->last_item()->variation->storage }}"
+                                                        data-bs-color="{{ $stock->last_item()->variation->color }}"
+                                                        data-bs-grade="8"
+                                                        data-bs-reference_id="{{ $stock->last_item()->order->reference_id }}"
+                                                        data-bs-stock_id="{{ $stock->id }}"
+                                                        data-bs-price="{{ $stock->last_item()->price }}"
+                                                        data-bs-linked_id="{{ $stock->last_item()->id }}"
+                                                        data-bs-action="{{ url('belfast_inventory/aftersale_action').'/'.$stock->id.'/aftersale_repair' }}"
+                                                        > Send for Aftersale Repair </a>
+
+                                                    <a class="dropdown-item" id="action_{{ $stock->id }}" href="javascript:void(0);"
+                                                        data-bs-target="#action_model"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-reference="Return as RMA"
+                                                        data-bs-product="{{ $stock->last_item()->variation->product_id }}"
+                                                        data-bs-storage="{{ $stock->last_item()->variation->storage }}"
+                                                        data-bs-color="{{ $stock->last_item()->variation->color }}"
+                                                        data-bs-grade="10"
+                                                        data-bs-reference_id="{{ $stock->last_item()->order->reference_id }}"
+                                                        data-bs-stock_id="{{ $stock->id }}"
+                                                        data-bs-price="{{ $stock->last_item()->price }}"
+                                                        data-bs-linked_id="{{ $stock->last_item()->id }}"
+                                                        data-bs-action="{{ url('add_return_item').'/'.$return_order->id}}"
+                                                        > Return as RMA </a>
+
+                                                    <a class="dropdown-item" id="action_{{ $stock->id }}" href="javascript:void(0);"
+                                                        data-bs-target="#action_model"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-reference="Return as WIP"
+                                                        data-bs-product="{{ $stock->last_item()->variation->product_id }}"
+                                                        data-bs-storage="{{ $stock->last_item()->variation->storage }}"
+                                                        data-bs-color="{{ $stock->last_item()->variation->color }}"
+                                                        data-bs-grade="9"
+                                                        data-bs-reference_id="{{ $stock->last_item()->order->reference_id }}"
+                                                        data-bs-stock_id="{{ $stock->id }}"
+                                                        data-bs-price="{{ $stock->last_item()->price }}"
+                                                        data-bs-linked_id="{{ $stock->last_item()->id }}"
+                                                        data-bs-action="{{ url('add_return_item').'/'.$return_order->id}}"
+                                                        > Return as WIP </a>
+
                                                 </div>
 
                                             </td>
@@ -294,17 +351,26 @@
                             type="button"><span aria-hidden="true">&times;</span></button>
                         <h3 class="modal-title mg-b-5">Update Stock Status</h3>
                         <hr>
-                        <form action="{{ 'sad' }}" method="POST">
+                        <form action="" method="POST" id="action_form">
                             @csrf
                             <div class="form-group">
                                 <label for="">Action</label>
-                                <input class="form-control" name="action[id]" type="text" id="order_reference" readonly>
+                                <input class="form-control" name="return[id]" type="text" id="order_reference" readonly>
                             </div>
                             <div class="form-group">
                                 <label for="">Reason</label>
-                                <textarea class="form-control" name="action[reason]"></textarea>
+                                <textarea class="form-control" name="return[description]"></textarea>
                             </div>
-                            <input type="hidden" id="item_id" name="action[item_id]" value="">
+                            <input type="hidden" id="product" name="return[product]">
+                            <input type="hidden" id="storage" name="return[storage]">
+                            <input type="hidden" id="color" name="return[color]">
+                            <input type="hidden" id="grade" name="return[grade]">
+                            <input type="hidden" id="order_id" name="return[order_id]" value="{{$return_order->id}}">
+                            <input type="hidden" id="reference_id" name="return[reference_id]">
+                            <input type="hidden" id="stock_id" name="return[stock_id]">
+                            <input type="hidden" id="price" name="return[price]">
+                            <input type="hidden" id="linked_id" name="return[linked_id]">
+
 
                             <button class="btn btn-primary btn-block">Send</button>
                         </form>
@@ -316,19 +382,32 @@
 
     @section('scripts')
         <script>
-            $(document).ready(function(){
-                $(.select2).select2();
-            });
 
             $('#action_model').on('show.bs.modal', function (event) {
             var button = $(event.relatedTarget) // Button that triggered the modal
+            var action = button.data('bs-action') // Extract info from data-* attributesv
             var reference = button.data('bs-reference') // Extract info from data-* attributesv
-            var item = button.data('bs-item') // Extract info from data-* attributes
+            var product = button.data('bs-product') // Extract info from data-* attributes
+            var storage = button.data('bs-storage') // Extract info from data-* attributes
+            var color = button.data('bs-color') // Extract info from data-* attributes
+            var grade = button.data('bs-grade') // Extract info from data-* attributes
+            var reference_id = button.data('bs-reference_id') // Extract info from data-* attributes
+            var stock_id = button.data('bs-stock_id') // Extract info from data-* attributes
+            var price = button.data('bs-price') // Extract info from data-* attributes
+            var linked_id = button.data('bs-linked_id') // Extract info from data-* attributes
             // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
             // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
             var modal = $(this)
+            modal.find('.modal-body #action_form').attr('action', action);
             modal.find('.modal-body #order_reference').val(reference)
-            modal.find('.modal-body #item_id').val(item)
+            modal.find('.modal-body #product').val(product)
+            modal.find('.modal-body #storage').val(storage)
+            modal.find('.modal-body #color').val(color)
+            modal.find('.modal-body #grade').val(grade)
+            modal.find('.modal-body #reference_id').val(reference_id)
+            modal.find('.modal-body #stock_id').val(stock_id)
+            modal.find('.modal-body #price').val(price)
+            modal.find('.modal-body #linked_id').val(linked_id)
             })
         </script>
 		<!--Internal Sparkline js -->

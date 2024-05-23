@@ -10,6 +10,7 @@ use App\Models\Grade_model;
 use App\Models\Category_model;
 use App\Models\Brand_model;
 use App\Models\Customer_model;
+use App\Models\Order_model;
 use App\Models\Stock_model;
 use App\Models\Products_model;
 use App\Models\Stock_operations_model;
@@ -213,7 +214,7 @@ class Inventory extends Component
         }else{
             $per_page = 10;
         }
-
+        $data['return_order'] = Order_model::where(['order_type_id'=>4,'status'=>1])->first();
         $data['vendors'] = Customer_model::where('is_vendor',1)->pluck('first_name','id');
         $data['colors'] = Color_model::pluck('name','id');
         $data['storages'] = Storage_model::pluck('name','id');
@@ -364,8 +365,6 @@ class Inventory extends Component
 
         }elseif($action == 'aftersale_repair'){
             $grade = 8;
-        }elseif($action == 'rma'){
-            $grade = 10;
         }
         $new_variation = Variation_model::firstOrNew([
             'product_id' => $product_id,
@@ -381,6 +380,10 @@ class Inventory extends Component
             'description' => request('description'),
             'admin_id' => session('user_id'),
         ]);
+
+        $new_variation->save();
+        $stock->variation_id = $new_variation->id;
+        $stock->save();
     }
 }
 
