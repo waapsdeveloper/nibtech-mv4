@@ -14,7 +14,7 @@ use App\Models\Color_model;
 use App\Models\Grade_model;
 use App\Models\Order_issue_model;
 use App\Models\Stock_operations_model;
-
+use Illuminate\Support\Facades\DB;
 
 class SalesReturn extends Component
 {
@@ -42,12 +42,12 @@ class SalesReturn extends Component
             'orders.id',
             'orders.reference_id',
             // DB::raw('SUM(order_items.price) as total_price'),
-            // DB::raw('COUNT(order_items.id) as total_quantity'),
-            // DB::raw('COUNT(CASE WHEN stock.status = 1 THEN order_items.id END) as available_stock'),
+            DB::raw('COUNT(order_items.id) as total_quantity'),
+            DB::raw('COUNT(CASE WHEN stock.status = 1 THEN order_items.id END) as available_stock'),
             'orders.created_at')
         ->where('orders.order_type_id', 4)
-        // ->join('order_items', 'orders.id', '=', 'order_items.order_id')
-        // ->join('stock', 'order_items.stock_id', '=', 'stock.id')
+        ->join('order_items', 'orders.id', '=', 'order_items.order_id')
+        ->join('stock', 'order_items.stock_id', '=', 'stock.id')
         ->when(request('start_date'), function ($q) {
             return $q->where('orders.created_at', '>=', request('start_date'));
         })
@@ -60,7 +60,7 @@ class SalesReturn extends Component
         ->when(request('status'), function ($q) {
             return $q->where('orders.status', request('status'));
         })
-        // ->groupBy('orders.id', 'orders.reference_id', 'orders.created_at')
+        ->groupBy('orders.id', 'orders.reference_id', 'orders.created_at')
         ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
         ->paginate($per_page)
         ->onEachSide(5)
