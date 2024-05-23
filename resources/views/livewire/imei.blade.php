@@ -122,7 +122,7 @@
                                 <thead>
                                     <tr>
                                         <th><small><b>No</b></small></th>
-                                        <th><small><b>Order ID</b></small></th>
+                                        <th width="100px"><small><b>Order ID</b></small></th>
                                         <th><small><b>Type</b></small></th>
                                         <th><small><b>Customer / Vendor</b></small></th>
                                         <th><small><b>Product</b></small></th>
