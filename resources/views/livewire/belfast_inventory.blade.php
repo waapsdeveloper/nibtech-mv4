@@ -262,10 +262,10 @@
 
                                                 <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                                 <div class="dropdown-menu">
-                                                    <a class="dropdown-item" id="action_{{ $stock->id }}" href="javascript:void(0);" data-bs-target="#action_model" data-bs-toggle="modal" data-bs-reference="Send Back to Customer" data-bs-item=""> Send Back to Customer </a>
-                                                    <a class="dropdown-item" id="action_{{ $stock->id }}" href="javascript:void(0);" data-bs-target="#action_model" data-bs-toggle="modal" data-bs-reference="Send for Aftersale Repair" data-bs-item=""> Send for Aftersale Repair </a>
-                                                    <a class="dropdown-item" id="action_{{ $stock->id }}" href="javascript:void(0);" data-bs-target="#action_model" data-bs-toggle="modal" data-bs-reference="Return as RMA" data-bs-item=""> Return as RMA </a>
-                                                    <a class="dropdown-item" id="action_{{ $stock->id }}" href="javascript:void(0);" data-bs-target="#action_model" data-bs-toggle="modal" data-bs-reference="Return as WIP" data-bs-item=""> Return as WIP </a>
+                                                    <a class="dropdown-item" id="action_{{ $stock->id }}" href="javascript:void(0);" data-bs-target="#action_model" data-bs-toggle="modal" data-bs-reference="Send Back to Customer" data-bs-item="{{ $stock->id }}"> Send Back to Customer </a>
+                                                    <a class="dropdown-item" id="action_{{ $stock->id }}" href="javascript:void(0);" data-bs-target="#action_model" data-bs-toggle="modal" data-bs-reference="Send for Aftersale Repair" data-bs-item="{{ $stock->id }}"> Send for Aftersale Repair </a>
+                                                    <a class="dropdown-item" id="action_{{ $stock->id }}" href="javascript:void(0);" data-bs-target="#action_model" data-bs-toggle="modal" data-bs-reference="Return as RMA" data-bs-item="{{ $stock->id }}"> Return as RMA </a>
+                                                    <a class="dropdown-item" id="action_{{ $stock->id }}" href="javascript:void(0);" data-bs-target="#action_model" data-bs-toggle="modal" data-bs-reference="Return as WIP" data-bs-item="{{ $stock->id }}"> Return as WIP </a>
                                                 </div>
 
                                             </td>
