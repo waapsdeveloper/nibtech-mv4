@@ -221,8 +221,8 @@ class Inventory extends Component
         $data['grades'] = Grade_model::pluck('name','id');
         $data['categories'] = Category_model::get();
         $data['brands'] = Brand_model::get();
-        $data['stocks'] = Stock_model::
-        when(request('vendor') != '', function ($q) {
+        $data['stocks'] = Stock_model::with('purchase_item','order_items')
+        ->when(request('vendor') != '', function ($q) {
             return $q->whereHas('order', function ($q) {
                 $q->where('customer_id', request('vendor'));
             });
