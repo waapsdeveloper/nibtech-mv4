@@ -154,7 +154,7 @@
                                                 @elseif ($order->order_type_id == 4)
                                                     <td><a href="{{url(session('url').'return/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
                                                 @elseif ($order->order_type_id == 3)
-                                                    <td>{{ $order->reference_id }}</td>
+                                                    <td><a href="https://www.backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}">{{ $order->reference_id }}</a></td>
                                                 @endif
                                                 <td>{{ $order->order_type->name }}</td>
                                                 <td>@if ($order->customer)
