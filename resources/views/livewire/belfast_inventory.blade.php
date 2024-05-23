@@ -262,7 +262,7 @@
 
                                                 <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                                 <div class="dropdown-menu">
-                                                    <a class="dropdown-item" id="action_{{ $stock->id }}" href="javascript:void(0);" data-bs-target="#action_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}"> Replacement </a>
+                                                    <a class="dropdown-item" id="action_{{ $stock->id }}" href="javascript:void(0);" data-bs-target="#action_model" data-bs-toggle="modal" data-bs-reference="" data-bs-item=""> Action </a>
                                                 </div>
 
                                             </td>
