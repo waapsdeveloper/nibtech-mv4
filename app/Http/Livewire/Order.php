@@ -238,6 +238,128 @@ class Order extends Component
         // dd($data['orders']);
         return view('livewire.order')->with($data);
     }
+    public function sales_allowed()
+    {
+
+        $data['grades'] = Grade_model::all();
+        $data['last_hour'] = Carbon::now()->subHour(72);
+        $data['admins'] = Admin_model::where('id','!=',1)->get();
+        $user_id = session('user_id');
+        $data['user_id'] = $user_id;
+        $data['pending_orders_count'] = Order_model::where('order_type_id',3)->where('status',2)->count();
+        $data['order_statuses'] = Order_status_model::get();
+        if(request('per_page') != null){
+            $per_page = request('per_page');
+        }else{
+            $per_page = 10;
+        }
+        // if(request('care')){
+        //     foreach(Order_model::where('status',2)->pluck('reference_id') as $pend){
+        //         $this->recheck($pend);
+        //     }
+        // }
+
+        switch (request('sort')){
+            case 2: $sort = "orders.reference_id"; $by = "ASC"; break;
+            case 3: $sort = "products.model"; $by = "DESC"; break;
+            case 4: $sort = "products.model"; $by = "ASC"; break;
+            default: $sort = "orders.reference_id"; $by = "DESC";
+        }
+
+        $orders = Order_model::with(['order_items','order_items.variation', 'order_items.variation.grade_id', 'order_items.stock'])
+        ->where('order_type_id',3)
+        ->when(request('start_date') != '', function ($q) {
+            if(request('adm') > 0){
+                return $q->where('processed_at', '>=', request('start_date', 0));
+            }else{
+                return $q->where('created_at', '>=', request('start_date', 0));
+
+            }
+        })
+        ->when(request('end_date') != '', function ($q) {
+            if(request('adm') > 0){
+                return $q->where('processed_at', '<=', request('end_date', 0) . " 23:59:59")->orderBy('processed_at','desc');
+            }else{
+                return $q->where('created_at', '<=', request('end_date', 0) . " 23:59:59");
+            }
+        })
+        ->when(request('status') != '', function ($q) {
+            return $q->where('status', request('status'));
+        })
+        ->when(request('adm') != '', function ($q) {
+            if(request('adm') == 0){
+                return $q->where('processed_by', null);
+            }
+            return $q->where('processed_by', request('adm'));
+        })
+        ->when(request('care') != '', function ($q) {
+            return $q->whereHas('order_items', function ($query) {
+                $query->where('care_id', '!=', null);
+            });
+        })
+        ->when(request('order_id') != '', function ($q) {
+            return $q->where('reference_id', 'LIKE', request('order_id') . '%');
+        })
+        ->when(request('sku') != '', function ($q) {
+            return $q->whereHas('order_items.variation', function ($q) {
+                $q->where('sku', 'LIKE', '%' . request('sku') . '%');
+            });
+        })
+        ->when(request('imei') != '', function ($q) {
+            return $q->whereHas('order_items.stock', function ($q) {
+                $q->where('imei', 'LIKE', '%' . request('imei') . '%');
+            });
+        })
+        ->when(request('tracking_number') != '', function ($q) {
+            if(strlen(request('tracking_number')) == 21){
+                $tracking = substr(request('tracking_number'),1);
+            }else{
+                $tracking = request('tracking_number');
+            }
+            return $q->where('tracking_number', 'LIKE', '%' . $tracking . '%');
+        })
+        ->orderBy($sort, $by) // Order by variation name
+        ->when(request('sort') == 4, function ($q) {
+            return $q->whereHas('order_items.variation.product', function ($q) {
+                $q->orderBy('model', 'ASC');
+            })->whereHas('order_items.variation', function ($q) {
+                $q->orderBy('variation.storage', 'ASC');
+            })->whereHas('order_items.variation', function ($q) {
+                $q->orderBy('variation.color', 'ASC');
+            })->whereHas('order_items.variation', function ($q) {
+                $q->orderBy('variation.grade', 'ASC');
+            });
+
+        })
+        ->orderBy('reference_id', 'desc'); // Secondary order by reference_id
+        if(request('bulk_invoice') && request('bulk_invoice') == 1){
+
+            $data['orders2'] = $orders
+            ->get();
+            foreach($data['orders2'] as $order){
+
+                $data2 = [
+                    'order' => $order,
+                    'customer' => $order->customer,
+                    'orderItems' => $order->order_items,
+                ];
+                Mail::to($order->customer->email)->send(new InvoiceMail($data2));
+
+            }
+            // return redirect()->back();
+
+        }
+        $data['orders'] = $orders
+        ->paginate($per_page)
+        ->onEachSide(5)
+        ->appends(request()->except('page'));
+
+        if(count($data['orders']) == 0 && request('order_id')){
+            $this->recheck(request('order_id'));
+        }
+        // dd($data['orders']);
+        return view('livewire.sales_allowed')->with($data);
+    }
     public function purchase()
     {
 

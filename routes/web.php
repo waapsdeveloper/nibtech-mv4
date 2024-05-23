@@ -147,6 +147,9 @@ Route::get('export_ordersheet', [Order::class,'export_ordersheet'])->name('dispa
 Route::get('export_invoice/{id}', [Order::class,'export_invoice'])->name('dispatch_order');
 Route::get('order/label/{id}', [Order::class,'getLabel'])->name('dispatch_order');
 
+Route::get('sales/allowed', [Order::class,'sales_allowed'])->name('dispatch_admin');
+Route::post('order/dispatch_allowed/{id}', [Order::class,'dispatch_allowed'])->name('dispatch_admin');
+
 Route::get('inventory', Inventory::class)->name('view_inventory');
 Route::get('inventory/get_products', [Inventory::class,'get_products'])->name('view_inventory');
 Route::get('inventory/get_variations/{id}', [Inventory::class,'get_variations'])->name('view_inventory');
