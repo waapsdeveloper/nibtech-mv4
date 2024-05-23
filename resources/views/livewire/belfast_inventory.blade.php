@@ -260,6 +260,10 @@
                                                     <button class="btn btn-secondary">Send</button>
                                                 </form>
 
+                                                <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
+                                                <div class="dropdown-menu">
+                                                    <a class="dropdown-item" id="action_{{ $stock->id }}" href="javascript:void(0);" data-bs-target="#action_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}"> Replacement </a>
+                                                </div>
 
                                             </td>
                                         </tr>
@@ -279,44 +283,45 @@
             </div>
         </div>
 
-        <div class="modal" id="modaldemo">
+        <div class="modal" id="action_model">
             <div class="modal-dialog wd-xl-400" role="document">
                 <div class="modal-content">
                     <div class="modal-body pd-sm-40">
                         <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
                             type="button"><span aria-hidden="true">&times;</span></button>
-                        <h5 class="modal-title mg-b-5">Add Product</h5>
+                        <h3 class="modal-title mg-b-5">Update Order</h3>
                         <hr>
-                        <form action="{{ url('add_product') }}" method="POST">
+                        <form action="{{ 'sad' }}" method="POST">
                             @csrf
                             <div class="form-group">
-                                <label for="">Category</label>
-                                <select class="form-select" placeholder="Input Category" name="product[category]" required>
-                                    <option>Select Category</option>
-                                    @foreach ($categories as $category)
-                                        <option value="{{ $category->id }}">{{ $category->name }}</option>
-
+                                <label for="">Order Number</label>
+                                <input class="form-control" name="action[id]" type="text" id="order_reference" readonly>
+                            </div>
+                            <h4>Replace</h4>
+                            <div class="form-group">
+                                <label for="">Move to</label>
+                                <select name="action[grade]" class="form-control form-select" required>
+                                    <option value="">Move to</option>
+                                    @foreach ($grades as $grade)
+                                        <option value="{{ $grade->id }}">{{ $grade->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="">Brand</label>
-                                <select class="form-select" placeholder="Input Brand" name="product[brand]" required>
-                                    <option>Select Brand</option>
-                                    @foreach ($brands as $brand)
-                                        <option value="{{ $brand->id }}">{{ $brand->name }}</option>
+                                <label for="">Reason</label>
+                                <textarea class="form-control" name="action[reason]"></textarea>
+                            </div>
+                            <h4>With</h4>
+                            <div class="form-group">
+                                <label for="">Tester</label>
+                                <input class="form-control" placeholder="input Tester Initial" name="action[tester]" type="text">
+                            </div>
+                            <div class="form-group">
+                                <label for="">IMEI / Serial Number</label>
+                                <input class="form-control" placeholder="input IMEI / Serial Number" name="action[imei]" type="text" required>
+                            </div>
+                            <input type="hidden" id="item_id" name="action[item_id]" value="">
 
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="">Model</label>
-                                <input class="form-control" placeholder="Input Model" name="product[model]" type="text" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="">Description</label>
-                                <textarea class="form-control" placeholder="Input Description" name="product[description]"></textarea>
-                            </div>
                             <button class="btn btn-primary btn-block">{{ __('locale.Submit') }}</button>
                         </form>
                     </div>
@@ -331,6 +336,16 @@
                 $(.select2).select2();
             });
 
+            $('#action_model').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget) // Button that triggered the modal
+            var reference = button.data('bs-reference') // Extract info from data-* attributesv
+            var item = button.data('bs-item') // Extract info from data-* attributes
+            // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+            // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+            var modal = $(this)
+            modal.find('.modal-body #order_reference').val(reference)
+            modal.find('.modal-body #item_id').val(item)
+            })
         </script>
 		<!--Internal Sparkline js -->
 		<script src="{{asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js')}}"></script>

@@ -59,9 +59,9 @@ class MoveInventory extends Component
         ->when(request('adm') != '', function ($q) {
             return $q->where('admin_id', request('adm'));
         })
-            ->whereHas('stock', function ($query) {
-                $query->where('status', 1);
-            })
+            // ->whereHas('stock', function ($query) {
+            //     $query->where('status', 1);
+            // })
             ->orderBy('id','desc')->get();
         $data['stocks'] = $stocks;
         $data['grade'] = Grade_model::find($grade);
