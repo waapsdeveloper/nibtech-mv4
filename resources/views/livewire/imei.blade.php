@@ -256,7 +256,7 @@
                                 @endphp
                                 @foreach ($process_stocks as $index => $p_stock)
                                     @php
-                                        $process = $p_stock->order;
+                                        $process = $p_stock->process;
                                         $j = 0;
                                     @endphp
 
