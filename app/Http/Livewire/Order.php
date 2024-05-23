@@ -928,7 +928,7 @@ class Order extends Component
                     return redirect()->back();
 
                 }
-                if($stock[$i]->status != 1){
+                // if($stock[$i]->status != 1){
 
                     $last_item = $stock[$i]->last_item();
                     // if(session('user_id') == 1){
@@ -948,7 +948,268 @@ class Order extends Component
                         session()->put('error', "Stock Already Sold");
                         return redirect()->back();
                     }
+                // }
+                if($stock[$i]->order->status < 3){
+                    session()->put('error', "Stock List Awaiting Approval");
+                    return redirect()->back();
                 }
+                if($stock[$i]->variation->grade == 17){
+                    session()->put('error', "IMEI Flagged | Contact Admin");
+                    return redirect()->back();
+                }
+                if($stock[$i]->variation->storage != null){
+                    $storage = $stock[$i]->variation->storage_id->name . " - ";
+                }else{
+                    $storage = null;
+                }
+                if($stock[$i]->variation->color != null){
+                    $color = $stock[$i]->variation->color_id->name . " - ";
+                }else{
+                    $color = null;
+                }
+                if(($stock[$i]->variation->product_id == $variant->product_id) || ($variant->product_id == 144 && $stock[$i]->variation->product_id == 229) || ($variant->product_id == 142 && $stock[$i]->variation->product_id == 143) || ($variant->product_id == 54 && $stock[$i]->variation->product_id == 55) || ($variant->product_id == 55 && $stock[$i]->variation->product_id == 54) || ($variant->product_id == 58 && $stock[$i]->variation->product_id == 59) || ($variant->product_id == 59 && $stock[$i]->variation->product_id == 58) || ($variant->product_id == 200 && $stock[$i]->variation->product_id == 160)){
+                }else{
+                    session()->put('error', "Product Model not matched");
+                    return redirect()->back();
+                }
+                if(($stock[$i]->variation->storage == $variant->storage) || ($variant->storage == 5 && in_array($stock[$i]->variation->storage,[0,6]) && $variant->product->brand == 2) || (in_array($variant->product_id, [78,58,59]) && $variant->storage == 4 && in_array($stock[$i]->variation->storage,[0,5]))){
+                }else{
+                    session()->put('error', "Product Storage not matched");
+                    return redirect()->back();
+                }
+                echo "<script>
+                if (confirm('System Model: " . $stock[$i]->variation->product->model . " - " . $storage . $color . $stock[$i]->variation->grade_id->name . "\\nRequired Model: " . $variant->product->model . " - " . $storage2 . $color2 . $variant->grade_id->name . "')) {
+                    // User clicked OK, do nothing or perform any other action
+                } else {
+                    // User clicked Cancel, redirect to the previous page
+                    window.history.back();
+                }
+                </script>";
+                if($stock[$i]->variation_id != $variant->id){
+
+                    $stock_operation = Stock_operations_model::create([
+                        'stock_id' => $stock[$i]->id,
+                        'old_variation_id' => $stock[$i]->variation_id,
+                        'new_variation_id' => $variant->id,
+                        'description' => "Grade changed for Sell",
+                        'admin_id' => session('user_id'),
+                    ]);
+                }
+                $stock[$i]->variation_id = $variant->id;
+                $stock[$i]->tester = $tester[$i];
+                $stock[$i]->status = 2;
+                $stock[$i]->save();
+                $orderObj = $this->updateBMOrder($order->reference_id, true, $tester[$i], true);
+            }
+            $order = Order_model::find($order->id);
+            $items = $order->order_items;
+            if(count($items) > 1 || $items[0]->quantity > 1){
+                $indexes = 0;
+                foreach($skus as $each_sku){
+                    if($indexes == 0 && count($each_sku) == 1){
+                        $detail = $bm->shippingOrderlines($order->reference_id,$sku[0],trim($imeis[0]),$orderObj->tracking_number,$serial_number);
+                    }elseif($indexes == 0 && count($each_sku) > 1){
+                        // dd("Hello");
+                        $detail = $bm->shippingOrderlines($order->reference_id,$sku[0],false,$orderObj->tracking_number,$serial_number);
+                    }elseif($indexes > 0 && count($each_sku) == 1){
+                        $detail = $bm->orderlineIMEI($order->reference_id,trim($imeis[0]),$serial_number);
+                    }else{
+
+                    }
+                    $indexes++;
+                }
+            }else{
+                $detail = $bm->shippingOrderlines($order->reference_id,$sku[0],trim($imeis[0]),$orderObj->tracking_number,$serial_number);
+            }
+            // print_r($detail);
+
+            if(is_string($detail)){
+                session()->put('error', $detail);
+                return redirect()->back();
+            }
+
+
+            foreach ($skus as $each) {
+                $inde = 0;
+                foreach ($each as $idt => $s) {
+                    $variation = Variation_model::where('sku',$s)->first();
+                    $item = Order_item_model::where(['order_id'=>$id, 'variation_id'=>$variation->id])->first();
+                    if ($inde != 0) {
+
+                        $new_item = new Order_item_model();
+                        $new_item->order_id = $id;
+                        $new_item->variation_id = $item->variation_id;
+                        $new_item->quantity = $item->quantity;
+                        $new_item->status = $item->status;
+                        $new_item->price = $item->price;
+                    }else{
+                        $new_item = $item;
+                        $new_item->price = $item->price/count($each);
+                    }
+                    if($stock[$idt]){
+                    $new_item->stock_id = $stock[$idt]->id;
+                    // $new_item->linked_id = Order_item_model::where(['order_id'=>$stock[$idt]->order_id,'stock_id'=>$stock[$idt]->id])->first()->id;
+                    }
+                    $new_item->save();
+                    $inde ++;
+                }
+            }
+
+            // print_r($d[6]);
+        }
+
+        $orderObj = $this->updateBMOrder($order->reference_id, true);
+        $order = Order_model::find($order->id);
+        if(!isset($detail)){
+
+            $invoice_url = url(session('url').'export_invoice').'/'.$id;
+            // JavaScript to open two tabs and print
+            echo '<script>
+            var newTab1 = window.open("'.$order->delivery_note_url.'", "_blank");
+            var newTab2 = window.open("'.$invoice_url.'", "_blank");
+
+            newTab2.onload = function() {
+                newTab2.print();
+            };
+            newTab1.onload = function() {
+                newTab1.print();
+            };
+
+            window.location.href = document.referrer;
+            </script>';
+
+        }
+        if(!$detail->orderlines){
+            dd($detail);
+        }
+        if($detail->orderlines[0]->imei == null && $detail->orderlines[0]->serial_number  == null){
+            $content = "Hi, here are the IMEIs/Serial numbers for this order. \n";
+            foreach ($imeis as $im) {
+                $content .= $im . "\n";
+            }
+            $content .= "Regards \n".session('fname');
+
+            // JavaScript code to automatically copy content to clipboard
+            echo "<script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const el = document.createElement('textarea');
+                    el.value = '$content';
+                    document.body.appendChild(el);
+                    el.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(el);
+                });
+            </script>";
+
+
+            // JavaScript to open two tabs and print
+            echo '<script>
+            window.open("https://backmarket.fr/bo_merchant/orders/all?orderId='.$order->reference_id.'", "_blank");
+            window.location.href = document.referrer;
+            </script>';
+        }else{
+
+            $invoice_url = url(session('url').'export_invoice').'/'.$id;
+            // JavaScript to open two tabs and print
+            echo '<script>
+            var newTab1 = window.open("'.$order->delivery_note_url.'", "_blank");
+            var newTab2 = window.open("'.$invoice_url.'", "_blank");
+
+            newTab2.onload = function() {
+                newTab2.print();
+            };
+            newTab1.onload = function() {
+                newTab1.print();
+            };
+
+            window.location.href = document.referrer;
+            </script>';
+        }
+
+
+    }
+    public function dispatch_allowed($id)
+    {
+        $order = Order_model::where('id',$id)->first();
+        $bm = new BackMarketAPIController();
+
+        // $orderObj = $bm->getOneOrder($order->reference_id);
+        $orderObj = $this->updateBMOrder($order->reference_id, false, null, true);
+        $tester = request('tester');
+        $sku = request('sku');
+        $imeis = request('imei');
+
+        // Initialize an empty result array
+        $skus = [];
+
+        // Loop through the numbers array
+        foreach ($sku as $index => $number) {
+            // If the value doesn't exist as a key in the skus array, create it
+            if (!isset($skus[$number])) {
+                $skus[$number] = [];
+            }
+            // Add the current number to the skus array along with its index in the original array
+            $skus[$number][$index] = $number;
+        }
+        // print_r(request('imei'));
+        if($orderObj->state == 3){
+            foreach(request('imei') as $i => $imei){
+
+                $variant = Variation_model::where('sku',$sku[$i])->first();
+                if($variant->storage != null){
+                    $storage2 = $variant->storage_id->name . " - ";
+                }else{
+                    $storage2 = null;
+                }
+                if($variant->color != null){
+                    $color2 = $variant->color_id->name . " - ";
+                }else{
+                    $color2 = null;
+                }
+
+                $serial_number = null;
+                $imei = trim($imei);
+                if(!ctype_digit($imei)){
+                    $serial_number = $imei;
+                    $imei = null;
+
+                }else{
+
+                    if(strlen($imei) != 15){
+
+                        session()->put('error', "IMEI invalid");
+                        return redirect()->back();
+                    }
+                }
+
+                $stock[$i] = Stock_model::where(['imei'=>$imei, 'serial_number'=>$serial_number])->first();
+
+                if(!$stock[$i] || $stock[$i]->status == null){
+                    session()->put('error', "Stock not Found");
+                    return redirect()->back();
+
+                }
+                // if($stock[$i]->status != 1){
+
+                    $last_item = $stock[$i]->last_item();
+                    // if(session('user_id') == 1){
+                    //     dd($last_item);
+                    // }
+                    if(in_array($last_item->order->order_type_id,[1,4])){
+
+                        if($stock[$i]->status == 2){
+                            $stock[$i]->status = 1;
+                            $stock[$i]->save();
+                        }
+                    }else{
+                        if($stock[$i]->status == 1){
+                            $stock[$i]->status = 2;
+                            $stock[$i]->save();
+                        }
+                        session()->put('error', "Stock Already Sold");
+                        return redirect()->back();
+                    }
+                // }
                 if($stock[$i]->order->status < 3){
                     session()->put('error', "Stock List Awaiting Approval");
                     return redirect()->back();
@@ -970,12 +1231,12 @@ class Order extends Component
                 if(($stock[$i]->variation->product_id == $variant->product_id) || ($variant->product_id == 144 && $stock[$i]->variation->product_id == 229) || ($variant->product_id == 142 && $stock[$i]->variation->product_id == 143) || ($variant->product_id == 54 && $stock[$i]->variation->product_id == 55) || ($variant->product_id == 55 && $stock[$i]->variation->product_id == 54) || ($variant->product_id == 200 && $stock[$i]->variation->product_id == 160)){
                 }else{
                     session()->put('error', "Product Model not matched");
-                    return redirect()->back();
+                    // return redirect()->back();
                 }
                 if(($stock[$i]->variation->storage == $variant->storage) || ($variant->storage == 5 && in_array($stock[$i]->variation->storage,[0,6]) && $variant->product->brand == 2) || (in_array($variant->product_id, [78,58,59]) && $variant->storage == 4 && in_array($stock[$i]->variation->storage,[0,5]))){
                 }else{
                     session()->put('error', "Product Storage not matched");
-                    return redirect()->back();
+                    // return redirect()->back();
                 }
                 echo "<script>
                 if (confirm('System Model: " . $stock[$i]->variation->product->model . " - " . $storage . $color . $stock[$i]->variation->grade_id->name . "\\nRequired Model: " . $variant->product->model . " - " . $storage2 . $color2 . $variant->grade_id->name . "')) {
