@@ -132,6 +132,7 @@ class IMEI extends Component
                 //     dd($last_item);
                 // }
 
+                $stock_id = $stock->id;
 
             $process_stocks = Process_stock_model::where('stock_id', $stock_id)->whereHas('process', function ($query) {
                 $query->where('process_type_id', 9);
@@ -157,7 +158,6 @@ class IMEI extends Component
                     session()->put('success', 'IMEI Sold');
             }
             // print_r($last_item);
-            $stock_id = $stock->id;
             $orders = Order_item_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
             $data['stock'] = $stock;
             $data['orders'] = $orders;
