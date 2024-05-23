@@ -194,7 +194,7 @@
                                                     @isset($item->stock->imei) {{ $item->stock->imei }}&nbsp; @endisset
                                                     @isset($item->stock->serial_number) {{ $item->stock->serial_number }}&nbsp; @endisset
 
-                                                    @isset($order->processed_by) | {{ $order->admin->first_name[0] }} | @endisset
+                                                    @isset($order->processed_by) | {{ $order->admin->first_name }} | @endisset
                                                     @isset($item->stock->tester) ({{ $item->stock->tester }}) @endisset
                                                 </td>
                                                 @endif
