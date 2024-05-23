@@ -245,7 +245,7 @@
                                             <td></td>
                                             @endif
                                             <td>
-                                                <form action="{{ url('belfast_inventory/aftersale_action').'/'.$stock->id }}" method="POST" id="aftersale_action" class="form-inline">
+                                                {{-- <form action="{{ url('belfast_inventory/aftersale_action').'/'.$stock->id }}" method="POST" id="aftersale_action" class="form-inline">
                                                     <div class="form-floating">
                                                         <input type="text" class="form-control" name="description" placeholder="Enter Reason">
                                                         <label for="description">Reason</label>
@@ -258,7 +258,7 @@
                                                         <option value="rma">RMA</option>
                                                     </select>
                                                     <button class="btn btn-secondary">Send</button>
-                                                </form>
+                                                </form> --}}
 
                                                 <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                                 <div class="dropdown-menu">
