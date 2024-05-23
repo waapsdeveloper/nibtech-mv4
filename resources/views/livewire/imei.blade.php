@@ -243,7 +243,6 @@
                                     <th><small><b>No</b></small></th>
                                     <th><small><b>Reference ID</b></small></th>
                                     <th><small><b>Repairer</b></small></th>
-                                    <th><small><b>Product</b></small></th>
                                     <th><small><b>Price</b></small></th>
                                     <th><small><b>IMEI</b></small></th>
                                     <th><small><b>Creation Date | TN</b></small></th>
@@ -267,9 +266,6 @@
                                                 {{ $process->customer->first_name." ".$process->customer->last_name }}
                                             @endif</td>
                                             <td>
-                                                @if ($p_stock->variation ?? false)
-                                                    <strong>{{ $p_stock->variation->sku }}</strong>{{ " - " . $p_stock->variation->product->model . " - " . (isset($p_stock->variation->storage_id)?$p_stock->variation->storage_id->name . " - " : null) . (isset($p_stock->variation->color_id)?$p_stock->variation->color_id->name. " - ":null)}} <strong><u>{{ $p_stock->variation->grade_id->name }}</u></strong>
-                                                @endif
                                                 @if ($p_stock->care_id != null)
                                                     <a class="" href="https://backmarket.fr/bo_merchant/customer-request/{{ $p_stock->care_id }}" target="_blank"><strong class="text-danger">Conversation</strong></a>
                                                 @endif
@@ -277,6 +273,11 @@
                                             <td>
                                                 {{ $process->currency_id->sign.number_format($p_stock->price,2) }}
                                             </td>
+                                            <td>@if ($p_stock->status == 1)
+                                                Sent
+                                                @else
+                                                Received
+                                            @endif</td>
                                             <td style="width:240px" class="text-success text-uppercase" title="{{ $p_stock->stock_id }}" id="copy_imei_{{ $process->id }}">
                                                 @isset($p_stock->stock->imei) {{ $p_stock->stock->imei }}&nbsp; @endisset
                                                 @isset($p_stock->stock->serial_number) {{ $p_stock->stock->serial_number }}&nbsp; @endisset
