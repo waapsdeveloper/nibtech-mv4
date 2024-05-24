@@ -163,7 +163,7 @@
                     @php
                         $totalAmount = 0;
                         $totalQty = 0;
-                        $items = $process->process_stocks
+                        $items = $process->process_stocks;
                     @endphp
                     @foreach ($process_stocks as $item)
                         @php
