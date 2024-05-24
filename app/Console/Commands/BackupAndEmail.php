@@ -57,7 +57,7 @@ class BackupAndEmail extends Command
             $backupPath = "$backupDir/$backupFile";
 
             $command = sprintf(
-                'mysqldump --defaults-extra-file=%s --column-statistics=0 --user=%s --password=%s --host=%s --port=%s %s %s --where="1 LIMIT %d OFFSET %d" > %s 2>&1',
+                'mysqldump --defaults-extra-file=%s --column-statistics=0 --user=%s --password=%s --host=%s --port=%s %s --where="1 LIMIT %d OFFSET %d" > %s 2>&1',
                 escapeshellarg(env('DB_USERNAME')),
                 escapeshellarg(env('DB_PASSWORD')),
                 escapeshellarg(env('DB_HOST')),
