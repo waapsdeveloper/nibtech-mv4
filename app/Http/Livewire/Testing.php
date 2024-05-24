@@ -80,7 +80,7 @@ class Testing extends Component
 
 
             if($stock != null && $stock->variation->storage == $storage && $stock->status == 1){
-
+                echo "HEllo";
                 $new_variation = [
                     'product_id' => $stock->variation->product_id,
                     'storage' => $stock->variation->storage,
