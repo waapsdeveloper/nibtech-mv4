@@ -62,7 +62,7 @@
 </head>
 <body>
 
-    {{-- <iframe src="{{ $order->delivery_note_url }}"></iframe> --}}
+    {{-- <iframe src="{{ $process->delivery_note_url }}"></iframe> --}}
     <div class="invoice-container">
         <!-- Company Information -->
         <table border="0">
@@ -124,27 +124,27 @@
                     <br><br><br><br>
                         <tr>
                             <td style="text-align: left; margin-top:5px;" width="80"><h4><strong>Order ID:</strong></h4></td>
-                            <td colspan="2" width="80"><h4 style="font-weight: 400">{{ $order->reference_id }}</h4></td>
+                            <td colspan="2" width="80"><h4 style="font-weight: 400">{{ $process->reference_id }}</h4></td>
                         </tr>
-                        @if ($order->admin)
+                        @if ($process->admin)
 
                         <tr>
                             <td style="text-align: left; margin-top:5px;"><h4><strong>Sales Rep:</strong></h4></td>
-                            <td colspan="2"><h4 style="font-weight: 400">{{ $order->admin->first_name }}</h4></td>
+                            <td colspan="2"><h4 style="font-weight: 400">{{ $process->admin->first_name }}</h4></td>
                         </tr>
                         @endif
                         <tr>
                             <td style="text-align: left; margin-top:5px;"><h4><strong>Order Date:</strong></h4></td>
-                            <td colspan="2"><h4 style="font-weight: 400">{{ \Carbon\Carbon::parse($order->created_at)->format('d-m-Y') }}</h4></td>
+                            <td colspan="2"><h4 style="font-weight: 400">{{ \Carbon\Carbon::parse($process->created_at)->format('d-m-Y') }}</h4></td>
                         </tr>
                         <tr>
                             <td style="text-align: left; margin-top:5px;"><h4><strong>Invoice Date:</strong></h4></td>
-                            <td colspan="2"><h4 style="font-weight: 400">{{ \Carbon\Carbon::parse($order->processed_at)->format('d-m-Y') }}</h4></td>
+                            <td colspan="2"><h4 style="font-weight: 400">{{ \Carbon\Carbon::parse($process->processed_at)->format('d-m-Y') }}</h4></td>
                         </tr>
                     </table>
-                    {{-- <h3><strong>Order ID:</strong> {{ $order->reference_id }}</h3>
-                    <h3><strong>Order Date:</strong> {{ \Carbon\Carbon::parse($order->created_at)->format('d/m/Y') }}</h4><h4> {{ \Carbon\Carbon::parse($order->created_at)->format('H:m:s') }}&nbsp;</h3>
-                    <h3><strong>Invoice Date:</strong> {{ \Carbon\Carbon::parse($order->updated_at)->format('d/m/Y') }}</h4><h4> {{ \Carbon\Carbon::parse($order->updated_at)->format('H:m:s') }}&nbsp;</h3> --}}
+                    {{-- <h3><strong>Order ID:</strong> {{ $process->reference_id }}</h3>
+                    <h3><strong>Order Date:</strong> {{ \Carbon\Carbon::parse($process->created_at)->format('d/m/Y') }}</h4><h4> {{ \Carbon\Carbon::parse($process->created_at)->format('H:m:s') }}&nbsp;</h3>
+                    <h3><strong>Invoice Date:</strong> {{ \Carbon\Carbon::parse($process->updated_at)->format('d/m/Y') }}</h4><h4> {{ \Carbon\Carbon::parse($process->updated_at)->format('H:m:s') }}&nbsp;</h3> --}}
                 </td>
             </tr>
         </table>
@@ -168,7 +168,7 @@
                         $totalAmount = 0;
                         $totalQty = 0;
                     @endphp
-                    @foreach ($order_items as $item)
+                    @foreach ($process_stocks as $item)
                         @php
                             // $itemTotal = $item->quantity * $item->price;
                             $totalAmount += $item->total_price;
@@ -187,16 +187,16 @@
                         @endphp
                         <tr>
                             <td width="320">{{ $item->model . " - " . $storage . $color . $grades[$item->grade] }}</td>
-                            <td width="80" align="right">{{ $order->currency_id->sign }}{{ number_format($item->average_price,2) }}</td>
+                            <td width="80" align="right">{{ $process->currency_id->sign }}{{ number_format($item->average_price,2) }}</td>
                             <td width="40">{{ $item->total_quantity }}</td>
-                            <td width="90" align="right">{{ $order->currency_id->sign }}{{ number_format($item->total_price,2) }}</td>
+                            <td width="90" align="right">{{ $process->currency_id->sign }}{{ number_format($item->total_price,2) }}</td>
                         </tr>
                     @endforeach
                         {{-- <tr>
                             <td width="320">Accessories</td>
-                            <td width="80" align="right">{{ $order->currency_id->sign }}0.00</td>
+                            <td width="80" align="right">{{ $process->currency_id->sign }}0.00</td>
                             <td width="40">{{ $totalQty }}</td>
-                            <td width="90" align="right">{{ $order->currency_id->sign }}0.00</td>
+                            <td width="90" align="right">{{ $process->currency_id->sign }}0.00</td>
                         </tr> --}}
                     <hr>
                 </tbody>
@@ -208,7 +208,7 @@
                                 <tr>
                                     <td>Sub Total:</td>
                                     {{-- <td>{{$totalQty}}</td> --}}
-                                    <td align="right"> <strong>{{ $order->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td>
+                                    <td align="right"> <strong>{{ $process->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td>
                                 </tr>
                                 <tr>
                                     <td>Qty:</td>
@@ -218,16 +218,16 @@
                                     <hr>
                                     <tr>
                                         <td>Amount Due:</td>
-                                        <td align="right"> <strong>{{ $order->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td>
+                                        <td align="right"> <strong>{{ $process->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td>
                                     </tr>
                                     {{-- <tr>
                                         <td>Back Market:</td>
-                                        <td align="right"> <strong>{{ $order->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td>
+                                        <td align="right"> <strong>{{ $process->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td>
                                     </tr>
                                     <hr>
                                     <tr>
                                         <td>Change:</td>
-                                        <td align="right"> <strong>{{ $order->currency_id->sign }}0.00</strong></td>
+                                        <td align="right"> <strong>{{ $process->currency_id->sign }}0.00</strong></td>
                                     </tr> --}}
                             </table>
 
