@@ -33,7 +33,7 @@ class Testing extends Component
             // Convert each grade name to lowercase
         $lowercaseGrades = array_map('strtolower', $grades);
 
-        $requests = Api_request_model::where('status',null)->limit(2)->get();
+        $requests = Api_request_model::where('status',null)->limit(20)->get();
         foreach($requests as $request){
             $data = $request->request;
             $datas = json_decode(json_decode(preg_split('/(?<=\}),(?=\{)/', $data)[0]));
