@@ -371,8 +371,8 @@
                                                     Item Not Purchased Yet
                                                 @endif
                                             </td>
-                                            <td>{{$stock->latest_operation->description }}</td>
-                                            <td style="width:180px">{{ $stock->latest_operation->created_at."  ".$stock->latest_operation->updated_at }}</td>
+                                            <td>{{$stock->latest_operation->description ?? "Missing Movement" }}</td>
+                                            <td style="width:180px">{{ $stock->latest_operation->created_at ?? null}} {{$stock->latest_operation->updated_at ?? null }}</td>
                                         </tr>
                                         {{-- @php
                                             $j++;
