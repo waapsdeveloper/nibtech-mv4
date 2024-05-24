@@ -74,6 +74,7 @@ class Testing extends Component
                 // retrieve its index
                 $grade = array_search($gradeName, $lowercaseGrades);
             }else{
+                echo $gradeName;
                 continue;
             }
 
