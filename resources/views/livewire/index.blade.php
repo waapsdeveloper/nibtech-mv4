@@ -330,7 +330,7 @@
 							<div class="card custom-card overflow-hidden">
 								<div class="card-header border-bottom-0">
 									<div class="d-flex justify-content-between">
-										<h3 class="card-title mb-2 ">Daily Orders for this month</h3> <span class="d-block tx-12 mb-0 text-muted">Total Pending Order ({{ $pending_orders_count }})</span>
+										<h3 class="card-title mb-2 ">Daily Orders for this month</h3> <span class="mb-0 ">Total Pending Order ({{ $pending_orders_count }})</span>
 									</div>
 								</div>
 								<div class="card-body">
