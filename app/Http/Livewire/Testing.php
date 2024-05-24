@@ -37,6 +37,9 @@ class Testing extends Component
         foreach($requests as $request){
             $data = $request->request;
             $datas = json_decode(json_decode(preg_split('/(?<=\}),(?=\{)/', $data)[0]));
+            if($datas == null){
+                continue;
+            }
             $stock = Stock_model::where('imei',$datas->Imei)->orWhere('imei',$datas->Imei2)->orWhere('serial_number',$datas->Serial)->first();
 
             if(in_array($datas->Memory, $storages)){
