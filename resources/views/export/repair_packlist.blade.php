@@ -188,7 +188,7 @@
                             <td width="40">{{ $item->total_quantity }}</td>
                             <td width="90" align="right">{{ $process->currency_id->sign }}{{ number_format($item->total_price,2) }}</td>
                         </tr>
-                        @foreach ($process_stocks as $process_stock)
+                        @foreach ($items as $process_stock)
                             @if($process_stock->variation_id == $item->variation_id)
                             <tr class="font-sm">
                                 <td width="320" style="font-size: 10px" align="right">{{ $process_stock->stock->imei ?? "Stock Not Found"}}{{$process_stock->stock->serial_number ?? null }}</td>
