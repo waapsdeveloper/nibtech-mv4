@@ -152,7 +152,7 @@ class GoogleController extends Controller
 
     // Get the attachment from the mailable
     $pdfData = $mailable->build()->rawAttachments[0]['data'];
-    $fileName = $mailable->build()->rawAttachments[0]['as'];
+    $fileName = $mailable->build()->rawAttachments[0]['name'];
     $fileType = $mailable->build()->rawAttachments[0]['options']['mime'];
 
     // Create a new message
