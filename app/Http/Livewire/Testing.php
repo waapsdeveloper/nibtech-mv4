@@ -78,8 +78,13 @@ class Testing extends Component
                 // retrieve its index
                 $grade = array_search($gradeName, $lowercaseGrades);
             }else{
-                echo $gradeName;
-                continue;
+                if($gradeName == ''){
+                    $grade = 7;
+                }else{
+
+                    echo $gradeName;
+                    continue;
+                }
             }
 
 
@@ -95,7 +100,7 @@ class Testing extends Component
                     $new_variation['color'] = $color;
                 }
 
-                if($stock->variation->grade == 9 || $stock->variation->grade == $grade){
+                if(($stock->variation->grade == 9 || $stock->variation->grade == $grade) && $grade != ''){
                     $new_variation['grade'] = $grade;
                 }
                 $variation = Variation_model::firstOrNew($new_variation);
