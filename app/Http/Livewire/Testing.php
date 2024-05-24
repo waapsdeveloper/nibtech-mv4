@@ -98,6 +98,7 @@ class Testing extends Component
                     $new_variation['grade'] = $grade;
                 }
                 $variation = Variation_model::firstOrNew($new_variation);
+                $variation->status = 1;
                 $variation->save();
                 $stock->variaton_id = $variation->id;
                 $stock->save();
