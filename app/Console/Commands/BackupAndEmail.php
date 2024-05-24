@@ -57,14 +57,30 @@ class BackupAndEmail extends Command
             $backupPath = "$backupDir/$backupFile";
 
             $command = sprintf(
-                'mysqldump --defaults-extra-file=%s --column-statistics=0 %s %s --where="1 LIMIT %d OFFSET %d" > %s 2>&1',
-                escapeshellarg('/root/.my.cnf'), // Update to the correct path to your .my.cnf file
+                'mysqldump --defaults-extra-file=%s --column-statistics=0 --user=%s --password=%s --host=%s --port=%s %s %s --where="1 LIMIT %d OFFSET %d" > %s 2>&1',
+                escapeshellarg(env('DB_USERNAME')),
+                escapeshellarg(env('DB_PASSWORD')),
+                escapeshellarg(env('DB_HOST')),
+                escapeshellarg(env('DB_PORT')),
+                escapeshellarg(env('DB_DATABASE')),
+                // escapeshellarg('/root/.my.cnf'), // Update to the correct path to your .my.cnf file
                 escapeshellarg(config('database.connections.mysql.database')),
                 escapeshellarg($table),
                 $chunkSize,
                 $offset,
                 escapeshellarg($backupPath)
             );
+            // Prepare the mysqldump command
+            // $command = sprintf(
+            //     'mysqldump --column-statistics=0 --user=%s --password=%s --host=%s --port=%s %s > %s',
+            //     escapeshellarg(env('DB_USERNAME')),
+            //     escapeshellarg(env('DB_PASSWORD')),
+            //     escapeshellarg(env('DB_HOST')),
+            //     escapeshellarg(env('DB_PORT')),
+            //     escapeshellarg(env('DB_DATABASE')),
+            //     $backupPath
+            // );
+
 
             $output = shell_exec($command);
             // if ($output === null || $output !== '') {
