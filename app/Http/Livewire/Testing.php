@@ -48,7 +48,7 @@ class Testing extends Component
 
             echo "<pre>";
 
-            print_r($request);
+            // print_r($request);
             print_r($datas);
             echo "</pre>";
 
