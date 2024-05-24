@@ -31,7 +31,7 @@ class Testing extends Component
         $storages = Storage_model::pluck('name','id')->toArray();
         $colors = Color_model::pluck('name','id')->toArray();
 
-        $requests = Api_request_model::where('status',null)->limit(20)->get();
+        $requests = Api_request_model::where('status',null)->limit(2)->get();
         foreach($requests as $request){
             $data = $request->request;
             $datas = json_decode(json_decode(preg_split('/(?<=\}),(?=\{)/', $data)[0]));
