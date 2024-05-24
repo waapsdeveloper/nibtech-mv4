@@ -27,6 +27,11 @@ class Testing extends Component
 
         $storages = Storage_model::pluck('name','id')->toArray();
         $colors = Color_model::pluck('name','id')->toArray();
+            // Convert each color name to lowercase
+        $lowercaseColors = array_map('strtolower', $colors);
+        $grades = Grade_model::pluck('name','id')->toArray();
+            // Convert each grade name to lowercase
+        $lowercaseGrades = array_map('strtolower', $grades);
 
         $requests = Api_request_model::where('status',null)->limit(2)->get();
         foreach($requests as $request){
@@ -38,8 +43,10 @@ class Testing extends Component
                 $storage = array_search($datas->Memory,$storages);
             }
 
-            // Convert each color name to lowercase
-            $lowercaseColors = array_map('strtolower', $colors);
+            echo "<pre>";
+
+            print_r($datas);
+            echo "</pre>";
 
             $colorName = strtolower($datas->Color); // Convert color name to lowercase
 
@@ -54,9 +61,23 @@ class Testing extends Component
                     'name' => $colorName
                 ]);
                 $colors = Color_model::pluck('name','id')->toArray();
+                $lowercaseColors = array_map('strtolower', $colors);
                 // Retrieve the ID of the newly created color
                 $color = $newColor->id;
             }
+
+
+            $gradeName = strtolower($datas->Grade); // Convert grade name to lowercase
+
+            if (in_array($gradeName, $lowercaseGrades)) {
+                // If the grade exists in the predefined grades array,
+                // retrieve its index
+                $grade = array_search($gradeName, $lowercaseGrades);
+            }else{
+                continue;
+            }
+
+
             if($stock != null && $stock->variation->storage == $storage && $stock->status == 1){
 
                 $new_variation = [
@@ -70,13 +91,12 @@ class Testing extends Component
                     $new_variation['color'] = $color;
                 }
 
-                if($stock->variation->color == null || $stock->variation->color == $color){
-                    $new_variation['color'] = $color;
+                if($stock->variation->grade == 9 || $stock->variation->grade == $grade){
+                    $new_variation['grade'] = $grade;
                 }
-                $variation = Variation_model::firstOrNew($new_variation);
+                // $variation = Variation_model::firstOrNew($new_variation);
                 echo "<pre>";
 
-                print_r($datas);
                 print_r($stock);
                 echo "</pre>";
             }
