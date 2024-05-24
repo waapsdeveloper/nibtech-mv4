@@ -82,6 +82,8 @@ class Testing extends Component
                     $grade = 7;
                 }elseif($gradeName == 'a'){
                     $grade = 2;
+                }elseif($gradeName == 'ok'){
+                    $grade = 5;
                 }else{
 
                     echo $gradeName;
