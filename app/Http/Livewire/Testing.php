@@ -80,6 +80,8 @@ class Testing extends Component
             }else{
                 if($gradeName == ''){
                     $grade = 7;
+                }elseif($gradeName == 'a'){
+                    $grade = 2;
                 }else{
 
                     echo $gradeName;
