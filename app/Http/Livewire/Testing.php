@@ -66,6 +66,7 @@ class Testing extends Component
                 $color = $newColor->id;
             }
 
+            echo "HEllo";
 
             $gradeName = strtolower($datas->Grade); // Convert grade name to lowercase
 
@@ -78,6 +79,7 @@ class Testing extends Component
                 continue;
             }
 
+            echo "HEllo";
 
             if($stock != null && $stock->variation->storage == $storage && $stock->status == 1){
                 echo "HEllo";
