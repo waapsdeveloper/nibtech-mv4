@@ -107,6 +107,9 @@ class Testing extends Component
                 if(($stock->variation->grade == 9 || $stock->variation->grade == $grade) && $grade != ''){
                     $new_variation['grade'] = $grade;
                 }
+                if($stock->status == 1){
+                    $new_variation['grade'] = $grade;
+                }
                 $variation = Variation_model::firstOrNew($new_variation);
                 if($stock->status == 1){
 
