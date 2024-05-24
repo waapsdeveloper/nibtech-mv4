@@ -7,13 +7,10 @@ use App\Models\Color_model;
 use Livewire\Component;
 use App\Models\Stock_model;
 use App\Models\Grade_model;
-use App\Models\Order_model;
 use App\Models\Products_model;
 use App\Models\Stock_operations_model;
 use App\Models\Storage_model;
 use App\Models\Variation_model;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 
 class Testing extends Component
 {
@@ -56,11 +53,27 @@ class Testing extends Component
                 $newColor = Color_model::create([
                     'name' => $colorName
                 ]);
+                $colors = Color_model::pluck('name','id')->toArray();
                 // Retrieve the ID of the newly created color
                 $color = $newColor->id;
             }
-            if($stock != null && $stock->variation->storage == $storage){
+            if($stock != null && $stock->variation->storage == $storage && $stock->status == 1){
 
+                $new_variation = [
+                    'product_id' => $stock->variation->product_id,
+                    'storage' => $stock->variation->storage,
+                    'color' => $stock->variation->color,
+                    'grade' => $stock->variation->grade
+                ];
+
+                if($stock->variation->color == null || $stock->variation->color == $color){
+                    $new_variation['color'] = $color;
+                }
+
+                if($stock->variation->color == null || $stock->variation->color == $color){
+                    $new_variation['color'] = $color;
+                }
+                $variation = Variation_model::firstOrNew($new_variation);
                 echo "<pre>";
 
                 print_r($datas);
