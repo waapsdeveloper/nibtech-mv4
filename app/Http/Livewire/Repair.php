@@ -593,7 +593,6 @@ class Repair extends Component
             )
             ->where('process_stock.process_id',$process_id)
             ->where('process_stock.deleted_at',null)
-            ->where('stock.deleted_at',null)
             ->groupBy('variation.id','products.model', 'variation.color', 'variation.storage', 'variation.grade')
             ->orderBy('products.model', 'ASC')
             ->get();
