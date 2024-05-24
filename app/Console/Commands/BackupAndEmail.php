@@ -64,7 +64,7 @@ class BackupAndEmail extends Command
                 escapeshellarg(env('DB_PORT')),
                 escapeshellarg(env('DB_DATABASE')),
                 // escapeshellarg('/root/.my.cnf'), // Update to the correct path to your .my.cnf file
-                escapeshellarg(config('database.connections.mysql.database')),
+                // escapeshellarg(config('database.connections.mysql.database')),
                 escapeshellarg($table),
                 $chunkSize,
                 $offset,
