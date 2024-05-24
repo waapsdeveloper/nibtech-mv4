@@ -122,8 +122,6 @@ class GoogleController extends Controller
 
         $service->users_messages->send('me', $message);
     }
-
-
     public function sendEmailInvoice($recipientEmail, $subject, Mailable $mailable)
     {
         $googleToken = GoogleToken::where('user_id', session('user_id'))->first();
@@ -158,10 +156,9 @@ class GoogleController extends Controller
         $rawMessageString .= $mailable->render() . "\r\n\r\n"; // Get the HTML content from the mailable
 
         // Attach the PDF
-        // dd($mailable->build());
-        $pdfData = $mailable->build()->rawAttachments[0]['data'];
-        $fileName = $mailable->build()->rawAttachments[0]['name'];
-        $fileType = $mailable->build()->rawAttachments[0]['options']['mime'];
+        $pdfData = $mailable->build()->attachments[0]['data'];
+        $fileName = $mailable->build()->attachments[0]['name'];
+        $fileType = $mailable->build()->attachments[0]['options']['mime'];
 
         $rawMessageString .= "--{$boundary}\r\n";
         $rawMessageString .= "Content-Type: {$fileType}; name=\"{$fileName}\"\r\n";
@@ -170,10 +167,11 @@ class GoogleController extends Controller
         $rawMessageString .= chunk_split(base64_encode($pdfData)) . "\r\n\r\n";
         $rawMessageString .= "--{$boundary}--";
 
-        $rawMessage = strtr(base64_encode($rawMessageString), array('+' => '-', '/' => '_'));
+        $rawMessage = strtr(base64_encode($rawMessageString), ['+' => '-', '/' => '_']);
         $message = new Google_Service_Gmail_Message();
         $message->setRaw($rawMessage);
 
         $service->users_messages->send('me', $message);
     }
+
 }
