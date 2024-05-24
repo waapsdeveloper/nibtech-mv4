@@ -100,7 +100,7 @@ class Testing extends Component
                 $variation = Variation_model::firstOrNew($new_variation);
                 $variation->status = 1;
                 $variation->save();
-                $stock->variaton_id = $variation->id;
+                $stock->variation_id = $variation->id;
                 $stock->save();
                 $request->stock_id = $stock->id;
                 $request->status = 1;
