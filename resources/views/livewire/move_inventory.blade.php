@@ -274,7 +274,7 @@
                                                     @endif
                                                 </td>
                                                 <td>{{ $operation->stock->imei.$operation->stock->serial_number }}</td>
-                                                <td>{{ $operation->stock->order->customer->first_name." | ".$operation->stock->order->reference_id }}</td>
+                                                <td>{{ $operation->stock->order->customer->first_name ?? "Purchase Order Missing"." | ".$operation->stock->order->reference_id  ?? "Purchase Order Missing"}}</td>
                                                 <td>{{ $operation->description }}</td>
                                                 <td>{{ $operation->admin->first_name }}</td>
                                                 <td>{{ $operation->created_at }}</td>
