@@ -69,7 +69,6 @@ class Testing extends Component
                 $color = $newColor->id;
             }
 
-            echo "HEllo";
 
             $gradeName = strtolower($datas->Grade); // Convert grade name to lowercase
 
@@ -82,10 +81,8 @@ class Testing extends Component
                 continue;
             }
 
-            echo "HEllo";
 
-            if($stock != null && $stock->variation->storage == $storage && $stock->status == 1){
-                echo "HEllo";
+            if($stock != null && $stock->variation->storage == $storage){
                 $new_variation = [
                     'product_id' => $stock->variation->product_id,
                     'storage' => $stock->variation->storage,
@@ -101,13 +98,21 @@ class Testing extends Component
                     $new_variation['grade'] = $grade;
                 }
                 $variation = Variation_model::firstOrNew($new_variation);
-                $variation->status = 1;
-                $variation->save();
-                $stock->variation_id = $variation->id;
-                $stock->save();
-                $request->stock_id = $stock->id;
-                $request->status = 1;
-                $request->save();
+                if($stock->status == 1){
+
+                    $variation->status = 1;
+                    $variation->save();
+                    $stock->variation_id = $variation->id;
+                    $stock->save();
+                    $request->stock_id = $stock->id;
+                    $request->status = 1;
+                    $request->save();
+                }elseif($stock->status == 2){
+
+                    $request->stock_id = $stock->id;
+                    $request->status = 1;
+                    $request->save();
+                }
                 echo "<pre>";
 
                 print_r($stock);
