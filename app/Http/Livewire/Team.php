@@ -14,7 +14,7 @@ class Team extends Component
 {
     public function render()
     {
-        $data['admin_team'] = Admin_model::where('parent_id','>=',session('user_id'))->Paginate(10);
+        $data['admin_team'] = Admin_model::where('parent_id','>=',session('user_id'))->Paginate(50);
         return view('livewire.team')->with($data);
     }
     public function add_member()
