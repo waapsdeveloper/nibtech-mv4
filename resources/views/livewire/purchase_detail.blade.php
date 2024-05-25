@@ -447,7 +447,7 @@
                                             <td>{{ $i }}</td>
                                             <td data-stock="{{ $item->id }}">{{ $item->imei.$item->serial_number }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
-                                            <td>{{ $currency.$item->purchase_item->price ?? "Error in Purchase Entry" }}</td>
+                                            <td>{{ $currency}}{{$item->purchase_item->price ?? "Error in Purchase Entry" }}</td>
                                             @endif
                                             @if (session('user')->hasPermission('delete_purchase_item'))
                                             <td><a href="{{ url('delete_order_item').'/'.$item->purchase_item->id ?? null }}"><i class="fa fa-trash"></i></a></td>
