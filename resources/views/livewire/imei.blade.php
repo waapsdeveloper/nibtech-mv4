@@ -377,7 +377,7 @@
         </div>
 
         @endif
-        @if (isset($test_results))
+        @if (isset($test_results) && $test_results->count() > 0)
         <br>
 
         <div class="row">
