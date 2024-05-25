@@ -25,6 +25,7 @@ class Testing extends Component
     public function render()
     {
 
+        $products = Products_model::pluck('model','id')->toArray();
         $storages = Storage_model::pluck('name','id')->toArray();
         $colors = Color_model::pluck('name','id')->toArray();
             // Convert each color name to lowercase
@@ -33,7 +34,7 @@ class Testing extends Component
             // Convert each grade name to lowercase
         $lowercaseGrades = array_map('strtolower', $grades);
 
-        $requests = Api_request_model::where('status',null)->get();
+        $requests = Api_request_model::where('status',null)->orderBy('id','asc')->get();
         foreach($requests as $request){
             $data = $request->request;
             $datas = json_decode(json_decode(preg_split('/(?<=\}),(?=\{)/', $data)[0]));
@@ -41,6 +42,10 @@ class Testing extends Component
                 continue;
             }
             $stock = Stock_model::where('imei',$datas->Imei)->orWhere('imei',$datas->Imei2)->orWhere('serial_number',$datas->Serial)->first();
+
+            if(in_array($datas->ModelName, $products)){
+                $product = array_search($datas->ModelName,$products);
+            }
 
             if(in_array($datas->Memory, $storages)){
                 $storage = array_search($datas->Memory,$storages);
@@ -113,6 +118,14 @@ class Testing extends Component
                 $variation = Variation_model::firstOrNew($new_variation);
                 if($stock->status == 1){
 
+
+                    $stock_operation = Stock_operations_model::create([
+                        'stock_id' => $stock->id,
+                        'old_variation_id' => $stock->variation_id,
+                        'new_variation_id' => $variation->id,
+                        'description' => "Testing API Push",
+                        'admin_id' => NULL,
+                    ]);
                     $variation->status = 1;
                     $variation->save();
                     $stock->variation_id = $variation->id;
@@ -120,6 +133,7 @@ class Testing extends Component
                     $request->stock_id = $stock->id;
                     $request->status = 1;
                     $request->save();
+
                 }elseif($stock->status == 2){
 
                     $request->stock_id = $stock->id;
