@@ -393,41 +393,20 @@
                         </div>
                     </div>
                     <div class="card-body"><div class="table-responsive">
+                        <pre>
+                        @foreach ($test_results as $result)
+                            @php
 
-                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
-                                <thead>
-                                    <tr>
-                                        <th><small><b>No</b></small></th>
-                                        <th><small><b>Key</b></small></th>
-                                        <th><small><b>Value</b></small></th>
-                                        <th><small><b>DateTime</b></small></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @php
-                                        $i = 0;
-                                    @endphp
-                                    @foreach ($test_results as $result)
-                                        @php
+                                $data = $result->request;
+                                $datas = json_decode(json_decode(preg_split('/(?<=\}),(?=\{)/', $data)[0]));
 
-                                            $data = $result->request;
-                                            $datas = json_decode(json_decode(preg_split('/(?<=\}),(?=\{)/', $data)[0]));
-                                        @endphp
-                                        @foreach ($datas as $key=>$value)
-                                            <tr>
-                                                <td title="{{ $result->id }}">{{ $i + 1 }}</td>
-                                                <td>{{ $key }}</td>
-                                                <td>{{ $value }}</td>
-                                                <td>{{ $result->created_at }}</td>
-                                            </tr>
-                                        @endforeach
-                                        @php
-                                            $i ++;
-                                        @endphp
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        <br>
+                                print_r($datas);
+                            @endphp
+                            @php
+                                $i ++;
+                            @endphp
+                        @endforeach
+                        </pre>
                     </div>
 
                     </div>
