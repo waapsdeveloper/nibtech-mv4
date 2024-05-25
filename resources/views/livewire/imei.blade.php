@@ -399,7 +399,7 @@
 
                                 $data = $result->request;
                                 $datas = json_decode(json_decode(preg_split('/(?<=\}),(?=\{)/', $data)[0]));
-
+                                echo "Test DateTime: ".$result->created_at;
                                 print_r($datas);
                             @endphp
                             @php
