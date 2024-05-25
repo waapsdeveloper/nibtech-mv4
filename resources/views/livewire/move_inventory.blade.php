@@ -276,7 +276,7 @@
                                                 <td>{{ $operation->stock->imei.$operation->stock->serial_number }}</td>
                                                 <td>{{ $operation->stock->order->customer->first_name ?? "Purchase Order Missing"}} | {{$operation->stock->order->reference_id ?? null}}</td>
                                                 <td>{{ $operation->description }}</td>
-                                                <td>{{ $operation->admin->first_name }}</td>
+                                                <td>{{ $operation->admin->first_name ?? null }}</td>
                                                 <td>{{ $operation->created_at }}</td>
                                                 <td>
                                                     <form method="POST" action="{{url('move_inventory/delete_move')}}">
