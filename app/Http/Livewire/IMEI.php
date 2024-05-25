@@ -89,30 +89,34 @@ class IMEI extends Component
                 }
                 $last_item = $stock->last_item();
             }
+            if($stock->purchase_item){
 
-            $items3 = Order_item_model::where(['stock_id'=>$stock->id, 'linked_id' => $stock->purchase_item->id])->whereHas('order', function ($query) {
-                $query->whereIn('order_type_id', [5,3]);
-            })->orderBy('id','asc')->get();
-            if($items3->count() > 1){
-                $i = 0;
-                foreach($items3 as $item3){
-                    $i ++;
-                    if($i == 1){
-                    }else{
-                        $item3->linked_id = null;
-                        $item3->save();
+                $items3 = Order_item_model::where(['stock_id'=>$stock->id, 'linked_id' => $stock->purchase_item->id])->whereHas('order', function ($query) {
+                    $query->whereIn('order_type_id', [5,3]);
+                })->orderBy('id','asc')->get();
+                if($items3->count() > 1){
+                    $i = 0;
+                    foreach($items3 as $item3){
+                        $i ++;
+                        if($i == 1){
+                        }else{
+                            $item3->linked_id = null;
+                            $item3->save();
+                        }
                     }
                 }
-            }
 
+            }
             $items4 = Order_item_model::where(['stock_id'=>$stock->id])->whereHas('order', function ($query) {
                 $query->whereIn('order_type_id', [5,3]);
             })->orderBy('id','asc')->get();
             if($items4->count() == 1){
                 foreach($items4 as $item4){
-                    if($item4->linked_id != $stock->purchase_item->id && $item4->linked_id != null){
-                        $item4->linked_id = $stock->purchase_item->id;
-                        $item4->save();
+                    if($stock->purchase_item){
+                        if($item4->linked_id != $stock->purchase_item->id && $item4->linked_id != null){
+                            $item4->linked_id = $stock->purchase_item->id;
+                            $item4->save();
+                        }
                     }
                 }
             }
