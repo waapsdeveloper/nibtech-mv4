@@ -377,23 +377,70 @@
         </div>
 
         @endif
+        @if (isset($test_results))
+        <br>
+
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-header pb-0">
+                        <div class="d-flex justify-content-between">
+                            <h4 class="card-title mg-b-0">
+                                Testing Report
+                            </h4>
+
+
+                        </div>
+                    </div>
+                    <div class="card-body"><div class="table-responsive">
+
+                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th><small><b>No</b></small></th>
+                                        <th><small><b>Key</b></small></th>
+                                        <th><small><b>Value</b></small></th>
+                                        <th><small><b>DateTime</b></small></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @php
+                                        $i = 0;
+                                    @endphp
+                                    @foreach ($test_results as $result)
+                                        @php
+
+                                            $data = $result->request;
+                                            $datas = json_decode(json_decode(preg_split('/(?<=\}),(?=\{)/', $data)[0]));
+                                        @endphp
+                                        @foreach ($datas as $key=>$value)
+                                            <tr>
+                                                <td title="{{ $result->id }}">{{ $i + 1 }}</td>
+                                                <td>{{ $key }}</td>
+                                                <td>{{ $value }}</td>
+                                                <td>{{ $result->created_at }}</td>
+                                            </tr>
+                                        @endforeach
+                                        @php
+                                            $i ++;
+                                        @endphp
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        <br>
+                    </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @endif
 
     @endsection
 
     @section('scripts')
 
-    <script>
-        $('#correction_model').on('show.bs.modal', function (event) {
-            var button = $(event.relatedTarget) // Button that triggered the modal
-            var reference = button.data('bs-reference') // Extract info from data-* attributesv
-            var item = button.data('bs-item') // Extract info from data-* attributes
-            // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
-            // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
-            var modal = $(this)
-            modal.find('.modal-body #order_reference').val(reference)
-            modal.find('.modal-body #item_id').val(item)
-            })
-    </script>
 		<!--Internal Sparkline js -->
 		<script src="{{asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js')}}"></script>
 

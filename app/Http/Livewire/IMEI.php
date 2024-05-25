@@ -1,13 +1,12 @@
 <?php
 
 namespace App\Http\Livewire;
-    use Livewire\Component;
-    use App\Models\Admin_model;
+use Livewire\Component;
+use App\Models\Admin_model;
+use App\Models\Api_request_model;
 use App\Models\Color_model;
 use App\Models\Stock_model;
-    use App\Models\Order_item_model;
-    use App\Models\Currency_model;
-    use App\Models\Country_model;
+use App\Models\Order_item_model;
 use App\Models\Grade_model;
 use App\Models\Process_stock_model;
 use App\Models\Products_model;
@@ -166,6 +165,9 @@ class IMEI extends Component
 
             $stocks = Stock_operations_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
             $data['stocks'] = $stocks;
+
+            $test_results = Api_request_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
+            $data['test_results'] = $test_results;
             //     dd($stocks);
             // }
 
