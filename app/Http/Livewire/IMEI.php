@@ -142,23 +142,25 @@ class IMEI extends Component
             })->orderBy('id','desc')->get();
             $data['process_stocks'] = $process_stocks;
 
+            if($last_item){
 
-            if(in_array($last_item->order->order_type_id,[1,4])){
+                if(in_array($last_item->order->order_type_id,[1,4])){
 
-                if($stock->status == 2){
-                    if($process_stocks->where('status',1)->count() == 0){
+                    if($stock->status == 2){
+                        if($process_stocks->where('status',1)->count() == 0){
 
-                        $stock->status = 1;
+                            $stock->status = 1;
+                            $stock->save();
+                        }
+                    }
+                        session()->put('success', 'IMEI is Available');
+                }else{
+                    if($stock->status == 1){
+                        $stock->status = 2;
                         $stock->save();
                     }
+                        session()->put('success', 'IMEI Sold');
                 }
-                    session()->put('success', 'IMEI is Available');
-            }else{
-                if($stock->status == 1){
-                    $stock->status = 2;
-                    $stock->save();
-                }
-                    session()->put('success', 'IMEI Sold');
             }
             // print_r($last_item);
             $orders = Order_item_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
