@@ -369,7 +369,7 @@ class Order extends Component
         if(request('per_page') != null){
             $per_page = request('per_page');
         }else{
-            $per_page = 20;
+            $per_page = 50;
         }
 
         $data['orders'] = Order_model::select(
