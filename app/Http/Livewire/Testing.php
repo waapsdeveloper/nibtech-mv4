@@ -105,6 +105,9 @@ class Testing extends Component
                     'grade' => $stock->variation->grade
                 ];
 
+                if($stock->variation->storage == null || $stock->variation->storage == 0 || $stock->variation->storage == $storage){
+                    $new_variation['storage'] = $storage;
+                }
                 if($stock->variation->color == null || $stock->variation->color == $color){
                     $new_variation['color'] = $color;
                 }
