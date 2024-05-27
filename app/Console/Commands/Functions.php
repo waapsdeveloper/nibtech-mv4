@@ -193,7 +193,7 @@ class Functions extends Command
                         'stock_id' => $stock->id,
                         'old_variation_id' => $stock->variation_id,
                         'new_variation_id' => $variation->id,
-                        'description' => "Testing API Push",
+                        'description' => $datas->Comments." | Testing API Push",
                         'admin_id' => NULL,
                     ]);
                     $variation->status = 1;
