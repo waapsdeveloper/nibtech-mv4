@@ -495,6 +495,7 @@
                                         <th><small><b>Cost</b></small></th>
                                         @endif
                                         <th><small><b>Reason</b></small></th>
+                                        <th><small><b>Member</b></small></th>
                                         <th><small><b>Date</b></small></th>
                                         @if (session('user')->hasPermission('delete_return_item'))
                                         <th></th>
@@ -534,6 +535,7 @@
                                             <td>{{ $currency.$stock->sale_item($order_id)->price }}</td>
                                             @endif
                                             <td>{{ $row->description ?? null }}</td>
+                                            <td>{{ $row->admin->first_name ?? null }}</td>
                                             <td>{{ $row->updated_at ?? null }}</td>
                                             @if (session('user')->hasPermission('delete_return_item'))
                                             <td><a href="{{ url('delete_return_item').'/'.$stock->sale_item($order_id)->id }}"><i class="fa fa-trash"></i></a></td>
