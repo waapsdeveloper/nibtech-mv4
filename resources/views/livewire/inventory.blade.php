@@ -289,7 +289,7 @@
                                             @endif
                                             <td>{{ $stock->updated_at }}</td>
                                             @if ($stock->latest_operation)
-                                            <td>{{ $stock->latest_operation->admin->first_name }}</td>
+                                            <td>{{ $stock->latest_operation->admin->first_name ?? null }}</td>
                                             <td>
                                                 {{ $stock->latest_operation->description }}
                                             </td>@endif
