@@ -381,7 +381,7 @@ class Inventory extends Component
             'stock_id' => $stock_id,
             'old_variation_id' => $stock->variation_id,
             'new_variation_id' => $new_variation->id,
-            'description' => request('description'),
+            'description' => request('return')['description'],
             'admin_id' => session('user_id'),
         ]);
 
