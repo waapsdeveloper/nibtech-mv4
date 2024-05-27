@@ -364,7 +364,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="">Reason</label>
-                                <textarea class="form-control" name="return[description]"></textarea>
+                                <textarea class="form-control" id="reason" name="return[description]"></textarea>
                             </div>
                             <input type="hidden" id="product" name="return[product]">
                             <input type="hidden" id="storage" name="return[storage]">
@@ -403,6 +403,9 @@
             // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
             // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
             var modal = $(this)
+            if(reference == "Send Back to Customer"){
+                modal.find('.modal-body #reason').val("Warranty Exclusion Approved")
+            }
             modal.find('.modal-body #action_form').attr('action', action);
             modal.find('.modal-body #order_reference').val(reference)
             modal.find('.modal-body #product').val(product)
