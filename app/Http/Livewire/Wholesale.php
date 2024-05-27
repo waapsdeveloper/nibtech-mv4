@@ -36,6 +36,8 @@ class Wholesale extends Component
     public function render()
     {
 
+        $data['title'] = "BulkSales";
+
         $user_id = session('user_id');
         $data['vendors'] = Customer_model::where('is_vendor','!=',null)->pluck('first_name','id');
         $data['currencies'] = Currency_model::pluck('sign','id');
@@ -142,6 +144,8 @@ class Wholesale extends Component
         return redirect()->back();
     }
     public function wholesale_detail($order_id){
+
+        $data['title'] = "BulkSale Detail";
 
         // $data['imeis'] = Stock_model::whereIn('status',[1,3])->orderBy('serial_number','asc')->orderBy('imei','asc')->get();
         $data['exchange_rates'] = ExchangeRate::pluck('target_currency','rate');

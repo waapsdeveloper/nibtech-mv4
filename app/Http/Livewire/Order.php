@@ -48,7 +48,7 @@ class Order extends Component
     }
     public function render()
     {
-
+        $data['title'] = "Sales";
         $data['grades'] = Grade_model::all();
         $data['last_hour'] = Carbon::now()->subHour(2);
         $data['admins'] = Admin_model::where('id','!=',1)->get();
@@ -240,6 +240,7 @@ class Order extends Component
     }
     public function sales_allowed()
     {
+        $data['title'] = "Sales (Admin)";
 
         $data['grades'] = Grade_model::all();
         $data['last_hour'] = Carbon::now()->subHour(72);
@@ -363,6 +364,7 @@ class Order extends Component
     public function purchase()
     {
 
+        $data['title'] = "Purchases";
         $data['latest_reference'] = Order_model::where('order_type_id',1)->orderBy('reference_id','DESC')->first()->reference_id;
         $data['vendors'] = Customer_model::where('is_vendor',1)->pluck('first_name','id');
         $data['order_statuses'] = Order_status_model::get();
@@ -493,6 +495,8 @@ class Order extends Component
     }
     public function purchase_detail($order_id){
 
+
+        $data['title'] = "Purchase Detail";
         $data['storages'] = Storage_model::pluck('name','id');
         $data['colors'] = Color_model::pluck('name','id');
 

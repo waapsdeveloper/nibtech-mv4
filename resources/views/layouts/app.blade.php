@@ -15,7 +15,7 @@
         @php
             $session_url = session('url');
         @endphp
-		<title> Britain Tech – Admin Panel </title>
+		<title> {{ $title ?? null }}Britain Tech – Admin Panel </title>
 
         @include('layouts.components.styles')
         <style>

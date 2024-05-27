@@ -26,6 +26,8 @@ class Index extends Component
     public function render(Request $request)
     {
 
+
+        $data['title'] = "Dashboard";
         // dd('Hello2');
         $user_id = session('user_id');
 

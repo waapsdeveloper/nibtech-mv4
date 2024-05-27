@@ -22,6 +22,8 @@ class Inventory extends Component
 
     public function render()
     {
+
+        $data['title'] = "Inventory";
         if(request('per_page') != null){
             $per_page = request('per_page');
         }else{
@@ -209,6 +211,8 @@ class Inventory extends Component
 
     public function belfast_inventory(){
 
+
+        $data['title'] = "Belfast Inventory";
         if(request('per_page') != null){
             $per_page = request('per_page');
         }else{

@@ -46,6 +46,8 @@ class Repair extends Component
     public function render()
     {
 
+        $data['title'] = "Repairs";
+
         $data['latest_reference'] = Process_model::where('process_type_id',9)->orderBy('reference_id','DESC')->first()->reference_id;
         $data['repairers'] = Customer_model::where('is_vendor',3)->pluck('first_name','id');
         if(request('per_page') != null){
@@ -146,6 +148,8 @@ class Repair extends Component
     }
     public function repair_detail($process_id){
 
+
+        $data['title'] = "Repair Detail";
         // $data['imeis'] = Stock_model::whereIn('status',[1,3])->orderBy('serial_number','asc')->orderBy('imei','asc')->get();
         $data['storages'] = Storage_model::pluck('name','id');
         $data['products'] = Products_model::pluck('model','id');

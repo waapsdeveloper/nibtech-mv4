@@ -16,6 +16,8 @@ class Customer extends Component
 {
     public function render()
     {
+
+        $data['title'] = "Customers";
         $data['customers'] = Customer_model::
         when(request('type') && request('type') != 0, function($q){
             if(request('type') == 4){

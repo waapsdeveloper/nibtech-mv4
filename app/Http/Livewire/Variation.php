@@ -23,6 +23,8 @@ class Variation extends Component
     }
     public function render()
     {
+
+        $data['title'] = "Variations";
         // $this->refresh_stock();
         $user_id = session('user_id');
         $data['order_statuses'] = Order_status_model::get();
