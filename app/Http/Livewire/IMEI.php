@@ -127,9 +127,12 @@ class IMEI extends Component
             })->orderBy('id','asc')->get();
             if($items5->count() == 1){
                 foreach($items5 as $item5){
-                    $last_item = $stock->last_item();
-                    $item5->linked_id = $last_item->id;
-                    $item5->save();
+                    if($stock->last_item()){
+
+                        $last_item = $stock->last_item();
+                        $item5->linked_id = $last_item->id;
+                        $item5->save();
+                    }
                 }
                     $last_item = $stock->last_item();
             }
