@@ -9226,7 +9226,7 @@ textarea.form-control.is-invalid, textarea.form-control.parsley-error {
 }
 .table th,
 .table td {
-  padding: 0.75rem;
+  padding: 0.5rem;
   vertical-align: middle;
   border-top: 1px solid #f0f0f8;
 }
