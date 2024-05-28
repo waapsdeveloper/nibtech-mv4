@@ -68,7 +68,10 @@ class OrdersExport
         $pdf->AddPage();
         // Add heading cell at the top center
         $pdf->Cell(0, 10, 'Order list', 0, 1, 'C');
-
+        // $pdf->setPrintHeader(false);
+        // $pdf->SetFooterMargin(0);
+        // $pdf->setPrintFooter(false);
+        $pdf->SetAutoPageBreak(TRUE, 10);
         // Set font
         $pdf->SetFont('times', 'B', 12);
 
