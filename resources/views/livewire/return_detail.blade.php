@@ -449,7 +449,7 @@
                                     @foreach ($last_ten as $item)
                                         <tr>
                                             <td>{{ $i + 1 }}</td>
-                                            <td>{{ $products[$item->variation->product_id]}} {{$storages[$item->variation->storage] ?? null}} {{$colors[$item->variation->color] ?? null}} {{$grades[$item->variation->grade] }}</td>
+                                            <td>{{ $products[$item->variation->product_id] ?? "Variation Model Not added"}} {{$storages[$item->variation->storage] ?? null}} {{$colors[$item->variation->color] ?? null}} {{$grades[$item->variation->grade] }}</td>
                                             <td>{{ $item->stock->imei.$item->stock->serial_number }}</td>
                                             <td>{{ $item->stock->order->customer->first_name }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
