@@ -106,7 +106,30 @@ class Order extends Component
             });
         })
         ->when(request('order_id') != '', function ($q) {
-            return $q->where('reference_id', 'LIKE', request('order_id') . '%');
+            if(in_array('<',request('order_id'))){
+                $order_ref = str_replace('<','',request('order_id'));
+                return $q->where('reference_id', '<', $order_ref);
+            }elseif(in_array('>',request('order_id'))){
+                $order_ref = str_replace('>','',request('order_id'));
+                return $q->where('reference_id', '>', $order_ref);
+            }elseif(in_array('<=',request('order_id'))){
+                $order_ref = str_replace('<=','',request('order_id'));
+                return $q->where('reference_id', '<=', $order_ref);
+            }elseif(in_array('>=',request('order_id'))){
+                $order_ref = str_replace('>=','',request('order_id'));
+                return $q->where('reference_id', '>=', $order_ref);
+            }elseif(in_array('-',request('order_id'))){
+                $order_ref = explode('-',request('order_id'));
+                return $q->whereBetween('reference_id', $order_ref);
+            }elseif(in_array(',',request('order_id'))){
+                $order_ref = explode(',',request('order_id'));
+                return $q->whereIn('reference_id', $order_ref);
+            }elseif(in_array(' ',request('order_id'))){
+                $order_ref = explode(' ',request('order_id'));
+                return $q->whereIn('reference_id', $order_ref);
+            }else{
+                return $q->where('reference_id', 'LIKE', request('order_id') . '%');
+            }
         })
         ->when(request('sku') != '', function ($q) {
             return $q->whereHas('order_items.variation', function ($q) {
