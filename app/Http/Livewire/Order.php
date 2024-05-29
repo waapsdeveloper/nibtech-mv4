@@ -245,6 +245,7 @@ class Order extends Component
                 ];
                 echo "Hello";
                 Mail::to($order->customer->email)->send(new InvoiceMail($data2));
+                sleep(1);
 
             }
             // return redirect()->back();
