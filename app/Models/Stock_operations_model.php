@@ -19,6 +19,7 @@ class Stock_operations_model extends Model
         'old_variation_id',
         'new_variation_id',
         'description',
+        'admin_id',
     ];
     public function __construct(array $attributes = [])
     {
