@@ -106,7 +106,7 @@ class Api_request_model extends Model
                 // retrieve its index
                 $grade = array_search($gradeName, $lowercaseGrades);
             }else{
-                if($gradeName == '' || $gradeName == 'ug'){
+                if($gradeName == '' || $gradeName == 'a+' || $gradeName == 'ug'){
                     $grade = 7;
                 }elseif($gradeName == 'a'){
                     $grade = 2;
@@ -126,17 +126,15 @@ class Api_request_model extends Model
                 // retrieve its index
                 $admin = array_search($adminName, $lowercaseAdmins);
             }else{
-                // if($adminName == '' || $adminName == 'ug'){
-                //     $admin = 7;
-                // }elseif($adminName == 'a'){
-                //     $admin = 2;
-                // }elseif($adminName == 'ok'){
-                //     $admin = 5;
-                // }else{
+                if($adminName == 'paras khan'){
+                    $admin = 6;
+                }elseif($adminName == 'sangeeta punia'){
+                    $admin = 8;
+                }else{
 
                     echo $adminName;
                     continue;
-                // }
+                }
             }
 
             if($stock != null && ($stock->variation->storage == $storage || $stock->variation->storage == 0)){
