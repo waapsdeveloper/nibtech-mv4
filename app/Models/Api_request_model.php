@@ -130,6 +130,8 @@ class Api_request_model extends Model
                     $admin = 6;
                 }elseif($adminName == 'sangeeta punia'){
                     $admin = 8;
+                }elseif($adminName == '`rizzz'){
+                    $admin = null;
                 }else{
 
                     echo $adminName;
