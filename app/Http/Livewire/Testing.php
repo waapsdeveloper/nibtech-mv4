@@ -48,6 +48,16 @@ class Testing extends Component
                 continue;
             }else{
 
+                $stock_operation = Stock_operations_model::create([
+                    'stock_id' => $stock->id,
+                    'old_variation_id' => $stock->variation_id,
+                    'new_variation_id' => $stock->variation->id,
+                    'description' => $datas->Comments." | IMEI changed from: ".$datas->Imei2." | Testing API Push",
+                    'admin_id' => NULL,
+                ]);
+                $stock->imei = $datas->Imei;
+                $stock->save();
+
             echo "<pre>";
 
             print_r($stock);
