@@ -34,37 +34,37 @@ class Testing extends Component
             // Convert each grade name to lowercase
         $lowercaseGrades = array_map('strtolower', $grades);
 
-        // $requests = Api_request_model::where('status',null)->orderBy('id','asc')->get();
-        $requests = Api_request_model::orderBy('id','asc')->get();
+        $requests = Api_request_model::where('status',null)->orderBy('id','asc')->get();
+        // $requests = Api_request_model::orderBy('id','asc')->get();
         foreach($requests as $request){
             $data = $request->request;
             $datas = json_decode(json_decode(preg_split('/(?<=\}),(?=\{)/', $data)[0]));
             if($datas == null || ($datas->Imei == '' && $datas->Serial == '')){
                 continue;
             }
-            // $stock = Stock_model::where('imei',$datas->Imei)->orWhere('imei',$datas->Imei2)->orWhere('serial_number',$datas->Serial)->first();
-            $stock = Stock_model::where('imei',$datas->Imei2)->first();
-            if(!$stock){
-                continue;
-            }else{
+            $stock = Stock_model::where('imei',$datas->Imei)->orWhere('imei',$datas->Imei2)->orWhere('serial_number',$datas->Serial)->first();
+            // $stock = Stock_model::where('imei',$datas->Imei2)->first();
+            // if(!$stock){
+            //     continue;
+            // }else{
 
-                $stock_operation = Stock_operations_model::create([
-                    'stock_id' => $stock->id,
-                    'old_variation_id' => $stock->variation_id,
-                    'new_variation_id' => $stock->variation->id,
-                    'description' => $datas->Comments." | IMEI changed from: ".$datas->Imei2." | Testing API Push",
-                    'admin_id' => NULL,
-                ]);
-                $stock->imei = $datas->Imei;
-                $stock->save();
+            //     $stock_operation = Stock_operations_model::create([
+            //         'stock_id' => $stock->id,
+            //         'old_variation_id' => $stock->variation_id,
+            //         'new_variation_id' => $stock->variation->id,
+            //         'description' => $datas->Comments." | IMEI changed from: ".$datas->Imei2." | Testing API Push",
+            //         'admin_id' => NULL,
+            //     ]);
+            //     $stock->imei = $datas->Imei;
+            //     $stock->save();
 
-            echo "<pre>";
+            // echo "<pre>";
 
-            print_r($stock);
-            print_r($datas);
-            echo "</pre>";
-            continue;
-            }
+            // print_r($stock);
+            // print_r($datas);
+            // echo "</pre>";
+            // continue;
+            // }
             if(in_array($datas->ModelName, $products)){
                 $product = array_search($datas->ModelName,$products);
             }
@@ -143,14 +143,26 @@ class Testing extends Component
                 $variation = Variation_model::firstOrNew($new_variation);
                 if($stock->status == 1){
 
+                    if($stock->imei == $datas->Imei2){
 
-                    $stock_operation = Stock_operations_model::create([
-                        'stock_id' => $stock->id,
-                        'old_variation_id' => $stock->variation_id,
-                        'new_variation_id' => $variation->id,
-                        'description' => $datas->Comments." | Testing API Push",
-                        'admin_id' => NULL,
-                    ]);
+                        $stock_operation = Stock_operations_model::create([
+                            'stock_id' => $stock->id,
+                            'old_variation_id' => $stock->variation_id,
+                            'new_variation_id' => $stock->variation->id,
+                            'description' => $datas->Comments." | IMEI changed from: ".$datas->Imei2." | Testing API Push",
+                            'admin_id' => NULL,
+                        ]);
+                        $stock->imei = $datas->Imei;
+                    }else{
+
+                        $stock_operation = Stock_operations_model::create([
+                            'stock_id' => $stock->id,
+                            'old_variation_id' => $stock->variation_id,
+                            'new_variation_id' => $variation->id,
+                            'description' => $datas->Comments." | Testing API Push",
+                            'admin_id' => NULL,
+                        ]);
+                    }
                     $variation->status = 1;
                     $variation->save();
                     $stock->variation_id = $variation->id;

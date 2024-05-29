@@ -189,13 +189,26 @@ class Functions extends Command
                 if($stock->status == 1){
 
 
-                    $stock_operation = Stock_operations_model::create([
-                        'stock_id' => $stock->id,
-                        'old_variation_id' => $stock->variation_id,
-                        'new_variation_id' => $variation->id,
-                        'description' => $datas->Comments." | Testing API Push",
-                        'admin_id' => NULL,
-                    ]);
+                    if($stock->imei == $datas->Imei2){
+
+                        $stock_operation = Stock_operations_model::create([
+                            'stock_id' => $stock->id,
+                            'old_variation_id' => $stock->variation_id,
+                            'new_variation_id' => $stock->variation->id,
+                            'description' => $datas->Comments." | IMEI changed from: ".$datas->Imei2." | Testing API Push",
+                            'admin_id' => NULL,
+                        ]);
+                        $stock->imei = $datas->Imei;
+                    }else{
+
+                        $stock_operation = Stock_operations_model::create([
+                            'stock_id' => $stock->id,
+                            'old_variation_id' => $stock->variation_id,
+                            'new_variation_id' => $variation->id,
+                            'description' => $datas->Comments." | Testing API Push",
+                            'admin_id' => NULL,
+                        ]);
+                    }
                     $variation->status = 1;
                     $variation->save();
                     $stock->variation_id = $variation->id;
