@@ -106,7 +106,7 @@ class Api_request_model extends Model
                 // retrieve its index
                 $grade = array_search($gradeName, $lowercaseGrades);
             }else{
-                if($gradeName == '' || $gradeName == 'a+' || $gradeName == 'ug'){
+                if($gradeName == '' || $gradeName == 'a+' || $gradeName == 'a/a+' || $gradeName == 'ug'){
                     $grade = 7;
                 }elseif($gradeName == 'a'){
                     $grade = 2;
