@@ -712,12 +712,12 @@
         $('#replacement_model').on('show.bs.modal', function (event) {
             var button = $(event.relatedTarget) // Button that triggered the modal
             var reference = button.data('bs-reference') // Extract info from data-* attributesv
-            var return = button.data('bs-return') // Extract info from data-* attributesv
+            var retun = button.data('bs-return') // Extract info from data-* attributesv
             var item = button.data('bs-item') // Extract info from data-* attributes
             // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
             // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
             var modal = $(this)
-            if(return == 1){
+            if(retun == 1){
                  modal.find('.modal-body .bs_hide').addClass('d-none')
             }
 
