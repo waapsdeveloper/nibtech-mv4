@@ -717,7 +717,10 @@
             // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
             // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
             var modal = $(this)
-            modal.find('.modal-body .bs_hide').hide();
+            if(return == 1){
+                 modal.find('.modal-body .bs_hide').addClass('d-none')
+            }
+
             modal.find('.modal-body #order_reference').val(reference)
             modal.find('.modal-body #item_id').val(item)
             })
