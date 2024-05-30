@@ -1636,13 +1636,24 @@ class Order extends Component
                 return redirect()->back();
             }
 
-            $variation = Variation_model::firstOrNew(['product_id' => $item->variation->product_id, 'storage' => $item->variation->storage, 'color' => $item->variation->color, 'grade' => request('replacement')['grade']]);
+            $r_item = Order_item_model::where(['order_id'=>$return_order->id, 'stock_id' => $item->stock_id])->first();
+            if($r_item){
+                $grade = $r_item->variation->grade;
+
+                $stock_operation = Stock_operations_model::where(['stock_id'=>$item->stock_id])->orderBy('id','desc')->first();
+                $stock_operation->description = $stock_operation->description." | Order: ".$item->order->reference_id." | New IMEI: ".$imei.$serial_number;
+                $stock_operation->save();
+            }else{
+                $grade = request('replacement')['grade'];
+            }
+
+            $variation = Variation_model::firstOrNew(['product_id' => $item->variation->product_id, 'storage' => $item->variation->storage, 'color' => $item->variation->color, 'grade' => $grade]);
 
             $variation->stock += 1;
             $variation->status = 1;
             $variation->save();
 
-            $r_item = Order_item_model::where(['order_id'=>$return_order->id, 'stock_id' => $item->stock_id])->first();
+
             // print_r($stock);
             if($r_item == null){
                 $return_item = new Order_item_model();
@@ -1662,6 +1673,7 @@ class Order extends Component
                 session()->put('success','Item returned');
             }else{
                 session()->put('error','Item already returned');
+
             }
 
             $stock_operation = Stock_operations_model::create([

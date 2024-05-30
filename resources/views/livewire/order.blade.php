@@ -491,7 +491,7 @@
                                                         {{-- @if ($item->order->processed_at > $last_hour || $user_id == 1) --}}
                                                         <a class="dropdown-item" id="correction_{{ $item->id }}" href="javascript:void(0);" data-bs-target="#correction_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}"> Correction </a>
                                                         {{-- @endif --}}
-                                                        <a class="dropdown-item" id="replacement_{{ $item->id }}" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}"> Replacement </a>
+                                                        <a class="dropdown-item" id="replacement_{{ $item->id }}" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}" data-bs-return="@if(in_array($item->stock->last_item()->order->order_type_id,[1,4])) 1 @endif"> Replacement </a>
                                                         @if ($order->status >= 3)
 
                                                         <a class="dropdown-item" href="{{url(session('url').'order')}}/recheck/{{ $order->reference_id }}/true" target="_blank">Invoice</a>
@@ -657,7 +657,7 @@
                                 <input class="form-control" name="replacement[id]" type="text" id="order_reference" readonly>
                             </div>
                             <h4>Replace</h4>
-                            <div class="form-group">
+                            <div class="form-group bs_hide">
                                 <label for="">Move to</label>
                                 <select name="replacement[grade]" class="form-control form-select" required>
                                     <option value="">Move to</option>
@@ -666,7 +666,7 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group bs_hide">
                                 <label for="">Reason</label>
                                 <textarea class="form-control" name="replacement[reason]"></textarea>
                             </div>
@@ -712,10 +712,12 @@
         $('#replacement_model').on('show.bs.modal', function (event) {
             var button = $(event.relatedTarget) // Button that triggered the modal
             var reference = button.data('bs-reference') // Extract info from data-* attributesv
+            var return = button.data('bs-return') // Extract info from data-* attributesv
             var item = button.data('bs-item') // Extract info from data-* attributes
             // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
             // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
             var modal = $(this)
+            modal.find('.modal-body .bs_hide').hide();
             modal.find('.modal-body #order_reference').val(reference)
             modal.find('.modal-body #item_id').val(item)
             })
