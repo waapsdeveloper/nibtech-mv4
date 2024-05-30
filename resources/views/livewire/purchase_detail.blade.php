@@ -515,7 +515,7 @@
                                                 isset($item->variation->color_id)?$color = $item->variation->color_id->name:$color = null;
                                                 isset($item->variation->storage)?$storage = $storages[$item->variation->storage]:$storage = null;
                                                 @endphp
-                                                {{ $item->variation->product->model." ".$storage." ".$color." ".$item->variation->grade_id->name }}
+                                                {{ $item->variation->product->model." ".$storage." ".$color}} {{$item->variation->grade_id->name ?? "Not Assigned" }}
                                             </td>
                                             <td title="Double click to change" data-stock="{{ $stock->id }}">{{ $stock->imei.$stock->serial_number }}</td>
                                             <td>{{ $item->order->customer->first_name }}</td>
