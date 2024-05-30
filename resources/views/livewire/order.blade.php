@@ -491,7 +491,7 @@
                                                         {{-- @if ($item->order->processed_at > $last_hour || $user_id == 1) --}}
                                                         <a class="dropdown-item" id="correction_{{ $item->id }}" href="javascript:void(0);" data-bs-target="#correction_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}"> Correction </a>
                                                         {{-- @endif --}}
-                                                        <a class="dropdown-item" id="replacement_{{ $item->id }}" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}" data-bs-return="@if(in_array($item->stock->last_item()->order->order_type_id,[1,4])) 1 @endif"> Replacement </a>
+                                                        <a class="dropdown-item" id="replacement_{{ $item->id }}" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}" data-bs-return="@if($item->stock && in_array($item->stock->last_item()->order->order_type_id,[1,4])) 1 @endif"> Replacement </a>
                                                         @if ($order->status >= 3)
 
                                                         <a class="dropdown-item" href="{{url(session('url').'order')}}/recheck/{{ $order->reference_id }}/true" target="_blank">Invoice</a>
