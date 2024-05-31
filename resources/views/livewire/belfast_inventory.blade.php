@@ -231,6 +231,7 @@
                                         @php
                                             $item = $stock->last_item();
                                             $variation = $item->variation;
+                                            $order = $item->order;
                                         @endphp
                                         <tr>
                                             <td title="{{ $stock->id }}">{{ $i + 1 }}</td>
@@ -238,7 +239,7 @@
                                                 (isset($stock->variation->storage_id) ? $stock->variation->storage_id->name . " " : null) . " " . $stock->variation->grade_id->name }} </a></td>
                                             <td><a title="Search Serial" href="{{url('imei')."?imei=".$stock->imei.$stock->serial_number}}" target="_blank"> {{$stock->imei.$stock->serial_number }} </a></td>
                                             <td><a title="Vendor Profile" href="{{url('edit-customer').'/'.$stock->order->customer_id}}" target="_blank"> {{ $stock->order->customer->first_name ?? null}} </a> <br> <a title="Purchase Order Details" href="{{url('purchase/detail').'/'.$stock->order_id}}" target="_blank"> {{ $stock->order->reference_id }} </a></td>
-                                            <td><a href="https://www.backmarket.fr/bo_merchant/orders/all?orderId={{ $item->order->reference_id }}" target="_blank">{{ $item->order->reference_id }}</a></td>
+                                            <td><a href="https://www.backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}" target="_blank">{{ $order->reference_id }}</a></td>
                                             @if (session('user')->hasPermission('view_cost'))
                                             <td>{{ $stock->order->currency_id->sign ?? null }}{{$stock->purchase_item->price ?? null }}</td>
                                             @endif
@@ -277,7 +278,7 @@
                                                         data-bs-storage="{{ $variation->storage }}"
                                                         data-bs-color="{{ $variation->color }}"
                                                         data-bs-grade="{{ $variation->grade }}"
-                                                        data-bs-reference_id="{{ $item->order->reference_id }}"
+                                                        data-bs-reference_id="{{ $order->reference_id }}"
                                                         data-bs-stock_id="{{ $stock->id }}"
                                                         data-bs-price="{{ $item->price }}"
                                                         data-bs-linked_id="{{ $item->id }}"
@@ -292,7 +293,7 @@
                                                         data-bs-storage="{{ $variation->storage }}"
                                                         data-bs-color="{{ $variation->color }}"
                                                         data-bs-grade="8"
-                                                        data-bs-reference_id="{{ $item->order->reference_id }}"
+                                                        data-bs-reference_id="{{ $order->reference_id }}"
                                                         data-bs-stock_id="{{ $stock->id }}"
                                                         data-bs-price="{{ $item->price }}"
                                                         data-bs-linked_id="{{ $item->id }}"
@@ -307,7 +308,7 @@
                                                         data-bs-storage="{{ $variation->storage }}"
                                                         data-bs-color="{{ $variation->color }}"
                                                         data-bs-grade="10"
-                                                        data-bs-reference_id="{{ $item->order->reference_id }}"
+                                                        data-bs-reference_id="{{ $order->reference_id }}"
                                                         data-bs-stock_id="{{ $stock->id }}"
                                                         data-bs-price="{{ $item->price }}"
                                                         data-bs-linked_id="{{ $item->id }}"
@@ -322,7 +323,7 @@
                                                         data-bs-storage="{{ $variation->storage }}"
                                                         data-bs-color="{{ $variation->color }}"
                                                         data-bs-grade="9"
-                                                        data-bs-reference_id="{{ $item->order->reference_id }}"
+                                                        data-bs-reference_id="{{ $order->reference_id }}"
                                                         data-bs-stock_id="{{ $stock->id }}"
                                                         data-bs-price="{{ $item->price }}"
                                                         data-bs-linked_id="{{ $item->id }}"
