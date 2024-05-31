@@ -1544,6 +1544,13 @@ class Order extends Component
         Order_item_model::find($id)->delete();
         return redirect()->back();
     }
+    public function delete_replacement_item($id){
+        $item = Order_item_model::find($id);
+        $item->stock->status = 1;
+        $item->stock->save();
+        $item->delete();
+        return redirect()->back();
+    }
     public function correction(){
         $item = Order_item_model::find(request('correction')['item_id']);
         if($item->order->processed_at > Carbon::now()->subHour(2) || session('user')->hasPermission('correction')){

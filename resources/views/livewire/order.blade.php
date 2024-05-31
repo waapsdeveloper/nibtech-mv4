@@ -543,7 +543,7 @@
                                                                 <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical text-white tx-18"></i></a>
                                                                 <div class="dropdown-menu">
                                                                     <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $ord->reference_id }}&see-order-details={{ $ord->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
-                                                                    {{-- <a class="dropdown-item" href="javascript:void(0);"><i class="fe fe-trash-2 me-2"></i>Delete</a> --}}
+                                                                    <a class="dropdown-item" href="{{url('order/delete_replacement_item').'/'.$itm->id}}"><i class="fe fe-trash-2 me-2"></i>Delete</a>
                                                                 </div>
                                                             </td>
                                                         </tr>
