@@ -311,7 +311,7 @@
 
                                                     <tr>
                                                         <td>{{ $testing->first_name}}</td>
-                                                        <td class="tx-right"><a href="{{url(session('url').'move_inventory')}}?start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to Move Inventory page">{{ $testing->stock_operations_count }}</a></td>
+                                                        <td class="tx-right"><a href="{{url(session('url').'move_inventory')}}?start_date={{ $start_date }}&end_date={{ $end_date }}&adm={{ $testing->id }}" title="Go to Move Inventory page">{{ $testing->stock_operations_count }}</a></td>
                                                     </tr>
                                                     @endif
                                                 @endforeach
