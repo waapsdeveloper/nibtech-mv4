@@ -321,7 +321,7 @@
                                     </div>
                                 </div>
                                 {{-- Date search section --}}
-                                <div class="col-xl-8 col-lg-8 col-md-8 col-xs-8">
+                                <div class="col-xl-6 col-lg-6 col-md-8 col-xs-12">
                                     <div class="card">
                                         <div class="card-header">
                                             <h4 class="card-title mb-1">{{ __('locale.Search Records By Dates') }}</h4>
