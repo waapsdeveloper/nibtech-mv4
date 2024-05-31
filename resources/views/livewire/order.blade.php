@@ -659,7 +659,7 @@
                             <h4>Replace</h4>
                             <div class="form-group bs_hide">
                                 <label for="">Move to</label>
-                                <select name="replacement[grade]" class="form-control form-select" required>
+                                <select name="replacement[grade]" id="move_grade" class="form-control form-select" required>
                                     <option value="">Move to</option>
                                     @foreach ($grades as $grade)
                                         <option value="{{ $grade->id }}">{{ $grade->name }}</option>
@@ -718,7 +718,8 @@
             // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
             var modal = $(this)
             if(retun == 1){
-                 modal.find('.modal-body .bs_hide').addClass('d-none')
+                modal.find('.modal-body .bs_hide').addClass('d-none')
+                modal.find('.modal-body #move_grade').removeAttr('required')
             }
 
             modal.find('.modal-body #order_reference').val(reference)
