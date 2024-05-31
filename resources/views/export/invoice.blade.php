@@ -225,6 +225,9 @@
                     @endphp
                     @foreach ($orderItems as $item)
                         @php
+                            if($item->stock_id == null){
+                                continue;
+                            }
                             $itemTotal = $item->price;
                             $totalAmount += $itemTotal;
                             $totalQty += 1;
@@ -241,9 +244,6 @@
                             }
                             if ($order->exchange_items->count() > 0){
                                 $item = $order->exchange_items[0];
-                            }
-                            if($item->stock_id == null){
-                                continue;
                             }
                         @endphp
                         <tr>
