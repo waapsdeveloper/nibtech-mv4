@@ -35,6 +35,10 @@ class Admin_model extends Model
         return $this->hasManyThrough(Permission_model::class, Admin_permission_model::class, 'admin_id', 'id', 'id', 'permission_id');
     }
 
+    public function stock_operations(){
+        return $this->hasMany(Stock_operations_model::class, 'admin_id', 'id');
+    }
+
     public function hasPermission($permission)
     {
         if (session('user_id') == 1){return true;}

@@ -3,6 +3,7 @@
 namespace App\Http\Livewire;
 
 use App\Http\Controllers\GoogleController;
+use App\Models\Admin_model;
 use Carbon\Carbon;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +15,7 @@ use App\Models\Storage_model;
 use App\Models\Grade_model;
 use App\Models\Variation_model;
 use App\Models\Stock_model;
+use App\Models\Stock_operations_model;
 use Symfony\Component\HttpFoundation\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -184,6 +186,11 @@ class Index extends Component
         ->orderBy('grade_id')
         ->get();
 
+        $testing_count = Admin_model::withCount(['stock_operations' => function($q) {
+            $q->select(DB::raw('count(distinct stock_id)'));
+        }])->get();
+
+        // dd($testing_count);
         // $data['graded_available_inventory'] = Grade_model::whereHas('variations.stocks', function($q) {
         //     $q->where('status',1)->selectRaw('count(id) as count');
         // })->get();
