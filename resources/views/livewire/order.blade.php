@@ -467,7 +467,7 @@
 
                                                                     <div class="input-group">
                                                                         <input type="text" name="tester[]" placeholder="Tester" class="form-control form-control-sm" style="max-width: 50px">
-                                                                        <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm" required title="for SKU:{{ $items[$in-1]->variation->sku }}">
+                                                                        <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm" @if ($item->care_id == null) required @endif title="for SKU:{{ $items[$in-1]->variation->sku }}">
                                                                     </div>
                                                                 <input type="hidden" name="sku[]" value="{{ $items[$in-1]->variation->sku }}">
                                                                 @endfor
