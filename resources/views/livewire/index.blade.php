@@ -269,7 +269,7 @@
 						</div>
 						<div class="col-xl-7 col-lg-12 col-md-12 col-sm-12">
                             <div class="row">
-                                <div class="col-xl-4 col-lg-4 col-md-4 col-xs-4">
+                                <div class="col-xl-3 col-lg-3 col-md-4 col-xs-6">
 
                                     <div class="card">
                                         <div class="card-header">
@@ -293,6 +293,25 @@
                                                     <td>Invoiced:</td>
                                                     <td class="tx-right"><a href="{{url(session('url').'order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ $invoiced_orders }}</a></td>
                                                 </tr>
+                                            </table>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-xl-3 col-lg-3 col-md-4 col-xs-6">
+
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h4 class="card-title mb-1">Testing Count</h4>
+                                        </div>
+                                        <div class="card-body py-2">
+                                            <table class="w-100">
+                                                @foreach ($testing_count as $testing)
+                                                    <tr>
+                                                        <td>{{ $testing->first_name}}</td>
+                                                        <td class="tx-right"><a href="{{url(session('url').'move_inventory')}}?start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to Move Inventory page">{{ $testing->stock_operations }}</a></td>
+                                                    </tr>
+                                                @endforeach
                                             </table>
 
                                         </div>

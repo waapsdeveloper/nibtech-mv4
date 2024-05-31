@@ -186,9 +186,10 @@ class Index extends Component
         ->orderBy('grade_id')
         ->get();
 
-        $testing_count = Admin_model::withCount(['stock_operations' => function($q) {
-            $q->select(DB::raw('count(distinct stock_id)'));
+        $testing_count = Admin_model::withCount(['stock_operations' => function($q) use ($start_date,$end_date) {
+            $q->select(DB::raw('count(distinct stock_id)'))->where('description','LIKE','%DrPhone')->where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date);
         }])->get();
+        $data['testing_count'] = $testing_count;
 
         // dd($testing_count);
         // $data['graded_available_inventory'] = Grade_model::whereHas('variations.stocks', function($q) {
