@@ -230,6 +230,7 @@
 
                                         @php
                                             $item = $stock->last_item();
+                                            $variation = $item->variation;
                                         @endphp
                                         <tr>
                                             <td title="{{ $stock->id }}">{{ $i + 1 }}</td>
@@ -272,10 +273,10 @@
                                                         data-bs-target="#action_model"
                                                         data-bs-toggle="modal"
                                                         data-bs-reference="Send Back to Customer"
-                                                        data-bs-product="{{ $item->variation->product_id }}"
-                                                        data-bs-storage="{{ $item->variation->storage }}"
-                                                        data-bs-color="{{ $item->variation->color }}"
-                                                        data-bs-grade="{{ $item->variation->grade }}"
+                                                        data-bs-product="{{ $variation->product_id }}"
+                                                        data-bs-storage="{{ $variation->storage }}"
+                                                        data-bs-color="{{ $variation->color }}"
+                                                        data-bs-grade="{{ $variation->grade }}"
                                                         data-bs-reference_id="{{ $item->order->reference_id }}"
                                                         data-bs-stock_id="{{ $stock->id }}"
                                                         data-bs-price="{{ $item->price }}"
@@ -287,9 +288,9 @@
                                                         data-bs-target="#action_model"
                                                         data-bs-toggle="modal"
                                                         data-bs-reference="Send for Aftersale Repair"
-                                                        data-bs-product="{{ $item->variation->product_id }}"
-                                                        data-bs-storage="{{ $item->variation->storage }}"
-                                                        data-bs-color="{{ $item->variation->color }}"
+                                                        data-bs-product="{{ $variation->product_id }}"
+                                                        data-bs-storage="{{ $variation->storage }}"
+                                                        data-bs-color="{{ $variation->color }}"
                                                         data-bs-grade="8"
                                                         data-bs-reference_id="{{ $item->order->reference_id }}"
                                                         data-bs-stock_id="{{ $stock->id }}"
@@ -302,9 +303,9 @@
                                                         data-bs-target="#action_model"
                                                         data-bs-toggle="modal"
                                                         data-bs-reference="Return as RMA"
-                                                        data-bs-product="{{ $item->variation->product_id }}"
-                                                        data-bs-storage="{{ $item->variation->storage }}"
-                                                        data-bs-color="{{ $item->variation->color }}"
+                                                        data-bs-product="{{ $variation->product_id }}"
+                                                        data-bs-storage="{{ $variation->storage }}"
+                                                        data-bs-color="{{ $variation->color }}"
                                                         data-bs-grade="10"
                                                         data-bs-reference_id="{{ $item->order->reference_id }}"
                                                         data-bs-stock_id="{{ $stock->id }}"
@@ -317,9 +318,9 @@
                                                         data-bs-target="#action_model"
                                                         data-bs-toggle="modal"
                                                         data-bs-reference="Return as WIP"
-                                                        data-bs-product="{{ $item->variation->product_id }}"
-                                                        data-bs-storage="{{ $item->variation->storage }}"
-                                                        data-bs-color="{{ $item->variation->color }}"
+                                                        data-bs-product="{{ $variation->product_id }}"
+                                                        data-bs-storage="{{ $variation->storage }}"
+                                                        data-bs-color="{{ $variation->color }}"
                                                         data-bs-grade="9"
                                                         data-bs-reference_id="{{ $item->order->reference_id }}"
                                                         data-bs-stock_id="{{ $stock->id }}"
