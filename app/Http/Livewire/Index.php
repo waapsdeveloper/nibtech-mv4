@@ -176,7 +176,7 @@ class Index extends Component
         ->count();
 
         $data['graded_inventory'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', 'orders.status as status_id', DB::raw('COUNT(*) as quantity'))
-        ->where('stock.status', '!=', 2)
+        ->where('stock.status', 1)
         ->join('variation', 'stock.variation_id', '=', 'variation.id')
         ->join('grade', 'variation.grade', '=', 'grade.id')
         ->join('orders', 'stock.order_id', '=', 'orders.id')

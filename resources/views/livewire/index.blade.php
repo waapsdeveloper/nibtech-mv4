@@ -28,7 +28,7 @@
 
             <div class="row">
 
-                <div class="col-lg-3 col-xl-3 col-md-3 col-sm-3">
+                <div class="col-md">
                     {{-- <div class="card-header">
                         <h4 class="card-title mb-1">Model</h4>
                     </div> --}}
@@ -43,7 +43,7 @@
                         @endforeach
                     </datalist>
                 </div>
-                <div class="col-md col-sm-2">
+                <div class="col-md">
                     {{-- <div class="card-header">
                         <h4 class="card-title mb-1">Storage</h4>
                     </div> --}}
@@ -54,7 +54,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md col-sm-2">
+                <div class="col-md">
                     {{-- <div class="card-header">
                         <h4 class="card-title mb-1">Storage</h4>
                     </div> --}}
@@ -65,7 +65,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md col-sm-2">
+                <div class="col-md">
                     {{-- <div class="card-header">
                         <h4 class="card-title mb-1">Grade</h4>
                     </div> --}}
@@ -76,6 +76,22 @@
                         @endforeach
                     </select>
                 </div>
+
+                <div class="col-md">
+                    <div class="form-floating">
+                        <input class="form-control" id="datetimepicker" type="date" id="start" name="start_date" value="{{$start_date}}">
+                        <label for="start">{{ __('locale.Start Date') }}</label>
+                    </div>
+                </div>
+                <div class="col-md">
+                    <div class="form-floating">
+                        <input class="form-control" id="datetimepicker" type="date" id="end" name="end_date" value="{{$end_date}}">
+                        <label for="end">{{ __('locale.End Date') }}</label>
+                    </div>
+                </div>
+                {{-- <div class="col-md"> --}}
+                    <button type="submit" class="btn btn-icon  btn-success me-1"><i class="fe fe-search"></i></button>
+                {{-- </div> --}}
             </div>
             <br>
                     @if (count($variations) > 0)
