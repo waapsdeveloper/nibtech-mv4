@@ -307,10 +307,13 @@
                                         <div class="card-body py-2">
                                             <table class="w-100">
                                                 @foreach ($testing_count as $testing)
+                                                    @if ($testing->stock_operations_count > 0)
+
                                                     <tr>
                                                         <td>{{ $testing->first_name}}</td>
                                                         <td class="tx-right"><a href="{{url(session('url').'move_inventory')}}?start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to Move Inventory page">{{ $testing->stock_operations_count }}</a></td>
                                                     </tr>
+                                                    @endif
                                                 @endforeach
                                             </table>
 
