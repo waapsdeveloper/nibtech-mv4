@@ -198,7 +198,7 @@ class Index extends Component
         // $data['awaiting_replacement'] = Order_model::where(['status'=>3,'order_type_id'=>3])->with(['order_items.stock' => function ($q) {
         //     $q->where('status',1);
         // }]);
-        $data['awaiting_replacement'] = Stock_model::where('status',1)->with(['order_items.order' => function ($q) {
+        $data['awaiting_replacement'] = Stock_model::where('status',2)->with(['order_items.order' => function ($q) {
             $q->where(['status'=>3,'order_type_id'=>3]);
         }])->count();
 
