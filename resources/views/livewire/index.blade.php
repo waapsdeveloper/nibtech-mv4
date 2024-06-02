@@ -374,14 +374,8 @@
                                                 <div class="col-lg-6 col-md-6"><h6><a href="{{url(session('url').'inventory')}}?grade[]={{ $inv->grade_id }}&status={{ $inv->status_id }}&stock_status={{ $inv->stock_status }}" title="Go to orders page">{{ $inv->grade.": ".$inv->quantity." ".$purchase_status[$inv->status_id] }}</a></h6></div>
                                             @endforeach
                                         </div>
-                                        <div class="card-header border-bottom-0">
-                                                <h3 class="card-title mb-2 ">Awaiting Replacements</h3> <span class="d-block tx-12 mb-0 text-muted"></span>
-                                        </div>
-                                        <div class="card-body py-1 row">
-                                            @foreach ($aftersale_inventory as $inv)
-                                                <div class="col-lg-6 col-md-6"><h6><a href="{{url(session('url').'inventory')}}?grade[]={{ $inv->grade_id }}&status={{ $inv->status_id }}&stock_status={{ $inv->stock_status }}" title="Go to orders page">{{ $inv->grade.": ".$inv->quantity." ".$purchase_status[$inv->status_id] }}</a></h6></div>
-                                            @endforeach
-                                        </div>
+                                        <h3 class="">Awaiting Replacements</h3> <span class="d-block tx-12 mb-0 text-muted"></span>:{{$awaiting_replacement}}
+
                                     </div>
                                 </div>
                             </div>

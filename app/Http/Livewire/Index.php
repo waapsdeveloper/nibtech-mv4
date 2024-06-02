@@ -195,6 +195,14 @@ class Index extends Component
         ->orderBy('grade_id')
         ->get();
 
+        // $data['awaiting_replacement'] = Order_model::where(['status'=>3,'order_type_id'=>3])->with(['order_items.stock' => function ($q) {
+        //     $q->where('status',1);
+        // }]);
+        $data['awaiting_replacement'] = Stock_model::where('status',1)->with(['order_items.order' => function ($q) {
+            $q->where(['status'=>3,'order_type_id'=>3]);
+        }])->count();
+
+
         $testing_count = Admin_model::withCount(['stock_operations' => function($q) use ($start_date,$end_date) {
             $q->select(DB::raw('count(distinct stock_id)'))->where('description','LIKE','%DrPhone')->where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date);
         }])->get();
