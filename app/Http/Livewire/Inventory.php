@@ -11,6 +11,8 @@ use App\Models\Category_model;
 use App\Models\Brand_model;
 use App\Models\Customer_model;
 use App\Models\Order_model;
+use App\Models\Process_model;
+use App\Models\Process_stock_model;
 use App\Models\Stock_model;
 use App\Models\Products_model;
 use App\Models\Stock_operations_model;
@@ -25,6 +27,7 @@ class Inventory extends Component
     {
 
         $data['title_page'] = "Inventory";
+        $all_verified_stocks = [];
         if(request('per_page') != null){
             $per_page = request('per_page');
         }else{
@@ -37,7 +40,58 @@ class Inventory extends Component
         $data['grades'] = Grade_model::pluck('name','id');
         $data['categories'] = Category_model::get();
         $data['brands'] = Brand_model::get();
-        $data['stocks'] = Stock_model::where('stock.status',1)
+
+
+        $active_inventory_verification = Process_model::where(['process_type_id'=>20,'status'=>1])->first();
+        if($active_inventory_verification != null){
+            $all_verified_stocks = Process_stock_model::where('process_id', $active_inventory_verification->id)->pluck('stock_id')->toArray();
+            $verified_stocks = Process_stock_model::where('process_id', $active_inventory_verification->id)
+            ->when(request('vendor') != '', function ($q) {
+                return $q->whereHas('stock.order', function ($q) {
+                    $q->where('customer_id', request('vendor'));
+                });
+            })
+            ->when(request('status') != '', function ($q) {
+                return $q->whereHas('stock.order', function ($q) {
+                    $q->where('status', request('status'));
+                });
+            })
+            ->when(request('storage') != '', function ($q) {
+                return $q->whereHas('stock.variation', function ($q) {
+                    $q->where('storage', request('storage'));
+                });
+            })
+            ->when(request('category') != '', function ($q) {
+                return $q->whereHas('stock.variation.product', function ($q) {
+                    $q->where('category', request('category'));
+                });
+            })
+            ->when(request('brand') != '', function ($q) {
+                return $q->whereHas('stock.variation.product', function ($q) {
+                    $q->where('brand', request('brand'));
+                });
+            })
+            ->when(request('product') != '', function ($q) {
+                return $q->whereHas('stock.variation', function ($q) {
+                    $q->where('product_id', request('product'));
+                });
+            })
+            ->when(request('grade') != [], function ($q) {
+                return $q->whereHas('stock.variation', function ($q) {
+                    // print_r(request('grade'));
+                    $q->whereIn('grade', request('grade'));
+                });
+            })
+            // ->orderBy('product_id','ASC')
+            ->paginate($per_page)
+            ->onEachSide(5)
+            ->appends(request()->except('page'));
+            $data['verified_stocks'] = $verified_stocks;
+        }
+        $data['active_inventory_verification'] = $active_inventory_verification;
+
+
+        $data['stocks'] = Stock_model::where('stock.status',1)->whereNotIn('stock.id',$all_verified_stocks)
 
         ->when(request('vendor') != '', function ($q) {
             return $q->whereHas('order', function ($q) {
@@ -47,11 +101,6 @@ class Inventory extends Component
         ->when(request('status') != '', function ($q) {
             return $q->whereHas('order', function ($q) {
                 $q->where('status', request('status'));
-            // })
-            // ->whereHas('last_item', function ($q) {
-            //     $q->whereHas('order', function ($q) {
-            //         $q->where('status', request('status'));
-            //     });
             });
         })
         ->when(request('storage') != '', function ($q) {
@@ -130,15 +179,14 @@ class Inventory extends Component
         // ->pluck('average_price')
         ->first();
 
-        $vendor_average = Customer_model::where('is_vendor',1)
-        ->with(['orders' => function($q) {
-            $q->where('order_type_id', 1)
-                ->with(['order_items' => function($q) {
-                $q->whereHas('stock', function ($q) {
-                    $q->where('status', 1);
-                })->select(DB::raw('count(distinct id) as count'), DB::raw('sum(price) as total_price'));
-            }]);
-        }])->first();
+        // ->with(['orders' => function($q) {
+        //     $q->where('order_type_id', 1)
+        //         ->with(['order_items' => function($q) {
+        //         $q->whereHas('stock', function ($q) {
+        //             $q->where('status', 1);
+        //         })->select(DB::raw('count(distinct id) as count'), DB::raw('sum(price) as total_price'));
+        //     }]);
+        // }])->first();
 
 
         // ->with(['orders.order_items' => function($q) {
@@ -149,8 +197,23 @@ class Inventory extends Component
         //     $q->where('order_type_id',1);
 
         // })->get();
+    //     $vendor_average = Customer_model::where('is_vendor',1)
 
-        // dd($vendor_average);
+    // ->with(['orders' => function($q) {
+    //     $q->where('order_type_id', 1)
+    //         ->withCount(['order_items as unique_stock_count' => function($q) {
+    //             $q->whereHas('stock', function ($q) {
+    //                 $q->where('status', 1);
+    //             })->select(DB::raw('count(distinct stock_id)'))->groupBy('order_id');
+    //         }])->withSum(['order_items as unique_stock_sum' => function($q) {
+    //             $q->whereHas('stock', function ($q) {
+    //                 $q->where('status', 1);
+    //             });
+    //         }], 'price');
+    // }])->get();
+
+
+    //     dd($vendor_average);
 
         $data['vendor_average_cost'] = Stock_model::where('stock.status',1)->where('stock.deleted_at',null)->where('order_items.deleted_at',null)->where('orders.deleted_at',null)
 
@@ -199,6 +262,52 @@ class Inventory extends Component
         // ->pluck('average_price')
         ->get();
 
+        $active_inventory_verification = Process_model::where(['process_type_id'=>20,'status'=>1])->first();
+        if($active_inventory_verification != null){
+            $verified_stocks = Process_stock_model::where('process_id', $active_inventory_verification->id)
+            ->when(request('vendor') != '', function ($q) {
+                return $q->whereHas('stock.order', function ($q) {
+                    $q->where('customer_id', request('vendor'));
+                });
+            })
+            ->when(request('status') != '', function ($q) {
+                return $q->whereHas('stock.order', function ($q) {
+                    $q->where('status', request('status'));
+                });
+            })
+            ->when(request('storage') != '', function ($q) {
+                return $q->whereHas('stock.variation', function ($q) {
+                    $q->where('storage', request('storage'));
+                });
+            })
+            ->when(request('category') != '', function ($q) {
+                return $q->whereHas('stock.variation.product', function ($q) {
+                    $q->where('category', request('category'));
+                });
+            })
+            ->when(request('brand') != '', function ($q) {
+                return $q->whereHas('stock.variation.product', function ($q) {
+                    $q->where('brand', request('brand'));
+                });
+            })
+            ->when(request('product') != '', function ($q) {
+                return $q->whereHas('stock.variation', function ($q) {
+                    $q->where('product_id', request('product'));
+                });
+            })
+            ->when(request('grade') != [], function ($q) {
+                return $q->whereHas('stock.variation', function ($q) {
+                    // print_r(request('grade'));
+                    $q->whereIn('grade', request('grade'));
+                });
+            })
+            // ->orderBy('product_id','ASC')
+            ->paginate($per_page)
+            ->onEachSide(5)
+            ->appends(request()->except('page'));
+            $data['verified_stocks'] = $verified_stocks;
+        }
+        $data['active_inventory_verification'] = $active_inventory_verification;
         // dd($data['vendor_average_cost']);
 
         return view('livewire.inventory')->with($data);
@@ -231,6 +340,47 @@ class Inventory extends Component
 
         return Excel::download(new InventorysheetExport, 'inventory.xlsx');
     }
+
+    public function start_verification() {
+        $last = Process_model::where('process_type_id',20)->orderBy('id','desc')->first();
+        $verification = Process_model::firstOrNew(['process_type_id'=>20, 'status'=>1]);
+        if($verification->id == null && $last != null){
+            $verification->reference_id = $last->reference_id + 1;
+        }elseif($verification->id == null && $last == null){
+            $verification->reference_id = "8001";
+        }else{
+            session()->put('error', 'Inventory Verification already in progress');
+        }
+        if($verification->id == null){
+            $verification->save();
+            session()->put('success', 'Inventory Verification started');
+        }
+        return redirect()->back();
+    }
+
+    public function add_verification_imei($process_id) {
+
+        if (ctype_digit(request('imei'))) {
+            $i = request('imei');
+            $s = null;
+        } else {
+            $i = null;
+            $s = request('imei');
+        }
+        $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
+
+        $process_stock = Process_stock_model::firstOrNew(['process_id'=>$process_id, 'stock_id'=>$stock->id]);
+        $process_stock->admin_id = session('user_id');
+        $process_stock->status = 1;
+        if($process_stock->id == null){
+            $process_stock->save();
+            session()->put('success', 'Stock Verified successfully');
+        }else{
+            session()->put('error', 'Stock already verified');
+        }
+        return redirect()->back();
+    }
+
 
     public function belfast_inventory(){
 

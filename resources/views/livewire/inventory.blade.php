@@ -170,7 +170,7 @@
         </div>
         <br>
 
-        @if (session('user')->hasPermission('view_cost'))
+        @if (session('user')->hasPermission('view_cost') && $stocks->count() > 0)
             <div class="">
                 Vendor wise average:
                 @foreach ($vendor_average_cost as $v_cost)
@@ -190,7 +190,24 @@
                 <a href="{{url(session('url').'inventory')}}?status=2" class="btn btn-link">Pending</a>
                 <a href="{{url(session('url').'inventory')}}" class="btn btn-link">All</a>
             </div>
+
+            @if ($active_inventory_verification != null)
+                <div>
+                    <form class="form-inline" action="{{ url('inventory/add_verification_imei').'/'.$active_inventory_verification->id }}" method="POST" id="wholesale_item">
+                        @csrf
+                        <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
+                        <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
+                        <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
+
+                    </form>
+
+                </div>
+            @endif
             <div class="">
+                @if ($active_inventory_verification == null)
+                <a class="btn btn-sm btn-secondary pd-x-20 " href="{{url('inventory/start_verification')}}">Start Inventory Verification</a>
+
+                @endif
                 @if (session('user')->hasPermission('view_cost'))
                 <button class="btn btn-sm btn-secondary pd-x-20 " type="submit" form="export" name="inventorysheet" value="1">Export Sheet</button>
 
@@ -216,7 +233,11 @@
         </form>
         <br>
         <div class="row">
-            <div class="col-xl-12">
+            <div @if ($active_inventory_verification == null)
+                 class="col-xl-12"
+                 @else
+                 class="col-xl-9"
+            @endif>
                 <div class="card">
                     <div class="card-header pb-0">
                         <div class="d-flex justify-content-between">
@@ -279,8 +300,8 @@
                                     @foreach ($stocks as $index => $stock)
                                         <tr>
                                             <td title="{{ $stock->id }}">{{ $i + 1 }}</td>
-                                            <td><a title="Filter this variation" href="{{url('inventory').'?product='.$stock->variation->product_id.'&storage='.$stock->variation->storage.'&grade[]='.$stock->variation->grade}}">{{ $stock->variation->product->model . " " . (isset($stock->variation->color_id) ? $stock->variation->color_id->name . " " : null) .
-                                                (isset($stock->variation->storage_id) ? $stock->variation->storage_id->name . " " : null) . " " . $stock->variation->grade_id->name }} </a></td>
+                                            <td><a title="Filter this variation" href="{{url('inventory').'?product='.$stock->variation->product_id.'&storage='.$stock->variation->storage.'&grade[]='.$stock->variation->grade}}">{{ $stock->variation->product->model . " " . (isset($stock->variation->storage_id) ? $stock->variation->storage_id->name . " " : null) . " " .
+                                            (isset($stock->variation->color_id) ? $stock->variation->color_id->name . " " : null) . $stock->variation->grade_id->name }} </a></td>
                                             <td><a title="Search Serial" href="{{url('imei')."?imei=".$stock->imei.$stock->serial_number}}" target="_blank"> {{$stock->imei.$stock->serial_number }} </a></td>
                                             <td><a title="Vendor Profile" href="{{url('edit-customer').'/'.$stock->order->customer_id}}" target="_blank"> {{ $stock->order->customer->first_name ?? null}} </a></td>
                                             <td><a title="Purchase Order Details" href="{{url('purchase/detail').'/'.$stock->order_id}}" target="_blank"> {{ $stock->order->reference_id }} </a></td>
@@ -308,6 +329,51 @@
                     </div>
                 </div>
             </div>
+            @if ($active_inventory_verification != null)
+                <div class="col-xl-3">
+                    <div class="card">
+                        <div class="card-header pb-0">
+                            <div class="d-flex justify-content-between">
+                                <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$verified_stocks->firstItem()}} {{ __('locale.To') }} {{$verified_stocks->lastItem()}} {{ __('locale.Out Of') }} {{$verified_stocks->total()}} </h5>
+                            </div>
+                        </div>
+                        <div class="card-body"><div class="table-responsive">
+                                <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                                    <thead>
+                                        <tr>
+                                            <th><small><b>No</b></small></th>
+                                            <th><small><b>IMEI / Serial Number</b></small></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @php
+                                            $i = $verified_stocks->firstItem() - 1;
+                                        @endphp
+                                        @foreach ($verified_stocks as $index => $verified_stock)
+                                            @php
+                                                $stock = $verified_stock->stock;
+                                            @endphp
+                                            <tr>
+                                                <td title="{{ $verified_stock->id }}">{{ $i + 1 }}</td>
+                                                <td><a title="Search Serial {{ $stock->variation->product->model . " " . (isset($stock->variation->storage_id) ? $stock->variation->storage_id->name . " " : null) . " " .
+                                                    (isset($stock->variation->color_id) ? $stock->variation->color_id->name . " " : null) . $stock->variation->grade_id->name }} " href="{{url('imei')."?imei=".$stock->imei.$stock->serial_number}}" target="_blank"> {{$stock->imei.$stock->serial_number }} </a></td>
+                                            </tr>
+
+                                            @php
+                                                $i ++;
+                                            @endphp
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            <br>
+                            {{ $verified_stocks->onEachSide(1)->links() }} {{ __('locale.From') }} {{$verified_stocks->firstItem()}} {{ __('locale.To') }} {{$verified_stocks->lastItem()}} {{ __('locale.Out Of') }} {{$verified_stocks->total()}}
+                        </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            @endif
         </div>
 
         <div class="modal" id="modaldemo">
