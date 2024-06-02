@@ -15,6 +15,7 @@ use App\Models\Stock_model;
 use App\Models\Products_model;
 use App\Models\Stock_operations_model;
 use App\Models\Variation_model;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
 class Inventory extends Component
@@ -128,6 +129,28 @@ class Inventory extends Component
         ->selectRaw('SUM(order_items.price) as total_price')
         // ->pluck('average_price')
         ->first();
+
+        $vendor_average = Customer_model::where('is_vendor',1)
+        ->with(['orders' => function($q) {
+            $q->where('order_type_id', 1)
+                ->with(['order_items' => function($q) {
+                $q->whereHas('stock', function ($q) {
+                    $q->where('status', 1);
+                })->select(DB::raw('count(distinct id) as count'), DB::raw('sum(price) as total_price'));
+            }])->select('customer_id', 'count', 'total_price')->groupBy('customer_id');
+        }])->first();
+
+
+        // ->with(['orders.order_items' => function($q) {
+        //     $q->whereHas('stock', function ($q) {
+        //         $q->where('status', 1);
+        //     })->select(DB::raw('count(id)'), DB::raw('sum(price)'));
+        // }])->whereHas('orders', function ($q) {
+        //     $q->where('order_type_id',1);
+
+        // })->get();
+
+        // dd($vendor_average);
 
         $data['vendor_average_cost'] = Stock_model::where('stock.status',1)->where('stock.deleted_at',null)->where('order_items.deleted_at',null)->where('orders.deleted_at',null)
 

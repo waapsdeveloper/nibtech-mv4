@@ -23,7 +23,7 @@ class Api_request_model extends Model
 
     public function push_testing()
     {
-
+        $imeis = [];
         $admins = Admin_model::pluck('first_name','id')->toArray();
         $lowercaseAdmins = array_map('strtolower', $admins);
         $products = Products_model::pluck('model','id')->toArray();
@@ -73,12 +73,14 @@ class Api_request_model extends Model
             if(in_array($datas->Memory, $storages)){
                 $storage = array_search($datas->Memory,$storages);
             }
-
+            if(!in_array($datas->Imei, $imeis)){
+                $imeis[] = $datas->Imei;
             echo "<pre>";
 
             // print_r($request);
             print_r($datas);
             echo "</pre>";
+            }
 
             $colorName = strtolower($datas->Color); // Convert color name to lowercase
 
