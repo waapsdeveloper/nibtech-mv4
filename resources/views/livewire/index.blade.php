@@ -321,7 +321,7 @@
                                     </div>
                                 </div>
                                 {{-- Date search section --}}
-                                <div class="col-xl-6 col-lg-6 col-md-8 col-xs-12">
+                                {{-- <div class="col-xl-6 col-lg-6 col-md-8 col-xs-12">
                                     <div class="card">
                                         <div class="card-header">
                                             <h4 class="card-title mb-1">{{ __('locale.Search Records By Dates') }}</h4>
@@ -345,24 +345,38 @@
                                             </form>
                                         </div>
                                     </div>
-                                </div>
+                                </div> --}}
 
                             </div>
 								{{-- Welcome Box end --}}
 								{{-- Date search section --}}
                             @if (session('user')->hasPermission('view_inventory'))
-							<div class="card custom-card overflow-hidden">
-								<div class="card-header border-bottom-0">
-									<div>
-										<h3 class="card-title mb-2 ">Available Inventory by Grade</h3> <span class="d-block tx-12 mb-0 text-muted"></span>
-									</div>
-								</div>
-								<div class="card-body row">
-									@foreach ($graded_inventory as $inv)
-                                        <div class="col-lg-3 col-md-4"><h6><a href="{{url(session('url').'inventory')}}?grade[]={{ $inv->grade_id }}&status={{ $inv->status_id }}" title="Go to orders page">{{ $inv->grade.": ".$inv->quantity." ".$purchase_status[$inv->status_id] }}</a></h6></div>
-                                    @endforeach
-								</div>
-							</div>
+                            <div class="row">
+                                <div class="col-lg-9">
+                                    <div class="card custom-card overflow-hidden">
+                                        <div class="card-header border-bottom-0">
+                                                <h3 class="card-title mb-2 ">Available Inventory by Grade</h3> <span class="d-block tx-12 mb-0 text-muted"></span>
+                                        </div>
+                                        <div class="card-body row">
+                                            @foreach ($graded_inventory as $inv)
+                                                <div class="col-lg-3 col-md-4"><h6><a href="{{url(session('url').'inventory')}}?grade[]={{ $inv->grade_id }}&status={{ $inv->status_id }}" title="Go to orders page">{{ $inv->grade.": ".$inv->quantity." ".$purchase_status[$inv->status_id] }}</a></h6></div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3">
+                                    <div class="card custom-card overflow-hidden">
+                                        <div class="card-header border-bottom-0">
+                                                <h3 class="card-title mb-2 ">Aftersale Inventory</h3> <span class="d-block tx-12 mb-0 text-muted"></span>
+                                        </div>
+                                        <div class="card-body row">
+                                            @foreach ($aftersale_inventory as $inv)
+                                                <div class=""><h6><a href="{{url(session('url').'inventory')}}?grade[]={{ $inv->grade_id }}&status={{ $inv->status_id }}" title="Go to orders page">{{ $inv->grade.": ".$inv->quantity." ".$purchase_status[$inv->status_id] }}</a></h6></div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             @endif
 
 							<div class="card custom-card overflow-hidden">
