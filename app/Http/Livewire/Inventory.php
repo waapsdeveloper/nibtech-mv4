@@ -91,8 +91,14 @@ class Inventory extends Component
         $data['active_inventory_verification'] = $active_inventory_verification;
 
 
-        $data['stocks'] = Stock_model::where('stock.status',1)->whereNotIn('stock.id',$all_verified_stocks)
+        $data['stocks'] = Stock_model::whereNotIn('stock.id',$all_verified_stocks)
 
+        ->when(request('stock_status') != '', function ($q) {
+            return $q->where('status', request('stock_status'));
+        })
+        ->when(request('stock_status') == '', function ($q) {
+            return $q->where('status', 1);
+        })
         ->when(request('vendor') != '', function ($q) {
             return $q->whereHas('order', function ($q) {
                 $q->where('customer_id', request('vendor'));
@@ -135,8 +141,14 @@ class Inventory extends Component
         ->appends(request()->except('page'));
 
 
-        $data['average_cost'] = Stock_model::where('stock.status',1)->where('stock.deleted_at',null)->where('order_items.deleted_at',null)
+        $data['average_cost'] = Stock_model::where('stock.deleted_at',null)->where('order_items.deleted_at',null)
 
+        ->when(request('stock_status') != '', function ($q) {
+            return $q->where('stock.status', request('stock_status'));
+        })
+        ->when(request('stock_status') == '', function ($q) {
+            return $q->where('stock.status', 1);
+        })
         ->when(request('vendor') != '', function ($q) {
             return $q->whereHas('order', function ($q) {
                 $q->where('customer_id', request('vendor'));
@@ -215,8 +227,14 @@ class Inventory extends Component
 
     //     dd($vendor_average);
 
-        $data['vendor_average_cost'] = Stock_model::where('stock.status',1)->where('stock.deleted_at',null)->where('order_items.deleted_at',null)->where('orders.deleted_at',null)
+        $data['vendor_average_cost'] = Stock_model::where('stock.deleted_at',null)->where('order_items.deleted_at',null)->where('orders.deleted_at',null)
 
+        ->when(request('stock_status') != '', function ($q) {
+            return $q->where('stock.status', request('stock_status'));
+        })
+        ->when(request('stock_status') == '', function ($q) {
+            return $q->where('stock.status', 1);
+        })
         ->when(request('vendor') != '', function ($q) {
             return $q->whereHas('order', function ($q) {
                 $q->where('customer_id', request('vendor'));

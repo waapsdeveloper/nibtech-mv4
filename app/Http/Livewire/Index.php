@@ -185,13 +185,13 @@ class Index extends Component
         ->groupBy('variation.grade', 'grade.name', 'orders.status')
         ->orderBy('grade_id')
         ->get();
-        $data['aftersale_inventory'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', 'orders.status as status_id', DB::raw('COUNT(*) as quantity'))
+        $data['aftersale_inventory'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', 'orders.status as status_id', 'stock.status as stock_status', DB::raw('COUNT(*) as quantity'))
         ->where('stock.status', 2)
         ->join('variation', 'stock.variation_id', '=', 'variation.id')
         ->join('grade', 'variation.grade', '=', 'grade.id')
         ->whereIn('grade.id',[8,10,12,17])
         ->join('orders', 'stock.order_id', '=', 'orders.id')
-        ->groupBy('variation.grade', 'grade.name', 'orders.status')
+        ->groupBy('variation.grade', 'grade.name', 'orders.status', 'stock.status')
         ->orderBy('grade_id')
         ->get();
 
