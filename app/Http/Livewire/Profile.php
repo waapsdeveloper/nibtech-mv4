@@ -21,7 +21,7 @@ class Profile extends Component
     public function render()
     {
 
-        $data['title'] = "Profile";
+        $data['title_page'] = "Profile";
         $admin = Admin_model::where('id',session('user_id'))->first();
         if(request('update_profile') && $admin->id != 1){
             $admin->first_name = request('first_name');

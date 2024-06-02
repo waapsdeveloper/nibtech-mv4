@@ -15,14 +15,14 @@ class Team extends Component
     public function render()
     {
 
-        $data['title'] = "Team";
+        $data['title_page'] = "Team";
         $data['admin_team'] = Admin_model::where('parent_id','>=',session('user_id'))->Paginate(50);
         return view('livewire.team')->with($data);
     }
     public function add_member()
     {
 
-        $data['title'] = "Add Member";
+        $data['title_page'] = "Add Member";
         $data['parents'] = Admin_model::where('id','>=',Admin_model::find(session('user_id'))->role_id)->get();
         $data['roles'] = Role_model::where('id','>=',Admin_model::find(session('user_id'))->role_id)->get();
         $data['parents'] = Admin_model::whereIn('role_id',$data['roles']->pluck('id')->toArray())->get();
@@ -80,7 +80,7 @@ class Team extends Component
     public function edit_member($id)
     {
 
-        $data['title'] = "Edit Member";
+        $data['title_page'] = "Edit Member";
         $data['user'] = session('user');
         $data['roles'] = Role_model::where('id','>=',$data['user']->role_id)->get();
         $data['parents'] = Admin_model::where('role_id','>=',$data['user']->role_id)->get();

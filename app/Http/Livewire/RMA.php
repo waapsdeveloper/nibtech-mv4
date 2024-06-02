@@ -34,7 +34,7 @@ class RMA extends Component
     public function render()
     {
 
-        $data['title'] = "RMA";
+        $data['title_page'] = "RMA";
 
         $user_id = session('user_id');
         $data['vendors'] = Customer_model::where('is_vendor','!=',null)->pluck('first_name','id');
@@ -142,7 +142,7 @@ class RMA extends Component
     public function rma_detail($order_id){
 
 
-        $data['title'] = "RMA Detail";
+        $data['title_page'] = "RMA Detail";
         // $data['imeis'] = Stock_model::whereIn('status',[1,3])->orderBy('serial_number','asc')->orderBy('imei','asc')->get();
         $data['storages'] = Storage_model::pluck('name','id');
         $data['products'] = Products_model::pluck('model','id');

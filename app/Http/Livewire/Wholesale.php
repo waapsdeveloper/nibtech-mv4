@@ -40,7 +40,7 @@ class Wholesale extends Component
         $data['vendors'] = Customer_model::where('is_vendor','!=',null)->pluck('first_name','id');
         $data['currencies'] = Currency_model::pluck('sign','id');
 
-        $data['title'] = "BulkSales";
+        $data['title_page'] = "BulkSales";
         $data['order_statuses'] = Order_status_model::get();
             if(request('per_page') != null){
                 $per_page = request('per_page');
@@ -145,7 +145,7 @@ class Wholesale extends Component
     }
     public function wholesale_detail($order_id){
 
-        $data['title'] = "BulkSale Detail";
+        $data['title_page'] = "BulkSale Detail";
 
         // $data['imeis'] = Stock_model::whereIn('status',[1,3])->orderBy('serial_number','asc')->orderBy('imei','asc')->get();
         $data['exchange_rates'] = ExchangeRate::pluck('target_currency','rate');

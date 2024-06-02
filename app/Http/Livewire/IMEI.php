@@ -29,7 +29,7 @@ class IMEI extends Component
     public function render()
     {
 
-        $data['title'] = "Search Serial";
+        $data['title_page'] = "Search Serial";
         $data['last_hour'] = Carbon::now()->subHour(1);
         $data['admins'] = Admin_model::where('id', '!=', 1)->get();
         $user_id = session('user_id');

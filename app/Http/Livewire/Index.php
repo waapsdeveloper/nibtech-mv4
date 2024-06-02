@@ -29,7 +29,7 @@ class Index extends Component
     {
 
 
-        $data['title'] = "Dashboard";
+        $data['title_page'] = "Dashboard";
         // dd('Hello2');
         $user_id = session('user_id');
 

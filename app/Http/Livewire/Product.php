@@ -43,7 +43,7 @@ class Product extends Component
         // $this->import_sku();
         // die;
 
-        $data['title'] = "Products";
+        $data['title_page'] = "Products";
 
         $user_id = session('user_id');
         $data['order_statuses'] = Order_status_model::get();

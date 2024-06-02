@@ -16,7 +16,7 @@ class Grade extends Component
     {
 
 
-        $data['title'] = "Grade";
+        $data['title_page'] = "Grade";
         $data['grades'] = Grade_model::all();
 
         // foreach($data['grades'] as $grade){
@@ -46,7 +46,7 @@ class Grade extends Component
     public function edit_grade($id)
     {
 
-        $data['title'] = "Edit Grade";
+        $data['title_page'] = "Edit Grade";
 
         $data['grade'] = Grade_model::where('id',$id)->first();
 
