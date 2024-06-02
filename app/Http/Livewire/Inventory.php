@@ -137,7 +137,7 @@ class Inventory extends Component
                 $q->whereHas('stock', function ($q) {
                     $q->where('status', 1);
                 })->select(DB::raw('count(distinct id) as count'), DB::raw('sum(price) as total_price'));
-            }])->select('customer_id', 'count', 'total_price')->groupBy('customer_id');
+            }]);
         }])->first();
 
 
