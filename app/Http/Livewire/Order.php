@@ -997,7 +997,7 @@ class Order extends Component
         // dd($pdfContent);
         // Send the invoice via email
 
-        Mail::to($order->customer->email)->send(new InvoiceMail($data));
+        // Mail::to($order->customer->email)->send(new InvoiceMail($data));
         // if(session('user_id') == 1){
 
         // $recipientEmail = $order->customer->email;
