@@ -110,7 +110,7 @@ class Inventory extends Component
             });
         })
         ->when(request('order_type') != '', function ($q) {
-            return $q->whereHas('order', function ($q) {
+            return $q->whereHas('order_items.order', function ($q) {
                 $q->where('order_type_id', request('order_type'));
             });
         })
@@ -165,7 +165,7 @@ class Inventory extends Component
             });
         })
         ->when(request('order_type') != '', function ($q) {
-            return $q->whereHas('order', function ($q) {
+            return $q->whereHas('order_items.order', function ($q) {
                 $q->where('order_type_id', request('order_type'));
             });
         })
@@ -256,7 +256,7 @@ class Inventory extends Component
             });
         })
         ->when(request('order_type') != '', function ($q) {
-            return $q->whereHas('order', function ($q) {
+            return $q->whereHas('order_items.order', function ($q) {
                 $q->where('order_type_id', request('order_type'));
             });
         })
