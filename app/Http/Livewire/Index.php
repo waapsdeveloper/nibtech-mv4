@@ -217,15 +217,12 @@ class Index extends Component
         //     });
         // })
         // ->count();
-        $replacements = Order_item_model::where(['order_id'=>8974])->pluck('reference_id')->toArray();
+        $replacements = Order_item_model::where(['order_id'=>8974])->where('reference_id','!=',null)->pluck('reference_id')->toArray();
         // dd($replacements);
         $data['awaiting_replacement'] = Stock_model::where('status', 1)
-        ->whereHas('order_items', function ($q) use ($replacements) {
-            $q->whereHas('order', function ($q) use ($replacements) {
-                $q->where('status', 3)
-                ->where('order_type_id', 3)
-                ->whereNotIn('reference_id', $replacements);
-            });
+        ->whereHas('order_items.order', function ($q) use ($replacements) {
+            $q->where(['status'=>3, 'order_type_id'=>3])
+            ->whereNotIn('reference_id', $replacements);
         })
         ->count();
 
