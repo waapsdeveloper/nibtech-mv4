@@ -206,17 +206,33 @@ class Index extends Component
         // })
         // ->count('id');
 
+        // $data['awaiting_replacement'] = Stock_model::where('status', 1)
+        // ->whereHas('order_items.order', function ($q) {
+        //     $q->where(['status' => 3, 'order_type_id' => 3]);
+        // })
+        // ->whereHas('order_items', function ($q) {
+        //     $q->whereHas('order', function ($q) {
+        //         $q->whereColumn('order_items.reference_id', 'orders.reference_id')
+        //           ->where('order_type_id', 5);
+        //     });
+        // })
+        // ->count();
         $data['awaiting_replacement'] = Stock_model::where('status', 1)
-        ->whereHas('order_items.order', function ($q) {
-            $q->where(['status' => 3, 'order_type_id' => 3]);
-        })
-        ->whereHas('order_items', function ($q) {
-            $q->whereHas('order', function ($q) {
-                $q->whereColumn('order_items.reference_id', 'orders.reference_id')
-                  ->where('order_type_id', 5);
-            });
-        })
-        ->count();
+    ->whereHas('order_items', function ($q) {
+        $q->whereHas('order', function ($q) {
+            $q->where('status', 3)
+              ->where('order_type_id', 3);
+        });
+    })
+    ->whereHas('order_items', function ($q) {
+        $q->whereHas('order', function ($q) {
+            $q->where('order_type_id', 3)
+              ->whereColumn('order_items.reference_id', 'reference_id');
+        });
+    })
+    ->count();
+
+
 
 
         $testing_count = Admin_model::withCount(['stock_operations' => function($q) use ($start_date,$end_date) {
