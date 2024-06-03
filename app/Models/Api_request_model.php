@@ -205,7 +205,7 @@ class Api_request_model extends Model
 
                 print_r($stock);
                 echo "</pre>";
-            }elseif($stock->variation->storage != $storage){
+            }elseif($stock != null && $stock->variation->storage != $storage){
                 echo "Storage Not Match";
             }
         }
