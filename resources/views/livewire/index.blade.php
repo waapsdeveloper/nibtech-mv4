@@ -374,7 +374,7 @@
                                                 <div class=""><h6><a href="{{url(session('url').'inventory')}}?grade[]={{ $inv->grade_id }}&status={{ $inv->status_id }}&stock_status={{ $inv->stock_status }}" title="Go to orders page">{{ $inv->grade.": ".$inv->quantity." ".$purchase_status[$inv->status_id] }}</a></h6></div>
                                             @endforeach
                                             <br>
-                                            <h6 class=""><a href="{{url(session('url').'inventory')}}?status=3&stock_status=1&order_type=3" title="Go to orders page">Awaiting <br> Replacements : {{$awaiting_replacement}}</a></h6>
+                                            <h6 class=""><a href="{{url(session('url').'inventory')}}?stock_status=1&replacement=1" title="Go to orders page">Awaiting <br> Replacements : {{$awaiting_replacement}}</a></h6>
                                         </div>
 
                                     </div>

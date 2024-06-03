@@ -109,9 +109,9 @@ class Inventory extends Component
                 $q->where('status', request('status'));
             });
         })
-        ->when(request('order_type') != '', function ($q) {
+        ->when(request('replacement') != '', function ($q) {
             return $q->whereHas('order_items.order', function ($q) {
-                $q->where('order_type_id', request('order_type'));
+                $q->where('order_type_id', 3)->where('status', 3);
             });
         })
         ->when(request('storage') != '', function ($q) {
@@ -164,9 +164,9 @@ class Inventory extends Component
                 $q->where('status', request('status'));
             });
         })
-        ->when(request('order_type') != '', function ($q) {
+        ->when(request('replacement') != '', function ($q) {
             return $q->whereHas('order_items.order', function ($q) {
-                $q->where('order_type_id', request('order_type'));
+                $q->where('order_type_id', 3)->where('status', 3);
             });
         })
         ->when(request('storage') != '', function ($q) {
@@ -255,9 +255,9 @@ class Inventory extends Component
                 $q->where('status', request('status'));
             });
         })
-        ->when(request('order_type') != '', function ($q) {
+        ->when(request('replacement') != '', function ($q) {
             return $q->whereHas('order_items.order', function ($q) {
-                $q->where('order_type_id', request('order_type'));
+                $q->where('order_type_id', 3)->where('status', 3);
             });
         })
         ->when(request('storage') != '', function ($q) {
