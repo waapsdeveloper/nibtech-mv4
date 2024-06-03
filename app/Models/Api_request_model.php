@@ -143,7 +143,7 @@ class Api_request_model extends Model
                 }
             }
 
-            if($stock != null && ($stock->variation->storage == $storage || $stock->variation->storage == 0)){
+            if($stock != null){
                 $new_variation = [
                     'product_id' => $stock->variation->product_id,
                     'storage' => $stock->variation->storage,
@@ -151,9 +151,9 @@ class Api_request_model extends Model
                     'grade' => $stock->variation->grade
                 ];
 
-                if($stock->variation->storage == null || $stock->variation->storage == 0 || $stock->variation->storage == $storage){
+                // if($stock->variation->storage == null || $stock->variation->storage == 0 || $stock->variation->storage == $storage){
                     $new_variation['storage'] = $storage;
-                }
+                // }
                 if($stock->variation->color == null || $stock->variation->color == $color){
                     $new_variation['color'] = $color;
                 }
@@ -205,8 +205,6 @@ class Api_request_model extends Model
 
                 print_r($stock);
                 echo "</pre>";
-            }elseif($stock != null && $stock->variation->storage != $storage){
-                echo "Storage Not Match";
             }
         }
 
