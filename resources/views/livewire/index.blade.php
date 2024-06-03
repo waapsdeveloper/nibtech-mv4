@@ -241,6 +241,10 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
+                                                    @php
+                                                        echo $total = $top_products->sum('total_quantity_sold');
+
+                                                    @endphp
                                                     @foreach ($top_products as $top => $product)
 
                                                         <tr>
