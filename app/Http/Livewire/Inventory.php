@@ -109,6 +109,11 @@ class Inventory extends Component
                 $q->where('status', request('status'));
             });
         })
+        ->when(request('order_type') != '', function ($q) {
+            return $q->whereHas('order', function ($q) {
+                $q->where('order_type_id', request('order_type'));
+            });
+        })
         ->when(request('storage') != '', function ($q) {
             return $q->whereHas('variation', function ($q) {
                 $q->where('storage', request('storage'));
@@ -157,6 +162,11 @@ class Inventory extends Component
         ->when(request('status') != '', function ($q) {
             return $q->whereHas('order', function ($q) {
                 $q->where('status', request('status'));
+            });
+        })
+        ->when(request('order_type') != '', function ($q) {
+            return $q->whereHas('order', function ($q) {
+                $q->where('order_type_id', request('order_type'));
             });
         })
         ->when(request('storage') != '', function ($q) {
@@ -243,6 +253,11 @@ class Inventory extends Component
         ->when(request('status') != '', function ($q) {
             return $q->whereHas('order', function ($q) {
                 $q->where('status', request('status'));
+            });
+        })
+        ->when(request('order_type') != '', function ($q) {
+            return $q->whereHas('order', function ($q) {
+                $q->where('order_type_id', request('order_type'));
             });
         })
         ->when(request('storage') != '', function ($q) {
