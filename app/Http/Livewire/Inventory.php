@@ -42,7 +42,7 @@ class Inventory extends Component
         $data['categories'] = Category_model::get();
         $data['brands'] = Brand_model::get();
 
-        if(request('replacement')){
+        if(request('replacement') == 1){
             $replacements = Order_item_model::where(['order_id'=>8974])->where('reference_id','!=',null)->pluck('reference_id')->toArray();
         }else{
             $replacements = [];

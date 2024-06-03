@@ -105,6 +105,7 @@
                 <a href="{{url(session('url').'inventory')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
             </div>
 
+            <input type="hidden" name="replacement" value="{{ Request::get('replacement') }}">
             <input type="hidden" name="status" value="{{ Request::get('status') }}">
             <input type="hidden" name="page" value="{{ Request::get('page') }}">
             <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
@@ -227,6 +228,7 @@
                 <input type="hidden" name="grade[]" value="{{ $grd }}">
             @endforeach
             @endif
+            <input type="hidden" name="replacement" value="{{ Request::get('replacement') }}">
             <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
             <input type="hidden" name="status" value="{{ Request::get('status') }}">
             <input type="hidden" name="vendor" value="{{ Request::get('vendor') }}">
@@ -256,6 +258,7 @@
                                         <option value="100" {{ Request::get('per_page') == 100 ? 'selected' : '' }}>100</option>
                                     </select>
                                     {{-- <button type="submit">Apply</button> --}}
+                                    <input type="hidden" name="replacement" value="{{ Request::get('replacement') }}">
                                     <input type="hidden" name="category" value="{{ Request::get('category') }}">
                                     <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
                                     <input type="hidden" name="product" value="{{ Request::get('product') }}">
