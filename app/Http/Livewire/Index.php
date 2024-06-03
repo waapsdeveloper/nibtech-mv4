@@ -221,12 +221,7 @@ class Index extends Component
     ->whereHas('order_items', function ($q) {
         $q->whereHas('order', function ($q) {
             $q->where('status', 3)
-              ->where('order_type_id', 3);
-        });
-    })
-    ->whereHas('order_items', function ($q) {
-        $q->whereHas('order', function ($q) {
-            $q->where('order_type_id', 3)
+              ->where('order_type_id', 3)
               ->whereColumn('order_items.reference_id', 'reference_id');
         });
     })
