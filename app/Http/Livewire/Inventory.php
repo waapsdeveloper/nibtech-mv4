@@ -10,6 +10,7 @@ use App\Models\Grade_model;
 use App\Models\Category_model;
 use App\Models\Brand_model;
 use App\Models\Customer_model;
+use App\Models\Order_item_model;
 use App\Models\Order_model;
 use App\Models\Process_model;
 use App\Models\Process_stock_model;
@@ -40,6 +41,10 @@ class Inventory extends Component
         $data['grades'] = Grade_model::pluck('name','id');
         $data['categories'] = Category_model::get();
         $data['brands'] = Brand_model::get();
+
+        if(request('replacement')){
+            $replacements = Order_item_model::where(['order_id'=>8974])->where('reference_id','!=',null)->pluck('reference_id')->toArray();
+        }
 
 
         $active_inventory_verification = Process_model::where(['process_type_id'=>20,'status'=>1])->first();
@@ -109,9 +114,10 @@ class Inventory extends Component
                 $q->where('status', request('status'));
             });
         })
-        ->when(request('replacement') != '', function ($q) {
-            return $q->whereHas('order_items.order', function ($q) {
-                $q->where('order_type_id', 3)->where('status', 3);
+        ->when(request('replacement') != '', function ($q) use ($replacements) {
+            return $q->whereHas('order_items.order', function ($q) use ($replacements) {
+                $q->where(['status'=>3, 'order_type_id'=>3])
+                ->whereNotIn('reference_id', $replacements);
             });
         })
         ->when(request('storage') != '', function ($q) {
@@ -164,9 +170,10 @@ class Inventory extends Component
                 $q->where('status', request('status'));
             });
         })
-        ->when(request('replacement') != '', function ($q) {
-            return $q->whereHas('order_items.order', function ($q) {
-                $q->where('order_type_id', 3)->where('status', 3);
+        ->when(request('replacement') != '', function ($q) use ($replacements) {
+            return $q->whereHas('order_items.order', function ($q) use ($replacements) {
+                $q->where(['status'=>3, 'order_type_id'=>3])
+                ->whereNotIn('reference_id', $replacements);
             });
         })
         ->when(request('storage') != '', function ($q) {
@@ -255,9 +262,10 @@ class Inventory extends Component
                 $q->where('status', request('status'));
             });
         })
-        ->when(request('replacement') != '', function ($q) {
-            return $q->whereHas('order_items.order', function ($q) {
-                $q->where('order_type_id', 3)->where('status', 3);
+        ->when(request('replacement') != '', function ($q) use ($replacements) {
+            return $q->whereHas('order_items.order', function ($q) use ($replacements) {
+                $q->where(['status'=>3, 'order_type_id'=>3])
+                ->whereNotIn('reference_id', $replacements);
             });
         })
         ->when(request('storage') != '', function ($q) {
