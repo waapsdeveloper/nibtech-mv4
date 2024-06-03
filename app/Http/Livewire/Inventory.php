@@ -44,6 +44,8 @@ class Inventory extends Component
 
         if(request('replacement')){
             $replacements = Order_item_model::where(['order_id'=>8974])->where('reference_id','!=',null)->pluck('reference_id')->toArray();
+        }else{
+            $replacements = [];
         }
 
 
