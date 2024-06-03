@@ -401,6 +401,12 @@ class Inventory extends Component
         return redirect()->back();
     }
 
+    public function end_verification() {
+        $verification = Process_model::where(['process_type_id'=>20, 'status'=>1])->update(['status'=>2,'description'=>request('message')]);
+        session()->put('success', 'Inventory Verification ended');
+        return redirect()->back();
+    }
+
     public function add_verification_imei($process_id) {
 
         if (ctype_digit(request('imei'))) {
