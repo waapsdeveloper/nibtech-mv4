@@ -219,6 +219,10 @@
                                                 {{-- <button type="submit">Apply</button> --}}
                                                 <input type="hidden" name="start_date" value="{{ $start_date }}">
                                                 <input type="hidden" name="end_date" value="{{ $end_date }}">
+                                                <input type="hidden" name="product" value="{{ Request::get('product') }}">
+                                                <input type="hidden" name="storage" value="{{ Request::get('storage') }}">>
+                                                <input type="hidden" name="color" value="{{ Request::get('color') }}">
+                                                <input type="hidden" name="grade" value="{{ Request::get('grade') }}">
                                             </form>
                                             </div>
 										</div>
