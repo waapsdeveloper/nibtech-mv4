@@ -77,7 +77,7 @@
                     </select>
                 </div>
 
-                <div class="col-md">
+                {{-- <div class="col-md">
                     <div class="form-floating">
                         <input class="form-control" id="datetimepicker" type="date" id="start" name="start_date" value="{{$start_date}}">
                         <label for="start">{{ __('locale.Start Date') }}</label>
@@ -89,9 +89,9 @@
                         <label for="end">{{ __('locale.End Date') }}</label>
                     </div>
                 </div>
-                {{-- <div class="col-md"> --}}
+                <div class="col-md">
                     <button type="submit" class="btn btn-icon  btn-success me-1"><i class="fe fe-search"></i></button>
-                {{-- </div> --}}
+                </div> --}}
             </div>
             <br>
                     @if (count($variations) > 0)
@@ -321,7 +321,7 @@
                                     </div>
                                 </div>
                                 {{-- Date search section --}}
-                                {{-- <div class="col-xl-6 col-lg-6 col-md-8 col-xs-12">
+                                <div class="col-xl-6 col-lg-6 col-md-8 col-xs-12">
                                     <div class="card">
                                         <div class="card-header">
                                             <h4 class="card-title mb-1">{{ __('locale.Search Records By Dates') }}</h4>
@@ -345,7 +345,7 @@
                                             </form>
                                         </div>
                                     </div>
-                                </div> --}}
+                                </div>
 
                             </div>
 								{{-- Welcome Box end --}}
@@ -374,7 +374,7 @@
                                                 <div class=""><h6><a href="{{url(session('url').'inventory')}}?grade[]={{ $inv->grade_id }}&status={{ $inv->status_id }}&stock_status={{ $inv->stock_status }}" title="Go to orders page">{{ $inv->grade.": ".$inv->quantity." ".$purchase_status[$inv->status_id] }}</a></h6></div>
                                             @endforeach
                                             <br>
-                                            <h6 class="">Awaiting <br> Replacements :{{$awaiting_replacement}}</h6>
+                                            <h6 class="">Awaiting <br> Replacements : {{$awaiting_replacement}}</h6>
                                         </div>
 
                                     </div>
