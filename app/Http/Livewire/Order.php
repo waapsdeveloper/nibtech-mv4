@@ -1577,6 +1577,7 @@ class Order extends Component
 
             $stock_operation = Stock_operations_model::create([
                 'stock_id' => $item->stock->id,
+                'order_item_id' => $item->id,
                 'old_variation_id' => $item->stock->variation_id,
                 'new_variation_id' => $item->stock->variation_id,
                 'description' => request('correction')['reason']." ".$item->order->reference_id." ".$imei.$serial_number,
@@ -1648,6 +1649,7 @@ class Order extends Component
                 $grade = $r_item->variation->grade;
 
                 $stock_operation = Stock_operations_model::where(['stock_id'=>$item->stock_id])->orderBy('id','desc')->first();
+                $stock_operation->order_item_id = $r_item->id;
                 $stock_operation->description = $stock_operation->description." | Order: ".$item->order->reference_id." | New IMEI: ".$imei.$serial_number;
                 $stock_operation->save();
             }else{
@@ -1681,6 +1683,7 @@ class Order extends Component
 
                 $stock_operation = Stock_operations_model::create([
                     'stock_id' => $item->stock_id,
+                    'order_item_id' => $return_item->id,
                     'old_variation_id' => $item->variation_id,
                     'new_variation_id' => $variation->id,
                     'description' => request('replacement')['reason']." | Order: ".$item->order->reference_id." | New IMEI: ".$imei.$serial_number,
@@ -1692,6 +1695,7 @@ class Order extends Component
             }
             $stock_operation_2 = Stock_operations_model::create([
                 'stock_id' => $stock->id,
+                'order_item_id' => $item->id,
                 'old_variation_id' => $stock->variation_id,
                 'new_variation_id' => $item->variation_id,
                 'description' => "Replacement | Order: ".$item->order->reference_id." | Old IMEI: ".$item->stock->imei.$item->stock->serial_number,

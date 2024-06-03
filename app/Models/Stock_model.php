@@ -83,27 +83,6 @@ class Stock_model extends Model
         // Define a custom method to retrieve only one order item
         return $this->hasOne(Order_item_model::class, 'stock_id', 'id')->where('order_id', $order_id)->orderBy('id','desc')->first();
     }
-    public function check_status()
-    {
 
-        $sale_status = Order_item_model::where(['stock_id'=>$this->id,'linked_id'=>$this->purchase_item->id])->first();
-        if($this->status == 1){
-            if($sale_status != null){
-                $this->status = 2;
-                $this->save();
-                session()->put('success', 'IMEI Sold');
-            }else{
-                session()->put('success', 'IMEI Available');
-            }
-        }
-        if($this->status == 2){
-            if($sale_status == null){
-                $this->status = 1;
-                $this->save();
-                session()->put('success', 'IMEI Available');
-            }else{
-                session()->put('success', 'IMEI Sold');
-            }
-        }
-    }
+
 }

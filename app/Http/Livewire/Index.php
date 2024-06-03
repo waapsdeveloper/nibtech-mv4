@@ -198,13 +198,25 @@ class Index extends Component
         // $data['awaiting_replacement'] = Order_model::where(['status'=>3,'order_type_id'=>3])->with(['order_items.stock' => function ($q) {
         //     $q->where('status',1);
         // }]);
-        $data['awaiting_replacement'] = Stock_model::where('status',1)->with(['order_items.order' => function ($q) {
-            $q->where(['status'=>3,'order_type_id'=>3]);
-        }])
+        // $data['awaiting_replacement'] = Stock_model::where('status',1)->with(['order_items.order' => function ($q) {
+        //     $q->where(['status'=>3,'order_type_id'=>3]);
+        // }])
+        // ->whereHas('order_items.order', function ($q) {
+        //     $q->where(['status'=>3,'order_type_id'=>3]);
+        // })
+        // ->count('id');
+
+        $data['awaiting_replacement'] = Stock_model::where('status', 1)
         ->whereHas('order_items.order', function ($q) {
-            $q->where(['status'=>3,'order_type_id'=>3]);
+            $q->where(['status' => 3, 'order_type_id' => 3]);
         })
-        ->count('id');
+        ->whereHas('order_items', function ($q) {
+            $q->whereHas('order', function ($q) {
+                $q->whereColumn('order_items.reference_id', 'orders.reference_id')
+                  ->where('order_type_id', 5);
+            });
+        })
+        ->count();
 
 
         $testing_count = Admin_model::withCount(['stock_operations' => function($q) use ($start_date,$end_date) {
