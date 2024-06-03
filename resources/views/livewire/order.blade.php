@@ -343,7 +343,7 @@
                                                 @endif
                                                 <td>
                                                     @if ($item->variation ?? false)
-                                                        <strong>{{ $item->variation->sku }}</strong>{{ " - " . $item->variation->product->model . " - " . (isset($item->variation->storage_id)?$item->variation->storage_id->name . " - " : null) . (isset($item->variation->color_id)?$item->variation->color_id->name. " - ":null)}} <strong><u>{{ $item->variation->grade_id->name }}</u></strong>
+                                                        <strong>{{ $item->variation->sku }}</strong> - {{$item->variation->product->model ?? "Model not defined"}}{{. " - " . (isset($item->variation->storage_id)?$item->variation->storage_id->name . " - " : null) . (isset($item->variation->color_id)?$item->variation->color_id->name. " - ":null)}} <strong><u>{{ $item->variation->grade_id->name }}</u></strong>
                                                     @endif
                                                     @if ($order->delivery_note_url == null || $order->label_url == null)
                                                         <a class="" href="{{url(session('url').'order')}}/label/{{ $order->reference_id }}">
