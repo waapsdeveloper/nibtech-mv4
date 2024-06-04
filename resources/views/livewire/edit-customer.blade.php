@@ -16,7 +16,7 @@
             </div>
             <div class="justify-content-center mt-2">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item tx-15"><a href="{{url('team')}}">Customer</a></li>
+                    <li class="breadcrumb-item tx-15"><a href="{{url('customer')}}">Customer</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Customer Profile</li>
                 </ol>
             </div>
