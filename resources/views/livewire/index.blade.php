@@ -242,11 +242,13 @@
                                                 </thead>
                                                 <tbody>
                                                     @php
-                                                        echo $total = $top_products->sum('total_quantity_sold');
-
+                                                        $total = $top_products->sum('total_quantity_sold');
+                                                        $weighted_average = 0;
                                                     @endphp
                                                     @foreach ($top_products as $top => $product)
-
+                                                        @php
+                                                            $weighted_average += $product->total_quantity_sold / $total * $product->average_price;
+                                                        @endphp
                                                         <tr>
                                                             <td>{{ $top+1 }}</td>
                                                             <td>{{ $product->product_name . " - " . $product->storage . " - " . $product->color . " - " . $product->grade }}</td>
@@ -269,6 +271,11 @@
                                                         </tr>
                                                     @endforeach
                                                 </tbody>
+                                                <tfoot>
+                                                    <tr>
+                                                        <td colspan="4">Weighted Average: €{{ number_format($weighted_average,2) }}</td>
+                                                    </tr>
+                                                </tfoot>
                                             </table>
                                         </div>
                                     </div>
