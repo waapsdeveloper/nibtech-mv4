@@ -527,9 +527,6 @@
                                                                     <strong>{{ $itm->variation->sku }}</strong>{{ " - " . $itm->variation->product->model . " - " . (isset($itm->variation->storage_id)?$itm->variation->storage_id->name . " - " : null) . (isset($itm->variation->color_id)?$itm->variation->color_id->name. " - ":null)}} <strong><u>{{ $itm->variation->grade_id->name }}</u></strong>
                                                                 @endif
 
-                                                                @if ($itm->care_id != null)
-                                                                    <a class="" href="https://backmarket.fr/bo_merchant/customer-request/{{ $itm->care_id }}" target="_blank"><strong class="text-white">Conversation</strong></a>
-                                                                @endif
                                                             </td>
                                                             <td>{{ $itm->quantity }}</td>
                                                             <td>
@@ -564,9 +561,6 @@
                                                                     <strong>{{ $itm->variation->sku }}</strong>{{ " - " . $itm->variation->product->model . " - " . (isset($itm->variation->storage_id)?$itm->variation->storage_id->name . " - " : null) . (isset($itm->variation->color_id)?$itm->variation->color_id->name. " - ":null)}} <strong><u>{{ $itm->variation->grade_id->name }}</u></strong>
                                                                 @endif
 
-                                                                @if ($itm->care_id != null)
-                                                                    <a class="" href="https://backmarket.fr/bo_merchant/customer-request/{{ $itm->care_id }}" target="_blank"><strong class="text-white">Conversation</strong></a>
-                                                                @endif
                                                             </td>
                                                             <td>{{ $itm->quantity }}</td>
                                                             <td>
