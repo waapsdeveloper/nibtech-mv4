@@ -25,6 +25,7 @@ use App\Http\Livewire\Payouts;
 use App\Http\Livewire\Logout;
 use App\Http\Livewire\MoveInventory;
 use App\Http\Livewire\Repair;
+use App\Http\Livewire\Report;
 use App\Http\Livewire\RMA;
 use App\Http\Livewire\SalesReturn;
 use App\Http\Livewire\Team;
@@ -69,6 +70,9 @@ Route::get('delete_order_item/{id}', [Order::class,'delete_order_item'])->name('
 Route::get('purchase/detail/{id}', [Order::class,'purchase_detail'])->name('purchase_detail');
 Route::post('purchase/approve/{id}', [Order::class,'purchase_approve'])->name('purchase_approve');
 Route::post('purchase/remove_issues', [Order::class,'remove_issues'])->name('remove_purchase_issues');
+
+Route::get('report', Report::class)->name('view_report');
+
 
 Route::get('return', SalesReturn::class)->name('view_return');
 Route::get('add_return', [SalesReturn::class,'add_return'])->name('add_return');
