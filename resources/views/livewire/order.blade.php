@@ -504,64 +504,17 @@
                                             @php
                                                 $j++;
                                             @endphp
-                                        @endforeach
-                                        @if ($order->customer->orders->count() > 1)
+                                        @if ($item->replacement)
                                             @php
-                                                $def = 0;
-                                            @endphp
-                                            @foreach ($order->customer->orders as $ins => $ord)
-                                                @if ($ord->id != $order->id)
-
-                                                    @foreach ($ord->order_items as $ind => $itm)
-
-                                                        <tr class="bg-secondary text-white">
-                                                            @if (!$def)
-                                                                @php
-                                                                    $def = 1;
-                                                                @endphp
-                                                                <td rowspan="{{ count($order->customer->orders)-1 }}" colspan="2">{{ $ord->customer->first_name." ".$ord->customer->last_name." ".$ord->customer->phone }}</td>
-                                                            @endif
-                                                            <td>{{ $ord->reference_id }}</td>
-                                                            <td>
-
-                                                                @if ($itm->variation ?? false)
-                                                                    <strong>{{ $itm->variation->sku }}</strong>{{ " - " . $itm->variation->product->model . " - " . (isset($itm->variation->storage_id)?$itm->variation->storage_id->name . " - " : null) . (isset($itm->variation->color_id)?$itm->variation->color_id->name. " - ":null)}} <strong><u>{{ $itm->variation->grade_id->name }}</u></strong>
-                                                                @endif
-
-                                                                @if ($itm->care_id != null)
-                                                                    <a class="" href="https://backmarket.fr/bo_merchant/customer-request/{{ $itm->care_id }}" target="_blank"><strong class="text-white">Conversation</strong></a>
-                                                                @endif
-                                                            </td>
-                                                            <td>{{ $itm->quantity }}</td>
-                                                            <td>
-                                                                {{ $ord->order_status->name }}
-                                                                @isset($itm->stock->imei) {{ $itm->stock->imei }}&nbsp; @endisset
-                                                                @isset($itm->stock->serial_number) {{ $itm->stock->serial_number }}&nbsp; @endisset
-                                                            </td>
-
-                                                            <td>{{ $ord->created_at }}</td>
-                                                            <td>
-                                                                <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical text-white tx-18"></i></a>
-                                                                <div class="dropdown-menu">
-                                                                    <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $ord->reference_id }}&see-order-details={{ $ord->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    @endforeach
-                                                @endif
-                                            @endforeach
-                                        @endif
-                                        @if ($order->replacement)
-                                            @php
-                                                $replacement = $order->replacement;
+                                                $replacement = $item->replacement;
                                             @endphp
                                                     @while ($replacement != null)
                                                         @php
                                                             $itm = $replacement;
-                                                            $replacement = $replacement->order->replacement;
+                                                            $replacement = $replacement->replacement;
 
                                                         @endphp
-                            Hello World
+
                                                     {{-- @foreach ($order->exchange_items as $ind => $itm) --}}
 
                                                         <tr class="bg-secondary text-white">
@@ -634,6 +587,53 @@
                                                             </td>
                                                         </tr>
                                                     @endforeach
+                                        @endif
+                                        @endforeach
+                                        @if ($order->customer->orders->count() > 1)
+                                            @php
+                                                $def = 0;
+                                            @endphp
+                                            @foreach ($order->customer->orders as $ins => $ord)
+                                                @if ($ord->id != $order->id)
+
+                                                    @foreach ($ord->order_items as $ind => $itm)
+
+                                                        <tr class="bg-secondary text-white">
+                                                            @if (!$def)
+                                                                @php
+                                                                    $def = 1;
+                                                                @endphp
+                                                                <td rowspan="{{ count($order->customer->orders)-1 }}" colspan="2">{{ $ord->customer->first_name." ".$ord->customer->last_name." ".$ord->customer->phone }}</td>
+                                                            @endif
+                                                            <td>{{ $ord->reference_id }}</td>
+                                                            <td>
+
+                                                                @if ($itm->variation ?? false)
+                                                                    <strong>{{ $itm->variation->sku }}</strong>{{ " - " . $itm->variation->product->model . " - " . (isset($itm->variation->storage_id)?$itm->variation->storage_id->name . " - " : null) . (isset($itm->variation->color_id)?$itm->variation->color_id->name. " - ":null)}} <strong><u>{{ $itm->variation->grade_id->name }}</u></strong>
+                                                                @endif
+
+                                                                @if ($itm->care_id != null)
+                                                                    <a class="" href="https://backmarket.fr/bo_merchant/customer-request/{{ $itm->care_id }}" target="_blank"><strong class="text-white">Conversation</strong></a>
+                                                                @endif
+                                                            </td>
+                                                            <td>{{ $itm->quantity }}</td>
+                                                            <td>
+                                                                {{ $ord->order_status->name }}
+                                                                @isset($itm->stock->imei) {{ $itm->stock->imei }}&nbsp; @endisset
+                                                                @isset($itm->stock->serial_number) {{ $itm->stock->serial_number }}&nbsp; @endisset
+                                                            </td>
+
+                                                            <td>{{ $ord->created_at }}</td>
+                                                            <td>
+                                                                <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical text-white tx-18"></i></a>
+                                                                <div class="dropdown-menu">
+                                                                    <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $ord->reference_id }}&see-order-details={{ $ord->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    @endforeach
+                                                @endif
+                                            @endforeach
                                         @endif
                                         @php
                                             $i ++;

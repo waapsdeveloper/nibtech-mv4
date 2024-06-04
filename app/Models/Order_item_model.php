@@ -69,6 +69,10 @@ class Order_item_model extends Model
         return $this->HasOne(Order_item_model::class, 'linked_id','id')->where('reference_id',$this->order->reference_id);
     }
 
+    public function replacement()
+    {
+        return $this->hasOne(Order_item_model::class, 'care_id', 'id');
+    }
     public function updateOrderItemsInDB($orderObj, $tester = null, $bm)
     {
         // Your implementation here

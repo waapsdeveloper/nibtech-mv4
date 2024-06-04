@@ -49,10 +49,6 @@ class Order_model extends Model
             $q->where('order_type_id',5);
         });
     }
-    public function replacement()
-    {
-        return $this->hasOne(Order_item_model::class, 'care_id', 'id');
-    }
     public function order_issues()
     {
         return $this->hasMany(Order_issue_model::class, 'order_id', 'id');
