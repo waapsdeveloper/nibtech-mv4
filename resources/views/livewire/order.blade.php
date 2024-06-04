@@ -561,7 +561,7 @@
                                                             $replacement = $replacement->order->replacement;
 
                                                         @endphp
-
+                            Hello World
                                                     {{-- @foreach ($order->exchange_items as $ind => $itm) --}}
 
                                                         <tr class="bg-secondary text-white">
