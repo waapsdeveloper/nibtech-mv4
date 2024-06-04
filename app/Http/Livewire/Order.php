@@ -1554,7 +1554,24 @@ class Order extends Component
     public function correction(){
         $item = Order_item_model::find(request('correction')['item_id']);
         if($item->order->processed_at > Carbon::now()->subHour(2) || session('user')->hasPermission('correction')){
+            if($item->quantity > 1 && $item->order->order_items->count() == 1){
+                for($i=1; $i<=$item->quantity; $i++){
 
+                    if ($i != 1) {
+
+                        $new_item = new Order_item_model();
+                        $new_item->order_id = $item->order_id;
+                        $new_item->variation_id = $item->variation_id;
+                        $new_item->quantity = $item->quantity;
+                        $new_item->status = $item->status;
+                        $new_item->price = $item->price;
+                    }else{
+                        $new_item = $item;
+                        $new_item->price = $item->price/$item->quantity;
+                    }
+                    $new_item->save();
+                }
+            }
             $imei = request('correction')['imei'];
             $serial_number = null;
             if(!ctype_digit($imei)){
