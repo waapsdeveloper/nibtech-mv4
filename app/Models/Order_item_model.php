@@ -66,7 +66,7 @@ class Order_item_model extends Model
     }
     public function check_return()
     {
-        return $this->HasOne(Order_item_model::class, 'id','linked_id')->where('reference_id',$this->order->reference_id)->first();
+        return $this->HasOne(Order_item_model::class, 'linked_id','id')->where('reference_id',$this->order->reference_id);
     }
 
     public function updateOrderItemsInDB($orderObj, $tester = null, $bm)
