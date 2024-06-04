@@ -211,11 +211,8 @@
 
                 <form action="{{ url('inventory/end_verification')}}" method="POST" class="form-inline">
                     @csrf
-                    <div class="form-floating">
-                        <input type="text" class="form-control" name="description" placeholder="Enter Reason" id="description" required>
-                        <label for="description">Reason</label>
-                    </div>
-                        <button class="btn btn-primary pd-x-20" type="submit">End Verification</button>
+                    <input type="text" class="form-control" name="description" placeholder="Enter Reason" id="description" required>
+                    <button class="btn btn-primary pd-x-20" type="submit">End Verification</button>
                 </form>
 
                 @endif
