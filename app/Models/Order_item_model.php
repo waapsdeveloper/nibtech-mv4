@@ -64,6 +64,10 @@ class Order_item_model extends Model
     {
         return $this->hasOne(Purchase_grade_model::class, 'order_item_id', 'id');
     }
+    public function check_return()
+    {
+        return $this->HasOne(Order_item_model::class, 'id','linked_id')->where('reference_id',$this->order->reference_id);
+    }
 
     public function updateOrderItemsInDB($orderObj, $tester = null, $bm)
     {
