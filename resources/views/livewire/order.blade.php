@@ -373,6 +373,7 @@
                                                 @php
                                                     $content2 = "Hi, here are the IMEIs/Serial numbers for this order. \n";
                                                     foreach ($items as $im) {
+                                                        if($im->stock_id == null){ continue;}
                                                         $content2 .= $im->stock->imei . $im->stock->serial_number . " " . $im->stock->tester . "\n";
                                                     }
                                                     $content2 .= "Regards \n".session('fname');
