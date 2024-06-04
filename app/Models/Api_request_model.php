@@ -44,6 +44,13 @@ class Api_request_model extends Model
                 continue;
             }
             $stock = Stock_model::where('imei',$datas->Imei)->orWhere('imei',$datas->Imei2)->orWhere('serial_number',$datas->Serial)->first();
+
+            if(!$stock && $datas->Imei == '' && $datas->Imei2 == ''){
+                $api_request = Api_request_model::where('stock_id','!=',null)->where('status','!=',null)->first();
+                if($api_request){
+                    $stock = Stock_model::find($api_request->stock_id);
+                }
+            }
             // $stock = Stock_model::where('imei',$datas->Imei2)->first();
             // if(!$stock){
             //     continue;
