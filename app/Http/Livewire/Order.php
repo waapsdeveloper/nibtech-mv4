@@ -1740,6 +1740,7 @@ class Order extends Component
             $order_item = new Order_item_model();
             $order_item->order_id = 8974;
             $order_item->reference_id = $item->order->reference_id;
+            $order_item->care_id = $item->id;
             $order_item->variation_id = $item->variation_id;
             $order_item->stock_id = $stock->id;
             $order_item->quantity = 1;
