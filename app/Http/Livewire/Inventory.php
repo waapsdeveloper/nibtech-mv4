@@ -402,7 +402,7 @@ class Inventory extends Component
     }
 
     public function end_verification() {
-        $verification = Process_model::where(['process_type_id'=>20, 'status'=>1])->update(['status'=>2,'description'=>request('message')]);
+        $verification = Process_model::where(['process_type_id'=>20, 'status'=>1])->update(['status'=>2,'description'=>request('description')]);
         session()->put('success', 'Inventory Verification ended');
         return redirect()->back();
     }

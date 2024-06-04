@@ -207,6 +207,16 @@
             <div class="">
                 @if ($active_inventory_verification == null)
                 <a class="btn btn-sm btn-secondary pd-x-20 " href="{{url('inventory/start_verification')}}">Start Inventory Verification</a>
+                @else
+
+                <form action="{{ url('inventory/end_verification')}}" method="POST" class="form-inline">
+                    @csrf
+                    <div class="form-floating">
+                        <input type="text" class="form-control" name="description" placeholder="Enter Reason" id="description" required>
+                        <label for="description">Reason</label>
+                    </div>
+                        <button class="btn btn-primary pd-x-20" type="submit">End Verification</button>
+                </form>
 
                 @endif
                 @if (session('user')->hasPermission('view_cost'))
