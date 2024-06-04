@@ -207,17 +207,18 @@
             <div class="">
                 @if ($active_inventory_verification == null)
                 <a class="btn btn-sm btn-secondary pd-x-20 " href="{{url('inventory/start_verification')}}">Start Inventory Verification</a>
+
+                @if (session('user')->hasPermission('view_cost'))
+                <button class="btn btn-sm btn-secondary pd-x-20 " type="submit" form="export" name="inventorysheet" value="1">Export Sheet</button>
+
+                @endif
                 @else
 
                 <form action="{{ url('inventory/end_verification')}}" method="POST" class="form-inline">
                     @csrf
-                    <input type="text" class="form-control" name="description" placeholder="Enter Reason" id="description" required>
-                    <button class="btn btn-primary pd-x-20" type="submit">End Verification</button>
+                    <input type="text" class="form-control form-control-sm" name="description" placeholder="Enter Reason" id="description" required>
+                    <button class="btn btn-sm btn-primary pd-x-20" type="submit">End Verification</button>
                 </form>
-
-                @endif
-                @if (session('user')->hasPermission('view_cost'))
-                <button class="btn btn-sm btn-secondary pd-x-20 " type="submit" form="export" name="inventorysheet" value="1">Export Sheet</button>
 
                 @endif
             </div>
