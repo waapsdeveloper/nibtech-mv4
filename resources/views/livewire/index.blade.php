@@ -273,9 +273,9 @@
                                                 </tbody>
                                                 <tfoot>
                                                     <tr>
-                                                        <td colspan="2"><strong>Total</strong></td>
-                                                        <td title="Total">{{ $total }}</td>
-                                                        <td title="Weighted Average">€{{ number_format($weighted_average,2) }}</td>
+                                                        <td colspan="2"><strong>Total:</strong></td>
+                                                        <td title="Total"><strong>{{ $total }}</strong></td>
+                                                        <td title="Weighted Average"><strong>€{{ number_format($weighted_average,2) }}</strong></td>
                                                     </tr>
                                                 </tfoot>
                                             </table>
