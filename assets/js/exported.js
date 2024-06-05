@@ -513,8 +513,102 @@
     chart1.render();
   } //Visitors chart
 
-
   function statistics2 (data1,data2,dates) {
+
+    var options1 = {
+      series: [{
+    //     name: 'Orders',
+    //     data: datas.split(',')
+    //   }, {
+        name: 'EUR',
+        data: data1.split(',')
+    //   }, {
+    //     name: 'GBP',
+    //     data: data2.split(',')
+      }],
+      chart: {
+        type: 'line',
+        height: 280
+      },
+      grid: {
+        borderColor: '#f2f6f7'
+      },
+      colors: [myVarVal, "Red", "Green"],
+      plotOptions: {
+        line: {
+          colors: {
+            ranges: [{
+              from: -100,
+              to: -46,
+              color: 'Red'
+            }, {
+              from: -45,
+              to: 0,
+              color: 'Green'
+            }]
+          },
+          columnWidth: '100%'
+        }
+      },
+      dataLabels: {
+        enabled: false
+      },
+      stroke: {
+        curve: 'smooth',
+        show: true,
+        width: 4,
+        // colors: ['transparent']
+      },
+      legend: {
+        show: true,
+        position: 'top'
+      },
+      yaxis: {
+        title: {
+          text: 'Orders',
+          style: {
+            color: '#adb5be',
+            fontSize: '14px',
+            fontFamily: 'poppins, sans-serif',
+            fontWeight: 600,
+            cssClass: 'apexcharts-yaxis-label'
+          }
+        },
+        labels: {
+          formatter: function formatter(y) {
+            return y.toFixed(0) + "";
+          }
+        }
+      },
+      xaxis: {
+        type: 'month',
+        categories: dates.split(','),
+        axisBorder: {
+          show: true,
+          color: 'rgba(119, 119, 142, 0.05)',
+          offsetX: 0,
+          offsetY: 0
+        },
+        axisTicks: {
+          show: true,
+          borderType: 'solid',
+          color: 'rgba(119, 119, 142, 0.05)',
+          width: 6,
+          offsetX: 0,
+          offsetY: 0
+        },
+        labels: {
+          rotate: -90
+        }
+      }
+    };
+    document.getElementById('statistics1').innerHTML = '';
+    var chart1 = new ApexCharts(document.querySelector("#statistics1"), options1);
+    chart1.render();
+  } //Visitors chart
+
+
+  function statistics3 (data1,data2,dates) {
 
     var options1 = {
       series: [{
