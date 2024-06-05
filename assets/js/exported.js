@@ -247,7 +247,7 @@
 
      if (document.querySelector('#statistics1') !== null) {
        setTimeout(function () {
-         statistics1(sessionStorage.getItem('approved'),sessionStorage.getItem('failed'),sessionStorage.getItem('dates'));
+         statistics1(sessionStorage.getItem('total'),sessionStorage.getItem('approved'),sessionStorage.getItem('failed'),sessionStorage.getItem('dates'));
        }, 1000);
      }
 
@@ -411,15 +411,18 @@
    } // Project Budget chart //
 
 
-   function statistics1 (data1,data2,dates) {
+   function statistics1 (datas,data1,data2,dates) {
 
     var options1 = {
       series: [{
         name: 'Orders',
+        data: datas.split(',')
+      }, {
+        name: 'EUR',
         data: data1.split(',')
-   //    }, {
-   //      name: '{{ __("locale.Failed Transactions") }}',
-   //      data: data2.split(',')
+      }, {
+        name: 'GBP',
+        data: data2.split(',')
       }],
       chart: {
         type: 'line',
@@ -428,30 +431,31 @@
       grid: {
         borderColor: '#f2f6f7'
       },
-      colors: [myVarVal || "#38cab3"],
-      plotOptions: {
-        line: {
-          colors: {
-            ranges: [{
-              from: -100,
-              to: -46,
-              color: '#ebeff5'
-           //  }, {
-           //    from: -45,
-           //    to: 0,
-           //    color: '#ebeff5'
-            }]
-          },
-          columnWidth: '100%'
-        }
-      },
+      colors: [myVarVal, "Red", "Green"],
+    //   plotOptions: {
+        // line: {
+        //   colors: {
+            // ranges: [{
+            //   from: -100,
+            //   to: -46,
+            //   color: 'Red'
+            // }, {
+            //   from: -45,
+            //   to: 0,
+            //   color: 'Green'
+            // }]
+        //   },
+        //   columnWidth: '100%'
+        // }
+    //   },
       dataLabels: {
         enabled: false
       },
       stroke: {
+        curve: 'smooth',
         show: true,
         width: 4,
-        colors: ['transparent']
+        // colors: ['transparent']
       },
       legend: {
         show: true,
@@ -506,11 +510,11 @@
 
     var options1 = {
       series: [{
-        name: 'Orders',
+        name: 'EUR',
         data: data1.split(',')
-   //    }, {
-   //      name: '{{ __("locale.Failed Transactions") }}',
-   //      data: data2.split(',')
+      }, {
+        name: 'GBP',
+        data: data2.split(',')
       }],
       chart: {
         type: 'line',
@@ -526,11 +530,11 @@
             ranges: [{
               from: -100,
               to: -46,
-              color: '#ebeff5'
-           //  }, {
-           //    from: -45,
-           //    to: 0,
-           //    color: '#ebeff5'
+              color: 'red'
+            }, {
+              from: -45,
+              to: 0,
+              color: 'green'
             }]
           },
           columnWidth: '100%'

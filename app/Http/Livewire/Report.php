@@ -263,8 +263,18 @@ class Report extends Component
             $start = date('Y-m-26 00:00:00', strtotime("-".$j." months"));
             $end = date('Y-m-5 23:59:59', strtotime("-".$i." months"));
             $orders = Order_model::where('created_at', '>=', $start)->where('order_type_id',3)
-                ->where('created_at', '<=', $end)->count();
+                ->where('created_at', '<=', $end)->where('status',3)->count();
+            $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
+                $q->where('created_at', '>=', $start)->where('order_type_id',3)
+                ->where('created_at', '<=', $end)->where('status',3)->where('currency',4);
+            })->sum('price');
+            $pound = Order_item_model::whereHas('order', function($q) use ($start,$end) {
+                $q->where('created_at', '>=', $start)->where('order_type_id',3)
+                ->where('created_at', '<=', $end)->where('status',3)->where('currency',5);
+            })->sum('price');
             $order[$k] = $orders;
+            $eur[$k] = $euro;
+            $gbp[$k] = $pound;
             $dates[$k] = date('Y-m-26', strtotime("-".$j." months")) . " - " . date('Y-m-5', strtotime("-".$i." months"));
             if($i == 0 && $today < 6){
                 continue;
@@ -273,8 +283,18 @@ class Report extends Component
             $start = date('Y-m-6 00:00:00', strtotime("-".$i." months"));
             $end = date('Y-m-15 23:59:59', strtotime("-".$i." months"));
             $orders = Order_model::where('created_at', '>=', $start)->where('order_type_id',3)
-                ->where('created_at', '<=', $end)->count();
+                ->where('created_at', '<=', $end)->where('status',3)->count();
+            $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
+                $q->where('created_at', '>=', $start)->where('order_type_id',3)
+                ->where('created_at', '<=', $end)->where('status',3)->where('currency',4);
+            })->sum('price');
+            $pound = Order_item_model::whereHas('order', function($q) use ($start,$end) {
+                $q->where('created_at', '>=', $start)->where('order_type_id',3)
+                ->where('created_at', '<=', $end)->where('status',3)->where('currency',5);
+            })->sum('price');
             $order[$k] = $orders;
+            $eur[$k] = $euro;
+            $gbp[$k] = $pound;
             $dates[$k] = date('Y-m-6', strtotime("-".$i." months")) . " - " . date('Y-m-15', strtotime("-".$i." months"));
             if($i == 0 && $today < 16){
                 continue;
@@ -283,13 +303,24 @@ class Report extends Component
             $start = date('Y-m-16 00:00:00', strtotime("-".$i." months"));
             $end = date('Y-m-25 23:59:59', strtotime("-".$i." months"));
             $orders = Order_model::where('created_at', '>=', $start)->where('order_type_id',3)
-                ->where('created_at', '<=', $end)->count();
+                ->where('created_at', '<=', $end)->where('status',3)->count();
+            $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
+                $q->where('created_at', '>=', $start)->where('order_type_id',3)
+                ->where('created_at', '<=', $end)->where('status',3)->where('currency',4);
+            })->sum('price');
+            $pound = Order_item_model::whereHas('order', function($q) use ($start,$end) {
+                $q->where('created_at', '>=', $start)->where('order_type_id',3)
+                ->where('created_at', '<=', $end)->where('status',3)->where('currency',5);
+            })->sum('price');
             $order[$k] = $orders;
+            $eur[$k] = $euro;
+            $gbp[$k] = $pound;
             $dates[$k] = date('Y-m-16', strtotime("-".$i." months")) . " - " . date('Y-m-25', strtotime("-".$i." months"));
 
         }
-
-        echo '<script> sessionStorage.setItem("approved", "' . implode(',', $order) . '");</script>';
+        echo '<script> sessionStorage.setItem("total", "' . implode(',', $order) . '");</script>';
+        echo '<script> sessionStorage.setItem("approved", "' . implode(',', $eur) . '");</script>';
+        echo '<script> sessionStorage.setItem("failed", "' . implode(',', $gbp) . '");</script>';
         echo '<script> sessionStorage.setItem("dates", "' . implode(',', $dates) . '");</script>';
 
 
