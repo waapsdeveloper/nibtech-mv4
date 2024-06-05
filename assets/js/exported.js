@@ -602,8 +602,8 @@
         }
       }
     };
-    document.getElementById('statistics1').innerHTML = '';
-    var chart1 = new ApexCharts(document.querySelector("#statistics1"), options1);
+    document.getElementById('statistics2').innerHTML = '';
+    var chart1 = new ApexCharts(document.querySelector("#statistics2"), options1);
     chart1.render();
   } //Visitors chart
 
