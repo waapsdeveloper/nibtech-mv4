@@ -275,7 +275,7 @@ class Report extends Component
             $order[$k] = $orders;
             $eur[$k] = $euro;
             $gbp[$k] = $pound;
-            $dates[$k] = date('Y-m-26', strtotime("-".$j." months")) . " - " . date('Y-m-5', strtotime("-".$i." months"));
+            $dates[$k] = date('26-m-Y', strtotime("-".$j." months")) . " - " . date('5-m-Y', strtotime("-".$i." months"));
             if($i == 0 && $today < 6){
                 continue;
             }
@@ -295,7 +295,7 @@ class Report extends Component
             $order[$k] = $orders;
             $eur[$k] = $euro;
             $gbp[$k] = $pound;
-            $dates[$k] = date('Y-m-6', strtotime("-".$i." months")) . " - " . date('Y-m-15', strtotime("-".$i." months"));
+            $dates[$k] = date('6-m-Y', strtotime("-".$i." months")) . " - " . date('15-m-Y', strtotime("-".$i." months"));
             if($i == 0 && $today < 16){
                 continue;
             }
@@ -315,7 +315,7 @@ class Report extends Component
             $order[$k] = $orders;
             $eur[$k] = $euro;
             $gbp[$k] = $pound;
-            $dates[$k] = date('Y-m-16', strtotime("-".$i." months")) . " - " . date('Y-m-25', strtotime("-".$i." months"));
+            $dates[$k] = date('16-m-Y', strtotime("-".$i." months")) . " - " . date('25-m-Y', strtotime("-".$i." months"));
 
         }
         echo '<script> sessionStorage.setItem("total", "' . implode(',', $order) . '");</script>';
