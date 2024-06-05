@@ -432,22 +432,22 @@
         borderColor: '#f2f6f7'
       },
       colors: [myVarVal, "Red", "Green"],
-    //   plotOptions: {
-        // line: {
-        //   colors: {
-            // ranges: [{
-            //   from: -100,
-            //   to: -46,
-            //   color: 'Red'
-            // }, {
-            //   from: -45,
-            //   to: 0,
-            //   color: 'Green'
-            // }]
-        //   },
-        //   columnWidth: '100%'
-        // }
-    //   },
+      plotOptions: {
+        line: {
+          colors: {
+            ranges: [{
+              from: -100,
+              to: -46,
+              color: 'Red'
+            }, {
+              from: -45,
+              to: 0,
+              color: 'Green'
+            }]
+          },
+          columnWidth: '100%'
+        }
+      },
       dataLabels: {
         enabled: false
       },
