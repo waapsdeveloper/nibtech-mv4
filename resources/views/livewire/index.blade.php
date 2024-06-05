@@ -273,7 +273,8 @@
                                                 </tbody>
                                                 <tfoot>
                                                     <tr>
-                                                        <td colspan="5" align="right">Weighted Average: €{{ number_format($weighted_average,2) }}</td>
+                                                        <td colspan="3" align="right">Total: {{ $total }}</td>
+                                                        <td colspan="3" align="right">Weighted Average: €{{ number_format($weighted_average,2) }}</td>
                                                     </tr>
                                                 </tfoot>
                                             </table>
