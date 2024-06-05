@@ -406,7 +406,7 @@
 									</div>
 								</div>
 								<div class="card-body">
-									<div id="statistics1"></div>
+									<div id="statistics2"></div>
 								</div>
 							</div>
 						</div>

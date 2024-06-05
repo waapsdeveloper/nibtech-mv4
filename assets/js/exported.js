@@ -246,10 +246,15 @@
      myVarVal1 = hexToRgba(localStorage.getItem("primaryColor"), 0.8) || hexToRgba(localStorage.getItem("darkPrimary"), 0.8) || hexToRgba(localStorage.getItem("transparentPrimary"), 0.8) || hexToRgba(localStorage.getItem("transparentBgImgPrimary"), 0.8) || null; // For index.html
 
      if (document.querySelector('#statistics1') !== null) {
-       setTimeout(function () {
-         statistics1(sessionStorage.getItem('total'),sessionStorage.getItem('approved'),sessionStorage.getItem('failed'),sessionStorage.getItem('dates'));
-       }, 1000);
-     }
+        setTimeout(function () {
+          statistics1(sessionStorage.getItem('total'),sessionStorage.getItem('approved'),sessionStorage.getItem('failed'),sessionStorage.getItem('dates'));
+        }, 1000);
+      }
+    //   if (document.querySelector('#statistics1') !== null) {
+    //     setTimeout(function () {
+    //       statistics1(sessionStorage.getItem('total'),sessionStorage.getItem('approved'),sessionStorage.getItem('failed'),sessionStorage.getItem('dates'));
+    //     }, 1000);
+    //   }
 
      if (document.querySelector('#Viewers') !== null) {
        viewers();
@@ -261,7 +266,10 @@
 
 
      if (document.querySelector('#statistics2') !== null) {
-       statistics2();
+        setTimeout(function () {
+          statistics2(sessionStorage.getItem('approved'),sessionStorage.getItem('failed'),sessionStorage.getItem('dates'));
+        }, 1000);
+    //    statistics2();
      }
 
      if (document.querySelector('#budget') !== null) {
@@ -513,7 +521,7 @@
         name: 'EUR',
         data: data1.split(',')
       }, {
-        name: 'GBP',
+        name: 'Orders',
         data: data2.split(',')
       }],
       chart: {
