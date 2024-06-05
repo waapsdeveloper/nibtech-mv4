@@ -256,6 +256,7 @@ class Report extends Component
         $order = [];
         $dates = [];
         $k = 0;
+        $today = date('d');
         for ($i = 5; $i >= 0; $i--) {
             $j = $i+1;
             $k++;
@@ -265,7 +266,9 @@ class Report extends Component
                 ->where('created_at', '<=', $end)->count();
             $order[$k] = $orders;
             $dates[$k] = date('Y-m-26', strtotime("-".$j." months")) . " - " . date('Y-m-5', strtotime("-".$i." months"));
-
+            if($i == 0 && $today < 6){
+                continue;
+            }
             $k++;
             $start = date('Y-m-6 00:00:00', strtotime("-".$i." months"));
             $end = date('Y-m-15 23:59:59', strtotime("-".$i." months"));
@@ -273,7 +276,9 @@ class Report extends Component
                 ->where('created_at', '<=', $end)->count();
             $order[$k] = $orders;
             $dates[$k] = date('Y-m-6', strtotime("-".$i." months")) . " - " . date('Y-m-15', strtotime("-".$i." months"));
-
+            if($i == 0 && $today < 16){
+                continue;
+            }
             $k++;
             $start = date('Y-m-16 00:00:00', strtotime("-".$i." months"));
             $end = date('Y-m-25 23:59:59', strtotime("-".$i." months"));
