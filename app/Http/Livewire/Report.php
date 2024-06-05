@@ -295,7 +295,7 @@ class Report extends Component
             $order[$k] = $orders;
             $eur[$k] = $euro;
             $gbp[$k] = $pound;
-            $dates[$k] = date('6-m-Y', strtotime("-".$i." months")) . " - " . date('15-m-Y', strtotime("-".$i." months"));
+            $dates[$k] = date('06-m-Y', strtotime("-".$i." months")) . " - " . date('15-m-Y', strtotime("-".$i." months"));
             if($i == 0 && $today < 16){
                 continue;
             }
