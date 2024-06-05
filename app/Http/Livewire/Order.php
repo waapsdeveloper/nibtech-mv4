@@ -1163,7 +1163,10 @@ class Order extends Component
                         // dd("Hello");
                         $detail = $bm->shippingOrderlines($order->reference_id,$sku[0],false,$orderObj->tracking_number,$serial_number);
                     }elseif($indexes > 0 && count($each_sku) == 1){
-                        $detail = $bm->orderlineIMEI($order->reference_id,trim($imeis[0]),$serial_number);
+                        $order_item = Order_item_model::where('order_id',$order->id)->whereHas('variation', function($q) use ($each_sku){
+                            $q->whereIn('sku',$each_sku);
+                        })->first();
+                        $detail = $bm->orderlineIMEI($order_item->reference_id,trim($imeis[0]),$serial_number);
                     }else{
 
                     }
@@ -1881,7 +1884,6 @@ class Order extends Component
     }
     public function getapiorders($page = null)
     {
-
 
         if($page == 1){
             for($i = 1; $i <= 10; $i++){

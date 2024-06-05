@@ -25,6 +25,10 @@ class Stock_model extends Model
     {
         return $this->belongsTo(Variation_model::class, 'variation_id', 'id');
     }
+    public function all_orders()
+    {
+        return $this->hasManyThrough(Order_model::class, Order_item_model::class, 'stock_id', 'id', 'id', 'order_id');
+    }
 
     public function order_item()
     {

@@ -185,6 +185,8 @@
                     </div>
 
                     @endif
+
+
 					<!-- row -->
 					<div class="row">
 						<div class="col-xl-5 col-lg-12 col-md-12 col-sm-12">

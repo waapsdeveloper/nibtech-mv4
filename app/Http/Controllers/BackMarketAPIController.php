@@ -239,7 +239,7 @@ class BackMarketAPIController extends Controller
 
         // echo $end_point."\n";
         // echo $request_JSON;
-        $result = $this->requestPatch($end_point, $request_shipping);
+        $result = $this->apiPatch($end_point, $request_JSON);
 
         return $result;
     }

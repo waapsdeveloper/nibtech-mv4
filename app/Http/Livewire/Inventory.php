@@ -98,7 +98,9 @@ class Inventory extends Component
         $data['active_inventory_verification'] = $active_inventory_verification;
 
 
-        $data['stocks'] = Stock_model::whereNotIn('stock.id',$all_verified_stocks)
+        $data['stocks'] = Stock_model::whereNotIn('stock.id',$all_verified_stocks)->whereHas('all_orders', function ($q) {
+            $q->where('orders.status', 1);
+        })
 
         ->when(request('stock_status') != '', function ($q) {
             return $q->where('status', request('stock_status'));
@@ -114,6 +116,8 @@ class Inventory extends Component
         ->when(request('status') != '', function ($q) {
             return $q->whereHas('order', function ($q) {
                 $q->where('status', request('status'));
+            })->whereHas('all_orders', function ($q) {
+                $q->where('orders.status', request('status'));
             });
         })
         ->when(request('replacement') != '', function ($q) use ($replacements) {
