@@ -95,96 +95,64 @@
                 </div> --}}
             </div>
             <br>
-                    @if (count($variations) > 0)
 
-                    <div class="row">
-                        <div class="col-xl-12">
-                            <div class="card">
-                                <div class="card-header pb-0">
-                                    <div class="d-flex justify-content-between">
-                                        <h4 class="card-title mg-b-0">
-                                            New Added Variations
-                                        </h4>
-                                    </div>
-                                </div>
-                                <div class="card-body"><div class="table-responsive">
-                                        <table class="table table-bordered table-hover mb-0 text-md-nowrap">
-                                            <thead>
-                                                <tr>
-                                                    <th><small><b>No</b></small></th>
-                                                    <th><small><b>Product</b></small></th>
-                                                    <th><small><b>Name</b></small></th>
-                                                    <th><small><b>SKU</b></small></th>
-                                                    <th><small><b>Color</b></small></th>
-                                                    <th><small><b>Storage</b></small></th>
-                                                    <th><small><b>Grade</b></small></th>
-                                                    <th></th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @php
-                                                    $i = 0;
-                                                @endphp
-                                                @foreach ($variations as $index => $product)
-                                                    <form method="post" action="{{url(session('url').'variation/update_product')}}/{{ $product->id }}" class="row form-inline">
-                                                        @csrf
-                                                    <tr>
-                                                        <td>{{ $i + 1 }}</td>
-                                                        <td>
-                                                            <input type="text" name="update[product_id]" list="models" class="form-select form-select-sm" required>
-                                                            <datalist id="models">
-                                                                <option value="">None</option>
-                                                                @foreach ($products as $prod)
-                                                                    <option value="{{ $prod->id }}" {{ $product->product_id == $prod->id ? 'selected' : '' }}>{{ $prod->series." ".$prod->model }}</option>
-                                                                @endforeach
-                                                            </datalist>
-                                                        </td>
-                                                        <td>{{ $product->name }}</td>
-                                                        <td>{{ $product->sku }}</td>
-                                                        <td>
-                                                            <select name="update[color]" class="form-select form-select-sm">
-                                                                <option value="">None</option>
-                                                                @foreach ($colors as $id => $name)
-                                                                    <option value="{{ $id }}" {{ $product->color == $id ? 'selected' : '' }}>{{ $name }}</option>
-                                                                @endforeach
-                                                            </select>
-                                                        </td>
-                                                        <td>
-                                                            <select name="update[storage]" class="form-select form-select-sm">
-                                                                <option value="">None</option>
-                                                                @foreach ($storages as $id => $name)
-                                                                    <option value="{{ $id }}" {{ $product->storage == $id ? 'selected' : '' }}>{{ $name }}</option>
-                                                                @endforeach
-                                                            </select>
-                                                        </td>
-                                                        <td>
-                                                            <select name="update[grade]" class="form-select form-select-sm">
-                                                                <option value="">None</option>
-                                                                @foreach ($grades as  $id => $name)
-                                                                    <option value="{{ $id }}" {{ $product->grade == $id ? 'selected' : '' }}>{{ $name }}</option>
-                                                                @endforeach
-                                                            </select>
-                                                        </td>
-                                                        <td>
-                                                            <input type="submit" value="Update" class="btn btn-success">
-                                                        </td>
-                                                    </tr>
-                                                    </form>
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-1">Sales</h4>
+                </div>
 
-                                                    @php
-                                                        $i ++;
-                                                    @endphp
-                                                @endforeach
-                                            </tbody>
-                                        </table>
-                                    <br>
-                                </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="card-body">
+                    <table class="table table-bordered table-hover text-md-nowrap">
+                        <thead>
+                            <tr>
+                                <th><small><b>No</b></small></th>
+                                <th><small><b>Product</b></small></th>
+                                <th><small><b>Qty</b></small></th>
+                                @if (session('user')->hasPermission('view_price'))
+                                    <th title="Only Shows average price for selected ranged EU orders"><small><b>Avg</b></small></th>
+                                @endif
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                                $total = $top_products->sum('total_quantity_sold');
+                                $weighted_average = 0;
+                            @endphp
+                            @foreach ($top_products as $top => $product)
+                                @php
+                                    $weighted_average += $product->total_quantity_sold / $total * $product->average_price;
+                                @endphp
+                                <tr>
+                                    <td>{{ $top+1 }}</td>
+                                    <td>{{ $product->product_name . " - " . $product->storage . " - " . $product->color . " - " . $product->grade }}</td>
+                                    <td>{{ $product->total_quantity_sold }}</td>
+                                    @if (session('user')->hasPermission('view_price'))
+                                    <td>€{{ number_format($product->average_price,2) }}</td>
+                                    @endif
 
-                    @endif
+                                    <td>
+                                        <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
+                                        <div class="dropdown-menu">
+                                            {{-- <a class="dropdown-item" href="{{url(session('url').'order')}}/refresh/{{ $order->reference_id }}"><i class="fe fe-arrows-rotate me-2 "></i>Refresh</a> --}}
+                                            {{-- <a class="dropdown-item" href="{{ $order->delivery_note_url }}" target="_blank"><i class="fe fe-arrows-rotate me-2 "></i>Delivery Note</a> --}}
+                                            <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/listings/active?sku={{ $product->sku }}" target="_blank"><i class="fe fe-caret me-2"></i>View Listing in BackMarket</a>
+                                            <a class="dropdown-item" href="{{url(session('url').'order')}}?sku={{ $product->sku }}&start_date={{ $start_date }}&end_date={{ $end_date }}" target="_blank"><i class="fe fe-caret me-2"></i>View Orders</a>
+                                            <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?sku={{ $product->sku }}&startDate={{ $start_date }}&endDate={{ $end_date }}" target="_blank"><i class="fe fe-caret me-2"></i>View Orders in BackMarket</a>
+                                            {{-- <a class="dropdown-item" href="javascript:void(0);"><i class="fe fe-trash-2 me-2"></i>Delete</a> --}}
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="5" align="right">Weighted Average: €{{ number_format($weighted_average,2) }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
 
 
 					<!-- row -->
@@ -403,7 +371,7 @@
 							<div class="card custom-card overflow-hidden">
 								<div class="card-header border-bottom-0">
 									<div class="d-flex justify-content-between">
-										<h3 class="card-title mb-2 ">Daily Orders for this month</h3> <h6 class="mb-0">{{ $pending_orders_count }} Orders Pending</h6>
+										<h3 class="card-title mb-2 ">Sales for past 6 months</h3>
 									</div>
 								</div>
 								<div class="card-body">
