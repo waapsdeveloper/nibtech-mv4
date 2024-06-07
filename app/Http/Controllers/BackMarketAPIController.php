@@ -276,7 +276,7 @@ class BackMarketAPIController extends Controller
                     $end_point_next_tail = '&page=' . "$page";
                     $end_point_next = $end_point . $end_point_next_tail;
                     $result_next = $this->requestGet($end_point_next);
-                    if(!$result_next->result){
+                    if(!isset($result_next->result)){
                         print_r($result_next);
                         continue;
                     }
