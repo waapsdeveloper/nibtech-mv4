@@ -968,12 +968,15 @@ class Order extends Component
 
         // Find the order
         $order = Order_model::with('customer', 'order_items')->find($orderId);
+        $order_items = Order_item_model::where('order_id', $orderId)->whereHas('stock', function($q) {
+                $q->where('status', 2);
+            })->get();
 
         // Generate PDF for the invoice content
         $data = [
             'order' => $order,
             'customer' => $order->customer,
-            'orderItems' => $order->order_items,
+            'orderItems' => $order_items,
         ];
 
         // Create a new TCPDF instance
@@ -1000,10 +1003,10 @@ class Order extends Component
         // Mail::to($order->customer->email)->send(new InvoiceMail($data));
         // if(session('user_id') == 1){
 
-        $recipientEmail = $order->customer->email;
-        $subject = 'Invoice for Your Recent Purchase';
+        // $recipientEmail = $order->customer->email;
+        // $subject = 'Invoice for Your Recent Purchase';
 
-        app(GoogleController::class)->sendEmailInvoice($recipientEmail, $subject, new InvoiceMail($data));
+        // app(GoogleController::class)->sendEmailInvoice($recipientEmail, $subject, new InvoiceMail($data));
         // }
         // Optionally, save the PDF locally
         // file_put_contents('invoice.pdf', $pdfContent);

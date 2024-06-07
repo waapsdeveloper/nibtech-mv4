@@ -52,4 +52,8 @@ class Variation_model extends Model
     {
         return $this->hasMany(Stock_model::class, 'variation_id', 'id');
     }
+    public function order_items()
+    {
+        return $this->hasMany(Order_item_model::class, 'variation_id', 'id');
+    }
 }

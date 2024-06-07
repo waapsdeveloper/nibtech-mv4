@@ -4,6 +4,7 @@ namespace App\Http\Livewire;
 
 use App\Http\Controllers\GoogleController;
 use App\Models\Admin_model;
+use App\Models\Category_model;
 use Carbon\Carbon;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
@@ -49,7 +50,8 @@ class Report extends Component
         ->onEachSide(5)
         ->appends(request()->except('page'));
 
-        $start_date = Carbon::now()->startOfDay();
+        // $start_date = Carbon::now()->startOfDay();
+        $start_date = date('Y-4-d 23:59:59');
         $end_date = date('Y-m-d 23:59:59');
         if (request('start_date') != NULL && request('end_date') != NULL) {
             $start_date = request('start_date') . " 00:00:00";
@@ -57,6 +59,112 @@ class Report extends Component
         }
         // $products = Products_model::get()->toArray();
         // Retrieve the top 10 selling products from the order_items table
+        $data['orders_qty'] = Order_model::where('processed_at', '>=', $start_date)->where('order_type_id',3)
+        ->where('processed_at', '<=', $end_date)->count();
+        $data['approved_orders_qty'] = Order_model::where('processed_at', '>=', $start_date)->where('order_type_id',3)
+        ->where('processed_at', '<=', $end_date)->where('status',3)->count();
+        $data['eur_items_sum'] = Order_item_model::whereHas('order', function($q) use ($start_date,$end_date) {
+            $q->where('processed_at', '>=', $start_date)->where('order_type_id',3)
+            ->where('processed_at', '<=', $end_date)->where('currency',4);
+        })->sum('price');
+        $data['eur_approved_items_sum'] = Order_item_model::whereHas('order', function($q) use ($start_date,$end_date) {
+            $q->where('processed_at', '>=', $start_date)->where('order_type_id',3)
+            ->where('processed_at', '<=', $end_date)->where('status',3)->where('currency',4);
+        })->sum('price');
+        $data['gbp_items_sum'] = Order_item_model::whereHas('order', function($q) use ($start_date,$end_date) {
+            $q->where('processed_at', '>=', $start_date)->where('order_type_id',3)
+            ->where('processed_at', '<=', $end_date)->where('currency',5);
+        })->sum('price');
+        $data['gbp_approved_items_sum'] = Order_item_model::whereHas('order', function($q) use ($start_date,$end_date) {
+            $q->where('processed_at', '>=', $start_date)->where('order_type_id',3)
+            ->where('processed_at', '<=', $end_date)->where('status',3)->where('currency',5);
+        })->sum('price');
+
+
+
+        $data = Order_model::whereBetween('processed_at', [$start_date, $end_date])
+        ->where('order_type_id', 3)
+        ->select(
+            DB::raw('COUNT(*) as orders_qty'),
+            DB::raw('SUM(CASE WHEN status = 3 THEN 1 ELSE 0 END) as approved_orders_qty'),
+            DB::raw('SUM(CASE WHEN currency = 4 THEN (SELECT SUM(price) FROM order_items WHERE order_items.order_id = orders.id) ELSE 0 END) as eur_items_sum'),
+            DB::raw('SUM(CASE WHEN currency = 4 AND status = 3 THEN (SELECT SUM(price) FROM order_items WHERE order_items.order_id = orders.id) ELSE 0 END) as eur_approved_items_sum'),
+            DB::raw('SUM(CASE WHEN currency = 5 THEN (SELECT SUM(price) FROM order_items WHERE order_items.order_id = orders.id) ELSE 0 END) as gbp_items_sum'),
+            DB::raw('SUM(CASE WHEN currency = 5 AND status = 3 THEN (SELECT SUM(price) FROM order_items WHERE order_items.order_id = orders.id) ELSE 0 END) as gbp_approved_items_sum')
+        )
+        ->first();
+        // $data['sales'] = Category_model::with(['products.variations.order_items.order'=> function($q) use ($start_date, $end_date) {
+        //     $q->whereBetween('processed_at', [$start_date, $end_date])
+        //         ->where('order_type_id', 3)
+        //         ->select(
+        //             DB::raw('COUNT(*) as orders_qty'),
+        //             DB::raw('SUM(CASE WHEN status = 3 THEN 1 ELSE 0 END) as approved_orders_qty'),
+        //             DB::raw('SUM(CASE WHEN currency = 4 THEN (SELECT SUM(price) FROM order_items WHERE order_items.order_id = orders.id) ELSE 0 END) as eur_items_sum'),
+        //             DB::raw('SUM(CASE WHEN currency = 4 AND status = 3 THEN (SELECT SUM(price) FROM order_items WHERE order_items.order_id = orders.id) ELSE 0 END) as eur_approved_items_sum'),
+        //             DB::raw('SUM(CASE WHEN currency = 5 THEN (SELECT SUM(price) FROM order_items WHERE order_items.order_id = orders.id) ELSE 0 END) as gbp_items_sum'),
+        //             DB::raw('SUM(CASE WHEN currency = 5 AND status = 3 THEN (SELECT SUM(price) FROM order_items WHERE order_items.order_id = orders.id) ELSE 0 END) as gbp_approved_items_sum')
+        //         );
+        // }])->get();
+
+        $data['sales'] = Category_model::with([
+            'products.variations.order_items' => function ($q) use ($start_date, $end_date) {
+                $q->whereHas('order', function ($query) use ($start_date, $end_date) {
+                    $query->whereBetween('processed_at', [$start_date, $end_date])
+                          ->where('order_type_id', 3);
+                });
+            }
+        ])
+        ->withCount([
+            'products.variations.order_items as orders_qty' => function ($q) use ($start_date, $end_date) {
+                $q->whereHas('order', function ($query) use ($start_date, $end_date) {
+                    $query->whereBetween('processed_at', [$start_date, $end_date])
+                          ->where('order_type_id', 3);
+                });
+            },
+            'products.variations.order_items as approved_orders_qty' => function ($q) use ($start_date, $end_date) {
+                $q->whereHas('order', function ($query) use ($start_date, $end_date) {
+                    $query->whereBetween('processed_at', [$start_date, $end_date])
+                          ->where('order_type_id', 3)
+                          ->where('status', 3);
+                });
+            }
+        ])
+        ->withSum([
+            'products.variations.order_items as eur_items_sum' => function ($q) use ($start_date, $end_date) {
+                $q->whereHas('order', function ($query) use ($start_date, $end_date) {
+                    $query->whereBetween('processed_at', [$start_date, $end_date])
+                          ->where('order_type_id', 3)
+                          ->where('currency', 4);
+                });
+            },
+            'products.variations.order_items as eur_approved_items_sum' => function ($q) use ($start_date, $end_date) {
+                $q->whereHas('order', function ($query) use ($start_date, $end_date) {
+                    $query->whereBetween('processed_at', [$start_date, $end_date])
+                          ->where('order_type_id', 3)
+                          ->where('status', 3)
+                          ->where('currency', 4);
+                });
+            },
+            'products.variations.order_items as gbp_items_sum' => function ($q) use ($start_date, $end_date) {
+                $q->whereHas('order', function ($query) use ($start_date, $end_date) {
+                    $query->whereBetween('processed_at', [$start_date, $end_date])
+                          ->where('order_type_id', 3)
+                          ->where('currency', 5);
+                });
+            },
+            'products.variations.order_items as gbp_approved_items_sum' => function ($q) use ($start_date, $end_date) {
+                $q->whereHas('order', function ($query) use ($start_date, $end_date) {
+                    $query->whereBetween('processed_at', [$start_date, $end_date])
+                          ->where('order_type_id', 3)
+                          ->where('status', 3)
+                          ->where('currency', 5);
+                });
+            }
+        ], 'price')
+        ->get();
+
+    dd($data);
+
         $data['top_products'] = Order_item_model::select('products.model as product_name', 'color.name as color', 'storage.name as storage', 'variation.sku as sku', 'grade.name as grade', DB::raw('SUM(order_items.quantity) as total_quantity_sold'), DB::raw('AVG(CASE WHEN orders.currency = 4 THEN order_items.price END) as average_price'))
         ->where('orders.created_at', '>=', $start_date)->where('orders.created_at', '<=', $end_date)->where('orders.order_type_id',3)
         ->join('variation', 'order_items.variation_id', '=', 'variation.id')
@@ -195,28 +303,7 @@ class Report extends Component
         ->orderBy('grade_id')
         ->get();
 
-        // $data['awaiting_replacement'] = Order_model::where(['status'=>3,'order_type_id'=>3])->with(['order_items.stock' => function ($q) {
-        //     $q->where('status',1);
-        // }]);
-        // $data['awaiting_replacement'] = Stock_model::where('status',1)->with(['order_items.order' => function ($q) {
-        //     $q->where(['status'=>3,'order_type_id'=>3]);
-        // }])
-        // ->whereHas('order_items.order', function ($q) {
-        //     $q->where(['status'=>3,'order_type_id'=>3]);
-        // })
-        // ->count('id');
 
-        // $data['awaiting_replacement'] = Stock_model::where('status', 1)
-        // ->whereHas('order_items.order', function ($q) {
-        //     $q->where(['status' => 3, 'order_type_id' => 3]);
-        // })
-        // ->whereHas('order_items', function ($q) {
-        //     $q->whereHas('order', function ($q) {
-        //         $q->whereColumn('order_items.reference_id', 'orders.reference_id')
-        //           ->where('order_type_id', 5);
-        //     });
-        // })
-        // ->count();
         $replacements = Order_item_model::where(['order_id'=>8974])->where('reference_id','!=',null)->pluck('reference_id')->toArray();
         // dd($replacements);
         $data['awaiting_replacement'] = Stock_model::where('status', 1)
@@ -234,25 +321,6 @@ class Report extends Component
         }])->get();
         $data['testing_count'] = $testing_count;
 
-        // dd($testing_count);
-        // $data['graded_available_inventory'] = Grade_model::whereHas('variations.stocks', function($q) {
-        //     $q->where('status',1)->selectRaw('count(id) as count');
-        // })->get();
-        // $data['graded_available_inventory'] = Grade_model::whereHas('variations.stocks', function($q) {
-        //     $q->where('status', 1);
-        // })->withCount(['variations.stocks as graded_stock_count' => function($q) {
-        //     $q->where('status', 1);
-        // }])->get();
-        // $data['graded_available_inventory'] = Grade_model::whereHas('variations.stocks', function($q) {
-        //     $q->where('status', 1);
-        // })->withCount(['variations.stocks as graded_stock_count' => function($q) {
-        //     $q->where('status', 1);
-        // }])->get();
-
-        // $data['graded_aftersale_inventory'] = Grade_model::whereHas('stocksCount', function($q) {
-        //     $q->where('stock.status',2);
-        // })->get();
-        // dd($data['graded_available_inventory']);
         $order = [];
         $dates = [];
         $k = 0;
@@ -262,15 +330,15 @@ class Report extends Component
             $k++;
             $start = date('Y-m-26 00:00:00', strtotime("-".$j." months"));
             $end = date('Y-m-5 23:59:59', strtotime("-".$i." months"));
-            $orders = Order_model::where('created_at', '>=', $start)->where('order_type_id',3)
-                ->where('created_at', '<=', $end)->where('status',3)->count();
+            $orders = Order_model::where('processed_at', '>=', $start)->where('order_type_id',3)
+                ->where('processed_at', '<=', $end)->where('status',3)->count();
             $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
-                $q->where('created_at', '>=', $start)->where('order_type_id',3)
-                ->where('created_at', '<=', $end)->where('status',3)->where('currency',4);
+                $q->where('processed_at', '>=', $start)->where('order_type_id',3)
+                ->where('processed_at', '<=', $end)->where('status',3)->where('currency',4);
             })->sum('price');
             $pound = Order_item_model::whereHas('order', function($q) use ($start,$end) {
-                $q->where('created_at', '>=', $start)->where('order_type_id',3)
-                ->where('created_at', '<=', $end)->where('status',3)->where('currency',5);
+                $q->where('processed_at', '>=', $start)->where('order_type_id',3)
+                ->where('processed_at', '<=', $end)->where('status',3)->where('currency',5);
             })->sum('price');
             $order[$k] = $orders;
             $eur[$k] = $euro;
@@ -282,15 +350,15 @@ class Report extends Component
             $k++;
             $start = date('Y-m-6 00:00:00', strtotime("-".$i." months"));
             $end = date('Y-m-15 23:59:59', strtotime("-".$i." months"));
-            $orders = Order_model::where('created_at', '>=', $start)->where('order_type_id',3)
-                ->where('created_at', '<=', $end)->where('status',3)->count();
+            $orders = Order_model::where('processed_at', '>=', $start)->where('order_type_id',3)
+                ->where('processed_at', '<=', $end)->where('status',3)->count();
             $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
-                $q->where('created_at', '>=', $start)->where('order_type_id',3)
-                ->where('created_at', '<=', $end)->where('status',3)->where('currency',4);
+                $q->where('processed_at', '>=', $start)->where('order_type_id',3)
+                ->where('processed_at', '<=', $end)->where('status',3)->where('currency',4);
             })->sum('price');
             $pound = Order_item_model::whereHas('order', function($q) use ($start,$end) {
-                $q->where('created_at', '>=', $start)->where('order_type_id',3)
-                ->where('created_at', '<=', $end)->where('status',3)->where('currency',5);
+                $q->where('processed_at', '>=', $start)->where('order_type_id',3)
+                ->where('processed_at', '<=', $end)->where('status',3)->where('currency',5);
             })->sum('price');
             $order[$k] = $orders;
             $eur[$k] = $euro;
@@ -302,15 +370,15 @@ class Report extends Component
             $k++;
             $start = date('Y-m-16 00:00:00', strtotime("-".$i." months"));
             $end = date('Y-m-25 23:59:59', strtotime("-".$i." months"));
-            $orders = Order_model::where('created_at', '>=', $start)->where('order_type_id',3)
-                ->where('created_at', '<=', $end)->where('status',3)->count();
+            $orders = Order_model::where('processed_at', '>=', $start)->where('order_type_id',3)
+                ->where('processed_at', '<=', $end)->where('status',3)->count();
             $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
-                $q->where('created_at', '>=', $start)->where('order_type_id',3)
-                ->where('created_at', '<=', $end)->where('status',3)->where('currency',4);
+                $q->where('processed_at', '>=', $start)->where('order_type_id',3)
+                ->where('processed_at', '<=', $end)->where('status',3)->where('currency',4);
             })->sum('price');
             $pound = Order_item_model::whereHas('order', function($q) use ($start,$end) {
-                $q->where('created_at', '>=', $start)->where('order_type_id',3)
-                ->where('created_at', '<=', $end)->where('status',3)->where('currency',5);
+                $q->where('processed_at', '>=', $start)->where('order_type_id',3)
+                ->where('processed_at', '<=', $end)->where('status',3)->where('currency',5);
             })->sum('price');
             $order[$k] = $orders;
             $eur[$k] = $euro;

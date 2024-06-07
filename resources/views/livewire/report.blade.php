@@ -106,12 +106,17 @@
                         <thead>
                             <tr>
                                 <th><small><b>No</b></small></th>
-                                <th><small><b>Product</b></small></th>
+                                <th><small><b>Categories</b></small></th>
                                 <th><small><b>Qty</b></small></th>
                                 @if (session('user')->hasPermission('view_price'))
-                                    <th title="Only Shows average price for selected ranged EU orders"><small><b>Avg</b></small></th>
+                                    <th title="Only Shows average price for selected ranged EU orders"><small><b>Price</b></small></th>
                                 @endif
-                                <th></th>
+                                @if (session('user')->hasPermission('view_cost'))
+                                    <th title="Only Shows average price for selected ranged EU orders"><small><b>Cost</b></small></th>
+                                    <th title="Only Shows average price for selected ranged EU orders"><small><b>Repair</b></small></th>
+                                    <th title="Only Shows average price for selected ranged EU orders"><small><b>Fee</b></small></th>
+                                    <th title="Only Shows average price for selected ranged EU orders"><small><b>Profit</b></small></th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
