@@ -288,7 +288,7 @@ class BackMarketAPIController extends Controller
                     if($i == 50){
                         break;
                     }
-                    sleep(1);
+                    sleep(2);
                 }
             }
 
