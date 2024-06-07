@@ -122,14 +122,21 @@ class Inventory extends Component
             });
         })
         ->when(request('replacement') != '', function ($q) use ($replacements) {
-            return $q->whereHas('order_items.order', function ($q) use ($replacements) {
+            return $q->whereNotHas('order_items.order', function ($q) use ($replacements) {
                 $q->where(['status'=>3, 'order_type_id'=>3])
                 ->whereNotIn('reference_id', $replacements);
             });
         })
-        ->when(request('rma') != '', function ($q) use ($rmas) {
-            return $q->whereHas('order_items', function ($q) use ($rmas) {
-                $q->whereNotIn('order_id', $rmas);
+        // ->when(request('rma') != '', function ($q) use ($rmas) {
+
+        //     return $q->whereHas('order_items', function ($q) use ($rmas) {
+        //         $q->whereNotIn('order_id', $rmas);
+        //     });
+        // })
+
+        ->when(request('rma') != '', function ($query) use ($rmas) {
+            return $query->whereDoesntHave('order_items', function ($q) use ($rmas) {
+                $q->whereIn('order_id', $rmas);
             });
         })
         ->when(request('storage') != '', function ($q) {
