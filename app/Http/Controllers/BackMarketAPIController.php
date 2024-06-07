@@ -278,7 +278,7 @@ class BackMarketAPIController extends Controller
                     $result_next = $this->requestGet($end_point_next);
                     if(!isset($result_next->results)){
                         print_r($result_next);
-                        continue;
+                        break;
                     }
                     $result_next_array = $result_next->results;
 
@@ -288,6 +288,7 @@ class BackMarketAPIController extends Controller
                     if($i == 50){
                         break;
                     }
+                    sleep(1);
                 }
             }
 
