@@ -250,7 +250,7 @@ class BackMarketAPIController extends Controller
         $end_point = 'sav?';
 
         if ($date_modification == false) {
-            $date_modification = date("Y-m-d-H-i", time() - 1 * 24 * 60 * 60);
+            $date_modification = date("Y-m-d-H-i", time() - 2 * 24 * 60 * 60);
         }
 
         $end_point .= "?last_modification_date=$date_modification";
