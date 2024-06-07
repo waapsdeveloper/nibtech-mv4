@@ -73,6 +73,14 @@ class Order_item_model extends Model
     {
         return $this->hasOne(Order_item_model::class, 'care_id', 'id');
     }
+    public function check_replacement()
+    {
+        $item = $this;
+        while($item->replacement != null){
+            $item = $item->replacement;
+        }
+        return $item;
+    }
     public function updateOrderItemsInDB($orderObj, $tester = null, $bm)
     {
         // Your implementation here
