@@ -106,62 +106,99 @@ class Report extends Component
         //         );
         // }])->get();
 
-        $data['sales'] = Category_model::with([
-            'products.variations.order_items' => function ($q) use ($start_date, $end_date) {
-                $q->whereHas('order', function ($query) use ($start_date, $end_date) {
-                    $query->whereBetween('processed_at', [$start_date, $end_date])
-                          ->where('order_type_id', 3);
-                });
-            }
-        ])
-        ->withCount([
-            'products.variations.order_items as orders_qty' => function ($q) use ($start_date, $end_date) {
-                $q->whereHas('order', function ($query) use ($start_date, $end_date) {
-                    $query->whereBetween('processed_at', [$start_date, $end_date])
-                          ->where('order_type_id', 3);
-                });
-            },
-            'products.variations.order_items as approved_orders_qty' => function ($q) use ($start_date, $end_date) {
-                $q->whereHas('order', function ($query) use ($start_date, $end_date) {
-                    $query->whereBetween('processed_at', [$start_date, $end_date])
-                          ->where('order_type_id', 3)
-                          ->where('status', 3);
-                });
-            }
-        ])
-        ->withSum([
-            'products.variations.order_items as eur_items_sum' => function ($q) use ($start_date, $end_date) {
-                $q->whereHas('order', function ($query) use ($start_date, $end_date) {
-                    $query->whereBetween('processed_at', [$start_date, $end_date])
-                          ->where('order_type_id', 3)
-                          ->where('currency', 4);
-                });
-            },
-            'products.variations.order_items as eur_approved_items_sum' => function ($q) use ($start_date, $end_date) {
-                $q->whereHas('order', function ($query) use ($start_date, $end_date) {
-                    $query->whereBetween('processed_at', [$start_date, $end_date])
-                          ->where('order_type_id', 3)
-                          ->where('status', 3)
-                          ->where('currency', 4);
-                });
-            },
-            'products.variations.order_items as gbp_items_sum' => function ($q) use ($start_date, $end_date) {
-                $q->whereHas('order', function ($query) use ($start_date, $end_date) {
-                    $query->whereBetween('processed_at', [$start_date, $end_date])
-                          ->where('order_type_id', 3)
-                          ->where('currency', 5);
-                });
-            },
-            'products.variations.order_items as gbp_approved_items_sum' => function ($q) use ($start_date, $end_date) {
-                $q->whereHas('order', function ($query) use ($start_date, $end_date) {
-                    $query->whereBetween('processed_at', [$start_date, $end_date])
-                          ->where('order_type_id', 3)
-                          ->where('status', 3)
-                          ->where('currency', 5);
-                });
-            }
-        ], 'price')
-        ->get();
+        // $data['sales'] = Category_model::with([
+        //     'products.variations.order_items' => function ($q) use ($start_date, $end_date) {
+        //         $q->whereHas('order', function ($query) use ($start_date, $end_date) {
+        //             $query->whereBetween('processed_at', [$start_date, $end_date])
+        //                   ->where('order_type_id', 3);
+        //         });
+        //     }
+        // ])
+        // ->withCount([
+        //     'products.variations.order_items as orders_qty' => function ($q) use ($start_date, $end_date) {
+        //         $q->whereHas('order', function ($query) use ($start_date, $end_date) {
+        //             $query->whereBetween('processed_at', [$start_date, $end_date])
+        //                   ->where('order_type_id', 3);
+        //         });
+        //     },
+        //     'products.variations.order_items as approved_orders_qty' => function ($q) use ($start_date, $end_date) {
+        //         $q->whereHas('order', function ($query) use ($start_date, $end_date) {
+        //             $query->whereBetween('processed_at', [$start_date, $end_date])
+        //                   ->where('order_type_id', 3)
+        //                   ->where('status', 3);
+        //         });
+        //     }
+        // ])
+        // ->withSum([
+        //     'products.variations.order_items as eur_items_sum' => function ($q) use ($start_date, $end_date) {
+        //         $q->whereHas('order', function ($query) use ($start_date, $end_date) {
+        //             $query->whereBetween('processed_at', [$start_date, $end_date])
+        //                   ->where('order_type_id', 3)
+        //                   ->where('currency', 4);
+        //         });
+        //     },
+        //     'products.variations.order_items as eur_approved_items_sum' => function ($q) use ($start_date, $end_date) {
+        //         $q->whereHas('order', function ($query) use ($start_date, $end_date) {
+        //             $query->whereBetween('processed_at', [$start_date, $end_date])
+        //                   ->where('order_type_id', 3)
+        //                   ->where('status', 3)
+        //                   ->where('currency', 4);
+        //         });
+        //     },
+        //     'products.variations.order_items as gbp_items_sum' => function ($q) use ($start_date, $end_date) {
+        //         $q->whereHas('order', function ($query) use ($start_date, $end_date) {
+        //             $query->whereBetween('processed_at', [$start_date, $end_date])
+        //                   ->where('order_type_id', 3)
+        //                   ->where('currency', 5);
+        //         });
+        //     },
+        //     'products.variations.order_items as gbp_approved_items_sum' => function ($q) use ($start_date, $end_date) {
+        //         $q->whereHas('order', function ($query) use ($start_date, $end_date) {
+        //             $query->whereBetween('processed_at', [$start_date, $end_date])
+        //                   ->where('order_type_id', 3)
+        //                   ->where('status', 3)
+        //                   ->where('currency', 5);
+        //         });
+        //     }
+        // ], 'price')
+        // ->get();
+
+// Build the query
+$data['sales'] = Category_model::with(['products.variations.order_items.order' => function ($query) use ($start_date, $end_date) {
+    $query->whereBetween('processed_at', [$start_date, $end_date])
+          ->where('order_type_id', 3);
+}])
+->get()
+->map(function ($category) {
+    // Aggregate data within the category
+    $orders = $category->products->flatMap->variations->flatMap->order_items->pluck('order');
+
+    $orders_qty = $orders->count();
+    $approved_orders_qty = $orders->where('status', 3)->count();
+    $eur_items_sum = $orders->where('currency', 4)->sum(function ($order) {
+        return $order->order_items->sum('price');
+    });
+    $eur_approved_items_sum = $orders->where('currency', 4)->where('status', 3)->sum(function ($order) {
+        return $order->order_items->sum('price');
+    });
+    $gbp_items_sum = $orders->where('currency', 5)->sum(function ($order) {
+        return $order->order_items->sum('price');
+    });
+    $gbp_approved_items_sum = $orders->where('currency', 5)->where('status', 3)->sum(function ($order) {
+        return $order->order_items->sum('price');
+    });
+
+    return [
+        'category' => $category->name,
+        'orders_qty' => $orders_qty,
+        'approved_orders_qty' => $approved_orders_qty,
+        'eur_items_sum' => $eur_items_sum,
+        'eur_approved_items_sum' => $eur_approved_items_sum,
+        'gbp_items_sum' => $gbp_items_sum,
+        'gbp_approved_items_sum' => $gbp_approved_items_sum,
+    ];
+});
+
 
     dd($data);
 
