@@ -47,6 +47,11 @@ class Inventory extends Component
         }else{
             $replacements = [];
         }
+        if(request('rma') == 1){
+            $rmas = Order_model::where(['order_type_id'=>2])->pluck('id')->toArray();
+        }else{
+            $rmas = [];
+        }
 
 
         $active_inventory_verification = Process_model::where(['process_type_id'=>20,'status'=>1])->first();
@@ -120,6 +125,11 @@ class Inventory extends Component
             return $q->whereHas('order_items.order', function ($q) use ($replacements) {
                 $q->where(['status'=>3, 'order_type_id'=>3])
                 ->whereNotIn('reference_id', $replacements);
+            });
+        })
+        ->when(request('rma') != '', function ($q) use ($rmas) {
+            return $q->whereHas('order_items', function ($q) use ($rmas) {
+                $q->whereNotIn('order_id', $rmas);
             });
         })
         ->when(request('storage') != '', function ($q) {

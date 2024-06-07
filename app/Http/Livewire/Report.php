@@ -14,6 +14,7 @@ use App\Models\Products_model;
 use App\Models\Color_model;
 use App\Models\Storage_model;
 use App\Models\Grade_model;
+use App\Models\Process_stock_model;
 use App\Models\Variation_model;
 use App\Models\Stock_model;
 use App\Models\Stock_operations_model;
@@ -59,40 +60,92 @@ class Report extends Component
         }
         // $products = Products_model::get()->toArray();
         // Retrieve the top 10 selling products from the order_items table
-        $data['orders_qty'] = Order_model::where('processed_at', '>=', $start_date)->where('order_type_id',3)
-        ->where('processed_at', '<=', $end_date)->count();
-        $data['approved_orders_qty'] = Order_model::where('processed_at', '>=', $start_date)->where('order_type_id',3)
-        ->where('processed_at', '<=', $end_date)->where('status',3)->count();
-        $data['eur_items_sum'] = Order_item_model::whereHas('order', function($q) use ($start_date,$end_date) {
-            $q->where('processed_at', '>=', $start_date)->where('order_type_id',3)
-            ->where('processed_at', '<=', $end_date)->where('currency',4);
+        // $data['orders_qty'] = Order_model::where('processed_at', '>=', $start_date)->where('order_type_id',3)
+        // ->where('processed_at', '<=', $end_date)->count();
+        // $data['approved_orders_qty'] = Order_model::where('processed_at', '>=', $start_date)->where('order_type_id',3)
+        // ->where('processed_at', '<=', $end_date)->where('status',3)->count();
+        // $data['eur_items_sum'] = Order_item_model::whereHas('order', function($q) use ($start_date,$end_date) {
+        //     $q->where('processed_at', '>=', $start_date)->where('order_type_id',3)
+        //     ->where('processed_at', '<=', $end_date)->where('currency',4);
+        // })->sum('price');
+        // $data['eur_approved_items_sum'] = Order_item_model::whereHas('order', function($q) use ($start_date,$end_date) {
+        //     $q->where('processed_at', '>=', $start_date)->where('order_type_id',3)
+        //     ->where('processed_at', '<=', $end_date)->where('status',3)->where('currency',4);
+        // })->sum('price');
+        // $data['gbp_items_sum'] = Order_item_model::whereHas('order', function($q) use ($start_date,$end_date) {
+        //     $q->where('processed_at', '>=', $start_date)->where('order_type_id',3)
+        //     ->where('processed_at', '<=', $end_date)->where('currency',5);
+        // })->sum('price');
+        // $data['gbp_approved_items_sum'] = Order_item_model::whereHas('order', function($q) use ($start_date,$end_date) {
+        //     $q->where('processed_at', '>=', $start_date)->where('order_type_id',3)
+        //     ->where('processed_at', '<=', $end_date)->where('status',3)->where('currency',5);
+        // })->sum('price');
+
+        $stock_ids = Stock_model::whereHas('order_items.order', function($q) use ($start_date, $end_date) {
+            $q->whereBetween('processed_at', [$start_date, $end_date])
+                ->where('order_type_id', 3);
+        })->pluck('id')->toArray();
+
+        $data = Category_model::with(['products.variations.order_items.order' => function ($query) use ($start_date, $end_date) {
+            $query->whereBetween('processed_at', [$start_date, $end_date])
+                  ->where('order_type_id', 3)
+                  ->select(
+                      DB::raw('COUNT(*) as orders_qty'),
+                      DB::raw('SUM(CASE WHEN status = 3 THEN 1 ELSE 0 END) as approved_orders_qty')
+                  );
+        }])
+        ->get();
+
+        // Collect category IDs to use in aggregate queries
+        $category_ids = $data->pluck('id');
+
+        $aggregates = DB::table('category')
+            ->join('products', 'category.id', '=', 'products.category')
+            ->join('variation', 'products.id', '=', 'variation.product_id')
+            ->join('order_items', 'variation.id', '=', 'order_items.variation_id')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->leftJoin('stock', 'order_items.stock_id', '=', 'stock.id')
+            // ->leftJoin('process_stocks', 'stocks.id', '=', 'process_stocks.stock_id')
+            // ->leftJoin('processes', 'process_stocks.process_id', '=', 'processes.id')
+            ->select(
+                'category.id as category_id',
+                DB::raw('SUM(CASE WHEN orders.currency = 4 THEN order_items.price ELSE 0 END) as eur_items_sum'),
+                DB::raw('SUM(CASE WHEN orders.currency = 4 AND orders.status = 3 THEN order_items.price ELSE 0 END) as eur_approved_items_sum'),
+                DB::raw('SUM(CASE WHEN orders.currency = 5 THEN order_items.price ELSE 0 END) as gbp_items_sum'),
+                DB::raw('SUM(CASE WHEN orders.currency = 5 AND orders.status = 3 THEN order_items.price ELSE 0 END) as gbp_approved_items_sum'),
+                'stock.id as stock_id'
+                // DB::raw('SUM(CASE WHEN orders.currency = 5 AND orders.status = 3 THEN order_items.price ELSE 0 END) as gbp_approved_items_sum'),
+                // DB::raw('SUM(purchase_items.price) as items_cost_sum'),
+                // DB::raw('SUM(CASE WHEN processes.process_type_id = 9 THEN process_stocks.price ELSE 0 END) as items_repair_sum')
+            )
+            ->whereBetween('orders.processed_at', [$start_date, $end_date])
+            ->where('orders.order_type_id', 3)
+            ->groupBy('category.id')
+            ->get();
+        // $costs = Category_model::select(
+        //     'category.'
+        // )
+        $aggregated_cost = Order_item_model::whereIn('stock_id',$stock_ids)->whereHas('order', function ($q) {
+            $q->where('order_type_id',1);
         })->sum('price');
-        $data['eur_approved_items_sum'] = Order_item_model::whereHas('order', function($q) use ($start_date,$end_date) {
-            $q->where('processed_at', '>=', $start_date)->where('order_type_id',3)
-            ->where('processed_at', '<=', $end_date)->where('status',3)->where('currency',4);
-        })->sum('price');
-        $data['gbp_items_sum'] = Order_item_model::whereHas('order', function($q) use ($start_date,$end_date) {
-            $q->where('processed_at', '>=', $start_date)->where('order_type_id',3)
-            ->where('processed_at', '<=', $end_date)->where('currency',5);
-        })->sum('price');
-        $data['gbp_approved_items_sum'] = Order_item_model::whereHas('order', function($q) use ($start_date,$end_date) {
-            $q->where('processed_at', '>=', $start_date)->where('order_type_id',3)
-            ->where('processed_at', '<=', $end_date)->where('status',3)->where('currency',5);
+        $aggregated_repair = Process_stock_model::whereIn('stock_id',$stock_ids)->whereHas('process', function ($q) {
+            $q->where('process_type_id',1);
         })->sum('price');
 
+        dd($aggregates);
 
-
-        $data = Order_model::whereBetween('processed_at', [$start_date, $end_date])
-        ->where('order_type_id', 3)
-        ->select(
-            DB::raw('COUNT(*) as orders_qty'),
-            DB::raw('SUM(CASE WHEN status = 3 THEN 1 ELSE 0 END) as approved_orders_qty'),
-            DB::raw('SUM(CASE WHEN currency = 4 THEN (SELECT SUM(price) FROM order_items WHERE order_items.order_id = orders.id) ELSE 0 END) as eur_items_sum'),
-            DB::raw('SUM(CASE WHEN currency = 4 AND status = 3 THEN (SELECT SUM(price) FROM order_items WHERE order_items.order_id = orders.id) ELSE 0 END) as eur_approved_items_sum'),
-            DB::raw('SUM(CASE WHEN currency = 5 THEN (SELECT SUM(price) FROM order_items WHERE order_items.order_id = orders.id) ELSE 0 END) as gbp_items_sum'),
-            DB::raw('SUM(CASE WHEN currency = 5 AND status = 3 THEN (SELECT SUM(price) FROM order_items WHERE order_items.order_id = orders.id) ELSE 0 END) as gbp_approved_items_sum')
-        )
-        ->first();
+        // $data = Category_model::with(['products.variations.order_items.order'=> function($q) use ($start_date, $end_date) {
+        //     $q->whereBetween('processed_at', [$start_date, $end_date])
+        //     ->where('order_type_id', 3)
+        //     ->select(
+        //         DB::raw('COUNT(*) as orders_qty'),
+        //         DB::raw('SUM(CASE WHEN status = 3 THEN 1 ELSE 0 END) as approved_orders_qty'),
+        //         DB::raw('SUM(CASE WHEN currency = 4 THEN (SELECT SUM(price) FROM order_items WHERE order_items.order_id = orders.id) ELSE 0 END) as eur_items_sum'),
+        //         DB::raw('SUM(CASE WHEN currency = 4 AND status = 3 THEN (SELECT SUM(price) FROM order_items WHERE order_items.order_id = orders.id) ELSE 0 END) as eur_approved_items_sum'),
+        //         DB::raw('SUM(CASE WHEN currency = 5 THEN (SELECT SUM(price) FROM order_items WHERE order_items.order_id = orders.id) ELSE 0 END) as gbp_items_sum'),
+        //         DB::raw('SUM(CASE WHEN currency = 5 AND status = 3 THEN (SELECT SUM(price) FROM order_items WHERE order_items.order_id = orders.id) ELSE 0 END) as gbp_approved_items_sum')
+        //     );
+        // }])->get();
         // $data['sales'] = Category_model::with(['products.variations.order_items.order'=> function($q) use ($start_date, $end_date) {
         //     $q->whereBetween('processed_at', [$start_date, $end_date])
         //         ->where('order_type_id', 3)
@@ -164,40 +217,47 @@ class Report extends Component
         // ->get();
 
 // Build the query
-$data['sales'] = Category_model::with(['products.variations.order_items.order' => function ($query) use ($start_date, $end_date) {
-    $query->whereBetween('processed_at', [$start_date, $end_date])
-          ->where('order_type_id', 3);
-}])
-->get()
-->map(function ($category) {
-    // Aggregate data within the category
-    $orders = $category->products->flatMap->variations->flatMap->order_items->pluck('order');
+// $data['sales'] = Category_model::with(['products.variations.order_items.order' => function ($query) use ($start_date, $end_date) {
+//     $query->whereBetween('processed_at', [$start_date, $end_date])
+//           ->where('order_type_id', 3);
+// }])
+// ->get()
+// ->map(function ($category) {
+//     // Aggregate data within the category
+//     $orders = $category->products->flatMap->variations->flatMap->order_items->pluck('order');
 
-    $orders_qty = $orders->count();
-    $approved_orders_qty = $orders->where('status', 3)->count();
-    $eur_items_sum = $orders->where('currency', 4)->sum(function ($order) {
-        return $order->order_items->sum('price');
-    });
-    $eur_approved_items_sum = $orders->where('currency', 4)->where('status', 3)->sum(function ($order) {
-        return $order->order_items->sum('price');
-    });
-    $gbp_items_sum = $orders->where('currency', 5)->sum(function ($order) {
-        return $order->order_items->sum('price');
-    });
-    $gbp_approved_items_sum = $orders->where('currency', 5)->where('status', 3)->sum(function ($order) {
-        return $order->order_items->sum('price');
-    });
+//     $orders_qty = $orders->count();
+//     $approved_orders_qty = $orders->where('status', 3)->count();
+//     $eur_items_sum = $orders->where('currency', 4)->sum(function ($order) {
+//         return $order->order_items->sum('price');
+//     });
+//     $eur_approved_items_sum = $orders->where('currency', 4)->where('status', 3)->sum(function ($order) {
+//         return $order->order_items->sum('price');
+//     });
+//     $gbp_items_sum = $orders->where('currency', 5)->sum(function ($order) {
+//         return $order->order_items->sum('price');
+//     });
+//     $gbp_approved_items_sum = $orders->where('currency', 5)->where('status', 3)->sum(function ($order) {
+//         return $order->order_items->sum('price');
+//     });
+//     // $items_cost_sum = $orders->where('status', '>=', 3)->flatMap->order_items->flatMap->stock->flatMap->purchase_item->sum('price');
+//     // $items_repair_sum = $orders->where('status', '>=', 3)->flatMap->order_items->flatMap->stock->flatMap->process_stocks->sum('price');
+//     // $items_repair_sum = $orders->sum(function ($order) {
+//     //     return $order->order_items->stock->process_stock->whereHas('process',function ($q) { $q->where('process_type_id',9); })->sum('price');
+//     // });
 
-    return [
-        'category' => $category->name,
-        'orders_qty' => $orders_qty,
-        'approved_orders_qty' => $approved_orders_qty,
-        'eur_items_sum' => $eur_items_sum,
-        'eur_approved_items_sum' => $eur_approved_items_sum,
-        'gbp_items_sum' => $gbp_items_sum,
-        'gbp_approved_items_sum' => $gbp_approved_items_sum,
-    ];
-});
+//     return [
+//         'category' => $category->name,
+//         'orders_qty' => $orders_qty,
+//         'approved_orders_qty' => $approved_orders_qty,
+//         'eur_items_sum' => $eur_items_sum,
+//         'eur_approved_items_sum' => $eur_approved_items_sum,
+//         'gbp_items_sum' => $gbp_items_sum,
+//         'gbp_approved_items_sum' => $gbp_approved_items_sum,
+//         // 'items_cost_sum' => $items_cost_sum,
+//         // 'items_repair_sum' => $items_repair_sum,
+//     ];
+// });
 
 
     dd($data);
