@@ -25,15 +25,18 @@ class InventorysheetExport implements FromCollection, WithHeadings
             $join->on('stock.id', '=', 'order_items.stock_id')
                  ->whereColumn('order_items.order_id', 'stock.order_id');
         })
-        // ->leftJoin('stock_operations', function($join) {
-        //     $join->on('stock.id', '=', 'stock_operations.stock_id')
-        //          ->whereColumn('stock_operations.new_variation_id', 'stock.variation_id')
-        //          ->orderBy('id','desc')->limit(1);
-        // })
-        ->leftJoin(DB::raw('(SELECT stock_id, new_variation_id, description, MAX(id) as max_id FROM stock_operations GROUP BY stock_id, new_variation_id, description) as stock_operations'), function($join) {
+        ->leftJoin('stock_operations', function($join) {
             $join->on('stock.id', '=', 'stock_operations.stock_id')
-                 ->whereColumn('stock_operations.new_variation_id', 'stock.variation_id');
+                 ->whereColumn('stock_operations.new_variation_id', 'stock.variation_id')
+                 ->whereRaw('stock_operations.id = (
+                     SELECT MAX(id) FROM stock_operations WHERE stock_operations.stock_id = stock.id
+                 )');
+                //  ->orderBy('id','desc')->limit(1);
         })
+        // ->leftJoin(DB::raw('(SELECT stock_id, new_variation_id, description FROM stock_operations) as stock_operations'), function($join) {
+        //     $join->on('stock.id', '=', 'stock_operations.stock_id')
+        //          ->whereColumn('stock_operations.new_variation_id', 'stock.variation_id');
+        // })
 
         ->select(
             'products.model',
