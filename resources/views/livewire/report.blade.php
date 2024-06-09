@@ -145,12 +145,12 @@
                             @endforeach
                         </tbody>
                     </table>
-                </div>
-                {{-- <div class="card-header mb-0">
+                {{-- </div>
+                <div class="card-header mb-0">
                     <h4 class="card-title mb-0">Returns Report</h4>
-                </div> --}}
+                </div>
 
-                <div class="card-body mt-0">
+                <div class="card-body mt-0"> --}}
                     <table class="table table-bordered table-hover text-md-nowrap">
                         <thead>
                             <tr>
