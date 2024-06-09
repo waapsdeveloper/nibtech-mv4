@@ -189,7 +189,7 @@ class Inventory extends Component
             return $q->whereHas('order_items.order', function ($q) use ($replacements) {
                 $q->where(['status'=>3, 'order_type_id'=>3])
                 ->whereNotIn('reference_id', $replacements);
-            })->Where('status',1);
+            })->Where('stock.status',1);
         })
 
         ->when(request('rma') != '', function ($query) use ($rmas) {
@@ -197,7 +197,7 @@ class Inventory extends Component
                 $q->whereIn('order_id', $rmas);
             })->whereHas('variation', function ($q) {
                 $q->where('grade', 10);
-            })->Where('status',2);
+            })->Where('stock.status',2);
         })
         ->when(request('storage') != '', function ($q) {
             return $q->whereHas('variation', function ($q) {
@@ -289,7 +289,7 @@ class Inventory extends Component
             return $q->whereHas('order_items.order', function ($q) use ($replacements) {
                 $q->where(['status'=>3, 'order_type_id'=>3])
                 ->whereNotIn('reference_id', $replacements);
-            })->Where('status',1);
+            })->Where('stock.status',1);
         })
 
         ->when(request('rma') != '', function ($query) use ($rmas) {
@@ -297,7 +297,7 @@ class Inventory extends Component
                 $q->whereIn('order_id', $rmas);
             })->whereHas('variation', function ($q) {
                 $q->where('grade', 10);
-            })->Where('status',2);
+            })->Where('stock.status',2);
         })
         ->when(request('storage') != '', function ($q) {
             return $q->whereHas('variation', function ($q) {
