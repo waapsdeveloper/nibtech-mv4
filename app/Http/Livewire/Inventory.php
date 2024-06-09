@@ -249,23 +249,6 @@ class Inventory extends Component
         //     $q->where('order_type_id',1);
 
         // })->get();
-    //     $vendor_average = Customer_model::where('is_vendor',1)
-
-    // ->with(['orders' => function($q) {
-    //     $q->where('order_type_id', 1)
-    //         ->withCount(['order_items as unique_stock_count' => function($q) {
-    //             $q->whereHas('stock', function ($q) {
-    //                 $q->where('status', 1);
-    //             })->select(DB::raw('count(distinct stock_id)'))->groupBy('order_id');
-    //         }])->withSum(['order_items as unique_stock_sum' => function($q) {
-    //             $q->whereHas('stock', function ($q) {
-    //                 $q->where('status', 1);
-    //             });
-    //         }], 'price');
-    // }])->get();
-
-
-    //     dd($vendor_average);
 
         $data['vendor_average_cost'] = Stock_model::where('stock.deleted_at',null)->where('order_items.deleted_at',null)->where('orders.deleted_at',null)
 

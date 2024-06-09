@@ -28,7 +28,7 @@ class InventorysheetExport implements FromCollection, WithHeadings
         ->leftJoin('stock_operations', function($join) {
             $join->on('stock.id', '=', 'stock_operations.stock_id')
                  ->whereColumn('stock_operations.new_variation_id', 'stock.variation_id')
-                 ->orderBy('id','desc');
+                 ->orderBy('id','desc')->limit(1);
         })
 
         ->select(

@@ -109,26 +109,44 @@
                                 <th><small><b>Categories</b></small></th>
                                 <th><small><b>Qty</b></small></th>
                                 @if (session('user')->hasPermission('view_price'))
-                                <th title="Only Shows average Sales for selected ranged EU orders"><small><b>EUR Sales</b></small></th>
-                                <th title="Only Shows average Sales for selected ranged EU orders"><small><b>GBP Sales</b></small></th>
+                                <th title=""><small><b>EUR Price</b></small></th>
+                                <th title=""><small><b>GBP Price</b></small></th>
                                 @endif
                                 @if (session('user')->hasPermission('view_cost'))
-                                    <th title="Only Shows average price for selected ranged EU orders"><small><b>Cost</b></small></th>
-                                    <th title="Only Shows average price for selected ranged EU orders"><small><b>Repair</b></small></th>
-                                    <th title="Only Shows average price for selected ranged EU orders"><small><b>Fee</b></small></th>
-                                    <th title="Only Shows average price for selected ranged EU orders"><small><b>Profit</b></small></th>
+                                    <th title=""><small><b>Cost</b></small></th>
+                                    <th title=""><small><b>Repair</b></small></th>
+                                    <th title=""><small><b>Fee</b></small></th>
+                                    <th title=""><small><b>Profit</b></small></th>
                                 @endif
                             </tr>
                         </thead>
                         <tbody>
                             @php
+                                $total_sale_orders = 0;
+                                $total_approved_sale_orders = 0;
+                                $total_sale_eur_items = 0;
+                                $total_approved_sale_eur_items = 0;
+                                $total_sale_gbp_items = 0;
+                                $total_approved_sale_gbp_items = 0;
+                                $total_sale_cost = 0;
+                                $total_repair_cost = 0;
+                                $total_eur_profit = 0;
+                                $total_gbp_profit = 0;
                             @endphp
                             <tr>
                                 <td colspan="9" align="center"><b>Sales</b></td>
                             </tr>
                             @foreach ($aggregated_sales as $s => $sales)
                                 @php
-                                    // $weighted_average += $product->total_quantity_sold / $total * $product->average_price;
+                                    $total_sale_orders += $sales->orders_qty;
+                                    $total_approved_sale_orders += $sales->approved_orders_qty;
+                                    $total_sale_eur_items += $sales->eur_items_sum;
+                                    $total_approved_sale_eur_items += $sales->eur_approved_items_sum;
+                                    $total_sale_gbp_items += $sales->gbp_items_sum;
+                                    $total_approved_sale_gbp_items += $sales->gbp_approved_items_sum;
+                                    $total_sale_cost += $aggregated_sales_cost[$sales->category_id];
+                                    $total_repair_cost += $sales->items_repair_sum;
+                                    $total_eur_profit += $sales->eur_items_sum - $aggregated_sales_cost[$sales->category_id] - $sales->items_repair_sum;
                                 @endphp
                                 <tr>
                                     <td>{{ $s+1 }}</td>
