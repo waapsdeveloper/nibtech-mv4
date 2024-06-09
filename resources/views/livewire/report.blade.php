@@ -105,7 +105,7 @@
                     <table class="table table-bordered table-hover text-md-nowrap">
                         <thead>
                             <tr>
-                                <th><small><b>Sales</b></small></th>
+                                <th><small><b>No</b></small></th>
                                 <th><small><b>Categories</b></small></th>
                                 <th><small><b>Qty</b></small></th>
                                 @if (session('user')->hasPermission('view_price'))
@@ -123,6 +123,9 @@
                         <tbody>
                             @php
                             @endphp
+                            <tr>
+                                <td colspan="9" align="center"><b>Sales</b></td>
+                            </tr>
                             @foreach ($aggregated_sales as $s => $sales)
                                 @php
                                     // $weighted_average += $product->total_quantity_sold / $total * $product->average_price;
@@ -170,6 +173,9 @@
                             </tr>
                         </thead>
                         <tbody> --}}
+                            <tr>
+                                <td colspan="9" align="center"><b>Returns</b></td>
+                            </tr>
                             @php
                             @endphp
                             @foreach ($aggregated_returns as $s => $returns)
