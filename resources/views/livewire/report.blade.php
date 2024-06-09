@@ -212,9 +212,9 @@
                                     $total_approved_return_eur_items += $returns->eur_approved_items_sum;
                                     $total_return_gbp_items += $returns->gbp_items_sum;
                                     $total_approved_return_gbp_items += $returns->gbp_approved_items_sum;
-                                    $total_return_cost += $aggregated_returns_cost[$returns->category_id];
+                                    $total_return_cost += $aggregated_return_cost[$returns->category_id];
                                     $total_repair_cost += $returns->items_repair_sum;
-                                    $total_eur_loss += $returns->eur_items_sum - $aggregated_returns_cost[$returns->category_id] - $returns->items_repair_sum;
+                                    $total_eur_loss += $returns->eur_items_sum - $aggregated_return_cost[$returns->category_id] - $returns->items_repair_sum;
                                 @endphp
                                 <tr>
                                     <td>{{ $s+1 }}</td>
