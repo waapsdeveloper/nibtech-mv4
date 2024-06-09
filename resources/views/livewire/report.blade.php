@@ -105,7 +105,7 @@
                     <table class="table table-bordered table-hover text-md-nowrap">
                         <thead>
                             <tr>
-                                <th><small><b>No</b></small></th>
+                                <th><small><b>Sales</b></small></th>
                                 <th><small><b>Categories</b></small></th>
                                 <th><small><b>Qty</b></small></th>
                                 @if (session('user')->hasPermission('view_price'))
@@ -143,33 +143,33 @@
                                     @endif
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
+                        {{-- </tbody>
+                    </table> --}}
                 {{-- </div>
                 <div class="card-header mb-0">
                     <h4 class="card-title mb-0">Returns Report</h4>
                 </div>
 
                 <div class="card-body mt-0"> --}}
-                    <table class="table table-bordered table-hover text-md-nowrap">
+                    {{-- <table class="table table-bordered table-hover text-md-nowrap">
                         <thead>
                             <tr>
-                                <th><small><b>No</b></small></th>
+                                <th><small><b>Returns</b></small></th>
                                 <th><small><b>Categories</b></small></th>
                                 <th><small><b>Qty</b></small></th>
                                 @if (session('user')->hasPermission('view_price'))
-                                <th title="Only Shows average Sales for selected ranged EU orders"><small><b>EUR Sales</b></small></th>
-                                <th title="Only Shows average Sales for selected ranged EU orders"><small><b>GBP Sales</b></small></th>
+                                <th title=""><small><b>EUR Sales</b></small></th>
+                                <th title=""><small><b>GBP Sales</b></small></th>
                                 @endif
                                 @if (session('user')->hasPermission('view_cost'))
-                                    <th title="Only Shows average price for selected ranged EU orders"><small><b>Cost</b></small></th>
-                                    <th title="Only Shows average price for selected ranged EU orders"><small><b>Repair</b></small></th>
-                                    <th title="Only Shows average price for selected ranged EU orders"><small><b>Fee</b></small></th>
-                                    <th title="Only Shows average price for selected ranged EU orders"><small><b>Loss</b></small></th>
+                                    <th title=""><small><b>Cost</b></small></th>
+                                    <th title=""><small><b>Repair</b></small></th>
+                                    <th title=""><small><b>Fee</b></small></th>
+                                    <th title=""><small><b>Loss</b></small></th>
                                 @endif
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody> --}}
                             @php
                             @endphp
                             @foreach ($aggregated_returns as $s => $returns)
