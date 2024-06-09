@@ -164,17 +164,17 @@
                                 </tr>
                             @endforeach
                             <tr>
-                                <td><strong>Total</strong></td>
-                                <td>{{ $total_sale_orders." (".$total_approved_sale_orders.")" }}</td>
+                                <td colspan="2"><strong>Total</strong></td>
+                                <td><strong>{{ $total_sale_orders." (".$total_approved_sale_orders.")" }}</strong></td>
                                 @if (session('user')->hasPermission('view_price'))
-                                <td>€{{ number_format($total_sale_eur_items,2)." (€".number_format($total_approved_sale_eur_items,2).")" }}</td>
-                                <td>£{{ number_format($total_sale_gbp_items,2)." (£".number_format($total_approved_sale_gbp_items,2).")" }}</td>
+                                <td><strong>€{{ number_format($total_sale_eur_items,2)." (€".number_format($total_approved_sale_eur_items,2).")" }}</strong></td>
+                                <td><strong>£{{ number_format($total_sale_gbp_items,2)." (£".number_format($total_approved_sale_gbp_items,2).")" }}</strong></td>
                                 @endif
                                 @if (session('user')->hasPermission('view_cost'))
-                                <td title="">€{{ number_format($total_sale_cost,2) }}</td>
-                                <td>€{{ number_format($total_repair_cost,2) }}</td>
-                                <td>{{ number_format(0,2) }}</td>
-                                <td>€{{ number_format($total_eur_profit) }} + £{{ number_format($total_sale_gbp_items,2) }}</td>
+                                <td title="">€{{ number_format($total_sale_cost,2) }}</strong></td>
+                                <td><strong>€{{ number_format($total_repair_cost,2) }}</strong></td>
+                                <td><strong>{{ number_format(0,2) }}</strong></td>
+                                <td><strong>€{{ number_format($total_eur_profit) }} + £{{ number_format($total_sale_gbp_items,2) }}</strong></td>
                                 @endif
                             </tr>
                         {{-- </tbody>
@@ -247,17 +247,17 @@
                                 </tr>
                             @endforeach
                             <tr>
-                                <td><strong>Total</strong></td>
-                                <td>{{ $total_return_orders." (".$total_approved_return_orders.")" }}</td>
+                                <td colspan="2"><strong>Total</strong></td>
+                                <td><strong>{{ $total_return_orders." (".$total_approved_return_orders.")" }}</strong></td>
                                 @if (session('user')->hasPermission('view_price'))
-                                <td>€{{ number_format($total_return_eur_items,2)." (€".number_format($total_approved_return_eur_items,2).")" }}</td>
-                                <td>£{{ number_format($total_return_gbp_items,2)." (£".number_format($total_approved_return_gbp_items,2).")" }}</td>
+                                <td><strong>€{{ number_format($total_return_eur_items,2)." (€".number_format($total_approved_return_eur_items,2).")" }}</strong></td>
+                                <td><strong>£{{ number_format($total_return_gbp_items,2)." (£".number_format($total_approved_return_gbp_items,2).")" }}</strong></td>
                                 @endif
                                 @if (session('user')->hasPermission('view_cost'))
-                                <td title="">€{{ number_format($total_return_cost,2) }}</td>
-                                <td>€{{ number_format($total_repair_return_cost,2) }}</td>
-                                <td>{{ number_format(0,2) }}</td>
-                                <td>€{{ number_format($total_eur_loss) }} + £{{ number_format($total_return_gbp_items,2) }}</td>
+                                <td title="">€{{ number_format($total_return_cost,2) }}</strong></td>
+                                <td><strong>€{{ number_format($total_repair_return_cost,2) }}</strong></td>
+                                <td><strong>{{ number_format(0,2) }}</strong></td>
+                                <td><strong>€{{ number_format($total_eur_loss) }} + £{{ number_format($total_return_gbp_items,2) }}</strong></td>
                                 @endif
                             </tr>
                         </tbody>
