@@ -188,7 +188,7 @@
                                     <td title="{{count(explode(',',$returns->stock_ids))}}">€{{ number_format($aggregated_return_cost[$returns->category_id],2) }}</td>
                                     <td>€{{ number_format($returns->items_repair_sum,2) }}</td>
                                     <td>{{ number_format(0,2) }}</td>
-                                    <td>€{{ number_format($returns->eur_items_sum - $aggregated_return_cost[$returns->category_id] - $returns->items_repair_sum,2) }} + £{{ number_format($sales->gbp_items_sum,2) }}</td>
+                                    <td>€{{ number_format(-$returns->eur_items_sum + $aggregated_return_cost[$returns->category_id] + $returns->items_repair_sum,2) }} + £{{ number_format($returns->gbp_items_sum,2) }}</td>
                                     @endif
                                 </tr>
                             @endforeach
