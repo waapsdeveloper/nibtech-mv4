@@ -91,6 +91,11 @@ class Report extends Component
         //     'category.'
         // )
         foreach ($aggregates as $agg) {
+
+            if (empty($agg->stock_ids)) {
+                $aggregated_cost[$agg->category_id] = 0;
+                continue;
+            }
             $aggregated_cost[$agg->category_id] = Order_item_model::whereIn('stock_id',explode(',',$agg->stock_ids))->whereHas('order', function ($q) {
                 $q->where('order_type_id',1);
             })->sum('price');
