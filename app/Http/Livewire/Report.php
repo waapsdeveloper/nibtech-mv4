@@ -90,6 +90,7 @@ class Report extends Component
         // $costs = Category_model::select(
         //     'category.'
         // )
+        $aggregated_cost = [];
         foreach ($aggregates as $agg) {
 
             if (empty($agg->stock_ids)) {
