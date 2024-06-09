@@ -163,6 +163,20 @@
                                     @endif
                                 </tr>
                             @endforeach
+                            <tr>
+                                <td><strong>Total</strong></td>
+                                <td>{{ $total_sale_orders." (".$total_approved_sale_orders.")" }}</td>
+                                @if (session('user')->hasPermission('view_price'))
+                                <td>€{{ number_format($total_sale_eur_items,2)." (€".number_format($total_approved_sale_eur_items,2).")" }}</td>
+                                <td>£{{ number_format($total_sale_gbp_items,2)." (£".number_format($total_approved_sale_gbp_items,2).")" }}</td>
+                                @endif
+                                @if (session('user')->hasPermission('view_cost'))
+                                <td title="">€{{ number_format($total_sale_cost,2) }}</td>
+                                <td>€{{ number_format($total_repair_cost,2) }}</td>
+                                <td>{{ number_format(0,2) }}</td>
+                                <td>€{{ number_format($total_eur_profit) }} + £{{ number_format($total_sale_gbp_items,2) }}</td>
+                                @endif
+                            </tr>
                         {{-- </tbody>
                     </table> --}}
                 {{-- </div>
@@ -213,7 +227,7 @@
                                     $total_return_gbp_items += $returns->gbp_items_sum;
                                     $total_approved_return_gbp_items += $returns->gbp_approved_items_sum;
                                     $total_return_cost += $aggregated_return_cost[$returns->category_id];
-                                    $total_repair_cost += $returns->items_repair_sum;
+                                    $total_repair_return_cost += $returns->items_repair_sum;
                                     $total_eur_loss += $returns->eur_items_sum - $aggregated_return_cost[$returns->category_id] - $returns->items_repair_sum;
                                 @endphp
                                 <tr>
@@ -232,6 +246,20 @@
                                     @endif
                                 </tr>
                             @endforeach
+                            <tr>
+                                <td><strong>Total</strong></td>
+                                <td>{{ $total_return_orders." (".$total_approved_return_orders.")" }}</td>
+                                @if (session('user')->hasPermission('view_price'))
+                                <td>€{{ number_format($total_return_eur_items,2)." (€".number_format($total_approved_return_eur_items,2).")" }}</td>
+                                <td>£{{ number_format($total_return_gbp_items,2)." (£".number_format($total_approved_return_gbp_items,2).")" }}</td>
+                                @endif
+                                @if (session('user')->hasPermission('view_cost'))
+                                <td title="">€{{ number_format($total_return_cost,2) }}</td>
+                                <td>€{{ number_format($total_repair_return_cost,2) }}</td>
+                                <td>{{ number_format(0,2) }}</td>
+                                <td>€{{ number_format($total_eur_loss) }} + £{{ number_format($total_return_gbp_items,2) }}</td>
+                                @endif
+                            </tr>
                         </tbody>
                     </table>
                 </div>
