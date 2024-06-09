@@ -136,7 +136,7 @@
                                     <td>£{{ number_format($sales->gbp_items_sum,2)." (£".number_format($sales->gbp_approved_items_sum,2).")" }}</td>
                                     @endif
                                     @if (session('user')->hasPermission('view_cost'))
-                                    <td>€{{ number_format($aggregated_sales_cost[$sales->category_id],2) }}</td>
+                                    <td title="{{count(explode(',',$sales->stock_ids))}}">€{{ number_format($aggregated_sales_cost[$sales->category_id],2) }}</td>
                                     <td>€{{ number_format($sales->items_repair_sum,2) }}</td>
                                     <td>{{ number_format(0,2) }}</td>
                                     <td>€{{ number_format($sales->eur_items_sum - $aggregated_sales_cost[$sales->category_id] - $sales->items_repair_sum,2) }} + £{{ number_format($sales->gbp_items_sum,2) }}</td>
