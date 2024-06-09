@@ -98,7 +98,7 @@
 
             <div class="card">
                 <div class="card-header mb-0">
-                    <h4 class="card-title mb-0">Sales Report</h4>
+                    <h4 class="card-title mb-0">Sales & Returns</h4>
                 </div>
 
                 <div class="card-body mt-0">
@@ -146,9 +146,9 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="card-header mb-0">
+                {{-- <div class="card-header mb-0">
                     <h4 class="card-title mb-0">Returns Report</h4>
-                </div>
+                </div> --}}
 
                 <div class="card-body mt-0">
                     <table class="table table-bordered table-hover text-md-nowrap">
@@ -165,7 +165,7 @@
                                     <th title="Only Shows average price for selected ranged EU orders"><small><b>Cost</b></small></th>
                                     <th title="Only Shows average price for selected ranged EU orders"><small><b>Repair</b></small></th>
                                     <th title="Only Shows average price for selected ranged EU orders"><small><b>Fee</b></small></th>
-                                    <th title="Only Shows average price for selected ranged EU orders"><small><b>Profit</b></small></th>
+                                    <th title="Only Shows average price for selected ranged EU orders"><small><b>Loss</b></small></th>
                                 @endif
                             </tr>
                         </thead>
