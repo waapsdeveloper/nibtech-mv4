@@ -146,6 +146,55 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="card-header mb-0">
+                    <h4 class="card-title mb-0">Returns Report</h4>
+                </div>
+
+                <div class="card-body mt-0">
+                    <table class="table table-bordered table-hover text-md-nowrap">
+                        <thead>
+                            <tr>
+                                <th><small><b>No</b></small></th>
+                                <th><small><b>Categories</b></small></th>
+                                <th><small><b>Qty</b></small></th>
+                                @if (session('user')->hasPermission('view_price'))
+                                <th title="Only Shows average Sales for selected ranged EU orders"><small><b>EUR Sales</b></small></th>
+                                <th title="Only Shows average Sales for selected ranged EU orders"><small><b>GBP Sales</b></small></th>
+                                @endif
+                                @if (session('user')->hasPermission('view_cost'))
+                                    <th title="Only Shows average price for selected ranged EU orders"><small><b>Cost</b></small></th>
+                                    <th title="Only Shows average price for selected ranged EU orders"><small><b>Repair</b></small></th>
+                                    <th title="Only Shows average price for selected ranged EU orders"><small><b>Fee</b></small></th>
+                                    <th title="Only Shows average price for selected ranged EU orders"><small><b>Profit</b></small></th>
+                                @endif
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                            @endphp
+                            @foreach ($aggregated_returns as $s => $returns)
+                                @php
+                                    // $weighted_average += $product->total_quantity_sold / $total * $product->average_price;
+                                @endphp
+                                <tr>
+                                    <td>{{ $s+1 }}</td>
+                                    <td>{{ $categories[$returns->category_id] }}</td>
+                                    <td>{{ $returns->orders_qty." (".$returns->approved_orders_qty.")" }}</td>
+                                    @if (session('user')->hasPermission('view_price'))
+                                    <td>€{{ number_format($returns->eur_items_sum,2)." (€".number_format($returns->eur_approved_items_sum,2).")" }}</td>
+                                    <td>£{{ number_format($returns->gbp_items_sum,2)." (£".number_format($returns->gbp_approved_items_sum,2).")" }}</td>
+                                    @endif
+                                    @if (session('user')->hasPermission('view_cost'))
+                                    <td title="{{count(explode(',',$returns->stock_ids))}}">€{{ number_format($aggregated_return_cost[$returns->category_id],2) }}</td>
+                                    <td>€{{ number_format($returns->items_repair_sum,2) }}</td>
+                                    <td>{{ number_format(0,2) }}</td>
+                                    <td>€{{ number_format($returns->eur_items_sum - $aggregated_returns_cost[$returns->category_id] - $returns->items_repair_sum,2) }} + £{{ number_format($sales->gbp_items_sum,2) }}</td>
+                                    @endif
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
 
