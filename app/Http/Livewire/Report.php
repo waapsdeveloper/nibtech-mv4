@@ -41,6 +41,7 @@ class Report extends Component
             $per_page = 10;
         }
         $data['purchase_status'] = [2 => '(Pending)', 3 => ''];
+        $data['categories'] = Category_model::pluck('name','id');
         $data['products'] = Products_model::orderBy('model','asc')->get();
         $data['colors'] = Color_model::pluck('name','id');
         $data['storages'] = Storage_model::pluck('name','id');
@@ -58,41 +59,7 @@ class Report extends Component
             $start_date = request('start_date') . " 00:00:00";
             $end_date = request('end_date') . " 23:59:59";
         }
-        // $products = Products_model::get()->toArray();
-        // Retrieve the top 10 selling products from the order_items table
-        // $data['orders_qty'] = Order_model::where('processed_at', '>=', $start_date)->where('order_type_id',3)
-        // ->where('processed_at', '<=', $end_date)->count();
-        // $data['approved_orders_qty'] = Order_model::where('processed_at', '>=', $start_date)->where('order_type_id',3)
-        // ->where('processed_at', '<=', $end_date)->where('status',3)->count();
-        // $data['eur_items_sum'] = Order_item_model::whereHas('order', function($q) use ($start_date,$end_date) {
-        //     $q->where('processed_at', '>=', $start_date)->where('order_type_id',3)
-        //     ->where('processed_at', '<=', $end_date)->where('currency',4);
-        // })->sum('price');
-        // $data['eur_approved_items_sum'] = Order_item_model::whereHas('order', function($q) use ($start_date,$end_date) {
-        //     $q->where('processed_at', '>=', $start_date)->where('order_type_id',3)
-        //     ->where('processed_at', '<=', $end_date)->where('status',3)->where('currency',4);
-        // })->sum('price');
-        // $data['gbp_items_sum'] = Order_item_model::whereHas('order', function($q) use ($start_date,$end_date) {
-        //     $q->where('processed_at', '>=', $start_date)->where('order_type_id',3)
-        //     ->where('processed_at', '<=', $end_date)->where('currency',5);
-        // })->sum('price');
-        // $data['gbp_approved_items_sum'] = Order_item_model::whereHas('order', function($q) use ($start_date,$end_date) {
-        //     $q->where('processed_at', '>=', $start_date)->where('order_type_id',3)
-        //     ->where('processed_at', '<=', $end_date)->where('status',3)->where('currency',5);
-        // })->sum('price');
 
-        $data = Category_model::with(['products.variations.order_items.order' => function ($query) use ($start_date, $end_date) {
-            $query->whereBetween('processed_at', [$start_date, $end_date])
-                  ->where('order_type_id', 3)
-                  ->select(
-                      DB::raw('COUNT(*) as orders_qty'),
-                      DB::raw('SUM(CASE WHEN status = 3 THEN 1 ELSE 0 END) as approved_orders_qty')
-                  );
-        }])
-        ->get();
-
-        // Collect category IDs to use in aggregate queries
-        $category_ids = $data->pluck('id');
 
         $aggregates = DB::table('category')
             ->join('products', 'category.id', '=', 'products.category')
@@ -117,6 +84,7 @@ class Report extends Component
             )
             ->whereBetween('orders.processed_at', [$start_date, $end_date])
             ->where('orders.order_type_id', 3)
+            ->whereIn('orders.status', [3,6])
             ->groupBy('category.id')
             ->get();
         // $costs = Category_model::select(
@@ -127,11 +95,14 @@ class Report extends Component
                 $q->where('order_type_id',1);
             })->sum('price');
         }
+
+        $data['aggregated_sales'] = $aggregates;
+        $data['aggregated_sales_cost'] = $aggregated_cost;
         // $aggregated_cost = Order_item_model::whereIn('stock_id',$stock_ids)->whereHas('order', function ($q) {
         //     $q->where('order_type_id',1);
         // })->sum('price');
 
-        dd($aggregates);
+        // dd($aggregates);
 
         // $data = Category_model::with(['products.variations.order_items.order'=> function($q) use ($start_date, $end_date) {
         //     $q->whereBetween('processed_at', [$start_date, $end_date])
@@ -259,7 +230,7 @@ class Report extends Component
 // });
 
 
-    dd($data);
+    // dd($data);
 
         $data['top_products'] = Order_item_model::select('products.model as product_name', 'color.name as color', 'storage.name as storage', 'variation.sku as sku', 'grade.name as grade', DB::raw('SUM(order_items.quantity) as total_quantity_sold'), DB::raw('AVG(CASE WHEN orders.currency = 4 THEN order_items.price END) as average_price'))
         ->where('orders.created_at', '>=', $start_date)->where('orders.created_at', '<=', $end_date)->where('orders.order_type_id',3)

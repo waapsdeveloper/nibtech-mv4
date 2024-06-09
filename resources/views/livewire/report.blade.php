@@ -97,11 +97,11 @@
             <br>
 
             <div class="card">
-                <div class="card-header">
-                    <h4 class="card-title mb-1">Sales</h4>
+                <div class="card-header mb-0">
+                    <h4 class="card-title mb-0">Sales Report</h4>
                 </div>
 
-                <div class="card-body">
+                <div class="card-body mt-0">
                     <table class="table table-bordered table-hover text-md-nowrap">
                         <thead>
                             <tr>
@@ -109,7 +109,8 @@
                                 <th><small><b>Categories</b></small></th>
                                 <th><small><b>Qty</b></small></th>
                                 @if (session('user')->hasPermission('view_price'))
-                                    <th title="Only Shows average price for selected ranged EU orders"><small><b>Price</b></small></th>
+                                <th title="Only Shows average Sales for selected ranged EU orders"><small><b>EUR Sales</b></small></th>
+                                <th title="Only Shows average Sales for selected ranged EU orders"><small><b>GBP Sales</b></small></th>
                                 @endif
                                 @if (session('user')->hasPermission('view_cost'))
                                     <th title="Only Shows average price for selected ranged EU orders"><small><b>Cost</b></small></th>
@@ -121,40 +122,28 @@
                         </thead>
                         <tbody>
                             @php
-                                $total = $top_products->sum('total_quantity_sold');
-                                $weighted_average = 0;
                             @endphp
-                            @foreach ($top_products as $top => $product)
+                            @foreach ($aggregated_sales as $s => $sales)
                                 @php
-                                    $weighted_average += $product->total_quantity_sold / $total * $product->average_price;
+                                    // $weighted_average += $product->total_quantity_sold / $total * $product->average_price;
                                 @endphp
                                 <tr>
-                                    <td>{{ $top+1 }}</td>
-                                    <td>{{ $product->product_name . " - " . $product->storage . " - " . $product->color . " - " . $product->grade }}</td>
-                                    <td>{{ $product->total_quantity_sold }}</td>
+                                    <td>{{ $s+1 }}</td>
+                                    <td>{{ $categories[$sales->category_id] }}</td>
+                                    <td>{{ $sales->orders_qty." (".$sales->approved_orders_qty.")" }}</td>
                                     @if (session('user')->hasPermission('view_price'))
-                                    <td>€{{ number_format($product->average_price,2) }}</td>
+                                    <td>€{{ number_format($sales->eur_items_sum,2)." (€".number_format($sales->eur_approved_items_sum,2).")" }}</td>
+                                    <td>£{{ number_format($sales->gbp_items_sum,2)." (£".number_format($sales->gbp_approved_items_sum,2).")" }}</td>
                                     @endif
-
-                                    <td>
-                                        <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
-                                        <div class="dropdown-menu">
-                                            {{-- <a class="dropdown-item" href="{{url(session('url').'order')}}/refresh/{{ $order->reference_id }}"><i class="fe fe-arrows-rotate me-2 "></i>Refresh</a> --}}
-                                            {{-- <a class="dropdown-item" href="{{ $order->delivery_note_url }}" target="_blank"><i class="fe fe-arrows-rotate me-2 "></i>Delivery Note</a> --}}
-                                            <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/listings/active?sku={{ $product->sku }}" target="_blank"><i class="fe fe-caret me-2"></i>View Listing in BackMarket</a>
-                                            <a class="dropdown-item" href="{{url(session('url').'order')}}?sku={{ $product->sku }}&start_date={{ $start_date }}&end_date={{ $end_date }}" target="_blank"><i class="fe fe-caret me-2"></i>View Orders</a>
-                                            <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?sku={{ $product->sku }}&startDate={{ $start_date }}&endDate={{ $end_date }}" target="_blank"><i class="fe fe-caret me-2"></i>View Orders in BackMarket</a>
-                                            {{-- <a class="dropdown-item" href="javascript:void(0);"><i class="fe fe-trash-2 me-2"></i>Delete</a> --}}
-                                        </div>
-                                    </td>
+                                    @if (session('user')->hasPermission('view_cost'))
+                                    <td>€{{ number_format($aggregated_sales_cost[$sales->category_id],2) }}</td>
+                                    <td>€{{ number_format($sales->items_repair_sum,2) }}</td>
+                                    <td>{{ number_format(0,2) }}</td>
+                                    <td>€{{ number_format($sales->eur_items_sum - $aggregated_sales_cost[$sales->category_id] - $sales->items_repair_sum,2) }} + £{{ number_format($sales->gbp_items_sum,2) }}</td>
+                                    @endif
                                 </tr>
                             @endforeach
                         </tbody>
-                        <tfoot>
-                            <tr>
-                                <td colspan="5" align="right">Weighted Average: €{{ number_format($weighted_average,2) }}</td>
-                            </tr>
-                        </tfoot>
                     </table>
                 </div>
             </div>
