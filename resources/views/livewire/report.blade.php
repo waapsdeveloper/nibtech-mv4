@@ -164,7 +164,7 @@
                                 </tr>
                             @endforeach
                             <tr>
-                                <td colspan="2"><strong>Profif</strong></td>
+                                <td colspan="2"><strong>Profit</strong></td>
                                 <td><strong>{{ $total_sale_orders." (".$total_approved_sale_orders.")" }}</strong></td>
                                 @if (session('user')->hasPermission('view_price'))
                                 <td><strong>€{{ number_format($total_sale_eur_items,2)." (€".number_format($total_approved_sale_eur_items,2).")" }}</strong></td>
@@ -248,7 +248,7 @@
                             @endforeach
                             <tr>
                                 <td colspan="2"><strong>Loss</strong></td>
-                                <td><strong>{{ $total_return_orders." (".$total_approved_return_orders.")" }}</strong></td>
+                                <td><strong>{{ $total_return_orders }}</strong></td>
                                 @if (session('user')->hasPermission('view_price'))
                                 <td><strong>€{{ number_format($total_return_eur_items,2) }}</strong></td>
                                 <td><strong>£{{ number_format($total_return_gbp_items,2) }}</strong></td>
@@ -261,11 +261,11 @@
                                 @endif
                             </tr>
                             <tr>
-                                <td colspan="2"><strong>Total</strong></td>
-                                <td><strong>{{ $total_sale_orders-$total_return_orders." (".$total_approved_sale_orders-$total_approved_return_orders.")" }}</strong></td>
+                                <td colspan="2"><strong>Net</strong></td>
+                                <td><strong>{{ $total_sale_orders-$total_return_orders }}</strong></td>
                                 @if (session('user')->hasPermission('view_price'))
-                                <td><strong>€{{ number_format($total_sale_eur_items-$total_return_eur_items,2)." (€".number_format($total_approved_sale_eur_items-$total_approved_return_eur_items,2).")" }}</strong></td>
-                                <td><strong>£{{ number_format($total_sale_gbp_items-$total_return_gbp_items,2)." (£".number_format($total_approved_sale_gbp_items-$total_approved_return_gbp_items,2).")" }}</strong></td>
+                                <td><strong>€{{ number_format($total_sale_eur_items-$total_return_eur_items,2) }}</strong></td>
+                                <td><strong>£{{ number_format($total_sale_gbp_items-$total_return_gbp_items,2) }}</strong></td>
                                 @endif
                                 @if (session('user')->hasPermission('view_cost'))
                                 <td title=""><strong>€{{ number_format($total_sale_cost-$total_return_cost,2) }}</strong></td>
