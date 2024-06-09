@@ -84,6 +84,10 @@ class Report extends Component
             )
             ->whereBetween('orders.processed_at', [$start_date, $end_date])
             ->where('orders.order_type_id', 3)
+            ->Where('orders.deleted_at',null)
+            ->Where('order_items.deleted_at',null)
+            ->Where('stock.deleted_at',null)
+            ->Where('process_stock.deleted_at',null)
             ->whereIn('orders.status', [3,6])
             ->groupBy('category.id')
             ->get();
