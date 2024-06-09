@@ -131,7 +131,6 @@
                                 $total_sale_cost = 0;
                                 $total_repair_cost = 0;
                                 $total_eur_profit = 0;
-                                $total_gbp_profit = 0;
                             @endphp
                             <tr>
                                 <td colspan="9" align="center"><b>Sales</b></td>
@@ -195,10 +194,27 @@
                                 <td colspan="9" align="center"><b>Returns</b></td>
                             </tr>
                             @php
+                            $total_return_orders = 0;
+                            $total_approved_return_orders = 0;
+                            $total_return_eur_items = 0;
+                            $total_approved_return_eur_items = 0;
+                            $total_return_gbp_items = 0;
+                            $total_approved_return_gbp_items = 0;
+                            $total_return_cost = 0;
+                            $total_repair_return_cost = 0;
+                            $total_eur_loss = 0;
                             @endphp
                             @foreach ($aggregated_returns as $s => $returns)
                                 @php
-                                    // $weighted_average += $product->total_quantity_sold / $total * $product->average_price;
+                                    $total_return_orders += $returns->orders_qty;
+                                    $total_approved_return_orders += $returns->approved_orders_qty;
+                                    $total_return_eur_items += $returns->eur_items_sum;
+                                    $total_approved_return_eur_items += $returns->eur_approved_items_sum;
+                                    $total_return_gbp_items += $returns->gbp_items_sum;
+                                    $total_approved_return_gbp_items += $returns->gbp_approved_items_sum;
+                                    $total_return_cost += $aggregated_returns_cost[$returns->category_id];
+                                    $total_repair_cost += $returns->items_repair_sum;
+                                    $total_eur_loss += $returns->eur_items_sum - $aggregated_returns_cost[$returns->category_id] - $returns->items_repair_sum;
                                 @endphp
                                 <tr>
                                     <td>{{ $s+1 }}</td>
@@ -212,7 +228,7 @@
                                     <td title="{{count(explode(',',$returns->stock_ids))}}">€{{ number_format($aggregated_return_cost[$returns->category_id],2) }}</td>
                                     <td>€{{ number_format($returns->items_repair_sum,2) }}</td>
                                     <td>{{ number_format(0,2) }}</td>
-                                    <td>€{{ number_format(-$returns->eur_items_sum + $aggregated_return_cost[$returns->category_id] + $returns->items_repair_sum,2) }} + £{{ number_format($returns->gbp_items_sum,2) }}</td>
+                                    <td>€{{ number_format(-$returns->eur_items_sum - $aggregated_return_cost[$returns->category_id] + $returns->items_repair_sum,2) }} + £{{ number_format($returns->gbp_items_sum,2) }}</td>
                                     @endif
                                 </tr>
                             @endforeach
