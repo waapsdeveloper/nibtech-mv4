@@ -125,13 +125,15 @@ class Inventory extends Component
             return $q->whereHas('order_items.order', function ($q) use ($replacements) {
                 $q->where(['status'=>3, 'order_type_id'=>3])
                 ->whereNotIn('reference_id', $replacements);
-            });
+            })->Where('status',1);
         })
 
         ->when(request('rma') != '', function ($query) use ($rmas) {
             return $query->whereDoesntHave('order_items', function ($q) use ($rmas) {
                 $q->whereIn('order_id', $rmas);
-            });
+            })->whereHas('variation', function ($q) {
+                $q->where('grade', 10);
+            })->Where('status',2);
         })
         ->when(request('storage') != '', function ($q) {
             return $q->whereHas('variation', function ($q) {
@@ -187,7 +189,15 @@ class Inventory extends Component
             return $q->whereHas('order_items.order', function ($q) use ($replacements) {
                 $q->where(['status'=>3, 'order_type_id'=>3])
                 ->whereNotIn('reference_id', $replacements);
-            });
+            })->Where('status',1);
+        })
+
+        ->when(request('rma') != '', function ($query) use ($rmas) {
+            return $query->whereDoesntHave('order_items', function ($q) use ($rmas) {
+                $q->whereIn('order_id', $rmas);
+            })->whereHas('variation', function ($q) {
+                $q->where('grade', 10);
+            })->Where('status',2);
         })
         ->when(request('storage') != '', function ($q) {
             return $q->whereHas('variation', function ($q) {
@@ -279,7 +289,15 @@ class Inventory extends Component
             return $q->whereHas('order_items.order', function ($q) use ($replacements) {
                 $q->where(['status'=>3, 'order_type_id'=>3])
                 ->whereNotIn('reference_id', $replacements);
-            });
+            })->Where('status',1);
+        })
+
+        ->when(request('rma') != '', function ($query) use ($rmas) {
+            return $query->whereDoesntHave('order_items', function ($q) use ($rmas) {
+                $q->whereIn('order_id', $rmas);
+            })->whereHas('variation', function ($q) {
+                $q->where('grade', 10);
+            })->Where('status',2);
         })
         ->when(request('storage') != '', function ($q) {
             return $q->whereHas('variation', function ($q) {
