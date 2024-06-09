@@ -52,8 +52,8 @@ class Report extends Component
         ->onEachSide(5)
         ->appends(request()->except('page'));
 
-        // $start_date = Carbon::now()->startOfDay();
-        $start_date = date('Y-4-d 23:59:59');
+        $start_date = Carbon::now()->startOfMonth();
+        // $start_date = date('Y-m-d 00:00:00',);
         $end_date = date('Y-m-d 23:59:59');
         if (request('start_date') != NULL && request('end_date') != NULL) {
             $start_date = request('start_date') . " 00:00:00";
