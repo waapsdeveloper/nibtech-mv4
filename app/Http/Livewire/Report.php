@@ -81,11 +81,6 @@ class Report extends Component
         //     ->where('processed_at', '<=', $end_date)->where('status',3)->where('currency',5);
         // })->sum('price');
 
-        $stock_ids = Stock_model::whereHas('order_items.order', function($q) use ($start_date, $end_date) {
-            $q->whereBetween('processed_at', [$start_date, $end_date])
-                ->where('order_type_id', 3);
-        })->pluck('id')->toArray();
-
         $data = Category_model::with(['products.variations.order_items.order' => function ($query) use ($start_date, $end_date) {
             $query->whereBetween('processed_at', [$start_date, $end_date])
                   ->where('order_type_id', 3)
@@ -105,18 +100,20 @@ class Report extends Component
             ->join('order_items', 'variation.id', '=', 'order_items.variation_id')
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->leftJoin('stock', 'order_items.stock_id', '=', 'stock.id')
-            // ->leftJoin('process_stocks', 'stocks.id', '=', 'process_stocks.stock_id')
-            // ->leftJoin('processes', 'process_stocks.process_id', '=', 'processes.id')
+            ->leftJoin('process_stock', 'stock.id', '=', 'process_stock.stock_id')
+            ->leftJoin('process', 'process_stock.process_id', '=', 'process.id')
             ->select(
                 'category.id as category_id',
+                DB::raw('COUNT(orders.id) as orders_qty'),
+                DB::raw('SUM(CASE WHEN orders.status = 3 THEN 1 ELSE 0 END) as approved_orders_qty'),
                 DB::raw('SUM(CASE WHEN orders.currency = 4 THEN order_items.price ELSE 0 END) as eur_items_sum'),
                 DB::raw('SUM(CASE WHEN orders.currency = 4 AND orders.status = 3 THEN order_items.price ELSE 0 END) as eur_approved_items_sum'),
                 DB::raw('SUM(CASE WHEN orders.currency = 5 THEN order_items.price ELSE 0 END) as gbp_items_sum'),
                 DB::raw('SUM(CASE WHEN orders.currency = 5 AND orders.status = 3 THEN order_items.price ELSE 0 END) as gbp_approved_items_sum'),
-                'stock.id as stock_id'
+                DB::raw('GROUP_CONCAT(stock.id) as stock_ids'),
                 // DB::raw('SUM(CASE WHEN orders.currency = 5 AND orders.status = 3 THEN order_items.price ELSE 0 END) as gbp_approved_items_sum'),
                 // DB::raw('SUM(purchase_items.price) as items_cost_sum'),
-                // DB::raw('SUM(CASE WHEN processes.process_type_id = 9 THEN process_stocks.price ELSE 0 END) as items_repair_sum')
+                DB::raw('SUM(CASE WHEN process.process_type_id = 9 THEN process_stock.price ELSE 0 END) as items_repair_sum')
             )
             ->whereBetween('orders.processed_at', [$start_date, $end_date])
             ->where('orders.order_type_id', 3)
@@ -125,12 +122,14 @@ class Report extends Component
         // $costs = Category_model::select(
         //     'category.'
         // )
-        $aggregated_cost = Order_item_model::whereIn('stock_id',$stock_ids)->whereHas('order', function ($q) {
-            $q->where('order_type_id',1);
-        })->sum('price');
-        $aggregated_repair = Process_stock_model::whereIn('stock_id',$stock_ids)->whereHas('process', function ($q) {
-            $q->where('process_type_id',1);
-        })->sum('price');
+        foreach ($aggregates as $agg) {
+            $aggregated_cost[$agg->category_id] = Order_item_model::whereIn('stock_id',explode(',',$agg->stock_ids))->whereHas('order', function ($q) {
+                $q->where('order_type_id',1);
+            })->sum('price');
+        }
+        // $aggregated_cost = Order_item_model::whereIn('stock_id',$stock_ids)->whereHas('order', function ($q) {
+        //     $q->where('order_type_id',1);
+        // })->sum('price');
 
         dd($aggregates);
 
