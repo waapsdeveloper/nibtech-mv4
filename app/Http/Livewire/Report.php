@@ -131,7 +131,7 @@ class Report extends Component
                 // DB::raw('SUM(purchase_items.price) as items_cost_sum'),
                 DB::raw('SUM(CASE WHEN process.process_type_id = 9 THEN process_stock.price ELSE 0 END) as items_repair_sum')
             )
-            ->whereBetween('orders.processed_at', [$start_date, $end_date])
+            ->whereBetween('orders.created_at', [$start_date, $end_date])
             ->where('orders.order_type_id', 4)
             ->Where('orders.deleted_at',null)
             ->Where('order_items.deleted_at',null)
