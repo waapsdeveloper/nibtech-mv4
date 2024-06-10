@@ -101,9 +101,11 @@ class Inventory extends Component
             $data['verified_stocks'] = $verified_stocks;
         }
         $data['active_inventory_verification'] = $active_inventory_verification;
+        $aftersale = Order_item_model::whereHas('order', function ($q) {
+            $q->where('order_type_id',4)->where('status','<',3);
+        })->pluck('stock_id')->toArray();
 
-
-        $data['stocks'] = Stock_model::whereNotIn('stock.id',$all_verified_stocks)
+        $data['stocks'] = Stock_model::whereNotIn('stock.id',$all_verified_stocks)->whereNotIn('stock.id',$aftersale)
 
         ->when(request('stock_status') != '', function ($q) {
             return $q->where('status', request('stock_status'));
