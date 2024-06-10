@@ -2,15 +2,17 @@
 
 namespace App\Mail;
 
-use Swift_Transport;
-use Swift_Mime_Message;
-use Swift_Mime_SimpleMessage;
-use Swift_Events_EventListener;
+use Symfony\Component\Mailer\Transport\TransportInterface;
+use Symfony\Component\Mailer\SentMessage;
+use Symfony\Component\Mailer\Envelope;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\Mime\RawMessage;
 use Google_Client;
 use Google_Service_Gmail;
 use Google_Service_Gmail_Message;
+use Illuminate\Support\Facades\Log;
 
-class GmailTransport implements Swift_Transport
+class GmailTransport implements TransportInterface
 {
     protected $client;
 
@@ -19,22 +21,7 @@ class GmailTransport implements Swift_Transport
         $this->client = $client;
     }
 
-    public function isStarted()
-    {
-        return true;
-    }
-
-    public function start()
-    {
-        // No action needed to start the transport
-    }
-
-    public function stop()
-    {
-        // No action needed to stop the transport
-    }
-
-    public function send(Swift_Mime_Message $message, &$failedRecipients = null)
+    public function send(RawMessage $message, Envelope $envelope = null): ?SentMessage
     {
         $service = new Google_Service_Gmail($this->client);
 
@@ -47,15 +34,15 @@ class GmailTransport implements Swift_Transport
         try {
             $service->users_messages->send('me', $gmailMessage);
         } catch (\Exception $e) {
-            \Log::error('Failed to send email via Gmail API: ' . $e->getMessage());
-            throw $e;
+            Log::error('Failed to send email via Gmail API: ' . $e->getMessage());
+            throw new TransportExceptionInterface($e->getMessage(), $e->getCode(), $e);
         }
 
-        return 1; // Assuming a single email sent; you may need to adjust based on your requirements
+        return new SentMessage($message, $envelope);
     }
 
-    public function registerPlugin(Swift_Events_EventListener $plugin)
+    public function __toString(): string
     {
-        // No action needed to register plugins
+        return 'gmail';
     }
 }

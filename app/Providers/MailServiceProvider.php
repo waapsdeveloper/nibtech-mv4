@@ -3,7 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Mail\MailManager;
+use Symfony\Component\Mailer\Mailer;
+use Symfony\Component\Mailer\Transport\TransportInterface;
 use Google_Client;
 use App\Mail\GmailTransport;
 
@@ -11,12 +12,8 @@ class MailServiceProvider extends ServiceProvider
 {
     public function register()
     {
-        //
-    }
-
-    public function boot()
-    {
-        $this->app->make(MailManager::class)->extend('gmail', function () {
+        // Register the custom Gmail transport
+        $this->app->singleton(TransportInterface::class, function ($app) {
             $client = new Google_Client();
             $client->setClientId(config('services.google.client_id'));
             $client->setClientSecret(config('services.google.client_secret'));
@@ -36,5 +33,16 @@ class MailServiceProvider extends ServiceProvider
 
             return new GmailTransport($client);
         });
+
+        // Register the mailer
+        $this->app->singleton('mailer', function ($app) {
+            $transport = $app->make(TransportInterface::class);
+            return new Mailer($transport);
+        });
+    }
+
+    public function boot()
+    {
+        //
     }
 }
