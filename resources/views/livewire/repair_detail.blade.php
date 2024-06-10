@@ -366,7 +366,7 @@
                                             </td>
 
                                             @if ($process->status == 3 && session('user')->hasPermission('view_cost'))
-                                            <td>{{$item->price}}</td>
+                                            <td>{{$processed_stock->price}}</td>
                                             @endif
                                             @if (session('user')->hasPermission('delete_repair_item'))
                                             {{-- <td><a href="{{ url('delete_repair_item').'/'.$item->process_stock($process_id)->id }}"><i class="fa fa-trash"></i></a></td> --}}

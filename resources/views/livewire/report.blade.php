@@ -233,7 +233,7 @@
                                 <tr>
                                     <td>{{ $s+1 }}</td>
                                     <td>{{ $categories[$returns->category_id] }}</td>
-                                    <td>{{ $returns->orders_qty." (".$returns->approved_orders_qty.")" }}</td>
+                                    <td>{{ $returns->orders_qty }}</td>
                                     @if (session('user')->hasPermission('view_price'))
                                     <td>€{{ number_format($returns->eur_items_sum,2) }}</td>
                                     <td>£{{ number_format($returns->gbp_items_sum,2) }}</td>
