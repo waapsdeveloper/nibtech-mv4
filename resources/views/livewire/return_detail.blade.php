@@ -24,7 +24,7 @@
                 <div class="left-content">
                 {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">Return</span> --}}
                     @if ($order->status == 1)
-                    <form class="form-inline" method="POST" action="{{url('return/approve').'/'.$order->id}}">
+                    <form class="form-inline" method="POST" action="{{url('return/ship').'/'.$order->id}}">
                         @csrf
                         <div class="form-floating">
                             <input type="text" class="form-control" id="tracking_number" name="tracking_number" placeholder="Enter Tracking Number" required>
@@ -33,7 +33,17 @@
                         <button type="submit" class="btn btn-success">Ship</button>
                     </form>
                     @else
-                    Tracking Number: <a href="https://www.dhl.com/gb-en/home/tracking/tracking-express.html?submit=1&tracking-id={{$order->tracking_number}}" target="_blank"> {{$order->tracking_number}}</a>
+                        @if ($order->status == 2)
+                        <form class="form-inline" method="POST" action="{{url('return/approve').'/'.$order->id}}">
+                            @csrf
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="reference" name="reference" placeholder="Enter Reference Message" required>
+                                <label for="reference">Reference Message</label>
+                            </div>
+                            <button type="submit" class="btn btn-success">Ship</button>
+                        </form>
+                        @endif
+                        Tracking Number: <a href="https://www.dhl.com/gb-en/home/tracking/tracking-express.html?submit=1&tracking-id={{$order->tracking_number}}" target="_blank"> {{$order->tracking_number}}</a>
                     @endif
                 </div>
                 <div class="justify-content-center mt-2">

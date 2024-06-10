@@ -73,10 +73,18 @@ class SalesReturn extends Component
         // dd($data['orders']);
         return view('livewire.return')->with($data);
     }
-    public function return_approve($order_id){
+    public function return_ship($order_id){
         $order = Order_model::find($order_id);
         $order->tracking_number = request('tracking_number');
         $order->status = 2;
+        $order->save();
+
+        return redirect()->back();
+    }
+    public function return_approve($order_id){
+        $order = Order_model::find($order_id);
+        $order->reference = request('reference');
+        $order->status = 3;
         $order->save();
 
         return redirect()->back();

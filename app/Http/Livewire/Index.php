@@ -177,7 +177,12 @@ class Index extends Component
         })
         ->count();
 
+        $aftersale = Order_item_model::whereHas('order', function ($q) {
+            $q->where('order_type_id',4)->where('status','<',3);
+        })->pluck('stock_id')->toArray();
+        $data['returns_in_progress'] = $aftersale->count();
         $data['graded_inventory'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', 'orders.status as status_id', DB::raw('COUNT(*) as quantity'))
+        ->whereNotIn('stock.id', $aftersale)
         ->where('stock.status', 1)
         ->join('variation', 'stock.variation_id', '=', 'variation.id')
         ->join('grade', 'variation.grade', '=', 'grade.id')

@@ -80,6 +80,7 @@ Route::post('add_return_item/{id}', [SalesReturn::class,'add_return_item'])->nam
 Route::get('delete_return/{id}', [SalesReturn::class,'delete_return'])->name('delete_return');
 Route::get('delete_return_item/{id}', [SalesReturn::class,'delete_return_item'])->name('delete_return_item');
 Route::get('return/detail/{id}', [SalesReturn::class,'return_detail'])->name('return_detail');
+Route::post('return/ship/{id}', [SalesReturn::class,'return_ship'])->name('return_ship');
 Route::post('return/approve/{id}', [SalesReturn::class,'return_approve'])->name('return_approve');
 
 Route::get('repair', Repair::class)->name('view_repair');
