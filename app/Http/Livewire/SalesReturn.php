@@ -248,7 +248,11 @@ class SalesReturn extends Component
             $ref = 3001;
         }else{
             $ref = $last_order->reference_id+1;
+            if($last_order->order_items->count() == 0){
+                return redirect(url('return/detail').'/'.$last_order->id);
+            }
         }
+
         $order = Order_model::create([
             'reference_id' => $ref,
             'status' => 1,
