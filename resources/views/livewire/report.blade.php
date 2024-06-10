@@ -27,12 +27,9 @@
 					</div>
 					<!-- /breadcrumb -->
 
-            <div class="row">
+            {{-- <div class="row">
 
                 <div class="col-md">
-                    {{-- <div class="card-header">
-                        <h4 class="card-title mb-1">Model</h4>
-                    </div> --}}
                     <div class="form-floating">
                         <input type="text" name="product" value="{{ Request::get('product') }}" class="form-control" data-bs-placeholder="Select Model" list="product-menu" form="index">
                         <label for="product">Product</label>
@@ -45,9 +42,6 @@
                     </datalist>
                 </div>
                 <div class="col-md">
-                    {{-- <div class="card-header">
-                        <h4 class="card-title mb-1">Storage</h4>
-                    </div> --}}
                     <select name="storage" class="form-control form-select" form="index">
                         <option value="">Storage</option>
                         @foreach ($storages as $id=>$name)
@@ -56,9 +50,6 @@
                     </select>
                 </div>
                 <div class="col-md">
-                    {{-- <div class="card-header">
-                        <h4 class="card-title mb-1">Storage</h4>
-                    </div> --}}
                     <select name="color" class="form-control form-select" form="index">
                         <option value="">Color</option>
                         @foreach ($colors as $id=>$name)
@@ -67,9 +58,6 @@
                     </select>
                 </div>
                 <div class="col-md">
-                    {{-- <div class="card-header">
-                        <h4 class="card-title mb-1">Grade</h4>
-                    </div> --}}
                     <select name="grade" class="form-control form-select" form="index">
                         <option value="">Grade</option>
                         @foreach ($grades as $id=>$name)
@@ -94,14 +82,34 @@
                     <button type="submit" class="btn btn-icon  btn-success me-1" form="index"><i class="fe fe-search"></i></button>
                 </div>
                 <form action="" method="GET" id="index"></form>
-            </div>
+            </div> --}}
             <br>
 
             <div class="card">
-                <div class="card-header mb-0">
-                    <h4 class="card-title mb-0">Sales & Returns</h4>
-                </div>
+                <div class="d-flex justify-content-between">
+                    <div class="card-header mb-0">
+                        <h4 class="card-title mb-0">Sales & Returns</h4>
+                    </div>
+                    <div class="">
 
+                        <form action="" method="GET" id="index">
+                            <div class="row">
+                                <div class="col-xl-5 col-lg-5 col-md-5 col-xs-5">
+                                    <label for="">{{ __('locale.Start Date') }}</label>
+                                    <input class="form-control" id="datetimepicker" type="date" id="strat" name="start_date" value="{{$start_date}}">
+                                </div>
+                                <div class="col-xl-5 col-lg-5 col-md-5 col-xs-5">
+                                    <label for="">{{ __('locale.End Date') }}</label>
+                                    <input class="form-control" id="datetimepicker" type="date" id="end" name="end_date" value="{{$end_date}}">
+                                </div>
+                                <div class="col-xl-2 col-lg-2 col-md-2 col-xs-2">
+                                    <label for="">&nbsp;</label>
+                                    <button type="submit" class="btn btn-icon  btn-success me-1"><i class="fe fe-search"></i></button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
                 <div class="card-body mt-0">
                     <table class="table table-bordered table-hover text-md-nowrap">
                         <thead>
@@ -180,31 +188,7 @@
                             </tr>
                         {{-- </tbody>
                     </table> --}}
-                {{-- </div>
-                <div class="card-header mb-0">
-                    <h4 class="card-title mb-0">Returns Report</h4>
-                </div>
 
-                <div class="card-body mt-0"> --}}
-                    {{-- <table class="table table-bordered table-hover text-md-nowrap">
-                        <thead>
-                            <tr>
-                                <th><small><b>Returns</b></small></th>
-                                <th><small><b>Categories</b></small></th>
-                                <th><small><b>Qty</b></small></th>
-                                @if (session('user')->hasPermission('view_price'))
-                                <th title=""><small><b>EUR Sales</b></small></th>
-                                <th title=""><small><b>GBP Sales</b></small></th>
-                                @endif
-                                @if (session('user')->hasPermission('view_cost'))
-                                    <th title=""><small><b>Cost</b></small></th>
-                                    <th title=""><small><b>Repair</b></small></th>
-                                    <th title=""><small><b>Fee</b></small></th>
-                                    <th title=""><small><b>Loss</b></small></th>
-                                @endif
-                            </tr>
-                        </thead>
-                        <tbody> --}}
                             <tr>
                                 <td colspan="9" align="center"><b>Returns</b></td>
                             </tr>
@@ -317,7 +301,7 @@
                                                 <input type="hidden" name="start_date" value="{{ $start_date }}">
                                                 <input type="hidden" name="end_date" value="{{ $end_date }}">
                                                 <input type="hidden" name="product" value="{{ Request::get('product') }}">
-                                                <input type="hidden" name="storage" value="{{ Request::get('storage') }}">>
+                                                <input type="hidden" name="storage" value="{{ Request::get('storage') }}">
                                                 <input type="hidden" name="color" value="{{ Request::get('color') }}">
                                                 <input type="hidden" name="grade" value="{{ Request::get('grade') }}">
                                             </form>
