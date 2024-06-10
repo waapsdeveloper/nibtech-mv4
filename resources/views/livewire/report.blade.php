@@ -86,8 +86,8 @@
             <br>
 
             <div class="card">
-                <div class="d-flex justify-content-between">
-                    <div class="card-header mb-0">
+                <div class="card-header d-flex justify-content-between">
+                    <div class="mb-0">
                         <h4 class="card-title mb-0">Sales & Returns</h4>
                     </div>
                     <div class="">
