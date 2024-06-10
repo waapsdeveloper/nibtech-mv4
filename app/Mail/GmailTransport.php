@@ -5,16 +5,31 @@ namespace App\Mail;
 use Google_Client;
 use Google_Service_Gmail;
 use Google_Service_Gmail_Message;
-use Illuminate\Mail\Transport\Transport;
 use Swift_Mime_SimpleMessage;
+use Swift_Transport;
 
-class GmailTransport extends Transport
+class GmailTransport implements Swift_Transport
 {
     protected $client;
 
     public function __construct(Google_Client $client)
     {
         $this->client = $client;
+    }
+
+    public function isStarted()
+    {
+        return true;
+    }
+
+    public function start()
+    {
+        // No action needed to start the transport
+    }
+
+    public function stop()
+    {
+        // No action needed to stop the transport
     }
 
     public function send(Swift_Mime_SimpleMessage $message, &$failedRecipients = null)
@@ -33,5 +48,10 @@ class GmailTransport extends Transport
             \Log::error('Failed to send email via Gmail API: ' . $e->getMessage());
             throw $e;
         }
+    }
+
+    public function registerPlugin(Swift_Events_EventListener $plugin)
+    {
+        // No action needed to register plugins
     }
 }
