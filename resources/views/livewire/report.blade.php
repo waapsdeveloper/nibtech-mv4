@@ -111,7 +111,6 @@
                                     <input class="form-control" id="datetimepicker" type="date" id="end" name="end_date" value="{{$end_date}}"> --}}
                                 </div>
                                 <div class="col-xl-2 col-lg-2 col-md-2 col-xs-2">
-                                    <label for="">&nbsp;</label>
                                     <button type="submit" class="btn btn-icon  btn-success me-1"><i class="fe fe-search"></i></button>
                                 </div>
                             </div>
