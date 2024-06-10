@@ -94,7 +94,7 @@ class GoogleController extends Controller
         $service = new Google_Service_Gmail($client);
 
         $boundary = uniqid(rand(), true);
-        $rawMessageString = "From: your-email@gmail.com\r\n";
+        $rawMessageString = "From: no-reply@nibritaintech.com\r\n";
         $rawMessageString .= "To: " . $recipientEmail . "\r\n";
         $rawMessageString .= "Subject: " . $subject . "\r\n";
         $rawMessageString .= "MIME-Version: 1.0\r\n";
@@ -160,7 +160,7 @@ class GoogleController extends Controller
 
     // Construct the email message
     $boundary = uniqid(rand(), true);
-    $rawMessageString = "From: your-email@gmail.com\r\n";
+    $rawMessageString = "From: no-reply@nibritaintech.com\r\n";
     $rawMessageString .= "To: {$recipientEmail}\r\n";
     $rawMessageString .= "Subject: {$subject}\r\n";
     $rawMessageString .= "MIME-Version: 1.0\r\n";
