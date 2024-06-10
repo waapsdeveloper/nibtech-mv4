@@ -180,7 +180,7 @@ class Index extends Component
         $aftersale = Order_item_model::whereHas('order', function ($q) {
             $q->where('order_type_id',4)->where('status','<',3);
         })->pluck('stock_id')->toArray();
-        $data['returns_in_progress'] = $aftersale->count();
+        $data['returns_in_progress'] = count($aftersale);
         $data['graded_inventory'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', 'orders.status as status_id', DB::raw('COUNT(*) as quantity'))
         ->whereNotIn('stock.id', $aftersale)
         ->where('stock.status', 1)

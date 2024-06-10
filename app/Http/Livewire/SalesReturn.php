@@ -235,6 +235,7 @@ class SalesReturn extends Component
         ->when(request('status') != '', function ($q) {
             return $q->whereHas('variations.stocks', function ($q) {
                 $q->where('status', request('status'));
+
             });
         })
         ->orderBy('id', 'asc')
