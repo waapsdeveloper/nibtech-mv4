@@ -78,21 +78,22 @@
                     </select>
                 </div>
 
-                {{-- <div class="col-md">
+                <div class="col-md">
                     <div class="form-floating">
-                        <input class="form-control" id="datetimepicker" type="date" id="start" name="start_date" value="{{$start_date}}">
+                        <input class="form-control" id="datetimepicker" type="date" id="start" name="start_date" value="{{$start_date}}" form="index">
                         <label for="start">{{ __('locale.Start Date') }}</label>
                     </div>
                 </div>
                 <div class="col-md">
                     <div class="form-floating">
-                        <input class="form-control" id="datetimepicker" type="date" id="end" name="end_date" value="{{$end_date}}">
+                        <input class="form-control" id="datetimepicker" type="date" id="end" name="end_date" value="{{$end_date}}" form="index">
                         <label for="end">{{ __('locale.End Date') }}</label>
                     </div>
                 </div>
                 <div class="col-md">
-                    <button type="submit" class="btn btn-icon  btn-success me-1"><i class="fe fe-search"></i></button>
-                </div> --}}
+                    <button type="submit" class="btn btn-icon  btn-success me-1" form="index"><i class="fe fe-search"></i></button>
+                </div>
+                <form action="" method="GET" id="index"></form>
             </div>
             <br>
 
@@ -433,7 +434,7 @@
                                 </div>
                                 {{-- Date search section --}}
                                 <div class="col-xl-6 col-lg-6 col-md-8 col-xs-12">
-                                    <div class="card">
+                                    {{-- <div class="card">
                                         <div class="card-header">
                                             <h4 class="card-title mb-1">{{ __('locale.Search Records By Dates') }}</h4>
                                         </div>
@@ -455,7 +456,7 @@
                                                 </div>
                                             </form>
                                         </div>
-                                    </div>
+                                    </div> --}}
                                 </div>
 
                             </div>
