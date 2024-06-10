@@ -429,6 +429,15 @@
         @if (isset($graded_stocks))
 
 
+        <div class="d-flex justify-content-between">
+            <div>
+                <a href="{{url('return/detail')."/".$order->id}}?status=1" class="btn btn-link @if (request('status') == 1) bg-white @endif ">Available</a>
+                <a href="{{url('return/detail')."/".$order->id}}?status=2" class="btn btn-link @if (request('status') == 2) bg-white @endif ">Sold</a>
+                <a href="{{url('return/detail')."/".$order->id}}" class="btn btn-link @if (!request('status')) bg-white @endif " >All</a>
+            </div>
+            <div class="">
+            </div>
+        </div>
         <div class="row">
             <div class="col-xl-12">
                 <div class="card">

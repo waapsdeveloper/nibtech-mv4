@@ -232,6 +232,11 @@ class SalesReturn extends Component
         ->whereHas('variations.stocks.order_items', function ($query) use ($order_id) {
             $query->where('order_id', $order_id);
         })
+        ->when(request('status') != '', function ($q) {
+            return $q->whereHas('variations.stocks', function ($q) {
+                $q->where('status', request('status'));
+            });
+        })
         ->orderBy('id', 'asc')
         ->get();
         // dd($graded_stock);
