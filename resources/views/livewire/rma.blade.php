@@ -221,7 +221,7 @@
                         <input type="hidden" name="rma[type]" id="" value="5">
                         <div class="form-group">
                             <label for="">Reference ID</label>
-                            <input class="form-control" placeholder="input Reference No" name="rma[reference_id]" type="text" required>
+                            <input class="form-control" placeholder="input Reference No" name="rma[reference_id]" type="text" value="{{ $latest_reference }}" readonly required>
                         </div>
                         <div class="form-group">
                             <label for="">Vendor</label>

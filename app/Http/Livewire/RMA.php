@@ -38,6 +38,7 @@ class RMA extends Component
 
         $user_id = session('user_id');
         $data['vendors'] = Customer_model::where('is_vendor','!=',null)->pluck('first_name','id');
+        $data['latest_reference'] = Order_model::where('order_type_id',2)->orderBy('reference_id','DESC')->first()->reference_id;
         $data['currencies'] = Currency_model::pluck('sign','id');
         $data['order_statuses'] = Order_status_model::get();
             if(request('per_page') != null){
