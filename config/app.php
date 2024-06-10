@@ -181,6 +181,7 @@ return [
         Barryvdh\DomPDF\ServiceProvider::class,
 
 
+        App\Providers\MailServiceProvider::class,
     ],
 
     /*
