@@ -95,12 +95,20 @@
                         <form action="" method="GET" id="index">
                             <div class="row">
                                 <div class="col-xl-5 col-lg-5 col-md-5 col-xs-5">
-                                    <label for="">{{ __('locale.Start Date') }}</label>
-                                    <input class="form-control" id="datetimepicker" type="date" id="strat" name="start_date" value="{{$start_date}}">
+                                    <div class="form-floating">
+                                        <input class="form-control" id="datetimepicker" type="date" id="start" name="start_date" value="{{$start_date}}">
+                                        <label for="start">{{ __('locale.Start Date') }}</label>
+                                    </div>
+                                    {{-- <label for="">{{ __('locale.Start Date') }}</label>
+                                    <input class="form-control" id="datetimepicker" type="date" id="strat" name="start_date" value="{{$start_date}}"> --}}
                                 </div>
                                 <div class="col-xl-5 col-lg-5 col-md-5 col-xs-5">
-                                    <label for="">{{ __('locale.End Date') }}</label>
-                                    <input class="form-control" id="datetimepicker" type="date" id="end" name="end_date" value="{{$end_date}}">
+                                    <div class="form-floating">
+                                        <input class="form-control" id="datetimepicker" type="date" id="end" name="end_date" value="{{$end_date}}">
+                                        <label for="end">{{ __('locale.End Date') }}</label>
+                                    </div>
+                                    {{-- <label for="">{{ __('locale.End Date') }}</label>
+                                    <input class="form-control" id="datetimepicker" type="date" id="end" name="end_date" value="{{$end_date}}"> --}}
                                 </div>
                                 <div class="col-xl-2 col-lg-2 col-md-2 col-xs-2">
                                     <label for="">&nbsp;</label>
