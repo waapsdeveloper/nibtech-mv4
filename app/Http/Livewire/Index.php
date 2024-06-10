@@ -181,6 +181,14 @@ class Index extends Component
             $q->where('order_type_id',4)->where('status','<',3);
         })->pluck('stock_id')->toArray();
         $data['returns_in_progress'] = count($aftersale);
+        $rmas = Order_model::where(['order_type_id'=>2])->pluck('id')->toArray();
+        $rma = Stock_model::whereDoesntHave('order_items', function ($q) use ($rmas) {
+                $q->whereIn('order_id', $rmas);
+            })->whereHas('variation', function ($q) {
+                $q->where('grade', 10);
+            })->Where('status',2)->count();
+        $data['rma'] = $rma;
+
         $data['graded_inventory'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', 'orders.status as status_id', DB::raw('COUNT(*) as quantity'))
         ->whereNotIn('stock.id', $aftersale)
         ->where('stock.status', 1)
