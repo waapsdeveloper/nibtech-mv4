@@ -110,7 +110,10 @@ class Customer extends Component
         ->where('orders.customer_id',$id)
 
         ->orderBy('orders.reference_id', 'desc')
-        ->select('orders.*')->get();
+        ->select('orders.*')
+        ->paginate(50)
+        ->onEachSide(5)
+        ->appends(request()->except('page'));
         $data['orders'] = $orders;
         // dd($orders);
 
