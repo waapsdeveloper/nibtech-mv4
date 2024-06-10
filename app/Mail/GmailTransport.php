@@ -2,11 +2,13 @@
 
 namespace App\Mail;
 
+use Swift_Transport;
+use Swift_Mime_Message;
+use Swift_Mime_SimpleMessage;
+use Swift_Events_EventListener;
 use Google_Client;
 use Google_Service_Gmail;
 use Google_Service_Gmail_Message;
-use Swift_Mime_SimpleMessage;
-use Swift_Transport;
 
 class GmailTransport implements Swift_Transport
 {
@@ -32,7 +34,7 @@ class GmailTransport implements Swift_Transport
         // No action needed to stop the transport
     }
 
-    public function send(Swift_Mime_SimpleMessage $message, &$failedRecipients = null)
+    public function send(Swift_Mime_Message $message, &$failedRecipients = null)
     {
         $service = new Google_Service_Gmail($this->client);
 
@@ -48,6 +50,8 @@ class GmailTransport implements Swift_Transport
             \Log::error('Failed to send email via Gmail API: ' . $e->getMessage());
             throw $e;
         }
+
+        return 1; // Assuming a single email sent; you may need to adjust based on your requirements
     }
 
     public function registerPlugin(Swift_Events_EventListener $plugin)

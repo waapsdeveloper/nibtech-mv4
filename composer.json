@@ -25,6 +25,7 @@
         "setasign/fpdf": "^1.8",
         "setasign/fpdi": "^2.6",
         "spatie/pdf-to-image": "^1.2",
+        "swiftmailer/swiftmailer": "^5.4",
         "tecnickcom/tcpdf": "^6.6"
     },
     "require-dev": {
