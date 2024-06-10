@@ -86,13 +86,13 @@
             <br>
 
             <div class="card">
-                <div class="card-header d-flex justify-content-between">
+                <div class="card-header mb-0 d-flex justify-content-between">
                     <div class="mb-0">
                         <h4 class="card-title mb-0">Sales & Returns</h4>
                     </div>
                     <div class="">
 
-                        <form action="" method="GET" id="index">
+                        <form action="" method="GET" id="index" class="mb-0">
                             <div class="row">
                                 <div class="col-xl-5 col-lg-5 col-md-5 col-xs-5">
                                     <div class="form-floating">
