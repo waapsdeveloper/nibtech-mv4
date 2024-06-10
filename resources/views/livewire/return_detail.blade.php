@@ -42,6 +42,8 @@
                             </div>
                             <button type="submit" class="btn btn-success">Ship</button>
                         </form>
+                        @else
+                        Reference: {{$order->reference}}<br>
                         @endif
                         Tracking Number: <a href="https://www.dhl.com/gb-en/home/tracking/tracking-express.html?submit=1&tracking-id={{$order->tracking_number}}" target="_blank"> {{$order->tracking_number}}</a>
                     @endif
