@@ -15,7 +15,7 @@ use App\Models\Variation_model;
 use Carbon\Carbon;
 
 
-class MoveInventory extends Component
+class FortnightReturn extends Component
 {
 
     public function mount()
@@ -28,7 +28,7 @@ class MoveInventory extends Component
     public function render()
     {
 
-        $data['title_page'] = "Move Inventory";
+        $data['title_page'] = "Fortnight Return";
 
         $data['admins'] = Admin_model::where('id','!=',1)->get();
         $data['products'] = Products_model::orderBy('model','asc')->get();
@@ -53,6 +53,12 @@ class MoveInventory extends Component
             session()->put('description',request('description'));
         }
 
+        $latest_items = Order_item_model::where('created_at','>=',Carbon::now()->subDays(14))
+        ->whereHas('order', function ($q) {
+            $q->where('order_type_id',4);
+        })->with(['stock.stock_operations'=> function ($q) {
+
+        }]);
 
         $stocks = Stock_operations_model::
         where('created_at','>=',$start_date)
@@ -65,11 +71,7 @@ class MoveInventory extends Component
             //     $query->where('status', 1);
             // })
         ->where('description','!=','Grade changed for Sell')
-            ->orderBy('id','desc')
-
-        ->paginate(50)
-        ->onEachSide(5)
-        ->appends(request()->except('page'));
+            ->orderBy('id','desc')->get();
         $data['stocks'] = $stocks;
         $data['grade'] = Grade_model::find($grade);
 

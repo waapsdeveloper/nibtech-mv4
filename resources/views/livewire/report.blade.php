@@ -166,10 +166,10 @@
                                 <tr>
                                     <td>{{ $s+1 }}</td>
                                     <td>{{ $categories[$sales->category_id] }}</td>
-                                    <td>{{ $sales->orders_qty." (".$sales->approved_orders_qty.")" }}</td>
+                                    <td>{{ $sales->orders_qty }}</td>
                                     @if (session('user')->hasPermission('view_price'))
-                                    <td>€{{ number_format($sales->eur_items_sum,2)." (€".number_format($sales->eur_approved_items_sum,2).")" }}</td>
-                                    <td>£{{ number_format($sales->gbp_items_sum,2)." (£".number_format($sales->gbp_approved_items_sum,2).")" }}</td>
+                                    <td>€{{ number_format($sales->eur_items_sum,2) }}</td>
+                                    <td>£{{ number_format($sales->gbp_items_sum,2) }}</td>
                                     @endif
                                     @if (session('user')->hasPermission('view_cost'))
                                     <td title="{{count(explode(',',$sales->stock_ids))}}">€{{ number_format($aggregated_sales_cost[$sales->category_id],2) }}</td>

@@ -68,6 +68,10 @@ class Order_item_model extends Model
     {
         return $this->HasOne(Order_item_model::class, 'linked_id','id')->where('reference_id',$this->order->reference_id);
     }
+    public function refund_order()
+    {
+        return $this->HasOne(Order_model::class, 'reference_id', 'reference_id');
+    }
 
     public function replacement()
     {
