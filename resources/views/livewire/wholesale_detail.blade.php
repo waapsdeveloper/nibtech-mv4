@@ -305,7 +305,7 @@
                                         <th><small><b>IMEI | Serial Number</b></small></th>
                                         <th><small><b>Vendor</b></small></th>
                                         @if (session('user')->hasPermission('view_cost'))
-                                        <th><small><b>Cost</b></small></th>
+                                        <th><small><b>Price</b></small></th>
                                         @endif
                                         <th><small><b>Creation Date</b></small></th>
                                         <th></th>
@@ -322,7 +322,7 @@
                                             <td>{{ $item->stock->imei.$item->stock->serial_number }}</td>
                                             <td>{{ $item->stock->order->customer->first_name }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
-                                            <td>{{ $currency.number_format($item->price,2) }}</td>
+                                            <td>€{{ number_format($item->price,2) }}</td>
                                             @endif
                                             <td style="width:220px">{{ $item->created_at }}</td>
                                             <td><a href="{{ url('delete_wholesale_item').'/'.$item->id }}"><i class="fa fa-trash"></i></a></td>
