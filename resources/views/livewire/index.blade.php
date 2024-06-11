@@ -314,8 +314,8 @@
                                                 </tr>
                                                 @if (session('user')->hasPermission('view_price'))
                                                 <tr>
-                                                    <td>Average Price:</td>
-                                                    <td class="tx-right"><a href="{{url(session('url').'order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ $average }}</a></td>
+                                                    <td title="Average Price">Average:</td>
+                                                    <td class="tx-right"><a href="{{url(session('url').'order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ number_format($average,2) }}</a></td>
                                                 </tr>
                                                 @endif
                                             </table>
