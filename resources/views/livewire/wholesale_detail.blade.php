@@ -359,9 +359,9 @@
                                         <th><small><b>#</b></small></th>
                                         {{-- <th><small><b>Vendor</b></small></th> --}}
                                         <th><small><b>IMEI/Serial</b></small></th>
-                                        {{-- @if (session('user')->hasPermission('view_cost')) --}}
+                                        @if (session('user')->hasPermission('view_price'))
                                         <th><small><b>Vendor Price</b></small></th>
-                                        {{-- @endif --}}
+                                        @endif
                                         @if (session('user')->hasPermission('delete_wholesale_item'))
                                         <th></th>
                                         @endif
@@ -389,7 +389,7 @@
                                             $i ++;
                                             $price = $item->sale_item($order_id)->price;
                                             if($order->exchange_rate != null){
-                                                $price = $price * $order->exchange_rate;
+                                                $ex_price = $price * $order->exchange_rate;
                                             }
                                             $total += $price;
                                         @endphp
@@ -397,9 +397,11 @@
                                             <td>{{ $i }}</td>
                                             {{-- <td>{{ $item->order->customer->first_name }}</td> --}}
                                             <td>{{ $item->imei.$item->serial_number }}</td>
+                                            @if (session('user')->hasPermission('view_price'))
                                             <td @if (session('user')->hasPermission('view_cost')) title="Cost Price: {{ $currency.$item->purchase_item->price }}" @endif>
                                                 {{ $item->order->customer->first_name }} {{ $currency.$price }}
                                             </td>
+                                            @endif
                                             @if (session('user')->hasPermission('delete_wholesale_item'))
                                             <td><a href="{{ url('delete_wholesale_item').'/'.$item->sale_item($order_id)->id }}"><i class="fa fa-trash"></i></a></td>
                                             @endif

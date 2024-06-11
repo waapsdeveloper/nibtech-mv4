@@ -186,13 +186,21 @@
                             <td width="320">{{ $item->model . " - " . $storage . $color . $grades[$item->grade] }}</td>
                             <td width="80" align="right"></td>
                             <td width="40">{{ $item->total_quantity }}</td>
-                            <td width="90" align="right">{{ $order->currency_id->sign }}{{ number_format($item->total_price,2) }}</td>
+                            @if ($invoice == 1)
+                            <td width="90" align="right">€{{ number_format($item->total_price,2) }}</td>
+                            @else
+                            <td width="90" align="right">{{ $order->currency_id->sign }}{{ number_format($item->total_price*$order->exchange_rate,2) }}</td>
+                            @endif
                         </tr>
                         @foreach ($items as $order_item)
                             @if($order_item->variation_id == $item->variation_id)
                             <tr class="font-sm">
                                 <td width="320" style="font-size: 10px" align="right">{{ $order_item->stock->imei.$order_item->stock->serial_number }}</td>
-                                <td width="80" style="font-size: 10px" align="right">{{ $order->currency_id->sign }}{{ number_format($order_item->price,2) }}</td>
+                                @if ($invoice == 1)
+                                <td width="80" style="font-size: 10px" align="right">€{{ number_format($order_item->price,2) }}</td>
+                                @else
+                                <td width="80" style="font-size: 10px" align="right">{{ $order->currency_id->sign }}{{ number_format($order_item->price*$order->exchange_rate,2) }}</td>
+                                @endif
                                 <td width="40"></td>
                                 <td width="90" align="right"></td>
                             </tr>
@@ -215,14 +223,24 @@
                             <table cellpadding="5">
                                     <tr>
                                         <td>Sub Total:</td>
-                                        <td align="right"> <strong>{{ $order->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td>
+                                        @if ($invoice == 1)
+                                        <td align="right"> <strong> €{{number_format( $totalAmount,2) }}</strong></td>
+                                        @else
+                                        <td align="right"> <strong>{{ $order->currency_id->sign }}{{number_format( $totalAmount*$order->exchange_rate,2) }}</strong></td>
+                                        @endif
+                                        {{-- <td align="right"> <strong>{{ $order->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td> --}}
                                     </tr>
                                     <br>
                                     <br>
                                     <hr>
                                     <tr>
                                         <td>Amount Due:</td>
-                                        <td align="right"> <strong>{{ $order->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td>
+                                        @if ($invoice == 1)
+                                        <td align="right"> <strong> €{{number_format( $totalAmount,2) }}</strong></td>
+                                        @else
+                                        <td align="right"> <strong>{{ $order->currency_id->sign }}{{number_format( $totalAmount*$order->exchange_rate,2) }}</strong></td>
+                                        @endif
+                                        {{-- <td align="right"> <strong>{{ $order->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td> --}}
                                     </tr>
                                     {{-- <tr>
                                         <td>Back Market:</td>
