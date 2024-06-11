@@ -74,7 +74,7 @@ Route::post('purchase/remove_issues', [Order::class,'remove_issues'])->name('rem
 Route::get('report', Report::class)->name('view_report');
 use Illuminate\Support\Facades\Mail;
 
-use App\Http\Controllers\GoogleController;
+// use App\Http\Controllers\GoogleController;
 
 Route::get('/send-test-email', function () {
     Mail::raw('This is a test email.', function ($message) {
