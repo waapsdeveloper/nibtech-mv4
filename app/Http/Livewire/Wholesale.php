@@ -637,7 +637,7 @@ class Wholesale extends Component
         return redirect()->back();
     }
 
-    public function export_bulksale_invoice($order_id)
+    public function export_bulksale_invoice($order_id, $invoice = null)
     {
 
         // Find the order
@@ -666,7 +666,8 @@ class Wholesale extends Component
         $data = [
             'order' => $order,
             'customer' => $order->customer,
-            'order_items' =>$order_items
+            'order_items' =>$order_items,
+            'invoice' => $invoice
         ];
         $data['storages'] = Storage_model::pluck('name','id');
         $data['grades'] = Grade_model::pluck('name','id');

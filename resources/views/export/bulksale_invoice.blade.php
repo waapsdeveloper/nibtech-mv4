@@ -189,7 +189,7 @@
                             <td width="320">{{ $item->model . " - " . $storage . $color . $grades[$item->grade] }}</td>
                             <td width="80" align="right">{{ $order->currency_id->sign }}{{ number_format($item->average_price,2) }}</td>
                             <td width="40">{{ $item->total_quantity }}</td>
-                            @if ($invoice == 1)
+                            @if ($invoice != 1)
                             <td width="90" align="right">€{{ number_format($item->total_price,2) }}</td>
                             @else
                             <td width="90" align="right">{{ $order->currency_id->sign }}{{ number_format($item->total_price*$order->exchange_rate,2) }}</td>
@@ -212,7 +212,7 @@
                                 <tr>
                                     <td>Sub Total:</td>
                                     {{-- <td>{{$totalQty}}</td> --}}
-                                    @if ($invoice == 1)
+                                    @if ($invoice != 1)
                                     <td align="right"> <strong> €{{number_format( $totalAmount,2) }}</strong></td>
                                     @else
                                     <td align="right"> <strong>{{ $order->currency_id->sign }}{{number_format( $totalAmount*$order->exchange_rate,2) }}</strong></td>
@@ -226,7 +226,7 @@
                                     <hr>
                                     <tr>
                                         <td>Amount Due:</td>
-                                    @if ($invoice == 1)
+                                    @if ($invoice != 1)
                                     <td align="right"> <strong> €{{number_format( $totalAmount,2) }}</strong></td>
                                     @else
                                     <td align="right"> <strong>{{ $order->currency_id->sign }}{{number_format( $totalAmount*$order->exchange_rate,2) }}</strong></td>

@@ -101,16 +101,20 @@
                     <input type="file" class="form-control form-control-sm" name="sheet">
                     <button type="submit" class="btn btn-sm btn-primary">Upload Sheet</button>
                 </form>
-                <a href="{{url(session('url').'bulksale_email')}}/{{ $order->id }}" target="_blank"><button class="btn-sm btn-secondary">Send Email</button></a>
-                <a href="{{url(session('url').'export_bulksale_invoice')}}/{{ $order->id }}" target="_blank"><button class="btn-sm btn-secondary">Invoice</button></a>
+                <a href="{{url('bulksale_email')}}/{{ $order->id }}" target="_blank"><button class="btn-sm btn-secondary">Send Email</button></a>
+                <a href="{{url('export_bulksale_invoice')}}/{{ $order->id }}" target="_blank"><button class="btn-sm btn-secondary">Invoice</button></a>
+                @if ($order->exchange_rate != null)
+                <a href="{{url('export_bulksale_invoice')}}/{{ $order->id }}/1" target="_blank"><button class="btn-sm btn-secondary">{{$order->currency_id->sign}} Invoice</button></a>
+
+                @endif
 
                 <div class="btn-group p-1" role="group">
                     <button type="button" class="btn-sm btn-secondary dropdown-toggle" id="pack_sheet" data-bs-toggle="dropdown" aria-expanded="false">
                     Pack Sheet
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="pack_sheet">
-                        <li><a class="dropdown-item" href="{{url(session('url').'export_bulksale_invoice')}}/{{ $order->id }}?packlist=2&id={{ $order->id }}">.xlsx</a></li>
-                        <li><a class="dropdown-item" href="{{url(session('url').'export_bulksale_invoice')}}/{{ $order->id }}?packlist=1" target="_blank">.pdf</a></li>
+                        <li><a class="dropdown-item" href="{{url('export_bulksale_invoice')}}/{{ $order->id }}?packlist=2&id={{ $order->id }}">.xlsx</a></li>
+                        <li><a class="dropdown-item" href="{{url('export_bulksale_invoice')}}/{{ $order->id }}?packlist=1" target="_blank">.pdf</a></li>
                     </ul>
                 </div>
             </div>
@@ -368,7 +372,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <form method="POST" action="{{url(session('url').'wholesale')}}/update_prices" id="update_prices_{{ $variation->id }}">
+                                    <form method="POST" action="{{url('wholesale')}}/update_prices" id="update_prices_{{ $variation->id }}">
                                         @csrf
                                     @php
                                         $i = 0;
