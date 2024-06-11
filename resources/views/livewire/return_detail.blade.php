@@ -497,6 +497,11 @@
         <div class="row">
 
             @foreach ($graded_stocks as $graded_stock)
+            @php
+                if($graded_stock->variations->count() == 0){
+                    continue;
+                }
+            @endphp
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header pb-0">

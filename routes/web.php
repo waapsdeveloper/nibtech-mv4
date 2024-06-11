@@ -72,7 +72,16 @@ Route::post('purchase/approve/{id}', [Order::class,'purchase_approve'])->name('p
 Route::post('purchase/remove_issues', [Order::class,'remove_issues'])->name('remove_purchase_issues');
 
 Route::get('report', Report::class)->name('view_report');
+use Illuminate\Support\Facades\Mail;
 
+Route::get('/send-test-email', function () {
+    Mail::raw('This is a test email.', function ($message) {
+        $message->to('haleem.shahhs@gmail.com')
+                ->subject('Test Email');
+    });
+
+    return 'Test email sent!';
+});
 
 Route::get('return', SalesReturn::class)->name('view_return');
 Route::get('add_return', [SalesReturn::class,'add_return'])->name('add_return');
