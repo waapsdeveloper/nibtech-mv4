@@ -248,7 +248,7 @@ class Order extends Component
                 $recipientEmail = $order->customer->email;
                 $subject = 'Invoice for Your Recent Purchase';
 
-                app(GoogleController::class)->sendEmailInvoice($recipientEmail, $subject, "Hello, Test");
+                app(GoogleController::class)->sendEmailInvoice($recipientEmail, $subject, new InvoiceMail($data2));
                 sleep(1);
 
             }
