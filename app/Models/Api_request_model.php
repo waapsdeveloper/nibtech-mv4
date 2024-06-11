@@ -188,16 +188,16 @@ class Api_request_model extends Model
                             'admin_id' => $admin,
                         ]);
                         $stock->imei = $datas->Imei;
-                    }else{
-
-                        $stock_operation = Stock_operations_model::create([
-                            'stock_id' => $stock->id,
-                            'old_variation_id' => $stock->variation_id,
-                            'new_variation_id' => $variation->id,
-                            'description' => $datas->Fail." | ".$datas->Comments." | DrPhone",
-                            'admin_id' => $admin,
-                        ]);
                     }
+
+                    $stock_operation = Stock_operations_model::create([
+                        'stock_id' => $stock->id,
+                        'old_variation_id' => $stock->variation_id,
+                        'new_variation_id' => $variation->id,
+                        'description' => $datas->Fail." | ".$datas->Comments." | DrPhone",
+                        'admin_id' => $admin,
+                    ]);
+
                     $variation->status = 1;
                     $variation->save();
                     $stock->variation_id = $variation->id;
