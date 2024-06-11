@@ -62,7 +62,7 @@ class Index extends Component
         // $products = Products_model::get()->toArray();
         // Retrieve the top 10 selling products from the order_items table
         $variation_ids = Variation_model::when(request('product') != '', function ($q) {
-            return $q->where('products.id', '=', request('product'));
+            return $q->where('product_id', '=', request('product'));
         })
         ->when(request('category') != '', function ($q) {
             return $q->whereHas('product', function ($qu) {

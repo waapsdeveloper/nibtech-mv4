@@ -377,8 +377,8 @@
                                                 </tr>
                                             @endforeach
                                             <tr>
-                                                <td>Returns:</td>
-                                                <td class="tx-right"><a href="{{url(session('url').'inventory')}}?stock_status=1&replacement=1" title="Returns in Progress">{{$returns_in_progress}}</a></td>
+                                                <td title="Waiting for Approval">Returns:</td>
+                                                <td class="tx-right"><a href="{{url(session('url').'return')}}" title="Returns in Progress">{{$returns_in_progress}}</a></td>
                                             </tr>
                                             <tr>
                                                 <td>RMA:</td>

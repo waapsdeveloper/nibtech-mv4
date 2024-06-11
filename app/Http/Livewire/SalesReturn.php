@@ -226,6 +226,8 @@ class SalesReturn extends Component
             'variations.stocks' => function ($query) use ($order_id) {
                 $query->whereHas('order_items', function ($query) use ($order_id) {
                     $query->where('order_id', $order_id);
+                })->when(request('status') != '', function ($q) {
+                    return $q->where('status', request('status'));
                 });
             }
         ])
