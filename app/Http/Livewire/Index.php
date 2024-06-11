@@ -4,6 +4,8 @@ namespace App\Http\Livewire;
 
 use App\Http\Controllers\GoogleController;
 use App\Models\Admin_model;
+use App\Models\Brand_model;
+use App\Models\Category_model;
 use Carbon\Carbon;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
@@ -40,6 +42,8 @@ class Index extends Component
         }
         $data['purchase_status'] = [2 => '(Pending)', 3 => ''];
         $data['products'] = Products_model::orderBy('model','asc')->get();
+        $data['categories'] = Category_model::pluck('name','id');
+        $data['brands'] = Brand_model::pluck('name','id');
         $data['colors'] = Color_model::pluck('name','id');
         $data['storages'] = Storage_model::pluck('name','id');
         $data['grades'] = Grade_model::pluck('name','id');
@@ -59,6 +63,16 @@ class Index extends Component
         // Retrieve the top 10 selling products from the order_items table
         $variation_ids = Variation_model::when(request('product') != '', function ($q) {
             return $q->where('products.id', '=', request('product'));
+        })
+        ->when(request('category') != '', function ($q) {
+            return $q->whereHas('product', function ($qu) {
+                $qu->where('category', '=', request('category'));
+            });
+        })
+        ->when(request('brand') != '', function ($q) {
+            return $q->whereHas('product', function ($qu) {
+                $qu->where('brand', '=', request('brand'));
+            });
         })
         ->when(request('storage') != '', function ($q) {
             return $q->where('variation.storage', 'LIKE', request('storage') . '%');
