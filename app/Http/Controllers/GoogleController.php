@@ -7,6 +7,7 @@ use Google_Client;
 use Google_Service_Gmail;
 use Google_Service_Gmail_Message;
 use App\Models\GoogleToken;
+use Exception;
 use Illuminate\Mail\Mailable;
 use Illuminate\Support\Facades\Log;
 
@@ -182,7 +183,21 @@ class GoogleController extends Controller
     $message->setRaw($rawMessage);
 
     // Send the message
-    $service->users_messages->send('me', $message);
+    // $service->users_messages->send('me', $message);
+    try {
+        $response = $service->users_messages->send('me', $message);
+
+        // Log the request and response
+        Log::info('Send Email Request Body', [
+            'recipientEmail' => $recipientEmail,
+            'subject' => $subject,
+            'body' => $mailable,
+        ]);
+        Log::info('Send Email Response', ['response' => $response]);
+
+    } catch (Exception $e) {
+        Log::error('Failed to send email', ['error' => $e->getMessage()]);
+    }
 }
 
 
