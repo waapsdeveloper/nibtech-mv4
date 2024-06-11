@@ -58,7 +58,7 @@ class Index extends Component
         // $products = Products_model::get()->toArray();
         // Retrieve the top 10 selling products from the order_items table
         $data['top_products'] = Order_item_model::select('products.model as product_name', 'color.name as color', 'storage.name as storage', 'variation.sku as sku', 'grade.name as grade', DB::raw('SUM(order_items.quantity) as total_quantity_sold'), DB::raw('AVG(CASE WHEN orders.currency = 4 THEN order_items.price END) as average_price'))
-        ->where('orders.created_at', '>=', $start_date)->where('orders.created_at', '<=', $end_date)->where('orders.order_type_id',3)
+        ->where('orders.created_at', '>=', $start_date)->where('orders.created_at', '<=', $end_date)->where('orders.order_type_id',3)->where('orders.currency',4)
         ->join('variation', 'order_items.variation_id', '=', 'variation.id')
         ->join('orders', 'order_items.order_id', '=', 'orders.id')
         ->join('products', 'variation.product_id', '=', 'products.id')
