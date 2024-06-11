@@ -176,6 +176,30 @@ class Index extends Component
             });
         })
         ->count();
+        $data['average'] = Order_item_model::where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date)->whereHas('order', function ($q) {
+            $q->where('currency',4);
+        })
+        ->when(request('product') != '', function ($q) {
+            return $q->whereHas('variation', function ($q) {
+                $q->where('product_id', '=', request('product'));
+            });
+        })
+        ->when(request('storage') != '', function ($q) {
+            return $q->whereHas('variation', function ($q) {
+                $q->where('variation.storage', 'LIKE', request('storage') . '%');
+            });
+        })
+        ->when(request('color') != '', function ($q) {
+            return $q->whereHas('variation', function ($q) {
+                $q->where('variation.color', 'LIKE', request('color') . '%');
+            });
+        })
+        ->when(request('grade') != '', function ($q) {
+            return $q->whereHas('variation', function ($q) {
+                $q->where('variation.grade', 'LIKE', request('grade') . '%');
+            });
+        })
+        ->avg('price');
 
         $aftersale = Order_item_model::whereHas('order', function ($q) {
             $q->where('order_type_id',4)->where('status','<',3);

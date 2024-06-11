@@ -275,7 +275,9 @@
                                                     <tr>
                                                         <td colspan="2"><strong>Total:</strong></td>
                                                         <td title="Total"><strong>{{ $total }}</strong></td>
+                                                        @if (session('user')->hasPermission('view_price'))
                                                         <td title="Weighted Average"><strong>€{{ number_format($weighted_average,2) }}</strong></td>
+                                                        @endif
                                                     </tr>
                                                 </tfoot>
                                             </table>
@@ -310,6 +312,12 @@
                                                     <td>Invoiced:</td>
                                                     <td class="tx-right"><a href="{{url(session('url').'order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ $invoiced_orders }}</a></td>
                                                 </tr>
+                                                @if (session('user')->hasPermission('view_price'))
+                                                <tr>
+                                                    <td>Average Price:</td>
+                                                    <td class="tx-right"><a href="{{url(session('url').'order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ $average }}</a></td>
+                                                </tr>
+                                                @endif
                                             </table>
 
                                         </div>
