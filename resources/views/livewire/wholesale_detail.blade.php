@@ -402,8 +402,8 @@
                                             {{-- <td>{{ $item->order->customer->first_name }}</td> --}}
                                             <td>{{ $item->imei.$item->serial_number }}</td>
                                             @if (session('user')->hasPermission('view_price'))
-                                            <td @if (session('user')->hasPermission('view_cost')) title="Cost Price: {{ $currency.$item->purchase_item->price }}" @endif>
-                                                {{ $item->order->customer->first_name }} {{ $currency.$price }}
+                                            <td @if (session('user')->hasPermission('view_cost')) title="Cost Price: €{{ $item->purchase_item->price }}" @endif>
+                                                {{ $item->order->customer->first_name }} €{{ $price }}
                                             </td>
                                             @endif
                                             @if (session('user')->hasPermission('delete_wholesale_item'))
