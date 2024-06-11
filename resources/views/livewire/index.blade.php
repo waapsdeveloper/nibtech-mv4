@@ -258,6 +258,8 @@
                                                 <input type="hidden" name="storage" value="{{ Request::get('storage') }}">
                                                 <input type="hidden" name="color" value="{{ Request::get('color') }}">
                                                 <input type="hidden" name="grade" value="{{ Request::get('grade') }}">
+                                                <input type="hidden" name="category" value="{{ Request::get('category') }}">
+                                                <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
                                             </form>
                                             </div>
 										</div>
