@@ -26,74 +26,7 @@
 					</div>
 					<!-- /breadcrumb -->
 
-                    <div class="row">
-
-                        <div class="col-md">
-                            {{-- <div class="card-header">
-                                <h4 class="card-title mb-1">Model</h4>
-                            </div> --}}
-                            <div class="form-floating">
-                                <input type="text" name="product" value="{{ Request::get('product') }}" class="form-control" data-bs-placeholder="Select Model" list="product-menu" form="index">
-                                <label for="product">Product</label>
-                            </div>
-                            <datalist id="product-menu">
-                                <option value="">Products</option>
-                                @foreach ($products as $product)
-                                    <option value="{{ $product->id }}" @if(isset($_GET['product']) && $product->id == $_GET['product']) {{'selected'}}@endif>{{ $product->model }}</option>
-                                @endforeach
-                            </datalist>
-                        </div>
-                        <div class="col-md">
-                            {{-- <div class="card-header">
-                                <h4 class="card-title mb-1">Storage</h4>
-                            </div> --}}
-                            <select name="storage" class="form-control form-select" form="index">
-                                <option value="">Storage</option>
-                                @foreach ($storages as $id=>$name)
-                                    <option value="{{ $id }}" @if(isset($_GET['storage']) && $id == $_GET['storage']) {{'selected'}}@endif>{{ $name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md">
-                            {{-- <div class="card-header">
-                                <h4 class="card-title mb-1">Storage</h4>
-                            </div> --}}
-                            <select name="color" class="form-control form-select" form="index">
-                                <option value="">Color</option>
-                                @foreach ($colors as $id=>$name)
-                                    <option value="{{ $id }}" @if(isset($_GET['color']) && $id == $_GET['color']) {{'selected'}}@endif>{{ $name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md">
-                            {{-- <div class="card-header">
-                                <h4 class="card-title mb-1">Grade</h4>
-                            </div> --}}
-                            <select name="grade" class="form-control form-select" form="index">
-                                <option value="">Grade</option>
-                                @foreach ($grades as $id=>$name)
-                                    <option value="{{ $id }}" @if(isset($_GET['grade']) && $id == $_GET['grade']) {{'selected'}}@endif>{{ $name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        {{-- <div class="col-md">
-                            <div class="form-floating">
-                                <input class="form-control" id="datetimepicker" type="date" id="start" name="start_date" value="{{$start_date}}">
-                                <label for="start">{{ __('locale.Start Date') }}</label>
-                            </div>
-                        </div>
-                        <div class="col-md">
-                            <div class="form-floating">
-                                <input class="form-control" id="datetimepicker" type="date" id="end" name="end_date" value="{{$end_date}}">
-                                <label for="end">{{ __('locale.End Date') }}</label>
-                            </div>
-                        </div>
-                        <div class="col-md">
-                            <button type="submit" class="btn btn-icon  btn-success me-1"><i class="fe fe-search"></i></button>
-                        </div> --}}
-                    </div>
-                    <div class="row">
+                    <div class="row mb-3">
 
                         <div class="col-md">
                             <select name="category" class="form-control form-select" form="index">
@@ -127,6 +60,53 @@
 
                             <form action="" method="GET" id="index">
                             </form>
+                    </div>
+                    <div class="row">
+
+                        <div class="col-md">
+                            <div class="form-floating">
+                                <input type="text" name="product" value="{{ Request::get('product') }}" class="form-control" data-bs-placeholder="Select Model" list="product-menu" form="index">
+                                <label for="product">Product</label>
+                            </div>
+                            <datalist id="product-menu">
+                                <option value="">Products</option>
+                                @foreach ($products as $product)
+                                    <option value="{{ $product->id }}" @if(isset($_GET['product']) && $product->id == $_GET['product']) {{'selected'}}@endif>{{ $product->model }}</option>
+                                @endforeach
+                            </datalist>
+                        </div>
+                        <div class="col-md">
+                            <select name="storage" class="form-control form-select" form="index">
+                                <option value="">Storage</option>
+                                @foreach ($storages as $id=>$name)
+                                    <option value="{{ $id }}" @if(isset($_GET['storage']) && $id == $_GET['storage']) {{'selected'}}@endif>{{ $name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md">
+                            {{-- <div class="card-header">
+                                <h4 class="card-title mb-1">Storage</h4>
+                            </div> --}}
+                            <select name="color" class="form-control form-select" form="index">
+                                <option value="">Color</option>
+                                @foreach ($colors as $id=>$name)
+                                    <option value="{{ $id }}" @if(isset($_GET['color']) && $id == $_GET['color']) {{'selected'}}@endif>{{ $name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md">
+                            {{-- <div class="card-header">
+                                <h4 class="card-title mb-1">Grade</h4>
+                            </div> --}}
+                            <select name="grade" class="form-control form-select" form="index">
+                                <option value="">Grade</option>
+                                @foreach ($grades as $id=>$name)
+                                    <option value="{{ $id }}" @if(isset($_GET['grade']) && $id == $_GET['grade']) {{'selected'}}@endif>{{ $name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <button type="reset" class="btn btn-icon btn-danger me-1" form="index"><i class="fe fe-search"></i></button>
+
                     </div>
             <br>
                     @if (count($variations) > 0)
