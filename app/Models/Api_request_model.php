@@ -145,6 +145,10 @@ class Api_request_model extends Model
                     $admin = 8;
                 }elseif($adminName == '`rizzz'){
                     $admin = null;
+                }elseif($adminName == 'owais'){
+                    $admin = 2;
+                }elseif($adminName == '10043ss'){
+                    $admin = 15;
                 }else{
 
                     echo $adminName;

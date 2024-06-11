@@ -57,16 +57,7 @@ class Index extends Component
         }
         // $products = Products_model::get()->toArray();
         // Retrieve the top 10 selling products from the order_items table
-        $data['top_products'] = Order_item_model::select('products.model as product_name', 'color.name as color', 'storage.name as storage', 'variation.sku as sku', 'grade.name as grade', DB::raw('SUM(order_items.quantity) as total_quantity_sold'), DB::raw('AVG(order_items.price) as average_price'))
-        ->where('orders.created_at', '>=', $start_date)->where('orders.created_at', '<=', $end_date)->where('orders.order_type_id',3)->where('orders.currency',4)
-        ->join('variation', 'order_items.variation_id', '=', 'variation.id')
-        ->join('orders', 'order_items.order_id', '=', 'orders.id')
-        ->join('products', 'variation.product_id', '=', 'products.id')
-        ->join('color', 'variation.color', '=', 'color.id')
-        ->join('storage', 'variation.storage', '=', 'storage.id')
-        ->join('grade', 'variation.grade', '=', 'grade.id')
-
-        ->when(request('product') != '', function ($q) {
+        $variation_ids = Variation_model::when(request('product') != '', function ($q) {
             return $q->where('products.id', '=', request('product'));
         })
         ->when(request('storage') != '', function ($q) {
@@ -77,132 +68,74 @@ class Index extends Component
         })
         ->when(request('grade') != '', function ($q) {
             return $q->where('variation.grade', 'LIKE', request('grade') . '%');
+        })->pluck('id')->toArray();
+
+        $top_products = Order_item_model::whereIn('variation_id',$variation_ids)
+        ->whereHas('order', function ($q) use ($start_date, $end_date) {
+            $q->where(['order_type_id'=>3, 'currency'=>4])
+            ->whereBetween('created_at', [$start_date, $end_date]);
         })
-        ->where('orders.deleted_at', null)
-        ->where('order_items.deleted_at', null)
-        ->where('variation.deleted_at', null)
-        ->groupBy('order_items.variation_id', 'products.model', 'storage.name', 'color.name', 'variation.sku', 'grade.name')
+        ->select('variation_id', DB::raw('SUM(quantity) as total_quantity_sold'), DB::raw('AVG(price) as average_price'))
+        ->groupBy('variation_id')
         ->orderByDesc('total_quantity_sold')
         ->take($per_page)
         ->get();
 
-        $data['total_orders'] = Order_model::where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date)->where('order_type_id',3)
+        $data['top_products'] = $top_products;
 
-        ->when(request('product') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('product_id', '=', request('product'));
-            });
-        })
-        ->when(request('storage') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('variation.storage', 'LIKE', request('storage') . '%');
-            });
-        })
-        ->when(request('color') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('variation.color', 'LIKE', request('color') . '%');
-            });
-        })
-        ->when(request('grade') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('variation.grade', 'LIKE', request('grade') . '%');
-            });
+        // $data['top_products'] = Order_item_model::select('products.model as product_name', 'color.name as color', 'storage.name as storage', 'variation.sku as sku', 'grade.name as grade', DB::raw('SUM(order_items.quantity) as total_quantity_sold'), DB::raw('AVG(order_items.price) as average_price'))
+        // ->where('orders.created_at', '>=', $start_date)->where('orders.created_at', '<=', $end_date)->where('orders.order_type_id',3)->where('orders.currency',4)
+        // ->join('variation', 'order_items.variation_id', '=', 'variation.id')
+        // ->join('orders', 'order_items.order_id', '=', 'orders.id')
+        // ->join('products', 'variation.product_id', '=', 'products.id')
+        // ->join('color', 'variation.color', '=', 'color.id')
+        // ->join('storage', 'variation.storage', '=', 'storage.id')
+        // ->join('grade', 'variation.grade', '=', 'grade.id')
+
+        // ->when(request('product') != '', function ($q) {
+        //     return $q->where('products.id', '=', request('product'));
+        // })
+        // ->when(request('storage') != '', function ($q) {
+        //     return $q->where('variation.storage', 'LIKE', request('storage') . '%');
+        // })
+        // ->when(request('color') != '', function ($q) {
+        //     return $q->where('variation.color', 'LIKE', request('color') . '%');
+        // })
+        // ->when(request('grade') != '', function ($q) {
+        //     return $q->where('variation.grade', 'LIKE', request('grade') . '%');
+        // })
+        // ->where('orders.deleted_at', null)
+        // ->where('order_items.deleted_at', null)
+        // ->where('variation.deleted_at', null)
+        // ->groupBy('order_items.variation_id', 'products.model', 'storage.name', 'color.name', 'variation.sku', 'grade.name')
+        // ->orderByDesc('total_quantity_sold')
+        // ->take($per_page)
+        // ->get();
+
+        $data['total_orders'] = Order_model::where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date)->where('order_type_id',3)
+        ->whereHas('order_items', function ($q) use ($variation_ids) {
+            $q->whereIn('variation_id', $variation_ids);
         })
         ->count();
-        $data['pending_orders'] = Order_model::where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date)->where('order_type_id',3)->where('status','<',3)
 
-        ->when(request('product') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('product_id', '=', request('product'));
-            });
-        })
-        ->when(request('storage') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('variation.storage', 'LIKE', request('storage') . '%');
-            });
-        })
-        ->when(request('color') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('variation.color', 'LIKE', request('color') . '%');
-            });
-        })
-        ->when(request('grade') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('variation.grade', 'LIKE', request('grade') . '%');
-            });
+        $data['pending_orders'] = Order_model::where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date)->where('order_type_id',3)->where('status','<',3)
+        ->whereHas('order_items', function ($q) use ($variation_ids) {
+            $q->whereIn('variation_id', $variation_ids);
         })
         ->count();
         $data['invoiced_orders'] = Order_model::where('processed_at', '>=', $start_date)->where('processed_at', '<=', $end_date)->where('order_type_id',3)
-        // ->whereHas('admin', function ($q) {
-        //     $q->where('role_id', '<=', 5);
-        // })
-        ->when(request('product') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('product_id', '=', request('product'));
-            });
-        })
-        ->when(request('storage') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('variation.storage', 'LIKE', request('storage') . '%');
-            });
-        })
-        ->when(request('color') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('variation.color', 'LIKE', request('color') . '%');
-            });
-        })
-        ->when(request('grade') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('variation.grade', 'LIKE', request('grade') . '%');
-            });
+        ->whereHas('order_items', function ($q) use ($variation_ids) {
+            $q->whereIn('variation_id', $variation_ids);
         })
         ->count();
         $data['total_conversations'] = Order_item_model::where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date)->where('care_id','!=',null)
-        ->when(request('product') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('product_id', '=', request('product'));
-            });
-        })
-        ->when(request('storage') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('variation.storage', 'LIKE', request('storage') . '%');
-            });
-        })
-        ->when(request('color') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('variation.color', 'LIKE', request('color') . '%');
-            });
-        })
-        ->when(request('grade') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('variation.grade', 'LIKE', request('grade') . '%');
-            });
-        })
+        ->whereIn('variation_id', $variation_ids)
         ->count();
         $data['average'] = Order_item_model::where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date)->whereHas('order', function ($q) {
             $q->where('currency',4);
-        })
-        ->when(request('product') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('product_id', '=', request('product'));
-            });
-        })
-        ->when(request('storage') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('variation.storage', 'LIKE', request('storage') . '%');
-            });
-        })
-        ->when(request('color') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('variation.color', 'LIKE', request('color') . '%');
-            });
-        })
-        ->when(request('grade') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('variation.grade', 'LIKE', request('grade') . '%');
-            });
-        })
+        })->whereIn('variation_id', $variation_ids)
         ->avg('price');
+
 
         $aftersale = Order_item_model::whereHas('order', function ($q) {
             $q->where('order_type_id',4)->where('status','<',3);
