@@ -672,7 +672,10 @@ class Repair extends Component
         ->when(request('stock_status'), function ($q) {
             return $q->where('status', request('stock_status'));
         })
-        ->orderBy('updated_at','desc')->get();
+        ->orderBy('updated_at','desc')
+        ->paginate(50)
+        ->onEachSide(5)
+        ->appends(request()->except('page'));
         $data['repair_stocks'] = $repair_stocks;
 
         $repaired_stocks = Stock_operations_model::where('created_at','>=',now()->format('Y-m-d')." 00:00:00")->where('admin_id',session('user_id'))->orderBy('id','desc')->get();

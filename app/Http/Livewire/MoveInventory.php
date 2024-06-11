@@ -66,10 +66,7 @@ class MoveInventory extends Component
             // })
         ->where('description','!=','Grade changed for Sell')
             ->orderBy('id','desc')
-
-        ->paginate(50)
-        ->onEachSide(5)
-        ->appends(request()->except('page'));
+            ->get();
         $data['stocks'] = $stocks;
         $data['grade'] = Grade_model::find($grade);
 
