@@ -105,7 +105,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <button type="reset" class="btn btn-icon btn-danger me-1" form="index"><i class="fe fe-search"></i></button>
+                        <a href="{{ url('/') }}" class="btn btn-icon btn-danger me-1" form="index"><i class="fe fe-search"></i></a>
 
                     </div>
             <br>
