@@ -78,6 +78,9 @@ class Index extends Component
         ->when(request('grade') != '', function ($q) {
             return $q->where('variation.grade', 'LIKE', request('grade') . '%');
         })
+        ->where('orders.deleted_at', null)
+        ->where('order_items.deleted_at', null)
+        ->where('variation.deleted_at', null)
         ->groupBy('order_items.variation_id', 'products.model', 'storage.name', 'color.name', 'variation.sku', 'grade.name')
         ->orderByDesc('total_quantity_sold')
         ->take($per_page)
