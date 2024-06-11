@@ -305,7 +305,7 @@
 						</div>
 						<div class="col-xl-7 col-lg-12 col-md-12 col-sm-12">
                             <div class="row">
-                                <div class="col-xl-3 col-lg-3 col-md-4 col-xs-6">
+                                <div class="col-xl-4 col-lg-4 col-md-4 col-xs-6">
 
                                     <div class="card">
                                         <div class="card-header">
@@ -340,7 +340,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-xl-3 col-lg-3 col-md-4 col-xs-6">
+                                <div class="col-xl-4 col-lg-4 col-md-4 col-xs-6">
 
                                     <div class="card">
                                         <div class="card-header">
@@ -352,7 +352,7 @@
                                                     @if ($testing->stock_operations_count > 0)
 
                                                     <tr>
-                                                        <td>{{ $testing->first_name}}</td>
+                                                        <td>{{ $testing->first_name}}:</td>
                                                         <td class="tx-right"><a href="{{url(session('url').'move_inventory')}}?start_date={{ $start_date }}&end_date={{ $end_date }}&adm={{ $testing->id }}" title="Go to Move Inventory page">{{ $testing->stock_operations_count }}</a></td>
                                                     </tr>
                                                     @endif
@@ -363,8 +363,34 @@
                                     </div>
                                 </div>
                                 {{-- Date search section --}}
-                                <div class="col-xl-6 col-lg-6 col-md-8 col-xs-12">
+                                <div class="col-xl-4 col-lg-4 col-md-4 col-xs-6">
                                     <div class="card">
+                                        <div class="card-header border-bottom-0">
+                                                <h3 class="card-title mb-0">Aftersale Inventory</h3> <span class="d-block tx-12 mb-0 text-muted"></span>
+                                        </div>
+                                        <div class="card-body py-2">
+                                            <table class="w-100">
+                                            @foreach ($aftersale_inventory as $inv)
+                                                <tr>
+                                                    <td>{{ $inv->grade }}:</td>
+                                                    <td class="tx-right"><a href="{{url(session('url').'inventory')}}?grade[]={{ $inv->grade_id }}&status={{ $inv->status_id }}&stock_status={{ $inv->stock_status }}" title="Go to orders page">{{ $inv->quantity }}</a></td>
+                                                </tr>
+                                            @endforeach
+                                            <tr>
+                                                <td>Returns:</td>
+                                                <td class="tx-right"><a href="{{url(session('url').'inventory')}}?stock_status=1&replacement=1" title="Returns in Progress">{{$returns_in_progress}}</a></td>
+                                            </tr>
+                                            <tr>
+                                                <td>RMA:</td>
+                                                <td class="tx-right"><a href="{{url(session('url').'inventory')}}?rma=1" title="Not Returned RMA">{{$rma}}</a></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="Awaiting Replacements">Replacements:</td>
+                                                <td class="tx-right"><a href="{{url(session('url').'inventory')}}?stock_status=1&replacement=1" title="Pending Replacements">{{$awaiting_replacement}}</a></td>
+                                            </tr>
+                                            </table>
+                                        </div>
+
                                         {{-- <div class="card-header">
                                             <h4 class="card-title mb-1">{{ __('locale.Search Records By Dates') }}</h4>
                                         </div>
@@ -407,20 +433,6 @@
                                     </div>
                                 {{-- </div>
                                 <div class="col-lg-3"> --}}
-                                    <div class="col-lg-3 overflow-hidden">
-                                        <div class="card-header border-bottom-0">
-                                                <h3 class="card-title mb-0">Aftersale Inventory</h3> <span class="d-block tx-12 mb-0 text-muted"></span>
-                                        </div>
-                                        <div class="card-body">
-                                            @foreach ($aftersale_inventory as $inv)
-                                                <div class=""><h6><a href="{{url(session('url').'inventory')}}?grade[]={{ $inv->grade_id }}&status={{ $inv->status_id }}&stock_status={{ $inv->stock_status }}" title="Go to orders page">{{ $inv->grade.": ".$inv->quantity." ".$purchase_status[$inv->status_id] }}</a></h6></div>
-                                            @endforeach
-                                            <h6 class=""><a href="{{url(session('url').'inventory')}}?stock_status=1&replacement=1" title="Returns in Progress">Returns : {{$returns_in_progress}}</a></h6>
-                                            <h6 class=""><a href="{{url(session('url').'inventory')}}?rma=1" title="Not Returned RMA">RMA : {{$rma}}</a></h6>
-                                            <h6 class=""><a href="{{url(session('url').'inventory')}}?stock_status=1&replacement=1" title="Pending Replacements">Awaiting <br> Replacements : {{$awaiting_replacement}}</a></h6>
-                                        </div>
-
-                                    </div>
                                 </div>
                             </div>
                             @endif
