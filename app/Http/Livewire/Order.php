@@ -244,7 +244,11 @@ class Order extends Component
                     'orderItems' => $order->order_items,
                 ];
                 echo "Hello";
-                Mail::mailer('gmail')->to($order->customer->email)->send(new InvoiceMail($data2));
+                // Mail::mailer('gmail')->to($order->customer->email)->send(new InvoiceMail($data2));
+                $recipientEmail = $order->customer->email;
+                $subject = 'Invoice for Your Recent Purchase';
+
+                app(GoogleController::class)->sendEmailInvoice($recipientEmail, $subject, new InvoiceMail($data));
                 sleep(1);
 
             }
