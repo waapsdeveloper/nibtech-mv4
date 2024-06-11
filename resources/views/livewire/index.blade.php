@@ -105,7 +105,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <a href="{{ url('/') }}" class="btn btn-icon btn-danger me-1" form="index"><i class="fe fe-search"></i></a>
+                        <a href="{{ url('/') }}" class="btn btn-icon btn-danger me-1" form="index">X</a>
 
                     </div>
             <br>
