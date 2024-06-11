@@ -58,8 +58,6 @@
                         </div>
                             <button type="submit" class="btn btn-icon  btn-success me-1" form="index"><i class="fe fe-search"></i></button>
 
-                            <form action="" method="GET" id="index">
-                            </form>
                     </div>
                     <div class="row">
 
@@ -108,6 +106,8 @@
                         <a href="{{ url('/') }}" class="btn btn-icon btn-danger me-1" form="index">X</a>
 
                     </div>
+                    <form action="" method="GET" id="index">
+                    </form>
             <br>
                     @if (count($variations) > 0)
 
