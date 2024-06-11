@@ -33,7 +33,7 @@
                     <div class="form-floating">
                         <input type="text" list="currencies" id="currency" name="currency" class="form-control">
                         <datalist id="currencies">
-                            @foreach ($exchange_rates as $rate => $target_currency)
+                            @foreach ($exchange_rates as $target_currency => $rate)
                                 <option value="{{$target_currency}}" data-rate="{{$rate}}"></option>
                             @endforeach
                         </datalist>
