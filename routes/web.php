@@ -74,11 +74,16 @@ Route::post('purchase/remove_issues', [Order::class,'remove_issues'])->name('rem
 Route::get('report', Report::class)->name('view_report');
 use Illuminate\Support\Facades\Mail;
 
+use App\Http\Controllers\GoogleController;
+
 Route::get('/send-test-email', function () {
     Mail::raw('This is a test email.', function ($message) {
         $message->to('haleem.shahhs@gmail.com')
                 ->subject('Test Email');
     });
+    $subject = 'Invoice for Your Recent Purchase';
+
+    print_r(app(GoogleController::class)->sendEmailInvoice("haleem.shahhs@gmail.com", $subject));
 
     return 'Test email sent!';
 });
