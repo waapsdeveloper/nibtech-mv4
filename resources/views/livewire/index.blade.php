@@ -44,22 +44,6 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md">
-                            <div class="form-floating">
-                                <input class="form-control" id="datetimepicker" type="date" id="start" name="start_date" value="{{$start_date}}" form="index">
-                                <label for="start">{{ __('locale.Start Date') }}</label>
-                            </div>
-                        </div>
-                        <div class="col-md">
-                            <div class="form-floating">
-                                <input class="form-control" id="datetimepicker" type="date" id="end" name="end_date" value="{{$end_date}}" form="index">
-                                <label for="end">{{ __('locale.End Date') }}</label>
-                            </div>
-                        </div>
-                            <button type="submit" class="btn btn-icon  btn-success me-1" form="index"><i class="fe fe-search"></i></button>
-
-                    </div>
-                    <div class="row">
 
                         <div class="col-md">
                             <div class="form-floating">
@@ -103,13 +87,10 @@
                                 @endforeach
                             </select>
                         </div>
-                        <a href="{{ url('/') }}" class="btn btn-icon btn-danger me-1" form="index"><i class="fe fe-x"></i></a>
 
                     </div>
-                    <form action="" method="GET" id="index">
-                    </form>
-            <br>
                     @if (count($variations) > 0)
+            <br>
 
                     <div class="row">
                         <div class="col-xl-12">
@@ -202,8 +183,25 @@
 					<!-- row -->
 					<div class="row">
 						<div class="col-xl-5 col-lg-12 col-md-12 col-sm-12">
-							<div class="row">
-								<div class="col-xl-12 col-lg-12 col-md-12 col-xs-12">
+
+                    <div class="row me-0">
+                        <div class="col-md">
+                            <div class="form-floating">
+                                <input class="form-control" id="datetimepicker" type="date" id="start" name="start_date" value="{{$start_date}}" form="index">
+                                <label for="start">{{ __('locale.Start Date') }}</label>
+                            </div>
+                        </div>
+                        <div class="col-md">
+                            <div class="form-floating">
+                                <input class="form-control" id="datetimepicker" type="date" id="end" name="end_date" value="{{$end_date}}" form="index">
+                                <label for="end">{{ __('locale.End Date') }}</label>
+                            </div>
+                        </div>
+                            <button type="submit" class="btn btn-icon  btn-success me-1" form="index"><i class="fe fe-search"></i></button>
+                            <a href="{{ url('/') }}" class="btn btn-icon btn-danger me-1" form="index"><i class="fe fe-x"></i></a>
+                    </div>
+                    <form action="" method="GET" id="index">
+                    </form>
 									<div class="card">
 										<div class="card-header">
                                             <div class="d-flex justify-content-between">
@@ -300,8 +298,6 @@
                                             </table>
                                         </div>
                                     </div>
-								</div>
-							</div>
 						</div>
 						<div class="col-xl-7 col-lg-12 col-md-12 col-sm-12">
                             <div class="row">
