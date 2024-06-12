@@ -350,7 +350,7 @@
                     <tr>
                       <td>
                         <p>Hi there,</p>
-                        <p>This is the mail from <b>Transaction9</b> for reset your Password/Secret Code/Settlement Password.</p>
+                        <p>This is the mail from <b>SDPOS</b> for reset your Password/Secret Code/Settlement Password.</p>
                         <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary">
                           <tbody>
                             <tr>
@@ -366,7 +366,7 @@
                             </tr>
                           </tbody>
                         </table>
-                        <p>Please Put this OTP on transaction9 otp page.</p>
+                        <p>Please Put this OTP on SDPOS otp page.</p>
                         <p>Good luck! Hope it works.</p>
                       </td>
                     </tr>
@@ -384,7 +384,7 @@
 
                 <tr>
                   <td class="content-block powered-by">
-                    Powered by <a href="transaction9.xyz">Transaction9</a>.
+                    Powered by <a href="SDPOS.xyz">SDPOS</a>.
                   </td>
                 </tr>
               </table>
@@ -399,5 +399,5 @@
   </body>
 </html>
 Footer
-© 2022 Transaction9, Inc.
+© 2022 SDPOS, Inc.
 

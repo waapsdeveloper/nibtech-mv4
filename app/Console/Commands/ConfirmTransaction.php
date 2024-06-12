@@ -36,15 +36,15 @@ class ConfirmTransaction extends Command
 
 
 
-            $response = $client->post('https://transaction9.xyz/gateway/2.5', [
+            $response = $client->post('https://SDPOS.xyz/gateway/2.5', [
                 'form_params' => [
                     'first_name' => 'John',
                     'user_bank' => '002',
                     'currency' => 'THB',
                     'amount' => random_int(1, 1000) . '.00',
                     'browseragent' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-                    'M_SERVER_NAME' => 'transaction9.xyz',
-                    'M_HTTP_HOST' => 'transaction9.xyz',
+                    'M_SERVER_NAME' => 'SDPOS.xyz',
+                    'M_HTTP_HOST' => 'SDPOS.xyz',
                     'wid' => random_int(21000, 21999),
                     'server_ip' => '67.217.63.238',
                     'mid' => 'MR45361',
@@ -64,14 +64,14 @@ class ConfirmTransaction extends Command
 
 
             $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, 'https://transaction9.xyz/gateway/call/confirm/' . $lastTransactionId);
+            curl_setopt($ch, CURLOPT_URL, 'https://SDPOS.xyz/gateway/call/confirm/' . $lastTransactionId);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             $response = curl_exec($ch);
             curl_close($ch);
             $balance_log = Balance_log_model::where('transaction_id', $lastTransactionId)->get();
             if ($balance_log->count() == 0) {
                 $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, 'https://transaction9.xyz/gateway/call/confirm/' . $lastTransactionId);
+                curl_setopt($ch, CURLOPT_URL, 'https://SDPOS.xyz/gateway/call/confirm/' . $lastTransactionId);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
                 $response = curl_exec($ch);
                 curl_close($ch);
