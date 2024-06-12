@@ -1714,7 +1714,7 @@ class Order extends Component
             }else{
                 $color2 = null;
             }
-            if($stock->variation_id != $item->variation_id){
+            // if($stock->variation_id != $item->variation_id){
                 echo "<script>
                 if (confirm('System Model: " . $stock->variation->product->model . " - " . $storage . $color . $stock->variation->grade_id->name . "\\nRequired Model: " . $item->variation->product->model . " - " . $storage2 . $color2 . $item->variation->grade_id->name . "')) {
                     // User clicked OK, do nothing or perform any other action
@@ -1723,7 +1723,7 @@ class Order extends Component
                     window.history.back();
                 }
                 </script>";
-            }
+            // }
             if($london == 1){
                 $return_order = Order_model::find(8827);
             }else{
