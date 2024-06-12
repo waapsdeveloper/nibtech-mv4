@@ -583,7 +583,7 @@
                                                 </tr>
                                             @endforeach
                                         @endif
-                                        @if ($item->replacement || $itm->replacement)
+                                        @if ($item->replacement || (isset($itm) && $itm->replacement))
                                                         @php
                                                             if ($item->replacement){
                                                                 $replacement = $item->replacement;
