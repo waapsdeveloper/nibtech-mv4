@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Http\Controllers\GoogleController;
 use Livewire\Component;
 use App\Models\Admin_model;
 use Illuminate\Http\Request;
@@ -37,7 +38,11 @@ class Change extends Component
                     'title' => 'Mail from Britain Tech Ltd',
                     'body' => $body
                 ];
-                Mail::to($request->email)->send(new ResetMail($mailData));
+                // Mail::to($request->email)->send(new ResetMail($mailData));
+                $recipientEmail = $request->email;
+                $subject = 'Reset Your Password';
+
+                app(GoogleController::class)->sendEmailInvoice($recipientEmail, $subject, new ResetMail($mailData));
                 return redirect('OTP/password');
             }else{
                 session()->forget('error');
