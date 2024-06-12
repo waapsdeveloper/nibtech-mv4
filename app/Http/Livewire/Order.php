@@ -1006,9 +1006,12 @@ class Order extends Component
 
         // Find the order
         $order = Order_model::with('customer', 'order_items')->find($orderId);
-        $order_items = Order_item_model::where('order_id', $orderId)->whereHas('stock', function($q) {
+        $order_items = Order_item_model::where('order_id', $orderId)->get();
+        if($order_items->count() > 1){
+            $order_items = $order_items->whereHas('stock', function($q) {
                 $q->where('status', 2)->orWhere('status',null);
             })->get();
+        }
 
         // Generate PDF for the invoice content
         $data = [
