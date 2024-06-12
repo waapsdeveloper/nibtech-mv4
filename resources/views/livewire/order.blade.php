@@ -633,7 +633,7 @@
                                                         {{-- @endforeach --}}
                                                         @endwhile
                                         @endif
-                                        {{-- @endforeach --}}
+                                        @endforeach
                                         @if ($order->customer->orders->count() > 1)
                                             @php
                                                 $def = 0;
