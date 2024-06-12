@@ -7,6 +7,7 @@ use App\Models\Color_model;
 use Livewire\Component;
 use App\Models\Stock_model;
 use App\Models\Grade_model;
+use App\Models\Order_item_model;
 use App\Models\Order_model;
 use App\Models\Products_model;
 use App\Models\Stock_operations_model;
@@ -36,46 +37,17 @@ class FortnightReturn extends Component
         $data['storages'] = Storage_model::pluck('name','id');
         $data['grades'] = Grade_model::all();
 
-        $start_date = Carbon::now()->startOfDay();
-        $end_date = date('Y-m-d 23:59:59');
-        if (request('start_date') != NULL && request('end_date') != NULL) {
-            $start_date = request('start_date') . " 00:00:00";
-            $end_date = request('end_date') . " 23:59:59";
-        }
-
-        if(request('grade')){
-            session()->put('grade',request('grade'));
-            session()->put('success',request('grade'));
-
-        }
-        $grade = session('grade');
-        if(request('description')){
-            session()->put('description',request('description'));
-        }
-
-        $latest_items = Order_item_model::where('created_at','>=',Carbon::now()->subDays(14))
+        $latest_items = Order_item_model::whereHas('variation', function ($q) {
+            $q->where('grade',10);
+        })
         ->whereHas('order', function ($q) {
             $q->where('order_type_id',4);
-        })->with(['stock.stock_operations'=> function ($q) {
+        })->whereHas('refund_order')->get();
 
-        }]);
+        $data['latest_items'] = $latest_items;
 
-        $stocks = Stock_operations_model::
-        where('created_at','>=',$start_date)
-        ->where('created_at','<=',$end_date)
 
-        ->when(request('adm') != '', function ($q) {
-            return $q->where('admin_id', request('adm'));
-        })
-            // ->whereHas('stock', function ($query) {
-            //     $query->where('status', 1);
-            // })
-        ->where('description','!=','Grade changed for Sell')
-            ->orderBy('id','desc')->get();
-        $data['stocks'] = $stocks;
-        $data['grade'] = Grade_model::find($grade);
-
-        return view('livewire.move_inventory', $data); // Return the Blade view instance with data
+        return view('livewire.fortnight_return', $data); // Return the Blade view instance with data
     }
 
     public function change_grade(){

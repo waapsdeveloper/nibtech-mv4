@@ -70,7 +70,7 @@ class Order_item_model extends Model
     }
     public function refund_order()
     {
-        return $this->HasOne(Order_model::class, 'reference_id', 'reference_id');
+        return $this->HasOne(Order_model::class, 'reference_id', 'reference_id')->where('processed_at','>=',Carbon::parse($this->created_at)->subDays(14));
     }
 
     public function replacement()
