@@ -750,7 +750,7 @@ class Order extends Component
 
                 $variation = Variation_model::firstOrNew(['product_id' => $product, 'grade' => $grade, 'storage' => $storage]);
                 }
-
+                $grd = null;
                 if ($v_grade) {
                     // Convert each v_grade name to lowercase
                     $lowercaseGrades = array_map('strtolower', $grades);
