@@ -203,9 +203,9 @@
                     <form action="" method="GET" id="index">
                     </form>
 									<div class="card">
-										<div class="card-header">
+										<div class="card-header pb-0">
                                             <div class="d-flex justify-content-between">
-											<h4 class="card-title mb-1">Top Selling Products</h4>
+											<h4 class="card-title ">Top Selling Products</h4>
 
                                                 {{-- @dd($products) --}}
                                             {{-- <select class="select2" multiple>

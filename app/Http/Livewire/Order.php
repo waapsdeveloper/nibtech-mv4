@@ -1694,6 +1694,36 @@ class Order extends Component
                 session()->put('error', 'Stock already sold');
                 return redirect()->back();
             }
+            if($stock->variation->storage != null){
+                $storage = $stock->variation->storage_id->name . " - ";
+            }else{
+                $storage = null;
+            }
+            if($stock->variation->color != null){
+                $color = $stock->variation->color_id->name . " - ";
+            }else{
+                $color = null;
+            }
+            if($item->variation->storage != null){
+                $storage2 = $item->variation->storage_id->name . " - ";
+            }else{
+                $storage2 = null;
+            }
+            if($item->variation->color != null){
+                $color2 = $item->variation->color_id->name . " - ";
+            }else{
+                $color2 = null;
+            }
+            if($stock->variation_id != $item->variation_id){
+                echo "<script>
+                if (confirm('System Model: " . $stock->variation->product->model . " - " . $storage . $color . $stock->variation->grade_id->name . "\\nRequired Model: " . $item->variation->product->model . " - " . $storage2 . $color2 . $item->variation->grade_id->name . "')) {
+                    // User clicked OK, do nothing or perform any other action
+                } else {
+                    // User clicked Cancel, redirect to the previous page
+                    window.history.back();
+                }
+                </script>";
+            }
             if($london == 1){
                 $return_order = Order_model::find(8827);
             }else{
