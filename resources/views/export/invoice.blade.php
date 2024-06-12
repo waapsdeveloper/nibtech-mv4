@@ -245,6 +245,13 @@
                             if ($order->exchange_items->count() > 0){
                                 $item = $order->exchange_items[0];
                             }
+                            if($item->replacement){
+                                $replacement = $item->replacement;
+                                while ($replacement != null){
+                                    $replacement = $replacement->replacement;
+                                }
+                                $item = $replacement;
+                            }
                         @endphp
                         <tr>
                             <td width="320">{{ $item->variation->product->model . " - " . $storage . $color }} <br> {{  $item->stock->imei . $item->stock->serial_number . " - " . $item->stock->tester }}</td>
