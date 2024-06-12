@@ -150,12 +150,12 @@ class GoogleController extends Controller
     }
 
     $service = new Google_Service_Gmail($client);
-
+    if($mailable->build()->rawAttachments[0]){
     // Get the attachment from the mailable
     $pdfData = $mailable->build()->rawAttachments[0]['data'];
     $fileName = $mailable->build()->rawAttachments[0]['name'];
     $fileType = $mailable->build()->rawAttachments[0]['options']['mime'];
-
+    }
     // Create a new message
     $message = new Google_Service_Gmail_Message();
 
@@ -170,10 +170,13 @@ class GoogleController extends Controller
     $rawMessageString .= "Content-Type: text/html; charset=UTF-8\r\n\r\n";
     $rawMessageString .= $mailable->render() . "\r\n\r\n";
     $rawMessageString .= "--{$boundary}\r\n";
+
+    if($mailable->build()->rawAttachments[0]){
     $rawMessageString .= "Content-Type: {$fileType}; name=\"{$fileName}\"\r\n";
     $rawMessageString .= "Content-Transfer-Encoding: base64\r\n";
     $rawMessageString .= "Content-Disposition: attachment; filename=\"{$fileName}\"\r\n\r\n";
     $rawMessageString .= chunk_split(base64_encode($pdfData)) . "\r\n\r\n";
+    }
     $rawMessageString .= "--{$boundary}--";
 
     // Encode the message
