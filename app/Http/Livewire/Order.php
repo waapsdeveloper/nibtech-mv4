@@ -760,17 +760,9 @@ class Order extends Component
                     if (in_array($v_gradeName, $lowercaseGrades)) {
                         // If the v_grade exists in the predefined v_grades array,
                         // retrieve its index
-                        $clr = array_search($v_gradeName, $lowercaseGrades);
+                        $grd = array_search($v_gradeName, $lowercaseGrades);
                     } else {
-                        // If the v_grade doesn't exist in the predefined v_grades array,
-                        // create a new v_grade record in the database
-                        $newGrade = Grade_model::create([
-                            'name' => $v_gradeName
-                        ]);
-                        $v_grades = Grade_model::pluck('name','id')->toArray();
-                        $lowercaseGrades = array_map('strtolower', $v_grades);
-                        // Retrieve the ID of the newly created v_grade
-                        $clr = $newGrade->id;
+                        $grd = 9;
                     }
                 }
 
@@ -785,6 +777,9 @@ class Order extends Component
                     $issue[$dr]['data']['storage'] = $st;
                     if($color){
                         $issue[$dr]['data']['color'] = $d[$color];
+                    }
+                    if($v_grade){
+                        $issue[$dr]['data']['v_grade'] = $d[$v_grade];
                     }
                     $issue[$dr]['data']['imei'] = $i.$s;
                     $issue[$dr]['data']['cost'] = $c;
@@ -812,6 +807,7 @@ class Order extends Component
                     $stock->save();
 
                     $order_item = Order_item_model::firstOrNew(['order_id' => $order->id, 'variation_id' => $variation->id, 'stock_id' => $stock->id]);
+                    $order_item->reference_id = $grd;
                     $order_item->quantity = 1;
                     $order_item->price = $c;
                     $order_item->status = 3;
@@ -828,6 +824,9 @@ class Order extends Component
                     $issue[$dr]['data']['storage'] = $st;
                     if($color){
                         $issue[$dr]['data']['color'] = $d[$color];
+                    }
+                    if($v_grade){
+                        $issue[$dr]['data']['v_grade'] = $d[$v_grade];
                     }
                     $issue[$dr]['data']['imei'] = $i.$s;
                     $issue[$dr]['data']['cost'] = $c;
