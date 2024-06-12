@@ -248,9 +248,9 @@
                             if($item->replacement){
                                 $replacement = $item->replacement;
                                 while ($replacement != null){
+                                    $item = $replacement;
                                     $replacement = $replacement->replacement;
                                 }
-                                $item = $replacement;
                             }
                         @endphp
                         <tr>
