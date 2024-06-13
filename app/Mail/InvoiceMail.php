@@ -44,10 +44,10 @@ class InvoiceMail extends Mailable
         $pdfOutput = $pdf->Output('invoice.pdf', 'S'); // Get the PDF output as a string
         // $pdf = PDF::loadView('export.invoice', $this->data);
 
-        return $this->view('email.invoice');
-            // ->attachData($pdfOutput, 'invoice.pdf', [
-            //     'mime' => 'application/pdf',
-            // ]);
+        return $this->view('email.invoice')
+            ->attachData($pdfOutput, 'invoice.pdf', [
+                'mime' => 'application/pdf',
+            ]);
 
         // return $this->view('export.invoice', $this->data)
         //     ->subject('Invoice for Order #' . $this->data['order']->reference_id)
