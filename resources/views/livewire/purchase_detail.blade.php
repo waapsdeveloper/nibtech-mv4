@@ -262,7 +262,20 @@
                                             <tr>
                                                 <td>{{ $i + 1 }}</td>
                                                 @foreach ($data as $key => $value)
-                                                    <td title="{{ $key }}">{{ $value }}</td>
+                                                    @if ($key == 'variation')
+                                                        @php
+                                                            $variation = $all_variations->where('id',$value)->first();
+                                                            if($variation->storage){
+                                                                $storage = $storages[$variation->storage];
+                                                            }else{
+                                                                $storage = null;
+                                                            }
+                                                        @endphp
+                                                        <td title="{{ $key }}">{{$variation->product->model." ".$storage}}</td>
+                                                    @else
+                                                        <td title="{{ $key }}">{{ $value }}</td>
+
+                                                    @endif
                                                 @endforeach
                                                 <td>
                                                     @if ($row->message == "IMEI not Provided" || $row->message == "IMEI/Serial Not Found")
