@@ -68,7 +68,7 @@ class Product_Variation extends Component
         when(request('grade') != '', function ($q) {
             return $q->where('grade', request('grade'));
         })
-        ->orderBy('name','desc')
+        ->orderBy('id','desc')
         ->paginate($per_page)
         ->onEachSide(5)
         ->appends(request()->except('page'));
