@@ -255,7 +255,7 @@ class Index extends Component
         echo '<script> sessionStorage.setItem("dates", "' . implode(',', $dates) . '");</script>';
 
 
-        $data['pending_orders_count'] = Order_model::where('status',2)->groupBy('order_type_id')->select('order_type_id', DB::raw('COUNT(id) as count'))->get();
+        $data['pending_orders_count'] = Order_model::where('status',2)->groupBy('order_type_id')->select('order_type_id', DB::raw('COUNT(id) as count'))->orderBy('order_type_id','asc')->get();
 
         $data['start_date'] = date('Y-m-d', strtotime($start_date));
         $data['end_date'] = date("Y-m-d", strtotime($end_date));
