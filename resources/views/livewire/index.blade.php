@@ -429,7 +429,7 @@
                                             <br>
                                                 Pending Orders:
                                                 @foreach ($pending_orders_count as $pending)
-                                                    | {{ $pending->order_type->name.": ".$pending->count }} |
+                                                    {{ $pending->order_type->name.": ".$pending->count }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                 @endforeach
                                             </h6>
                                         </div>
