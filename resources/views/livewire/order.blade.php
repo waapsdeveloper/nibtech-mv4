@@ -548,8 +548,7 @@
                                                 </tr>
                                             {{-- @endforeach --}}
                                             @endwhile
-                                        @endif
-                                        @if ($order->exchange_items->count() > 0)
+                                        @elseif ($order->exchange_items->count() > 0)
                                             @foreach ($order->exchange_items as $ind => $itm)
 
                                                 <tr class="bg-secondary text-white">
@@ -583,7 +582,7 @@
                                                 </tr>
                                             @endforeach
                                         @endif
-                                        @if ($item->replacement || (isset($itm) && $itm->replacement))
+                                        @if (isset($itm) && $itm->replacement)
                                                         @php
                                                             if ($item->replacement){
                                                                 $replacement = $item->replacement;
