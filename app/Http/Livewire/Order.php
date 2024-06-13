@@ -1052,7 +1052,6 @@ class Order extends Component
         // app(GoogleController::class)->sendEmailInvoice($recipientEmail, $subject, new InvoiceMail($data));
         // die;
         // }
-        // Optionally, save the PDF locally
         // file_put_contents('invoice.pdf', $pdfContent);
 
         // Get the PDF content
