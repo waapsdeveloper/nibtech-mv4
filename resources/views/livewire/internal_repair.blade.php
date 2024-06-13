@@ -332,9 +332,7 @@
                 <div class="card-header pb-0">
                     <div class="d-flex justify-content-between">
                         <h4 class="card-title mg-b-0">Awaiting Repair</h4>
-                        <div class=" mg-b-0">
-                            Count: {{ count($repair_stocks)}}
-                        </div>
+                        <h5 class="mg-b-0">{{ __('locale.From') }} {{$repair_stocks->firstItem()}} {{ __('locale.To') }} {{$repair_stocks->lastItem()}} {{ __('locale.Out Of') }} {{$repair_stocks->total()}} </h5>
 
                     </div>
                 </div>
@@ -384,6 +382,7 @@
                                 @endforeach
                             </tbody>
                         </table>
+                        {{ $repair_stocks->onEachSide(1)->links() }} {{ __('locale.From') }} {{$repair_stocks->firstItem()}} {{ __('locale.To') }} {{$repair_stocks->lastItem()}} {{ __('locale.Out Of') }} {{$repair_stocks->total()}}
                     <br>
                 </div>
 
