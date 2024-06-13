@@ -427,7 +427,7 @@
                                             @endforeach
                                             <h6 class="mb-0">
                                             <br>
-                                                Pending Orders:
+                                                Pending Orders:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                 @foreach ($pending_orders_count as $pending)
                                                     {{ $pending->order_type->name.": ".$pending->count }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                 @endforeach
