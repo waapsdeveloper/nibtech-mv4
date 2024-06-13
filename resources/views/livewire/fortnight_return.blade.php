@@ -186,7 +186,7 @@
                                 </thead>
                                 <tbody>
                                     @php
-                                        $i = 0;
+                                        $i = $latest_items->firstItem() - 1;
                                     @endphp
                                     @foreach ($latest_items as $item)
 
