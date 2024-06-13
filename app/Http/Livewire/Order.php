@@ -1719,16 +1719,17 @@ class Order extends Component
             }else{
                 $color2 = null;
             }
-            // if($stock->variation_id != $item->variation_id){
-                echo "<script>
-                if (confirm('System Model: " . $stock->variation->product->model . " - " . $storage . $color . $stock->variation->grade_id->name . "\\nRequired Model: " . $item->variation->product->model . " - " . $storage2 . $color2 . $item->variation->grade_id->name . "')) {
-                    // User clicked OK, do nothing or perform any other action
-                } else {
-                    // User clicked Cancel, redirect to the previous page
-                    window.history.back();
-                }
-                </script>";
-            // }
+            if(($stock->variation->product_id == $item->variation->product_id) || ($item->variation->product_id == 144 && $stock->variation->product_id == 229) || ($item->variation->product_id == 142 && $stock->variation->product_id == 143) || ($item->variation->product_id == 54 && $stock->variation->product_id == 55) || ($item->variation->product_id == 55 && $stock->variation->product_id == 54) || ($item->variation->product_id == 58 && $stock->variation->product_id == 59) || ($item->variation->product_id == 59 && $stock->variation->product_id == 58) || ($item->variation->product_id == 200 && $stock->variation->product_id == 160)){
+            }else{
+                session()->put('error', "Product Model not matched");
+                return redirect()->back();
+            }
+            if(($stock->variation->storage == $item->variation->storage) || ($item->variation->storage == 5 && in_array($stock->variation->storage,[0,6]) && $item->variation->product->brand == 2) || (in_array($item->variation->product_id, [78,58,59]) && $item->variation->storage == 4 && in_array($stock->variation->storage,[0,5]))){
+            }else{
+                session()->put('error', "Product Storage not matched");
+                return redirect()->back();
+            }
+
             if($london == 1){
                 $return_order = Order_model::find(8827);
             }else{
