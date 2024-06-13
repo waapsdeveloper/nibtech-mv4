@@ -524,6 +524,7 @@ class Order extends Component
     public function purchase_detail($order_id){
 
 
+        DB::statement("SET SESSION group_concat_max_len = 1000000;");
         $data['title_page'] = "Purchase Detail";
         $data['storages'] = Storage_model::pluck('name','id');
         $data['colors'] = Color_model::pluck('name','id');
