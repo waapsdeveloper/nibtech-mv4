@@ -425,7 +425,7 @@
                                             @foreach ($graded_inventory as $inv)
                                                 <div class="col-lg-3 col-md-4"><h6><a href="{{url(session('url').'inventory')}}?grade[]={{ $inv->grade_id }}&status={{ $inv->status_id }}" title="Go to orders page">{{ $inv->grade.": ".$inv->quantity." ".$purchase_status[$inv->status_id] }}</a></h6></div>
                                             @endforeach
-                                            <h6 class="mb-0">
+                                            <h6 class="mb-0" class="tx-right">
                                             <br>
                                                 Pending Orders:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                 @foreach ($pending_orders_count as $pending)
