@@ -141,6 +141,7 @@
             <div class="col-xl-12">
                 <div class="card">
                     <div class="card-header pb-0">
+                        <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$latest_items->firstItem()}} {{ __('locale.To') }} {{$latest_items->lastItem()}} {{ __('locale.Out Of') }} {{$latest_items->total()}} </h5>
                         {{-- <div class="d-flex justify-content-between">
 
                             <div class=" mg-b-0">
@@ -234,6 +235,7 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                        {{ $latest_items->onEachSide(1)->links() }} {{ __('locale.From') }} {{$latest_items->firstItem()}} {{ __('locale.To') }} {{$latest_items->lastItem()}} {{ __('locale.Out Of') }} {{$latest_items->total()}}
                         <br>
                     </div>
 

@@ -42,7 +42,10 @@ class FortnightReturn extends Component
         })
         ->whereHas('order', function ($q) {
             $q->where('order_type_id',4);
-        })->whereHas('refund_order')->orderBy('created_at','desc')->get();
+        })->whereHas('refund_order')->orderBy('created_at','desc')
+        ->paginate(20)
+        ->onEachSide(5)
+        ->appends(request()->except('page'));
 
         $data['latest_items'] = $latest_items;
 
