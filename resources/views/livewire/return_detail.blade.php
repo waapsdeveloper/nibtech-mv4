@@ -548,7 +548,7 @@
                             isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
                         @endphp
 
-                                    @foreach ($variation->stocks as $stock)
+                                    @foreach ($variation->stocks->sortByDesc('stocks.updated_at') as $stock)
                                         @php
                                         $row = $stock->latest_operation;
                                         $i ++;
