@@ -273,7 +273,7 @@
                                                         <strong>{{ $operation->new_variation->sku }}</strong>{{ " - " . $operation->new_variation->product->model . " - " . (isset($operation->new_variation->storage_id)?$operation->new_variation->storage_id->name . " - " : null) . (isset($operation->new_variation->color_id)?$operation->new_variation->color_id->name. " - ":null)}} <strong><u>{{ $operation->new_variation->grade_id->name ?? "Grade Missing" }}</u></strong>
                                                     @endif
                                                 </td>
-                                                <td>{{ $operation->stock->imei??"Stock Missing" }}{{ $operation->stock->serial_number??"Stock Missing" }}</td>
+                                                <td>{{ $operation->stock->imei ?? null }}{{ $operation->stock->serial_number ?? null }}</td>
                                                 <td>{{ $operation->stock->order->customer->first_name ?? "Purchase Order Missing"}} | {{$operation->stock->order->reference_id ?? null}}</td>
                                                 <td>{{ $operation->description }}</td>
                                                 <td>{{ $operation->admin->first_name ?? null }}</td>
