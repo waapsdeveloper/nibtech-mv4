@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Google\Service\MyBusinessAccountManagement\Admin;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -143,13 +144,11 @@ class Api_request_model extends Model
                     $admin = 6;
                 }elseif(trim($adminName) == 'sangeeta punia'){
                     $admin = 8;
-                }elseif($adminName == '`rizzz'){
-                    $admin = null;
                 }elseif($adminName == 'owais'){
                     $admin = 2;
                 }else{
 
-                    echo $adminName;
+                    echo "Please create/change Team Member First Name to: ".$adminName;
                     continue;
                 }
             }
@@ -186,7 +185,7 @@ class Api_request_model extends Model
                             'new_variation_id' => $stock->variation->id,
                             'description' => $datas->Fail." | ".$datas->Comments." | IMEI changed from: ".$datas->Imei2." | DrPhone",
                             'admin_id' => $admin,
-                            'created_at' => date('Y-m-d h:i:s',strtotime($datas->Time)),
+                            'created_at' => Carbon::parse($datas->Time),
                         ]);
                         $stock->imei = $datas->Imei;
                     }

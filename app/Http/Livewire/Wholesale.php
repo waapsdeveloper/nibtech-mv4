@@ -37,8 +37,8 @@ class Wholesale extends Component
     {
 
         $user_id = session('user_id');
-        $data['vendors'] = Customer_model::where('is_vendor','!=',null)->pluck('first_name','id');
-        $data['currencies'] = Currency_model::pluck('sign','id');
+        $data['vendors'] = Customer_model::where('is_vendor','!=',null)->pluck('company','id');
+
 
         $data['title_page'] = "BulkSales";
         $data['latest_reference'] = Order_model::where('order_type_id',5)->orderBy('reference_id','DESC')->first()->reference_id;
