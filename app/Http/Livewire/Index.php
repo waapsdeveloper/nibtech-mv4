@@ -208,7 +208,7 @@ class Index extends Component
             $order[$k] = $orders;
             $eur[$k] = $euro;
             $gbp[$k] = $pound;
-            $dates[$k] = date('26-M', strtotime("-".$j." months")) . " - " . date('05-M', strtotime("-".$i." months"));
+            $dates[$k] = date('26 M', strtotime("-".$j." months")) . " - " . date('05 M', strtotime("-".$i." months"));
             if($i == 0 && $today < 6){
                 continue;
             }
@@ -228,7 +228,7 @@ class Index extends Component
             $order[$k] = $orders;
             $eur[$k] = $euro;
             $gbp[$k] = $pound;
-            $dates[$k] = date('06-M', strtotime("-".$i." months")) . " - " . date('15-M', strtotime("-".$i." months"));
+            $dates[$k] = date('06 M', strtotime("-".$i." months")) . " - " . date('15 M', strtotime("-".$i." months"));
             if($i == 0 && $today < 16){
                 continue;
             }
@@ -248,7 +248,7 @@ class Index extends Component
             $order[$k] = $orders;
             $eur[$k] = $euro;
             $gbp[$k] = $pound;
-            $dates[$k] = date('16-M', strtotime("-".$i." months")) . " - " . date('25-M', strtotime("-".$i." months"));
+            $dates[$k] = date('16 M', strtotime("-".$i." months")) . " - " . date('25 M', strtotime("-".$i." months"));
 
         }
         echo '<script> sessionStorage.setItem("total2", "' . implode(',', $order) . '");</script>';
