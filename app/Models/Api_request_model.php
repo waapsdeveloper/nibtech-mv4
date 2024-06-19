@@ -82,11 +82,11 @@ class Api_request_model extends Model
             }
             // if(!in_array($datas->Imei, $imeis)){
             //     $imeis[] = $datas->Imei;
-            echo "<pre>";
+            echo "<div class='col-md-4'><pre>";
 
             // print_r($request);
             print_r($datas);
-            echo "</pre>";
+            echo "</pre></div>";
             // }
 
             $colorName = strtolower($datas->Color); // Convert color name to lowercase
@@ -213,10 +213,6 @@ class Api_request_model extends Model
                     $request->status = 1;
                     $request->save();
                 }
-                echo "<pre>";
-
-                print_r($stock);
-                echo "</pre>";
             }
         }
 

@@ -4,6 +4,7 @@ namespace App\Http\Livewire;
 
 use App\Http\Controllers\GoogleController;
 use App\Models\Admin_model;
+use App\Models\Api_request_model;
 use App\Models\Brand_model;
 use App\Models\Category_model;
 use Carbon\Carbon;
@@ -98,34 +99,6 @@ class Index extends Component
 
         $data['top_products'] = $top_products;
 
-        // $data['top_products'] = Order_item_model::select('products.model as product_name', 'color.name as color', 'storage.name as storage', 'variation.sku as sku', 'grade.name as grade', DB::raw('SUM(order_items.quantity) as total_quantity_sold'), DB::raw('AVG(order_items.price) as average_price'))
-        // ->where('orders.created_at', '>=', $start_date)->where('orders.created_at', '<=', $end_date)->where('orders.order_type_id',3)->where('orders.currency',4)
-        // ->join('variation', 'order_items.variation_id', '=', 'variation.id')
-        // ->join('orders', 'order_items.order_id', '=', 'orders.id')
-        // ->join('products', 'variation.product_id', '=', 'products.id')
-        // ->join('color', 'variation.color', '=', 'color.id')
-        // ->join('storage', 'variation.storage', '=', 'storage.id')
-        // ->join('grade', 'variation.grade', '=', 'grade.id')
-
-        // ->when(request('product') != '', function ($q) {
-        //     return $q->where('products.id', '=', request('product'));
-        // })
-        // ->when(request('storage') != '', function ($q) {
-        //     return $q->where('variation.storage', 'LIKE', request('storage') . '%');
-        // })
-        // ->when(request('color') != '', function ($q) {
-        //     return $q->where('variation.color', 'LIKE', request('color') . '%');
-        // })
-        // ->when(request('grade') != '', function ($q) {
-        //     return $q->where('variation.grade', 'LIKE', request('grade') . '%');
-        // })
-        // ->where('orders.deleted_at', null)
-        // ->where('order_items.deleted_at', null)
-        // ->where('variation.deleted_at', null)
-        // ->groupBy('order_items.variation_id', 'products.model', 'storage.name', 'color.name', 'variation.sku', 'grade.name')
-        // ->orderByDesc('total_quantity_sold')
-        // ->take($per_page)
-        // ->get();
 
         $data['total_orders'] = Order_model::where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date)->where('order_type_id',3)
         ->whereHas('order_items', function ($q) use ($variation_ids) {
@@ -183,28 +156,6 @@ class Index extends Component
         ->orderBy('grade_id')
         ->get();
 
-        // $data['awaiting_replacement'] = Order_model::where(['status'=>3,'order_type_id'=>3])->with(['order_items.stock' => function ($q) {
-        //     $q->where('status',1);
-        // }]);
-        // $data['awaiting_replacement'] = Stock_model::where('status',1)->with(['order_items.order' => function ($q) {
-        //     $q->where(['status'=>3,'order_type_id'=>3]);
-        // }])
-        // ->whereHas('order_items.order', function ($q) {
-        //     $q->where(['status'=>3,'order_type_id'=>3]);
-        // })
-        // ->count('id');
-
-        // $data['awaiting_replacement'] = Stock_model::where('status', 1)
-        // ->whereHas('order_items.order', function ($q) {
-        //     $q->where(['status' => 3, 'order_type_id' => 3]);
-        // })
-        // ->whereHas('order_items', function ($q) {
-        //     $q->whereHas('order', function ($q) {
-        //         $q->whereColumn('order_items.reference_id', 'orders.reference_id')
-        //           ->where('order_type_id', 5);
-        //     });
-        // })
-        // ->count();
         $replacements = Order_item_model::where(['order_id'=>8974])->where('reference_id','!=',null)->pluck('reference_id')->toArray();
         // dd($replacements);
         $data['awaiting_replacement'] = Stock_model::where('status', 1)
@@ -222,25 +173,6 @@ class Index extends Component
         }])->get();
         $data['testing_count'] = $testing_count;
 
-        // dd($testing_count);
-        // $data['graded_available_inventory'] = Grade_model::whereHas('variations.stocks', function($q) {
-        //     $q->where('status',1)->selectRaw('count(id) as count');
-        // })->get();
-        // $data['graded_available_inventory'] = Grade_model::whereHas('variations.stocks', function($q) {
-        //     $q->where('status', 1);
-        // })->withCount(['variations.stocks as graded_stock_count' => function($q) {
-        //     $q->where('status', 1);
-        // }])->get();
-        // $data['graded_available_inventory'] = Grade_model::whereHas('variations.stocks', function($q) {
-        //     $q->where('status', 1);
-        // })->withCount(['variations.stocks as graded_stock_count' => function($q) {
-        //     $q->where('status', 1);
-        // }])->get();
-
-        // $data['graded_aftersale_inventory'] = Grade_model::whereHas('stocksCount', function($q) {
-        //     $q->where('stock.status',2);
-        // })->get();
-        // dd($data['graded_available_inventory']);
         $order = [];
         $dates = [];
         for ($i = 1; $i <= date('d'); $i++) {
@@ -256,6 +188,11 @@ class Index extends Component
 
 
         $data['pending_orders_count'] = Order_model::where('status',2)->groupBy('order_type_id')->select('order_type_id', DB::raw('COUNT(id) as count'))->orderBy('order_type_id','asc')->get();
+
+
+        $testing = new Api_request_model();
+        $data['not_added'] = $testing->push_testing();
+
 
         $data['start_date'] = date('Y-m-d', strtotime($start_date));
         $data['end_date'] = date("Y-m-d", strtotime($end_date));
