@@ -43,6 +43,15 @@ return [
             'password' => env('MAIL_PASSWORD'),
             'timeout' => null,
         ],
+        'no-reply' => [
+            'transport' => 'smtp',
+            'host' => env('MAIL_HOST', 'smtp.mailgun.org'),
+            'port' => env('MAIL_PORT', 587),
+            'encryption' => env('MAIL_ENCRYPTION', 'tls'),
+            'username' => "no-reply@nibritaintech.com",
+            'password' => "qkfh maqw dnsx rghw",
+            'timeout' => null,
+        ],
         'gmail' => [
             'transport' => 'gmail',
         ],
