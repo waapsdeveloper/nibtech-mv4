@@ -147,8 +147,6 @@ class Api_request_model extends Model
                     $admin = null;
                 }elseif($adminName == 'owais'){
                     $admin = 2;
-                }elseif($adminName == ''){
-                    $admin = 17;
                 }else{
 
                     echo $adminName;
@@ -188,7 +186,7 @@ class Api_request_model extends Model
                             'new_variation_id' => $stock->variation->id,
                             'description' => $datas->Fail." | ".$datas->Comments." | IMEI changed from: ".$datas->Imei2." | DrPhone",
                             'admin_id' => $admin,
-                            'created_at' => $datas->Time,
+                            'created_at' => date('Y-m-d h:i:s',strtotime($datas->Time)),
                         ]);
                         $stock->imei = $datas->Imei;
                     }
