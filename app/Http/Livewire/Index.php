@@ -248,7 +248,7 @@ class Index extends Component
             $order[$k] = $orders;
             $eur[$k] = $euro;
             $gbp[$k] = $pound;
-            $dates[$k] = date('16-m', strtotime("-".$i." months")) . " - " . date('25-M', strtotime("-".$i." months"));
+            $dates[$k] = date('16-M', strtotime("-".$i." months")) . " - " . date('25-M', strtotime("-".$i." months"));
 
         }
         echo '<script> sessionStorage.setItem("total2", "' . implode(',', $order) . '");</script>';
