@@ -449,6 +449,7 @@
 									<div id="statistics2"></div>
 								</div>
 							</div>
+                            @if (session('user')->hasPermission('10_day_sales_chart'))
 
 							<div class="card custom-card overflow-hidden">
 								<div class="card-header border-bottom-0">
@@ -460,6 +461,7 @@
 									<div id="statistics1"></div>
 								</div>
 							</div>
+                            @endif
 						</div>
 						<!-- </div> -->
 					</div>

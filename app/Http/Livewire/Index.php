@@ -185,7 +185,7 @@ class Index extends Component
         }
         echo '<script> sessionStorage.setItem("approved", "' . implode(',', $order) . '");</script>';
         echo '<script> sessionStorage.setItem("dates", "' . implode(',', $dates) . '");</script>';
-
+        if (session('user')->hasPermission('10_day_sales_chart')){
         $order = [];
         $dates = [];
         $k = 0;
@@ -208,7 +208,7 @@ class Index extends Component
             $order[$k] = $orders;
             $eur[$k] = $euro;
             $gbp[$k] = $pound;
-            $dates[$k] = date('26-m', strtotime("-".$j." months")) . " - " . date('05-m', strtotime("-".$i." months"));
+            $dates[$k] = date('26-M', strtotime("-".$j." months")) . " - " . date('05-M', strtotime("-".$i." months"));
             if($i == 0 && $today < 6){
                 continue;
             }
@@ -228,7 +228,7 @@ class Index extends Component
             $order[$k] = $orders;
             $eur[$k] = $euro;
             $gbp[$k] = $pound;
-            $dates[$k] = date('06-m', strtotime("-".$i." months")) . " - " . date('15-m', strtotime("-".$i." months"));
+            $dates[$k] = date('06-M', strtotime("-".$i." months")) . " - " . date('15-M', strtotime("-".$i." months"));
             if($i == 0 && $today < 16){
                 continue;
             }
@@ -248,7 +248,7 @@ class Index extends Component
             $order[$k] = $orders;
             $eur[$k] = $euro;
             $gbp[$k] = $pound;
-            $dates[$k] = date('16-m', strtotime("-".$i." months")) . " - " . date('25-m', strtotime("-".$i." months"));
+            $dates[$k] = date('16-m', strtotime("-".$i." months")) . " - " . date('25-M', strtotime("-".$i." months"));
 
         }
         echo '<script> sessionStorage.setItem("total2", "' . implode(',', $order) . '");</script>';
@@ -256,7 +256,7 @@ class Index extends Component
         echo '<script> sessionStorage.setItem("failed2", "' . implode(',', $gbp) . '");</script>';
         echo '<script> sessionStorage.setItem("dates2", "' . implode(',', $dates) . '");</script>';
 
-
+        }
         $data['pending_orders_count'] = Order_model::where('status',2)->groupBy('order_type_id')->select('order_type_id', DB::raw('COUNT(id) as count'))->orderBy('order_type_id','asc')->get();
 
 
