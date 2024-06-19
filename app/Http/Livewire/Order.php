@@ -998,6 +998,51 @@ class Order extends Component
             }
 
         }
+        if(request('change_imei') == 1){
+            $imei = request('imei');
+            $serial_number = null;
+            $imei = trim($imei);
+            if(!ctype_digit($imei)){
+                $serial_number = $imei;
+                $imei = null;
+            }
+            $old_stock = Stock_model::where(['imei'=>$imei,'serial_number'=>$serial_number])->where('status','!=',null)->first();
+            if(!$old_stock){
+
+                session()->put('error', "IMEI not Found");
+                return redirect()->back();
+            }
+            $data = json_decode($issue->data);
+            $new_stock = Stock_model::find($data->stock_id);
+            if(!$new_stock){
+
+                session()->put('error', "Additional Item not added Properly");
+                return redirect()->back();
+            }
+            $new_item = Order_item_model::find($new_stock->purchase_item->id);
+            $new_item->order_id = $old_stock->order_id;
+            $new_item->price = $old_stock->purchase_item->price;
+
+            $new_stock->order_id = $old_stock->order_id;
+
+
+            $stock_operation = Stock_operations_model::create([
+                'stock_id' => $new_stock->id,
+                'old_variation_id' => $old_stock->variation_id,
+                'new_variation_id' => $new_stock->variation_id,
+                'description' => "IMEI Changed from ".$old_stock->imei.$old_stock->serial_number,
+                'admin_id' => session('user_id'),
+            ]);
+
+            $old_stock->purchase_item->delete();
+            $old_stock->delete();
+
+            $new_item->save();
+            $new_stock->save();
+
+            $issue->delete();
+
+        }
         return redirect()->back();
 
     }

@@ -306,6 +306,17 @@
                                                         <button class="btn btn-primary m-0" name="add_imei" value="1">Insert</button>
 
                                                     </form>
+                                                    @elseif ($row->message == "Additional Item")
+                                                    <form id="order_issues_{{$i}}" method="POST" action="{{ url('purchase/remove_issues') }}" class="form-inline">
+                                                        @csrf
+                                                        <input type="hidden" name="id" value="{{$row->id}}">
+                                                        <div class="form-floating">
+                                                            <input type="text" class="form-control" id="imei" name="imei" placeholder="Enter IMEI" required>
+                                                            <label for="imei">IMEI</label>
+                                                        </div>
+                                                        <button class="btn btn-primary m-0" name="change_imei" value="1">Insert</button>
+
+                                                    </form>
                                                     @else
                                                         {{ $row->message }}
                                                     @endif
