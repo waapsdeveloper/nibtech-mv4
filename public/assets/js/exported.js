@@ -247,7 +247,7 @@
 
      if (document.querySelector('#statistics1') !== null) {
         setTimeout(function () {
-          statistics1(sessionStorage.getItem('total'),sessionStorage.getItem('approved'),sessionStorage.getItem('failed'),sessionStorage.getItem('dates'));
+          statistics1(sessionStorage.getItem('total2'),sessionStorage.getItem('approved2'),sessionStorage.getItem('failed2'),sessionStorage.getItem('dates2'));
         }, 1000);
       }
     //   if (document.querySelector('#statistics1') !== null) {

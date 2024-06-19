@@ -512,10 +512,10 @@ class Report extends Component
             $dates[$k] = date('16-m-Y', strtotime("-".$i." months")) . " - " . date('25-m-Y', strtotime("-".$i." months"));
 
         }
-        echo '<script> sessionStorage.setItem("total", "' . implode(',', $order) . '");</script>';
-        echo '<script> sessionStorage.setItem("approved", "' . implode(',', $eur) . '");</script>';
-        echo '<script> sessionStorage.setItem("failed", "' . implode(',', $gbp) . '");</script>';
-        echo '<script> sessionStorage.setItem("dates", "' . implode(',', $dates) . '");</script>';
+        echo '<script> sessionStorage.setItem("total2", "' . implode(',', $order) . '");</script>';
+        echo '<script> sessionStorage.setItem("approved2", "' . implode(',', $eur) . '");</script>';
+        echo '<script> sessionStorage.setItem("failed2", "' . implode(',', $gbp) . '");</script>';
+        echo '<script> sessionStorage.setItem("dates2", "' . implode(',', $dates) . '");</script>';
 
 
         $data['pending_orders_count'] = Order_model::where('order_type_id',3)->where('status',2)->count();

@@ -186,6 +186,76 @@ class Index extends Component
         echo '<script> sessionStorage.setItem("approved", "' . implode(',', $order) . '");</script>';
         echo '<script> sessionStorage.setItem("dates", "' . implode(',', $dates) . '");</script>';
 
+        $order = [];
+        $dates = [];
+        $k = 0;
+        $today = date('d');
+        for ($i = 5; $i >= 0; $i--) {
+            $j = $i+1;
+            $k++;
+            $start = date('Y-m-26 00:00:00', strtotime("-".$j." months"));
+            $end = date('Y-m-5 23:59:59', strtotime("-".$i." months"));
+            $orders = Order_model::where('processed_at', '>=', $start)->where('order_type_id',3)
+                ->where('processed_at', '<=', $end)->where('status',3)->count();
+            $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
+                $q->where('processed_at', '>=', $start)->where('order_type_id',3)
+                ->where('processed_at', '<=', $end)->where('status',3)->where('currency',4);
+            })->sum('price');
+            $pound = Order_item_model::whereHas('order', function($q) use ($start,$end) {
+                $q->where('processed_at', '>=', $start)->where('order_type_id',3)
+                ->where('processed_at', '<=', $end)->where('status',3)->where('currency',5);
+            })->sum('price');
+            $order[$k] = $orders;
+            $eur[$k] = $euro;
+            $gbp[$k] = $pound;
+            $dates[$k] = date('26-m', strtotime("-".$j." months")) . " - " . date('05-m', strtotime("-".$i." months"));
+            if($i == 0 && $today < 6){
+                continue;
+            }
+            $k++;
+            $start = date('Y-m-6 00:00:00', strtotime("-".$i." months"));
+            $end = date('Y-m-15 23:59:59', strtotime("-".$i." months"));
+            $orders = Order_model::where('processed_at', '>=', $start)->where('order_type_id',3)
+                ->where('processed_at', '<=', $end)->where('status',3)->count();
+            $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
+                $q->where('processed_at', '>=', $start)->where('order_type_id',3)
+                ->where('processed_at', '<=', $end)->where('status',3)->where('currency',4);
+            })->sum('price');
+            $pound = Order_item_model::whereHas('order', function($q) use ($start,$end) {
+                $q->where('processed_at', '>=', $start)->where('order_type_id',3)
+                ->where('processed_at', '<=', $end)->where('status',3)->where('currency',5);
+            })->sum('price');
+            $order[$k] = $orders;
+            $eur[$k] = $euro;
+            $gbp[$k] = $pound;
+            $dates[$k] = date('06-m', strtotime("-".$i." months")) . " - " . date('15-m', strtotime("-".$i." months"));
+            if($i == 0 && $today < 16){
+                continue;
+            }
+            $k++;
+            $start = date('Y-m-16 00:00:00', strtotime("-".$i." months"));
+            $end = date('Y-m-25 23:59:59', strtotime("-".$i." months"));
+            $orders = Order_model::where('processed_at', '>=', $start)->where('order_type_id',3)
+                ->where('processed_at', '<=', $end)->where('status',3)->count();
+            $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
+                $q->where('processed_at', '>=', $start)->where('order_type_id',3)
+                ->where('processed_at', '<=', $end)->where('status',3)->where('currency',4);
+            })->sum('price');
+            $pound = Order_item_model::whereHas('order', function($q) use ($start,$end) {
+                $q->where('processed_at', '>=', $start)->where('order_type_id',3)
+                ->where('processed_at', '<=', $end)->where('status',3)->where('currency',5);
+            })->sum('price');
+            $order[$k] = $orders;
+            $eur[$k] = $euro;
+            $gbp[$k] = $pound;
+            $dates[$k] = date('16-m', strtotime("-".$i." months")) . " - " . date('25-m', strtotime("-".$i." months"));
+
+        }
+        echo '<script> sessionStorage.setItem("total2", "' . implode(',', $order) . '");</script>';
+        echo '<script> sessionStorage.setItem("approved2", "' . implode(',', $eur) . '");</script>';
+        echo '<script> sessionStorage.setItem("failed2", "' . implode(',', $gbp) . '");</script>';
+        echo '<script> sessionStorage.setItem("dates2", "' . implode(',', $dates) . '");</script>';
+
 
         $data['pending_orders_count'] = Order_model::where('status',2)->groupBy('order_type_id')->select('order_type_id', DB::raw('COUNT(id) as count'))->orderBy('order_type_id','asc')->get();
 

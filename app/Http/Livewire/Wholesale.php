@@ -48,12 +48,6 @@ class Wholesale extends Component
             }else{
                 $per_page = 10;
             }
-            switch (request('sort')){
-                case 2: $sort = "orders.reference_id"; $by = "ASC"; break;
-                case 3: $sort = "variation.name"; $by = "DESC"; break;
-                case 4: $sort = "variation.name"; $by = "ASC"; break;
-                default: $sort = "orders.reference_id"; $by = "DESC";
-            }
             $data['orders'] = Order_model::select(
                 'orders.id',
                 'orders.reference_id',
