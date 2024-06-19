@@ -190,9 +190,6 @@ class Index extends Component
         $data['pending_orders_count'] = Order_model::where('status',2)->groupBy('order_type_id')->select('order_type_id', DB::raw('COUNT(id) as count'))->orderBy('order_type_id','asc')->get();
 
 
-        $testing = new Api_request_model();
-        $data['not_added'] = $testing->push_testing();
-
 
         $data['start_date'] = date('Y-m-d', strtotime($start_date));
         $data['end_date'] = date("Y-m-d", strtotime($end_date));

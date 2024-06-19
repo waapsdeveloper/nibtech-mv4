@@ -453,9 +453,6 @@
 						<!-- </div> -->
 					</div>
 					<!-- row closed -->
-        <div class="row">
-            {{ $not_added }}
-        </div>
     @endsection
 
     @section('scripts')
