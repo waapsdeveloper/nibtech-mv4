@@ -175,18 +175,19 @@
                             $totalQty += $item->total_quantity;
 
                             if($item->storage){
-                                $storage = $storages[$item->storage] . " - " ;
+                                $storage = $storages[$item->storage];
                             }else {
                                 $storage = null;
                             }
-                            if($item->color){
-                                $color = $colors[$item->color] . " - " ;
-                            }else {
-                                $color = null;
-                            }
+                            // if($item->color){
+                            //     $color = $colors[$item->color] . " - " ;
+                            // }else {
+                            //     $color = null;
+                            // }
                         @endphp
                         <tr>
-                            <td width="320">{{ $item->model . " - " . $storage . $color . $grades[$item->grade] }}</td>
+                            <td width="320">{{ $item->model . " - " . $storage }}</td>
+                            {{-- $color . $grades[$item->grade]  --}}
                             @if ($invoice != 1)
                             <td width="80" align="right">€{{ number_format($item->average_price,2) }}</td>
                             @else
