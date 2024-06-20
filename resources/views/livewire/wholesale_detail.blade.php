@@ -380,10 +380,10 @@
                                     @php
                                         $i = 0;
                                     @endphp
+                                    <form method="POST" action="{{url('wholesale')}}/update_prices" id="update_prices_{{ $variation->id }}">
                                     @foreach ($vars as $var)
                                     @foreach ($var as $variation)
                                     {{-- @dd($variation) --}}
-                                    <form method="POST" action="{{url('wholesale')}}/update_prices" id="update_prices_{{ $variation->id }}">
                                         @csrf
                                     @php
                                             # code...
@@ -421,9 +421,9 @@
                                         </tr>
                                         @endif
                                     @endforeach
+                                    @endforeach
+                                    @endforeach
                                     </form>
-                                    @endforeach
-                                    @endforeach
                                 </tbody>
                             </table>
                         <br>
