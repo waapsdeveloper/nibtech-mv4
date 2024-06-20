@@ -228,7 +228,6 @@
                                     @php
                                         $stocks = $variation->stocks;
                                         // $items = $stocks->order_item;
-                                        $j = 0;
                                         // print_r($variation);
                                     @endphp
 

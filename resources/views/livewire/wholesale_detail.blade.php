@@ -379,6 +379,7 @@
                                 <tbody>
                                     @php
                                         $i = 0;
+                                        $total = 0;
                                     @endphp
                                     <form method="POST" action="{{url('wholesale')}}/update_prices" id="update_prices_{{ $key."_".array_key_first($varss) }}">
                                         @csrf
@@ -389,8 +390,6 @@
                                             # code...
                                         $stocks = $variation->stocks;
                                         // $items = $stocks->order_item;
-                                        $j = 0;
-                                        $total = 0;
                                         // print_r($variation);
                                     @endphp
 
