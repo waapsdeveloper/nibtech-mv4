@@ -221,10 +221,10 @@
                                     @php
                                         $i = 0;
                                     @endphp
-                                    @foreach ($vars as $var)
-                                    @foreach ($var as $variation)
                                     <form method="POST" action="{{url(session('url').'rma')}}/update_prices" id="update_prices_{{ $variation->id }}">
                                         @csrf
+                                    @foreach ($vars as $var)
+                                    @foreach ($var as $variation)
                                     @php
                                         $stocks = $variation->stocks;
                                         // $items = $stocks->order_item;
@@ -253,9 +253,9 @@
                                         </tr>
                                         @endif
                                     @endforeach
+                                    @endforeach
+                                    @endforeach
                                     </form>
-                                    @endforeach
-                                    @endforeach
                                 </tbody>
                             </table>
                         <br>
