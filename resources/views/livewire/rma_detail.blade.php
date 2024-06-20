@@ -182,15 +182,23 @@
 
         <div class="row">
 
-            @foreach ($variations as $variation)
+            {{-- @foreach ($variations as $variation) --}}
+            @foreach ($variations as $key=>$vars)
             <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header pb-0">
+                        @php
+                            $varss = $vars->toArray();
+                        @endphp
+                        {{ $products[$key]." ".$storages[array_key_first($varss)] }}
+            {{-- <div class="col-md-4">
                 <div class="card">
                     <div class="card-header pb-0">
                         @php
                             isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
                             isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
                         @endphp
-                        {{ $variation->product->model." ".$storage." ".$color." ".$variation->grade_id->name }}
+                        {{ $variation->product->model." ".$storage." ".$color." ".$variation->grade_id->name }} --}}
                     </div>
                             {{-- {{ $variation }} --}}
                     <div class="card-body"><div class="table-responsive" style="max-height: 400px">
@@ -210,12 +218,13 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <form method="POST" action="{{url(session('url').'rma')}}/update_prices" id="update_prices_{{ $variation->id }}">
-                                        @csrf
                                     @php
                                         $i = 0;
-                                        $id = [];
                                     @endphp
+                                    @foreach ($vars as $var)
+                                    @foreach ($var as $variation)
+                                    <form method="POST" action="{{url(session('url').'rma')}}/update_prices" id="update_prices_{{ $variation->id }}">
+                                        @csrf
                                     @php
                                         $stocks = $variation->stocks;
                                         // $items = $stocks->order_item;
@@ -245,6 +254,8 @@
                                         @endif
                                     @endforeach
                                     </form>
+                                    @endforeach
+                                    @endforeach
                                 </tbody>
                             </table>
                         <br>
