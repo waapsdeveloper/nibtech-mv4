@@ -184,7 +184,7 @@
 
             {{-- @foreach ($variations as $variation) --}}
             @foreach ($variations as $key=>$vars)
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <div class="card">
                     <div class="card-header pb-0">
                         @php
@@ -207,7 +207,7 @@
                                 <thead>
                                     <tr>
                                         <th><small><b>#</b></small></th>
-                                        {{-- <th><small><b>Vendor</b></small></th> --}}
+                                        <th><small><b>Color - Grade</b></small></th>
                                         <th><small><b>IMEI/Serial</b></small></th>
                                         {{-- @if (session('user')->hasPermission('view_cost')) --}}
                                         <th><small><b>Vendor Price</b></small></th>
@@ -240,7 +240,7 @@
                                         @endphp
                                         <tr>
                                             <td>{{ $i }}</td>
-                                            {{-- <td>{{ $item->order->customer->first_name }}</td> --}}
+                                            <td>{{ $colors[$variation->color] ?? null }} - {{ $grades[$variation->grade] ?? null }}</td>
                                             <td>{{ $item->imei.$item->serial_number }}</td>
                                             <td @if (session('user')->hasPermission('view_cost')) title="Cost Price: {{ $currency.$item->purchase_item->price }}" @endif>
                                                 {{ $item->order->customer->first_name }} {{ $currency.$item->sale_item($order_id)->price }}
