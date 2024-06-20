@@ -209,10 +209,8 @@
 
                                 </form>
                             </h4>
+                            <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$stocks->firstItem()}} {{ __('locale.To') }} {{$stocks->lastItem()}} {{ __('locale.Out Of') }} {{$stocks->total()}} </h5>
 
-                            <div class=" mg-b-0">
-                                Movement Count: {{ count($stocks) }}
-                            </div>
                             <div class=" mg-b-0">
 
                                 <form method="get" action="" class="row form-inline">
@@ -296,6 +294,7 @@
                                 </tbody>
                             </table>
                         <br>
+                        {{ $stocks->onEachSide(1)->links() }} {{ __('locale.From') }} {{$stocks->firstItem()}} {{ __('locale.To') }} {{$stocks->lastItem()}} {{ __('locale.Out Of') }} {{$stocks->total()}}
                     </div>
 
                     </div>
