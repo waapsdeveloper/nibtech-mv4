@@ -212,7 +212,7 @@ class IMEI extends Component
         }
         $item = $stock->last_item();
 
-        $variation = Variation_model::firstOrNew(['product_id' => $item->variation->product_id, 'storage' => $item->variation->storage, 'color' => $item->variation->color, 'grade' => 9]);
+        $variation = $stock->variation;
 
         $variation->stock += 1;
         $variation->status = 1;
@@ -224,7 +224,7 @@ class IMEI extends Component
             'stock_id' => $stock->id,
             'old_variation_id' => $stock->variation_id,
             'new_variation_id' => $variation->id,
-            'description' => request('description'),
+            'description' => request('description')." | Refund",
             'admin_id' => session('user_id'),
         ]);
 
