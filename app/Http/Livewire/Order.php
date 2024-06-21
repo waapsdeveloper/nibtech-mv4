@@ -633,7 +633,7 @@ class Order extends Component
 
         $storages = Storage_model::pluck('name','id')->toArray();
         $colors = Color_model::pluck('name','id')->toArray();
-        $grades = Grade_model::pluck('name','id')->toArray();
+        $grades = range('a','z');
 
         $products = Products_model::pluck('model','id')->toArray();
 
@@ -1678,6 +1678,10 @@ class Order extends Component
                 session()->put('error', 'Stock not found');
                 return redirect()->back();
             }
+            if($stock->order->status != 3){
+                session()->put('error', 'Stock list awaiting approval');
+                return redirect()->back();
+            }
             $stock->variation_id = $item->variation_id;
             $stock->tester = request('correction')['tester'];
             $stock->added_by = session('user_id');
@@ -1741,6 +1745,10 @@ class Order extends Component
             }
             if($stock->status != 1){
                 session()->put('error', 'Stock already sold');
+                return redirect()->back();
+            }
+            if($stock->order->status != 3){
+                session()->put('error', 'Stock list awaiting approval');
                 return redirect()->back();
             }
             if($stock->variation->storage != null){
