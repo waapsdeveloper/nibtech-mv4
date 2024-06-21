@@ -45,6 +45,8 @@ class OrderReportExport implements FromCollection, WithHeadings
         ->whereIn('orders.status', [3,6])
         ->where('orders.order_type_id', 3)
         ->where('orders.deleted_at',null)
+        ->Where('order_items.deleted_at',null)
+        ->Where('stock.deleted_at',null)
         ->when(request('start_date') != '', function ($q) {
             return $q->where('orders.processed_at', '>=', request('start_date', 0));
         })
