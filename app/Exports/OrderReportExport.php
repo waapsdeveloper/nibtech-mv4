@@ -26,6 +26,7 @@ class OrderReportExport implements FromCollection, WithHeadings
             $join->on('stock.id', '=', 'purchase_item.stock_id')
                 ->whereRaw('purchase_item.order_id = stock.order_id');
         })
+        ->leftJoin('currency', 'orders.currency', '=', 'currency.id')
         ->select(
             'orders.reference_id',
             'variation.sku',
@@ -40,7 +41,8 @@ class OrderReportExport implements FromCollection, WithHeadings
             'admin.first_name as invoice',
             'orders.processed_at as date',
             'order_items.price as price',
-            'purchase_item.price as cost'
+            'purchase_item.price as cost',
+            'currency.code as currency'
         )
         ->whereIn('orders.status', [3,6])
         ->where('orders.order_type_id', 3)
@@ -62,7 +64,7 @@ class OrderReportExport implements FromCollection, WithHeadings
     public function headings(): array
     {
         return [
-            'Order ID',
+            'Order Number',
             'SKU',
             'Quantity',
             'Model',
@@ -75,7 +77,8 @@ class OrderReportExport implements FromCollection, WithHeadings
             'Invoice',
             'Date',
             'Price',
-            'Cost'
+            'Cost',
+            'Currency'
         ];
     }
 }
