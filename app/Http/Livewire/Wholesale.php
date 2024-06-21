@@ -778,7 +778,8 @@ $variations = $variations->groupBy(['product_id', 'storage']);
         $data = [
             'order' => $order,
             'customer' => $order->customer,
-            'order_items' =>$order_items
+            'order_items' =>$order_items,
+            'invoice' => 1
         ];
         $data['storages'] = Storage_model::pluck('name','id');
         $data['grades'] = Grade_model::pluck('name','id');
