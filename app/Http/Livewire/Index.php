@@ -196,14 +196,14 @@ class Index extends Component
             $start = date('Y-m-26 00:00:00', strtotime("-".$j." months"));
             $end = date('Y-m-5 23:59:59', strtotime("-".$i." months"));
             $orders = Order_model::where('processed_at', '>=', $start)->where('order_type_id',3)
-                ->where('processed_at', '<=', $end)->where('status',3)->count();
+                ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->count();
             $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
                 $q->where('processed_at', '>=', $start)->where('order_type_id',3)
-                ->where('processed_at', '<=', $end)->where('status',3)->where('currency',4);
+                ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',4);
             })->sum('price');
             $pound = Order_item_model::whereHas('order', function($q) use ($start,$end) {
                 $q->where('processed_at', '>=', $start)->where('order_type_id',3)
-                ->where('processed_at', '<=', $end)->where('status',3)->where('currency',5);
+                ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',5);
             })->sum('price');
             $order[$k] = $orders;
             $eur[$k] = $euro;
@@ -216,14 +216,14 @@ class Index extends Component
             $start = date('Y-m-6 00:00:00', strtotime("-".$i." months"));
             $end = date('Y-m-15 23:59:59', strtotime("-".$i." months"));
             $orders = Order_model::where('processed_at', '>=', $start)->where('order_type_id',3)
-                ->where('processed_at', '<=', $end)->where('status',3)->count();
+                ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->count();
             $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
                 $q->where('processed_at', '>=', $start)->where('order_type_id',3)
-                ->where('processed_at', '<=', $end)->where('status',3)->where('currency',4);
+                ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',4);
             })->sum('price');
             $pound = Order_item_model::whereHas('order', function($q) use ($start,$end) {
                 $q->where('processed_at', '>=', $start)->where('order_type_id',3)
-                ->where('processed_at', '<=', $end)->where('status',3)->where('currency',5);
+                ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',5);
             })->sum('price');
             $order[$k] = $orders;
             $eur[$k] = $euro;
@@ -236,14 +236,14 @@ class Index extends Component
             $start = date('Y-m-16 00:00:00', strtotime("-".$i." months"));
             $end = date('Y-m-25 23:59:59', strtotime("-".$i." months"));
             $orders = Order_model::where('processed_at', '>=', $start)->where('order_type_id',3)
-                ->where('processed_at', '<=', $end)->where('status',3)->count();
+                ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->count();
             $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
                 $q->where('processed_at', '>=', $start)->where('order_type_id',3)
-                ->where('processed_at', '<=', $end)->where('status',3)->where('currency',4);
+                ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',4);
             })->sum('price');
             $pound = Order_item_model::whereHas('order', function($q) use ($start,$end) {
                 $q->where('processed_at', '>=', $start)->where('order_type_id',3)
-                ->where('processed_at', '<=', $end)->where('status',3)->where('currency',5);
+                ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',5);
             })->sum('price');
             $order[$k] = $orders;
             $eur[$k] = $euro;
