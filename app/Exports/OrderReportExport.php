@@ -42,7 +42,7 @@ class OrderReportExport implements FromCollection, WithHeadings
             'order_items.price as price',
             'purchase_item.price as cost'
         )
-        ->where('orders.status', 3)
+        ->whereIn('orders.status', [3,6])
         ->where('orders.order_type_id', 3)
         ->where('orders.deleted_at',null)
         ->when(request('start_date') != '', function ($q) {
