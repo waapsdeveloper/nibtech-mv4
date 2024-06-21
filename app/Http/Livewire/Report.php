@@ -60,8 +60,8 @@ class Report extends Component
         // $start_date = date('Y-m-d 00:00:00',);
         $end_date = date('Y-m-d 23:59:59');
         if (request('start_date') != NULL && request('end_date') != NULL) {
-            $start_date = request('start_date') . " 00:00:00";
-            $end_date = request('end_date') . " 23:59:59";
+            $start_date = request('start_date') . " 23:00:00";
+            $end_date = request('end_date') . " 22:59:59";
         }
 
 
@@ -170,8 +170,8 @@ class Report extends Component
         for ($i = 5; $i >= 0; $i--) {
             $j = $i+1;
             $k++;
-            $start = date('Y-m-26 00:00:00', strtotime("-".$j." months"));
-            $end = date('Y-m-5 23:59:59', strtotime("-".$i." months"));
+            $start = date('Y-m-25 23:00:00', strtotime("-".$j." months"));
+            $end = date('Y-m-5 22:59:59', strtotime("-".$i." months"));
             $orders = Order_model::where('processed_at', '>=', $start)->where('order_type_id',3)
                 ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->count();
             $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
@@ -185,13 +185,13 @@ class Report extends Component
             $order[$k] = $orders;
             $eur[$k] = $euro;
             $gbp[$k] = $pound;
-            $dates[$k] = date('26 M', strtotime("-".$j." months")) . " - " . date('05 M', strtotime("-".$i." months"));
+            $dates[$k] = date('25 M', strtotime("-".$j." months")) . " - " . date('05 M', strtotime("-".$i." months"));
             if($i == 0 && $today < 6){
                 continue;
             }
             $k++;
-            $start = date('Y-m-6 00:00:00', strtotime("-".$i." months"));
-            $end = date('Y-m-15 23:59:59', strtotime("-".$i." months"));
+            $start = date('Y-m-5 23:00:00', strtotime("-".$i." months"));
+            $end = date('Y-m-15 22:59:59', strtotime("-".$i." months"));
             $orders = Order_model::where('processed_at', '>=', $start)->where('order_type_id',3)
                 ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->count();
             $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
@@ -205,13 +205,13 @@ class Report extends Component
             $order[$k] = $orders;
             $eur[$k] = $euro;
             $gbp[$k] = $pound;
-            $dates[$k] = date('06 M', strtotime("-".$i." months")) . " - " . date('15 M', strtotime("-".$i." months"));
+            $dates[$k] = date('05 M', strtotime("-".$i." months")) . " - " . date('15 M', strtotime("-".$i." months"));
             if($i == 0 && $today < 16){
                 continue;
             }
             $k++;
-            $start = date('Y-m-16 00:00:00', strtotime("-".$i." months"));
-            $end = date('Y-m-25 23:59:59', strtotime("-".$i." months"));
+            $start = date('Y-m-15 23:00:00', strtotime("-".$i." months"));
+            $end = date('Y-m-25 22:59:59', strtotime("-".$i." months"));
             $orders = Order_model::where('processed_at', '>=', $start)->where('order_type_id',3)
                 ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->count();
             $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
@@ -225,7 +225,7 @@ class Report extends Component
             $order[$k] = $orders;
             $eur[$k] = $euro;
             $gbp[$k] = $pound;
-            $dates[$k] = date('16 M', strtotime("-".$i." months")) . " - " . date('25 M', strtotime("-".$i." months"));
+            $dates[$k] = date('15 M', strtotime("-".$i." months")) . " - " . date('25 M', strtotime("-".$i." months"));
 
         }
         echo '<script> sessionStorage.setItem("total2", "' . implode(',', $order) . '");</script>';

@@ -764,7 +764,7 @@ class Order extends Component
                         // retrieve its index
                         $grd = array_search($v_gradeName, $lowercaseGrades);
                     } else {
-                        $grd = 9;
+                        $grd = 6;
                     }
                 }
 

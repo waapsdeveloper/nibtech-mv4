@@ -51,10 +51,10 @@ class OrderReportExport implements FromCollection, WithHeadings
         ->Where('order_items.deleted_at',null)
         ->Where('stock.deleted_at',null)
         ->when(request('start_date') != '', function ($q) {
-            return $q->where('orders.processed_at', '>=', request('start_date', 0));
+            return $q->where('orders.processed_at', '>=', request('start_date', 0) . " 23:00:00");
         })
         ->when(request('end_date') != '', function ($q) {
-            return $q->where('orders.processed_at', '<=', request('end_date', 0) . " 23:59:59");
+            return $q->where('orders.processed_at', '<=', request('end_date', 0) . " 22:59:59");
         })
         ->orderBy('orders.reference_id', 'DESC')
         ->get();
