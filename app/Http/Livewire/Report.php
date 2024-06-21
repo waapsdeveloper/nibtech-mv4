@@ -157,295 +157,7 @@ class Report extends Component
 
         $data['aggregated_returns'] = $aggregate_returns;
         $data['aggregated_return_cost'] = $aggregated_return_cost;
-        // $aggregated_cost = Order_item_model::whereIn('stock_id',$stock_ids)->whereHas('order', function ($q) {
-        //     $q->where('order_type_id',1);
-        // })->sum('price');
 
-        // dd($aggregates);
-
-        // $data = Category_model::with(['products.variations.order_items.order'=> function($q) use ($start_date, $end_date) {
-        //     $q->whereBetween('processed_at', [$start_date, $end_date])
-        //     ->where('order_type_id', 3)
-        //     ->select(
-        //         DB::raw('COUNT(*) as orders_qty'),
-        //         DB::raw('SUM(CASE WHEN status = 3 THEN 1 ELSE 0 END) as approved_orders_qty'),
-        //         DB::raw('SUM(CASE WHEN currency = 4 THEN (SELECT SUM(price) FROM order_items WHERE order_items.order_id = orders.id) ELSE 0 END) as eur_items_sum'),
-        //         DB::raw('SUM(CASE WHEN currency = 4 AND status = 3 THEN (SELECT SUM(price) FROM order_items WHERE order_items.order_id = orders.id) ELSE 0 END) as eur_approved_items_sum'),
-        //         DB::raw('SUM(CASE WHEN currency = 5 THEN (SELECT SUM(price) FROM order_items WHERE order_items.order_id = orders.id) ELSE 0 END) as gbp_items_sum'),
-        //         DB::raw('SUM(CASE WHEN currency = 5 AND status = 3 THEN (SELECT SUM(price) FROM order_items WHERE order_items.order_id = orders.id) ELSE 0 END) as gbp_approved_items_sum')
-        //     );
-        // }])->get();
-        // $data['sales'] = Category_model::with(['products.variations.order_items.order'=> function($q) use ($start_date, $end_date) {
-        //     $q->whereBetween('processed_at', [$start_date, $end_date])
-        //         ->where('order_type_id', 3)
-        //         ->select(
-        //             DB::raw('COUNT(*) as orders_qty'),
-        //             DB::raw('SUM(CASE WHEN status = 3 THEN 1 ELSE 0 END) as approved_orders_qty'),
-        //             DB::raw('SUM(CASE WHEN currency = 4 THEN (SELECT SUM(price) FROM order_items WHERE order_items.order_id = orders.id) ELSE 0 END) as eur_items_sum'),
-        //             DB::raw('SUM(CASE WHEN currency = 4 AND status = 3 THEN (SELECT SUM(price) FROM order_items WHERE order_items.order_id = orders.id) ELSE 0 END) as eur_approved_items_sum'),
-        //             DB::raw('SUM(CASE WHEN currency = 5 THEN (SELECT SUM(price) FROM order_items WHERE order_items.order_id = orders.id) ELSE 0 END) as gbp_items_sum'),
-        //             DB::raw('SUM(CASE WHEN currency = 5 AND status = 3 THEN (SELECT SUM(price) FROM order_items WHERE order_items.order_id = orders.id) ELSE 0 END) as gbp_approved_items_sum')
-        //         );
-        // }])->get();
-
-        // $data['sales'] = Category_model::with([
-        //     'products.variations.order_items' => function ($q) use ($start_date, $end_date) {
-        //         $q->whereHas('order', function ($query) use ($start_date, $end_date) {
-        //             $query->whereBetween('processed_at', [$start_date, $end_date])
-        //                   ->where('order_type_id', 3);
-        //         });
-        //     }
-        // ])
-        // ->withCount([
-        //     'products.variations.order_items as orders_qty' => function ($q) use ($start_date, $end_date) {
-        //         $q->whereHas('order', function ($query) use ($start_date, $end_date) {
-        //             $query->whereBetween('processed_at', [$start_date, $end_date])
-        //                   ->where('order_type_id', 3);
-        //         });
-        //     },
-        //     'products.variations.order_items as approved_orders_qty' => function ($q) use ($start_date, $end_date) {
-        //         $q->whereHas('order', function ($query) use ($start_date, $end_date) {
-        //             $query->whereBetween('processed_at', [$start_date, $end_date])
-        //                   ->where('order_type_id', 3)
-        //                   ->where('status', 3);
-        //         });
-        //     }
-        // ])
-        // ->withSum([
-        //     'products.variations.order_items as eur_items_sum' => function ($q) use ($start_date, $end_date) {
-        //         $q->whereHas('order', function ($query) use ($start_date, $end_date) {
-        //             $query->whereBetween('processed_at', [$start_date, $end_date])
-        //                   ->where('order_type_id', 3)
-        //                   ->where('currency', 4);
-        //         });
-        //     },
-        //     'products.variations.order_items as eur_approved_items_sum' => function ($q) use ($start_date, $end_date) {
-        //         $q->whereHas('order', function ($query) use ($start_date, $end_date) {
-        //             $query->whereBetween('processed_at', [$start_date, $end_date])
-        //                   ->where('order_type_id', 3)
-        //                   ->where('status', 3)
-        //                   ->where('currency', 4);
-        //         });
-        //     },
-        //     'products.variations.order_items as gbp_items_sum' => function ($q) use ($start_date, $end_date) {
-        //         $q->whereHas('order', function ($query) use ($start_date, $end_date) {
-        //             $query->whereBetween('processed_at', [$start_date, $end_date])
-        //                   ->where('order_type_id', 3)
-        //                   ->where('currency', 5);
-        //         });
-        //     },
-        //     'products.variations.order_items as gbp_approved_items_sum' => function ($q) use ($start_date, $end_date) {
-        //         $q->whereHas('order', function ($query) use ($start_date, $end_date) {
-        //             $query->whereBetween('processed_at', [$start_date, $end_date])
-        //                   ->where('order_type_id', 3)
-        //                   ->where('status', 3)
-        //                   ->where('currency', 5);
-        //         });
-        //     }
-        // ], 'price')
-        // ->get();
-
-// Build the query
-// $data['sales'] = Category_model::with(['products.variations.order_items.order' => function ($query) use ($start_date, $end_date) {
-//     $query->whereBetween('processed_at', [$start_date, $end_date])
-//           ->where('order_type_id', 3);
-// }])
-// ->get()
-// ->map(function ($category) {
-//     // Aggregate data within the category
-//     $orders = $category->products->flatMap->variations->flatMap->order_items->pluck('order');
-
-//     $orders_qty = $orders->count();
-//     $approved_orders_qty = $orders->where('status', 3)->count();
-//     $eur_items_sum = $orders->where('currency', 4)->sum(function ($order) {
-//         return $order->order_items->sum('price');
-//     });
-//     $eur_approved_items_sum = $orders->where('currency', 4)->where('status', 3)->sum(function ($order) {
-//         return $order->order_items->sum('price');
-//     });
-//     $gbp_items_sum = $orders->where('currency', 5)->sum(function ($order) {
-//         return $order->order_items->sum('price');
-//     });
-//     $gbp_approved_items_sum = $orders->where('currency', 5)->where('status', 3)->sum(function ($order) {
-//         return $order->order_items->sum('price');
-//     });
-//     // $items_cost_sum = $orders->where('status', '>=', 3)->flatMap->order_items->flatMap->stock->flatMap->purchase_item->sum('price');
-//     // $items_repair_sum = $orders->where('status', '>=', 3)->flatMap->order_items->flatMap->stock->flatMap->process_stocks->sum('price');
-//     // $items_repair_sum = $orders->sum(function ($order) {
-//     //     return $order->order_items->stock->process_stock->whereHas('process',function ($q) { $q->where('process_type_id',9); })->sum('price');
-//     // });
-
-//     return [
-//         'category' => $category->name,
-//         'orders_qty' => $orders_qty,
-//         'approved_orders_qty' => $approved_orders_qty,
-//         'eur_items_sum' => $eur_items_sum,
-//         'eur_approved_items_sum' => $eur_approved_items_sum,
-//         'gbp_items_sum' => $gbp_items_sum,
-//         'gbp_approved_items_sum' => $gbp_approved_items_sum,
-//         // 'items_cost_sum' => $items_cost_sum,
-//         // 'items_repair_sum' => $items_repair_sum,
-//     ];
-// });
-
-
-    // dd($data);
-
-        $data['top_products'] = Order_item_model::select('products.model as product_name', 'color.name as color', 'storage.name as storage', 'variation.sku as sku', 'grade.name as grade', DB::raw('SUM(order_items.quantity) as total_quantity_sold'), DB::raw('AVG(CASE WHEN orders.currency = 4 THEN order_items.price END) as average_price'))
-        ->where('orders.created_at', '>=', $start_date)->where('orders.created_at', '<=', $end_date)->where('orders.order_type_id',3)
-        ->join('variation', 'order_items.variation_id', '=', 'variation.id')
-        ->join('orders', 'order_items.order_id', '=', 'orders.id')
-        ->join('products', 'variation.product_id', '=', 'products.id')
-        ->join('color', 'variation.color', '=', 'color.id')
-        ->join('storage', 'variation.storage', '=', 'storage.id')
-        ->join('grade', 'variation.grade', '=', 'grade.id')
-
-        ->when(request('product') != '', function ($q) {
-            return $q->where('products.id', '=', request('product'));
-        })
-        ->when(request('storage') != '', function ($q) {
-            return $q->where('variation.storage', 'LIKE', request('storage') . '%');
-        })
-        ->when(request('color') != '', function ($q) {
-            return $q->where('variation.color', 'LIKE', request('color') . '%');
-        })
-        ->when(request('grade') != '', function ($q) {
-            return $q->where('variation.grade', 'LIKE', request('grade') . '%');
-        })
-        ->groupBy('order_items.variation_id', 'products.model', 'storage.name', 'color.name', 'variation.sku', 'grade.name')
-        ->orderByDesc('total_quantity_sold')
-        ->take($per_page)
-        ->get();
-
-        $data['total_orders'] = Order_model::where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date)->where('order_type_id',3)
-
-        ->when(request('product') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('product_id', '=', request('product'));
-            });
-        })
-        ->when(request('storage') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('variation.storage', 'LIKE', request('storage') . '%');
-            });
-        })
-        ->when(request('color') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('variation.color', 'LIKE', request('color') . '%');
-            });
-        })
-        ->when(request('grade') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('variation.grade', 'LIKE', request('grade') . '%');
-            });
-        })
-        ->count();
-        $data['pending_orders'] = Order_model::where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date)->where('order_type_id',3)->where('status','<',3)
-
-        ->when(request('product') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('product_id', '=', request('product'));
-            });
-        })
-        ->when(request('storage') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('variation.storage', 'LIKE', request('storage') . '%');
-            });
-        })
-        ->when(request('color') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('variation.color', 'LIKE', request('color') . '%');
-            });
-        })
-        ->when(request('grade') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('variation.grade', 'LIKE', request('grade') . '%');
-            });
-        })
-        ->count();
-        $data['invoiced_orders'] = Order_model::where('processed_at', '>=', $start_date)->where('processed_at', '<=', $end_date)->where('order_type_id',3)
-        // ->whereHas('admin', function ($q) {
-        //     $q->where('role_id', '<=', 5);
-        // })
-        ->when(request('product') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('product_id', '=', request('product'));
-            });
-        })
-        ->when(request('storage') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('variation.storage', 'LIKE', request('storage') . '%');
-            });
-        })
-        ->when(request('color') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('variation.color', 'LIKE', request('color') . '%');
-            });
-        })
-        ->when(request('grade') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('variation.grade', 'LIKE', request('grade') . '%');
-            });
-        })
-        ->count();
-        $data['total_conversations'] = Order_item_model::where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date)->where('care_id','!=',null)
-        ->when(request('product') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('product_id', '=', request('product'));
-            });
-        })
-        ->when(request('storage') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('variation.storage', 'LIKE', request('storage') . '%');
-            });
-        })
-        ->when(request('color') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('variation.color', 'LIKE', request('color') . '%');
-            });
-        })
-        ->when(request('grade') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('variation.grade', 'LIKE', request('grade') . '%');
-            });
-        })
-        ->count();
-
-        $data['graded_inventory'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', 'orders.status as status_id', DB::raw('COUNT(*) as quantity'))
-        ->where('stock.status', 1)
-        ->join('variation', 'stock.variation_id', '=', 'variation.id')
-        ->join('grade', 'variation.grade', '=', 'grade.id')
-        ->join('orders', 'stock.order_id', '=', 'orders.id')
-        ->groupBy('variation.grade', 'grade.name', 'orders.status')
-        ->orderBy('grade_id')
-        ->get();
-        $data['aftersale_inventory'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', 'orders.status as status_id', 'stock.status as stock_status', DB::raw('COUNT(*) as quantity'))
-        ->where('stock.status', 2)
-        ->join('variation', 'stock.variation_id', '=', 'variation.id')
-        ->join('grade', 'variation.grade', '=', 'grade.id')
-        ->whereIn('grade.id',[8,12,17])
-        ->join('orders', 'stock.order_id', '=', 'orders.id')
-        ->groupBy('variation.grade', 'grade.name', 'orders.status', 'stock.status')
-        ->orderBy('grade_id')
-        ->get();
-
-
-        $replacements = Order_item_model::where(['order_id'=>8974])->where('reference_id','!=',null)->pluck('reference_id')->toArray();
-        // dd($replacements);
-        $data['awaiting_replacement'] = Stock_model::where('status', 1)
-        ->whereHas('order_items.order', function ($q) use ($replacements) {
-            $q->where(['status'=>3, 'order_type_id'=>3])
-            ->whereNotIn('reference_id', $replacements);
-        })
-        ->count();
-
-
-
-
-        $testing_count = Admin_model::withCount(['stock_operations' => function($q) use ($start_date,$end_date) {
-            $q->select(DB::raw('count(distinct stock_id)'))->where('description','LIKE','%DrPhone')->where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date);
-        }])->get();
-        $data['testing_count'] = $testing_count;
 
         $order = [];
         $dates = [];
@@ -523,5 +235,85 @@ class Report extends Component
         $data['start_date'] = date('Y-m-d', strtotime($start_date));
         $data['end_date'] = date("Y-m-d", strtotime($end_date));
         return view('livewire.report')->with($data);
+    }
+
+    public function export_report($order_id, $invoice = null)
+    {
+
+        // Find the order
+        $order = Order_model::with('customer', 'order_items')->find($order_id);
+
+        $order_items = Order_item_model::
+            join('variation', 'order_items.variation_id', '=', 'variation.id')
+            ->join('products', 'variation.product_id', '=', 'products.id')
+            ->select(
+                // 'variation.id as variation_id',
+                'products.model',
+                // 'variation.color',
+                'variation.storage',
+                // 'variation.grade',
+                DB::raw('AVG(order_items.price) as average_price'),
+                DB::raw('SUM(order_items.quantity) as total_quantity'),
+                DB::raw('SUM(order_items.price) as total_price')
+            )
+            ->where('order_items.order_id',$order_id)
+            ->groupBy('products.model', 'variation.storage')
+            ->orderBy('products.model', 'ASC')
+            ->get();
+
+            // dd($order);
+        // Generate PDF for the invoice content
+        $data = [
+            'order' => $order,
+            'customer' => $order->customer,
+            'order_items' =>$order_items,
+            'invoice' => $invoice
+        ];
+        $data['storages'] = Storage_model::pluck('name','id');
+        // $data['grades'] = Grade_model::pluck('name','id');
+        // $data['colors'] = Color_model::pluck('name','id');
+
+        // Create a new TCPDF instance
+        $pdf = new TCPDF();
+
+        // Set document information
+        $pdf->SetCreator(PDF_CREATOR);
+        // $pdf->SetTitle('Invoice');
+        // $pdf->SetHeaderData('', 0, 'Invoice', '');
+
+        // Add a page
+        $pdf->AddPage();
+
+        // Set font
+        $pdf->SetFont('times', '', 12);
+
+        // Additional content from your view
+        if(request('packlist') == 1){
+
+            $html = view('export.bulksale_packlist', $data)->render();
+        }elseif(request('packlist') == 2){
+
+            return Excel::download(new PacksheetExport, 'orders.xlsx');
+        }else{
+            $html = view('export.bulksale_invoice', $data)->render();
+        }
+
+        $pdf->writeHTML($html, true, false, true, false, '');
+
+        // dd($pdfContent);
+        // Send the invoice via email
+        // Mail::to($order->customer->email)->send(new InvoiceMail($data));
+
+        // Optionally, save the PDF locally
+        // file_put_contents('invoice.pdf', $pdfContent);
+
+        // Get the PDF content
+        $pdf->Output('', 'I');
+
+        // $pdfContent = $pdf->Output('', 'S');
+        // Return a response or redirect
+
+        // Pass the PDF content to the view
+        // return view('livewire.show_pdf')->with(['pdfContent'=> $pdfContent, 'delivery_note'=>$order->delivery_note_url]);
     }
 }
