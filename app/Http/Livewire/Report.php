@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Exports\OrderReportExport;
 use App\Http\Controllers\GoogleController;
 use App\Models\Admin_model;
 use App\Models\Category_model;
@@ -20,6 +21,8 @@ use App\Models\Stock_model;
 use App\Models\Stock_operations_model;
 use Symfony\Component\HttpFoundation\Request;
 use Illuminate\Support\Facades\Route;
+use Maatwebsite\Excel\Facades\Excel;
+use TCPDF;
 
 class Report extends Component
 {
@@ -181,7 +184,7 @@ class Report extends Component
             $order[$k] = $orders;
             $eur[$k] = $euro;
             $gbp[$k] = $pound;
-            $dates[$k] = date('26-m-Y', strtotime("-".$j." months")) . " - " . date('05-m-Y', strtotime("-".$i." months"));
+            $dates[$k] = date('26 M', strtotime("-".$j." months")) . " - " . date('05 M', strtotime("-".$i." months"));
             if($i == 0 && $today < 6){
                 continue;
             }
@@ -201,7 +204,7 @@ class Report extends Component
             $order[$k] = $orders;
             $eur[$k] = $euro;
             $gbp[$k] = $pound;
-            $dates[$k] = date('06-m-Y', strtotime("-".$i." months")) . " - " . date('15-m-Y', strtotime("-".$i." months"));
+            $dates[$k] = date('06 M', strtotime("-".$i." months")) . " - " . date('15 M', strtotime("-".$i." months"));
             if($i == 0 && $today < 16){
                 continue;
             }
@@ -221,7 +224,7 @@ class Report extends Component
             $order[$k] = $orders;
             $eur[$k] = $euro;
             $gbp[$k] = $pound;
-            $dates[$k] = date('16-m-Y', strtotime("-".$i." months")) . " - " . date('25-m-Y', strtotime("-".$i." months"));
+            $dates[$k] = date('16 M', strtotime("-".$i." months")) . " - " . date('25 M', strtotime("-".$i." months"));
 
         }
         echo '<script> sessionStorage.setItem("total2", "' . implode(',', $order) . '");</script>';
@@ -237,38 +240,38 @@ class Report extends Component
         return view('livewire.report')->with($data);
     }
 
-    public function export_report($order_id, $invoice = null)
+    public function export_report()
     {
 
         // Find the order
-        $order = Order_model::with('customer', 'order_items')->find($order_id);
+        // $order = Order_model::with('customer', 'order_items')->find($order_id);
 
-        $order_items = Order_item_model::
-            join('variation', 'order_items.variation_id', '=', 'variation.id')
-            ->join('products', 'variation.product_id', '=', 'products.id')
-            ->select(
-                // 'variation.id as variation_id',
-                'products.model',
-                // 'variation.color',
-                'variation.storage',
-                // 'variation.grade',
-                DB::raw('AVG(order_items.price) as average_price'),
-                DB::raw('SUM(order_items.quantity) as total_quantity'),
-                DB::raw('SUM(order_items.price) as total_price')
-            )
-            ->where('order_items.order_id',$order_id)
-            ->groupBy('products.model', 'variation.storage')
-            ->orderBy('products.model', 'ASC')
-            ->get();
+        // $order_items = Order_item_model::
+        //     join('variation', 'order_items.variation_id', '=', 'variation.id')
+        //     ->join('products', 'variation.product_id', '=', 'products.id')
+        //     ->select(
+        //         // 'variation.id as variation_id',
+        //         'products.model',
+        //         // 'variation.color',
+        //         'variation.storage',
+        //         // 'variation.grade',
+        //         DB::raw('AVG(order_items.price) as average_price'),
+        //         DB::raw('SUM(order_items.quantity) as total_quantity'),
+        //         DB::raw('SUM(order_items.price) as total_price')
+        //     )
+        //     ->where('order_items.order_id',$order_id)
+        //     ->groupBy('products.model', 'variation.storage')
+        //     ->orderBy('products.model', 'ASC')
+        //     ->get();
 
             // dd($order);
         // Generate PDF for the invoice content
-        $data = [
-            'order' => $order,
-            'customer' => $order->customer,
-            'order_items' =>$order_items,
-            'invoice' => $invoice
-        ];
+        // $data = [
+        //     'order' => $order,
+        //     'customer' => $order->customer,
+        //     'order_items' =>$order_items,
+        //     'invoice' => $invoice
+        // ];
         $data['storages'] = Storage_model::pluck('name','id');
         // $data['grades'] = Grade_model::pluck('name','id');
         // $data['colors'] = Color_model::pluck('name','id');
@@ -293,7 +296,7 @@ class Report extends Component
             $html = view('export.bulksale_packlist', $data)->render();
         }elseif(request('packlist') == 2){
 
-            return Excel::download(new PacksheetExport, 'orders.xlsx');
+            return Excel::download(new OrderReportExport, 'Report.xlsx');
         }else{
             $html = view('export.bulksale_invoice', $data)->render();
         }

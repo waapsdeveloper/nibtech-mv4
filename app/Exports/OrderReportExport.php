@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
-class OrdersheetExport implements FromCollection, WithHeadings
+class OrderReportExport implements FromCollection, WithHeadings
 {
 
     public function collection()
@@ -22,6 +22,10 @@ class OrdersheetExport implements FromCollection, WithHeadings
         ->leftJoin('color', 'variation.color', '=', 'color.id')
         ->leftJoin('storage', 'variation.storage', '=', 'storage.id')
         ->leftJoin('grade', 'variation.grade', '=', 'grade.id')
+        ->leftJoin('order_items as purchase_item', function ($join) {
+            $join->on('stock.id', '=', 'purchase_item.stock_id')
+                ->whereRaw('purchase_item.order_id = stock.order_id');
+        })
         ->select(
             'orders.reference_id',
             'variation.sku',
@@ -34,38 +38,18 @@ class OrdersheetExport implements FromCollection, WithHeadings
             'stock.serial_number as serial_number',
             'stock.tester as tester',
             'admin.first_name as invoice',
-            'orders.created_at as date'
+            'orders.processed_at as date',
+            'order_items.price as price',
+            'purchase_item.price as cost'
         )
         ->where('orders.status', 3)
         ->where('orders.order_type_id', 3)
         ->where('orders.deleted_at',null)
         ->when(request('start_date') != '', function ($q) {
-            return $q->where('orders.created_at', '>=', request('start_date', 0));
+            return $q->where('orders.processed_at', '>=', request('start_date', 0));
         })
         ->when(request('end_date') != '', function ($q) {
-            return $q->where('orders.created_at', '<=', request('end_date', 0) . " 23:59:59");
-        })
-        ->when(request('order_id') != '', function ($q) {
-            return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
-        })
-        ->when(request('last_order') != '', function ($q) {
-            return $q->where('orders.reference_id', '>', request('last_order'));
-        })
-        ->when(request('sku') != '', function ($q) {
-            return $q->whereHas('order_items.variation', function ($q) {
-                $q->where('sku', 'LIKE', '%' . request('sku') . '%');
-            });
-        })
-        ->when(request('adm') != '', function ($q) {
-            if(request('adm') == 0){
-                return $q->where('orders.processed_by', null);
-            }
-            return $q->where('orders.processed_by', request('adm'));
-        })
-        ->when(request('imei') != '', function ($q) {
-            return $q->whereHas('order_items.stock', function ($q) {
-                $q->where('imei', 'LIKE', '%' . request('imei') . '%');
-            });
+            return $q->where('orders.processed_at', '<=', request('end_date', 0) . " 23:59:59");
         })
         ->orderBy('orders.reference_id', 'DESC')
         ->get();
@@ -87,7 +71,9 @@ class OrdersheetExport implements FromCollection, WithHeadings
             'Serial Number',
             'Tester',
             'Invoice',
-            'Date'
+            'Date',
+            'Price',
+            'Cost'
         ];
     }
 }
