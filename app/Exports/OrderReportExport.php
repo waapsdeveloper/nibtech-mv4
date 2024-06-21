@@ -45,6 +45,7 @@ class OrderReportExport implements FromCollection, WithHeadings
             'currency.code as currency'
         )
         ->whereIn('orders.status', [3,6])
+        ->whereIn('order_items.status', [3,6])
         ->where('orders.order_type_id', 3)
         ->where('orders.deleted_at',null)
         ->Where('order_items.deleted_at',null)
