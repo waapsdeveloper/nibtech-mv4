@@ -177,11 +177,11 @@ class Report extends Component
             $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
                 $q->where('processed_at', '>=', $start)->where('order_type_id',3)
                 ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',4);
-            })->sum('price');
+            })->whereIn('status',[3,6])->sum('price');
             $pound = Order_item_model::whereHas('order', function($q) use ($start,$end) {
                 $q->where('processed_at', '>=', $start)->where('order_type_id',3)
                 ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',5);
-            })->sum('price');
+            })->whereIn('status',[3,6])->sum('price');
             $order[$k] = $orders;
             $eur[$k] = $euro;
             $gbp[$k] = $pound;
@@ -197,11 +197,11 @@ class Report extends Component
             $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
                 $q->where('processed_at', '>=', $start)->where('order_type_id',3)
                 ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',4);
-            })->sum('price');
+            })->whereIn('status',[3,6])->sum('price');
             $pound = Order_item_model::whereHas('order', function($q) use ($start,$end) {
                 $q->where('processed_at', '>=', $start)->where('order_type_id',3)
                 ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',5);
-            })->sum('price');
+            })->whereIn('status',[3,6])->sum('price');
             $order[$k] = $orders;
             $eur[$k] = $euro;
             $gbp[$k] = $pound;
@@ -217,11 +217,11 @@ class Report extends Component
             $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
                 $q->where('processed_at', '>=', $start)->where('order_type_id',3)
                 ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',4);
-            })->sum('price');
+            })->whereIn('status',[3,6])->sum('price');
             $pound = Order_item_model::whereHas('order', function($q) use ($start,$end) {
                 $q->where('processed_at', '>=', $start)->where('order_type_id',3)
                 ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',5);
-            })->sum('price');
+            })->whereIn('status',[3,6])->sum('price');
             $order[$k] = $orders;
             $eur[$k] = $euro;
             $gbp[$k] = $pound;
