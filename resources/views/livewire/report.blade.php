@@ -265,7 +265,7 @@
                                         @php
                                             $gradeReport = $orderReports->firstWhere('grade', $g_id);
                                         @endphp
-                                        <td>{{ $gradeReport ? ($gradeReport->quantity." (".$gradeReport->quantity/$total * 100."%)") : '-' }}</td>
+                                        <td>{{ $gradeReport ? ($gradeReport->quantity." (".number_format($gradeReport->quantity/$total * 100,1) .'%)' ) : '-' }}</td>
                                     @endforeach
                                 </tr>
                             @endforeach
