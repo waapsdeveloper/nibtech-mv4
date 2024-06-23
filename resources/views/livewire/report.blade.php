@@ -237,7 +237,7 @@
                                 @foreach ($grades as $id=>$grade)
                                     @php
                                         if (strlen($grade) >= 5) {
-                                            $gr = substr($grade, 0, 3). " ..." . substr($grade, -5);
+                                            $gr = substr($grade, 0, 3). " ...";
                                         } else {
                                             $gr = $grade;
                                         }
