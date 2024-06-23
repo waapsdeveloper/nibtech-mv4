@@ -238,11 +238,11 @@ class Inventory extends Component
             });
         })
 
-        ->join('order_items', 'stock.id', '=', 'order_items.stock_id')
-        // ->leftJoin('order_items as purchase_item', function ($join) {
-        //     $join->on('stock.id', '=', 'purchase_item.stock_id')
-        //         ->whereRaw('purchase_item.order_id = stock.order_id');
-        // })
+        // ->join('order_items', 'stock.id', '=', 'order_items.stock_id')
+        ->join('order_items', function ($join) {
+            $join->on('stock.id', '=', 'order_items.stock_id')
+                ->whereRaw('order_items.order_id = stock.order_id');
+        })
         ->selectRaw('AVG(order_items.price) as average_price')
         ->selectRaw('SUM(order_items.price) as total_price')
         // ->pluck('average_price')
@@ -324,7 +324,11 @@ class Inventory extends Component
                 $q->whereIn('grade', request('grade'));
             });
         })
-        ->join('order_items', 'stock.id', '=', 'order_items.stock_id')
+        // ->join('order_items', 'stock.id', '=', 'order_items.stock_id')
+        ->join('order_items', function ($join) {
+            $join->on('stock.id', '=', 'order_items.stock_id')
+                ->whereRaw('order_items.order_id = stock.order_id');
+        })
         ->join('orders', 'stock.order_id', '=', 'orders.id')
         ->select('orders.customer_id')
         ->selectRaw('AVG(order_items.price) as average_price')
