@@ -236,8 +236,8 @@
                                 <th><small><b>Total</b></small></th>
                                 @foreach ($grades as $id=>$grade)
                                     @php
-                                        if (strlen($grade) >= 20) {
-                                            $gr = substr($grade, 0, 10). " ... " . substr($grade, -5);
+                                        if (strlen($grade) >= 5) {
+                                            $gr = substr($grade, 0, 3). " ..." . substr($grade, -5);
                                         } else {
                                             $gr = $grade;
                                         }
