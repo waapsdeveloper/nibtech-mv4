@@ -517,6 +517,7 @@
                                         <th><small><b>No</b></small></th>
                                         <th><small><b>Variation</b></small></th>
                                         <th><small><b>IMEI/Serial</b></small></th>
+                                        <th><small><b>Vendor</b></small></th>
                                         @if (session('user')->hasPermission('view_cost'))
                                         <th><small><b>Cost</b></small></th>
                                         @endif
@@ -557,6 +558,7 @@
                                             <td>{{ $i }}</td>
                                             <td>{{ $variation->product->model." ".$storage." ".$color." ".$variation->grade_id->name ?? "Not Given" }}</td>
                                             <td data-stock="{{ $stock->id }}">{{ $stock->imei.$stock->serial_number }}</td>
+                                            <td>{{ $stock->order->customer->first_name }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
                                             <td>{{ $currency.$stock->sale_item($order_id)->price }}</td>
                                             @endif
