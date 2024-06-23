@@ -238,13 +238,13 @@ class Inventory extends Component
             });
         })
 
-        // ->join('order_items', 'stock.id', '=', 'order_items.stock_id')
-        ->leftJoin('order_items as purchase_item', function ($join) {
-            $join->on('stock.id', '=', 'purchase_item.stock_id')
-                ->whereRaw('purchase_item.order_id = stock.order_id');
-        })
-        ->selectRaw('AVG(purchase_item.price) as average_price')
-        ->selectRaw('SUM(purchase_item.price) as total_price')
+        ->join('order_items', 'stock.id', '=', 'order_items.stock_id')
+        // ->leftJoin('order_items as purchase_item', function ($join) {
+        //     $join->on('stock.id', '=', 'purchase_item.stock_id')
+        //         ->whereRaw('purchase_item.order_id = stock.order_id');
+        // })
+        ->selectRaw('AVG(order_items.price) as average_price')
+        ->selectRaw('SUM(order_items.price) as total_price')
         // ->pluck('average_price')
         ->first();
 
