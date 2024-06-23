@@ -45,6 +45,7 @@ class Report extends Component
             $per_page = 10;
         }
         $data['purchase_status'] = [2 => '(Pending)', 3 => ''];
+        $data['purchase_orders'] = Order_model::where('order_type_id',1)->pluck('reference_id','id');
         $data['categories'] = Category_model::pluck('name','id');
         $data['products'] = Products_model::orderBy('model','asc')->get();
         $data['colors'] = Color_model::pluck('name','id');
@@ -163,6 +164,17 @@ class Report extends Component
         $data['aggregated_return_cost'] = $aggregated_return_cost;
 
 
+        $data['batch_grade_reports'] = Stock_model::select('variation.grade as grade', 'orders.id as order_id', 'orders.reference_id as reference_id', 'orders.reference as reference', 'customer.first_name as vendor', DB::raw('COUNT(*) as quantity'))
+        ->join('variation', 'stock.variation_id', '=', 'variation.id')
+        ->join('orders', 'stock.order_id', '=', 'orders.id')
+        ->join('customer', 'orders.customer_id', '=', 'customer.id')
+        ->groupBy('variation.grade', 'orders.id', 'orders.reference_id', 'orders.reference', 'customer.first_name')
+        ->orderByDesc('order_id')
+        ->get();
+
+        // dd($data['Vendor_grade_report']);
+
+
         $order = [];
         $dates = [];
         $k = 0;
@@ -232,6 +244,8 @@ class Report extends Component
         echo '<script> sessionStorage.setItem("approved2", "' . implode(',', $eur) . '");</script>';
         echo '<script> sessionStorage.setItem("failed2", "' . implode(',', $gbp) . '");</script>';
         echo '<script> sessionStorage.setItem("dates2", "' . implode(',', $dates) . '");</script>';
+
+
 
 
         $data['pending_orders_count'] = Order_model::where('order_type_id',3)->where('status',2)->count();

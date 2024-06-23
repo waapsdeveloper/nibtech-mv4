@@ -219,6 +219,60 @@
             </div>
 
 
+            <div class="card">
+                <div class="card-header mb-0 d-flex justify-content-between">
+                    <div class="mb-0">
+                        <h4 class="card-title mb-0">Batch Grade Reports</h4>
+                    </div>
+                </div>
+                <div class="card-body mt-0">
+                    <table class="table table-bordered table-hover text-md-nowrap">
+                        <thead>
+                            <tr>
+                                <th><small><b>No</b></small></th>
+                                <th><small><b>Batch</b></small></th>
+                                <th><small><b>Reference</b></small></th>
+                                <th><small><b>Vendor</b></small></th>
+                                <th><small><b>Total</b></small></th>
+                                @foreach ($grades as $id=>$grade)
+                                    @php
+                                        if (strlen($grade) >= 20) {
+                                            $gr = substr($grade, 0, 10). " ... " . substr($grade, -5);
+                                        } else {
+                                            $gr = $grade;
+                                        }
+                                    @endphp
+                                    <th title="{{ $grade }}"><small><b>{{ $gr }}</b></small></th>
+                                @endforeach
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                                $i = 0;
+                            @endphp
+                            @foreach ($batch_grade_reports->groupBy('order_id') as $orderReports)
+                                @php
+                                    $order = $orderReports->first();
+                                    $total = $orderReports->sum('quantity');
+                                @endphp
+                                <tr>
+                                    <td>{{ $i += 1 }}</td>
+                                    <td>{{ $order->reference_id }}</td>
+                                    <td>{{ $order->reference }}</td>
+                                    <td>{{ $order->vendor }}</td>
+                                    <td>{{ $total }}</td>
+                                    @foreach ($grades as $g_id => $grade)
+                                        @php
+                                            $gradeReport = $orderReports->firstWhere('grade', $g_id);
+                                        @endphp
+                                        <td>{{ $gradeReport ? $gradeReport->quantity : '-' }}</td>
+                                    @endforeach
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 					<!-- row -->
 					<div class="row">
 						<div class="col-md-6 col-sm-12">

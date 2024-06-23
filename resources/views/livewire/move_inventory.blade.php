@@ -73,7 +73,7 @@
                 <form action="{{ url('move_inventory/change_grade') }}" method="POST" id="search" class="">
                     @csrf
 
-                    @if (session('user')->hasPermission('change_variation'))
+                    @if (session('user')->hasPermission('advanced_move_inventory'))
                         <div class="d-flex justify-content-between">
                         <div class="col-md col-sm-3">
                             <div class="form-floating">
