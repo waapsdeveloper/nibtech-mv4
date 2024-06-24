@@ -171,7 +171,7 @@
         </div>
         <br>
 
-        @if (session('user')->hasPermission('view_cost') && $stocks->count() > 0)
+        {{-- @if (session('user')->hasPermission('view_cost') && $stocks->count() > 0)
             <div class="">
                 Vendor wise average:
                 @foreach ($vendor_average_cost as $v_cost)
@@ -182,7 +182,7 @@
 
                 @endforeach
             </div>
-        @endif
+        @endif --}}
         <div class="d-flex justify-content-between">
             <div>
 
@@ -253,9 +253,9 @@
                         <div class="d-flex justify-content-between">
                             <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$stocks->firstItem()}} {{ __('locale.To') }} {{$stocks->lastItem()}} {{ __('locale.Out Of') }} {{$stocks->total()}} </h5>
 
-                            @if (session('user')->hasPermission('view_cost'))
+                            {{-- @if (session('user')->hasPermission('view_cost'))
                             <h5>Average Cost: {{ number_format($average_cost->average_price,2) }} | Total Cost: {{ number_format($average_cost->total_price,2) }}</h5>
-                            @endif
+                            @endif --}}
                             <div class=" mg-b-0">
                                 <form method="get" action="" class="row form-inline">
                                     <label for="perPage" class="card-title inline">per page:</label>
