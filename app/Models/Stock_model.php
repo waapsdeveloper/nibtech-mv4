@@ -30,12 +30,18 @@ class Stock_model extends Model
         return $this->hasManyThrough(Order_model::class, Order_item_model::class, 'stock_id', 'id', 'id', 'order_id');
     }
 
+
     public function latest_return()
     {
         return $this->hasOne(Order_item_model::class, 'stock_id', 'id')->whereHas('order', function ($q) {
-            $q->where('order_type_id',4);
-        })->orderBy('id','desc')->first();
+            $q->where('order_type_id', 4);
+        })->orderByDesc('id');
     }
+
+    // public function latest_return()
+    // {
+    //     return $this->return_items()->orderBy('id', 'desc')->first();
+    // }
     public function order_item()
     {
         return $this->hasMany(Order_item_model::class, 'stock_id', 'id');
