@@ -318,10 +318,10 @@
                                             <td>
                                                 <a title="Purchase Order Details" href="{{url('purchase/detail').'/'.$stock->order_id}}" target="_blank"> {{ $stock->order->reference_id }} </a>
                                                 @php
-                                                    $last_order = $stock->last_item()->order;
+                                                    $latest_return = $stock->latest_return;
                                                 @endphp
-                                                @if ($last_order->order_type_id == 4)
-                                                 &nbsp;<a title="Sales Return Details" href="{{url('return/detail').'/'.$last_order->id}}" target="_blank"> {{ $last_order->reference_id }} </a>
+                                                @if ($latest_return != null)
+                                                 &nbsp;<a title="Sales Return Details" href="{{url('return/detail').'/'.$latest_return->order->id}}" target="_blank"> {{ $latest_return->order->reference_id }} </a>
                                                 @endif
                                             </td>
                                             @if (session('user')->hasPermission('view_cost'))
