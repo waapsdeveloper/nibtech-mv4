@@ -429,7 +429,7 @@
                                             <h6 class="tx-right mb-3">
                                                 Pending Orders:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                 @foreach ($pending_orders_count as $pending)
-                                                    {{ $pending->order_type->name.": ".$pending->count }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                    <span title="Value: {{$pending->price}}">{{ $pending->order_type->name.": ".$pending->count }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
                                                 @endforeach
                                             </h6>
                                     {{-- </div> --}}

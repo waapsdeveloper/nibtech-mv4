@@ -335,8 +335,8 @@ class Inventory extends Component
         ->selectRaw('SUM(order_items.price) as total_price')
         ->selectRaw('COUNT(order_items.id) as total_qty')
         ->groupBy('orders.customer_id')
-        // ->pluck('average_price')
         ->get();
+
 
         $active_inventory_verification = Process_model::where(['process_type_id'=>20,'status'=>1])->first();
         if($active_inventory_verification != null){
