@@ -315,7 +315,15 @@
                                             (isset($stock->variation->color_id) ? $stock->variation->color_id->name . " " : null) . $stock->variation->grade_id->name }} </a></td>
                                             <td><a title="Search Serial" href="{{url('imei')."?imei=".$stock->imei.$stock->serial_number}}" target="_blank"> {{$stock->imei.$stock->serial_number }} </a></td>
                                             <td><a title="Vendor Profile" href="{{url('edit-customer').'/'.$stock->order->customer_id}}" target="_blank"> {{ $stock->order->customer->first_name ?? null}} </a></td>
-                                            <td><a title="Purchase Order Details" href="{{url('purchase/detail').'/'.$stock->order_id}}" target="_blank"> {{ $stock->order->reference_id }} </a></td>
+                                            <td>
+                                                <a title="Purchase Order Details" href="{{url('purchase/detail').'/'.$stock->order_id}}" target="_blank"> {{ $stock->order->reference_id }} </a>
+                                                @php
+                                                    $last_order = $stock->last_item()->order;
+                                                @endphp
+                                                @if ($last_order->order_type_id == 4)
+                                                 &nbsp;<a title="Sales Return Details" href="{{url('return/detail').'/'.$last_order->id}}" target="_blank"> {{ $last_order->reference_id }} </a>
+                                                @endif
+                                            </td>
                                             @if (session('user')->hasPermission('view_cost'))
                                             <td>{{ $stock->order->currency_id->sign ?? null }}{{$stock->purchase_item->price ?? null }}</td>
                                             @endif
