@@ -234,16 +234,16 @@ class Order extends Component
 
         if(request('bulk_invoice') && request('bulk_invoice') == 1){
 
+            ini_set('max_execution_time', 300);
             $data['orders2'] = $orders
             ->get();
             foreach($data['orders2'] as $order){
-
                 $data2 = [
                     'order' => $order,
                     'customer' => $order->customer,
                     'orderItems' => $order->order_items,
                 ];
-                echo "Hello";
+
                 Mail::mailer('no-reply')->to($order->customer->email)->send(new InvoiceMail($data2));
                 // $recipientEmail = $order->customer->email;
                 // $subject = 'Invoice for Your Recent Purchase';
