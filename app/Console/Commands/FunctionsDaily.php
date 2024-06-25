@@ -57,6 +57,7 @@ class FunctionsDaily extends Command
     }
 
     private function check_stock_status(){
+        ini_set('max_execution_time', 1200);
 
         // $items = Order_item_model::where('linked_id',null)->where('stock_id','!=',null)->whereHas('order', function ($query) {
         //     $query->where('order_type_id', '!=', 1);
