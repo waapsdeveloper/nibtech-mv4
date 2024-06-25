@@ -73,7 +73,7 @@ class FunctionsDaily extends Command
         // }
 
 
-        $stocks = Stock_model::all();
+        $stocks = Stock_model::orderByDesc('id')->get();
         foreach($stocks as $stock){
 
             $last_item = $stock->last_item();
