@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Country_model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
@@ -83,14 +84,17 @@ class BackMarketAPIController extends Controller
 
         return json_decode($response);
     }
-    public function apiGet($end_point) {
+    public function apiGet($end_point, $country_code = null) {
+        if($country_code == null){
+            $country_code = self::$COUNTRY_CODE;
+        }
         if(substr($end_point, 0, 1) === '/') {
             $end_point = substr($end_point, 1);
         }
 
         $api_call_data['Content-Type'] = 'application/json';
         $api_call_data['Accept'] = 'application/json';
-        $api_call_data['Accept-Language'] = self::$COUNTRY_CODE;
+        $api_call_data['Accept-Language'] = $country_code;
         $api_call_data['Authorization'] = 'Basic ' . self::$YOUR_ACCESS_TOKEN;
         $api_call_data['User-Agent'] = self::$YOUR_USER_AGENT;
 
@@ -431,43 +435,6 @@ class BackMarketAPIController extends Controller
         return $res1_array;
     }
 
-// ... (previous methods remain unchanged)
-
-    public function getBrands() {
-        $end_point = 'brands';
-        $result = $this->apiGet($end_point);
-        return $result;
-    }
-
-    public function getBrand($brand_id) {
-        $end_point = 'brands/' . $brand_id;
-        $result = $this->apiGet($end_point);
-        return $result;
-    }
-
-    public function getCategories() {
-        $end_point = 'categories';
-        $result = $this->apiGet($end_point);
-        return $result;
-    }
-
-    public function getCategory($category_id) {
-        $end_point = 'categories/' . $category_id;
-        $result = $this->apiGet($end_point);
-        return $result;
-    }
-
-    public function getModels() {
-        $end_point = 'models';
-        $result = $this->apiGet($end_point);
-        return $result;
-    }
-
-    public function getModel($model_id) {
-        $end_point = 'models/' . $model_id;
-        $result = $this->apiGet($end_point);
-        return $result;
-    }
 
     public function getProduct($product_id) {
         $end_point = 'products/' . $product_id;
@@ -552,7 +519,7 @@ class BackMarketAPIController extends Controller
     function getAllListings ($publication_state = null, $param = array()) {
         $end_point = 'listings';
 
-        $end_point .= "?publication_state=$publication_state";
+        $end_point .= "?publication_state=$publication_state&page-size=50";
 
         if (count($param) > 0) {
           $end_point .= '&'.http_build_query($param);
@@ -589,6 +556,54 @@ class BackMarketAPIController extends Controller
 
         return $result_array;
       }
+    function getAllListingsBi ($param = array()) {
+        $country_codes = Country_model::where('market_code','!=',null)->pluck('market_code','id')->toArray();
+        foreach($country_codes as $id => $code){
+            $end_point = 'listings_bi';
+
+            $end_point .= "?page-size=50";
+
+            if (count($param) > 0) {
+            $end_point .= '&'.http_build_query($param);
+            }
+
+            // result of the first page
+            $result = $this->apiGet($end_point, $code);
+            // print_r($result);
+
+            // array results of the first page
+            if(!isset($result_array[$id])){
+                $result_array[$id] = $result->results;
+            }else{
+                array_push($result_array[$id], $result->results);
+
+            }
+            $result_next = $result;
+
+            $page = 1;
+            // judge whetehr there exists the next page
+            while (($result_next->next) != null) {
+            // for($i = 0; $i <= 3; $i++){
+            $page++;
+            // get the new end point
+            $end_point_next_tail = '&page='."$page";
+            $end_point_next = $end_point.$end_point_next_tail;
+            // print_r($end_point_next);
+            // the new page object
+                $result_next = $this->apiGet($end_point_next, $code);
+                // print_r($result_next);
+            // the new page array
+            $result_next_array = $result_next->results;
+            // add all listings in current page to the $result_array
+            foreach ($result_next_array as $key => $value) {
+                array_push($result_array[$id], $result_next_array[$key]);
+            }
+            }
+        }
+        // print_r($result_array);
+
+        return $result_array;
+    }
     private function readCSV($file) {
         $data = null;
 

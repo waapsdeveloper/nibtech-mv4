@@ -220,7 +220,7 @@
                                             </td>
                                             <td>{{ $product->stock }}</td>
                                             <td>{{ $product->price }}</td>
-                                            <td>{{ $product->created_at }}</td>
+                                            <td>{{ $product->updated_at }}</td>
                                         </tr>
                                         </form>
 

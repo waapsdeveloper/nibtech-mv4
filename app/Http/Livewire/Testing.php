@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Http\Controllers\BackMarketAPIController;
 use App\Models\Api_request_model;
 use App\Models\Color_model;
 use Livewire\Component;
@@ -24,6 +25,20 @@ class Testing extends Component
     }
     public function render()
     {
+        $bm = new BackMarketAPIController();
+
+        // print_r($bm->getAllListingsBi(['min_quantity'=>0]));
+        $listings = $bm->getAllListingsBi();
+        $i = 1;
+        print_r($listings);
+        die;
+        foreach($listings as $listing){
+            print_r($listing);
+            $i++;
+            if($i == 5){
+                break;
+            }
+        }
 
         $testing = new Api_request_model();
         $testing->push_testing();

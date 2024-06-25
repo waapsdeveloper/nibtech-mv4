@@ -11,6 +11,7 @@ use App\Models\Customer_model;
 use App\Models\Currency_model;
 use App\Models\Country_model;
 use App\Models\Grade_model;
+use App\Models\Listing_model;
 use App\Models\Products_model;
 use App\Models\Variation_model;
 use App\Models\Stock_model;
@@ -94,4 +95,5 @@ class Functions extends Command
         $testing = new Api_request_model();
         $testing->push_testing();
     }
+
 }
