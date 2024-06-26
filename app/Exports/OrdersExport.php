@@ -40,7 +40,30 @@ class OrdersExport
                 return $q->where('orders.status', request('status'));
             })
             ->when(request('order_id') != '', function ($q) {
-                return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
+                if(str_contains(request('order_id'),'<')){
+                    $order_ref = str_replace('<','',request('order_id'));
+                    return $q->where('orders.reference_id', '<', $order_ref);
+                }elseif(str_contains(request('order_id'),'>')){
+                    $order_ref = str_replace('>','',request('order_id'));
+                    return $q->where('orders.reference_id', '>', $order_ref);
+                }elseif(str_contains(request('order_id'),'<=')){
+                    $order_ref = str_replace('<=','',request('order_id'));
+                    return $q->where('orders.reference_id', '<=', $order_ref);
+                }elseif(str_contains(request('order_id'),'>=')){
+                    $order_ref = str_replace('>=','',request('order_id'));
+                    return $q->where('orders.reference_id', '>=', $order_ref);
+                }elseif(str_contains(request('order_id'),'-')){
+                    $order_ref = explode('-',request('order_id'));
+                    return $q->whereBetween('orders.reference_id', $order_ref);
+                }elseif(str_contains(request('order_id'),',')){
+                    $order_ref = explode(',',request('order_id'));
+                    return $q->whereIn('orders.reference_id', $order_ref);
+                }elseif(str_contains(request('order_id'),' ')){
+                    $order_ref = explode(' ',request('order_id'));
+                    return $q->whereIn('orders.reference_id', $order_ref);
+                }else{
+                    return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
+                }
             })
             ->when(request('last_order') != '', function ($q) {
                 return $q->where('orders.reference_id', '>', request('last_order'));
