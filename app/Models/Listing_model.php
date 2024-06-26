@@ -20,7 +20,6 @@ class Listing_model extends Model
         'variation_id',
         'min_price',
         'max_price',
-        'quantity',
         'price',
         'buybox',
         'buybox_price',
