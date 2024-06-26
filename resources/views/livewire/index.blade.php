@@ -419,7 +419,8 @@
                                 {{-- <div class="row">
                                     <div class="col-lg-9 overflow-hidden"> --}}
                                         <div class="card-header border-bottom-0">
-                                                <h3 class="card-title mb-2 ">Available Inventory by Grade</h3> <span class="d-block tx-12 mb-0 text-muted"></span>
+                                            <h3 class="card-title mb-2 ">Available Inventory by Grade</h3> <span class="d-block tx-12 mb-0 text-muted"></span>
+                                            <h3 class="card-title mb-2 ">Total Listed Inventory: </h3> <span class="d-block tx-12 mb-0 text-muted">{{ $listed_inventory }}</span>
                                         </div>
                                         <div class="card-body row">
                                             @foreach ($graded_inventory as $inv)
