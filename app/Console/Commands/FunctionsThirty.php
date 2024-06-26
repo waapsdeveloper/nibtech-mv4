@@ -65,6 +65,7 @@ class FunctionsThirty extends Command
                 }else{
                     $listing = Listing_model::firstOrNew(['country' => $country, 'variation_id' => $variation->id]);
                     $variation->stock = $list->quantity;
+                    $listing->quantity = $list->quantity;
                     $listing->price = $list->price;
                     $listing->buybox = $list->same_merchant_winner;
                     $listing->buybox_price = $list->price_for_buybox;
