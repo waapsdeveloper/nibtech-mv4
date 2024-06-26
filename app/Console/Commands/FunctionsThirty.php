@@ -50,18 +50,28 @@ class FunctionsThirty extends Command
     {
         ini_set('max_execution_time', 1200);
         $this->get_listings();
-        $this->get_listingsBi();
+        // $this->get_listingsBi();
     }
 
     public function get_listings(){
         $bm = new BackMarketAPIController();
 
         // print_r($bm->getAllListingsBi(['min_quantity'=>0]));
-        $listings = $bm->getAllListings();
+        $listings = $bm->getAllListings(2);
 
         foreach($listings as $country => $lists){
             foreach($lists as $list){
                 $variation = Variation_model::where('reference_id',$list->listing_id)->first();
+                if($variation == null){
+                    $list = $bm->getOneListing($list->listing_id);
+                    $variation = Variation_model::firstOrNew(['reference_id' => $list->listing_id]);
+                    $variation->name = $list->title;
+                    $variation->sku = $list->sku;
+                    $variation->grade = $list->state+1;
+                    $variation->status = 1;
+                    // ... other fields
+                    $variation->save();
+                }
                 $currency = Currency_model::where('code',$list->currency)->first();
                 $variation_listing_qty = Variation_listing_qty_model::firstOrNew(['variation_id'=>$variation->id]);
                 if($variation == null){
