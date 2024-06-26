@@ -121,7 +121,7 @@ class Order_item_model extends Model
                 // dd($orderObj);
             }
             $variation_listing_qty = Variation_listing_qty_model::where('variation_id',$variation->id)->first();
-            if($orderItem->id != null && $variation_listing_qty != null){
+            if($orderItem->id == null && $variation_listing_qty != null){
                 $variation_listing_qty->quantity -= $itemObj->quantity;
                 $variation_listing_qty->save();
             }

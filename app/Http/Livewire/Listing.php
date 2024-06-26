@@ -29,17 +29,11 @@ class Listing extends Component
         $user_id = session('user_id');
         $data['order_statuses'] = Order_status_model::get();
 
-            if(request('per_page') != null){
-                $per_page = request('per_page');
-            }else{
-                $per_page = 10;
-            }
-
 
         $data['products'] = Products_model::all();
-        $data['colors'] = Color_model::all();
-        $data['storages'] = Storage_model::all();
-        $data['grades'] = Grade_model::all();
+        $data['storages'] = Storage_model::pluck('name','id');
+        $data['colors'] = Color_model::pluck('name','id');
+        $data['grades'] = Grade_model::pluck('name','id')->toArray();
         $data['variations'] = Variation_model::
         when(request('reference_id') != '', function ($q) {
             return $q->where('reference_id', request('reference_id'));
@@ -62,9 +56,7 @@ class Listing extends Component
         ->with(['product' => function ($q) {
             $q->orderBy('model');
         }])
-        ->paginate($per_page)
-        ->onEachSide(5)
-        ->appends(request()->except('page'));
+        ->get();
 
         return view('livewire.listing')->with($data);
     }

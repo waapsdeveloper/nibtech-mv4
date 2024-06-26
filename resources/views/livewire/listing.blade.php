@@ -67,8 +67,13 @@
                         @php
                             isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
                             isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
+                            if(isset($variation->grade) && array_key_exists($variation->grade, $grades)){
+                                $grade = $grades[$variation->grade];
+                            }else{
+                                $grade = null;
+                            }
                         @endphp
-                        {{ $variation->product->model." ".$storage." ".$color." ".$variation->grade_id->name }}
+                        {{ $variation->product->model." ".$storage." ".$color." ".$grade }}
                     </div>
                             {{-- {{ $variation }} --}}
                     <div class="card-body"><div class="table-responsive" style="max-height: 400px">
@@ -110,7 +115,7 @@
                                             <td>{{ $i }}</td>
                                             <td data-stock="{{ $item->id }}">{{ $item->imei.$item->serial_number }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
-                                            <td>{{ $currency}}{{$item->purchase_item->price ?? "Error in Purchase Entry" }}</td>
+                                            {{-- <td>{{ $currency}}{{$item->purchase_item->price ?? "Error in Purchase Entry" }}</td> --}}
                                             @endif
                                             @if (session('user')->hasPermission('delete_purchase_item'))
                                             <td><a href="{{ url('delete_order_item').'/'}}{{$item->purchase_item->id ?? null }}"><i class="fa fa-trash"></i></a></td>
@@ -122,7 +127,7 @@
                             </table>
                         <br>
                     </div>
-                    <div class="text-end">Average Cost: {{array_sum($prices)/count($prices) }} &nbsp;&nbsp;&nbsp; Total: {{$i }}</div>
+                    {{-- <div class="text-end">Average Cost: {{array_sum($prices)/count($prices) }} &nbsp;&nbsp;&nbsp; Total: {{$i }}</div> --}}
                     </div>
                 </div>
             </div>
