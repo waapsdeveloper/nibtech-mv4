@@ -19,6 +19,7 @@ use App\Http\Livewire\Order;
 use App\Http\Livewire\Wholesale;
 use App\Http\Livewire\Inventory;
 use App\Http\Livewire\Issue;
+use App\Http\Livewire\Listing;
 use App\Http\Livewire\Product;
 use App\Http\Livewire\Variation;
 use App\Http\Livewire\Process;
