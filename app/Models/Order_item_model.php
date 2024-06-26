@@ -120,6 +120,11 @@ class Order_item_model extends Model
                 $variation->save();
                 // dd($orderObj);
             }
+            $variation_listing_qty = Variation_listing_qty_model::where('variation_id',$variation->id)->first();
+            if($orderItem->id != null && $variation_listing_qty != null){
+                $variation_listing_qty->quantity -= $itemObj->quantity;
+                $variation_listing_qty->save();
+            }
             if($orderItem->stock_id == null){
                 if($itemObj->imei != null || $itemObj->serial_number != null){
                     if($itemObj->imei != null){

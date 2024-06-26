@@ -179,6 +179,8 @@ Route::post('product/update_product/{id}', [Product::class,'update_product'])->n
 Route::get('variation', Variation::class)->name('view_variation');
 Route::post('variation/update_product/{id}', [Variation::class,'update_product'])->name('update_variation');
 
+Route::get('listing', Listing::class)->name('view_listing');
+
 Route::get('process', Process::class)->name('view_process');
 
 Route::get('team', Team::class)->name('view_team');

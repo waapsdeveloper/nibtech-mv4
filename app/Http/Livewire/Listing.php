@@ -9,8 +9,8 @@ namespace App\Http\Livewire;
     use App\Models\Storage_model;
     use App\Models\Grade_model;
     use App\Models\Order_status_model;
-
-
+use App\Models\Variation_listing_qty_model;
+use App\Models\Variation_model;
 
 class Listing extends Component
 {
@@ -40,11 +40,9 @@ class Listing extends Component
         $data['colors'] = Color_model::all();
         $data['storages'] = Storage_model::all();
         $data['grades'] = Grade_model::all();
-        $data['listings'] = Listing_model::
+        $data['variations'] = Variation_model::
         when(request('reference_id') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('reference_id', request('reference_id'));
-            });
+            return $q->where('reference_id', request('reference_id'));
         })
         ->when(request('product') != '', function ($q) {
             return $q->where('product_id', request('product'));
@@ -61,7 +59,9 @@ class Listing extends Component
         ->when(request('grade') != '', function ($q) {
             return $q->where('grade', request('grade'));
         })
-        ->orderBy('name','desc')
+        ->with(['product' => function ($q) {
+            $q->orderBy('model');
+        }])
         ->paginate($per_page)
         ->onEachSide(5)
         ->appends(request()->except('page'));
