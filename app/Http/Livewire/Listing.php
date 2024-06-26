@@ -42,7 +42,9 @@ class Listing extends Component
         $data['grades'] = Grade_model::all();
         $data['listings'] = Listing_model::
         when(request('reference_id') != '', function ($q) {
-            return $q->where('reference_id', request('reference_id'));
+            return $q->whereHas('variation', function ($q) {
+                $q->where('reference_id', request('reference_id'));
+            });
         })
         ->when(request('product') != '', function ($q) {
             return $q->where('product_id', request('product'));
