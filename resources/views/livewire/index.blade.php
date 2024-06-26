@@ -418,7 +418,7 @@
                             <div class="card custom-card">
                                 {{-- <div class="row">
                                     <div class="col-lg-9 overflow-hidden"> --}}
-                                        <div class="card-header border-bottom-0">
+                                        <div class="card-header border-bottom-0 d-flex justify-content-between">
                                             <h3 class="card-title mb-2 ">Available Inventory by Grade</h3>
                                             <h3 class="card-title mb-2 ">Total Listed Inventory: {{ $listed_inventory }}</h3>
                                         </div>
