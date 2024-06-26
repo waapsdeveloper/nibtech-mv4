@@ -516,47 +516,54 @@ class BackMarketAPIController extends Controller
     //     return $result->results;
     // }
 
-    function getAllListings ($publication_state = null, $param = array()) {
-        $end_point = 'listings';
+    public function getAllListings ($publication_state = null, $param = array()) {
+        $country_codes = Country_model::where('market_code','!=',null)->pluck('market_code','id')->toArray();
+        foreach($country_codes as $id => $code){
 
-        $end_point .= "?publication_state=$publication_state&page-size=50";
+            $end_point = 'listings';
 
-        if (count($param) > 0) {
-          $end_point .= '&'.http_build_query($param);
-        }
+            $end_point .= "?publication_state=$publication_state&page-size=50";
 
-        // result of the first page
-        $result = $this->apiGet($end_point);
-        // print_r($result);
+            if (count($param) > 0) {
+            $end_point .= '&'.http_build_query($param);
+            }
 
-        // array results of the first page
-        $result_array = $result->results;
+            // result of the first page
+            $result = $this->apiGet($end_point, $code);
+            // print_r($result);
 
-        $result_next = $result;
+            // array results of the first page
+            if(!isset($result_array[$id])){
+                $result_array[$id] = $result->results;
+            }else{
+                array_push($result_array[$id], $result->results);
 
-        $page = 1;
-        // judge whetehr there exists the next page
-        while (($result_next->next) != null) {
-        // for($i = 0; $i <= 3; $i++){
-          $page++;
-          // get the new end point
-          $end_point_next_tail = '&page='."$page";
-          $end_point_next = $end_point.$end_point_next_tail;
-          // print_r($end_point_next);
-          // the new page object
-          $result_next = $this->apiGet($end_point_next);
-          // the new page array
-          $result_next_array = $result_next->results;
-          // add all listings in current page to the $result_array
-          foreach ($result_next_array as $key => $value) {
-            array_push($result_array, $result_next_array[$key]);
-          }
-        }
+            }
+            $result_next = $result;
+
+            $page = 1;
+            // judge whetehr there exists the next page
+            while (($result_next->next) != null) {
+                // for($i = 0; $i <= 3; $i++){
+                $page++;
+                // get the new end point
+                $end_point_next_tail = '&page='."$page";
+                $end_point_next = $end_point.$end_point_next_tail;
+                // print_r($end_point_next);
+                // the new page object
+                    $result_next = $this->apiGet($end_point_next, $code);
+                // the new page array
+                $result_next_array = $result_next->results;
+                // add all listings in current page to the $result_array
+                foreach ($result_next_array as $key => $value) {
+                    array_push($result_array[$id], $result_next_array[$key]);
+                }
+            }
         // print_r($result_array);
-
+        }
         return $result_array;
-      }
-    function getAllListingsBi ($param = array()) {
+    }
+    public function getAllListingsBi ($param = array()) {
         $country_codes = Country_model::where('market_code','!=',null)->pluck('market_code','id')->toArray();
         foreach($country_codes as $id => $code){
             $end_point = 'listings_bi';

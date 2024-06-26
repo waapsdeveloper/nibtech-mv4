@@ -116,6 +116,8 @@ class Index extends Component
             $q->whereIn('variation_id', $variation_ids);
         })
         ->count();
+
+
         $data['total_conversations'] = Order_item_model::where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date)->where('care_id','!=',null)
         ->whereIn('variation_id', $variation_ids)
         ->count();

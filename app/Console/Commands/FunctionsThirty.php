@@ -47,10 +47,38 @@ class FunctionsThirty extends Command
 
     public function handle()
     {
+        ini_set('max_execution_time', 1200);
         $this->get_listings();
+        $this->get_listingsBi();
     }
 
     public function get_listings(){
+        $bm = new BackMarketAPIController();
+
+        // print_r($bm->getAllListingsBi(['min_quantity'=>0]));
+        $listings = $bm->getAllListings();
+
+        foreach($listings as $country => $lists){
+            foreach($lists as $list){
+                $variation = Variation_model::where('reference_id',$list->listing_id)->first();
+                $currency = Currency_model::where('code',$list->currency)->first();
+                if($variation == null){
+                    echo $list->sku." ";
+                }else{
+                    $listing = Listing_model::firstOrNew(['country' => $country, 'variation_id' => $variation->id]);
+                    $listing->max_price = $list->max_price;
+                    $listing->min_price = $list->min_price;
+                    $listing->quantity = $list->quantity;
+                    $listing->price = $list->price;
+                    $listing->currency_id = $currency->id;
+                    // ... other fields
+                    $listing->save();
+                }
+            }
+        }
+        // $list = $bm->getOneListing($itemObj->listing_id);
+    }
+    public function get_listingsBi(){
         $bm = new BackMarketAPIController();
 
         // print_r($bm->getAllListingsBi(['min_quantity'=>0]));
@@ -64,7 +92,6 @@ class FunctionsThirty extends Command
                     echo $list->sku." ";
                 }else{
                     $listing = Listing_model::firstOrNew(['country' => $country, 'variation_id' => $variation->id]);
-                    $variation->stock = $list->quantity;
                     $listing->quantity = $list->quantity;
                     $listing->price = $list->price;
                     $listing->buybox = $list->same_merchant_winner;
@@ -72,7 +99,6 @@ class FunctionsThirty extends Command
                     $listing->currency_id = $currency->id;
                     // ... other fields
                     $listing->save();
-                    $variation->save();
                 }
             }
         }
