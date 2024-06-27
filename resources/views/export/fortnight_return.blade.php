@@ -121,7 +121,7 @@
                                                 @endif
                                             </td>
                                             <td>{{ $operation->description }}</td>
-                                            <td>{{ $operation->admin->first_name ?? null }} {{ $operation->created_at }}</td>
+                                            <td>{{ $operation->admin->first_name ?? null }}<br> {{ $operation->created_at }}</td>
                                         </tr>
                                     @endforeach
                                 </table>
