@@ -12,6 +12,7 @@
             .childs{
                 padding-top:5px
             }
+
         </style>
     @endsection
 <br>
@@ -141,39 +142,11 @@
             <div class="col-xl-12">
                 <div class="card">
                     <div class="card-header pb-0">
-                        {{-- <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$latest_items->firstItem()}} {{ __('locale.To') }} {{$latest_items->lastItem()}} {{ __('locale.Out Of') }} {{$latest_items->total()}} </h5> --}}
-                        {{-- <div class="d-flex justify-content-between">
-
-                            <div class=" mg-b-0">
-                                Movement Count: {{ count($stocks) }}
-                            </div>
-                            <div class=" mg-b-0">
-
-                                <form method="get" action="" class="row form-inline">
-
-                                    <div class="form-floating">
-                                        <input class="form-control" id="start_date_input" name="start_date" id="datetimepicker" type="date" value="@isset($_GET['start_date']){{$_GET['start_date']}}@endisset" oninput="this.form.submit()">
-                                        <label for="start_date_input">{{ __('locale.Start Date') }}</label>
-                                    </div>
-                                    <div class="form-floating">
-                                        <input class="form-control" id="end_date_input" name="end_date" id="datetimepicker" type="date" value="@isset($_GET['end_date']){{$_GET['end_date']}}@endisset" oninput="this.form.submit()">
-                                        <label for="end_date_input">{{ __('locale.End Date') }}</label>
-                                    </div>
-                                    <select id="adm_input" name="adm" class="form-control form-select form-select-sm" data-bs-placeholder="Select Processed By" title="Processed by" onchange="this.form.submit()">
-                                        <option value="">All</option>
-                                        @foreach ($admins as $adm)
-                                            <option value="{{$adm->id}}" @if(isset($_GET['adm']) && $adm->id == $_GET['adm']) {{'selected'}}@endif>{{$adm->first_name." ".$adm->last_name}}</option>
-                                        @endforeach
-                                    </select>
-                                </form>
-                            </div>
-
-                        </div> --}}
-
+                        <a href="{{ url('fortnight_return/print')}}" class="btn btn-secondary">Export</a>
                     </div>
                     <div class="card-body"><div class="table-responsive" id="reportPrinting">
 
-                            <table class="table table-bordered table-hover mb-0 text-md-nowrap" id="datatable">
+                            <table class="table table-bordered table-hover mb-0 text-md-nowrap" id="">
                                 <thead>
                                     <tr>
                                         <th><small><b>No</b></small></th>
@@ -235,6 +208,59 @@
                                         @endphp
                                     @endforeach
                                 </tbody>
+                                {{-- <tbody>
+                                    @php
+                                        $i = 0;
+                                    @endphp
+                                    @foreach ($latest_items as $item)
+                                        @foreach ($item->stock->stock_operations as $index => $operation)
+                                            <tr>
+                                                @if ($index == 0)
+                                                    <td rowspan="{{ count($item->stock->stock_operations) }}">{{ $i + 1 }}</td>
+                                                    <td rowspan="{{ count($item->stock->stock_operations) }}" align="center" width="240">
+                                                        <span title="Order Number">{{ $item->reference_id }}</span><br>
+                                                        <span title="Customer">{{ $item->refund_order->customer->first_name." ".$item->refund_order->customer->last_name }}</span><br>
+                                                        <span title="Product">
+                                                            <strong>{{ $item->refund_order->order_items[0]->variation->sku }}</strong><br>
+                                                            {{$item->refund_order->order_items[0]->variation->product->model ?? "Model not defined"}} - {{(isset($item->refund_order->order_items[0]->variation->storage_id)?$item->refund_order->order_items[0]->variation->storage_id->name . " - " : null)}}<br>
+                                                            {{(isset($item->refund_order->order_items[0]->variation->color_id)?$item->refund_order->order_items[0]->variation->color_id->name. " - ":null)}} <strong><u>{{ $item->refund_order->order_items[0]->variation->grade_id->name }}</u></strong><br>
+                                                        </span>
+                                                        <span title="IMEI | Invoiced By | Tested By">
+                                                            {{ $item->stock->imei.$item->stock->serial_number }}
+                                                            @isset($item->refund_order->processed_by) | {{ $item->refund_order->admin->first_name[0] }} | @endisset
+                                                            @isset($item->stock->tester) ({{ $item->stock->tester }}) @endisset
+                                                        </span><br>
+                                                        <span title="Vendor | Lot">{{ $item->stock->order->customer->first_name ?? "Purchase Order Missing"}} | {{$item->stock->order->reference_id ?? null}}</span><br>
+                                                        <span title="Invoiced at">{{ $item->refund_order->processed_at }}</span><br>
+                                                        <span title="Refunded at">{{ $item->created_at }}</span>
+                                                    </td>
+                                                @endif
+                                                <td title="{{ $operation->id }}">
+                                                    @if ($operation->old_variation ?? false)
+                                                        <strong>{{ $operation->old_variation->sku }}</strong>{{ " - " . $operation->old_variation->product->model . " - " . (isset($operation->old_variation->storage_id)?$operation->old_variation->storage_id->name . " - " : null) . (isset($operation->old_variation->color_id)?$operation->old_variation->color_id->name. " - ":null)}} <strong><u>{{ (isset($operation->old_variation->grade_id)?$operation->old_variation->grade_id->name:null)}} </u></strong>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if ($operation->new_variation ?? false)
+                                                        <strong>{{ $operation->new_variation->sku }}</strong>{{ " - " . $operation->new_variation->product->model . " - " . (isset($operation->new_variation->storage_id)?$operation->new_variation->storage_id->name . " - " : null) . (isset($operation->new_variation->color_id)?$operation->new_variation->color_id->name. " - ":null)}} <strong><u>{{ $operation->new_variation->grade_id->name ?? "Grade Missing" }}</u></strong>
+                                                    @endif
+                                                </td>
+                                                <td>{{ $operation->description }}</td>
+                                                <td>{{ $operation->admin->first_name ?? null }}</td>
+                                                <td>{{ $operation->created_at }}</td>
+                                                @if ($index > 0)
+                                                    <!-- Add empty cells for the first two columns when index > 0 -->
+                                                    <td style="display: none;"></td>
+                                                    <td style="display: none;"></td>
+                                                @endif
+                                            </tr>
+                                        @endforeach
+                                        @php
+                                            $i++;
+                                        @endphp
+                                    @endforeach
+                                </tbody> --}}
+
                             </table>
                         <br>
                     </div>
@@ -277,20 +303,19 @@
             //         }
             //     }
             // });
-            new DataTable('#datatable', {
-    layout: {
-        topStart: {
-            buttons: [
-                {
-                    extend: 'print',
-                    text: 'Print current page',
-                    autoPrint: false
-                }
-            ]
-        }
-    }
-});
-            $('#data_table').DataTable();
+//             new DataTable('#datatable', {
+// $('#datatable').DataTable({
+
+//             columnDefs: [
+//                 { targets: 0, orderable: false },
+//                 { targets: 1, orderable: false },
+//                 { targets: 2, orderable: false },
+//                 { targets: 3, orderable: false },
+//                 { targets: 4, orderable: false },
+//                 { targets: 5, orderable: false },
+//                 { targets: 6, orderable: false }
+//             ]
+//         });
         });
 
     </script>

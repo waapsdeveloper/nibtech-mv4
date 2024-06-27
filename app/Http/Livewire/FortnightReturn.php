@@ -12,7 +12,8 @@ use App\Models\Order_model;
 use App\Models\Products_model;
 use App\Models\Stock_operations_model;
 use App\Models\Storage_model;
-use App\Models\Variation_model;
+use Barryvdh\DomPDF\Facade as PDF; // Import the PDF facade
+use Barryvdh\DomPDF\Facade\Pdf as FacadePdf;
 use Carbon\Carbon;
 use TCPDF;
 
@@ -65,6 +66,8 @@ class FortnightReturn extends Component
 
         $data['latest_items'] = $latest_items;
 
+        $pdf = FacadePdf::loadView('export.fortnight_return', compact('latest_items'));
+        return $pdf->download('fortnight_returns.pdf');
         $pdf = new TCPDF();
 
         $pdf->SetCreator(PDF_CREATOR);
