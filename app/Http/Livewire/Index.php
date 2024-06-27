@@ -195,7 +195,6 @@ class Index extends Component
         $k = 0;
         $today = date('d');
         for ($i = 5; $i >= 0; $i--) {
-            $j = $i+1;
             if($i == 0 && $today < 6){
                 continue;
             }
@@ -240,9 +239,10 @@ class Index extends Component
             if($i == 0 && $today < 26){
                 continue;
             }
+            $j = $i-1;
             $k++;
-            $start = date('Y-m-25 23:00:00', strtotime("-".$j." months"));
-            $end = date('Y-m-5 22:59:59', strtotime("-".$i." months"));
+            $start = date('Y-m-25 23:00:00', strtotime("-".$i." months"));
+            $end = date('Y-m-5 22:59:59', strtotime("-".$j." months"));
             $orders = Order_model::where('processed_at', '>=', $start)->where('order_type_id',3)
                 ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->count();
             $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
@@ -256,7 +256,7 @@ class Index extends Component
             $order[$k] = $orders;
             $eur[$k] = $euro;
             $gbp[$k] = $pound;
-            $dates[$k] = date('25 M', strtotime("-".$j." months")) . " - " . date('05 M', strtotime("-".$i." months"));
+            $dates[$k] = date('25 M', strtotime("-".$i." months")) . " - " . date('05 M', strtotime("-".$j." months"));
         }
         echo '<script> sessionStorage.setItem("total2", "' . implode(',', $order) . '");</script>';
         echo '<script> sessionStorage.setItem("approved2", "' . implode(',', $eur) . '");</script>';
