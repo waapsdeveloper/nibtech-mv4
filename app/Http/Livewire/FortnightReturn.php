@@ -14,7 +14,7 @@ use App\Models\Stock_operations_model;
 use App\Models\Storage_model;
 use App\Models\Variation_model;
 use Carbon\Carbon;
-
+use TCPDF;
 
 class FortnightReturn extends Component
 {
@@ -43,13 +43,23 @@ class FortnightReturn extends Component
         ->whereHas('order', function ($q) {
             $q->where('order_type_id',4);
         })->whereHas('refund_order')->orderBy('created_at','desc')
-        ->paginate(20)
-        ->onEachSide(5)
-        ->appends(request()->except('page'));
+        ->get();
 
         $data['latest_items'] = $latest_items;
 
+        if(request('print')){
 
+            $pdf = new TCPDF();
+
+            $pdf->SetCreator(PDF_CREATOR);
+            $pdf->AddPage();
+            $pdf->SetFont('times', '', 12);
+            $html = view('export.fortnight_return', $data)->render();
+            $pdf->writeHTML($html, true, false, true, false, '');
+            $pdfContent = $pdf->Output('', 'S');
+            return view('livewire.show_pdf')->with(['pdfContent'=> $pdfContent]);
+
+        }
         return view('livewire.fortnight_return', $data); // Return the Blade view instance with data
     }
 

@@ -177,19 +177,21 @@
 <script type="text/javascript">
     function printReport()
     {
-        var prtContent = document.getElementById("reportPrinting");
-        var WinPrint = window.open();
-        WinPrint.document.write(prtContent.innerHTML);
-        WinPrint.document.close();
-        WinPrint.focus();
-        WinPrint.print();
-        WinPrint.close();
+
+var printContents = document.getElementById('reportPrinting').innerHTML;
+var originalContents = document.body.innerHTML;
+
+document.body.innerHTML = printContents;
+
+window.print();
+
+document.body.innerHTML = originalContents;
     }
 </script>
                     </div>
-                    <div class="card-body"><div class="table-responsive">
+                    <div class="card-body"><div class="table-responsive" id="reportPrinting">
 
-                            <table class="table table-bordered table-hover mb-0 text-md-nowrap" id="reportPrinting">
+                            <table class="table table-bordered table-hover mb-0 text-md-nowrap" id="datatable">
                                 <thead>
                                     <tr>
                                         <th><small><b>No</b></small></th>
@@ -252,7 +254,6 @@
                                     @endforeach
                                 </tbody>
                             </table>
-                        {{ $latest_items->onEachSide(1)->links() }} {{ __('locale.From') }} {{$latest_items->firstItem()}} {{ __('locale.To') }} {{$latest_items->lastItem()}} {{ __('locale.Out Of') }} {{$latest_items->total()}}
                         <br>
                     </div>
 
@@ -274,4 +275,27 @@
 		<!-- Internal Chart js -->
 		<script src="{{asset('assets/plugins/chartjs/Chart.bundle.min.js')}}"></script>
 
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            // $('#datatable').DataTable({
+                // processing: true,
+                // serverSide: true,
+                // ajax: '',
+                // columns: [
+                //     { data: 'name', name: 'name' },
+                //     { data: 'email', name: 'email' },
+                //     { data: 'created_at', name: 'created_at' }
+                // ]
+            // });
+            new DataTable('#datatable', {
+                layout: {
+                    topStart: {
+                        buttons: ['print']
+                    }
+                }
+            });
+        });
+
+    </script>
     @endsection
