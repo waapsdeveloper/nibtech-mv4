@@ -329,7 +329,11 @@
                                             <td>{{ $stock->latest_operation->admin->first_name ?? null }}</td>
                                             <td>
                                                 {{ $stock->latest_operation->description }}
-                                            </td>@endif
+                                            </td>
+                                            @else
+                                            <td>{{ $stock->admin->first_name ?? null }}</td>
+
+                                            @endif
                                         </tr>
 
                                         @php

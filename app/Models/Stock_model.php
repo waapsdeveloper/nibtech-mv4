@@ -25,6 +25,10 @@ class Stock_model extends Model
     {
         return $this->belongsTo(Variation_model::class, 'variation_id', 'id');
     }
+    public function admin()
+    {
+        return $this->hasOne(Admin_model::class, 'id', 'added_by');
+    }
     public function all_orders()
     {
         return $this->hasManyThrough(Order_model::class, Order_item_model::class, 'stock_id', 'id', 'id', 'order_id');
