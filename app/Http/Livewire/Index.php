@@ -239,7 +239,7 @@ class Index extends Component
             if($i == 0 && $today < 26){
                 continue;
             }
-            $j = $i+1;
+            $j = $i-1;
             $k++;
             $start = date('Y-m-25 23:00:00', strtotime("-".$i." months"));
             $end = date('Y-m-5 22:59:59', strtotime("-".$j." months"));
