@@ -256,7 +256,7 @@ class Index extends Component
             $order[$k] = $orders;
             $eur[$k] = $euro;
             $gbp[$k] = $pound;
-            $dates[$k] = date('25 M', strtotime("-".$j." months")) . " - " . date('05 M', strtotime("-".$j." months"));
+            $dates[$k] = date('25 M', strtotime("-".$j." months")) . " - " . date('05 M', strtotime("-".$i." months"));
         }
         echo '<script> sessionStorage.setItem("total2", "' . implode(',', $order) . '");</script>';
         echo '<script> sessionStorage.setItem("approved2", "' . implode(',', $eur) . '");</script>';
