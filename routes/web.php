@@ -130,6 +130,7 @@ Route::post('imei/refund/{id}', [IMEI::class,'refund'])->name('refund_imei');
 Route::get('issue', Issue::class)->name('view_issue');
 
 Route::get('fortnight_return', FortnightReturn::class)->name('view_fortnight_return');
+Route::get('fortnight_return/print', [FortnightReturn::class, 'print'])->name('view_fortnight_return');
 
 Route::get('move_inventory', MoveInventory::class)->name('move_inventory');
 Route::post('move_inventory/change_grade', [MoveInventory::class,'change_grade'])->name('move_inventory');

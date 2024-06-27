@@ -270,13 +270,27 @@
                 //     { data: 'created_at', name: 'created_at' }
                 // ]
             // });
+            // new DataTable('#datatable', {
+            //     layout: {
+            //         topStart: {
+            //             buttons: ['print']
+            //         }
+            //     }
+            // });
             new DataTable('#datatable', {
-                layout: {
-                    topStart: {
-                        buttons: ['print']
-                    }
+    layout: {
+        topStart: {
+            buttons: [
+                {
+                    extend: 'print',
+                    text: 'Print current page',
+                    autoPrint: false
                 }
-            });
+            ]
+        }
+    }
+});
+            $('#data_table').DataTable();
         });
 
     </script>

@@ -47,160 +47,33 @@ class FortnightReturn extends Component
 
         $data['latest_items'] = $latest_items;
 
-        if(request('print')){
+        if(request('print') == 1){
 
-            $pdf = new TCPDF();
-
-            $pdf->SetCreator(PDF_CREATOR);
-            $pdf->AddPage();
-            $pdf->SetFont('times', '', 12);
-            $html = view('export.fortnight_return', $data)->render();
-            $pdf->writeHTML($html, true, false, true, false, '');
-            $pdfContent = $pdf->Output('', 'S');
-            return view('livewire.show_pdf')->with(['pdfContent'=> $pdfContent]);
 
         }
         return view('livewire.fortnight_return', $data); // Return the Blade view instance with data
     }
 
-    public function change_grade(){
-        $description = request('description');
-        if(request('grade')){
-            session()->put('grade',request('grade'));
-        }
-        session()->put('description',request('description'));
+    public function print(){
+        $latest_items = Order_item_model::whereHas('variation', function ($q) {
+            $q->where('grade',10);
+        })
+        ->whereHas('order', function ($q) {
+            $q->where('order_type_id',4);
+        })->whereHas('refund_order')->orderBy('created_at','desc')
+        ->get();
 
+        $data['latest_items'] = $latest_items;
 
-        if (request('imei')) {
-            $imeis = explode(' ',request('imei'));
-            foreach($imeis as $imei){
+        $pdf = new TCPDF();
 
-                if (ctype_digit($imei)) {
-                    $i = $imei;
-                    $s = null;
-                } else {
-                    $i = null;
-                    $s = $imei;
-                }
-
-                $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
-                if ($imei == '' || !$stock) {
-                    session()->put('error', 'IMEI Invalid / Not Available');
-                    // return redirect()->back();
-                    continue;
-                }
-                if ($stock->order_id == null) {
-                    session()->put('error', 'Stock Not Purchased');
-                    // return redirect()->back();
-                    continue;
-                }
-                $stock_id = $stock->id;
-
-                $product_id = $stock->variation->product_id;
-                $storage = $stock->variation->storage;
-                $color = $stock->variation->color;
-                $grade = $stock->variation->grade;
-                if(session('user')->hasPermission('change_variation')){
-                    if(request('product') != ''){
-                        $product_id = request('product');
-                    }
-                    if(request('storage') != ''){
-                        $storage = request('storage');
-                    }
-                    if(request('color') != ''){
-                        $color = request('color');
-                    }
-                    if(request('price') != ''){
-                        $price = request('price');
-                        $p_order = $stock->purchase_item;
-
-                        $description .= "Price changed from ".$p_order->price;
-                        $p_order->price = $price;
-                        $p_order->save();
-
-                        // dd($p_order);
-                    }
-                }
-
-                    if(request('grade') != ''){
-                        $grade = request('grade');
-                    }
-                $new_variation = Variation_model::firstOrNew([
-                    'product_id' => $product_id,
-                    'storage' => $storage,
-                    'color' => $color,
-                    'grade' => $grade,
-                ]);
-                $new_variation->status = 1;
-                if($new_variation->id && $stock->variation_id == $new_variation->id && request('price') == null){
-                    session()->put('error', 'Stock already exist in this variation');
-                    // return redirect()->back();
-                    continue;
-
-                }
-                $new_variation->save();
-                $stock_operation = Stock_operations_model::create([
-                    'stock_id' => $stock_id,
-                    'old_variation_id' => $stock->variation_id,
-                    'new_variation_id' => $new_variation->id,
-                    'description' => $description,
-                    'admin_id' => session('user_id'),
-                ]);
-                $stock->variation_id = $new_variation->id;
-                $stock->save();
-            }
-
-            // session()->put('added_imeis['.$grade.'][]', $stock_id);
-            // dd($orders);
-        }
-
-
-        session()->put('success', 'Stock Sent Successfully');
-        return redirect()->back();
-
-    }
-    public function delete_move(){
-        $id = request('id');
-        if(request('grade')){
-            session()->put('grade',request('grade'));
-        }
-        session()->put('description',request('description'));
-
-
-        if ($id != null) {
-            $stock_operation = Stock_operations_model::find($id);
-            $stock = $stock_operation->stock;
-            $stock->variation_id = $stock_operation->old_variation_id;
-            $stock->save();
-            $stock_operation->delete();
-        }
-
-
-        session()->put('success', 'Stock Sent Back Successfully');
-        return redirect()->back();
-
-    }
-    public function delete_multiple_moves(){
-        $ids = request('ids');
-        if(request('grade')){
-            session()->put('grade',request('grade'));
-        }
-        session()->put('description',request('description'));
-
-
-        if ($ids != null) {
-            foreach($ids as $id){
-                $stock_operation = Stock_operations_model::find($id);
-                $stock = $stock_operation->stock;
-                $stock->variation_id = $stock_operation->old_variation_id;
-                $stock->save();
-                $stock_operation->delete();
-            }
-        }
-
-
-        session()->put('success', 'Stock Sent Back Successfully');
-        return redirect()->back();
+        $pdf->SetCreator(PDF_CREATOR);
+        $pdf->AddPage('L');
+        $pdf->SetFont('times', '', 12);
+        $html = view('export.fortnight_return', $data)->render();
+        $pdf->writeHTML($html, true, false, true, false, '');
+        $pdfContent = $pdf->Output('', 'S');
+        return view('livewire.show_pdf')->with(['pdfContent'=> $pdfContent]);
 
     }
 
