@@ -1257,10 +1257,10 @@ class Order extends Component
             </script>';
 
         }
-        if(!$detail->orderlines){
-            dd($detail);
-        }
-        if($detail->orderlines[0]->imei == null && $detail->orderlines[0]->serial_number  == null){
+        // if(!$detail->orderlines){
+        //     dd($detail);
+        // }
+        if(isset($detail->orderlines) && $detail->orderlines[0]->imei == null && $detail->orderlines[0]->serial_number  == null){
             $content = "Hi, here are the IMEIs/Serial numbers for this order. \n";
             foreach ($imeis as $im) {
                 $content .= $im . "\n";
