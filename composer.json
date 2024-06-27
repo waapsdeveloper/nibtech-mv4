@@ -26,7 +26,8 @@
         "setasign/fpdi": "^2.6",
         "spatie/pdf-to-image": "^1.2",
         "swiftmailer/swiftmailer": "^6.3",
-        "tecnickcom/tcpdf": "^6.6"
+        "tecnickcom/tcpdf": "^6.6",
+        "yajra/laravel-datatables-oracle": "^10.11"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.8",

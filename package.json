@@ -19,5 +19,10 @@
         "sass": "^1.49.7",
         "sass-loader": "^12.1.0",
         "select2": "^4.1.0-rc.0"
+    },
+    "dependencies": {
+        "datatables.net-bs4": "^2.0.8",
+        "datatables.net-buttons-bs4": "^3.0.2",
+        "datatables.net-responsive-bs4": "^3.0.2"
     }
 }
