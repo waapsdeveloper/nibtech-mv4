@@ -169,10 +169,27 @@
                             </div>
 
                         </div> --}}
+
+<form>
+    <input type="button" value="Print this page" onClick="printReport()">
+</form>
+
+<script type="text/javascript">
+    function printReport()
+    {
+        var prtContent = document.getElementById("reportPrinting");
+        var WinPrint = window.open();
+        WinPrint.document.write(prtContent.innerHTML);
+        WinPrint.document.close();
+        WinPrint.focus();
+        WinPrint.print();
+        WinPrint.close();
+    }
+</script>
                     </div>
                     <div class="card-body"><div class="table-responsive">
 
-                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                            <table class="table table-bordered table-hover mb-0 text-md-nowrap" id="reportPrinting">
                                 <thead>
                                     <tr>
                                         <th><small><b>No</b></small></th>
