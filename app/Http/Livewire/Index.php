@@ -213,11 +213,13 @@ if (session('user')->hasPermission('10_day_sales_chart')) {
         foreach ($periods as $period) {
             $j = $i - 1;
             $k++;
-            $start = date('Y-m-' . $period[0] . ' 23:00:00', strtotime("-$j months"));
-            $end = date('Y-m-' . $period[1] . ' 22:59:59', strtotime("-$j months"));
-
             if ($period[0] == 25) {
-                $end = date('Y-m-' . $period[1] . ' 22:59:59', strtotime("-$i months"));
+                // For the period spanning across months
+                $start = date('Y-m-25 23:00:00', strtotime("-$j months"));
+                $end = date('Y-m-05 22:59:59', strtotime("-$i months +1 month"));
+            } else {
+                $start = date('Y-m-' . $period[0] . ' 23:00:00', strtotime("-$j months"));
+                $end = date('Y-m-' . $period[1] . ' 22:59:59', strtotime("-$j months"));
             }
 
             $orders = Order_model::where('processed_at', '>=', $start)
@@ -245,7 +247,7 @@ if (session('user')->hasPermission('10_day_sales_chart')) {
             $order[$k] = $orders;
             $eur[$k] = $euro;
             $gbp[$k] = $pound;
-            $dates[$k] = date($period[0] . ' M', strtotime("-$j months")) . " - " . date($period[1] . ' M', strtotime("-$j months"));
+            $dates[$k] = date($period[0] == 25 ? '25 M' : '05 M', strtotime("-$j months")) . " - " . date($period[1] . ' M', strtotime($period[0] == 25 ? "-$i months +1 month" : "-$j months"));
 
             if ($period[0] == 5 && $today < 16) {
                 continue;
