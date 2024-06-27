@@ -141,7 +141,7 @@
             <div class="col-xl-12">
                 <div class="card">
                     <div class="card-header pb-0">
-                        <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$latest_items->firstItem()}} {{ __('locale.To') }} {{$latest_items->lastItem()}} {{ __('locale.Out Of') }} {{$latest_items->total()}} </h5>
+                        {{-- <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$latest_items->firstItem()}} {{ __('locale.To') }} {{$latest_items->lastItem()}} {{ __('locale.Out Of') }} {{$latest_items->total()}} </h5> --}}
                         {{-- <div class="d-flex justify-content-between">
 
                             <div class=" mg-b-0">
@@ -170,24 +170,6 @@
 
                         </div> --}}
 
-<form>
-    <input type="button" value="Print this page" onClick="printReport()">
-</form>
-
-<script type="text/javascript">
-    function printReport()
-    {
-
-var printContents = document.getElementById('reportPrinting').innerHTML;
-var originalContents = document.body.innerHTML;
-
-document.body.innerHTML = printContents;
-
-window.print();
-
-document.body.innerHTML = originalContents;
-    }
-</script>
                     </div>
                     <div class="card-body"><div class="table-responsive" id="reportPrinting">
 
