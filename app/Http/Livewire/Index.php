@@ -254,6 +254,25 @@ class Index extends Component
             $gbp[$k] = $pound;
             $dates[$k] = date('15 M', strtotime("-".$i." months")) . " - " . date('25 M', strtotime("-".$i." months"));
 
+            if($i == 0 && $today > 25){
+                $k++;
+                $start = date('Y-m-25 23:00:00', strtotime("-".$i." months"));
+                $end = date('Y-m-5 22:59:59', strtotime("+1 months"));
+                $orders = Order_model::where('processed_at', '>=', $start)->where('order_type_id',3)
+                    ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->count();
+                $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
+                    $q->where('processed_at', '>=', $start)->where('order_type_id',3)
+                    ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',4);
+                })->whereIn('status',[3,6])->sum('price');
+                $pound = Order_item_model::whereHas('order', function($q) use ($start,$end) {
+                    $q->where('processed_at', '>=', $start)->where('order_type_id',3)
+                    ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',5);
+                })->whereIn('status',[3,6])->sum('price');
+                $order[$k] = $orders;
+                $eur[$k] = $euro;
+                $gbp[$k] = $pound;
+                $dates[$k] = date('25 M', strtotime("-".$i." months")) . " - " . date('05 M', strtotime("+1 months"));
+            }
         }
         echo '<script> sessionStorage.setItem("total2", "' . implode(',', $order) . '");</script>';
         echo '<script> sessionStorage.setItem("approved2", "' . implode(',', $eur) . '");</script>';
