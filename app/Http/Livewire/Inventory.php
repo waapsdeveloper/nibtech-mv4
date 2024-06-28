@@ -174,8 +174,8 @@ class Inventory extends Component
                 $q->whereIn('grade', request('grade'));
             });
         })
-        ->orderBy('updated_at','ASC')
         ->orderBy('order_id','ASC')
+        ->orderBy('updated_at','ASC')
         ->paginate($per_page)
         ->onEachSide(5)
         ->appends(request()->except('page'));
