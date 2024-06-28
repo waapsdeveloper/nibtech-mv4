@@ -116,9 +116,9 @@ class Inventory extends Component
         ->when(request('aftersale') != 1, function ($q) use ($aftersale) {
             return $q->whereNotIn('stock.id',$aftersale);
         })
-        ->where('status', 1)
+        ->where('stock.status', 1)
 
-        ->when(request('stock_status') != '', function ($q) {
+        ->when(request('stock.stock_status') != '', function ($q) {
             return $q->where('status', request('stock_status'));
         })
         // ->when(request('stock_status') == '', function ($q) {
@@ -126,12 +126,12 @@ class Inventory extends Component
         // })
         ->when(request('vendor') != '', function ($q) {
             return $q->whereHas('order', function ($q) {
-                $q->where('customer_id', request('vendor'));
+                $q->where('orders.customer_id', request('vendor'));
             });
         })
         ->when(request('status') != '', function ($q) {
             return $q->whereHas('order', function ($q) {
-                $q->where('status', request('status'));
+                $q->where('orders.status', request('status'));
             });
         })
         ->when(request('replacement') != '', function ($q) use ($replacements) {
