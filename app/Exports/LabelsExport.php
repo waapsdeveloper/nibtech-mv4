@@ -13,12 +13,6 @@ class LabelsExport
     public function generatePdf()
     {
 
-        switch (request('sort')){
-            case 2: $sort = "orders.reference_id"; $by = "DESC"; break;
-            case 3: $sort = "products.model"; $by = "DESC"; break;
-            case 4: $sort = "products.model"; $by = "ASC"; break;
-            default: $sort = "orders.reference_id"; $by = "ASC";
-        }
 
         // Fetch data from the database
         $data = Order_model::join('order_items', 'orders.id', '=', 'order_items.order_id')
@@ -27,7 +21,13 @@ class LabelsExport
         ->with(['order_items.variation', 'order_items.variation.grade_id', 'order_items.stock'])
         ->where('orders.label_url', '!=', null)->whereIn('orders.id', request('ids'))
         ->orderBy('orders.reference_id', 'DESC') // Secondary order by reference_id
-        ->orderBy($sort, $by)
+        ->when(request('sort') == 4, function ($q) {
+            return $q
+                ->orderBy('products.model', 'ASC')
+                ->orderBy('variation.storage', 'ASC')
+                ->orderBy('variation.color', 'ASC')
+                ->orderBy('variation.grade', 'ASC');
+        })
         ->pluck('label_url')->toArray();
 
         // Output PDF to the browser
