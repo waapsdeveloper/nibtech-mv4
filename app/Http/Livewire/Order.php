@@ -74,7 +74,7 @@ class Order extends Component
             default: $sort = "orders.reference_id"; $by = "DESC";
         }
 
-        $orders = Order_model::with(['order_items','order_items.variation', 'order_items.variation.grade_id', 'order_items.stock'])
+        $orders = Order_model::with(['order_items','order_items.variation','order_items.variation.product', 'order_items.variation.grade_id', 'order_items.stock'])
         ->where('order_type_id',3)
         ->when(request('start_date') != '', function ($q) {
             if(request('adm') > 0){
