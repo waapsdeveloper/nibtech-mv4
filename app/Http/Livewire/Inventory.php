@@ -175,6 +175,7 @@ class Inventory extends Component
             });
         })
         ->orderBy('updated_at','ASC')
+        ->orderBy('order_id','ASC')
         ->paginate($per_page)
         ->onEachSide(5)
         ->appends(request()->except('page'));
