@@ -147,7 +147,7 @@
                             products.forEach(product => {
                                 const productLink = document.createElement('option');
                                 productLink.value = `${product.id}`;
-                                productLink.innerHTML = `${product.model}`;
+                                productLink.innerHTML = `${product.model}`+' ('+`${product.quantity}`+')';
                                 @if(request('product'))
                                     // Check if the request parameter matches the product's ID
                                     if (product.id == {{ request('product') }}) {

@@ -395,7 +395,17 @@ class Inventory extends Component
         $category = request('category');
         $brand = request('brand');
 
-        $products = Products_model::where(['category' => $category, 'brand' => $brand])->orderBy('model','asc')->get();
+        // $products = Products_model::where(['category' => $category, 'brand' => $brand])->orderBy('model','asc')->get();
+
+        $products = Stock_model::select('products.model as model', 'variation.product_id as id', DB::raw('COUNT(*) as quantity'))
+        ->where('stock.status', 1)
+        ->join('variation', 'stock.variation_id', '=', 'variation.id')
+        ->join('products', 'variation.product_id', '=', 'products.id')
+        ->groupBy('variation.product_id', 'products.model')
+        ->orderBy('variation.product_id')
+        ->get();
+
+        // dd($products);
 
         return response()->json($products);
     }
