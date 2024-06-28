@@ -166,7 +166,7 @@
             <div class="row">
                 <div class="col-md col-sm-6">
                     {{-- <div class="form-floating"> --}}
-                        <select type="text" id="order" name="order" class="form-control" required>
+                        <select type="text" id="order" name="order" class="form-select" required>
                             <option value="">Vendor</option>
                             <option value="4739">Sunstrike</option>
                             <option value="1">Mobi</option>
