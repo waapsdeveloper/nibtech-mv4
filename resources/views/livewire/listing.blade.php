@@ -146,7 +146,9 @@
                                     $grade = null;
                                 }
                             @endphp
+                            <a href="https://www.backmarket.fr/bo_merchant/listings/active?sku={{ $variation->sku }}">
                             {{ $variation->sku." - ".$variation->product->model." ".$storage." ".$color." ".$grade }}
+                            </a>
                         </div>
                         <div>
                             <div class="form-floating w-50">
