@@ -46,14 +46,14 @@ class FunctionsDaily extends Command
     }
     private function remove_extra_customers(){
 
-        $data['customers'] = Customer_model::where('is_vendor',null)->get();
+        // $data['customers'] = Customer_model::where('is_vendor',null)->get();
 
-        foreach($data['customers'] as $customer){
-            if($customer->orders->count() == 0){
-                $customer->delete();
-                $customer->forceDelete();
-            }
-        }
+        // foreach($data['customers'] as $customer){
+        //     if($customer->orders->count() == 0){
+        //         $customer->delete();
+        //         $customer->forceDelete();
+        //     }
+        // }
 
     }
 
