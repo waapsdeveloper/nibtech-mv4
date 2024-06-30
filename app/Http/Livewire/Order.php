@@ -1236,6 +1236,7 @@ class Order extends Component
                     }
                     if($stock[$idt]){
                     $new_item->stock_id = $stock[$idt]->id;
+                    $new_item->linked_id = $stock[$idt]->last_item()->id;
                     // $new_item->linked_id = Order_item_model::where(['order_id'=>$stock[$idt]->order_id,'stock_id'=>$stock[$idt]->id])->first()->id;
                     }
                     $new_item->save();
@@ -1497,6 +1498,7 @@ class Order extends Component
                     }
                     if($stock[$idt]){
                     $new_item->stock_id = $stock[$idt]->id;
+                    $new_item->linked_id = $stock[$idt]->last_item()->id;
                     // $new_item->linked_id = Order_item_model::where(['order_id'=>$stock[$idt]->order_id,'stock_id'=>$stock[$idt]->id])->first()->id;
                     }
                     $new_item->save();
