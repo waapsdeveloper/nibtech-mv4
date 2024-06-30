@@ -30,7 +30,7 @@ use App\Models\Grade_model;
 use App\Models\Order_issue_model;
 use App\Models\Stock_operations_model;
 use Illuminate\Support\Facades\Mail;
-
+use TCPDF_FONTS;
 
 class Order extends Component
 {
@@ -1022,7 +1022,10 @@ class Order extends Component
         $pdf->AddPage();
 
         // Set font
-        $pdf->SetFont('helvetica', '', 12);
+        // $fontname = TCPDF_FONTS::addTTFfont(asset('assets/font/OpenSans_Condensed-Regular.ttf'), 'TrueTypeUnicode', '', 96);
+
+        $pdf->SetFont('dejavusans', '', 12);
+
 
         // Additional content from your view
         $html = view('export.invoice', $data)->render();
