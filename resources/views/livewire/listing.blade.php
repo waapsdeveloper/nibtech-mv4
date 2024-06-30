@@ -163,7 +163,54 @@
                     </div>
                             {{-- {{ $variation }} --}}
                     <div class="card-body row"><div class="table-responsive" style="max-height: 400px">
-                        <div class="col-md-7"></div>
+                        <div class="col-md-7">
+                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th><small><b>Country</b></small></th>
+                                        @if (session('user')->hasPermission('view_price'))
+                                        <th><small><b>Min Price</b></small></th>
+                                        <th><small><b>Max Price</b></small></th>
+                                        <th><small><b>Price</b></small></th>
+                                        <th><small><b>BuyBox Price</b></small></th>
+                                        @endif
+                                        <th><small><b>Date</b></small></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @php
+                                        $i = 0;
+                                        $id = [];
+                                    @endphp
+                                    @php
+                                        $listings = $variation->listings;
+                                        // $items = $stocks->order_item;
+                                        // print_r($stocks);
+                                    @endphp
+
+                                    @foreach ($listings as $listing)
+                                        {{-- @dd($item) --}}
+                                        {{-- @if($item->order_item[0]->order_id == $order_id) --}}
+                                        @php
+                                    @endphp
+                                        <tr @if ($listing->buybox == 1) class="bg-success" @endif>
+                                            <td>{{ $listing->country_id->code }}</td>
+                                            @if (session('user')->hasPermission('view_price'))
+                                            <td>{{$listing->min_price}}</td>
+                                            <td>{{$listing->max_price}}</td>
+                                            <td>{{$listing->price}}</td>
+                                            <td>{{$listing->buybox_price}}</td>
+                                            {{-- <td>{{ $currency}}{{$item->purchase_item->price ?? "Error in Purchase Entry" }}</td> --}}
+                                            @endif
+                                            @if (session('user')->hasPermission('delete_purchase_item'))
+                                            <td><a href="{{ url('delete_order_item').'/'}}{{$item->purchase_item->id ?? null }}"><i class="fa fa-trash"></i></a></td>
+                                            @endif
+                                        </tr>
+                                        {{-- @endif --}}
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                         <div class="col-md-5">
                             <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                                 <thead>
@@ -172,9 +219,6 @@
                                         <th><small><b>IMEI/Serial</b></small></th>
                                         @if (session('user')->hasPermission('view_cost'))
                                         <th><small><b>Cost</b></small></th>
-                                        @endif
-                                        @if (session('user')->hasPermission('delete_purchase_item'))
-                                        <th></th>
                                         @endif
                                     </tr>
                                 </thead>
@@ -203,9 +247,6 @@
                                             <td data-stock="{{ $item->id }}">{{ $item->imei.$item->serial_number }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
                                             {{-- <td>{{ $currency}}{{$item->purchase_item->price ?? "Error in Purchase Entry" }}</td> --}}
-                                            @endif
-                                            @if (session('user')->hasPermission('delete_purchase_item'))
-                                            <td><a href="{{ url('delete_order_item').'/'}}{{$item->purchase_item->id ?? null }}"><i class="fa fa-trash"></i></a></td>
                                             @endif
                                         </tr>
                                         {{-- @endif --}}
