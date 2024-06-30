@@ -162,8 +162,9 @@
                         </div>
                     </div>
                             {{-- {{ $variation }} --}}
-                    <div class="card-body"><div class="table-responsive" style="max-height: 400px">
-
+                    <div class="card-body row"><div class="table-responsive" style="max-height: 400px">
+                        <div class="col-md-7"></div>
+                        <div class="col-md-5">
                             <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                                 <thead>
                                     <tr>
@@ -211,6 +212,7 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                        </div>
                         <br>
                     </div>
                     {{-- <div class="text-end">Average Cost: {{array_sum($prices)/count($prices) }} &nbsp;&nbsp;&nbsp; Total: {{$i }}</div> --}}
