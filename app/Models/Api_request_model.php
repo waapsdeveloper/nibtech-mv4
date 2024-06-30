@@ -189,12 +189,17 @@ class Api_request_model extends Model
                         ]);
                         $stock->imei = $datas->Imei;
                     }
+                    if(strlen($datas->Fail) > 200){
+                        $fail = substr($datas->Fail, 0, 200);
+                    }else{
+                        $fail = $datas->Fail;
+                    }
 
                     $stock_operation = Stock_operations_model::create([
                         'stock_id' => $stock->id,
                         'old_variation_id' => $stock->variation_id,
                         'new_variation_id' => $variation->id,
-                        'description' => $datas->Fail." | ".$datas->Comments." | DrPhone",
+                        'description' => $fail." | ".$datas->Comments." | DrPhone",
                         'admin_id' => $admin,
                     ]);
 
