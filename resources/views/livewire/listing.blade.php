@@ -146,7 +146,7 @@
                                     $grade = null;
                                 }
                             @endphp
-                            {{ $variation->product->model." ".$storage." ".$color." ".$grade }}
+                            {{ $variation->sku." - ".$variation->product->model." ".$storage." ".$color." ".$grade }}
                         </div>
                         <div>
                             <div class="form-floating w-50">
