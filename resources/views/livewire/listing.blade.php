@@ -34,6 +34,78 @@
             </div>
         <!-- /breadcrumb -->
         <br>
+        <div class="row">
+            <div class="col-md-12" style="border-bottom: 1px solid rgb(216, 212, 212);">
+                <center><h4>Search</h4></center>
+            </div>
+        </div>
+        <br>
+        <form action="" method="GET" id="search">
+            <div class="row">
+                <div class="col-md col-sm-6">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="reference_id" name="reference_id" placeholder="Enter IMEI" value="@isset($_GET['reference_id']){{$_GET['reference_id']}}@endisset">
+                        <label for="reference_id">Reference ID</label>
+                    </div>
+                </div>
+                <div class="col-md col-sm-6">
+                    <div class="form-floating">
+                        <input type="text" id="product" name="product" list="products" class="form-control" data-bs-placeholder="Select Status">
+                        <label for="product">Product</label>
+                    </div>
+                        <datalist id="products">
+                            @foreach ($products as $product)
+                                <option value="{{$product->id}}" @if(isset($_GET['product']) && $product->id == $_GET['product']) {{'selected'}}@endif>{{$product->model}}</option>
+                            @endforeach
+                        </datalist>
+                </div>
+                <div class="col-md col-sm-6">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" name="sku" placeholder="Enter IMEI" value="@isset($_GET['sku']){{$_GET['sku']}}@endisset">
+                        <label for="">SKU</label>
+                    </div>
+                </div>
+                <div class="col-md col-sm-6">
+                    <select name="color" class="form-control form-select" data-bs-placeholder="Select Status">
+                        <option value="">Color</option>
+                        @foreach ($colors as $id => $color)
+                            <option value="{{$id}}" @if(isset($_GET['color']) && $id == $_GET['color']) {{'selected'}}@endif>{{$color}}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md col-sm-6">
+                    <select name="storage" class="form-control form-select" data-bs-placeholder="Select Status">
+                        <option value="">Storage</option>
+                        @foreach ($storages as $id => $storage)
+                            <option value="{{$id}}" @if(isset($_GET['storage']) && $id == $_GET['storage']) {{'selected'}}@endif>{{$storage}}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md col-sm-6">
+                    <select name="grade" class="form-control form-select" data-bs-placeholder="Select Status">
+                        <option value="">Grade</option>
+                        @foreach ($grades as $id => $grade)
+                            <option value="{{$id}}" @if(isset($_GET['grade']) && $id == $_GET['grade']) {{'selected'}}@endif>{{$grade}}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="p-2">
+                    <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
+                    <a href="{{url(session('url').'order')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
+                </div>
+            </div>
+
+            <input type="hidden" name="page" value="{{ Request::get('page') }}">
+            <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
+            <input type="hidden" name="sort" value="{{ Request::get('sort') }}">
+        </form>
+        <br>
+        <div class="row">
+            <div class="col-md-12" style="border-bottom: 1px solid rgb(216, 212, 212);">
+                <center><h4>Product Variations</h4></center>
+            </div>
+        </div>
+        <br>
         @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <span class="alert-inner--icon"><i class="fe fe-thumbs-up"></i></span>
@@ -58,22 +130,31 @@
         @endif
 
         @if (isset($variations) && (!request('status') || request('status') == 1))
-        <div class="row">
+        {{-- <div class="row"> --}}
 
             @foreach ($variations as $variation)
-            <div class="col-md-4">
+            {{-- <div class="col-md-4"> --}}
                 <div class="card">
-                    <div class="card-header pb-0">
-                        @php
-                            isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
-                            isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
-                            if(isset($variation->grade) && array_key_exists($variation->grade, $grades)){
-                                $grade = $grades[$variation->grade];
-                            }else{
-                                $grade = null;
-                            }
-                        @endphp
-                        {{ $variation->product->model." ".$storage." ".$color." ".$grade }}
+                    <div class="card-header pb-0 d-flex justify-content-between">
+                        <div>
+                            @php
+                                isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
+                                isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
+                                if(isset($variation->grade) && array_key_exists($variation->grade, $grades)){
+                                    $grade = $grades[$variation->grade];
+                                }else{
+                                    $grade = null;
+                                }
+                            @endphp
+                            {{ $variation->product->model." ".$storage." ".$color." ".$grade }}
+                        </div>
+                        <div>
+                            <div class="form-floating w-50">
+                                <input type="number" class="form-control" name="stock" value="{{ $variation->variation_listing_qty->quantity ?? 0 }}">
+                                <label for="">Stock</label>
+                            </div>
+                        </div>
+                        <div></div>
                     </div>
                             {{-- {{ $variation }} --}}
                     <div class="card-body"><div class="table-responsive" style="max-height: 400px">
@@ -130,9 +211,9 @@
                     {{-- <div class="text-end">Average Cost: {{array_sum($prices)/count($prices) }} &nbsp;&nbsp;&nbsp; Total: {{$i }}</div> --}}
                     </div>
                 </div>
-            </div>
+            {{-- </div> --}}
             @endforeach
-        </div>
+        {{-- </div> --}}
         @endif
         @if (isset($sold_stocks) && count($sold_stocks)>0 && (!request('status') || request('status') == 2))
 

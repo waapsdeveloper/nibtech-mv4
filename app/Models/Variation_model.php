@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Http\Livewire\Listing;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -43,6 +44,14 @@ class Variation_model extends Model
     public function color_id()
     {
         return $this->hasOne(Color_model::class, 'id', 'color');
+    }
+    public function variation_listing_qty()
+    {
+        return $this->hasOne(Variation_listing_qty_model::class, 'variation_id', 'id');
+    }
+    public function listings()
+    {
+        return $this->hasMany(Listing_model::class, 'variation_id', 'id');
     }
     public function grade_id()
     {

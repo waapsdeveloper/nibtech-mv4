@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Http\Livewire\Variation;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -21,11 +22,11 @@ class Variation_listing_qty_model extends Model
     ];
 
 
-
-
-
-    public function variation(){
-        return $this->hasOne(Variation_model::class, 'id', 'variation_id');
+    public function variation()
+    {
+        return $this->belongsTo(Variation_model::class, 'variation_id', 'id');
     }
+
+
 
 }

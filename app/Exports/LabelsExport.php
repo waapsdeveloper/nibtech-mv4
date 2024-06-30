@@ -15,17 +15,20 @@ class LabelsExport
 
 
         // Fetch data from the database
-        $data = Order_model::join('order_items', 'orders.id', '=', 'order_items.order_id')
+        $data = Order_model::
+        join('order_items', 'orders.id', '=', 'order_items.order_id')
         ->join('variation', 'order_items.variation_id', '=', 'variation.id')
         ->join('products', 'variation.product_id', '=', 'products.id')
         ->where('orders.label_url', '!=', null)->whereIn('orders.id', request('ids'))
-        ->orderBy('orders.reference_id', 'DESC') // Secondary order by reference_id
+
         ->when(request('sort') == 4, function ($q) {
-            return $q
-                ->orderBy('products.model', 'ASC')
-                ->orderBy('variation.storage', 'ASC')
-                ->orderBy('variation.color', 'ASC')
-                ->orderBy('variation.grade', 'ASC');
+            return $q->orderBy('products.model', 'DESC')
+                ->orderBy('variation.storage', 'DESC')
+                ->orderBy('variation.color', 'DESC')
+                ->orderBy('variation.grade', 'DESC');
+        })
+        ->when(request('sort') == 1, function ($q) {
+            return $q->orderBy('orders.reference_id', 'ASC'); // Secondary order by reference_id
         })
         ->select('orders.id','orders.label_url','orders.reference_id')
         ->pluck('label_url')->toArray();

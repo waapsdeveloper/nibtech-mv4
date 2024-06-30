@@ -56,7 +56,13 @@ class Listing extends Component
         ->with(['product' => function ($q) {
             $q->orderBy('model');
         }])
-        ->get();
+        ->whereHas('listings', function ($q) {
+            $q->whereNull('min_price');
+        })
+
+        ->paginate(50)
+        ->onEachSide(5)
+        ->appends(request()->except('page'));
 
         return view('livewire.listing')->with($data);
     }
