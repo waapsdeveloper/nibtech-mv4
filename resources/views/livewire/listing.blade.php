@@ -193,7 +193,7 @@
                                         {{-- @if($item->order_item[0]->order_id == $order_id) --}}
                                         @php
                                     @endphp
-                                        <tr @if ($listing->buybox == 1) class="bg-success" @endif>
+                                        <tr @if ($listing->buybox == 1) style="background: LightGreen;" @endif>
                                             <td>{{ $listing->country_id->code }}</td>
                                             @if (session('user')->hasPermission('view_price'))
                                             <td>{{$listing->min_price}}</td>
