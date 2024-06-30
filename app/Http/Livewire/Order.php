@@ -108,27 +108,27 @@ class Order extends Component
         ->when(request('order_id') != '', function ($q) {
             if(str_contains(request('order_id'),'<')){
                 $order_ref = str_replace('<','',request('order_id'));
-                return $q->where('reference_id', '<', $order_ref);
+                return $q->where('orders.reference_id', '<', $order_ref);
             }elseif(str_contains(request('order_id'),'>')){
                 $order_ref = str_replace('>','',request('order_id'));
-                return $q->where('reference_id', '>', $order_ref);
+                return $q->where('orders.reference_id', '>', $order_ref);
             }elseif(str_contains(request('order_id'),'<=')){
                 $order_ref = str_replace('<=','',request('order_id'));
-                return $q->where('reference_id', '<=', $order_ref);
+                return $q->where('orders.reference_id', '<=', $order_ref);
             }elseif(str_contains(request('order_id'),'>=')){
                 $order_ref = str_replace('>=','',request('order_id'));
-                return $q->where('reference_id', '>=', $order_ref);
+                return $q->where('orders.reference_id', '>=', $order_ref);
             }elseif(str_contains(request('order_id'),'-')){
                 $order_ref = explode('-',request('order_id'));
-                return $q->whereBetween('reference_id', $order_ref);
+                return $q->whereBetween('orders.reference_id', $order_ref);
             }elseif(str_contains(request('order_id'),',')){
                 $order_ref = explode(',',request('order_id'));
-                return $q->whereIn('reference_id', $order_ref);
+                return $q->whereIn('orders.reference_id', $order_ref);
             }elseif(str_contains(request('order_id'),' ')){
                 $order_ref = explode(' ',request('order_id'));
-                return $q->whereIn('reference_id', $order_ref);
+                return $q->whereIn('orders.reference_id', $order_ref);
             }else{
-                return $q->where('reference_id', 'LIKE', request('order_id') . '%');
+                return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
             }
         })
         ->when(request('sku') != '', function ($q) {
