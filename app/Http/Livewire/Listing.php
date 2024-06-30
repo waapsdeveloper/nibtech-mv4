@@ -59,6 +59,9 @@ class Listing extends Component
         ->whereHas('listings', function ($q) {
             $q->whereNull('min_price');
         })
+        ->whereHas('variation_listing_qty', function ($q) {
+            $q->where('quantity','>',0);
+        })
 
         ->paginate(50)
         ->onEachSide(5)
