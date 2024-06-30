@@ -1022,7 +1022,7 @@ class Order extends Component
         $pdf->AddPage();
 
         // Set font
-        $pdf->SetFont('courier', '', 12);
+        $pdf->SetFont('helvetica', '', 12);
 
         // Additional content from your view
         $html = view('export.invoice', $data)->render();
