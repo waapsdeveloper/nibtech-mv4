@@ -95,7 +95,7 @@ class FunctionsDaily extends Command
             }
 
             $items3 = Order_item_model::where(['stock_id'=>$stock->id, 'linked_id' => $stock->purchase_item->id])->whereHas('order', function ($query) {
-                $query->whereIn('order_type_id', [5,3]);
+                $query->whereIn('order_type_id', [5,3,2]);
             })->orderBy('id','asc')->get();
             if($items3->count() > 1){
                 $i = 0;
@@ -110,7 +110,7 @@ class FunctionsDaily extends Command
             }
 
             $items4 = Order_item_model::where(['stock_id'=>$stock->id])->whereHas('order', function ($query) {
-                $query->whereIn('order_type_id', [5,3]);
+                $query->whereIn('order_type_id', [5,3,2]);
             })->orderBy('id','asc')->get();
             if($items4->count() == 1){
                 foreach($items4 as $item4){
