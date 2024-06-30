@@ -131,6 +131,7 @@
 
         @if (isset($variations) && (!request('status') || request('status') == 1))
         {{-- <div class="row"> --}}
+            <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$variations->firstItem()}} {{ __('locale.To') }} {{$variations->lastItem()}} {{ __('locale.Out Of') }} {{$variations->total()}} </h5>
 
             @foreach ($variations as $variation)
             {{-- <div class="col-md-4"> --}}
@@ -215,7 +216,8 @@
                 </div>
             {{-- </div> --}}
             @endforeach
-        {{-- </div> --}}
+            {{ $variations->onEachSide(1)->links() }} {{ __('locale.From') }} {{$variations->firstItem()}} {{ __('locale.To') }} {{$variations->lastItem()}} {{ __('locale.Out Of') }} {{$variations->total()}}
+            {{-- </div> --}}
         @endif
         @if (isset($sold_stocks) && count($sold_stocks)>0 && (!request('status') || request('status') == 2))
 
