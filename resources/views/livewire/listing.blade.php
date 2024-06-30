@@ -158,7 +158,7 @@
                             </div>
                         </div>
                         <div>
-                            Pending Order Items: {{ $variation->pending_orders }}
+                            Pending Order Items: {{ $variation->pending_orders->count() }}
                         </div>
                     </div>
                             {{-- {{ $variation }} --}}
