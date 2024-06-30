@@ -431,8 +431,9 @@
 
                                                     @if ($item->status == 2)
                                                         @if (count($items) < 2 && $item->quantity < 2)
-                                                            <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url(session('url').'order')}}/dispatch/{{ $order->id }}">
+                                                            <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url(session('url').'order')}}/dispatch/{{ $order->id }}" @if (request('sort') == 4) target="_blank" @endif>
                                                                 @csrf
+                                                                <input type="hidden" name="sort" value="{{request('sort')}}">
                                                                 <div class="input-group">
                                                                     <input type="text" name="tester[]" placeholder="Tester" class="form-control form-control-sm" style="max-width: 50px">
                                                                     <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm">

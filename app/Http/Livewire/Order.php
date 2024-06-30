@@ -1267,9 +1267,12 @@ class Order extends Component
                 newTab1.print();
             };
 
-            window.location.href = document.referrer;
             </script>';
-
+            if(request('sort') == 4){
+                echo "<script> window.close(); </script>";
+            }else{
+                echo "<script> window.location.href = document.referrer; </script>";
+            }
         }
         // if(!$detail->orderlines){
         //     dd($detail);
