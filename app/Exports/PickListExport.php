@@ -20,7 +20,9 @@ class PickListExport
             ->join('grade', 'variation.grade', '=', 'grade.id')
             ->select(
                 'variation.sku',
+                'variation.storage',
                 'variation.color',
+                'variation.grade',
                 'products.model',
                 'color.name as color',
                 'storage.name as storage',
@@ -55,11 +57,13 @@ class PickListExport
                     $q->where('imei', 'LIKE', '%' . request('imei') . '%');
                 });
             })
-            ->groupBy('variation.sku', 'products.model', 'variation.color', 'color.name', 'storage.name', 'grade.name')
+            ->groupBy('variation.sku', 'products.model', 'variation.storage', 'variation.color', 'variation.grade', 'color.name', 'storage.name', 'grade.name')
             ->orderBy('products.model', 'ASC')
-            ->orderBy('storage.name', 'ASC')
+            // ->orderBy('storage.name', 'ASC')
+            ->orderBy('variation.storage', 'ASC')
             ->orderBy('variation.color', 'ASC')
-            ->orderBy('grade.name', 'ASC')
+            ->orderBy('variation.grade', 'ASC')
+            // ->orderBy('grade.name', 'ASC')
             ->get();
 
         // Create a TCPDF instance
