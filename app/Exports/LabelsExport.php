@@ -25,7 +25,8 @@ class LabelsExport
             return $q->orderBy('products.model', 'DESC')
                 ->orderBy('variation.storage', 'DESC')
                 ->orderBy('variation.color', 'DESC')
-                ->orderBy('variation.grade', 'DESC');
+                ->orderBy('variation.grade', 'DESC')
+                ->orderBy('orders.reference_id', 'ASC');
         })
         ->when(request('sort') == 1, function ($q) {
             return $q->orderBy('orders.reference_id', 'ASC'); // Secondary order by reference_id
