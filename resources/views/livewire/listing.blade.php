@@ -146,7 +146,7 @@
                                     $grade = null;
                                 }
                             @endphp
-                            <a href="https://www.backmarket.fr/bo_merchant/listings/active?sku={{ $variation->sku }}">
+                            <a href="https://www.backmarket.fr/bo_merchant/listings/active?sku={{ $variation->sku }}" title="View BM Ad" target="_blank">
                             {{ $variation->sku." - ".$variation->product->model." ".$storage." ".$color." ".$grade }}
                             </a>
                         </div>
