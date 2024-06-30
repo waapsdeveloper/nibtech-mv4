@@ -164,7 +164,7 @@
                             {{-- {{ $variation }} --}}
                     <div class="card-body row">
                         <div class="col-md-7">
-                            <div class="table-responsive" style="max-height: 400px">
+                            <div class="table-responsive">
                             <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                                 <thead>
                                     <tr>
@@ -214,7 +214,7 @@
                             </div>
                         </div>
                         <div class="col-md-5">
-                            <div class="table-responsive" style="max-height: 400px">
+                            <div class="table-responsive">
                             <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                                 <thead>
                                     <tr>
