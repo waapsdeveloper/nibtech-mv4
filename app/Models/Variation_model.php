@@ -65,4 +65,8 @@ class Variation_model extends Model
     {
         return $this->hasMany(Order_item_model::class, 'variation_id', 'id');
     }
+    public function pending_orders()
+    {
+        return $this->hasMany(Order_item_model::class, 'variation_id', 'id')->where('status',2);
+    }
 }

@@ -157,7 +157,9 @@
                                 <label for="">Stock</label>
                             </div>
                         </div>
-                        <div></div>
+                        <div>
+                            Pending Order Items: {{ $variation->pending_orders }}
+                        </div>
                     </div>
                             {{-- {{ $variation }} --}}
                     <div class="card-body"><div class="table-responsive" style="max-height: 400px">
