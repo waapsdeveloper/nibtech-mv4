@@ -20,6 +20,7 @@ class PickListExport
             ->join('grade', 'variation.grade', '=', 'grade.id')
             ->select(
                 'variation.sku',
+                'variation.color',
                 'products.model',
                 'color.name as color',
                 'storage.name as storage',
@@ -54,10 +55,10 @@ class PickListExport
                     $q->where('imei', 'LIKE', '%' . request('imei') . '%');
                 });
             })
-            ->groupBy('variation.sku', 'products.model', 'color.name', 'storage.name', 'grade.name')
+            ->groupBy('variation.sku', 'products.model', 'variation.color', 'color.name', 'storage.name', 'grade.name')
             ->orderBy('products.model', 'ASC')
             ->orderBy('storage.name', 'ASC')
-            ->orderBy('color.name', 'ASC')
+            ->orderBy('variation.color', 'ASC')
             ->orderBy('grade.name', 'ASC')
             ->get();
 
