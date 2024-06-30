@@ -1022,7 +1022,7 @@ class Order extends Component
         $pdf->AddPage();
 
         // Set font
-        $pdf->SetFont('times', '', 12);
+        $pdf->SetFont('arial', '', 12);
 
         // Additional content from your view
         $html = view('export.invoice', $data)->render();
