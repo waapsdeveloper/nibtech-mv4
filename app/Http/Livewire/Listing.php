@@ -72,7 +72,7 @@ class Listing extends Component
             $q->orderBy('category');
         }])
 
-        ->orderBy('product_id')
+        ->orderBy('product_id', 'desc')
         ->paginate(50)
         ->onEachSide(5)
         ->appends(request()->except('page'));
