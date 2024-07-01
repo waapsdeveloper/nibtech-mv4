@@ -171,8 +171,8 @@
                                         <th><small><b>Country</b></small></th>
                                         @if (session('user')->hasPermission('view_price'))
                                         <th><small><b>BuyBox Price</b></small></th>
-                                        <th width="100"><small><b>Min Price</b></small></th>
-                                        <th width="100"><small><b>Price</b></small></th>
+                                        <th width="150"><small><b>Min Price</b></small></th>
+                                        <th width="150"><small><b>Price</b></small></th>
                                         <th><small><b>Max Price</b></small></th>
                                         @endif
                                         <th><small><b>Date</b></small></th>
