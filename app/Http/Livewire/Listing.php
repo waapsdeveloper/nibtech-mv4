@@ -54,7 +54,7 @@ class Listing extends Component
             return $q->where('grade', request('grade'));
         })
         ->with(['product' => function ($q) {
-            $q->orderByDesc('category')->orderBy('brand')->orderBy('model');
+            $q->orderBy('category')->orderBy('brand')->orderBy('model');
         }])
 
 
