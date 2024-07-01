@@ -227,6 +227,7 @@
                                 <tbody>
                                     @php
                                         $i = 0;
+                                        $id = [];
                                     @endphp
                                     @php
                                         $stocks = $variation->available_stocks;
