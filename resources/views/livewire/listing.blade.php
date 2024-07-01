@@ -49,6 +49,28 @@
                     </div>
                 </div>
                 <div class="col-md col-sm-6">
+                    {{-- <div class="card-header">
+                        <h4 class="card-title mb-1">Category</h4>
+                    </div> --}}
+                    <select name="category" class="form-control form-select" data-bs-placeholder="Select Category">
+                        <option value="">Category</option>
+                        @foreach ($categories as $category)
+                            <option value="{{$category->id}}" @if(isset($_GET['category']) && $category->id == $_GET['category']) {{'selected'}}@endif>{{$category->name}}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md col-sm-6">
+                    {{-- <div class="card-header">
+                        <h4 class="card-title mb-1">Brand</h4>
+                    </div> --}}
+                    <select name="brand" class="form-control form-select" data-bs-placeholder="Select Brand">
+                        <option value="">Brand</option>
+                        @foreach ($brands as $brand)
+                            <option value="{{$brand->id}}" @if(isset($_GET['brand']) && $brand->id == $_GET['brand']) {{'selected'}}@endif>{{$brand->name}}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md col-sm-6">
                     <div class="form-floating">
                         <input type="text" id="product" name="product" list="products" class="form-control" data-bs-placeholder="Select Status" value="@isset($_GET['product']){{$_GET['product']}}@endisset">
                         <label for="product">Product</label>

@@ -2,7 +2,9 @@
 
 namespace App\Http\Livewire;
     use App\Http\Controllers\BackMarketAPIController;
-    use Livewire\Component;
+use App\Models\Brand_model;
+use App\Models\Category_model;
+use Livewire\Component;
     use App\Models\listing_model;
     use App\Models\Products_model;
     use App\Models\Color_model;
@@ -11,6 +13,7 @@ namespace App\Http\Livewire;
     use App\Models\Order_status_model;
 use App\Models\Variation_listing_qty_model;
 use App\Models\Variation_model;
+use Google\Service\Books\Category;
 
 class Listing extends Component
 {
@@ -30,6 +33,8 @@ class Listing extends Component
         $data['order_statuses'] = Order_status_model::get();
 
 
+        $data['categories'] = Category_model::all();
+        $data['brands'] = Brand_model::all();
         $data['products'] = Products_model::all();
         $data['storages'] = Storage_model::pluck('name','id');
         $data['colors'] = Color_model::pluck('name','id');
@@ -57,7 +62,7 @@ class Listing extends Component
             $q->orderBy('category');
         }])
 
-
+        ->orderBy('product_id')
         ->paginate(50)
         ->onEachSide(5)
         ->appends(request()->except('page'));
