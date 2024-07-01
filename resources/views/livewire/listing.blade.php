@@ -195,7 +195,7 @@
                                         @php
                                     @endphp
                                         <tr @if ($listing->buybox == 1) style="background: LightGreen;" @endif>
-                                            <td>{{ $listing->country_id->code }}</td>
+                                            <td><img src="{{ asset('assets/img/flags/').'/'.$listing->country_id->code.'.svg' }}" height="30"> {{ $listing->country_id->code }}</td>
                                             @if (session('user')->hasPermission('view_price'))
                                             <td>{{$listing->min_price}}</td>
                                             <td>{{$listing->max_price}}</td>
