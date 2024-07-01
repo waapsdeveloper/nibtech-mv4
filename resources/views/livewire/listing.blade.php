@@ -193,19 +193,18 @@
                                         {{-- @dd($item) --}}
                                         {{-- @if($item->order_item[0]->order_id == $order_id) --}}
                                         @php
+                                        $sign = $listing->currency_id->sign;
                                     @endphp
                                         <tr @if ($listing->buybox != 1) style="background: LightRed;" @endif>
                                             <td><img src="{{ asset('assets/img/flags/').'/'.strtolower($listing->country_id->code).'.svg' }}" height="20"> {{ $listing->country_id->code }}</td>
                                             @if (session('user')->hasPermission('view_price'))
-                                            <td>{{$listing->min_price}}</td>
-                                            <td>{{$listing->max_price}}</td>
-                                            <td>{{$listing->price}}</td>
-                                            <td>{{$listing->buybox_price}}</td>
+                                            <td>{{$sign.$listing->min_price}}</td>
+                                            <td>{{$sign.$listing->max_price}}</td>
+                                            <td>{{$sign.$listing->price}}</td>
+                                            <td>{{$sign.$listing->buybox_price}}</td>
                                             {{-- <td>{{ $currency}}{{$item->purchase_item->price ?? "Error in Purchase Entry" }}</td> --}}
                                             @endif
-                                            @if (session('user')->hasPermission('delete_purchase_item'))
-                                            <td><a href="{{ url('delete_order_item').'/'}}{{$item->purchase_item->id ?? null }}"><i class="fa fa-trash"></i></a></td>
-                                            @endif
+                                            <td>{{ $listing->updated_at }}</td>
                                         </tr>
                                         {{-- @endif --}}
                                     @endforeach
