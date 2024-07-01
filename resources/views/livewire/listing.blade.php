@@ -198,10 +198,20 @@
                                         <tr @if ($listing->buybox != 1) style="background: pink;" @endif>
                                             <td><img src="{{ asset('assets/img/flags/').'/'.strtolower($listing->country_id->code).'.svg' }}" height="15"> {{ $listing->country_id->code }}</td>
                                             @if (session('user')->hasPermission('view_price'))
-                                            <td>{{$sign.$listing->min_price}}</td>
-                                            <td>{{$sign.$listing->price}}</td>
-                                            <td>{{$sign.$listing->max_price}}</td>
                                             <td>{{$sign.$listing->buybox_price}}</td>
+                                            <td>
+                                                <div class="form-floating">
+                                                    <input type="number" class="form-control" name="min_price" value="{{$listing->min_price}}">
+                                                    <label for="">Min Price ({{$sign}})</label>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="form-floating">
+                                                    <input type="number" class="form-control" name="price" value="{{$listing->price}}">
+                                                    <label for="">Price ({{$sign}})</label>
+                                                </div>
+                                            </td>
+                                            <td>{{$sign.$listing->max_price}}</td>
                                             {{-- <td>{{ $currency}}{{$item->purchase_item->price ?? "Error in Purchase Entry" }}</td> --}}
                                             @endif
                                             <td>{{ $listing->updated_at }}</td>
