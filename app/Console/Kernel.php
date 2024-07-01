@@ -16,13 +16,13 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('inspire')->hourly();
-        $schedule->command('refresh:new')->everyTwoMinutes()->between('8:00', '24:00');
-        $schedule->command('refresh:orders')->everyFiveMinutes()->between('8:00', '24:00');
-        $schedule->command('functions:ten')->everyTenMinutes()->between('8:00', '24:00');
-        $schedule->command('functions:thirty')->everyThirtyMinutes()->between('8:00', '24:00');
-        $schedule->command('backup:email')->hourly()->between('8:00', '24:00');
-        $schedule->command('functions:daily')->daily()->between('8:00', '24:00');
-        $schedule->command('fetch:exchange-rates')->hourly()->between('8:00', '24:00');
+        // $schedule->command('refresh:new')->everyTwoMinutes()->between('8:00', '24:00');
+        // $schedule->command('refresh:orders')->everyFiveMinutes()->between('8:00', '24:00');
+        // $schedule->command('functions:ten')->everyTenMinutes()->between('8:00', '24:00');
+        // $schedule->command('functions:thirty')->everyThirtyMinutes()->between('8:00', '24:00');
+        // $schedule->command('backup:email')->hourly()->between('8:00', '24:00');
+        // $schedule->command('functions:daily')->daily()->between('8:00', '24:00');
+        // $schedule->command('fetch:exchange-rates')->hourly()->between('8:00', '24:00');
 
     }
 
