@@ -444,7 +444,7 @@
                                                                     <input type="text" name="tester[]" placeholder="Tester" class="form-control form-control-sm" style="max-width: 50px">
                                                                     <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm">
 
-                                                                    <input type="hidden" name="sku[]" value="{{ $item->variation->sku }}">
+                                                                    <input type="hidden" name="sku[]" value="{{ $item->variation->sku ?? "Variation Issue" }}">
 
                                                                     <div class="input-group-append">
                                                                         <input type="submit" name="imei_send" value=">" class="form-control form-control-sm" form="dispatch_{{ $i."_".$j }}">
