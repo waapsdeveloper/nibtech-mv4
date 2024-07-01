@@ -61,6 +61,10 @@ class Variation_model extends Model
     {
         return $this->hasMany(Stock_model::class, 'variation_id', 'id');
     }
+    public function available_stocks()
+    {
+        return $this->hasMany(Stock_model::class, 'variation_id', 'id')->where('status',1);
+    }
     public function order_items()
     {
         return $this->hasMany(Order_item_model::class, 'variation_id', 'id');

@@ -230,7 +230,7 @@
                                         $id = [];
                                     @endphp
                                     @php
-                                        $stocks = $variation->stocks;
+                                        $stocks = $variation->available_stocks;
                                         // $items = $stocks->order_item;
                                         $j = 0;
                                         $prices = [];
