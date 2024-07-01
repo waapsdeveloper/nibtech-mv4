@@ -47,7 +47,7 @@ class Variation_model extends Model
     }
     public function variation_listing_qty()
     {
-        return $this->hasOne(Variation_listing_qty_model::class, 'variation_id', 'id');
+        return $this->hasOne(Variation_listing_qty_model::class, 'variation_id', 'id')->orderBy('quantity', 'desc');
     }
     public function listings()
     {
