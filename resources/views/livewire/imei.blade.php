@@ -58,7 +58,9 @@
                     document.getElementById('imeiInput').focus();
                 };
                 document.addEventListener('DOMContentLoaded', function() {
-                    document.getElementById('imeiInput').focus();
+                    var input = document.getElementById('imeiInput');
+                    input.focus();
+                    input.select();
                 });
             </script>
             @if (session('user')->hasPermission('refund_imei') && isset($stock) && $stock->status == 2)
