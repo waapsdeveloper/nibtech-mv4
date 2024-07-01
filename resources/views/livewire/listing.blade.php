@@ -194,7 +194,7 @@
                                         {{-- @if($item->order_item[0]->order_id == $order_id) --}}
                                         @php
                                     @endphp
-                                        <tr @if ($listing->buybox == 1) style="background: LightGreen;" @endif>
+                                        <tr @if ($listing->buybox != 1) style="background: LightRed;" @endif>
                                             <td><img src="{{ asset('assets/img/flags/').'/'.strtolower($listing->country_id->code).'.svg' }}" height="20"> {{ $listing->country_id->code }}</td>
                                             @if (session('user')->hasPermission('view_price'))
                                             <td>{{$listing->min_price}}</td>
