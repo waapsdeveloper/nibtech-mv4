@@ -171,8 +171,8 @@
                                         <th><small><b>Country</b></small></th>
                                         @if (session('user')->hasPermission('view_price'))
                                         <th><small><b>Min Price</b></small></th>
-                                        <th><small><b>Max Price</b></small></th>
                                         <th><small><b>Price</b></small></th>
+                                        <th><small><b>Max Price</b></small></th>
                                         <th><small><b>BuyBox Price</b></small></th>
                                         @endif
                                         <th><small><b>Date</b></small></th>
@@ -199,8 +199,8 @@
                                             <td><img src="{{ asset('assets/img/flags/').'/'.strtolower($listing->country_id->code).'.svg' }}" height="15"> {{ $listing->country_id->code }}</td>
                                             @if (session('user')->hasPermission('view_price'))
                                             <td>{{$sign.$listing->min_price}}</td>
-                                            <td>{{$sign.$listing->max_price}}</td>
                                             <td>{{$sign.$listing->price}}</td>
+                                            <td>{{$sign.$listing->max_price}}</td>
                                             <td>{{$sign.$listing->buybox_price}}</td>
                                             {{-- <td>{{ $currency}}{{$item->purchase_item->price ?? "Error in Purchase Entry" }}</td> --}}
                                             @endif
