@@ -182,6 +182,9 @@
                         <div>
                             Pending Order Items: {{ $variation->pending_orders->count() }}
                         </div>
+                        <div>
+                            status: {{ $variation->status }}
+                        </div>
                     </div>
                             {{-- {{ $variation }} --}}
                     <div class="card-body row">
