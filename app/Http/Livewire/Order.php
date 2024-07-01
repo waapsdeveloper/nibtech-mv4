@@ -1163,10 +1163,10 @@ class Order extends Component
                 }else{
                     session()->put('error', "Product Storage not matched");
                     return redirect()->back();
-                // }
-                // if(!in_array($stock[$i]->variation->grade, [$variant->grade, 7, 9])){
-                //     session()->put('error', "Product Grade not matched");
-                //     return redirect()->back();
+                }
+                if(!in_array($stock[$i]->variation->grade, [$variant->grade, 7, 9])){
+                    session()->put('error', "Product Grade not matched");
+                    return redirect()->back();
 
                 }
 
