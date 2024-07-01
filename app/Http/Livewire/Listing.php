@@ -71,7 +71,7 @@ class Listing extends Component
         ->with(['product' => function ($q) {
             $q->orderBy('category');
         }])
-
+        ->where('status',2)
         ->orderBy('product_id', 'desc')
         ->paginate(50)
         ->onEachSide(5)
