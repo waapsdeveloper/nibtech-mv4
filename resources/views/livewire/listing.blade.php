@@ -248,7 +248,7 @@
                                             <td>{{ $i }}</td>
                                             <td data-stock="{{ $item->id }}">{{ $item->imei.$item->serial_number }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
-                                            <td>{{ $currency}}{{$item->purchase_item->price ?? "Error in Purchase Entry" }}</td>
+                                            <td>€{{$item->purchase_item->price ?? "Error in Purchase Entry" }}</td>
                                             @endif
                                         </tr>
                                         {{-- @endif --}}
