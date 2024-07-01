@@ -83,6 +83,7 @@ class FunctionsThirty extends Command
                     $variation_listing_qty->quantity = $list->quantity;
                     $listing->price = $list->price;
                     $listing->currency_id = $currency->id;
+                    $listing->status = $list->publication_state;
                     // ... other fields
                     $listing->save();
                     $variation_listing_qty->save();
