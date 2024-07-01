@@ -193,7 +193,7 @@
                                         {{-- @dd($item) --}}
                                         {{-- @if($item->order_item[0]->order_id == $order_id) --}}
                                         @php
-                                        $sign = $listing->currency_id->sign;
+                                        $sign = $listing->currency->sign;
                                     @endphp
                                         <tr @if ($listing->buybox != 1) style="background: LightRed;" @endif>
                                             <td><img src="{{ asset('assets/img/flags/').'/'.strtolower($listing->country_id->code).'.svg' }}" height="20"> {{ $listing->country_id->code }}</td>
