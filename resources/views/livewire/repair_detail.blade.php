@@ -137,6 +137,11 @@
                 window.onload = function() {
                     document.getElementById('imei').focus();
                 };
+                document.addEventListener('DOMContentLoaded', function() {
+                    var input = document.getElementById('imei');
+                    input.focus();
+                    input.select();
+                });
             </script>
         <br>
         @if (session('success'))

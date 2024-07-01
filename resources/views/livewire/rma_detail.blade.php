@@ -87,6 +87,11 @@
                 window.onload = function() {
                     document.getElementById('imei').focus();
                 };
+                document.addEventListener('DOMContentLoaded', function() {
+                    var input = document.getElementById('imei');
+                    input.focus();
+                    input.select();
+                });
             </script>
             <div class="p-2">
                 <a href="{{url(session('url').'export_rma_invoice')}}/{{ $order->id }}" target="_blank"><button class="btn-sm btn-secondary">Invoice</button></a>

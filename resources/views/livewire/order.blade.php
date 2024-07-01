@@ -238,6 +238,12 @@
                     checkbox.checked = checkAllCheckbox.checked;
                 });
             }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                    var input = document.getElementById('skuInput');
+                    input.focus();
+                    input.select();
+                });
         </script>
         <div class="row">
             <div class="col-xl-12">

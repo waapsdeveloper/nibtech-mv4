@@ -37,12 +37,20 @@
             <div class="p-2">
                 <form action="" method="GET" id="search" class="form-inline">
                     <div class="form-floating">
-                        <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset">
+                        <input type="text" class="form-control" id="imei" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset">
                         <label for="">IMEI</label>
                     </div>
                         <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
                 </form>
             </div>
+            <script>
+
+                document.addEventListener('DOMContentLoaded', function() {
+                    var input = document.getElementById('imei');
+                    input.focus();
+                    input.select();
+                });
+            </script>
             @if (session('user')->hasPermission('internal_repair') && isset($stock) && $stock->variation->grade == 8)
                 <div class="p-2">
                     <form action="{{ url('add_internal_repair_item')}}" method="POST" class="form-inline">
