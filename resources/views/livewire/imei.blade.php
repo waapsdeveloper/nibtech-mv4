@@ -53,9 +53,13 @@
                 </form>
             </div>
             <script>
+
                 window.onload = function() {
                     document.getElementById('imeiInput').focus();
                 };
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.getElementById('imeiInput').focus();
+                });
             </script>
             @if (session('user')->hasPermission('refund_imei') && isset($stock) && $stock->status == 2)
             <div class="p-2">
