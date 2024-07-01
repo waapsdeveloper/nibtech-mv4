@@ -165,7 +165,7 @@
                     <div class="card-body row">
                         <div class="col-md-7">
                             <div class="table-responsive">
-                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                            <table class="table table-hover mb-0 text-md-nowrap">
                                 <thead>
                                     <tr>
                                         <th><small><b>Country</b></small></th>
