@@ -111,7 +111,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="p-2">
+                <div class="">
                     <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
                     <a href="{{url(session('url').'order')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
                 </div>

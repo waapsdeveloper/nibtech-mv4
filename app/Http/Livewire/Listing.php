@@ -43,6 +43,16 @@ class Listing extends Component
         when(request('reference_id') != '', function ($q) {
             return $q->where('reference_id', request('reference_id'));
         })
+        ->when(request('category') != '', function ($q) {
+            return $q->whereHas('product', function ($q) {
+                $q->where('category', request('category'));
+            });
+        })
+        ->when(request('brand') != '', function ($q) {
+            return $q->whereHas('product', function ($q) {
+                $q->where('brand', request('brand'));
+            });
+        })
         ->when(request('product') != '', function ($q) {
             return $q->where('product_id', request('product'));
         })
