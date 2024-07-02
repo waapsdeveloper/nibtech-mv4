@@ -342,6 +342,9 @@
                                         <th><small><b>Reason</b></small></th>
                                         <th><small><b>Added By</b></small></th>
                                         <th><small><b>DateTime</b></small></th>
+                                        @if (session('user')->has_permission('delete_move'))
+                                        <th><small><b>Delete</b></small></th>
+                                        @endif
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -367,6 +370,19 @@
                                                 <td>{{ $operation->description }}</td>
                                                 <td>{{ $operation->admin->first_name ?? null }}</td>
                                                 <td>{{ $operation->created_at }}</td>
+                                                @if (session('user')->has_permission('delete_move') && $i == 0)
+
+                                                <td>
+                                                    <form method="POST" action="{{url('move_inventory/delete_move')}}">
+                                                        @csrf
+                                                        <input type="hidden" name="id" value="{{ $operation->id }}">
+                                                        <input type="hidden" name="grade" value="{{ session('grade') }}">
+                                                        <input type="hidden" name="description" value="{{ session('description') }}">
+                                                        <button type="submit" class="btn btn-link"><i class="fa fa-trash"></i></button>
+                                                    </form>
+
+                                                </td>
+                                                @endif
                                             </tr>
                                         @php
                                             $i ++;
