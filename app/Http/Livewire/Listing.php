@@ -81,9 +81,9 @@ class Listing extends Component
         })
         ->when(request('available_stock') != '', function ($q) {
             if(request('available_stock') == 1){
-                return $q->whereHas('stocks');
+                return $q->whereHas('available_stocks');
             }elseif(request('available_stock') == 2){
-                return $q->whereDoesntHave('stocks');
+                return $q->whereDoesntHave('available_stocks');
             }
         })
         ->with('variation_listing_qty', 'listings')
