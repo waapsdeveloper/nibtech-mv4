@@ -75,15 +75,15 @@ class FunctionsThirty extends Command
                     echo "No variation found, creating new one for Listing ID: " . $trimmedListingId . "\n";
 
                     // Fetch the latest listing details
-                    $list = $bm->getOneListing($list->listing_id);
+                    $list_details = $bm->getOneListing($list->listing_id);
 
                     // Create or retrieve a new variation record
                     $variation = Variation_model::firstOrNew(['reference_id' => $trimmedListingId, 'sku' => $trimmedSku]);
 
                     // Update fields
-                    $variation->name = $list->title;
-                    $variation->grade = $list->state + 1;
-                    $variation->state = $list->publication_state;
+                    $variation->name = $list_details->title;
+                    $variation->grade = $list_details->state + 1;
+                    $variation->state = $list_details->publication_state;
                     // ... other fields
                     $variation->save();
 
