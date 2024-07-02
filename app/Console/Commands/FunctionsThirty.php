@@ -61,17 +61,47 @@ class FunctionsThirty extends Command
 
         foreach($listings as $country => $lists){
             foreach($lists as $list){
-                $variation = Variation_model::where(['reference_id'=>trim($list->listing_id), 'sku' => trim($list->sku)])->first();
-                if($variation == null){
+                // Ensure consistent trimming of listing_id and sku
+                $trimmedListingId = trim($list->listing_id);
+                $trimmedSku = trim($list->sku);
+
+                // Debugging: Log input data
+                echo "Processing Listing ID: " . $trimmedListingId . " SKU: " . $trimmedSku . "\n";
+
+                // Check if the variation already exists
+                $variation = Variation_model::where(['reference_id' => $trimmedListingId, 'sku' => $trimmedSku])->first();
+
+                if ($variation == null) {
+                    echo "No variation found, creating new one for Listing ID: " . $trimmedListingId . "\n";
+
+                    // Fetch the latest listing details
                     $list = $bm->getOneListing($list->listing_id);
-                    $variation = Variation_model::firstOrNew(['reference_id' => trim($list->listing_id), 'sku' => trim($list->sku)]);
+
+                    // Create or retrieve a new variation record
+                    $variation = Variation_model::firstOrNew(['reference_id' => $trimmedListingId, 'sku' => $trimmedSku]);
+
+                    // Update fields
                     $variation->name = $list->title;
-                    $variation->grade = $list->state+1;
+                    $variation->grade = $list->state + 1;
                     $variation->state = $list->publication_state;
                     // ... other fields
                     $variation->save();
-                    echo $list->listing_id." ";
+
+                    echo "New variation created for Listing ID: " . $trimmedListingId . "\n";
+                } else {
+                    echo "Existing variation found for Listing ID: " . $trimmedListingId . "\n";
                 }
+                // $variation = Variation_model::where(['reference_id'=>trim($list->listing_id), 'sku' => trim($list->sku)])->first();
+                // if($variation == null){
+                //     $list = $bm->getOneListing($list->listing_id);
+                //     $variation = Variation_model::firstOrNew(['reference_id' => trim($list->listing_id), 'sku' => trim($list->sku)]);
+                //     $variation->name = $list->title;
+                //     $variation->grade = $list->state+1;
+                //     $variation->state = $list->publication_state;
+                //     // ... other fields
+                //     $variation->save();
+                //     echo $list->listing_id." ";
+                // }
                 $currency = Currency_model::where('code',$list->currency)->first();
                 $variation_listing_qty = Variation_listing_qty_model::firstOrNew(['variation_id'=>$variation->id]);
                 if($variation == null){
