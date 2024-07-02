@@ -145,7 +145,7 @@ class FunctionsThirty extends Command
                     echo $list->listing_id." ";
                 }
                 $currency = Currency_model::where('code',$list->currency)->first();
-                echo $list->currency;
+                // echo $list->currency;
                 $variation_listing_qty = Variation_listing_qty_model::firstOrNew(['variation_id'=>$variation->id]);
                 if($variation == null){
                     echo $list->sku." ";
