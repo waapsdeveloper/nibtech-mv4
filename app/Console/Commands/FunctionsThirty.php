@@ -61,10 +61,10 @@ class FunctionsThirty extends Command
 
         foreach($listings as $country => $lists){
             foreach($lists as $list){
-                $variation = Variation_model::where(['reference_id'=>$list->listing_id, 'sku' => $list->sku])->first();
+                $variation = Variation_model::where(['reference_id'=>trim($list->listing_id), 'sku' => trim($list->sku)])->first();
                 if($variation == null){
                     $list = $bm->getOneListing($list->listing_id);
-                    $variation = Variation_model::firstOrNew(['reference_id' => $list->listing_id, 'sku' => $list->sku]);
+                    $variation = Variation_model::firstOrNew(['reference_id' => trim($list->listing_id), 'sku' => trim($list->sku)]);
                     $variation->name = $list->title;
                     $variation->grade = $list->state+1;
                     $variation->state = $list->publication_state;
