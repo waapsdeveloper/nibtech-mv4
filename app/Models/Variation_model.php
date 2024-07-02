@@ -24,6 +24,7 @@ class Variation_model extends Model
         'color',
         'storage',
         'grade',
+        'state',
     ];
     protected static function booted()
     {

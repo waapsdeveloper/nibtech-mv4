@@ -116,6 +116,7 @@ class Order_item_model extends Model
                 $variation->sku = $list->sku;
                 $variation->grade = $list->state+1;
                 $variation->status = 1;
+                $variation->state = $list->publication_state;
                 // ... other fields
                 $variation->save();
                 // dd($orderObj);
