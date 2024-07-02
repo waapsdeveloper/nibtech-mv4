@@ -68,7 +68,7 @@ class FunctionsThirty extends Command
                     $variation->name = $list->title;
                     $variation->sku = $list->sku;
                     $variation->grade = $list->state+1;
-                    // $variation->state = $list->publication_state;
+                    $variation->state = $list->publication_state;
                     // ... other fields
                     $variation->save();
                 }
