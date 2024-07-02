@@ -376,8 +376,6 @@
                                                     <form method="POST" action="{{url('move_inventory/delete_move')}}">
                                                         @csrf
                                                         <input type="hidden" name="id" value="{{ $operation->id }}">
-                                                        <input type="hidden" name="grade" value="{{ session('grade') }}">
-                                                        <input type="hidden" name="description" value="{{ session('description') }}">
                                                         <button type="submit" class="btn btn-link"><i class="fa fa-trash"></i></button>
                                                     </form>
 

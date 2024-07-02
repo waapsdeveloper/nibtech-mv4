@@ -177,8 +177,9 @@ class MoveInventory extends Component
         if(request('grade')){
             session()->put('grade',request('grade'));
         }
+        if(request('description')){
         session()->put('description',request('description'));
-
+        }
 
         if ($id != null) {
             $stock_operation = Stock_operations_model::find($id);
