@@ -207,6 +207,7 @@
             <div class="">
                 @if ($active_inventory_verification == null)
                 <a class="btn btn-sm btn-secondary pd-x-20 " href="{{url('inventory/start_verification')}}">Start Inventory Verification</a>
+                <a class="btn btn-sm btn-secondary pd-x-20 " href="{{url('inventory/resume_verification')}}">Resume Inventory Verification</a>
 
                 @if (session('user')->hasPermission('view_cost'))
                 <button class="btn btn-sm btn-secondary pd-x-20 " type="submit" form="export" name="inventorysheet" value="1">Export Sheet</button>

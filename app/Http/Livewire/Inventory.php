@@ -444,6 +444,13 @@ class Inventory extends Component
         }
         return redirect()->back();
     }
+    public function resume_verification() {
+        $last = Process_model::where('process_type_id',20)->orderBy('id','desc')->first();
+        $last->status = 1;
+        $last->save();
+        session()->put('success', 'Inventory Verification started');
+        return redirect()->back();
+    }
 
     public function end_verification() {
         $verification = Process_model::where(['process_type_id'=>20, 'status'=>1])->update(['status'=>2,'description'=>request('description')]);
