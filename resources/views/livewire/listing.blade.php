@@ -295,7 +295,7 @@
                                     @endphp
                                         <tr>
                                             <td>{{ $i }}</td>
-                                            <a href="{{ url('imei?imei=').$item->imei.$item->serial_number }}"><td data-stock="{{ $item->id }}">{{ $item->imei.$item->serial_number }}</td></a>
+                                            <td data-stock="{{ $item->id }}"><a href="{{ url('imei?imei=').$item->imei.$item->serial_number }}">{{ $item->imei.$item->serial_number }}</a></td>
                                             @if (session('user')->hasPermission('view_cost'))
                                             <td>€{{$item->purchase_item->price ?? "Error in Purchase Entry" }}</td>
                                             @endif
