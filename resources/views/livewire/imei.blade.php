@@ -342,7 +342,7 @@
                                         <th><small><b>Reason</b></small></th>
                                         <th><small><b>Added By</b></small></th>
                                         <th><small><b>DateTime</b></small></th>
-                                        @if (session('user')->has_permission('delete_move'))
+                                        @if (session('user')->hasPermission('delete_move'))
                                         <th><small><b>Delete</b></small></th>
                                         @endif
                                     </tr>
@@ -370,7 +370,7 @@
                                                 <td>{{ $operation->description }}</td>
                                                 <td>{{ $operation->admin->first_name ?? null }}</td>
                                                 <td>{{ $operation->created_at }}</td>
-                                                @if (session('user')->has_permission('delete_move') && $i == 0)
+                                                @if (session('user')->hasPermission('delete_move') && $i == 0)
 
                                                 <td>
                                                     <form method="POST" action="{{url('move_inventory/delete_move')}}">
