@@ -131,6 +131,16 @@
                         <option value="2" @if(isset($_GET['available_stock']) && $_GET['available_stock'] == 2) {{'selected'}}@endif>Without Stock</option>
                     </select>
                 </div>
+                <div class="col-md col-sm-6">
+                    <select name="state" class="form-control form-select" data-bs-placeholder="Select Publication State">
+                        <option value="">Publication State</option>
+                        <option value="0" @if(isset($_GET['state']) && $_GET['state'] == 0) {{'selected'}}@endif>Missing price or comment</option>
+                        <option value="1" @if(isset($_GET['state']) && $_GET['state'] == 1) {{'selected'}}@endif>Pending validation</option>
+                        <option value="2" @if(isset($_GET['state']) && $_GET['state'] == 2) {{'selected'}}@endif>Online</option>
+                        <option value="3" @if(isset($_GET['state']) && $_GET['state'] == 3) {{'selected'}}@endif>Offline</option>
+                        <option value="4" @if(isset($_GET['state']) && $_GET['state'] == 4) {{'selected'}}@endif>Deactivated</option>
+                    </select>
+                </div>
                 <div class="">
                     <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
                     <a href="{{url(session('url').'order')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>

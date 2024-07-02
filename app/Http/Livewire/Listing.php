@@ -86,9 +86,11 @@ class Listing extends Component
                 return $q->whereDoesntHave('available_stocks');
             }
         })
+        ->when(request('state') != '', function ($q) {
+            return $q->where('state', request('state'));
+        })
         ->with('variation_listing_qty', 'listings')
         ->where('sku', '!=', null)
-        ->where('status',1)
         ->orderBy('product_id', 'desc')
         ->paginate(10)
         ->onEachSide(5)
