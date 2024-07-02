@@ -111,6 +111,20 @@
                         @endforeach
                     </select>
                 </div>
+                <div class="col-md col-sm-6">
+                    <select name="listed_stock" class="form-control form-select" data-bs-placeholder="Select listed Stock">
+                        <option value="">Listed Stock</option>
+                        <option value="1" @if(isset($_GET['listed_stock']) && $_GET['listed_stock'] == 1) {{'selected'}}@endif>With Listing</option>
+                        <option value="2" @if(isset($_GET['listed_stock']) && $_GET['listed_stock'] == 2) {{'selected'}}@endif>Without Listing</option>
+                    </select>
+                </div>
+                <div class="col-md col-sm-6">
+                    <select name="available_stock" class="form-control form-select" data-bs-placeholder="Select Available Stock">
+                        <option value="">Available Stock</option>
+                        <option value="1" @if(isset($_GET['available_stock']) && $_GET['available_stock'] == 1) {{'selected'}}@endif>With Stock</option>
+                        <option value="2" @if(isset($_GET['available_stock']) && $_GET['available_stock'] == 2) {{'selected'}}@endif>Without Stock</option>
+                    </select>
+                </div>
                 <div class="">
                     <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
                     <a href="{{url(session('url').'order')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>

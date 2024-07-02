@@ -68,6 +68,24 @@ class Listing extends Component
         ->when(request('grade') != '', function ($q) {
             return $q->where('grade', request('grade'));
         })
+        ->when(request('listed_stock') != '', function ($q) {
+            if(request('listed_stock') == 1){
+                return $q->whereHas('variation_listing_qty', function ($q) {
+                    $q->where('quantity', '>', 0);
+                });
+            }elseif(request('listed_stock') == 2){
+                return $q->whereHas('variation_listing_qty', function ($q) {
+                    $q->where('quantity', '<=', 0);
+                });
+            }
+        })
+        ->when(request('available_stock') != '', function ($q) {
+            if(request('available_stock') == 1){
+                return $q->whereHas('stocks');
+            }elseif(request('available_stock') == 2){
+                return $q->whereDoesntHave('stocks');
+            }
+        })
         ->with('variation_listing_qty', 'listings')
         ->where('sku', '!=', null)
         ->where('status',1)
