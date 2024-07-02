@@ -51,7 +51,7 @@ class Variation_model extends Model
     }
     public function listings()
     {
-        return $this->hasMany(Listing_model::class, 'variation_id', 'id');
+        return $this->hasMany(Listing_model::class, 'variation_id', 'id')->orderBy('country_id', 'asc');
     }
     public function grade_id()
     {
