@@ -56,7 +56,7 @@ class FunctionsThirty extends Command
         $bm = new BackMarketAPIController();
 
         // Fetch listings
-        $listings = $bm->getAllListings(2);
+        $listings = $bm->getAllListings();
 
         foreach ($listings as $country => $lists) {
             foreach ($lists as $list) {
@@ -86,6 +86,7 @@ class FunctionsThirty extends Command
                     // Update fields
                     $variation->name = $listDetails->title;
                     $variation->grade = $listDetails->state + 1;
+                    $variation->status = 1;
                     $state = $listDetails->publication_state;
                     // ... other fields
 
