@@ -65,8 +65,8 @@ class FunctionsThirty extends Command
                 $trimmedListingId = trim($list->listing_id);
                 $trimmedSku = trim($list->sku);
 
-                // Debugging: Log input data
-                echo "Processing Listing ID: " . $trimmedListingId . " SKU: " . $trimmedSku . "\n";
+                // Debugging: Log trimmed input data
+                echo "Trimmed Listing ID: [" . $trimmedListingId . "] SKU: [" . $trimmedSku . "]\n";
 
                 // Check if the variation already exists
                 $variation = Variation_model::where(['reference_id' => $trimmedListingId, 'sku' => $trimmedSku])->first();
@@ -75,19 +75,26 @@ class FunctionsThirty extends Command
                     echo "No variation found, creating new one for Listing ID: " . $trimmedListingId . "\n";
 
                     // Fetch the latest listing details
-                    $list_details = $bm->getOneListing($list->listing_id);
+                    $listDetails = $bm->getOneListing($list->listing_id);
 
                     // Create or retrieve a new variation record
                     $variation = Variation_model::firstOrNew(['reference_id' => $trimmedListingId, 'sku' => $trimmedSku]);
 
-                    // Update fields
-                    $variation->name = $list_details->title;
-                    $variation->grade = $list_details->state + 1;
-                    $variation->state = $list_details->publication_state;
-                    // ... other fields
-                    $variation->save();
+                    // Debugging: Log fetched details
+                    echo "Fetched List Details: " . json_encode($listDetails) . "\n";
 
-                    echo "New variation created for Listing ID: " . $trimmedListingId . "\n";
+                    // Update fields
+                    $variation->name = $listDetails->title;
+                    $variation->grade = $listDetails->state + 1;
+                    $variation->state = $listDetails->publication_state;
+                    // ... other fields
+
+                    try {
+                        $variation->save();
+                        echo "New variation created for Listing ID: " . $trimmedListingId . "\n";
+                    } catch (\Exception $e) {
+                        echo "Error creating variation: " . $e->getMessage() . "\n";
+                    }
                 } else {
                     echo "Existing variation found for Listing ID: " . $trimmedListingId . "\n";
                 }
