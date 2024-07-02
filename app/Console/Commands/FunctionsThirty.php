@@ -70,6 +70,7 @@ class FunctionsThirty extends Command
                     $variation->state = $list->publication_state;
                     // ... other fields
                     $variation->save();
+                    echo $list->listing_id." ";
                 }
                 $currency = Currency_model::where('code',$list->currency)->first();
                 $variation_listing_qty = Variation_listing_qty_model::firstOrNew(['variation_id'=>$variation->id]);
