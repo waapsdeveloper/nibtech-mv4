@@ -68,7 +68,7 @@ class Listing extends Component
         ->when(request('grade') != '', function ($q) {
             return $q->where('grade', request('grade'));
         })
-        ->with('variation_listing_qty', 'listing')
+        ->with('variation_listing_qty', 'listings')
         ->where('sku', '!=', null)
         ->where('status',1)
         ->orderBy('product_id', 'desc')
