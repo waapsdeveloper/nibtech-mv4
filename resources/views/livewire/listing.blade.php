@@ -198,8 +198,9 @@
                                 }else{
                                     $grade = null;
                                 }
+                                $sku = str_replace('+','%2B',$variation->sku);
                             @endphp
-                            <a href="https://www.backmarket.fr/bo_merchant/listings/active?sku={{ $variation->sku }}" title="View BM Ad" target="_blank">
+                            <a href="https://www.backmarket.fr/bo_merchant/listings/active?sku={{ $sku }}" title="View BM Ad" target="_blank">
                             {{ $variation->sku." - ".$variation->product->model." ".$storage." ".$color." ".$grade }}
                             </a>
                         </div>
