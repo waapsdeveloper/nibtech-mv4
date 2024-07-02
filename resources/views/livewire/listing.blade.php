@@ -14,21 +14,12 @@
             .childs{
                 padding-top:5px
             }
-        .form-floating>.form-control,
-.form-floating>.form-control-plaintext {
-  padding: 0rem 0.75rem !important;
-}
-
 .form-floating>.form-control,
 .form-floating>.form-control-plaintext,
 .form-floating>.form-select {
-  height: calc(2.5rem + 2px) !important;
-  line-height: 1 !important;
+  height: calc(1rem + 2px) !important;
 }
 
-.form-floating>label {
-  padding: 0.5rem 0.75rem !important;
-}
         </style>
     @endsection
     @section('content')
