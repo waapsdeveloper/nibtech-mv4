@@ -90,7 +90,7 @@ class Listing extends Component
         ->where('sku', '!=', null)
         ->where('status',1)
         ->orderBy('product_id', 'desc')
-        ->paginate(50)
+        ->paginate(10)
         ->onEachSide(5)
         ->appends(request()->except('page'));
 
