@@ -17,7 +17,7 @@
 .form-floating>.form-control,
 .form-floating>.form-control-plaintext,
 .form-floating>.form-select {
-  height: calc(1rem + 2px) !important;
+  height: calc(2.3rem + 2px) !important;
 }
 
         </style>
