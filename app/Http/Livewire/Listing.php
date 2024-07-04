@@ -8,7 +8,9 @@ use Livewire\Component;
     use App\Models\listing_model;
     use App\Models\Products_model;
     use App\Models\Color_model;
-    use App\Models\Storage_model;
+use App\Models\Currency_exchange_model;
+use App\Models\ExchangeRate;
+use App\Models\Storage_model;
     use App\Models\Grade_model;
     use App\Models\Order_status_model;
 use App\Models\Variation_listing_qty_model;
@@ -32,7 +34,7 @@ class Listing extends Component
         $user_id = session('user_id');
         $data['order_statuses'] = Order_status_model::get();
 
-
+        $data['eur-gbp'] = ExchangeRate::where('target_currency','GBP')->first()->rate;
         $data['categories'] = Category_model::all();
         $data['brands'] = Brand_model::all();
         $data['products'] = Products_model::all();

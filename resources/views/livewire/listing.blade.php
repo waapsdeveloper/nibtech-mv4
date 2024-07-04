@@ -243,6 +243,8 @@
                                         $listings = $variation->listings;
                                         // $items = $stocks->order_item;
                                         // print_r($stocks);
+                                        $min_prices = [];
+                                        $prices = [];
                                     @endphp
 
                                     @foreach ($listings as $listing)
@@ -260,12 +262,26 @@
                                                     <input type="number" class="form-control" name="min_price" value="{{$listing->min_price}}">
                                                     <label for="">Min Price ({{$sign}})</label>
                                                 </div>
+                                                @if ($listing->country == 5)
+                                                    Excg Min Avg: £{{min($min_prices)}}
+                                                @else
+                                                    @php
+                                                    $min_prices[] = $listing->min_price;
+                                                    @endphp
+                                                @endif
                                             </td>
                                             <td>
                                                 <div class="form-floating">
                                                     <input type="number" class="form-control" name="price" value="{{$listing->price}}">
                                                     <label for="">Price ({{$sign}})</label>
                                                 </div>
+                                                @if ($listing->country == 5)
+                                                    Excg Min Avg: £{{min($prices)}}
+                                                @else
+                                                    @php
+                                                    $prices[] = $listing->price;
+                                                    @endphp
+                                                @endif
                                             </td>
                                             <td>{{$sign.$listing->max_price}}</td>
                                             {{-- <td>{{ $currency}}{{$item->purchase_item->price ?? "Error in Purchase Entry" }}</td> --}}
