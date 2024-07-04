@@ -1646,25 +1646,33 @@ class Order extends Component
             }
             $stock->save();
             if($item->stock_id != null){
-
-                $stock_operation = Stock_operations_model::create([
-                    'stock_id' => $item->stock->id,
-                    'order_item_id' => $item->id,
-                    'old_variation_id' => $item->stock->variation_id,
-                    'new_variation_id' => $item->stock->variation_id,
-                    'description' => request('correction')['reason']." ".$item->order->reference_id." ".$imei.$serial_number,
-                    'admin_id' => session('user_id'),
-                ]);
                 if($item->stock->purchase_item){
-                    $stock_operation->new_variation_id = $item->stock->purchase_item->variation_id;
+                    $last_operation = Stock_operations_model::where('stock_id',$item->stock_id)->orderBy('id','desc')->first();
+                    if($last_operation != null){
+                        if($last_operation->new_variation_id == $item->stock->variation_id){
+                            $last_variation_id = $last_operation->old_variation_id;
+                        }else{
+                            $last_variation_id = $last_operation->new_variation_id;
+                        }
+                    }else{
+                        $last_variation_id = Order_item_model::where(['order_id'=>$item->stock->order_id,'stock_id'=>$item->stock_id])->first()->variation_id;
+                    }
+                    $stock_operation = Stock_operations_model::create([
+                        'stock_id' => $item->stock->id,
+                        'order_item_id' => $item->id,
+                        'old_variation_id' => $item->stock->variation_id,
+                        'new_variation_id' => $last_variation_id,
+                        'description' => request('correction')['reason']." ".$item->order->reference_id." ".$imei.$serial_number,
+                        'admin_id' => session('user_id'),
+                    ]);
                     $stock_operation->save();
-                    $item->stock->variation_id = $item->stock->purchase_item->variation_id;
+                    $item->stock->variation_id = $last_variation_id;
+                    if($item->stock->status == 2){
+                        $item->stock->status = 1;
+                    }
+                    $item->stock->save();
                 }
 
-                if($item->stock->status == 2){
-                    $item->stock->status = 1;
-                }
-                $item->stock->save();
             }
 
             $item->stock_id = $stock->id;
