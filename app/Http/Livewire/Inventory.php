@@ -119,6 +119,19 @@ class Inventory extends Component
                 $q->where(['status'=>3, 'order_type_id'=>3])
                 ->whereNotIn('reference_id', $replacements);
             })
+            ->orderBy('order_id','ASC')
+            ->orderBy('updated_at','ASC')
+            ->paginate($per_page)
+            ->onEachSide(5)
+            ->appends(request()->except('page'));
+        }elseif(request('rma') == 1){
+            $rmas = Order_model::where(['order_type_id'=>2])->pluck('id')->toArray();
+            $data['stocks'] = Stock_model::whereDoesntHave('order_items', function ($q) use ($rmas) {
+                    $q->whereIn('order_id', $rmas);
+                })->whereHas('variation', function ($q) {
+                    $q->where('grade', 10);
+                })->Where('status',2)
+            ->orderBy('order_id','ASC')
             ->orderBy('updated_at','ASC')
             ->paginate($per_page)
             ->onEachSide(5)
