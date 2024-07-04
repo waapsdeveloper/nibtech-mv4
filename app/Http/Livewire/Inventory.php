@@ -112,14 +112,14 @@ class Inventory extends Component
         $data['active_inventory_verification'] = $active_inventory_verification;
 
         $data['stocks'] = Stock_model::whereNotIn('stock.id',$all_verified_stocks)
+        ->where('stock.status', 1)
 
         ->when(request('aftersale') != 1, function ($q) use ($aftersale) {
             return $q->whereNotIn('stock.id',$aftersale);
         })
-        ->where('stock.status', 1)
 
-        ->when(request('stock.stock_status') != '', function ($q) {
-            return $q->where('status', request('stock_status'));
+        ->when(request('stock_status') != '', function ($q) {
+            return $q->where('stock.status', request('stock_status'));
         })
         // ->when(request('stock_status') == '', function ($q) {
         //     return $q
@@ -136,17 +136,17 @@ class Inventory extends Component
         })
         ->when(request('replacement') != '', function ($q) use ($replacements) {
             return $q->whereHas('order_items.order', function ($q) use ($replacements) {
-                $q->where(['status'=>3, 'order_type_id'=>3]);
-                // ->whereNotIn('reference_id', $replacements);
+                $q->where(['status'=>3, 'order_type_id'=>3])
+                ->whereNotIn('orders.reference_id', $replacements);
             });
         })
 
         ->when(request('rma') != '', function ($query) use ($rmas) {
             return $query->whereDoesntHave('order_items', function ($q) use ($rmas) {
-                $q->whereIn('order_id', $rmas);
+                $q->whereIn('order_items.order_id', $rmas);
             })->whereHas('variation', function ($q) {
-                $q->where('grade', 10);
-            })->Where('status',2);
+                $q->where('variation.grade', 10);
+            })->where('stock.status',2);
         })
         ->when(request('storage') != '', function ($q) {
             return $q->whereHas('variation', function ($q) {
