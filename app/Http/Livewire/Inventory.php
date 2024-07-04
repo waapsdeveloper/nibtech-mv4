@@ -143,7 +143,7 @@ class Inventory extends Component
 
         ->when(request('rma') != '', function ($query) use ($rmas) {
             return $query->whereDoesntHave('order_items', function ($q) use ($rmas) {
-                $q->whereIn('order_items.order_id', $rmas);
+                $q->whereNotIn('order_items.order_id', $rmas);
             })->whereHas('variation', function ($q) {
                 $q->where('variation.grade', 10);
             })->where('stock.status',2);
