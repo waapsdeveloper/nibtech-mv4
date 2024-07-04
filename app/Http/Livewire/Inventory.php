@@ -135,7 +135,7 @@ class Inventory extends Component
             });
         })
         ->when(request('replacement') != '', function ($q) use ($replacements) {
-            return $q->where('status', 1)->whereHas('order_items.order', function ($q) use ($replacements) {
+            return $q->whereHas('order_items.order', function ($q) use ($replacements) {
                 $q->where(['status'=>3, 'order_type_id'=>3])
                 ->whereNotIn('reference_id', $replacements);
             });
