@@ -469,6 +469,10 @@
                                     @endphp
                                     @foreach ($last_ten as $item)
                                         <tr>
+                                            @if ($item->stock == null)
+                                                {{$item->stock_id}}
+                                                @continue
+                                            @endif
                                             <td>{{ $i + 1 }}</td>
                                             <td>{{ $products[$item->variation->product_id] ?? "Variation Model Not added"}} {{$storages[$item->variation->storage] ?? null}} {{$colors[$item->variation->color] ?? null}} {{$grades[$item->variation->grade] ?? "Variation Grade Not added Reference: ".$item->variation->reference_id }}</td>
                                             <td>{{ $item->stock->imei.$item->stock->serial_number }}</td>
