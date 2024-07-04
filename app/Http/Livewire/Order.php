@@ -204,7 +204,10 @@ class Order extends Component
         ->appends(request()->except('page'));
 
         if(count($data['orders']) == 0 && request('order_id')){
-            $this->recheck(request('order_id'));
+            $ors = explode(' ',request('order_id'));
+            foreach($ors as $or){
+                $this->recheck($or);
+            }
         }
         // dd($data['orders']);
         return view('livewire.order')->with($data);
