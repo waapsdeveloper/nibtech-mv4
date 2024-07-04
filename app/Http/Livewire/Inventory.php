@@ -119,7 +119,7 @@ class Inventory extends Component
                 $q->where(['status'=>3, 'order_type_id'=>3])
                 ->whereNotIn('reference_id', $replacements);
             })
-            ->count();
+            ->get();
         }else{
             $data['stocks'] = Stock_model::whereNotIn('stock.id',$all_verified_stocks)
             ->where('stock.status', 1)
