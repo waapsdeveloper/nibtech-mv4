@@ -252,7 +252,7 @@
                                         $sign = $listing->currency->sign;
                                     @endphp
                                         <tr @if ($listing->buybox != 1) style="background: pink;" @endif>
-                                            <td><img src="{{ asset('assets/img/flags/').'/'.strtolower($listing->country_id->code).'.svg' }}" height="15"> {{ $listing->country_id->code }}</td>
+                                            <td title="{{$listing->id}}"><img src="{{ asset('assets/img/flags/').'/'.strtolower($listing->country_id->code).'.svg' }}" height="15"> {{ $listing->country_id->code }}</td>
                                             @if (session('user')->hasPermission('view_price'))
                                             <td>{{$sign.$listing->buybox_price}}</td>
                                             <td>
