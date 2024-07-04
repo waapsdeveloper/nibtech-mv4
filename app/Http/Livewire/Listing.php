@@ -99,7 +99,7 @@ class Listing extends Component
         return view('livewire.listing')->with($data);
     }
 
-    public function update_product($id){
+    public function update_quantity($id){
 
         Listing_model::where('id', $id)->update(request('update'));
         return redirect()->back();
