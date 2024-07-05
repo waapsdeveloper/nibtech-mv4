@@ -399,7 +399,11 @@ class Order extends Component
         }
         $order->save();
 
-        return redirect()->back();
+        if(request('approve') == 1){
+            return redirect()->back();
+        }else{
+            return "Updated";
+        }
     }
     public function delete_order($order_id){
 
