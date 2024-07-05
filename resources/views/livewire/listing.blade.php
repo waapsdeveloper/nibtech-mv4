@@ -263,7 +263,7 @@
                                                     <label for="">Min Price ({{$sign}})</label>
                                                 </div>
                                                 @if ($listing->currency_id == 5)
-                                                    Excg Min Avg: £{{min($min_prices)}}
+                                                    Excg Min Avg: £{{min($min_prices)*$eur_gbp}}
                                                 @else
                                                     @php
                                                     $min_prices[] = $listing->min_price;
@@ -276,7 +276,7 @@
                                                     <label for="">Price ({{$sign}})</label>
                                                 </div>
                                                 @if ($listing->currency_id == 5)
-                                                    Excg Min: £{{min($prices)}}
+                                                    Excg Min: £{{min($prices)*$eur_gbp}}
                                                 @else
                                                     @php
                                                     $prices[] = $listing->price;

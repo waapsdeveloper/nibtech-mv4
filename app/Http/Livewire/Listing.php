@@ -34,7 +34,7 @@ class Listing extends Component
         $user_id = session('user_id');
         $data['order_statuses'] = Order_status_model::get();
 
-        $data['eur-gbp'] = ExchangeRate::where('target_currency','GBP')->first()->rate;
+        $data['eur_gbp'] = ExchangeRate::where('target_currency','GBP')->first()->rate;
         $data['categories'] = Category_model::all();
         $data['brands'] = Brand_model::all();
         $data['products'] = Products_model::all();
