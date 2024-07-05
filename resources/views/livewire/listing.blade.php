@@ -199,6 +199,7 @@
                                     $grade = null;
                                 }
                                 $sku = str_replace('+','%2B',$variation->sku);
+                                $listed_stock = $variation->update_qty();
                             @endphp
                             <a href="https://www.backmarket.fr/bo_merchant/listings/active?sku={{ $sku }}" title="View BM Ad" target="_blank">
                             {{ $variation->sku." - ".$variation->product->model." ".$storage." ".$color." ".$grade }}
@@ -207,7 +208,7 @@
                         <div>
                         <form method="POST" id="change_qty" action="{{url('listing/update_quantity').'/'.$variation->id}}">
                             <div class="form-floating w-50">
-                                <input type="number" class="form-control" name="stock" value="{{ $variation->listed_stock ?? 0 }}">
+                                <input type="number" class="form-control" name="stock" value="{{ $listed_stock ?? 0 }}">
                                 <label for="">Stock</label>
                             </div>
                         </form>

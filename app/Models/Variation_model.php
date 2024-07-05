@@ -74,4 +74,12 @@ class Variation_model extends Model
     {
         return $this->hasMany(Order_item_model::class, 'variation_id', 'id')->where('status',2);
     }
+    public function update_qty($bm)
+    {
+        $var = $bm->getOneListing($this->reference_id);
+        Variation_model::where('id', $this->id)->update([
+            'listed_stock' => $var->quantity,
+        ]);
+        return $var->quantity;
+    }
 }
