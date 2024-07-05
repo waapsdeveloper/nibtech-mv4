@@ -89,7 +89,7 @@ class Listing extends Component
         })
         ->with('listings')
         ->where('sku', '!=', null)
-        ->orderBy('product_id', 'desc')
+        ->orderBy('listed_stock', 'desc')
         ->paginate(10)
         ->onEachSide(5)
         ->appends(request()->except('page'));
