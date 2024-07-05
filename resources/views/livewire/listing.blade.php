@@ -266,7 +266,9 @@
                                                     Excg Min Avg: £{{min($min_prices)*$eur_gbp}}
                                                 @else
                                                     @php
+                                                    if($listing->min_price > 0){
                                                     $min_prices[] = $listing->min_price;
+                                                    }
                                                     @endphp
                                                 @endif
                                             </td>
@@ -279,7 +281,9 @@
                                                     Excg Min: £{{min($prices)*$eur_gbp}}
                                                 @else
                                                     @php
+                                                    if($listing->price > 0){
                                                     $prices[] = $listing->price;
+                                                    }
                                                     @endphp
                                                 @endif
                                             </td>
