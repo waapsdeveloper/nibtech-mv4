@@ -206,49 +206,46 @@
                             </a>
                         </div>
                         <div>
-                        <form class="form-inline" method="POST" id="change_qty" action="{{url('listing/update_quantity').'/'.$variation->id}}">
-                            <div class="form-floating">
-                                <input type="number" class="form-control" name="stock" value="{{ $listed_stock ?? 0 }}" style="width:80px;" onfocus="$('send_{{$variation->id}}').toggle()">
-                                <label for="">Stock</label>
-                            </div>
-                            <button id="send_{{$variation->id}}" class="btn btn-primary d-none" onclick="submitForm()">Change</button>
-                        </form>
-                        <script>
-                            function submitForm() {
-                                var form = $("#change_qty");
-                                var actionUrl = form.attr('action');
+                            <form class="form-inline" method="POST" id="change_qty_{{$variation->id}}" action="{{url('listing/update_quantity').'/'.$variation->id}}">
+                                @csrf
+                                <div class="form-floating">
+                                    <input type="number" class="form-control" name="stock" value="{{ $listed_stock ?? 0 }}" style="width:80px;" onfocus="toggleButton({{$variation->id}})">
+                                    <label for="">Stock</label>
+                                </div>
+                                <button id="send_{{$variation->id}}" class="btn btn-primary d-none" onclick="submitForm(event, {{$variation->id}})">Change</button>
+                            </form>
 
-                                $.ajax({
-                                    type: "POST",
-                                    url: actionUrl,
-                                    data: form.serialize(), // serializes the form's elements.
-                                    success: function(data) {
-                                        alert("Success: " + data); // show response from the PHP script.
-                                    },
-                                    error: function(jqXHR, textStatus, errorThrown) {
-                                        alert("Error: " + textStatus + " - " + errorThrown);
-                                    }
+                            {{-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> --}}
+                            <script>
+                                function toggleButton(variationId) {
+                                    $('#send_' + variationId).removeClass('d-none');
+                                }
+
+                                function submitForm(event, variationId) {
+                                    event.preventDefault(); // avoid executing the actual submit of the form.
+
+                                    var form = $('#change_qty_' + variationId);
+                                    var actionUrl = form.attr('action');
+
+                                    $.ajax({
+                                        type: "POST",
+                                        url: actionUrl,
+                                        data: form.serialize(), // serializes the form's elements.
+                                        success: function(data) {
+                                            alert("Success: " + data); // show response from the PHP script.
+                                            $('#send_' + variationId).addClass('d-none'); // hide the button after submission
+                                        },
+                                        error: function(jqXHR, textStatus, errorThrown) {
+                                            alert("Error: " + textStatus + " - " + errorThrown);
+                                        }
+                                    });
+                                }
+
+                                $("#change_qty_{{$variation->id}}").submit(function(e) {
+                                    submitForm(e, {{$variation->id}});
                                 });
-                            }
-                            $("#change_qty").submit(function(e) {
-                                e.preventDefault(); // avoid executing the actual submit of the form.
+                            </script>
 
-                                var form = $(this);
-                                var actionUrl = form.attr('action');
-
-                                $.ajax({
-                                    type: "POST",
-                                    url: actionUrl,
-                                    data: form.serialize(), // serialize the form's elements.
-                                    success: function(data) {
-                                        alert("Success: " + data); // show response from the PHP script.
-                                    },
-                                    error: function(jqXHR, textStatus, errorThrown) {
-                                        alert("Error: " + textStatus + " - " + errorThrown);
-                                    }
-                                });
-                            });
-                        </script>
                         </div>
                         <div>
                             Pending Order Items: {{ $variation->pending_orders->count() }}
