@@ -209,16 +209,27 @@
                             <form class="form-inline" method="POST" id="change_qty_{{$variation->id}}" action="{{url('listing/update_quantity').'/'.$variation->id}}">
                                 @csrf
                                 <div class="form-floating">
-                                    <input type="number" class="form-control" name="stock" value="{{ $listed_stock ?? 0 }}" style="width:80px;" onfocus="toggleButton({{$variation->id}})">
+                                    <input type="number" class="form-control" name="stock" value="{{ $listed_stock ?? 0 }}" style="width:80px;" oninput="toggleButtonOnChange({{$variation->id}}, this)">
                                     <label for="">Stock</label>
                                 </div>
                                 <button id="send_{{$variation->id}}" class="btn btn-primary d-none" onclick="submitForm(event, {{$variation->id}})">Change</button>
                             </form>
 
-                            {{-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> --}}
+                            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
                             <script>
-                                function toggleButton(variationId) {
-                                    $('#send_' + variationId).removeClass('d-none');
+                                function toggleButtonOnChange(variationId, inputElement) {
+                                    // Get the original value
+                                    var originalValue = inputElement.defaultValue;
+
+                                    // Get the current value
+                                    var currentValue = inputElement.value;
+
+                                    // Show the button only if the value has changed
+                                    if (currentValue != originalValue) {
+                                        $('#send_' + variationId).removeClass('d-none');
+                                    } else {
+                                        $('#send_' + variationId).addClass('d-none');
+                                    }
                                 }
 
                                 function submitForm(event, variationId) {
