@@ -207,19 +207,37 @@
                         <div>
                         <form method="POST" id="change_qty" action="{{url('listing/update_quantity').'/'.$variation->id}}">
                             <div class="form-floating w-50">
-                                <input type="number" class="form-control" name="stock" value="{{ $variation->listed_stock ?? 0 }}" onchange="submitForm()">
+                                <input type="number" class="form-control" name="stock" value="{{ $variation->listed_stock ?? 0 }}">
                                 <label for="">Stock</label>
                             </div>
                         </form>
                         <script>
-                            function submitForm() {
-                                var form = $("#change_qty");
+                            // function submitForm() {
+                            //     var form = $("#change_qty");
+                            //     var actionUrl = form.attr('action');
+
+                            //     $.ajax({
+                            //         type: "POST",
+                            //         url: actionUrl,
+                            //         data: form.serialize(), // serializes the form's elements.
+                            //         success: function(data) {
+                            //             alert("Success: " + data); // show response from the PHP script.
+                            //         },
+                            //         error: function(jqXHR, textStatus, errorThrown) {
+                            //             alert("Error: " + textStatus + " - " + errorThrown);
+                            //         }
+                            //     });
+                            // }
+                            $("#change_qty").submit(function(e) {
+                                e.preventDefault(); // avoid executing the actual submit of the form.
+
+                                var form = $(this);
                                 var actionUrl = form.attr('action');
 
                                 $.ajax({
                                     type: "POST",
                                     url: actionUrl,
-                                    data: form.serialize(), // serializes the form's elements.
+                                    data: form.serialize(), // serialize the form's elements.
                                     success: function(data) {
                                         alert("Success: " + data); // show response from the PHP script.
                                     },
@@ -227,7 +245,7 @@
                                         alert("Error: " + textStatus + " - " + errorThrown);
                                     }
                                 });
-                            }
+                            });
                         </script>
                         </div>
                         <div>
