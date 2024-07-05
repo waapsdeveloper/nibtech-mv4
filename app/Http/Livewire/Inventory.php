@@ -275,24 +275,24 @@ class Inventory extends Component
         // ->pluck('average_price')
         ->first();
 
-        ->with(['orders' => function($q) {
-            $q->where('order_type_id', 1)
-                ->with(['order_items' => function($q) {
-                $q->whereHas('stock', function ($q) {
-                    $q->where('status', 1);
-                })->select(DB::raw('count(distinct id) as count'), DB::raw('sum(price) as total_price'));
-            }]);
-        }])->first();
+        // ->with(['orders' => function($q) {
+        //     $q->where('order_type_id', 1)
+        //         ->with(['order_items' => function($q) {
+        //         $q->whereHas('stock', function ($q) {
+        //             $q->where('status', 1);
+        //         })->select(DB::raw('count(distinct id) as count'), DB::raw('sum(price) as total_price'));
+        //     }]);
+        // }])->first();
 
 
-        ->with(['orders.order_items' => function($q) {
-            $q->whereHas('stock', function ($q) {
-                $q->where('status', 1);
-            })->select(DB::raw('count(id)'), DB::raw('sum(price)'));
-        }])->whereHas('orders', function ($q) {
-            $q->where('order_type_id',1);
+        // ->with(['orders.order_items' => function($q) {
+        //     $q->whereHas('stock', function ($q) {
+        //         $q->where('status', 1);
+        //     })->select(DB::raw('count(id)'), DB::raw('sum(price)'));
+        // }])->whereHas('orders', function ($q) {
+        //     $q->where('order_type_id',1);
 
-        })->get();
+        // })->get();
 
         $data['vendor_average_cost'] = Stock_model::where('stock.deleted_at',null)->where('order_items.deleted_at',null)->where('orders.deleted_at',null)
 
