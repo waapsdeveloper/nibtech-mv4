@@ -208,10 +208,10 @@
                         <div>
                         <form class="form-inline" method="POST" id="change_qty" action="{{url('listing/update_quantity').'/'.$variation->id}}">
                             <div class="form-floating">
-                                <input type="number" class="form-control" name="stock" value="{{ $listed_stock ?? 0 }}" style="width:80px;">
+                                <input type="number" class="form-control" name="stock" value="{{ $listed_stock ?? 0 }}" style="width:80px;" onfocus="$('send_{{$variation->id}}').toggle()">
                                 <label for="">Stock</label>
                             </div>
-                            <button class="btn btn-primary" onclick="submitForm()">Change</button>
+                            <button id="send_{{$variation->id}}" class="btn btn-primary d-none" onclick="submitForm()">Change</button>
                         </form>
                         <script>
                             function submitForm() {
