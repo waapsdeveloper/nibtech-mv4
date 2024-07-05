@@ -13,7 +13,6 @@ use App\Models\ExchangeRate;
 use App\Models\Storage_model;
     use App\Models\Grade_model;
     use App\Models\Order_status_model;
-use App\Models\Variation_listing_qty_model;
 use App\Models\Variation_model;
 use Google\Service\Books\Category;
 
@@ -73,13 +72,9 @@ class Listing extends Component
         })
         ->when(request('listed_stock') != '', function ($q) {
             if(request('listed_stock') == 1){
-                return $q->whereHas('variation_listing_qty', function ($q) {
-                    $q->where('quantity', '>', 0);
-                });
+                return $q->where('listed_stock', '>', 0);
             }elseif(request('listed_stock') == 2){
-                return $q->whereHas('variation_listing_qty', function ($q) {
-                    $q->where('quantity', '<=', 0);
-                });
+                return $q->where('listed_stock', '<=', 0);
             }
         })
         ->when(request('available_stock') != '', function ($q) {
@@ -92,7 +87,7 @@ class Listing extends Component
         ->when(request('state') != '', function ($q) {
             return $q->where('state', request('state'));
         })
-        ->with('variation_listing_qty', 'listings')
+        ->with('listings')
         ->where('sku', '!=', null)
         ->orderBy('product_id', 'desc')
         ->paginate(10)

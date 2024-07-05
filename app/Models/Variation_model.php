@@ -46,10 +46,6 @@ class Variation_model extends Model
     {
         return $this->hasOne(Color_model::class, 'id', 'color');
     }
-    public function variation_listing_qty()
-    {
-        return $this->hasOne(Variation_listing_qty_model::class, 'variation_id', 'id')->orderBy('quantity', 'desc');
-    }
     public function listings()
     {
         return $this->hasMany(Listing_model::class, 'variation_id', 'id')->orderBy('country', 'asc');

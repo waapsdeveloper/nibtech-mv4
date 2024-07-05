@@ -17,7 +17,6 @@ use App\Models\Variation_model;
 use App\Models\Stock_model;
 use App\Models\Stock_operations_model;
 use App\Models\Storage_model;
-use App\Models\Variation_listing_qty_model;
 use Carbon\Carbon;
 
 
@@ -103,7 +102,6 @@ class FunctionsThirty extends Command
     //             $variation->save();
 
     //             $currency = Currency_model::where('code', $list->currency)->first();
-    //             $variation_listing_qty = Variation_listing_qty_model::firstOrNew(['variation_id' => $variation->id]);
 
     //             if ($variation == null) {
     //                 echo $list->sku . " ";
@@ -173,19 +171,18 @@ class FunctionsThirty extends Command
             foreach($lists as $list){
                 $variation = Variation_model::where('sku',$list->sku)->first();
                 $currency = Currency_model::where('code',$list->currency)->first();
-                $variation_listing_qty = Variation_listing_qty_model::firstOrNew(['variation_id'=>$variation->id]);
                 if($variation == null){
                     echo $list->sku." ";
                 }else{
                     $listing = Listing_model::firstOrNew(['country' => $country, 'variation_id' => $variation->id]);
-                    $variation_listing_qty->quantity = $list->quantity;
+                    $variation->listed_stock = $list->quantity;
                     $listing->price = $list->price;
                     $listing->buybox = $list->same_merchant_winner;
                     $listing->buybox_price = $list->price_for_buybox;
                     $listing->currency_id = $currency->id;
                     // ... other fields
                     $listing->save();
-                    $variation_listing_qty->save();
+                    $variation->save();
                 }
             }
         }
