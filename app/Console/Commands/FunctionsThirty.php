@@ -146,19 +146,18 @@ class FunctionsThirty extends Command
                 }
                 $currency = Currency_model::where('code',$list->currency)->first();
                 // echo $list->currency;
-                $variation_listing_qty = Variation_listing_qty_model::firstOrNew(['variation_id'=>$variation->id]);
                 if($variation == null){
                     echo $list->sku." ";
                 }else{
                     $listing = Listing_model::firstOrNew(['country' => $country, 'variation_id' => $variation->id]);
                     $listing->max_price = $list->max_price;
                     $listing->min_price = $list->min_price;
-                    $variation_listing_qty->quantity = $list->quantity;
+                    $variation->listed_stock = $list->quantity;
                     $listing->price = $list->price;
                     $listing->currency_id = $currency->id;
                     // ... other fields
                     $listing->save();
-                    $variation_listing_qty->save();
+                    $variation->save();
                 }
             }
         }
