@@ -104,7 +104,7 @@ class Listing extends Component
         $bm = new BackMarketAPIController();
         $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>request('stock')]));
 
-        return json_encode($response);
+        return "Quantity Changed to ".$response->quantity;
     }
 
     public function refresh_stock(){
