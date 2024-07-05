@@ -276,7 +276,7 @@
                                                     <label for="">Price ({{$sign}})</label>
                                                 </div>
                                                 @if ($listing->country == 5)
-                                                    Excg Min Avg: £{{min($prices)}}
+                                                    Excg Min: £{{min($prices)}}
                                                 @else
                                                     @php
                                                     $prices[] = $listing->price;
