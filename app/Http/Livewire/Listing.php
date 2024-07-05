@@ -102,9 +102,13 @@ class Listing extends Component
     }
 
     public function update_quantity($id){
+        $variation = Variation_model::find($id);
+        $variation->listed_stock = request('stock');
+        $variation->save();
+        $bm = new BackMarketAPIController();
+        $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>request('stock')]));
 
-        Listing_model::where('id', $id)->update(request('update'));
-        return redirect()->back();
+        return $response;
     }
 
     public function refresh_stock(){

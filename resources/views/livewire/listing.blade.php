@@ -205,10 +205,30 @@
                             </a>
                         </div>
                         <div>
+                        <form method="POST" id="change_qty" action="{{url('listing/update_quantity').'/'.$variation->id}}">
                             <div class="form-floating w-50">
-                                <input type="number" class="form-control" name="stock" value="{{ $variation->variation_listing_qty->quantity ?? 0 }}">
+                                <input type="number" class="form-control" name="stock" value="{{ $variation->listed_stock ?? 0 }}" onchange="submitForm()">
                                 <label for="">Stock</label>
                             </div>
+                        </form>
+                        <script>
+                            function submitForm() {
+                                var form = $("#change_qty");
+                                var actionUrl = form.attr('action');
+
+                                $.ajax({
+                                    type: "POST",
+                                    url: actionUrl,
+                                    data: form.serialize(), // serializes the form's elements.
+                                    success: function(data) {
+                                        alert("Success: " + data); // show response from the PHP script.
+                                    },
+                                    error: function(jqXHR, textStatus, errorThrown) {
+                                        alert("Error: " + textStatus + " - " + errorThrown);
+                                    }
+                                });
+                            }
+                        </script>
                         </div>
                         <div>
                             Pending Order Items: {{ $variation->pending_orders->count() }}

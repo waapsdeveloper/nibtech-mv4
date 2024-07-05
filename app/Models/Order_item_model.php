@@ -117,14 +117,14 @@ class Order_item_model extends Model
                 $variation->grade = $list->state+1;
                 $variation->status = 1;
                 $variation->state = $list->publication_state;
+                $variation->listed_stock = $list->quantity;
                 // ... other fields
-                $variation->save();
                 // dd($orderObj);
+            }else{
+                $variation->listed_stock -= $itemObj->quantity;
             }
-            $variation_listing_qty = Variation_listing_qty_model::where('variation_id',$variation->id)->first();
-            if($orderItem->id == null && $variation_listing_qty != null){
-                $variation_listing_qty->quantity -= $itemObj->quantity;
-                $variation_listing_qty->save();
+                $variation->save();
+
             }
             if($orderItem->stock_id == null){
                 if($itemObj->imei != null || $itemObj->serial_number != null){
