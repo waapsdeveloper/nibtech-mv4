@@ -212,7 +212,7 @@
                                     <input type="number" class="form-control" name="stock" value="{{ $listed_stock ?? 0 }}" style="width:80px;" oninput="toggleButtonOnChange({{$variation->id}}, this)">
                                     <label for="">Stock</label>
                                 </div>
-                                <button id="send_{{$variation->id}}" class="btn btn-primary d-none" onclick="submitForm(event, {{$variation->id}})">Change</button>
+                                <button id="send_{{$variation->id}}" class="btn btn-light d-none" onclick="submitForm(event, {{$variation->id}})">Push</button>
                             </form>
 
                             <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
