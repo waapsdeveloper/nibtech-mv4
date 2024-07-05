@@ -263,7 +263,7 @@
                                                     <label for="">Min Price ({{$sign}})</label>
                                                 </div>
                                                 @if ($listing->currency_id == 5 && count($min_prices) > 0)
-                                                    Minimum: £{{min($min_prices)*$eur_gbp}}
+                                                    Minimum: £{{number_format(min($min_prices)*$eur_gbp,2)}}
                                                 @else
                                                     @php
                                                     if($listing->min_price > 0){
@@ -278,7 +278,7 @@
                                                     <label for="">Price ({{$sign}})</label>
                                                 </div>
                                                 @if ($listing->currency_id == 5 && count($prices)>0)
-                                                    Minimum: £{{min($prices)*$eur_gbp}}
+                                                    Minimum: £{{number_format(min($prices)*$eur_gbp,2)}}
                                                 @else
                                                     @php
                                                     if($listing->price > 0){
