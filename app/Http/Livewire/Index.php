@@ -154,7 +154,7 @@ class Index extends Component
         ->orderBy('grade_id')
         ->get();
 
-        $data['listed_inventory'] = Variation_model::where('quantity','>',0)->sum('listed_stock');
+        $data['listed_inventory'] = Variation_model::where('listed_stock','>',0)->sum('listed_stock');
         $replacements = Order_item_model::where(['order_id'=>8974])->where('reference_id','!=',null)->pluck('reference_id')->toArray();
         // dd($replacements);
         $data['awaiting_replacement'] = Stock_model::where('status', 1)
