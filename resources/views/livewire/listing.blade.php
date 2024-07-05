@@ -262,7 +262,7 @@
                                                     <input type="number" class="form-control" name="min_price" value="{{$listing->min_price}}">
                                                     <label for="">Min Price ({{$sign}})</label>
                                                 </div>
-                                                @if ($listing->currency_id == 5)
+                                                @if ($listing->currency_id == 5 && count($min_prices) > 0)
                                                     Excg Min Avg: £{{min($min_prices)*$eur_gbp}}
                                                 @else
                                                     @php
@@ -277,7 +277,7 @@
                                                     <input type="number" class="form-control" name="price" value="{{$listing->price}}">
                                                     <label for="">Price ({{$sign}})</label>
                                                 </div>
-                                                @if ($listing->currency_id == 5)
+                                                @if ($listing->currency_id == 5 && count($prices)>0)
                                                     Excg Min: £{{min($prices)*$eur_gbp}}
                                                 @else
                                                     @php
