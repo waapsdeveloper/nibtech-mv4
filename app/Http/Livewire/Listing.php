@@ -33,6 +33,7 @@ class Listing extends Component
         // $this->refresh_stock();
         $user_id = session('user_id');
         $data['order_statuses'] = Order_status_model::get();
+        $data['bm'] = new BackMarketAPIController();
 
         $data['eur_gbp'] = ExchangeRate::where('target_currency','GBP')->first()->rate;
         $data['categories'] = Category_model::all();

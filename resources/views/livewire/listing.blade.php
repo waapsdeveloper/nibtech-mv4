@@ -199,7 +199,7 @@
                                     $grade = null;
                                 }
                                 $sku = str_replace('+','%2B',$variation->sku);
-                                $listed_stock = $variation->update_qty();
+                                $listed_stock = $variation->update_qty($bm);
                             @endphp
                             <a href="https://www.backmarket.fr/bo_merchant/listings/active?sku={{ $sku }}" title="View BM Ad" target="_blank">
                             {{ $variation->sku." - ".$variation->product->model." ".$storage." ".$color." ".$grade }}
