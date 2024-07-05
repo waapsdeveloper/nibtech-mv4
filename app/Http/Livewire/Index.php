@@ -2,9 +2,7 @@
 
 namespace App\Http\Livewire;
 
-use App\Http\Controllers\GoogleController;
 use App\Models\Admin_model;
-use App\Models\Api_request_model;
 use App\Models\Brand_model;
 use App\Models\Category_model;
 use Carbon\Carbon;
@@ -18,10 +16,7 @@ use App\Models\Storage_model;
 use App\Models\Grade_model;
 use App\Models\Variation_model;
 use App\Models\Stock_model;
-use App\Models\Stock_operations_model;
-use App\Models\Variation_listing_qty_model;
 use Symfony\Component\HttpFoundation\Request;
-use Illuminate\Support\Facades\Route;
 
 class Index extends Component
 {
@@ -159,7 +154,7 @@ class Index extends Component
         ->orderBy('grade_id')
         ->get();
 
-        $data['listed_inventory'] = Variation_listing_qty_model::where('quantity','>',0)->sum('quantity');
+        $data['listed_inventory'] = Variation_model::where('quantity','>',0)->sum('listed_stock');
         $replacements = Order_item_model::where(['order_id'=>8974])->where('reference_id','!=',null)->pluck('reference_id')->toArray();
         // dd($replacements);
         $data['awaiting_replacement'] = Stock_model::where('status', 1)
