@@ -259,7 +259,7 @@
 
                         </div>
                         <div>
-                            Pending Order Items: {{ $variation->pending_orders->count() }}
+                            <a href="{{url('order').'?sku='.$variation->sku}}" target="_blank">  Pending Order Items: {{ $variation->pending_orders->count() }} </a>
                         </div>
                         <div>
                             status: {{ $variation->status }}
