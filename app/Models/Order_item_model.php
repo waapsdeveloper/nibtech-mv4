@@ -125,7 +125,6 @@ class Order_item_model extends Model
             }
                 $variation->save();
 
-            }
             if($orderItem->stock_id == null){
                 if($itemObj->imei != null || $itemObj->serial_number != null){
                     if($itemObj->imei != null){
