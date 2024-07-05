@@ -63,7 +63,7 @@
                     input.select();
                 });
             </script>
-            @if (session('user')->hasPermission('refund_imei') && isset($stock) && $stock->status == 2)
+            @if (session('user')->hasPermission('refund_imei') && isset($stock) && $stock->status == 2 && $stock->last_item()->order->order_type_id != 2)
             <div class="p-2">
                 <form action="{{ url('imei/refund').'/'.$stock->id}}" method="POST" id="refund" class="form-inline">
                     @csrf
