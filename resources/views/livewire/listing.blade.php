@@ -206,7 +206,7 @@
                             </a>
                         </div>
                         <div>
-                        <form method="POST" id="change_qty" action="{{url('listing/update_quantity').'/'.$variation->id}}">
+                        <form class="form-inline" method="POST" id="change_qty" action="{{url('listing/update_quantity').'/'.$variation->id}}">
                             <div class="form-floating">
                                 <input type="number" class="form-control" name="stock" value="{{ $listed_stock ?? 0 }}">
                                 <label for="">Stock</label>
