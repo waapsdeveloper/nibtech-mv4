@@ -213,22 +213,22 @@
                             </div>
                         </form>
                         <script>
-                            // function submitForm() {
-                            //     var form = $("#change_qty");
-                            //     var actionUrl = form.attr('action');
+                            function submitForm() {
+                                var form = $("#change_qty");
+                                var actionUrl = form.attr('action');
 
-                            //     $.ajax({
-                            //         type: "POST",
-                            //         url: actionUrl,
-                            //         data: form.serialize(), // serializes the form's elements.
-                            //         success: function(data) {
-                            //             alert("Success: " + data); // show response from the PHP script.
-                            //         },
-                            //         error: function(jqXHR, textStatus, errorThrown) {
-                            //             alert("Error: " + textStatus + " - " + errorThrown);
-                            //         }
-                            //     });
-                            // }
+                                $.ajax({
+                                    type: "POST",
+                                    url: actionUrl,
+                                    data: form.serialize(), // serializes the form's elements.
+                                    success: function(data) {
+                                        alert("Success: " + data); // show response from the PHP script.
+                                    },
+                                    error: function(jqXHR, textStatus, errorThrown) {
+                                        alert("Error: " + textStatus + " - " + errorThrown);
+                                    }
+                                });
+                            }
                             $("#change_qty").submit(function(e) {
                                 e.preventDefault(); // avoid executing the actual submit of the form.
 
