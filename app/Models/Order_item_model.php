@@ -120,7 +120,7 @@ class Order_item_model extends Model
                 $variation->listed_stock = $list->quantity;
                 // ... other fields
                 // dd($orderObj);
-            }else{
+            }elseif($orderItem->id == null){
                 $variation->listed_stock -= $itemObj->quantity;
             }
                 $variation->save();
