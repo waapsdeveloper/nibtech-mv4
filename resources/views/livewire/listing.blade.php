@@ -313,13 +313,13 @@
                                                     <input type="number" class="form-control" name="min_price" value="{{$listing->min_price}}">
                                                     <label for="">Min Price ({{$sign}})</label>
                                                 </div>
-                                                @if ($listing->currency_id == 5 && count($min_prices) > 0)
+                                                @if ($listing->currency_id == 5)
                                                     Minimum: £{{number_format($m_min_price*$eur_gbp,2)}}
                                                 @else
                                                     @php
-                                                    if($listing->min_price > 0){
-                                                    $min_prices[] = $listing->min_price;
-                                                    }
+                                                    // if($listing->min_price > 0){
+                                                    // $min_prices[] = $listing->min_price;
+                                                    // }
                                                     @endphp
                                                 @endif
                                             </td>
@@ -328,13 +328,13 @@
                                                     <input type="number" class="form-control" name="price" value="{{$listing->price}}">
                                                     <label for="">Price ({{$sign}})</label>
                                                 </div>
-                                                @if ($listing->currency_id == 5 && count($prices)>0)
-                                                    Minimum: £{{number_format(min($prices)*$eur_gbp,2)}}
+                                                @if ($listing->currency_id == 5)
+                                                    Minimum: £{{number_format($m_price*$eur_gbp,2)}}
                                                 @else
                                                     @php
-                                                    if($listing->price > 0){
-                                                    $prices[] = $listing->price;
-                                                    }
+                                                    // if($listing->price > 0){
+                                                    // $prices[] = $listing->price;
+                                                    // }
                                                     @endphp
                                                 @endif
                                             </td>
