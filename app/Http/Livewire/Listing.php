@@ -118,7 +118,8 @@ class Listing extends Component
         }
 
         $listing->save();
-
+        print_r($response);
+        die;
         if(request('min_price')){
             return $response->min_price;
         }elseif(request('price')){
