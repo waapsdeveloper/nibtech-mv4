@@ -310,9 +310,10 @@
                                             <td>{{$sign.$listing->buybox_price}}</td>
                                             <form class="form-inline" method="POST" id="change_price_{{$listing->id}}" action="{{url('listing/update_price').'/'.$listing->id}}">
                                                 @csrf
+                                            </form>
                                             <td>
                                                 <div class="form-floating">
-                                                    <input type="number" class="form-control" id="min_price_{{$listing->id}}" name="min_price" value="{{$listing->min_price}}">
+                                                    <input type="number" class="form-control" id="min_price_{{$listing->id}}" name="min_price" value="{{$listing->min_price}}" form="change_price_{{$listing->id}}">
                                                     <label for="">Min Price ({{$sign}})</label>
                                                 </div>
                                                 @if ($listing->currency_id == 5)
@@ -321,7 +322,7 @@
                                             </td>
                                             <td>
                                                 <div class="form-floating">
-                                                    <input type="number" class="form-control" id="price_{{$listing->id}}" name="price" value="{{$listing->price}}">
+                                                    <input type="number" class="form-control" id="price_{{$listing->id}}" name="price" value="{{$listing->price}}" form="change_price_{{$listing->id}}">
                                                     <label for="">Price ({{$sign}})</label>
                                                 </div>
                                                 @if ($listing->currency_id == 5)
@@ -329,9 +330,7 @@
                                                 @endif
                                             </td>
                                                 {{-- <button id="send_{{$variation->id}}" class="btn btn-light d-none" onclick="submitForm(event, {{$variation->id}})">Push</button> --}}
-                                            </form>
 
-                                            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
                                             <script>
 
                                                 function submitForm2(event, listingId) {
