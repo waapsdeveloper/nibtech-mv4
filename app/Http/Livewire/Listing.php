@@ -111,10 +111,10 @@ class Listing extends Component
         $bm = new BackMarketAPIController();
         if(request('min_price')){
             $listing->min_price = request('min_price');
-            $response = $bm->updateOneListing($listing->reference_id,json_encode(['min_price'=>request('min_price')]));
+            $response = $bm->updateOneListing($listing->variation->reference_id,json_encode(['min_price'=>request('min_price')]), $listing->country_id->market_code);
         }elseif(request('price')){
             $listing->price = request('price');
-            $response = $bm->updateOneListing($listing->reference_id,json_encode(['price'=>request('price')]), $listing->country_id->market_code);
+            $response = $bm->updateOneListing($listing->variation->reference_id,json_encode(['price'=>request('price')]), $listing->country_id->market_code);
         }
 
         $listing->save();
