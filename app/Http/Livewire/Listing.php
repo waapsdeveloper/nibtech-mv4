@@ -5,7 +5,7 @@ namespace App\Http\Livewire;
 use App\Models\Brand_model;
 use App\Models\Category_model;
 use Livewire\Component;
-    use App\Models\listing_model;
+    use App\Models\Listing_model;
     use App\Models\Products_model;
     use App\Models\Color_model;
 use App\Models\Currency_exchange_model;
