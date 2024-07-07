@@ -310,6 +310,7 @@
                                             <td>{{$sign.$listing->buybox_price}}</td>
                                             <form class="form-inline" method="POST" id="change_price_{{$listing->id}}" action="{{url('listing/update_price').'/'.$listing->id}}">
                                                 @csrf
+                                                <input type="submit" hidden>
                                             </form>
                                             <td>
                                                 <div class="form-floating">
