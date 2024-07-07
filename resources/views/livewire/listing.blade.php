@@ -209,7 +209,7 @@
                             <form class="form-inline" method="POST" id="change_qty_{{$variation->id}}" action="{{url('listing/update_quantity').'/'.$variation->id}}">
                                 @csrf
                                 <div class="form-floating">
-                                    <input type="number" class="form-control" name="stock" value="{{ $listed_stock ?? 0 }}" style="width:80px;" oninput="toggleButtonOnChange({{$variation->id}}, this)">
+                                    <input type="number" class="form-control" name="stock" id="quantity_{{$variation->id}}" value="{{ $listed_stock ?? 0 }}" style="width:80px;" oninput="toggleButtonOnChange({{$variation->id}}, this)">
                                     <label for="">Stock</label>
                                 </div>
                                 <button id="send_{{$variation->id}}" class="btn btn-light d-none" onclick="submitForm(event, {{$variation->id}})">Push</button>
@@ -243,8 +243,9 @@
                                         url: actionUrl,
                                         data: form.serialize(), // serializes the form's elements.
                                         success: function(data) {
-                                            alert("Success: " + data); // show response from the PHP script.
+                                            alert("Success: Quantity changed to " + data); // show response from the PHP script.
                                             $('#send_' + variationId).addClass('d-none'); // hide the button after submission
+                                            $('quantity_' + variationId).value(data)
                                         },
                                         error: function(jqXHR, textStatus, errorThrown) {
                                             alert("Error: " + textStatus + " - " + errorThrown);
