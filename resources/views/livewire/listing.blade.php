@@ -308,36 +308,58 @@
                                             <td title="{{$listing->id." ".$listing->country_id->title}}"><img src="{{ asset('assets/img/flags/').'/'.strtolower($listing->country_id->code).'.svg' }}" height="15"> {{ $listing->country_id->code }}</td>
                                             @if (session('user')->hasPermission('view_price'))
                                             <td>{{$sign.$listing->buybox_price}}</td>
+                                            <form class="form-inline" method="POST" id="change_price_{{$listing->id}}" action="{{url('listing/update_price').'/'.$listing->id}}">
+                                                @csrf
                                             <td>
                                                 <div class="form-floating">
-                                                    <input type="number" class="form-control" name="min_price" value="{{$listing->min_price}}">
+                                                    <input type="number" class="form-control" id="min_price_{{$listing->id}}" name="min_price" value="{{$listing->min_price}}">
                                                     <label for="">Min Price ({{$sign}})</label>
                                                 </div>
                                                 @if ($listing->currency_id == 5)
                                                     Minimum: £{{number_format($m_min_price*$eur_gbp,2)}}
-                                                @else
-                                                    @php
-                                                    // if($listing->min_price > 0){
-                                                    // $min_prices[] = $listing->min_price;
-                                                    // }
-                                                    @endphp
                                                 @endif
                                             </td>
                                             <td>
                                                 <div class="form-floating">
-                                                    <input type="number" class="form-control" name="price" value="{{$listing->price}}">
+                                                    <input type="number" class="form-control" id="price_{{$listing->id}}" name="price" value="{{$listing->price}}">
                                                     <label for="">Price ({{$sign}})</label>
                                                 </div>
                                                 @if ($listing->currency_id == 5)
                                                     Minimum: £{{number_format($m_price*$eur_gbp,2)}}
-                                                @else
-                                                    @php
-                                                    // if($listing->price > 0){
-                                                    // $prices[] = $listing->price;
-                                                    // }
-                                                    @endphp
                                                 @endif
                                             </td>
+                                                {{-- <button id="send_{{$variation->id}}" class="btn btn-light d-none" onclick="submitForm(event, {{$variation->id}})">Push</button> --}}
+                                            </form>
+
+                                            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+                                            <script>
+
+                                                function submitForm2(event, listingId) {
+                                                    event.preventDefault(); // avoid executing the actual submit of the form.
+
+                                                    var form = $('#change_qty_' + listingId);
+                                                    var actionUrl = form.attr('action');
+
+                                                    $.ajax({
+                                                        type: "POST",
+                                                        url: actionUrl,
+                                                        data: form.serialize(), // serializes the form's elements.
+                                                        success: function(data) {
+                                                            alert("Success: Price changed to " + data); // show response from the PHP script.
+                                                            $('#send_' + listingId).addClass('d-none'); // hide the button after submission
+                                                            // $('quantity_' + listingId).val(data)
+                                                        },
+                                                        error: function(jqXHR, textStatus, errorThrown) {
+                                                            alert("Error: " + textStatus + " - " + errorThrown);
+                                                        }
+                                                    });
+                                                }
+
+                                                $("#change_price_{{$listing->id}}").submit(function(e) {
+                                                    submitForm2(e, {{$listing->id}});
+                                                });
+                                            </script>
+
                                             <td>{{$sign.$listing->max_price}}</td>
                                             {{-- <td>{{ $currency}}{{$item->purchase_item->price ?? "Error in Purchase Entry" }}</td> --}}
                                             @endif
