@@ -294,6 +294,8 @@
                                         // print_r($stocks);
                                         $min_prices = [];
                                         $prices = [];
+                                        $m_min_price = $listings->where('currency_id',4)->min('min_price');
+                                        $m_price = $listings->where('currency_id',4)->min('price');
                                     @endphp
 
                                     @foreach ($listings as $listing)
@@ -312,7 +314,7 @@
                                                     <label for="">Min Price ({{$sign}})</label>
                                                 </div>
                                                 @if ($listing->currency_id == 5 && count($min_prices) > 0)
-                                                    Minimum: £{{number_format(min($min_prices)*$eur_gbp,2)}}
+                                                    Minimum: £{{number_format($m_min_price*$eur_gbp,2)}}
                                                 @else
                                                     @php
                                                     if($listing->min_price > 0){

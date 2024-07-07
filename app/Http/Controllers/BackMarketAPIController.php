@@ -124,14 +124,17 @@ class BackMarketAPIController extends Controller
         return json_decode($get_result);
     }
 
-    public function apiPost($end_point, $request = '', $content_type='application/json') {
+    public function apiPost($end_point, $request = '', $content_type='application/json', $country_code = null) {
+        if($country_code == null){
+            $country_code = self::$COUNTRY_CODE;
+        }
         if(substr($end_point, 0, 1) === '/') {
             $end_point = substr($end_point, 1);
         }
 
         $api_call_data['Content-Type'] = $content_type;
         $api_call_data['Accept'] = $content_type;
-        $api_call_data['Accept-Language'] = self::$COUNTRY_CODE;
+        $api_call_data['Accept-Language'] = $country_code;
         $api_call_data['Authorization'] = 'Basic ' . self::$YOUR_ACCESS_TOKEN;
         $api_call_data['User-Agent'] = self::$YOUR_USER_AGENT;
 
@@ -478,9 +481,14 @@ class BackMarketAPIController extends Controller
         return $response;
     }
 
-    public function updateOneListing($listing_id, $request_JSON) {
+    public function updateOneListing($listing_id, $request_JSON, $code = null) {
         $end_point = 'listings/' . $listing_id;
-        $response = $this->apiPost($end_point, $request_JSON);
+        if($code != null){
+            $response = $this->apiPost($end_point, $request_JSON, $code);
+        }else{
+            $response = $this->apiPost($end_point, $request_JSON);
+        }
+
         return $response;
     }
 

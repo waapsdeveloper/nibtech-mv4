@@ -106,6 +106,25 @@ class Listing extends Component
 
         return $response->quantity;
     }
+    public function update_price($id){
+        $listing = Listing_model::find($id);
+        $bm = new BackMarketAPIController();
+        if(request('min_price')){
+            $listing->min_price = request('min_price');
+            $response = $bm->updateOneListing($listing->reference_id,json_encode(['min_price'=>request('min_price')]), $listing->country_id->market_code);
+        }elseif(request('price')){
+            $listing->price = request('price');
+            $response = $bm->updateOneListing($listing->reference_id,json_encode(['price'=>request('price')]), $listing->country_id->market_code);
+        }
+
+        $listing->save();
+
+        if(request('min_price')){
+            return $response->min_price;
+        }elseif(request('price')){
+            return $response->price;
+        }
+    }
 
     public function refresh_stock(){
         $listings = Listing_model::where('reference_id','!=',NULL)->pluck('reference_id','id');
