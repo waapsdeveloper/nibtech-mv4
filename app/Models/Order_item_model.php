@@ -43,6 +43,11 @@ class Order_item_model extends Model
         return $this->hasOne(Admin_model::class, 'id', 'admin_id');
     }
 
+    public function sale_order()
+    {
+        return $this->hasOne(Order_model::class, 'id', 'order_id')->where('order_type_id',3);
+    }
+
     public function order()
     {
         return $this->belongsTo(Order_model::class, 'order_id', 'id');

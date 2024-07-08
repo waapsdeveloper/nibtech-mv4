@@ -68,7 +68,7 @@ class Variation_model extends Model
     }
     public function pending_orders()
     {
-        return $this->hasMany(Order_item_model::class, 'variation_id', 'id')->where('status',2);
+        return $this->hasMany(Order_item_model::class, 'variation_id', 'id')->where('status',2)->whereHas('sale_order');
     }
     public function update_qty($bm)
     {
