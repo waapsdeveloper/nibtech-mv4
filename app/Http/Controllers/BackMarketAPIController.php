@@ -41,13 +41,11 @@ class BackMarketAPIController extends Controller
         // Specify the URL
         $url = "https://www.backmarket.fr/ws/sav";
 
-        // Basic Authorization Header
-        $authorizationHeader = "Basic YmFlNDFiOWI5OTZiOGE0YjYyZGU3NjpCTVQtOGI3NjRmYThjMDhhOTYwMGIwYTFkYmUyYjA3NjEyNGY2M2I4NzZiNg==";
 
         // Make the GET request
         $response = Http::withHeaders([
             "Accept" => "application/json",
-            "Authorization" => $authorizationHeader,
+            "Authorization" => $api_call_data['Authorization'],
         ])->get($target_url);
 
         return json_decode($response);
