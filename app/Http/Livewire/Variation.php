@@ -9,8 +9,7 @@ namespace App\Http\Livewire;
     use App\Models\Storage_model;
     use App\Models\Grade_model;
     use App\Models\Order_status_model;
-
-
+use Illuminate\Support\Facades\DB;
 
 class Variation extends Component
 {
@@ -41,7 +40,13 @@ class Variation extends Component
         $data['storages'] = Storage_model::all();
         $data['grades'] = Grade_model::all();
         $data['variations'] = Variation_model::
-        when(request('reference_id') != '', function ($q) {
+        when(request('duplicate') != '', function ($q) {
+            return $q
+            // ->select('name','location', DB::raw('COUNT(*) as `count`'))
+            ->groupBy('product_id', 'storage', 'color', 'grade')
+            ->havingRaw('COUNT(*) > 1');
+        })
+        ->when(request('reference_id') != '', function ($q) {
             return $q->where('reference_id', request('reference_id'));
         })
         ->when(request('product') != '', function ($q) {

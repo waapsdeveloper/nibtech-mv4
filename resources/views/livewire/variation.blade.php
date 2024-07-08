@@ -84,7 +84,13 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="p-2">
+                <div class="col-md col-sm-6">
+                    <select name="duplicate" class="form-control form-select" data-bs-placeholder="Select Status">
+                        <option value="">duplicate</option>
+                        <option value="1">Show</option>
+                    </select>
+                </div>
+                <div class="">
                     <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
                     <a href="{{url(session('url').'order')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
                 </div>
