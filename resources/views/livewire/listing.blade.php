@@ -337,7 +337,7 @@
                                                 function submitForm2(event, listingId) {
                                                     event.preventDefault(); // avoid executing the actual submit of the form.
 
-                                                    var form = $('#change_qty_' + listingId);
+                                                    var form = $('#change_price_' + listingId);
                                                     var actionUrl = form.attr('action');
 
                                                     $.ajax({
