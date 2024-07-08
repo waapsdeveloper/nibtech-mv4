@@ -43,6 +43,16 @@ class Variation_model extends Model
                     ->where('grade', $this->grade)
                     ->where('id', '!=', $this->id);
     }
+    public function hasDuplicate()
+    {
+        return $this->duplicate()->exists();
+    }
+
+    public function scopeHasDuplicate($query)
+    {
+        $query->whereHas('duplicate');
+    }
+
     public function product(){
         return $this->hasOne(Products_model::class, 'id', 'product_id');
     }

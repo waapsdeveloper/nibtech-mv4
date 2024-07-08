@@ -41,7 +41,8 @@ class Variation extends Component
         $data['grades'] = Grade_model::all();
         $data['variations'] = Variation_model::
         when(request('duplicate') != '', function ($q) {
-            return $q->whereHas('duplicate');
+            // return $q->whereHas('duplicate');
+            return $q->hasDuplicate();
         })
         ->
         when(request('reference_id') != '', function ($q) {
