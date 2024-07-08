@@ -17,7 +17,6 @@ use App\Models\Grade_model;
 use App\Models\Variation_model;
 use App\Models\Stock_model;
 use Symfony\Component\HttpFoundation\Request;
-use Illuminate\Support\Facades\Log;
 
 class Index extends Component
 {
@@ -27,9 +26,6 @@ class Index extends Component
     }
     public function render(Request $request)
     {
-
-
-        Log::channel('slack')->info('Something happened!');
         $data['title_page'] = "Dashboard";
         // dd('Hello2');
         $user_id = session('user_id');
