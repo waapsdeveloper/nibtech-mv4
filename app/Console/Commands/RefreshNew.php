@@ -75,12 +75,11 @@ class RefreshNew extends Command
         }
 
 
-        $last_id = Order_item_model::where('care_id','!=',null)->where('created_at','>=',Carbon::now()->subDays(4))->whereHas('order', function($q){$q->where('order_type_id',3);})->orderBy('reference_id','asc')->first()->care_id;
-        echo $last_id;
+        $last_id = Order_item_model::where('care_id','!=',null)->where('created_at','>=',Carbon::now()->subDays(4))->whereHas('sale_order')->orderBy('reference_id','asc')->first()->care_id;
+        // echo $last_id;
         $care = $bm->getAllCare(false, ['last_id'=>$last_id,'page-size'=>50]);
         // $care = $bm->getAllCare(false, ['page-size'=>50]);
-        print_r($care);
-        echo "s";
+        // print_r($care);
         $care_line = collect($care)->pluck('id','orderline')->toArray();
         $care_keys = array_keys($care_line);
 
@@ -100,7 +99,7 @@ class RefreshNew extends Command
         }
         $care = $bm->getAllCare(false, ['page-size'=>50]);
         // $care = $bm->getAllCare(false, ['page-size'=>50]);
-        print_r($care);
+        // print_r($care);
         $care_line = collect($care)->pluck('id','orderline')->toArray();
         $care_keys = array_keys($care_line);
 
