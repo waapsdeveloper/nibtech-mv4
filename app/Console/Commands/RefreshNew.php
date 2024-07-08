@@ -76,6 +76,7 @@ class RefreshNew extends Command
 
 
         $last_id = Order_item_model::where('care_id','!=',null)->where('created_at','>=',Carbon::now()->subDays(5))->whereHas('sale_order')->orderBy('reference_id','asc')->first()->care_id;
+        echo $last_id;
         $care = $bm->getAllCare(false, ['last_id'=>$last_id,'page-size'=>50]);
         // $care = $bm->getAllCare(false, ['page-size'=>50]);
         // print_r($care);
