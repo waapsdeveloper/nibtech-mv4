@@ -80,6 +80,10 @@ class Stock_model extends Model
     {
         return $this->hasOne(Order_model::class, 'id', 'order_id');
     }
+    public function active_order()
+    {
+        return $this->hasOne(Order_model::class, 'id', 'order_id')->where('status',3);
+    }
     public function purchase_item()
     {
         // Define a custom method to retrieve only one order item
