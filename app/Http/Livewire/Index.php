@@ -115,7 +115,7 @@ class Index extends Component
 
 
         $data['total_conversations'] = Order_item_model::where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date)->where('care_id','!=',null)
-        ->whereIn('variation_id', $variation_ids)
+        ->whereIn('variation_id', $variation_ids)->whereHas('sale_order')
         ->count();
         $data['average'] = Order_item_model::where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date)->whereHas('order', function ($q) {
             $q->where('currency',4);
