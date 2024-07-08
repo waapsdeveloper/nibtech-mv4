@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Http\Livewire\Listing;
+use App\Http\Livewire\Variation;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -35,6 +36,9 @@ class Variation_model extends Model
 
 
 
+    public function duplicate(){
+        return $this->hasOne(Variation_model::class, 'product_id', 'product_id')->where('storage',$this->storage)->where('color',$this->color)->where('grade',$this->grade);
+    }
     public function product(){
         return $this->hasOne(Products_model::class, 'id', 'product_id');
     }

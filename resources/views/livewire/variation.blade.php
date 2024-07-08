@@ -138,6 +138,11 @@
                         <div class="d-flex justify-content-between">
                             <h4 class="card-title mg-b-0">
                             </h4>
+                            @php
+                                if(request('duplicate')){
+                                    $variations = $variations->whereHas('duplicate');
+                                }
+                            @endphp
                             <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$variations->firstItem()}} {{ __('locale.To') }} {{$variations->lastItem()}} {{ __('locale.Out Of') }} {{$variations->total()}} </h5>
 
                             <div class=" mg-b-0">
@@ -182,6 +187,7 @@
                                 </thead>
                                 <tbody>
                                     @php
+
                                         $i = $variations->firstItem() - 1;
                                     @endphp
                                     @foreach ($variations as $index => $product)
