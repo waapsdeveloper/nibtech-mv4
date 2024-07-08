@@ -54,12 +54,12 @@ class Functions extends Command
         $this->push_testing_api();
     }
     private function remove_extra_variations(){
-        $variations = Variation_model::pluck('id');
+        $variations = Variation_model::limit(100)->pluck('id');
         if(file_exists('variations.txt')){
             $last_id = file_get_contents('variations.txt');
-            $variations = Variation_model::where('id','>',$last_id)->pluck('id');
+            $variations = Variation_model::where('id','>',$last_id)->limit(100)->pluck('id');
             if($variations->count() == 0){
-                $variations = Variation_model::pluck('id');
+                $variations = Variation_model::limit(100)->pluck('id');
             }
         }
         foreach($variations as $id){
