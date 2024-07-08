@@ -334,30 +334,30 @@
 
                                             <script>
 
-                                                // function submitForm2(event, listingId) {
-                                                //     event.preventDefault(); // avoid executing the actual submit of the form.
+                                                function submitForm2(event, listingId) {
+                                                    event.preventDefault(); // avoid executing the actual submit of the form.
 
-                                                //     var form = $('#change_qty_' + listingId);
-                                                //     var actionUrl = form.attr('action');
+                                                    var form = $('#change_qty_' + listingId);
+                                                    var actionUrl = form.attr('action');
 
-                                                //     $.ajax({
-                                                //         type: "POST",
-                                                //         url: actionUrl,
-                                                //         data: form.serialize(), // serializes the form's elements.
-                                                //         success: function(data) {
-                                                //             alert("Success: Price changed to " + data); // show response from the PHP script.
-                                                //             $('#send_' + listingId).addClass('d-none'); // hide the button after submission
-                                                //             // $('quantity_' + listingId).val(data)
-                                                //         },
-                                                //         error: function(jqXHR, textStatus, errorThrown) {
-                                                //             alert("Error: " + textStatus + " - " + errorThrown);
-                                                //         }
-                                                //     });
-                                                // }
+                                                    $.ajax({
+                                                        type: "POST",
+                                                        url: actionUrl,
+                                                        data: form.serialize(), // serializes the form's elements.
+                                                        success: function(data) {
+                                                            alert("Success: Price changed to " + data); // show response from the PHP script.
+                                                            $('#send_' + listingId).addClass('d-none'); // hide the button after submission
+                                                            // $('quantity_' + listingId).val(data)
+                                                        },
+                                                        error: function(jqXHR, textStatus, errorThrown) {
+                                                            alert("Error: " + textStatus + " - " + errorThrown);
+                                                        }
+                                                    });
+                                                }
 
-                                                // $("#change_price_{{$listing->id}}").submit(function(e) {
-                                                //     submitForm2(e, {{$listing->id}});
-                                                // });
+                                                $("#change_price_{{$listing->id}}").submit(function(e) {
+                                                    submitForm2(e, {{$listing->id}});
+                                                });
                                             </script>
 
                                             <td>{{$sign.$listing->max_price}}</td>
