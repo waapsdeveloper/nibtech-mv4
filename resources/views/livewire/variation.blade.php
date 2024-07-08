@@ -139,9 +139,9 @@
                             <h4 class="card-title mg-b-0">
                             </h4>
                             @php
-                                if(request('duplicate')){
-                                    $variations = $variations->whereHas('duplicate');
-                                }
+                                // if(request('duplicate')){
+                                //     $variations = $variations->whereHas('duplicate');
+                                // }
                             @endphp
                             <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$variations->firstItem()}} {{ __('locale.To') }} {{$variations->lastItem()}} {{ __('locale.Out Of') }} {{$variations->total()}} </h5>
 

@@ -40,13 +40,10 @@ class Variation extends Component
         $data['storages'] = Storage_model::all();
         $data['grades'] = Grade_model::all();
         $data['variations'] = Variation_model::
-        // when(request('duplicate') != '', function ($q) {
-        //     return $q
-        //     // ->select('name','location', DB::raw('COUNT(*) as `count`'))
-        //     ->groupBy('product_id', 'storage', 'color', 'grade')
-        //     ->havingRaw('COUNT(*) > 1');
-        // })
-        // ->
+        when(request('duplicate') != '', function ($q) {
+            return $q->whereHas('duplicate');
+        })
+        ->
         when(request('reference_id') != '', function ($q) {
             return $q->where('reference_id', request('reference_id'));
         })
