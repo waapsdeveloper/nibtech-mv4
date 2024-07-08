@@ -3,13 +3,17 @@
 namespace App\Console\Commands;
 
 use App\Http\Controllers\BackMarketAPIController;
+use App\Http\Livewire\Listing;
 use App\Models\Order_model;
 use App\Models\Order_item_model;
 use App\Models\Customer_model;
 use App\Models\Currency_model;
 use App\Models\Country_model;
+use App\Models\Listing_model;
+use App\Models\Process_model;
 use App\Models\Variation_model;
 use App\Models\Stock_model;
+use App\Models\Stock_operations_model;
 use Carbon\Carbon;
 
 
@@ -41,11 +45,34 @@ class FunctionsDaily extends Command
     public function handle()
     {
         ini_set('max_execution_time', 1200);
-        $this->remove_extra_customers();
+        $this->remove_extra_variations();
         $this->check_stock_status();
     }
-    private function remove_extra_customers(){
+    private function remove_extra_variations(){
+        $last_id = file_get_contents('variations.txt');
+        $variations = Variation_model::pluck('id');
+        foreach($variations as $id){
+            $variation = Variation_model::find($id);
+            if($variation != null){
 
+                $duplicates = Variation_model::where(['product_id'=>$variation->product_id,'reference_id'=>$variation->reference_id,'storage'=>$variation->storage,'color'=>$variation->color,'grade'=>$variation->grade])
+                ->whereNot('id',$variation->id)->get();
+                if($duplicates->count() > 0){
+                    foreach($duplicates as $duplicate){
+                        Listing_model::where('variation_id',$duplicate->id)->update(['variation_id'=>$variation->id]);
+                        Order_item_model::where('variation_id',$duplicate->id)->update(['variation_id'=>$variation->id]);
+                        Process_model::where('old_variation_id',$duplicate->id)->update(['old_variation_id'=>$variation->id]);
+                        Process_model::where('new_variation_id',$duplicate->id)->update(['new_variation_id'=>$variation->id]);
+                        Stock_model::where('variation_id',$duplicate->id)->update(['variation_id'=>$variation->id]);
+                        Stock_operations_model::where('old_variation_id',$duplicate->id)->update(['old_variation_id'=>$variation->id]);
+                        Stock_operations_model::where('new_variation_id',$duplicate->id)->update(['new_variation_id'=>$variation->id]);
+
+                        $duplicate->delete();
+                    }
+                }
+                file_put_contents('variations.txt', $id);
+            }
+        }
         // $data['customers'] = Customer_model::where('is_vendor',null)->get();
 
         // foreach($data['customers'] as $customer){
