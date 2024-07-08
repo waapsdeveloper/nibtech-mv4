@@ -308,13 +308,17 @@
                                             <td title="{{$listing->id." ".$listing->country_id->title}}"><img src="{{ asset('assets/img/flags/').'/'.strtolower($listing->country_id->code).'.svg' }}" height="15"> {{ $listing->country_id->code }}</td>
                                             @if (session('user')->hasPermission('view_price'))
                                             <td>{{$sign.$listing->buybox_price}}</td>
+                                            <form class="form-inline" method="POST" id="change_min_price_{{$listing->id}}" action="{{url('listing/update_price').'/'.$listing->id}}">
+                                                @csrf
+                                                <input type="submit" hidden>
+                                            </form>
                                             <form class="form-inline" method="POST" id="change_price_{{$listing->id}}" action="{{url('listing/update_price').'/'.$listing->id}}">
                                                 @csrf
                                                 <input type="submit" hidden>
                                             </form>
                                             <td>
                                                 <div class="form-floating">
-                                                    <input type="number" class="form-control" id="min_price_{{$listing->id}}" name="min_price" value="{{$listing->min_price}}" form="change_price_{{$listing->id}}">
+                                                    <input type="number" class="form-control" id="min_price_{{$listing->id}}" name="min_price" value="{{$listing->min_price}}" form="change_min_price_{{$listing->id}}">
                                                     <label for="">Min Price ({{$sign}})</label>
                                                 </div>
                                                 @if ($listing->currency_id == 5)
@@ -337,6 +341,30 @@
                                                 function submitForm2(event, listingId) {
                                                     event.preventDefault(); // avoid executing the actual submit of the form.
 
+                                                    var form = $('#change_min_price_' + listingId);
+                                                    var actionUrl = form.attr('action');
+
+                                                    $.ajax({
+                                                        type: "POST",
+                                                        url: actionUrl,
+                                                        data: form.serialize(), // serializes the form's elements.
+                                                        success: function(data) {
+                                                            alert("Success: Min Price changed to " + data); // show response from the PHP script.
+                                                            $('#send_' + listingId).addClass('d-none'); // hide the button after submission
+                                                            // $('quantity_' + listingId).val(data)
+                                                        },
+                                                        error: function(jqXHR, textStatus, errorThrown) {
+                                                            alert("Error: " + textStatus + " - " + errorThrown);
+                                                        }
+                                                    });
+                                                }
+
+                                                $("#change_min_price_{{$listing->id}}").submit(function(e) {
+                                                    submitForm2(e, {{$listing->id}});
+                                                });
+                                                function submitForm3(event, listingId) {
+                                                    event.preventDefault(); // avoid executing the actual submit of the form.
+
                                                     var form = $('#change_price_' + listingId);
                                                     var actionUrl = form.attr('action');
 
@@ -356,7 +384,7 @@
                                                 }
 
                                                 $("#change_price_{{$listing->id}}").submit(function(e) {
-                                                    submitForm2(e, {{$listing->id}});
+                                                    submitForm3(e, {{$listing->id}});
                                                 });
                                             </script>
 
