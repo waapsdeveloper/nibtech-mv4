@@ -162,7 +162,6 @@ class BackMarketAPIController extends Controller
 
         $error = (curl_error($ch));
         echo $error;
-        print_r($ch);
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
