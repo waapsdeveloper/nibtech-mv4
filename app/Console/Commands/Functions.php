@@ -48,15 +48,15 @@ class Functions extends Command
 
     public function handle()
     {
+        $this->remove_extra_variations();
         $this->check_linked_orders();
         $this->duplicate_orders();
         $this->push_testing_api();
-        $this->remove_extra_variations();
     }
     private function remove_extra_variations(){
         $variations = Variation_model::pluck('id');
-        $last_id = file_get_contents('variations.txt');
-        if($last_id != null){
+        if(file_exists('variations.txt')){
+            $last_id = file_get_contents('variations.txt');
             $variations = Variation_model::where('id','>',$last_id)->pluck('id');
         }
         foreach($variations as $id){
