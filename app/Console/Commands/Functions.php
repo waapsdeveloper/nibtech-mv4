@@ -12,6 +12,7 @@ use App\Models\Currency_model;
 use App\Models\Country_model;
 use App\Models\Grade_model;
 use App\Models\Listing_model;
+use App\Models\Process_model;
 use App\Models\Products_model;
 use App\Models\Variation_model;
 use App\Models\Stock_model;
@@ -50,6 +51,37 @@ class Functions extends Command
         $this->check_linked_orders();
         $this->duplicate_orders();
         $this->push_testing_api();
+        $this->remove_extra_variations();
+    }
+    private function remove_extra_variations(){
+        $variations = Variation_model::pluck('id');
+        $last_id = file_get_contents('variations.txt');
+        if($last_id != null){
+            $variations = Variation_model::where('id','>',$last_id)->pluck('id');
+        }
+        foreach($variations as $id){
+            $variation = Variation_model::find($id);
+            if($variation != null){
+
+                $duplicates = Variation_model::where(['product_id'=>$variation->product_id,'reference_id'=>$variation->reference_id,'storage'=>$variation->storage,'color'=>$variation->color,'grade'=>$variation->grade])
+                ->whereNot('id',$variation->id)->get();
+                if($duplicates->count() > 0){
+                    foreach($duplicates as $duplicate){
+                        Listing_model::where('variation_id',$duplicate->id)->update(['variation_id'=>$variation->id]);
+                        Order_item_model::where('variation_id',$duplicate->id)->update(['variation_id'=>$variation->id]);
+                        Process_model::where('old_variation_id',$duplicate->id)->update(['old_variation_id'=>$variation->id]);
+                        Process_model::where('new_variation_id',$duplicate->id)->update(['new_variation_id'=>$variation->id]);
+                        Stock_model::where('variation_id',$duplicate->id)->update(['variation_id'=>$variation->id]);
+                        Stock_operations_model::where('old_variation_id',$duplicate->id)->update(['old_variation_id'=>$variation->id]);
+                        Stock_operations_model::where('new_variation_id',$duplicate->id)->update(['new_variation_id'=>$variation->id]);
+
+                        $duplicate->delete();
+                    }
+                }
+                file_put_contents('variations.txt', $id);
+            }
+        }
+
     }
     private function check_linked_orders(){
 
