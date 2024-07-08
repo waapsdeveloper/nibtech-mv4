@@ -80,6 +80,7 @@ class RefreshNew extends Command
         $care = $bm->getAllCare(false, ['last_id'=>$last_id,'page-size'=>50]);
         // $care = $bm->getAllCare(false, ['page-size'=>50]);
         print_r($care);
+        echo "s";
         $care_line = collect($care)->pluck('id','orderline')->toArray();
         $care_keys = array_keys($care_line);
 
