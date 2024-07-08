@@ -58,6 +58,9 @@ class Functions extends Command
         if(file_exists('variations.txt')){
             $last_id = file_get_contents('variations.txt');
             $variations = Variation_model::where('id','>',$last_id)->pluck('id');
+            if($variations->count() == 0){
+                $variations = Variation_model::pluck('id');
+            }
         }
         foreach($variations as $id){
             $variation = Variation_model::find($id);
