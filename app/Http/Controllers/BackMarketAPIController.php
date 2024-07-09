@@ -269,6 +269,8 @@ class BackMarketAPIController extends Controller
         sleep(10);
 
         $result = $this->requestGet($end_point);
+        print_r($result);
+        die;
         if(isset($result->results)){
             $result_array = $result->results;
 
