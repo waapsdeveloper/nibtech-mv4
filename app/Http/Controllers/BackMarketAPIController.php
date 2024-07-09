@@ -72,12 +72,12 @@ class BackMarketAPIController extends Controller
         $url = "https://www.backmarket.fr/ws/sav";
 
         // Basic Authorization Header
-        $authorizationHeader = "Basic YmFlNDFiOWI5OTZiOGE0YjYyZGU3NjpCTVQtOGI3NjRmYThjMDhhOTYwMGIwYTFkYmUyYjA3NjEyNGY2M2I4NzZiNg==";
+        // $authorizationHeader = "Basic YmFlNDFiOWI5OTZiOGE0YjYyZGU3NjpCTVQtOGI3NjRmYThjMDhhOTYwMGIwYTFkYmUyYjA3NjEyNGY2M2I4NzZiNg==";
 
         // Make the PATCH request
         $response = Http::withHeaders([
             'Content-Type' => 'application/json', // Set the Content-Type header to JSON
-            'Authorization' => 'Bearer YOUR_ACCESS_TOKEN', // Add authorization token/header if required
+            'Authorization' => $api_call_data['Authorization'], // Add authorization token/header if required
         ])->patch($target_url, $patch_data);
 
         return json_decode($response);
