@@ -276,6 +276,7 @@ class BackMarketAPIController extends Controller
             // dd($result);
             while (($result_next->next) != null) {
                 if($result_next->results){
+                    sleep(5);
 
                     $i++;
                     $page++;
@@ -294,7 +295,6 @@ class BackMarketAPIController extends Controller
                     if($i == 50){
                         break;
                     }
-                    sleep(2);
                 }
             }
 
