@@ -266,7 +266,7 @@ class BackMarketAPIController extends Controller
             $end_point .= '&' . http_build_query($param);
         }
 
-        sleep(100);
+        sleep(10);
 
         $result = $this->requestGet($end_point);
         if(isset($result->results)){
@@ -564,6 +564,10 @@ class BackMarketAPIController extends Controller
                 // the new page object
                     $result_next = $this->apiGet($end_point_next, $code);
                 // the new page array
+                if(!isset($result_next->result)){
+                    Log::channel('slack')->info("Listing API: ".json_encode($result_next));
+                    break;
+                }
                 $result_next_array = $result_next->results;
                 // add all listings in current page to the $result_array
                 foreach ($result_next_array as $key => $value) {
