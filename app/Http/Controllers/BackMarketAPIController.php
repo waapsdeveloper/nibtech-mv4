@@ -266,6 +266,8 @@ class BackMarketAPIController extends Controller
             $end_point .= '&' . http_build_query($param);
         }
 
+        sleep(50);
+
         $result = $this->requestGet($end_point);
         if(isset($result->results)){
             $result_array = $result->results;
