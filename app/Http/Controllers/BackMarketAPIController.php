@@ -602,6 +602,7 @@ class BackMarketAPIController extends Controller
             $page = 1;
             // judge whetehr there exists the next page
             while (($result_next->next) != null) {
+                sleep(2);
             // for($i = 0; $i <= 3; $i++){
             $page++;
             // get the new end point
