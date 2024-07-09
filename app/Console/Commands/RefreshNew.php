@@ -49,6 +49,21 @@ class RefreshNew extends Command
         $currency_codes = Currency_model::pluck('id','code');
         $country_codes = Country_model::pluck('id','code');
 
+        $resArray1 = $bm->getNewOrders();
+        $orders = [];
+        if ($resArray1 !== null) {
+            foreach ($resArray1 as $orderObj) {
+                if (!empty($orderObj)) {
+                    foreach($orderObj->orderlines as $orderline){
+                        $this->validateOrderlines($orderObj->order_id, $orderline->listing, $bm);
+                    }
+                    $orders[] = $orderObj->order_id;
+                }
+            }
+            foreach($orders as $or){
+                $this->updateBMOrder($or, $bm, $currency_codes, $country_codes, $order_model, $order_item_model);
+            }
+        }
         $orders = Order_model::whereIn('status', [0, 1, 2])
             ->orWhereNull('delivery_note_url')
             ->orWhereNull('label_url')
