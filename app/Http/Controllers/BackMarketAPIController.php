@@ -300,7 +300,7 @@ class BackMarketAPIController extends Controller
 
             return $result_array;
         }else{
-            Log::channel('slack')->info($result);
+            Log::channel('slack')->info(json_encode($result));
         }
     }
     public function getAllOrders($page = 1, $param = []) {
