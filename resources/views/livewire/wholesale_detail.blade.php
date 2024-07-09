@@ -349,14 +349,15 @@
         <div class="row">
 
             @foreach ($variations as $key=>$vars)
+            @foreach ($vars as $key2=>$var)
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header pb-0">
                         @php
                             $varss = $vars->toArray();
                         @endphp
-                        {{ $products[$key]." ".$storages[array_key_first($varss)] }}
-                        @dd($vars)
+                        {{ $products[$key]." ".$storages[$key2] }}
+                        {{-- @dd($vars) --}}
                         {{-- @php
                             isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
                             isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
@@ -388,7 +389,6 @@
                                     @endphp
                                     <form method="POST" action="{{url('wholesale')}}/update_prices" id="update_prices_{{ $key."_".array_key_first($varss) }}">
                                         @csrf
-                                    @foreach ($vars as $var)
                                     @foreach ($var as $variation)
                                     {{-- @dd($variation) --}}
                                     @php
@@ -427,7 +427,6 @@
                                         @endif
                                     @endforeach
                                     @endforeach
-                                    @endforeach
                                     </form>
                                 </tbody>
                             </table>
@@ -444,6 +443,7 @@
                     </div>
                 </div>
             </div>
+            @endforeach
             @endforeach
         </div>
 
