@@ -356,7 +356,7 @@
                             $varss = $vars->toArray();
                         @endphp
                         {{ $products[$key]." ".$storages[array_key_first($varss)] }}
-                        {{-- @dd($vars) --}}
+                        @dd($vars)
                         {{-- @php
                             isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
                             isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;

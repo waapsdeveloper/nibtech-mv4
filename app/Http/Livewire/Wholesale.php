@@ -149,35 +149,35 @@ class Wholesale extends Component
         $data['grades'] = Grade_model::pluck('name','id');
         $data['colors'] = Color_model::pluck('name','id');
 
-$variations = Variation_model::with([
-    'stocks' => function ($query) use ($order_id) {
-        $query->whereHas('order_item', function ($query) use ($order_id) {
-            $query->where('order_id', $order_id);
-        });
-    },
-    'stocks.order_item'
-])
-->whereHas('stocks', function ($query) use ($order_id) {
-    $query->whereHas('order_item', function ($query) use ($order_id) {
-        $query->where('order_id', $order_id);
-    });
-})
-->orderBy('product_id', 'desc')
-->get();
+        $variations = Variation_model::with([
+            'stocks' => function ($query) use ($order_id) {
+                $query->whereHas('order_item', function ($query) use ($order_id) {
+                    $query->where('order_id', $order_id);
+                });
+            },
+            'stocks.order_item'
+        ])
+        ->whereHas('stocks', function ($query) use ($order_id) {
+            $query->whereHas('order_item', function ($query) use ($order_id) {
+                $query->where('order_id', $order_id);
+            });
+        })
+        ->orderBy('product_id', 'desc')
+        ->get();
 
-// Group by product_id and storage
-$variations = $variations->groupBy(['product_id', 'storage']);
+        // Group by product_id and storage
+        $variations = $variations->groupBy(['product_id', 'storage']);
 
-// Filter out variations with no associated stocks
-// $filteredGroupedVariations = $groupedVariations->map(function ($storageGroup) {
-//     return $storageGroup->filter(function ($variation) {
-//         return $variation->stocks->isNotEmpty();
-//     });
-// })->filter(function ($storageGroup) {
-//     return $storageGroup->isNotEmpty();
-// });
+        // Filter out variations with no associated stocks
+        // $filteredGroupedVariations = $groupedVariations->map(function ($storageGroup) {
+        //     return $storageGroup->filter(function ($variation) {
+        //         return $variation->stocks->isNotEmpty();
+        //     });
+        // })->filter(function ($storageGroup) {
+        //     return $storageGroup->isNotEmpty();
+        // });
 
-// dd($filteredGroupedVariations);
+        // dd($filteredGroupedVariations);
 
         // $variations = Variation_model::with([
         //     'stocks' => function ($query) use ($order_id) {
