@@ -588,7 +588,7 @@ class BackMarketAPIController extends Controller
             // result of the first page
             $result = $this->apiGet($end_point, $code);
             // print_r($result);
-            if(!$result->result){
+            if(!isset($result->result)){
 
                 Log::channel('slack')->info("ListingBI API: ".json_encode($result));
             }
