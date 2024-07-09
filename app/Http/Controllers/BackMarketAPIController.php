@@ -89,7 +89,7 @@ class BackMarketAPIController extends Controller
             } else {
                 // throw new Exception("Exceeded maximum retries for API request");
 
-                Log::channel('slack')->info("Care API: Exceeded maximum retries for API request".json_encode($result));
+                // Log::channel('slack')->info("Care API: Exceeded maximum retries for API request".json_encode($result));
             }
         }
 
@@ -369,8 +369,6 @@ class BackMarketAPIController extends Controller
         sleep(10);
 
         $result = $this->requestGet($end_point);
-        print_r($result);
-        die;
         if(isset($result->results)){
             $result_array = $result->results;
 
