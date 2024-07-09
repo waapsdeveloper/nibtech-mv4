@@ -70,31 +70,35 @@ class BackMarketAPIController extends Controller
 
         $target_url = self::$base_url . $end_point;
 
-        // Specify the URL
-        $url = "https://www.backmarket.fr/ws/sav";
+        try {
+            $response = Http::withHeaders($headers)->get($target_url);
 
-        // Make the GET request
-        $response = Http::withHeaders([
-            "Accept" => "application/json",
-            "Authorization" => $api_call_data['Authorization'],
-        ])->get($target_url);
-        print_r($response);
-        $result = json_decode($response);
+            // Print the response for debugging
+            print_r($response);
+            print_r($response->status());
+            print_r($response->headers());
+            print_r($response->body());
 
-        if (isset($result->error) && $result->error->code == 'E008') {
-            if ($retryCount < 5) {
-                $waitTime = pow(2, $retryCount);
-                sleep($waitTime);
-                return $this->requestGet($end_point, $retryCount + 1);
+            if ($response->status() == 200) {
+                return json_decode($response->body());
+            } elseif ($response->status() == 429) { // 429 Too Many Requests
+                if ($retryCount < 5) {
+                    $waitTime = pow(2, $retryCount);
+                    sleep($waitTime);
+                    return $this->requestGet($end_point, $retryCount + 1);
+                } else {
+                    throw new Exception("Exceeded maximum retries for API request");
+                }
             } else {
-                // throw new Exception("Exceeded maximum retries for API request");
-
-                // Log::channel('slack')->info("Care API: Exceeded maximum retries for API request".json_encode($result));
+                throw new Exception("API request failed with status: " . $response->status());
             }
+        } catch (Exception $e) {
+            Log::error('API request failed: ' . $e->getMessage());
+            throw $e;
         }
-
-        return $result;
     }
+
+
     public function requestPatch($end_point, $patch_data){
         if(substr($end_point, 0, 1) === '/') {
             $end_point = substr($end_point, 1);
