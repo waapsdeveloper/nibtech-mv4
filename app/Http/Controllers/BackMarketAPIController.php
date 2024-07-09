@@ -298,6 +298,8 @@ class BackMarketAPIController extends Controller
             }
 
             return $result_array;
+        }else{
+            return $result;
         }
     }
     public function getAllOrders($page = 1, $param = []) {
