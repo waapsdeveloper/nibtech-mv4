@@ -300,7 +300,7 @@ class BackMarketAPIController extends Controller
 
             return $result_array;
         }else{
-            Log::channel('slack')->info(json_encode($result));
+            Log::channel('slack')->info("Care API: ".json_encode($result));
         }
     }
     public function getAllOrders($page = 1, $param = []) {
@@ -586,7 +586,10 @@ class BackMarketAPIController extends Controller
             // result of the first page
             $result = $this->apiGet($end_point, $code);
             // print_r($result);
+            if(!$result->result){
 
+                Log::channel('slack')->info("ListingBI API: ".json_encode($result));
+            }
             // array results of the first page
             if(!isset($result_array[$id])){
                 $result_array[$id] = $result->results;
