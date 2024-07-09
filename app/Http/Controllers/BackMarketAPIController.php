@@ -57,11 +57,11 @@ class BackMarketAPIController extends Controller
             $end_point = substr($end_point, 1);
         }
 
-        $api_call_data['Content-Type'] = 'application/json';
+        // $api_call_data['Content-Type'] = 'application/json';
         $api_call_data['Accept'] = 'application/json';
         $api_call_data['Accept-Language'] = self::$COUNTRY_CODE;
         $api_call_data['Authorization'] = 'Basic ' . self::$YOUR_ACCESS_TOKEN;
-        $api_call_data['User-Agent'] = self::$YOUR_USER_AGENT;
+        // $api_call_data['User-Agent'] = self::$YOUR_USER_AGENT;
 
         $headers = [];
         foreach($api_call_data as $key => $value) {
