@@ -16,6 +16,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('inspire')->hourly();
+        $schedule->command('refresh:latest')->everyMinutes()->between('8:00', '24:00');
         $schedule->command('refresh:new')->everyTwoMinutes()->between('8:00', '24:00');
         $schedule->command('refresh:orders')->everyFiveMinutes()->between('8:00', '24:00');
         $schedule->command('functions:ten')->everyTenMinutes()->between('8:00', '24:00');
