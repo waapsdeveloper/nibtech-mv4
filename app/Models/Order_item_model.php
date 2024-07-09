@@ -148,18 +148,18 @@ class Order_item_model extends Model
         // Your implementation here
 
         foreach ($orderObj->orderlines as $itemObj) {
-            $care = $bm->getAllCare(false, ['orderline'=>$itemObj->id]);
-            // $care = $bm->getAllCare(false, ['page-size'=>50]);
-            // print_r($care);
-            $care_line = collect($care)->pluck('id','orderline')->toArray();
+            // $care = $bm->getAllCare(false, ['orderline'=>$itemObj->id]);
+            // // $care = $bm->getAllCare(false, ['page-size'=>50]);
+            // // print_r($care);
+            // $care_line = collect($care)->pluck('id','orderline')->toArray();
 
-            // Construct the raw SQL expression for the CASE statement
-            // $caseExpression = "CASE ";
-            foreach ($care_line as $id => $care) {
-                // $caseExpression .= "WHEN reference_id = $id THEN $care ";
-                $order = Order_item_model::where('reference_id',$id)->update(['care_id' => $care]);
+            // // Construct the raw SQL expression for the CASE statement
+            // // $caseExpression = "CASE ";
+            // foreach ($care_line as $id => $care) {
+            //     // $caseExpression .= "WHEN reference_id = $id THEN $care ";
+            //     $order = Order_item_model::where('reference_id',$id)->update(['care_id' => $care]);
 
-            }
+            // }
             // Your implementation here using Eloquent ORM
             // Example:
             // print_r($orderObj);
