@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Country_model;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
@@ -21,7 +22,37 @@ class BackMarketAPIController extends Controller
         self::$YOUR_ACCESS_TOKEN = "NzZhMGVhNTZlNmNjNGI1MTgzNzJjMzpCTVQtMmRhMTk3MWM1ZmVkNzJlMzRjMGZiYmFiMTdjYzkxZDEwMTM3MDU2Nw==";
         self::$YOUR_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36";
     }
-    public function requestGet($end_point){
+    // public function requestGet($end_point){
+    //     if(substr($end_point, 0, 1) === '/') {
+    //         $end_point = substr($end_point, 1);
+    //     }
+
+    //     $api_call_data['Content-Type'] = 'application/json';
+    //     $api_call_data['Accept'] = 'application/json';
+    //     $api_call_data['Accept-Language'] = self::$COUNTRY_CODE;
+    //     $api_call_data['Authorization'] = 'Basic ' . self::$YOUR_ACCESS_TOKEN;
+    //     $api_call_data['User-Agent'] = self::$YOUR_USER_AGENT;
+
+    //     $headers = [];
+    //     foreach($api_call_data as $key => $value) {
+    //         array_push($headers, "$key:$value");
+    //     }
+
+    //     $target_url = self::$base_url . $end_point;
+
+    //     // Specify the URL
+    //     $url = "https://www.backmarket.fr/ws/sav";
+
+
+    //     // Make the GET request
+    //     $response = Http::withHeaders([
+    //         "Accept" => "application/json",
+    //         "Authorization" => $api_call_data['Authorization'],
+    //     ])->get($target_url);
+
+    //     return json_decode($response);
+    // }
+    public function requestGet($end_point, $retryCount = 0){
         if(substr($end_point, 0, 1) === '/') {
             $end_point = substr($end_point, 1);
         }
@@ -42,14 +73,25 @@ class BackMarketAPIController extends Controller
         // Specify the URL
         $url = "https://www.backmarket.fr/ws/sav";
 
-
         // Make the GET request
         $response = Http::withHeaders([
             "Accept" => "application/json",
             "Authorization" => $api_call_data['Authorization'],
         ])->get($target_url);
 
-        return json_decode($response);
+        $result = json_decode($response);
+
+        if (isset($result->error) && $result->error->code == 'E008') {
+            if ($retryCount < 5) {
+                $waitTime = pow(2, $retryCount);
+                sleep($waitTime);
+                return $this->requestGet($end_point, $retryCount + 1);
+            } else {
+                throw new Exception("Exceeded maximum retries for API request");
+            }
+        }
+
+        return $result;
     }
     public function requestPatch($end_point, $patch_data){
         if(substr($end_point, 0, 1) === '/') {
@@ -250,9 +292,65 @@ class BackMarketAPIController extends Controller
         return $result;
     }
 
+    // public function getAllCare($date_modification = false, $param = []) {
+
+
+    //     $end_point = 'sav?';
+
+    //     if ($date_modification == false) {
+    //         $date_modification = date("Y-m-d-H-i", time() - 2 * 24 * 60 * 60);
+    //     }
+
+    //     $end_point .= "?last_modification_date=$date_modification";
+    //     // $end_point .= "?last_message_date=$date_modification";
+
+    //     if (count($param) > 0) {
+    //         $end_point .= '&' . http_build_query($param);
+    //     }
+
+    //     sleep(10);
+
+    //     $result = $this->requestGet($end_point);
+    //     print_r($result);
+    //     die;
+    //     if(isset($result->results)){
+    //         $result_array = $result->results;
+
+    //         $result_next = $result;
+    //         $i = 1;
+    //         $page = 1;
+    //         // dd($result);
+    //         while (($result_next->next) != null) {
+    //             if($result_next->results){
+    //                 sleep(5);
+
+    //                 $i++;
+    //                 $page++;
+    //                 $end_point_next_tail = '&page=' . "$page";
+    //                 $end_point_next = $end_point . $end_point_next_tail;
+    //                 $result_next = $this->requestGet($end_point_next);
+    //                 if(!isset($result_next->results)){
+    //                     print_r($result_next);
+    //                     break;
+    //                 }
+    //                 $result_next_array = $result_next->results;
+
+    //                 foreach ($result_next_array as $key => $value) {
+    //                     array_push($result_array, $result_next_array[$key]);
+    //                 }
+    //                 if($i == 50){
+    //                     break;
+    //                 }
+    //             }
+    //         }
+
+    //         return $result_array;
+    //     }else{
+    //         Log::channel('slack')->info("Care API: ".json_encode($result));
+    //     }
+    // }
+
     public function getAllCare($date_modification = false, $param = []) {
-
-
         $end_point = 'sav?';
 
         if ($date_modification == false) {
