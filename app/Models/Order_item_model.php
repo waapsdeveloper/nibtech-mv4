@@ -98,8 +98,8 @@ class Order_item_model extends Model
         echo $last_id;
         $care = $bm->getAllCare(false, ['last_id'=>$last_id,'page-size'=>50]);
         // $care = $bm->getAllCare(false, ['page-size'=>50]);
-        print_r($care);
-        die;
+        // print_r($care);
+        // die;
         $care_line = collect($care)->pluck('id','orderline')->toArray();
         $care_keys = array_keys($care_line);
 
