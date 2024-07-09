@@ -87,7 +87,9 @@ class BackMarketAPIController extends Controller
                 sleep($waitTime);
                 return $this->requestGet($end_point, $retryCount + 1);
             } else {
-                throw new Exception("Exceeded maximum retries for API request");
+                // throw new Exception("Exceeded maximum retries for API request");
+
+                Log::channel('slack')->info("ListingBI API: Exceeded maximum retries for API request".json_encode($result));
             }
         }
 
