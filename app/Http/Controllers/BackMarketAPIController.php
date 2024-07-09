@@ -664,7 +664,7 @@ class BackMarketAPIController extends Controller
                 // the new page object
                     $result_next = $this->apiGet($end_point_next, $code);
                 // the new page array
-                if(!isset($result_next->result)){
+                if(!isset($result_next->results)){
                     Log::channel('slack')->info("Listing API: ".json_encode($result_next));
                     break;
                 }
@@ -692,7 +692,7 @@ class BackMarketAPIController extends Controller
             // result of the first page
             $result = $this->apiGet($end_point, $code);
             // print_r($result);
-            if(!isset($result->result)){
+            if(!isset($result->results)){
 
                 Log::channel('slack')->info("ListingBI API: ".json_encode($result));
             }
