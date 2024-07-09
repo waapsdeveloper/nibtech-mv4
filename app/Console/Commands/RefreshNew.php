@@ -59,26 +59,6 @@ class RefreshNew extends Command
             $this->updateBMOrder($order, $bm, $currency_codes, $country_codes, $order_model, $order_item_model);
         }
 
-        $care = $bm->getAllCare(false, ['page-size'=>50]);
-        // $care = $bm->getAllCare(false, ['page-size'=>50]);
-        // print_r($care);
-        $care_line = collect($care)->pluck('id','orderline')->toArray();
-        $care_keys = array_keys($care_line);
-
-
-        // Assuming $care_line is already defined from the previous code
-        $careLineKeys = array_keys($care_line);
-
-        // Construct the raw SQL expression for the CASE statement
-        // $caseExpression = "CASE ";
-        foreach ($care_line as $id => $care) {
-            // $caseExpression .= "WHEN reference_id = $id THEN $care ";
-            $order = Order_item_model::where('reference_id',$id)->update(['care_id' => $care]);
-            if($order != 0){
-                print_r($order);
-            }
-
-        }
 
     }
     private function updateBMOrder($order_id, $bm, $currency_codes, $country_codes, $order_model, $order_item_model){
