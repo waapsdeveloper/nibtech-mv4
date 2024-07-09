@@ -78,7 +78,7 @@ class BackMarketAPIController extends Controller
             "Accept" => "application/json",
             "Authorization" => $api_call_data['Authorization'],
         ])->get($target_url);
-        print_r($response);
+        // print_r($response);
         $result = json_decode($response);
 
         if (isset($result->error) && $result->error->code == 'E008') {
