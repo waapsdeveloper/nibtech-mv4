@@ -387,7 +387,7 @@
                                         $i = 0;
                                         $total = 0;
                                     @endphp
-                                    <form method="POST" action="{{url('wholesale')}}/update_prices" id="update_prices_{{ $key."_".array_key_first($varss) }}">
+                                    <form method="POST" action="{{url('wholesale')}}/update_prices" id="update_prices_{{ $key."_".$key2 }}">
                                         @csrf
                                     @foreach ($var as $variation)
                                     {{-- @dd($variation) --}}
@@ -435,7 +435,7 @@
                     <div class="d-flex justify-content-between">
                         <div>
                             <label for="unit-price" class="">Change Unit Price: </label>
-                            <input type="number" name="unit_price" id="unit_price" step="0.01" class="w-50 border-0" placeholder="Input Unit price" form="update_prices_{{ $key."_".array_key_first($varss) }}">
+                            <input type="number" name="unit_price" id="unit_price" step="0.01" class="w-50 border-0" placeholder="Input Unit price" form="update_prices_{{ $key."_".$key2 }}">
                         </div>
                         <div>Average: {{$total/$i }}</div>
                         <div>Total: {{$i }}</div>
