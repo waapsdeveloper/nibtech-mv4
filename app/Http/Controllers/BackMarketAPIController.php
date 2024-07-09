@@ -6,6 +6,7 @@ use App\Models\Country_model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Log;
 
 
 
@@ -299,7 +300,7 @@ class BackMarketAPIController extends Controller
 
             return $result_array;
         }else{
-            return $result;
+            Log::channel('slack')->info($result);
         }
     }
     public function getAllOrders($page = 1, $param = []) {
