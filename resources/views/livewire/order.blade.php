@@ -468,17 +468,20 @@
                                                                     <input type="submit" name="imei_send" value="Submit IMEIs" class="form-control form-control-sm w-100" form="dispatch_{{ $i."_".$j }}">
                                                                 </div>
                                                             </form>
-                                                        @elseif (count($items) >= 2 && $item->quantity == 1)
+                                                        @elseif (count($items) >= 2)
                                                             <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url(session('url').'order')}}/dispatch/{{ $order->id }}">
                                                                 @csrf
-                                                                @for ($in = 1; $in <= count($items); $in ++)
+                                                                @foreach ($items as $itm)
 
-                                                                    <div class="input-group">
-                                                                        <input type="text" name="tester[]" placeholder="Tester" class="form-control form-control-sm" style="max-width: 50px">
-                                                                        <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm" required title="for SKU:{{ $items[$in-1]->variation->sku }}">
-                                                                    </div>
-                                                                <input type="hidden" name="sku[]" value="{{ $items[$in-1]->variation->sku }}">
-                                                                @endfor
+                                                                    @for ($in = 1; $in <= $itm->quantity; $in++)
+
+                                                                        <div class="input-group">
+                                                                            <input type="text" name="tester[]" placeholder="Tester" class="form-control form-control-sm" style="max-width: 50px">
+                                                                            <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm" required title="for SKU:{{ $itm->variation->sku }}">
+                                                                        </div>
+                                                                        <input type="hidden" name="sku[]" value="{{ $itm->variation->sku }}">
+                                                                    @endfor
+                                                                @endforeach
                                                                 <div class="w-100">
                                                                     <input type="submit" name="imei_send" value="Submit IMEIs" class="form-control form-control-sm w-100" form="dispatch_{{ $i."_".$j }}">
                                                                 </div>
