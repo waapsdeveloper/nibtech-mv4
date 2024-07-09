@@ -75,6 +75,7 @@ class RefreshLatest extends Command
         }
 
 
+        $order_item_model->get_latest_care($bm);
 
     }
     private function updateBMOrder($order_id, $bm, $currency_codes, $country_codes, $order_model, $order_item_model){
