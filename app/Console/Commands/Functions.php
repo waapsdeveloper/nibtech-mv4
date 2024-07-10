@@ -99,7 +99,9 @@ class Functions extends Command
         foreach($variations_2 as $id){
             $variation = Variation_model::find($id);
             if($variation != null){
-
+                if($variation->deleted_at != null){
+                    echo 2;
+                }
                 $duplicates = Variation_model::where(['sku'=>$variation->sku,'grade'=>$variation->grade])
                 ->whereNot('id',$variation->id)->get();
                 if($duplicates->count() > 0){
