@@ -110,7 +110,7 @@ class Inventory extends Component
             $data['verified_stocks'] = $verified_stocks;
         }
         $data['active_inventory_verification'] = $active_inventory_verification;
-        $stocks = Stock_model::with(['variation','latest_operation','latest_return','admin','purchase_item'])
+        $stocks = Stock_model::with(['variation','latest_operation','latest_return','admin'])
         ->whereNotIn('stock.id',$all_verified_stocks)
         ->where('stock.status', 1)
 
