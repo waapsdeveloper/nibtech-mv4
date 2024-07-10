@@ -349,8 +349,8 @@
                                                         url: actionUrl,
                                                         data: form.serialize(), // serializes the form's elements.
                                                         success: function(data) {
-                                                            alert("Success: Min Price changed to " + data); // show response from the PHP script.
-                                                            $('#send_' + listingId).addClass('d-none'); // hide the button after submission
+                                                            // alert("Success: Min Price changed to " + data); // show response from the PHP script.
+                                                            $('#senmin_price_' + listingId).addClass('bg-green'); // hide the button after submission
                                                             // $('quantity_' + listingId).val(data)
                                                         },
                                                         error: function(jqXHR, textStatus, errorThrown) {
