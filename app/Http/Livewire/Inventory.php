@@ -65,9 +65,8 @@ class Inventory extends Component
 
         $active_inventory_verification = Process_model::where(['process_type_id'=>20,'status'=>1])->first();
         if($active_inventory_verification != null){
-            $active_inventory_verification = $active_inventory_verification->id;
-            $all_verified_stocks = Process_stock_model::where('process_id', $active_inventory_verification)->pluck('stock_id')->toArray();
-            $verified_stocks = Process_stock_model::where('process_id', $active_inventory_verification)
+            $all_verified_stocks = Process_stock_model::where('process_id', $active_inventory_verification->id)->pluck('stock_id')->toArray();
+            $verified_stocks = Process_stock_model::where('process_id', $active_inventory_verification->id)
             ->when(request('vendor') != '', function ($q) {
                 return $q->whereHas('stock.order', function ($q) {
                     $q->where('customer_id', request('vendor'));
@@ -111,75 +110,6 @@ class Inventory extends Component
             $data['verified_stocks'] = $verified_stocks;
         }
         $data['active_inventory_verification'] = $active_inventory_verification;
-        $stocks = Stock_model::with(['variation','variation.product','latest_operation','latest_return','admin','order'])
-        ->whereNotIn('stock.id',$all_verified_stocks)
-        ->where('stock.status', 1)
-
-        ->when(request('aftersale') != 1, function ($q) use ($aftersale) {
-            return $q->whereNotIn('stock.id',$aftersale);
-        })
-
-        ->when(request('stock_status') != '', function ($q) {
-            return $q->where('stock.status', request('stock_status'));
-        })
-        // ->when(request('stock_status') == '', function ($q) {
-        //     return $q
-        // })
-        ->when(request('vendor') != '', function ($q) {
-            return $q->whereHas('order', function ($q) {
-                $q->where('orders.customer_id', request('vendor'));
-            });
-        })
-        ->when(request('status') != '', function ($q) {
-            return $q->whereHas('order', function ($q) {
-                $q->where('orders.status', request('status'));
-            });
-        })
-        ->when(request('replacement') != '', function ($q) use ($replacements) {
-            return $q->whereHas('order_items.order', function ($q) use ($replacements) {
-                $q->where(['status'=>3, 'order_type_id'=>3])
-                ->whereNotIn('orders.reference_id', $replacements);
-            });
-        })
-
-        ->when(request('rma') != '', function ($query) use ($rmas) {
-            return $query->whereDoesntHave('order_items', function ($q) use ($rmas) {
-                $q->whereIn('order_items.order_id', $rmas);
-            })->whereHas('variation', function ($q) {
-                $q->where('variation.grade', 10);
-            })->where('stock.status',2);
-        })
-        ->when(request('storage') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('storage', request('storage'));
-            });
-        })
-        ->when(request('category') != '', function ($q) {
-            return $q->whereHas('variation.product', function ($q) {
-                $q->where('category', request('category'));
-            });
-        })
-        ->when(request('brand') != '', function ($q) {
-            return $q->whereHas('variation.product', function ($q) {
-                $q->where('brand', request('brand'));
-            });
-        })
-        ->when(request('product') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('product_id', request('product'));
-            });
-        })
-        ->when(request('grade') != [], function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                // print_r(request('grade'));
-                $q->whereIn('grade', request('grade'));
-            });
-        })
-        ->withSum('order_items as cost', 'price', function ($q) {
-            $q->whereColumn('order_items.stock_id', 'stock.id')->whereColumn('order_items.order_id', 'stock.order_id')->whereColumn('order_items.order_id', 'order.id')
-              ->where('order_items.deleted_at', null); // Add any additional conditions here
-        })
-        ;
 
         if(request('replacement') == 1){
             $replacements = Order_item_model::where(['order_id'=>8974])->where('reference_id','!=',null)->pluck('reference_id')->toArray();
@@ -207,122 +137,143 @@ class Inventory extends Component
             ->onEachSide(5)
             ->appends(request()->except('page'));
         }else{
-            $data['stocks'] = $stocks->clone()
-            ->orderBy('stock.order_id','ASC')
-            ->orderBy('stock.updated_at','ASC')
+            $data['stocks'] = Stock_model::whereNotIn('stock.id',$all_verified_stocks)
+            ->where('stock.status', 1)
+
+            ->when(request('aftersale') != 1, function ($q) use ($aftersale) {
+                return $q->whereNotIn('stock.id',$aftersale);
+            })
+
+            ->when(request('stock_status') != '', function ($q) {
+                return $q->where('stock.status', request('stock_status'));
+            })
+            // ->when(request('stock_status') == '', function ($q) {
+            //     return $q
+            // })
+            ->when(request('vendor') != '', function ($q) {
+                return $q->whereHas('order', function ($q) {
+                    $q->where('orders.customer_id', request('vendor'));
+                });
+            })
+            ->when(request('status') != '', function ($q) {
+                return $q->whereHas('order', function ($q) {
+                    $q->where('orders.status', request('status'));
+                });
+            })
+            ->when(request('replacement') != '', function ($q) use ($replacements) {
+                return $q->whereHas('order_items.order', function ($q) use ($replacements) {
+                    $q->where(['status'=>3, 'order_type_id'=>3])
+                    ->whereNotIn('orders.reference_id', $replacements);
+                });
+            })
+
+            ->when(request('rma') != '', function ($query) use ($rmas) {
+                return $query->whereDoesntHave('order_items', function ($q) use ($rmas) {
+                    $q->whereIn('order_items.order_id', $rmas);
+                })->whereHas('variation', function ($q) {
+                    $q->where('variation.grade', 10);
+                })->where('stock.status',2);
+            })
+            ->when(request('storage') != '', function ($q) {
+                return $q->whereHas('variation', function ($q) {
+                    $q->where('storage', request('storage'));
+                });
+            })
+            ->when(request('category') != '', function ($q) {
+                return $q->whereHas('variation.product', function ($q) {
+                    $q->where('category', request('category'));
+                });
+            })
+            ->when(request('brand') != '', function ($q) {
+                return $q->whereHas('variation.product', function ($q) {
+                    $q->where('brand', request('brand'));
+                });
+            })
+            ->when(request('product') != '', function ($q) {
+                return $q->whereHas('variation', function ($q) {
+                    $q->where('product_id', request('product'));
+                });
+            })
+            ->when(request('grade') != [], function ($q) {
+                return $q->whereHas('variation', function ($q) {
+                    // print_r(request('grade'));
+                    $q->whereIn('grade', request('grade'));
+                });
+            })
+            ->orderBy('order_id','ASC')
+            ->orderBy('updated_at','ASC')
             ->paginate($per_page)
             ->onEachSide(5)
             ->appends(request()->except('page'));
         }
 
-        // Query for overall average cost
-        $data['average_cost'] = $stocks->clone()
-        ->get();
+        $data['average_cost'] = Stock_model::where('stock.deleted_at',null)->where('order_items.deleted_at',null)
 
-        // dd($data['average_cost']);
-        // ->map(function ($item) {
-        //     $item->average_price = $item->total_qty > 0 ? $item->total_price / $item->total_qty : 0;
-        //     return $item;
-        // });
+        ->when(request('stock_status') != '', function ($q) {
+            return $q->where('stock.status', request('stock_status'));
+        })
+        ->when(request('stock_status') == '', function ($q) {
+            return $q->where('stock.status', 1);
+        })
+        ->when(request('vendor') != '', function ($q) {
+            return $q->whereHas('order', function ($q) {
+                $q->where('customer_id', request('vendor'));
+            });
+        })
+        ->when(request('status') != '', function ($q) {
+            return $q->whereHas('order', function ($q) {
+                $q->where('status', request('status'));
+            });
+        })
+        ->when(request('replacement') != '', function ($q) use ($replacements) {
+            return $q->whereHas('order_items.order', function ($q) use ($replacements) {
+                $q->where(['status'=>3, 'order_type_id'=>3])
+                ->whereNotIn('reference_id', $replacements);
+            })->Where('stock.status',1);
+        })
 
-        // Calculate average_price from total_price
-        $averagePrice = $data['average_cost']->pluck('cost')->avg();
-
-        $data['average_cost'] = [
-            'average_price' => $averagePrice,
-            'total_price' => $data['average_cost']->pluck('cost')->sum(),
-        ];
-
-        // Query for vendor average cost
-        // $data['vendor_average_cost'] = $stocks->clone()
-        // ->withSum('purchase_item as total_price', 'price')
-        // ->withCount('purchase_item as total_qty')
-        // ->join('orders', 'stock.order_id', '=', 'orders.id')
-        // ->select('orders.customer_id')
-        // ->groupBy('orders.customer_id')
-        // ->get()
-        // ->map(function ($item) {
-        //     $item->average_price = $item->total_qty > 0 ? $item->total_price / $item->total_qty : 0;
-        //     return $item;
-        // });
-
-
-        // $data['average_cost'] = Stock_model::
-
-        // when(request('stock_status') != '', function ($q) {
-        //     return $q->where('stock.status', request('stock_status'));
-        // })
-        // ->when(request('stock_status') == '', function ($q) {
-        //     return $q->where('stock.status', 1);
-        // })
-        // ->when(request('vendor') != '', function ($q) {
-        //     return $q->whereHas('order', function ($q) {
-        //         $q->where('customer_id', request('vendor'));
-        //     });
-        // })
-        // ->when(request('status') != '', function ($q) {
-        //     return $q->whereHas('order', function ($q) {
-        //         $q->where('status', request('status'));
-        //     });
-        // })
-        // ->when(request('replacement') != '', function ($q) use ($replacements) {
-        //     return $q->whereHas('order_items.order', function ($q) use ($replacements) {
-        //         $q->where(['status'=>3, 'order_type_id'=>3])
-        //         ->whereNotIn('reference_id', $replacements);
-        //     })->Where('stock.status',1);
-        // })
-
-        // ->when(request('rma') != '', function ($query) use ($rmas) {
-        //     return $query->whereDoesntHave('order_items', function ($q) use ($rmas) {
-        //         $q->whereIn('order_id', $rmas);
-        //     })->whereHas('variation', function ($q) {
-        //         $q->where('grade', 10);
-        //     })->Where('stock.status',2);
-        // })
-        // ->when(request('storage') != '', function ($q) {
-        //     return $q->whereHas('variation', function ($q) {
-        //         $q->where('storage', request('storage'));
-        //     });
-        // })
-        // ->when(request('category') != '', function ($q) {
-        //     return $q->whereHas('variation.product', function ($q) {
-        //         $q->where('category', request('category'));
-        //     });
-        // })
-        // ->when(request('brand') != '', function ($q) {
-        //     return $q->whereHas('variation.product', function ($q) {
-        //         $q->where('brand', request('brand'));
-        //     });
-        // })
-        // ->when(request('product') != '', function ($q) {
-        //     return $q->whereHas('variation', function ($q) {
-        //         $q->where('product_id', request('product'));
-        //     });
-        // })
-        // ->when(request('grade') != [], function ($q) {
-        //     return $q->whereHas('variation', function ($q) {
-        //         $q->whereIn('grade', request('grade'));
-        //     });
-        // })
+        ->when(request('rma') != '', function ($query) use ($rmas) {
+            return $query->whereDoesntHave('order_items', function ($q) use ($rmas) {
+                $q->whereIn('order_id', $rmas);
+            })->whereHas('variation', function ($q) {
+                $q->where('grade', 10);
+            })->Where('stock.status',2);
+        })
+        ->when(request('storage') != '', function ($q) {
+            return $q->whereHas('variation', function ($q) {
+                $q->where('storage', request('storage'));
+            });
+        })
+        ->when(request('category') != '', function ($q) {
+            return $q->whereHas('variation.product', function ($q) {
+                $q->where('category', request('category'));
+            });
+        })
+        ->when(request('brand') != '', function ($q) {
+            return $q->whereHas('variation.product', function ($q) {
+                $q->where('brand', request('brand'));
+            });
+        })
+        ->when(request('product') != '', function ($q) {
+            return $q->whereHas('variation', function ($q) {
+                $q->where('product_id', request('product'));
+            });
+        })
+        ->when(request('grade') != [], function ($q) {
+            return $q->whereHas('variation', function ($q) {
+                $q->whereIn('grade', request('grade'));
+            });
+        })
 
         // ->join('order_items', 'stock.id', '=', 'order_items.stock_id')
-        // ->join('order_items', function ($join) {
-        //     $join->on('stock.id', '=', 'order_items.stock_id')
-        //         ->whereRaw('order_items.order_id = stock.order_id');
-        // })
-        // ->selectRaw('AVG(order_items.price) as average_price')
-        // ->selectRaw('SUM(order_items.price) as total_price')
+        ->join('order_items', function ($join) {
+            $join->on('stock.id', '=', 'order_items.stock_id')
+                ->whereRaw('order_items.order_id = stock.order_id');
+        })
+        ->selectRaw('AVG(order_items.price) as average_price')
+        ->selectRaw('SUM(order_items.price) as total_price')
         // ->pluck('average_price')
-        // ->first();
-        // ->withSum('purchase_item as total_price', 'price')
-        // ->get();
-        // Calculate average_price from total_price
-        // $averagePrice = $data['average_cost']->pluck('total_price')->avg();
-
-        // $data['average_cost'] = [
-        //     'average_price' => $averagePrice,
-        //     'total_price' => $data['average_cost']->pluck('total_price')->sum(),
-        // ];
+        ->first();
 
         // ->with(['orders' => function($q) {
         //     $q->where('order_type_id', 1)
@@ -343,123 +294,123 @@ class Inventory extends Component
 
         // })->get();
 
-        // $data['vendor_average_cost'] = Stock_model::where('stock.deleted_at',null)->where('order_items.deleted_at',null)->where('orders.deleted_at',null)
+        $data['vendor_average_cost'] = Stock_model::where('stock.deleted_at',null)->where('order_items.deleted_at',null)->where('orders.deleted_at',null)
 
-        // ->when(request('stock_status') != '', function ($q) {
-        //     return $q->where('stock.status', request('stock_status'));
-        // })
-        // ->when(request('stock_status') == '', function ($q) {
-        //     return $q->where('stock.status', 1);
-        // })
-        // ->when(request('vendor') != '', function ($q) {
-        //     return $q->whereHas('order', function ($q) {
-        //         $q->where('customer_id', request('vendor'));
-        //     });
-        // })
-        // ->when(request('status') != '', function ($q) {
-        //     return $q->whereHas('order', function ($q) {
-        //         $q->where('status', request('status'));
-        //     });
-        // })
-        // ->when(request('replacement') != '', function ($q) use ($replacements) {
-        //     return $q->whereHas('order_items.order', function ($q) use ($replacements) {
-        //         $q->where(['status'=>3, 'order_type_id'=>3])
-        //         ->whereNotIn('reference_id', $replacements);
-        //     })->Where('stock.status',1);
-        // })
+        ->when(request('stock_status') != '', function ($q) {
+            return $q->where('stock.status', request('stock_status'));
+        })
+        ->when(request('stock_status') == '', function ($q) {
+            return $q->where('stock.status', 1);
+        })
+        ->when(request('vendor') != '', function ($q) {
+            return $q->whereHas('order', function ($q) {
+                $q->where('customer_id', request('vendor'));
+            });
+        })
+        ->when(request('status') != '', function ($q) {
+            return $q->whereHas('order', function ($q) {
+                $q->where('status', request('status'));
+            });
+        })
+        ->when(request('replacement') != '', function ($q) use ($replacements) {
+            return $q->whereHas('order_items.order', function ($q) use ($replacements) {
+                $q->where(['status'=>3, 'order_type_id'=>3])
+                ->whereNotIn('reference_id', $replacements);
+            })->Where('stock.status',1);
+        })
 
-        // ->when(request('rma') != '', function ($query) use ($rmas) {
-        //     return $query->whereDoesntHave('order_items', function ($q) use ($rmas) {
-        //         $q->whereIn('order_id', $rmas);
-        //     })->whereHas('variation', function ($q) {
-        //         $q->where('grade', 10);
-        //     })->Where('stock.status',2);
-        // })
-        // ->when(request('storage') != '', function ($q) {
-        //     return $q->whereHas('variation', function ($q) {
-        //         $q->where('storage', request('storage'));
-        //     });
-        // })
-        // ->when(request('category') != '', function ($q) {
-        //     return $q->whereHas('variation.product', function ($q) {
-        //         $q->where('category', request('category'));
-        //     });
-        // })
-        // ->when(request('brand') != '', function ($q) {
-        //     return $q->whereHas('variation.product', function ($q) {
-        //         $q->where('brand', request('brand'));
-        //     });
-        // })
-        // ->when(request('product') != '', function ($q) {
-        //     return $q->whereHas('variation', function ($q) {
-        //         $q->where('product_id', request('product'));
-        //     });
-        // })
-        // ->when(request('grade') != [], function ($q) {
-        //     return $q->whereHas('variation', function ($q) {
-        //         $q->whereIn('grade', request('grade'));
-        //     });
-        // })
-        // // ->join('order_items', 'stock.id', '=', 'order_items.stock_id')
-        // ->join('order_items', function ($join) {
-        //     $join->on('stock.id', '=', 'order_items.stock_id')
-        //         ->whereRaw('order_items.order_id = stock.order_id');
-        // })
-        // ->join('orders', 'stock.order_id', '=', 'orders.id')
-        // ->select('orders.customer_id')
-        // ->selectRaw('AVG(order_items.price) as average_price')
-        // ->selectRaw('SUM(order_items.price) as total_price')
-        // ->selectRaw('COUNT(order_items.id) as total_qty')
-        // ->groupBy('orders.customer_id')
-        // ->get();
+        ->when(request('rma') != '', function ($query) use ($rmas) {
+            return $query->whereDoesntHave('order_items', function ($q) use ($rmas) {
+                $q->whereIn('order_id', $rmas);
+            })->whereHas('variation', function ($q) {
+                $q->where('grade', 10);
+            })->Where('stock.status',2);
+        })
+        ->when(request('storage') != '', function ($q) {
+            return $q->whereHas('variation', function ($q) {
+                $q->where('storage', request('storage'));
+            });
+        })
+        ->when(request('category') != '', function ($q) {
+            return $q->whereHas('variation.product', function ($q) {
+                $q->where('category', request('category'));
+            });
+        })
+        ->when(request('brand') != '', function ($q) {
+            return $q->whereHas('variation.product', function ($q) {
+                $q->where('brand', request('brand'));
+            });
+        })
+        ->when(request('product') != '', function ($q) {
+            return $q->whereHas('variation', function ($q) {
+                $q->where('product_id', request('product'));
+            });
+        })
+        ->when(request('grade') != [], function ($q) {
+            return $q->whereHas('variation', function ($q) {
+                $q->whereIn('grade', request('grade'));
+            });
+        })
+        // ->join('order_items', 'stock.id', '=', 'order_items.stock_id')
+        ->join('order_items', function ($join) {
+            $join->on('stock.id', '=', 'order_items.stock_id')
+                ->whereRaw('order_items.order_id = stock.order_id');
+        })
+        ->join('orders', 'stock.order_id', '=', 'orders.id')
+        ->select('orders.customer_id')
+        ->selectRaw('AVG(order_items.price) as average_price')
+        ->selectRaw('SUM(order_items.price) as total_price')
+        ->selectRaw('COUNT(order_items.id) as total_qty')
+        ->groupBy('orders.customer_id')
+        ->get();
 
 
-        // $active_inventory_verification = Process_model::where(['process_type_id'=>20,'status'=>1])->first();
-        // if($active_inventory_verification != null){
-        //     $verified_stocks = Process_stock_model::where('process_id', $active_inventory_verification)
-        //     ->when(request('vendor') != '', function ($q) {
-        //         return $q->whereHas('stock.order', function ($q) {
-        //             $q->where('customer_id', request('vendor'));
-        //         });
-        //     })
-        //     ->when(request('status') != '', function ($q) {
-        //         return $q->whereHas('stock.order', function ($q) {
-        //             $q->where('status', request('status'));
-        //         });
-        //     })
-        //     ->when(request('storage') != '', function ($q) {
-        //         return $q->whereHas('stock.variation', function ($q) {
-        //             $q->where('storage', request('storage'));
-        //         });
-        //     })
-        //     ->when(request('category') != '', function ($q) {
-        //         return $q->whereHas('stock.variation.product', function ($q) {
-        //             $q->where('category', request('category'));
-        //         });
-        //     })
-        //     ->when(request('brand') != '', function ($q) {
-        //         return $q->whereHas('stock.variation.product', function ($q) {
-        //             $q->where('brand', request('brand'));
-        //         });
-        //     })
-        //     ->when(request('product') != '', function ($q) {
-        //         return $q->whereHas('stock.variation', function ($q) {
-        //             $q->where('product_id', request('product'));
-        //         });
-        //     })
-        //     ->when(request('grade') != [], function ($q) {
-        //         return $q->whereHas('stock.variation', function ($q) {
-        //             // print_r(request('grade'));
-        //             $q->whereIn('grade', request('grade'));
-        //         });
-        //     })
-        //     // ->orderBy('product_id','ASC')
-        //     ->paginate($per_page)
-        //     ->onEachSide(5)
-        //     ->appends(request()->except('page'));
-        //     $data['verified_stocks'] = $verified_stocks;
-        // }
-        // $data['active_inventory_verification'] = $active_inventory_verification;
+        $active_inventory_verification = Process_model::where(['process_type_id'=>20,'status'=>1])->first();
+        if($active_inventory_verification != null){
+            $verified_stocks = Process_stock_model::where('process_id', $active_inventory_verification->id)
+            ->when(request('vendor') != '', function ($q) {
+                return $q->whereHas('stock.order', function ($q) {
+                    $q->where('customer_id', request('vendor'));
+                });
+            })
+            ->when(request('status') != '', function ($q) {
+                return $q->whereHas('stock.order', function ($q) {
+                    $q->where('status', request('status'));
+                });
+            })
+            ->when(request('storage') != '', function ($q) {
+                return $q->whereHas('stock.variation', function ($q) {
+                    $q->where('storage', request('storage'));
+                });
+            })
+            ->when(request('category') != '', function ($q) {
+                return $q->whereHas('stock.variation.product', function ($q) {
+                    $q->where('category', request('category'));
+                });
+            })
+            ->when(request('brand') != '', function ($q) {
+                return $q->whereHas('stock.variation.product', function ($q) {
+                    $q->where('brand', request('brand'));
+                });
+            })
+            ->when(request('product') != '', function ($q) {
+                return $q->whereHas('stock.variation', function ($q) {
+                    $q->where('product_id', request('product'));
+                });
+            })
+            ->when(request('grade') != [], function ($q) {
+                return $q->whereHas('stock.variation', function ($q) {
+                    // print_r(request('grade'));
+                    $q->whereIn('grade', request('grade'));
+                });
+            })
+            // ->orderBy('product_id','ASC')
+            ->paginate($per_page)
+            ->onEachSide(5)
+            ->appends(request()->except('page'));
+            $data['verified_stocks'] = $verified_stocks;
+        }
+        $data['active_inventory_verification'] = $active_inventory_verification;
         // dd($data['vendor_average_cost']);
 
         return view('livewire.inventory')->with($data);

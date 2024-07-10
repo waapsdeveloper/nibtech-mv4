@@ -174,13 +174,13 @@
         @if (session('user')->hasPermission('view_cost') && $stocks->count() > 0)
             <div class="">
                 Vendor wise average:
-                {{-- @foreach ($vendor_average_cost as $v_cost)
+                @foreach ($vendor_average_cost as $v_cost)
                     {{ $vendors[$v_cost->customer_id] }}:
                     {{ number_format($v_cost->average_price,2) }} x
                     {{ $v_cost->total_qty }} =
                     {{ number_format($v_cost->total_price,2) }} ({{number_format($v_cost->total_qty/$stocks->total()*100,2)}}%) ||
 
-                @endforeach --}}
+                @endforeach
             </div>
         @endif
         <div class="d-flex justify-content-between">
@@ -194,7 +194,7 @@
 
             @if ($active_inventory_verification != null)
                 <div>
-                    <form class="form-inline" action="{{ url('inventory/add_verification_imei').'/'.$active_inventory_verification }}" method="POST" id="wholesale_item">
+                    <form class="form-inline" action="{{ url('inventory/add_verification_imei').'/'.$active_inventory_verification->id }}" method="POST" id="wholesale_item">
                         @csrf
                         <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
                         <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
@@ -255,7 +255,7 @@
                             <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$stocks->firstItem()}} {{ __('locale.To') }} {{$stocks->lastItem()}} {{ __('locale.Out Of') }} {{$stocks->total()}} </h5>
 
                             @if (session('user')->hasPermission('view_cost'))
-                            <h5>Average Cost: {{ number_format($average_cost['average_price'],2) }} | Total Cost: {{ number_format($average_cost['total_price'],2) }}</h5>
+                            <h5>Average Cost: {{ number_format($average_cost->average_price,2) }} | Total Cost: {{ number_format($average_cost->total_price,2) }}</h5>
                             @endif
                             <div class=" mg-b-0">
                                 <form method="get" action="" class="row form-inline">
@@ -312,8 +312,8 @@
                                     @foreach ($stocks as $index => $stock)
                                         <tr>
                                             <td title="{{ $stock->id }}">{{ $i + 1 }}</td>
-                                            <td><a title="Filter this variation" href="{{url('inventory').'?product='.$stock->variation->product_id.'&storage='.$stock->variation->storage.'&grade[]='.$stock->variation->grade}}">{{ $stock->variation->product->model . " " . (isset($stock->variation->storage) ? $storages[$stock->variation->storage] . " " : null) . " " .
-                                            (isset($stock->variation->color) ? $colors[$stock->variation->color] . " " : null) . $grades[$stock->variation->grade] }} </a></td>
+                                            <td><a title="Filter this variation" href="{{url('inventory').'?product='.$stock->variation->product_id.'&storage='.$stock->variation->storage.'&grade[]='.$stock->variation->grade}}">{{ $stock->variation->product->model . " " . (isset($stock->variation->storage_id) ? $stock->variation->storage_id->name . " " : null) . " " .
+                                            (isset($stock->variation->color_id) ? $stock->variation->color_id->name . " " : null) . $stock->variation->grade_id->name }} </a></td>
                                             <td><a title="Search Serial" href="{{url('imei')."?imei=".$stock->imei.$stock->serial_number}}" target="_blank"> {{$stock->imei.$stock->serial_number }} </a></td>
                                             <td><a title="Vendor Profile" href="{{url('edit-customer').'/'.$stock->order->customer_id}}" target="_blank"> {{ $stock->order->customer->first_name ?? null}} </a></td>
                                             <td>
@@ -376,8 +376,8 @@
                                             @endphp
                                             <tr>
                                                 <td title="{{ $verified_stock->id }}">{{ $i + 1 }}</td>
-                                                <td><a title="Search Serial {{ $stock->variation->product->model . " " . (isset($stock->variation->storage) ? $storages[$stock->variation->storage] . " " : null) . " " .
-                                                    (isset($stock->variation->color) ? $colors[$stock->variation->color] . " " : null) . $grades[$stock->variation->grade] }} " href="{{url('imei')."?imei=".$stock->imei.$stock->serial_number}}" target="_blank"> {{$stock->imei.$stock->serial_number }} </a></td>
+                                                <td><a title="Search Serial {{ $stock->variation->product->model . " " . (isset($stock->variation->storage_id) ? $stock->variation->storage_id->name . " " : null) . " " .
+                                                    (isset($stock->variation->color_id) ? $stock->variation->color_id->name . " " : null) . $stock->variation->grade_id->name }} " href="{{url('imei')."?imei=".$stock->imei.$stock->serial_number}}" target="_blank"> {{$stock->imei.$stock->serial_number }} </a></td>
                                             </tr>
 
                                             @php
