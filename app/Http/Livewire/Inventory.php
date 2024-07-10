@@ -110,10 +110,8 @@ class Inventory extends Component
             $data['verified_stocks'] = $verified_stocks;
         }
         $data['active_inventory_verification'] = $active_inventory_verification;
-        $stocks = Stock_model::
-        // with(['variation','latest_operation','latest_return','admin'])
-        // ->
-        whereNotIn('stock.id',$all_verified_stocks)
+        $stocks = Stock_model::with(['variation','latest_operation','latest_return','admin'])
+        ->whereNotIn('stock.id',$all_verified_stocks)
         ->where('stock.status', 1)
 
         ->when(request('aftersale') != 1, function ($q) use ($aftersale) {
@@ -176,7 +174,10 @@ class Inventory extends Component
                 $q->whereIn('grade', request('grade'));
             });
         })
-        ->withSum('purchase_item as cost','price');
+        ->withSum('order_items as cost', 'price', function ($q) {
+            $q->whereColumn('order_items.stock_id', 'stock.id')->whereColumn('order_items.order_id', 'stock.order_id')
+              ->where('order_items.deleted_at', null); // Add any additional conditions here
+        });
 
         if(request('replacement') == 1){
             $replacements = Order_item_model::where(['order_id'=>8974])->where('reference_id','!=',null)->pluck('reference_id')->toArray();
