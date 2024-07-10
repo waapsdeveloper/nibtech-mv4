@@ -111,7 +111,7 @@ class Inventory extends Component
             $data['verified_stocks'] = $verified_stocks;
         }
         $data['active_inventory_verification'] = $active_inventory_verification;
-        $stocks = Stock_model::with(['variation','variation.product','latest_operation','latest_return','admin','purchase_item','order'])
+        $stocks = Stock_model::with(['variation','variation.product','latest_operation','latest_return','admin','order'])
         ->whereNotIn('stock.id',$all_verified_stocks)
         ->where('stock.status', 1)
 
@@ -175,10 +175,10 @@ class Inventory extends Component
                 $q->whereIn('grade', request('grade'));
             });
         })
-        // ->withSum('order_items as cost', 'price', function ($q) {
-        //     $q->whereColumn('order_items.stock_id', 'stock.id')->whereColumn('order_items.order_id', 'stock.order_id')
-        //       ->where('order_items.deleted_at', null); // Add any additional conditions here
-        // })
+        ->withSum('order_items as cost', 'price', function ($q) {
+            $q->whereColumn('order_items.stock_id', 'stock.id')->whereColumn('order_items.order_id', 'stock.order_id')->whereColumn('order_items.order_id', 'order.id')
+              ->where('order_items.deleted_at', null); // Add any additional conditions here
+        })
         ;
 
         if(request('replacement') == 1){
@@ -226,11 +226,11 @@ class Inventory extends Component
         // });
 
         // Calculate average_price from total_price
-        $averagePrice = $data['average_cost']->pluck('purchase_item.price')->avg();
+        $averagePrice = $data['average_cost']->pluck('cost')->avg();
 
         $data['average_cost'] = [
             'average_price' => $averagePrice,
-            'total_price' => $data['average_cost']->pluck('purchase_item.price')->sum(),
+            'total_price' => $data['average_cost']->pluck('cost')->sum(),
         ];
 
         // Query for vendor average cost
