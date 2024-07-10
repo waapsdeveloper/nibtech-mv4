@@ -403,7 +403,7 @@
                             </div>
                         </div>
                         <div class="col-md-5">
-                            <div class="table-responsive" style="height: 683px; overflow:scroll;">
+                            <div class="table-responsive" style="max-height: 683px; overflow:scroll;">
                             <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                                 <thead>
                                     <tr>
