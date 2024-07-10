@@ -148,8 +148,8 @@ class Api_request_model extends Model
                     $admin = 8;
                 }elseif($adminName == 'owais'){
                     $admin = 2;
-                }elseif($adminName == '' && $datas->PCName == 'PC6'){
-                    $admin = 16;
+                // }elseif($adminName == '' && $datas->PCName == 'PC6'){
+                //     $admin = 16;
                 }else{
 
                     echo "Please create/change Team Member First Name to: ".$adminName;
