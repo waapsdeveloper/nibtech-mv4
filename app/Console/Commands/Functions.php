@@ -101,6 +101,8 @@ class Functions extends Command
         foreach($variations_2 as $id){
             $variation = Variation_model::find($id)->withTrashed();
             if($variation != null){
+                print_r($variation);
+                die;
                 // if($variation->deleted_at != null){
                 //     echo 2;
                 // }
