@@ -89,6 +89,8 @@ class Functions extends Command
         // }
 
         $variations_2 = Variation_model::where('sku','!=',null)->where('product_id','!=',null)->limit(1000)->withTrashed()->get()->pluck('id');
+        echo $variations_2->count();
+        die;
         if(file_exists('variations_2.txt')){
             $last_id = file_get_contents('variations_2.txt');
             $variations_2 = Variation_model::where('id','>',$last_id)->where('sku','!=',null)->where('product_id','!=',null)->limit(1000)->withTrashed()->get()->pluck('id');
