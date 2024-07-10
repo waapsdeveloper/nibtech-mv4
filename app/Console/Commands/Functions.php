@@ -88,19 +88,19 @@ class Functions extends Command
             }
         }
 
-        $variations_2 = Variation_model::where('reference_id','!=',null)->where('product_id','!=',null)->limit(1000)->withTrashed()->pluck('id');
+        $variations_2 = Variation_model::where('sku','!=',null)->where('product_id','!=',null)->limit(1000)->withTrashed()->pluck('id');
         if(file_exists('variations_2.txt')){
             $last_id = file_get_contents('variations_2.txt');
-            $variations_2 = Variation_model::where('id','>',$last_id)->where('reference_id','!=',null)->where('product_id','!=',null)->limit(1000)->withTrashed()->pluck('id');
+            $variations_2 = Variation_model::where('id','>',$last_id)->where('sku','!=',null)->where('product_id','!=',null)->limit(1000)->withTrashed()->pluck('id');
             if($variations_2->count() == 0){
-                $variations_2 = Variation_model::where('reference_id','!=',null)->where('product_id','!=',null)->limit(1000)->withTrashed()->pluck('id');
+                $variations_2 = Variation_model::where('sku','!=',null)->where('product_id','!=',null)->limit(1000)->withTrashed()->pluck('id');
             }
         }
         foreach($variations_2 as $id){
             $variation = Variation_model::find($id);
             if($variation != null){
 
-                $duplicates = Variation_model::where(['reference_id'=>$variation->reference_id,'grade'=>$variation->grade])
+                $duplicates = Variation_model::where(['sku'=>$variation->sku,'grade'=>$variation->grade])
                 ->whereNot('id',$variation->id)->get();
                 if($duplicates->count() > 0){
                     foreach($duplicates as $duplicate){
