@@ -191,7 +191,7 @@
                     <div class="card-header pb-0 d-flex justify-content-between">
                         <div>
                             @php
-                                isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
+                                isset($variation->color)?$color = $colors[$variation->color]:$color = null;
                                 isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
                                 if(isset($variation->grade) && array_key_exists($variation->grade, $grades)){
                                     $grade = $grades[$variation->grade];
@@ -302,7 +302,10 @@
                                         {{-- @dd($item) --}}
                                         {{-- @if($item->order_item[0]->order_id == $order_id) --}}
                                         @php
-                                        $sign = $listing->currency->sign;
+                                        // if(!isset($currency_id) || $currency_id != $listing->currency_id){
+                                            $sign = $listing->currency->sign;
+                                        //     $currency_id = $listing->currency_id;
+                                        // }
                                     @endphp
                                         <tr @if ($listing->buybox != 1) style="background: pink;" @endif>
                                             <td title="{{$listing->id." ".$listing->country_id->title}}"><img src="{{ asset('assets/img/flags/').'/'.strtolower($listing->country_id->code).'.svg' }}" height="15"> {{ $listing->country_id->code }}</td>

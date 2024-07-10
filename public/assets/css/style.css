@@ -55701,8 +55701,8 @@ button.bg-dark:hover, button.bg-dark:focus {
 }
 
 .bg-green {
-  background-color: #AFE1AF !important;
-  color: #fff !important;
+  background-color: #7bf7c2 !important;
+  /* color: #fff !important; */
 }
 
 .gutters-xs > .col,
