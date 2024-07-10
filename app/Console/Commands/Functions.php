@@ -99,7 +99,7 @@ class Functions extends Command
         //     }
         // }
         foreach($variations_2 as $id){
-            $variation = Variation_model::find($id);
+            $variation = Variation_model::find($id)->withTrashed();
             if($variation != null){
                 if($variation->deleted_at != null){
                     echo 2;
