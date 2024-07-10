@@ -52,41 +52,41 @@ class Functions extends Command
         ini_set('max_execution_time', 1200);
 
         $this->remove_extra_variations();
-        // $this->check_linked_orders();
-        // $this->duplicate_orders();
-        // $this->push_testing_api();
+        $this->check_linked_orders();
+        $this->duplicate_orders();
+        $this->push_testing_api();
     }
     private function remove_extra_variations(){
-        // $variations = Variation_model::limit(100)->pluck('id');
-        // if(file_exists('variations.txt')){
-        //     $last_id = file_get_contents('variations.txt');
-        //     $variations = Variation_model::where('id','>',$last_id)->limit(100)->pluck('id');
-        //     if($variations->count() == 0){
-        //         $variations = Variation_model::limit(100)->pluck('id');
-        //     }
-        // }
-        // foreach($variations as $id){
-        //     $variation = Variation_model::find($id);
-        //     if($variation != null){
+        $variations = Variation_model::limit(100)->pluck('id');
+        if(file_exists('variations.txt')){
+            $last_id = file_get_contents('variations.txt');
+            $variations = Variation_model::where('id','>',$last_id)->limit(100)->pluck('id');
+            if($variations->count() == 0){
+                $variations = Variation_model::limit(100)->pluck('id');
+            }
+        }
+        foreach($variations as $id){
+            $variation = Variation_model::find($id);
+            if($variation != null){
 
-        //         $duplicates = Variation_model::where(['product_id'=>$variation->product_id,'reference_id'=>$variation->reference_id,'storage'=>$variation->storage,'color'=>$variation->color,'grade'=>$variation->grade])
-        //         ->whereNot('id',$variation->id)->get();
-        //         if($duplicates->count() > 0){
-        //             foreach($duplicates as $duplicate){
-        //                 Listing_model::where('variation_id',$duplicate->id)->update(['variation_id'=>$variation->id]);
-        //                 Order_item_model::where('variation_id',$duplicate->id)->update(['variation_id'=>$variation->id]);
-        //                 Process_model::where('old_variation_id',$duplicate->id)->update(['old_variation_id'=>$variation->id]);
-        //                 Process_model::where('new_variation_id',$duplicate->id)->update(['new_variation_id'=>$variation->id]);
-        //                 Stock_model::where('variation_id',$duplicate->id)->update(['variation_id'=>$variation->id]);
-        //                 Stock_operations_model::where('old_variation_id',$duplicate->id)->update(['old_variation_id'=>$variation->id]);
-        //                 Stock_operations_model::where('new_variation_id',$duplicate->id)->update(['new_variation_id'=>$variation->id]);
+                $duplicates = Variation_model::where(['product_id'=>$variation->product_id,'reference_id'=>$variation->reference_id,'storage'=>$variation->storage,'color'=>$variation->color,'grade'=>$variation->grade])
+                ->whereNot('id',$variation->id)->get();
+                if($duplicates->count() > 0){
+                    foreach($duplicates as $duplicate){
+                        Listing_model::where('variation_id',$duplicate->id)->update(['variation_id'=>$variation->id]);
+                        Order_item_model::where('variation_id',$duplicate->id)->update(['variation_id'=>$variation->id]);
+                        Process_model::where('old_variation_id',$duplicate->id)->update(['old_variation_id'=>$variation->id]);
+                        Process_model::where('new_variation_id',$duplicate->id)->update(['new_variation_id'=>$variation->id]);
+                        Stock_model::where('variation_id',$duplicate->id)->update(['variation_id'=>$variation->id]);
+                        Stock_operations_model::where('old_variation_id',$duplicate->id)->update(['old_variation_id'=>$variation->id]);
+                        Stock_operations_model::where('new_variation_id',$duplicate->id)->update(['new_variation_id'=>$variation->id]);
 
-        //                 $duplicate->delete();
-        //             }
-        //         }
-        //         file_put_contents('variations.txt', $id);
-        //     }
-        // }
+                        $duplicate->delete();
+                    }
+                }
+                file_put_contents('variations.txt', $id);
+            }
+        }
 
         $variations_2 = Variation_model::where('reference_id','!=',null)->limit(1000)->pluck('id');
         if(file_exists('variations_2.txt')){
