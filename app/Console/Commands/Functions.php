@@ -52,9 +52,9 @@ class Functions extends Command
         ini_set('max_execution_time', 1200);
 
         $this->remove_extra_variations();
-        $this->check_linked_orders();
-        $this->duplicate_orders();
-        $this->push_testing_api();
+        // $this->check_linked_orders();
+        // $this->duplicate_orders();
+        // $this->push_testing_api();
     }
     private function remove_extra_variations(){
         $variations = Variation_model::limit(100)->pluck('id');
