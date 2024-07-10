@@ -48,14 +48,15 @@ class Wholesale extends Component
             }else{
                 $per_page = 10;
             }
-            $data['orders'] = Order_model::select(
-                'orders.id',
-                'orders.reference_id',
-                'orders.customer_id',
-                'orders.currency',
-                // DB::raw('SUM(order_items.price) as total_price'),
-                // DB::raw('COUNT(order_items.id) as total_quantity'),
-                'orders.created_at')
+            $data['orders'] = Order_model::withCount('order_items')->withSum('order_items','price')
+            // select(
+            //     'orders.id',
+            //     'orders.reference_id',
+            //     'orders.customer_id',
+            //     'orders.currency',
+            //     // DB::raw('SUM(order_items.price) as total_price'),
+            //     // DB::raw('COUNT(order_items.id) as total_quantity'),
+            //     'orders.created_at')
             ->where('orders.order_type_id',5)
             // ->join('order_items', 'orders.id', '=', 'order_items.order_id')
 
@@ -71,7 +72,7 @@ class Wholesale extends Component
             ->when(request('status') != '', function ($q) {
                 return $q->where('orders.status', request('status'));
             })
-            ->groupBy('orders.id', 'orders.reference_id', 'orders.customer_id', 'orders.currency', 'orders.created_at')
+            // ->groupBy('orders.id', 'orders.reference_id', 'orders.customer_id', 'orders.currency', 'orders.created_at')
             ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
             // ->select('orders.*')
             ->paginate($per_page)
@@ -149,21 +150,24 @@ class Wholesale extends Component
         $data['grades'] = Grade_model::pluck('name','id');
         $data['colors'] = Color_model::pluck('name','id');
 
-        $variations = Variation_model::with([
+        $variations = Variation_model::
+        whereHas('stocks', function ($query) use ($order_id) {
+            $query->whereHas('order_item', function ($query) use ($order_id) {
+                $query->where('order_id', $order_id);
+            });
+        })
+        ->with([
             'stocks' => function ($query) use ($order_id) {
                 $query->whereHas('order_item', function ($query) use ($order_id) {
                     $query->where('order_id', $order_id);
                 });
             },
-            'stocks.order_item'
+            'stocks.order_items'
         ])
-        ->whereHas('stocks', function ($query) use ($order_id) {
-            $query->whereHas('order_item', function ($query) use ($order_id) {
-                $query->where('order_id', $order_id);
-            });
-        })->with('stocks')
-        ->orderBy('product_id', 'desc')
+        ->
+        orderBy('product_id', 'desc')
         ->get();
+        die;
 
         // Group by product_id and storage
         $variations = $variations->groupBy(['product_id', 'storage']);
@@ -188,7 +192,7 @@ class Wholesale extends Component
         $data['order_id'] = $order_id;
         $data['currency'] = $data['order']->currency_id->sign;
 
-
+            die;
         // echo "<pre>";
         // // print_r($items->stocks);
         // print_r($items);

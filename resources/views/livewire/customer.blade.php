@@ -156,7 +156,7 @@
                                             <td>{{$customer->last_name}}</td>
                                             <td>{{$customer->phone}}</td>
                                             <td>{{$customer->country_id->title ?? null}}</td>
-                                            <td>{{$customer->orders->count()}}</td>
+                                            <td>{{$customer->orders_count}}</td>
                                             <td><center><a href="edit-customer/{{$customer->id}}" class="text text-success w-100 vh-100">{{ __('locale.Edit') }}</a></center></td>
                                         </tr>
                                     @endforeach

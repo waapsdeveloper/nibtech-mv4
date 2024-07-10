@@ -255,7 +255,7 @@
                             <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$stocks->firstItem()}} {{ __('locale.To') }} {{$stocks->lastItem()}} {{ __('locale.Out Of') }} {{$stocks->total()}} </h5>
 
                             @if (session('user')->hasPermission('view_cost'))
-                            <h5>Average Cost: {{ number_format($average_cost->average_price,2) }} | Total Cost: {{ number_format($average_cost->total_price,2) }}</h5>
+                            <h5>Average Cost: {{ number_format($average_cost['average_price'],2) }} | Total Cost: {{ number_format($average_cost['total_price'],2) }}</h5>
                             @endif
                             <div class=" mg-b-0">
                                 <form method="get" action="" class="row form-inline">
@@ -323,7 +323,7 @@
                                                 @endif
                                             </td>
                                             @if (session('user')->hasPermission('view_cost'))
-                                            <td>{{ $stock->order->currency_id->sign ?? null }}{{$stock->purchase_item->price ?? null }}</td>
+                                            <td>{{ $stock->order->currency_id->sign ?? null }}{{$stock->cost ?? null }}</td>
                                             @endif
                                             <td>{{ $stock->updated_at }}</td>
                                             @if ($stock->latest_operation)

@@ -6,10 +6,6 @@ use App\Models\Country_model;
 use Livewire\Component;
 use App\Models\Customer_model;
 use App\Models\Order_model;
-use App\Models\Role_model;
-use App\Models\Permission_model;
-use App\Models\Role_permission_model;
-use Illuminate\Support\Facades\Hash;
 
 
 class Customer extends Component
@@ -18,8 +14,8 @@ class Customer extends Component
     {
 
         $data['title_page'] = "Customers";
-        $data['customers'] = Customer_model::
-        when(request('type') && request('type') != 0, function($q){
+        $data['customers'] = Customer_model::with('country_id')->withCount('orders')
+        ->when(request('type') && request('type') != 0, function($q){
             if(request('type') == 4){
                 return $q->where('is_vendor',null);
             }else{

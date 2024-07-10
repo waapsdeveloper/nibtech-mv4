@@ -164,10 +164,9 @@
                                             }else {
                                                 $id[] = $order->id;
                                             }
-                                            $items = $order->order_items;
                                             $j = 0;
 
-                                            $price = $order->order_items->sum('price');
+                                            $price = $order->order_items_sum_price;
 
                                             // if($order->exchange_rate != null){
                                             //     $price = $price * $order->exchange_rate;
@@ -183,7 +182,7 @@
                                                 @if (session('user')->hasPermission('view_price'))
                                                 <td>€{{ number_format($price,2) }}</td>
                                                 @endif
-                                                <td>{{ $order->order_items->count() }}</td>
+                                                <td>{{ $order->order_items_count }}</td>
                                                 <td style="width:220px">{{ $order->created_at }}</td>
                                                 <td>
                                                     <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
