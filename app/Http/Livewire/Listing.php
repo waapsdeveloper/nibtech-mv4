@@ -87,7 +87,7 @@ class Listing extends Component
         ->when(request('state') != '', function ($q) {
             return $q->where('state', request('state'));
         })
-        ->with('listings', 'listings.country_id', 'listings.currency', 'product')
+        ->with('listings', 'listings.country_id', 'listings.currency', 'product','available_stocks','available_stocks.purchase_item')
         ->where('sku', '!=', null)
         ->orderBy('listed_stock', 'desc')
         ->paginate(10)

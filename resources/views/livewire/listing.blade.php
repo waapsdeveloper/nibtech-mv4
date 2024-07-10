@@ -42,7 +42,7 @@
         <br>
         <div class="row">
             <div class="col-md-12" style="border-bottom: 1px solid rgb(216, 212, 212);">
-                <center><h4>Search</h4></center>
+                <center><h4>Listings</h4></center>
             </div>
         </div>
         <br>
@@ -151,12 +151,12 @@
             <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
             <input type="hidden" name="sort" value="{{ Request::get('sort') }}">
         </form>
-        <br>
+        {{-- <br>
         <div class="row">
             <div class="col-md-12" style="border-bottom: 1px solid rgb(216, 212, 212);">
-                <center><h4>Product Variations</h4></center>
+                <center><h4>Listings</h4></center>
             </div>
-        </div>
+        </div> --}}
         <br>
         @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -403,7 +403,7 @@
                             </div>
                         </div>
                         <div class="col-md-5">
-                            <div class="table-responsive">
+                            <div class="table-responsive" style="height: 804px; overflow:scroll;">
                             <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                                 <thead>
                                     <tr>
