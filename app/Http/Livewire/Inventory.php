@@ -65,8 +65,9 @@ class Inventory extends Component
 
         $active_inventory_verification = Process_model::where(['process_type_id'=>20,'status'=>1])->first();
         if($active_inventory_verification != null){
-            $all_verified_stocks = Process_stock_model::where('process_id', $active_inventory_verification->id)->pluck('stock_id')->toArray();
-            $verified_stocks = Process_stock_model::where('process_id', $active_inventory_verification->id)
+            $active_inventory_verification = $active_inventory_verification->id;
+            $all_verified_stocks = Process_stock_model::where('process_id', $active_inventory_verification)->pluck('stock_id')->toArray();
+            $verified_stocks = Process_stock_model::where('process_id', $active_inventory_verification)
             ->when(request('vendor') != '', function ($q) {
                 return $q->whereHas('stock.order', function ($q) {
                     $q->where('customer_id', request('vendor'));
@@ -110,7 +111,7 @@ class Inventory extends Component
             $data['verified_stocks'] = $verified_stocks;
         }
         $data['active_inventory_verification'] = $active_inventory_verification;
-        $stocks = Stock_model::with(['variation','latest_operation','latest_return','admin'])
+        $stocks = Stock_model::with(['variation','variation.product','latest_operation','latest_return','admin','purchase_item','order'])
         ->whereNotIn('stock.id',$all_verified_stocks)
         ->where('stock.status', 1)
 
@@ -174,10 +175,11 @@ class Inventory extends Component
                 $q->whereIn('grade', request('grade'));
             });
         })
-        ->withSum('order_items as cost', 'price', function ($q) {
-            $q->whereColumn('order_items.stock_id', 'stock.id')->whereColumn('order_items.order_id', 'stock.order_id')
-              ->where('order_items.deleted_at', null); // Add any additional conditions here
-        });
+        // ->withSum('order_items as cost', 'price', function ($q) {
+        //     $q->whereColumn('order_items.stock_id', 'stock.id')->whereColumn('order_items.order_id', 'stock.order_id')
+        //       ->where('order_items.deleted_at', null); // Add any additional conditions here
+        // })
+        ;
 
         if(request('replacement') == 1){
             $replacements = Order_item_model::where(['order_id'=>8974])->where('reference_id','!=',null)->pluck('reference_id')->toArray();
@@ -224,25 +226,25 @@ class Inventory extends Component
         // });
 
         // Calculate average_price from total_price
-        $averagePrice = $data['average_cost']->pluck('cost')->avg();
+        $averagePrice = $data['average_cost']->pluck('purchase_item.price')->avg();
 
         $data['average_cost'] = [
             'average_price' => $averagePrice,
-            'total_price' => $data['average_cost']->pluck('cost')->sum(),
+            'total_price' => $data['average_cost']->pluck('purchase_item.price')->sum(),
         ];
 
         // Query for vendor average cost
-        $data['vendor_average_cost'] = $stocks->clone()
-        ->withSum('purchase_item as total_price', 'price')
-        ->withCount('purchase_item as total_qty')
-        ->join('orders', 'stock.order_id', '=', 'orders.id')
-        ->select('orders.customer_id')
-        ->groupBy('orders.customer_id')
-        ->get()
-        ->map(function ($item) {
-            $item->average_price = $item->total_qty > 0 ? $item->total_price / $item->total_qty : 0;
-            return $item;
-        });
+        // $data['vendor_average_cost'] = $stocks->clone()
+        // ->withSum('purchase_item as total_price', 'price')
+        // ->withCount('purchase_item as total_qty')
+        // ->join('orders', 'stock.order_id', '=', 'orders.id')
+        // ->select('orders.customer_id')
+        // ->groupBy('orders.customer_id')
+        // ->get()
+        // ->map(function ($item) {
+        //     $item->average_price = $item->total_qty > 0 ? $item->total_price / $item->total_qty : 0;
+        //     return $item;
+        // });
 
 
         // $data['average_cost'] = Stock_model::
@@ -412,52 +414,52 @@ class Inventory extends Component
         // ->get();
 
 
-        $active_inventory_verification = Process_model::where(['process_type_id'=>20,'status'=>1])->first();
-        if($active_inventory_verification != null){
-            $verified_stocks = Process_stock_model::where('process_id', $active_inventory_verification->id)
-            ->when(request('vendor') != '', function ($q) {
-                return $q->whereHas('stock.order', function ($q) {
-                    $q->where('customer_id', request('vendor'));
-                });
-            })
-            ->when(request('status') != '', function ($q) {
-                return $q->whereHas('stock.order', function ($q) {
-                    $q->where('status', request('status'));
-                });
-            })
-            ->when(request('storage') != '', function ($q) {
-                return $q->whereHas('stock.variation', function ($q) {
-                    $q->where('storage', request('storage'));
-                });
-            })
-            ->when(request('category') != '', function ($q) {
-                return $q->whereHas('stock.variation.product', function ($q) {
-                    $q->where('category', request('category'));
-                });
-            })
-            ->when(request('brand') != '', function ($q) {
-                return $q->whereHas('stock.variation.product', function ($q) {
-                    $q->where('brand', request('brand'));
-                });
-            })
-            ->when(request('product') != '', function ($q) {
-                return $q->whereHas('stock.variation', function ($q) {
-                    $q->where('product_id', request('product'));
-                });
-            })
-            ->when(request('grade') != [], function ($q) {
-                return $q->whereHas('stock.variation', function ($q) {
-                    // print_r(request('grade'));
-                    $q->whereIn('grade', request('grade'));
-                });
-            })
-            // ->orderBy('product_id','ASC')
-            ->paginate($per_page)
-            ->onEachSide(5)
-            ->appends(request()->except('page'));
-            $data['verified_stocks'] = $verified_stocks;
-        }
-        $data['active_inventory_verification'] = $active_inventory_verification;
+        // $active_inventory_verification = Process_model::where(['process_type_id'=>20,'status'=>1])->first();
+        // if($active_inventory_verification != null){
+        //     $verified_stocks = Process_stock_model::where('process_id', $active_inventory_verification)
+        //     ->when(request('vendor') != '', function ($q) {
+        //         return $q->whereHas('stock.order', function ($q) {
+        //             $q->where('customer_id', request('vendor'));
+        //         });
+        //     })
+        //     ->when(request('status') != '', function ($q) {
+        //         return $q->whereHas('stock.order', function ($q) {
+        //             $q->where('status', request('status'));
+        //         });
+        //     })
+        //     ->when(request('storage') != '', function ($q) {
+        //         return $q->whereHas('stock.variation', function ($q) {
+        //             $q->where('storage', request('storage'));
+        //         });
+        //     })
+        //     ->when(request('category') != '', function ($q) {
+        //         return $q->whereHas('stock.variation.product', function ($q) {
+        //             $q->where('category', request('category'));
+        //         });
+        //     })
+        //     ->when(request('brand') != '', function ($q) {
+        //         return $q->whereHas('stock.variation.product', function ($q) {
+        //             $q->where('brand', request('brand'));
+        //         });
+        //     })
+        //     ->when(request('product') != '', function ($q) {
+        //         return $q->whereHas('stock.variation', function ($q) {
+        //             $q->where('product_id', request('product'));
+        //         });
+        //     })
+        //     ->when(request('grade') != [], function ($q) {
+        //         return $q->whereHas('stock.variation', function ($q) {
+        //             // print_r(request('grade'));
+        //             $q->whereIn('grade', request('grade'));
+        //         });
+        //     })
+        //     // ->orderBy('product_id','ASC')
+        //     ->paginate($per_page)
+        //     ->onEachSide(5)
+        //     ->appends(request()->except('page'));
+        //     $data['verified_stocks'] = $verified_stocks;
+        // }
+        // $data['active_inventory_verification'] = $active_inventory_verification;
         // dd($data['vendor_average_cost']);
 
         return view('livewire.inventory')->with($data);
