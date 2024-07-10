@@ -174,7 +174,6 @@ class Inventory extends Component
                 $q->whereIn('grade', request('grade'));
             });
         })
-        ->orderBy('stock.updated_at','ASC')
         ->withSum('purchase_item as cost','price');
 
         if(request('replacement') == 1){
@@ -205,6 +204,7 @@ class Inventory extends Component
         }else{
             $data['stocks'] = $stocks->clone()
             ->orderBy('stock.order_id','ASC')
+            ->orderBy('stock.updated_at','ASC')
             ->paginate($per_page)
             ->onEachSide(5)
             ->appends(request()->except('page'));
