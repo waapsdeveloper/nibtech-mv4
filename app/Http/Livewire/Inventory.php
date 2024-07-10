@@ -173,8 +173,7 @@ class Inventory extends Component
                 // print_r(request('grade'));
                 $q->whereIn('grade', request('grade'));
             });
-        })
-        ->withSum('purchase_item as cost','price');
+        });
 
         if(request('replacement') == 1){
             $replacements = Order_item_model::where(['order_id'=>8974])->where('reference_id','!=',null)->pluck('reference_id')->toArray();
@@ -212,6 +211,7 @@ class Inventory extends Component
 
         // Query for overall average cost
         $data['average_cost'] = $stocks->clone()
+        ->withSum('purchase_item as cost','price')
         ->get();
 
         // dd($data['average_cost']);
