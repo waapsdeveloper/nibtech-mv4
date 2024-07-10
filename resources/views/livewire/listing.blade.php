@@ -350,7 +350,7 @@
                                                         data: form.serialize(), // serializes the form's elements.
                                                         success: function(data) {
                                                             // alert("Success: Min Price changed to " + data); // show response from the PHP script.
-                                                            $('#senmin_price_' + listingId).addClass('bg-green'); // hide the button after submission
+                                                            $('#min_price_' + listingId).addClass('bg-green'); // hide the button after submission
                                                             // $('quantity_' + listingId).val(data)
                                                         },
                                                         error: function(jqXHR, textStatus, errorThrown) {
