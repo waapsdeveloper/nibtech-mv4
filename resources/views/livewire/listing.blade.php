@@ -319,7 +319,7 @@
                                                 @csrf
                                                 <input type="submit" hidden>
                                             </form>
-                                            <td>
+                                            <td class="p-0">
                                                 <div class="form-floating">
                                                     <input type="number" class="form-control" id="min_price_{{$listing->id}}" name="min_price" step="0.01" value="{{$listing->min_price}}" form="change_min_price_{{$listing->id}}">
                                                     <label for="">Min Price ({{$sign}})</label>
@@ -328,7 +328,7 @@
                                                     Minimum: £{{number_format($m_min_price*$eur_gbp,2)}}
                                                 @endif
                                             </td>
-                                            <td>
+                                            <td class="p-0">
                                                 <div class="form-floating">
                                                     <input type="number" class="form-control" id="price_{{$listing->id}}" name="price" step="0.01" value="{{$listing->price}}" form="change_price_{{$listing->id}}">
                                                     <label for="">Price ({{$sign}})</label>
