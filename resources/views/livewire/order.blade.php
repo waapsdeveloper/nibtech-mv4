@@ -349,7 +349,7 @@
                                                 @endif
                                                 <td>
                                                     @if ($item->variation ?? false)
-                                                        <strong>{{ $item->variation->sku }}</strong> - {{$item->variation->product->model ?? "Model not defined"}} - {{(isset($item->variation->storage_id)?$item->variation->storage_id->name . " - " : null) . (isset($item->variation->color_id)?$item->variation->color_id->name. " - ":null)}} <strong><u>{{ $item->variation->grade_id->name }}</u></strong>
+                                                        <strong>{{ $item->variation->sku }}</strong> - {{$item->variation->product->model ?? "Model not defined"}} - {{(isset($item->variation->storage)?$storages[$item->variation->storage] . " - " : null) . (isset($item->variation->color)?$colors[$item->variation->color]. " - ":null)}} <strong><u>{{ $grades[$item->variation->grade] }}</u></strong>
                                                     @endif
                                                     @if ($order->delivery_note_url == null || $order->label_url == null)
                                                         <a class="" href="{{url(session('url').'order')}}/label/{{ $order->reference_id }}">
@@ -534,7 +534,7 @@
                                                     <td>
 
                                                         @if ($itm->variation ?? false)
-                                                            <strong>{{ $itm->variation->sku }}</strong>{{ " - " . $itm->variation->product->model . " - " . (isset($itm->variation->storage_id)?$itm->variation->storage_id->name . " - " : null) . (isset($itm->variation->color_id)?$itm->variation->color_id->name. " - ":null)}} <strong><u>{{ $itm->variation->grade_id->name }}</u></strong>
+                                                            <strong>{{ $itm->variation->sku }}</strong>{{ " - " . $itm->variation->product->model . " - " . (isset($itm->variation->storage)?$storages[$itm->variation->storage] . " - " : null) . (isset($itm->variation->color)?$colors[$itm->variation->color]. " - ":null)}} <strong><u>{{ $grades[$itm->variation->grade] }}</u></strong>
                                                         @endif
 
                                                     </td>
@@ -568,7 +568,7 @@
                                                     <td>
 
                                                         @if ($itm->variation ?? false)
-                                                            <strong>{{ $itm->variation->sku }}</strong>{{ " - " . $itm->variation->product->model . " - " . (isset($itm->variation->storage_id)?$itm->variation->storage_id->name . " - " : null) . (isset($itm->variation->color_id)?$itm->variation->color_id->name. " - ":null)}} <strong><u>{{ $itm->variation->grade_id->name }}</u></strong>
+                                                            <strong>{{ $itm->variation->sku }}</strong>{{ " - " . $itm->variation->product->model . " - " . (isset($itm->variation->storage)?$storages[$itm->variation->storage] . " - " : null) . (isset($itm->variation->color)?$colors[$itm->variation->color]. " - ":null)}} <strong><u>{{ $grades[$itm->variation->grade] }}</u></strong>
                                                         @endif
 
                                                     </td>
@@ -617,7 +617,7 @@
                                                                 <td>
 
                                                                     @if ($itm->variation ?? false)
-                                                                        <strong>{{ $itm->variation->sku }}</strong>{{ " - " . $itm->variation->product->model . " - " . (isset($itm->variation->storage_id)?$itm->variation->storage_id->name . " - " : null) . (isset($itm->variation->color_id)?$itm->variation->color_id->name. " - ":null)}} <strong><u>{{ $itm->variation->grade_id->name }}</u></strong>
+                                                                        <strong>{{ $itm->variation->sku }}</strong>{{ " - " . $itm->variation->product->model . " - " . (isset($itm->variation->storage)?$storages[$itm->variation->storage] . " - " : null) . (isset($itm->variation->color)?$colors[$itm->variation->color]. " - ":null)}} <strong><u>{{ $grades[$itm->variation->grade] }}</u></strong>
                                                                     @endif
 
                                                                 </td>
@@ -663,7 +663,7 @@
                                                             <td>
 
                                                                 @if ($itm->variation ?? false)
-                                                                    <strong>{{ $itm->variation->sku }}</strong>{{ " - " . $itm->variation->product->model . " - " . (isset($itm->variation->storage_id)?$itm->variation->storage_id->name . " - " : null) . (isset($itm->variation->color_id)?$itm->variation->color_id->name. " - ":null)}} <strong><u>{{ $itm->variation->grade_id->name }}</u></strong>
+                                                                    <strong>{{ $itm->variation->sku }}</strong>{{ " - " . $itm->variation->product->model . " - " . (isset($itm->variation->storage)?$storages[$itm->variation->storage] . " - " : null) . (isset($itm->variation->color)?$colors[$itm->variation->color]. " - ":null)}} <strong><u>{{ $grades[$itm->variation->grade] }}</u></strong>
                                                                 @endif
 
                                                                 @if ($itm->care_id != null)
@@ -764,8 +764,8 @@
                                 <label for="">Move to</label>
                                 <select name="replacement[grade]" id="move_grade" class="form-control form-select" required>
                                     <option value="">Move to</option>
-                                    @foreach ($grades as $grade)
-                                        <option value="{{ $grade->id }}">{{ $grade->name }}</option>
+                                    @foreach ($grades as $id=>$grade)
+                                        <option value="{{ $id }}">{{ $grade }}</option>
                                     @endforeach
                                 </select>
                             </div>

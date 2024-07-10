@@ -34,13 +34,9 @@ use TCPDF_FONTS;
 
 class Order extends Component
 {
-    public $currency_codes;
-    public $country_codes;
 
     public function mount()
     {
-        $this->currency_codes = Currency_model::pluck('id','code');
-        $this->country_codes = Country_model::pluck('id','code');
         $user_id = session('user_id');
         if($user_id == NULL){
             return redirect('index');
@@ -49,7 +45,9 @@ class Order extends Component
     public function render()
     {
         $data['title_page'] = "Sales";
-        $data['grades'] = Grade_model::all();
+        $data['storages'] = Storage_model::pluck('name','id');
+        $data['colors'] = Color_model::pluck('name','id');
+        $data['grades'] = Grade_model::pluck('name','id');
         $data['last_hour'] = Carbon::now()->subHour(2);
         $data['admins'] = Admin_model::where('id','!=',1)->get();
         $user_id = session('user_id');
@@ -74,7 +72,7 @@ class Order extends Component
             default: $sort = "orders.reference_id"; $by = "DESC";
         }
 
-        $orders = Order_model::with(['order_items','order_items.variation','order_items.variation.product', 'order_items.variation.grade_id', 'order_items.stock'])
+        $orders = Order_model::with(['customer','customer.orders','order_items','order_items.variation','order_items.variation.product', 'order_items.variation.grade_id', 'order_items.stock'])
         ->where('orders.order_type_id',3)
         ->when(request('start_date') != '', function ($q) {
             if(request('adm') > 0){
