@@ -88,12 +88,12 @@ class Functions extends Command
             }
         }
 
-        $variations_2 = Variation_model::where('reference_id','!=',null)->where('product_id','!=',null)->limit(1000)->pluck('id');
+        $variations_2 = Variation_model::where('reference_id','!=',null)->where('product_id','!=',null)->limit(1000)->withTrashed()->pluck('id');
         if(file_exists('variations_2.txt')){
             $last_id = file_get_contents('variations_2.txt');
-            $variations_2 = Variation_model::where('id','>',$last_id)->where('reference_id','!=',null)->where('product_id','!=',null)->limit(1000)->pluck('id');
+            $variations_2 = Variation_model::where('id','>',$last_id)->where('reference_id','!=',null)->where('product_id','!=',null)->limit(1000)->withTrashed()->pluck('id');
             if($variations_2->count() == 0){
-                $variations_2 = Variation_model::where('reference_id','!=',null)->where('product_id','!=',null)->limit(1000)->pluck('id');
+                $variations_2 = Variation_model::where('reference_id','!=',null)->where('product_id','!=',null)->limit(1000)->withTrashed()->pluck('id');
             }
         }
         foreach($variations_2 as $id){
@@ -114,6 +114,8 @@ class Functions extends Command
 
                         $duplicate->delete();
                     }
+                        $variation->deleted_at = null;
+                        $variation->save();
                     echo 1;
                 }
                 file_put_contents('variations_2.txt', $id);
