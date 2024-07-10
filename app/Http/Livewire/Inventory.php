@@ -137,7 +137,8 @@ class Inventory extends Component
             ->onEachSide(5)
             ->appends(request()->except('page'));
         }else{
-            $data['stocks'] = Stock_model::whereNotIn('stock.id',$all_verified_stocks)
+            $data['stocks'] = Stock_model::with(['variation','variation.product','order','purchase_item','latest_operation','latest_return','admin'])
+            ->whereNotIn('stock.id',$all_verified_stocks)
             ->where('stock.status', 1)
 
             ->when(request('aftersale') != 1, function ($q) use ($aftersale) {
