@@ -191,7 +191,9 @@ class Order_item_model extends Model
                         if($stock->id != null){
                             $stock->status = 2;
                             $last_item = $stock->last_item();
-                            $orderItem->linked_id = $last_item->id;
+                            if($last_item != null){
+                                $orderItem->linked_id = $last_item->id;
+                            }
                         }
                     }
                     if($itemObj->serial_number != null){

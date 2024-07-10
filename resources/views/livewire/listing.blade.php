@@ -318,7 +318,7 @@
                                             </form>
                                             <td>
                                                 <div class="form-floating">
-                                                    <input type="number" class="form-control" id="min_price_{{$listing->id}}" name="min_price" value="{{$listing->min_price}}" form="change_min_price_{{$listing->id}}">
+                                                    <input type="number" class="form-control" id="min_price_{{$listing->id}}" name="min_price" step="0.01" value="{{$listing->min_price}}" form="change_min_price_{{$listing->id}}">
                                                     <label for="">Min Price ({{$sign}})</label>
                                                 </div>
                                                 @if ($listing->currency_id == 5)
@@ -327,7 +327,7 @@
                                             </td>
                                             <td>
                                                 <div class="form-floating">
-                                                    <input type="number" class="form-control" id="price_{{$listing->id}}" name="price" value="{{$listing->price}}" form="change_price_{{$listing->id}}">
+                                                    <input type="number" class="form-control" id="price_{{$listing->id}}" name="price" step="0.01" value="{{$listing->price}}" form="change_price_{{$listing->id}}">
                                                     <label for="">Price ({{$sign}})</label>
                                                 </div>
                                                 @if ($listing->currency_id == 5)
