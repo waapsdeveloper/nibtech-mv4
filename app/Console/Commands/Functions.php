@@ -20,6 +20,8 @@ use App\Models\Stock_operations_model;
 use App\Models\Storage_model;
 use Carbon\Carbon;
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 use Illuminate\Console\Command;
 use GuzzleHttp\Client;
@@ -88,7 +90,7 @@ class Functions extends Command
         //     }
         // }
 
-        $variations_2 = Variation_model::where('sku','!=',null)->where('product_id','!=',null)->withTrashed()->get()->pluck('id');
+        // $variations_2 = Variation_model::where('sku','!=',null)->where('product_id','!=',null)->withTrashed()->get()->pluck('id');
         // echo $variations_2->count();
         // die;
         // if(file_exists('variations_2.txt')){
@@ -98,35 +100,55 @@ class Functions extends Command
         //         $variations_2 = Variation_model::where('sku','!=',null)->where('product_id','!=',null)->withTrashed()->get()->pluck('id');
         //     }
         // }
-        foreach($variations_2 as $id){
-            $variation = Variation_model::find($id)->withTrashed();
-            if($variation != null){
-                print_r($variation);
-                die;
-                // if($variation->deleted_at != null){
-                //     echo 2;
-                // }
-                $duplicates = Variation_model::where(['sku'=>$variation->sku,'grade'=>$variation->grade])
-                ->whereNot('id',$variation->id)->get();
-                if($duplicates->count() > 0){
-                    foreach($duplicates as $duplicate){
-                        Listing_model::where('variation_id',$duplicate->id)->update(['variation_id'=>$variation->id]);
-                        Order_item_model::where('variation_id',$duplicate->id)->update(['variation_id'=>$variation->id]);
-                        Process_model::where('old_variation_id',$duplicate->id)->update(['old_variation_id'=>$variation->id]);
-                        Process_model::where('new_variation_id',$duplicate->id)->update(['new_variation_id'=>$variation->id]);
-                        Stock_model::where('variation_id',$duplicate->id)->update(['variation_id'=>$variation->id]);
-                        Stock_operations_model::where('old_variation_id',$duplicate->id)->update(['old_variation_id'=>$variation->id]);
-                        Stock_operations_model::where('new_variation_id',$duplicate->id)->update(['new_variation_id'=>$variation->id]);
+        // foreach($var
 
-                        $duplicate->delete();
-                    }
-                        $variation->deleted_at = null;
-                        $variation->save();
-                    echo 1;
+        $variations = Variation_model::whereNotNull('sku')
+            ->whereNotNull('product_id')
+            ->withTrashed()
+            ->pluck('id');
+
+        $processedVariations = $variations->map(function ($id) {
+            $variation = Variation_model::withTrashed()->find($id);
+
+            if ($variation) {
+                // Find duplicates
+                $duplicates = Variation_model::where('sku', $variation->sku)
+                    ->where('grade', $variation->grade)
+                    ->where('id', '!=', $variation->id)
+                    ->withTrashed()
+                    ->get();
+
+                if ($duplicates->isNotEmpty()) {
+                    DB::transaction(function () use ($variation, $duplicates) {
+                        foreach ($duplicates as $duplicate) {
+                            // Update related records to point to the original variation
+                            Listing_model::where('variation_id', $duplicate->id)->update(['variation_id' => $variation->id]);
+                            Order_item_model::where('variation_id', $duplicate->id)->update(['variation_id' => $variation->id]);
+                            Process_model::where('old_variation_id', $duplicate->id)->update(['old_variation_id' => $variation->id]);
+                            Process_model::where('new_variation_id', $duplicate->id)->update(['new_variation_id' => $variation->id]);
+                            Stock_model::where('variation_id', $duplicate->id)->update(['variation_id' => $variation->id]);
+                            Stock_operations_model::where('old_variation_id', $duplicate->id)->update(['old_variation_id' => $variation->id]);
+                            Stock_operations_model::where('new_variation_id', $duplicate->id)->update(['new_variation_id' => $variation->id]);
+
+                            // Soft delete the duplicate
+                            $duplicate->delete();
+                        }
+
+                        // Restore the original variation if it was soft deleted
+                        if ($variation->trashed()) {
+                            $variation->restore();
+                        }
+                    });
+
+                    Log::info('Processed variation ID: ' . $variation->id);
                 }
+
+                // Save the last processed ID to a file (or a more suitable persistent storage)
                 file_put_contents('variations_2.txt', $id);
             }
-        }
+        });
+
+        echo 'Processing completed';
 
     }
     private function check_linked_orders(){
