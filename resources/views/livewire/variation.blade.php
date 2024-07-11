@@ -45,7 +45,7 @@
                 </div>
                 <div class="col-md col-sm-6">
                     <div class="form-floating">
-                        <input type="text" id="product" name="product" list="products" class="form-control" data-bs-placeholder="Select Status">
+                        <input type="text" id="product" name="product" list="products" class="form-control" data-bs-placeholder="Select Status" value="@isset($_GET['product']){{$_GET['product']}}@endisset">
                         <label for="product">Product</label>
                     </div>
                         <datalist id="products">
