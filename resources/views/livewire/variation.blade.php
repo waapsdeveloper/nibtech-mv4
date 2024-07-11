@@ -208,13 +208,15 @@
                                                 @if ($product->sku == null && $product->grade < 6)
                                                     Merge With Available SKUs:
                                                     @if ($product->duplicates->count() > 0)
-
+                                                        <form class="form-inline" method="POST" action="">
                                                         <select name="sku" class="form-control form-select" data-bs-placeholder="Select Status">
                                                             <option value="">sku</option>
                                                             @foreach ($product->duplicates as $duplicate)
                                                                 <option value="{{$duplicate->id}}">{{$duplicate->sku}}</option>
                                                             @endforeach
                                                         </select>
+                                                        <input type="submit" value="Merge">
+                                                        </form>
                                                     @endif
                                                 @endif
                                             </td>
