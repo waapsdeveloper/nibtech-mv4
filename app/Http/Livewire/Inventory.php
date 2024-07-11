@@ -217,7 +217,7 @@ class Inventory extends Component
 
 
         ->when(request('variation') != '', function ($q) {
-            return $q->where('variation_id', request('variation'));
+            return $q->where('stock.variation_id', request('variation'));
         })
         ->when(request('stock_status') != '', function ($q) {
             return $q->where('stock.status', request('stock_status'));
@@ -308,7 +308,7 @@ class Inventory extends Component
 
 
         ->when(request('variation') != '', function ($q) {
-            return $q->where('variation_id', request('variation'));
+            return $q->where('stock.variation_id', request('variation'));
         })
         ->when(request('stock_status') != '', function ($q) {
             return $q->where('stock.status', request('stock_status'));
