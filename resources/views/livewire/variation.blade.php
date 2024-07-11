@@ -190,6 +190,9 @@
                                         $i = $variations->firstItem() - 1;
                                     @endphp
                                     @foreach ($variations as $index => $product)
+                                        <form class="form-inline" method="POST" action="{{ url('variation/merge').'/'.$product->id }}" id="merge_{{$product->id}}">
+                                            @csrf
+                                        </form>
                                         <form method="post" action="{{url(session('url').'variation/update_product')}}/{{ $product->id }}" class="row form-inline">
                                             @csrf
                                         <tr>
@@ -208,19 +211,17 @@
                                                 @if ($product->sku == null && $product->grade < 6)
                                                     Merge With Available SKUs:
                                                     @if ($product->duplicates->count() > 0)
-                                                        <form class="form-inline" method="POST" action="{{ url('variation/merge').'/'.$product->id }}">
                                                         <div class="input-group">
-                                                            <select name="variation" class="form-control form-select" required>
+                                                            <select name="variation" class="form-control form-select" form="merge_{{$product->id}}" required>
                                                                 <option value="">sku</option>
                                                                 @foreach ($product->duplicates as $duplicate)
                                                                     <option value="{{$duplicate->id}}">{{$duplicate->sku}}</option>
                                                                 @endforeach
                                                             </select>
                                                             <div class="input-group-append">
-                                                                <input type="submit" class="btn btn-light" value="Merge">
+                                                                <input type="submit" class="btn btn-light" value="Merge" form="merge_{{$product->id}}">
                                                             </div>
                                                         </div>
-                                                        </form>
                                                     @endif
                                                 @endif
                                             </td>

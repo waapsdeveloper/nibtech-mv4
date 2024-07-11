@@ -94,7 +94,13 @@ class Variation extends Component
 
                 // Soft delete the duplicate
                 $duplicate->delete();
+                session()->put('success', 'Variation Merged');
+            }else{
+                session()->put('error', 'Variation Not Found');
+
             }
+        }else{
+            session()->put('error', 'Variation Not selected');
         }
 
         return redirect()->back();
