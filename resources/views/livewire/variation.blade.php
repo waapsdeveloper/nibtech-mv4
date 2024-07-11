@@ -209,8 +209,8 @@
                                             <td>{{ $product->name }}</td>
                                             <td>{{ $product->sku }}
                                                 @if ($product->sku == null && $product->grade < 6)
-                                                    Merge With Available SKUs:
                                                     @if ($product->duplicates->count() > 0)
+                                                    Merge With Available SKUs:
                                                         <div class="input-group">
                                                             <select name="variation" class="form-control form-select" form="merge_{{$product->id}}" required>
                                                                 <option value="">sku</option>
