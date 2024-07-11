@@ -19,7 +19,7 @@ class LabelsExport
         join('order_items', 'orders.id', '=', 'order_items.order_id')
         ->join('variation', 'order_items.variation_id', '=', 'variation.id')
         ->join('products', 'variation.product_id', '=', 'products.id')
-        ->where('orders.label_url', '!=', null)->whereIn('orders.id', request('ids'))
+        ->where('orders.label_url', '!=', null)->where('order_items.deleted_at', '!=', null)->where('variation.deleted_at', '!=', null)->where('product.deleted_at', '!=', null)->whereIn('orders.id', request('ids'))
 
         ->when(request('sort') == 4, function ($q) {
             return $q->orderBy('products.model', 'DESC')
