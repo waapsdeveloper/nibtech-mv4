@@ -1958,7 +1958,7 @@ class Order extends Component
     public function export_label()
     {
         // return Excel::download(new OrdersExport, 'your_export_file.xlsx');
-
+        dd(request('ids'));
         $pdfExport = new LabelsExport();
         $pdfExport->generatePdf();
     }
