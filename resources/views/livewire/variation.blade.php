@@ -209,13 +209,17 @@
                                                     Merge With Available SKUs:
                                                     @if ($product->duplicates->count() > 0)
                                                         <form class="form-inline" method="POST" action="">
-                                                        <select name="sku" class="form-control form-select" data-bs-placeholder="Select Status">
-                                                            <option value="">sku</option>
-                                                            @foreach ($product->duplicates as $duplicate)
-                                                                <option value="{{$duplicate->id}}">{{$duplicate->sku}}</option>
-                                                            @endforeach
-                                                        </select>
-                                                        <input type="submit" class="btn btn-light" value="Merge">
+                                                        <div class="input-group">
+                                                            <select name="sku" class="form-control form-select" data-bs-placeholder="Select Status">
+                                                                <option value="">sku</option>
+                                                                @foreach ($product->duplicates as $duplicate)
+                                                                    <option value="{{$duplicate->id}}">{{$duplicate->sku}}</option>
+                                                                @endforeach
+                                                            </select>
+                                                            <div class="input-group-append">
+                                                                <input type="submit" class="btn btn-light" value="Merge">
+                                                            </div>
+                                                        </div>
                                                         </form>
                                                     @endif
                                                 @endif
