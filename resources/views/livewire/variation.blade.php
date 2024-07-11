@@ -155,14 +155,14 @@
                                         <option value="100" {{ Request::get('per_page') == 100 ? 'selected' : '' }}>100</option>
                                     </select>
                                     {{-- <button type="submit">Apply</button> --}}
-                                    <input type="hidden" name="start_date" value="{{ Request::get('start_date') }}">
-                                    <input type="hidden" name="end_date" value="{{ Request::get('end_date') }}">
-                                    <input type="hidden" name="status" value="{{ Request::get('status') }}">
-                                    <input type="hidden" name="order_id" value="{{ Request::get('order_id') }}">
+                                    <input type="hidden" name="reference_id" value="{{ Request::get('reference_id') }}">
+                                    <input type="hidden" name="product" value="{{ Request::get('product') }}">
                                     <input type="hidden" name="sku" value="{{ Request::get('sku') }}">
-                                    <input type="hidden" name="imei" value="{{ Request::get('imei') }}">
+                                    <input type="hidden" name="color" value="{{ Request::get('color') }}">
+                                    <input type="hidden" name="storage" value="{{ Request::get('storage') }}">
+                                    <input type="hidden" name="grade" value="{{ Request::get('grade') }}">
                                     <input type="hidden" name="page" value="{{ Request::get('page') }}">
-                                    <input type="hidden" name="sort" value="{{ Request::get('sort') }}">
+                                    <input type="hidden" name="duplicate" value="{{ Request::get('duplicate') }}">
                                 </form>
                             </div>
 
