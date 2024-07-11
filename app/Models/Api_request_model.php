@@ -125,7 +125,7 @@ class Api_request_model extends Model
                 }elseif($gradeName == 'a-'){
                     $grade = 3;
                 }elseif($gradeName == 'ab'){
-                    $grade = 3;
+                    $grade = 5;
                 }elseif($gradeName == 'ok'){
                     $grade = 5;
                 }else{
