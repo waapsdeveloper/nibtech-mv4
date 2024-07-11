@@ -173,7 +173,7 @@ class RMA extends Component
 
 
         $data['variations'] = $variations;
-        $last_ten = Order_item_model::where('order_id',$order_id)->orderBy('id','desc')->limit(10)->get();
+        $last_ten = Order_item_model::where('order_id',$order_id)->orderBy('id','desc')->limit(15)->get();
         $data['last_ten'] = $last_ten;
         $data['all_variations'] = Variation_model::where('grade',9)->get();
         $data['order'] = Order_model::find($order_id);
