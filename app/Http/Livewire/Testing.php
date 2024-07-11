@@ -31,7 +31,7 @@ class Testing extends Component
 
         $testing = new Api_request_model();
         $testing->push_testing();
-        $this->remove_extra_variations();
+        // $this->remove_extra_variations();
 
         die;
 

@@ -181,6 +181,7 @@ Route::post('product/update_product/{id}', [Product::class,'update_product'])->n
 
 Route::get('variation', Variation::class)->name('view_variation');
 Route::post('variation/update_product/{id}', [Variation::class,'update_product'])->name('update_variation');
+Route::post('variation/merge/{id}', [Variation::class,'merge'])->name('merge_variation');
 
 Route::get('listing', Listing::class)->name('view_listing');
 Route::post('listing/update_quantity/{id}', [Listing::class,'update_quantity'])->name('update_listing_quantity');

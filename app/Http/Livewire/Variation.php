@@ -8,7 +8,12 @@ namespace App\Http\Livewire;
     use App\Models\Color_model;
     use App\Models\Storage_model;
     use App\Models\Grade_model;
-    use App\Models\Order_status_model;
+use App\Models\Listing_model;
+use App\Models\Order_item_model;
+use App\Models\Order_status_model;
+use App\Models\Process_model;
+use App\Models\Stock_model;
+use App\Models\Stock_operations_model;
 use Illuminate\Support\Facades\DB;
 
 class Variation extends Component
@@ -70,6 +75,28 @@ class Variation extends Component
     public function update_product($id){
 
         Variation_model::where('id', $id)->update(request('update'));
+        return redirect()->back();
+    }
+    public function merge($id){
+        if(request('variation')){
+            $duplicate = Variation_model::find($id);
+            $new = Variation_model::find(request('variation'));
+            if($duplicate != null && $new != null){
+
+                // Update related records to point to the original variation
+                Listing_model::where('variation_id', $duplicate->id)->update(['variation_id' => $new->id]);
+                Order_item_model::where('variation_id', $duplicate->id)->update(['variation_id' => $new->id]);
+                Process_model::where('old_variation_id', $duplicate->id)->update(['old_variation_id' => $new->id]);
+                Process_model::where('new_variation_id', $duplicate->id)->update(['new_variation_id' => $new->id]);
+                Stock_model::where('variation_id', $duplicate->id)->update(['variation_id' => $new->id]);
+                Stock_operations_model::where('old_variation_id', $duplicate->id)->update(['old_variation_id' => $new->id]);
+                Stock_operations_model::where('new_variation_id', $duplicate->id)->update(['new_variation_id' => $new->id]);
+
+                // Soft delete the duplicate
+                $duplicate->delete();
+            }
+        }
+
         return redirect()->back();
     }
 
