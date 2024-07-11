@@ -206,7 +206,16 @@
                                             <td>{{ $product->name }}</td>
                                             <td>{{ $product->sku }}
                                                 @if ($product->sku == null && $product->grade < 6)
-                                                    {{ $product->duplicates }}
+                                                    Merge With Available SKUs:
+                                                    @if ($product->duplicates->count() > 0)
+
+                                                        <select name="sku" class="form-control form-select" data-bs-placeholder="Select Status">
+                                                            <option value="">sku</option>
+                                                            @foreach ($product->duplicates as $duplicate)
+                                                                <option value="{{$duplicate->id}}">{{$duplicate->sku}}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    @endif
                                                 @endif
                                             </td>
                                             <td>
