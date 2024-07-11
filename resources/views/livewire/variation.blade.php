@@ -215,7 +215,7 @@
                                                                 <option value="{{$duplicate->id}}">{{$duplicate->sku}}</option>
                                                             @endforeach
                                                         </select>
-                                                        <input type="submit" class="btn btn-default" value="Merge">
+                                                        <input type="submit" class="btn btn-light" value="Merge">
                                                         </form>
                                                     @endif
                                                 @endif
