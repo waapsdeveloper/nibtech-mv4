@@ -230,7 +230,7 @@
                                                     @endforeach
                                                 </select>
                                             </td>
-                                            <td>{{ $product->stock }}</td>
+                                            <td>{{ $product->available_stocks_count }}</td>
                                             <td>{{ $product->price }}</td>
                                             <td>{{ $product->updated_at }}</td>
                                         </tr>
