@@ -99,7 +99,7 @@ class Testing extends Component
         // Fetch IDs of variations with duplicate SKUs
         $variations = Variation_model::whereIn('sku', $duplicateSKUs)
         ->withTrashed()
-        ->pluck('id');
+        ->pluck('sku','id');
         print_r($variations);
         die;
         $variations = Variation_model::whereNotNull('sku')
