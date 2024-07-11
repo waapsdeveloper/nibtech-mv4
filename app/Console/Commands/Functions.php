@@ -148,7 +148,7 @@ class Functions extends Command
             }
         });
 
-        echo 'Processing completed';
+        echo 'Processing competed';
 
     }
     private function check_linked_orders(){
