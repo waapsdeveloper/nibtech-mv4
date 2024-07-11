@@ -147,6 +147,9 @@ class Inventory extends Component
                 return $q->whereNotIn('stock.id',$aftersale);
             })
 
+            ->when(request('variation') != '', function ($q) {
+                return $q->where('variation_id', request('variation'));
+            })
             ->when(request('stock_status') != '', function ($q) {
                 return $q->where('stock.status', request('stock_status'));
             })
@@ -212,6 +215,10 @@ class Inventory extends Component
 
         $data['average_cost'] = Stock_model::where('stock.deleted_at',null)->where('order_items.deleted_at',null)
 
+
+        ->when(request('variation') != '', function ($q) {
+            return $q->where('variation_id', request('variation'));
+        })
         ->when(request('stock_status') != '', function ($q) {
             return $q->where('stock.status', request('stock_status'));
         })
@@ -299,6 +306,10 @@ class Inventory extends Component
 
         $data['vendor_average_cost'] = Stock_model::where('stock.deleted_at',null)->where('order_items.deleted_at',null)->where('orders.deleted_at',null)
 
+
+        ->when(request('variation') != '', function ($q) {
+            return $q->where('variation_id', request('variation'));
+        })
         ->when(request('stock_status') != '', function ($q) {
             return $q->where('stock.status', request('stock_status'));
         })

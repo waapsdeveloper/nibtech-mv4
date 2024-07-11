@@ -230,7 +230,7 @@
                                                     @endforeach
                                                 </select>
                                             </td>
-                                            <td>{{ $product->available_stocks_count }}</td>
+                                            <td><a href="{{ url('inventory').'?variation='.$product->id}}" {{ $product->available_stocks_count }}</td>
                                             <td>{{ $product->price }}</td>
                                             <td>{{ $product->updated_at }}</td>
                                         </tr>
