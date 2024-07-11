@@ -33,7 +33,7 @@ class LabelsExport
         })
         ->select('orders.id','orders.label_url','orders.reference_id')
         ->pluck('label_url')->toArray();
-
+        dd($data);
         // Output PDF to the browser
         $pdf = $this->generateMergedPdf($data);
 
