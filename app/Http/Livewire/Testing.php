@@ -5,10 +5,16 @@ namespace App\Http\Livewire;
 
 use App\Models\Api_request_model;
 use Livewire\Component;
+
+use App\Models\Listing_model;
+use App\Models\Order_item_model;
+use App\Models\Process_model;
+use App\Models\Variation_model;
 use App\Models\Stock_model;
 use App\Models\Stock_operations_model;
-use App\Models\Variation_model;
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 class Testing extends Component
 {
 
@@ -25,6 +31,7 @@ class Testing extends Component
 
         $testing = new Api_request_model();
         $testing->push_testing();
+        $this->remove_extra_variations();
 
         die;
 
@@ -36,137 +43,112 @@ class Testing extends Component
         // return view('livewire.testing', $data); // Return the Blade view instance with data
     }
 
-    public function change_grade(){
-        $description = request('description');
-        if(request('grade')){
-            session()->put('grade',request('grade'));
-        }
-        session()->put('description',request('description'));
 
+    private function remove_extra_variations(){
+        // $variations = Variation_model::limit(100)->pluck('id');
+        // if(file_exists('variations.txt')){
+        //     $last_id = file_get_contents('variations.txt');
+        //     $variations = Variation_model::where('id','>',$last_id)->limit(100)->pluck('id');
+        //     if($variations->count() == 0){
+        //         $variations = Variation_model::limit(100)->pluck('id');
+        //     }
+        // }
+        // foreach($variations as $id){
+        //     $variation = Variation_model::find($id);
+        //     if($variation != null){
 
-        if (request('imei')) {
-            if (ctype_digit(request('imei'))) {
-                $i = request('imei');
-                $s = null;
-            } else {
-                $i = null;
-                $s = request('imei');
-            }
+        //         $duplicates = Variation_model::where(['product_id'=>$variation->product_id,'reference_id'=>$variation->reference_id,'storage'=>$variation->storage,'color'=>$variation->color,'grade'=>$variation->grade])
+        //         ->whereNot('id',$variation->id)->get();
+        //         if($duplicates->count() > 0){
+        //             foreach($duplicates as $duplicate){
+        //                 Listing_model::where('variation_id',$duplicate->id)->update(['variation_id'=>$variation->id]);
+        //                 Order_item_model::where('variation_id',$duplicate->id)->update(['variation_id'=>$variation->id]);
+        //                 Process_model::where('old_variation_id',$duplicate->id)->update(['old_variation_id'=>$variation->id]);
+        //                 Process_model::where('new_variation_id',$duplicate->id)->update(['new_variation_id'=>$variation->id]);
+        //                 Stock_model::where('variation_id',$duplicate->id)->update(['variation_id'=>$variation->id]);
+        //                 Stock_operations_model::where('old_variation_id',$duplicate->id)->update(['old_variation_id'=>$variation->id]);
+        //                 Stock_operations_model::where('new_variation_id',$duplicate->id)->update(['new_variation_id'=>$variation->id]);
 
-            $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
-            if (request('imei') == '' || !$stock) {
-                session()->put('error', 'IMEI Invalid / Not Available');
-                return redirect()->back();
-            }
-            if ($stock->order_id == null) {
-                session()->put('error', 'Stock Not Purchased');
-                return redirect()->back();
-            }
-            $stock_id = $stock->id;
+        //                 $duplicate->delete();
+        //             }
+        //         }
+        //         file_put_contents('variations.txt', $id);
+        //     }
+        // }
 
-            $product_id = $stock->variation->product_id;
-            $storage = $stock->variation->storage;
-            $color = $stock->variation->color;
-            $grade = $stock->variation->grade;
-            if(session('user')->hasPermission('change_variation')){
-                if(request('product') != ''){
-                    $product_id = request('product');
+        // $variations_2 = Variation_model::where('sku','!=',null)->where('product_id','!=',null)->withTrashed()->get()->pluck('id');
+        // echo $variations_2->count();
+        // die;
+        // if(file_exists('variations_2.txt')){
+        //     $last_id = file_get_contents('variations_2.txt');
+        //     $variations_2 = Variation_model::where('id','>',$last_id)->where('sku','!=',null)->where('product_id','!=',null)->withTrashed()->get()->pluck('id');
+        //     if($variations_2->count() == 0){
+        //         $variations_2 = Variation_model::where('sku','!=',null)->where('product_id','!=',null)->withTrashed()->get()->pluck('id');
+        //     }
+        // }
+        // foreach($var
+        // Find all duplicate SKUs
+        $duplicateSKUs = Variation_model::select('sku')
+        ->whereNotNull('sku')
+        ->whereNotNull('product_id')
+        ->withTrashed()
+        ->groupBy('sku')
+        ->havingRaw('COUNT(*) > 1')
+        ->pluck('sku');
+
+        // Fetch IDs of variations with duplicate SKUs
+        $variations = Variation_model::whereIn('sku', $duplicateSKUs)
+        ->withTrashed()
+        ->pluck('id');
+        print_r($variations);
+        die;
+        $variations = Variation_model::whereNotNull('sku')
+            ->whereNotNull('product_id')
+            ->withTrashed()
+            ->pluck('id');
+
+        $processedVariations = $variations->map(function ($id) {
+            $variation = Variation_model::withTrashed()->find($id);
+
+            if ($variation) {
+                // Find duplicates
+                $duplicates = Variation_model::where('sku', $variation->sku)
+                    ->where('grade', $variation->grade)
+                    ->where('id', '!=', $variation->id)
+                    ->withTrashed()
+                    ->get();
+
+                if ($duplicates->isNotEmpty()) {
+                    DB::transaction(function () use ($variation, $duplicates) {
+                        foreach ($duplicates as $duplicate) {
+                            // Update related records to point to the original variation
+                            Listing_model::where('variation_id', $duplicate->id)->update(['variation_id' => $variation->id]);
+                            Order_item_model::where('variation_id', $duplicate->id)->update(['variation_id' => $variation->id]);
+                            Process_model::where('old_variation_id', $duplicate->id)->update(['old_variation_id' => $variation->id]);
+                            Process_model::where('new_variation_id', $duplicate->id)->update(['new_variation_id' => $variation->id]);
+                            Stock_model::where('variation_id', $duplicate->id)->update(['variation_id' => $variation->id]);
+                            Stock_operations_model::where('old_variation_id', $duplicate->id)->update(['old_variation_id' => $variation->id]);
+                            Stock_operations_model::where('new_variation_id', $duplicate->id)->update(['new_variation_id' => $variation->id]);
+
+                            // Soft delete the duplicate
+                            $duplicate->delete();
+                        }
+
+                        // Restore the original variation if it was soft deleted
+                        if ($variation->trashed()) {
+                            $variation->restore();
+                        }
+                    });
+
+                    Log::info('Processed variation ID: ' . $variation->id);
                 }
-                if(request('storage') != ''){
-                    $storage = request('storage');
-                }
-                if(request('color') != ''){
-                    $color = request('color');
-                }
-                if(request('price') != ''){
-                    $price = request('price');
-                    $p_order = $stock->purchase_item;
 
-                    $description .= "Price changed from ".$p_order->price;
-                    $p_order->price = $price;
-                    $p_order->save();
-
-                    // dd($p_order);
-                }
+                // Save the last processed ID to a file (or a more suitable persistent storage)
+                file_put_contents('variations_2.txt', $id);
             }
+        });
 
-                if(request('grade') != ''){
-                    $grade = request('grade');
-                }
-            $new_variation = Variation_model::firstOrNew([
-                'product_id' => $product_id,
-                'storage' => $storage,
-                'color' => $color,
-                'grade' => $grade,
-            ]);
-            $new_variation->status = 1;
-            if($new_variation->id && $stock->variation_id == $new_variation->id && request('price') == null){
-                session()->put('error', 'Stock already exist in this variation');
-                return redirect()->back();
-
-            }
-            $new_variation->save();
-            $stock_operation = Stock_operations_model::create([
-                'stock_id' => $stock_id,
-                'old_variation_id' => $stock->variation_id,
-                'new_variation_id' => $new_variation->id,
-                'description' => $description,
-                'admin_id' => session('user_id'),
-            ]);
-            $stock->variation_id = $new_variation->id;
-            $stock->save();
-
-            // session()->put('added_imeis['.$grade.'][]', $stock_id);
-            // dd($orders);
-        }
-
-
-        session()->put('success', 'Stock Sent Successfully');
-        return redirect()->back();
-
-    }
-    public function delete_move(){
-        $id = request('id');
-        if(request('grade')){
-            session()->put('grade',request('grade'));
-        }
-        session()->put('description',request('description'));
-
-
-        if ($id != null) {
-            $stock_operation = Stock_operations_model::find($id);
-            $stock = $stock_operation->stock;
-            $stock->variation_id = $stock_operation->old_variation_id;
-            $stock->save();
-            $stock_operation->delete();
-        }
-
-
-        session()->put('success', 'Stock Sent Back Successfully');
-        return redirect()->back();
-
-    }
-    public function delete_multiple_moves(){
-        $ids = request('ids');
-        if(request('grade')){
-            session()->put('grade',request('grade'));
-        }
-        session()->put('description',request('description'));
-
-
-        if ($ids != null) {
-            foreach($ids as $id){
-                $stock_operation = Stock_operations_model::find($id);
-                $stock = $stock_operation->stock;
-                $stock->variation_id = $stock_operation->old_variation_id;
-                $stock->save();
-                $stock_operation->delete();
-            }
-        }
-
-
-        session()->put('success', 'Stock Sent Back Successfully');
-        return redirect()->back();
+        echo 'Processing competed';
 
     }
 
