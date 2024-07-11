@@ -36,8 +36,8 @@ class Variation_model extends Model
 
 
 
-    public function duplicate(){
-        return $this->hasOne(Variation_model::class, 'product_id', 'product_id')
+    public function duplicates(){
+        return $this->hasMany(Variation_model::class, 'product_id', 'product_id')
                     ->where('storage', $this->storage)
                     ->where('color', $this->color)
                     ->where('grade', $this->grade)

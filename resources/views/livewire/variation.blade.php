@@ -205,7 +205,11 @@
                                                 </select>
                                             </td>
                                             <td>{{ $product->name }}</td>
-                                            <td>{{ $product->sku }}</td>
+                                            <td>{{ $product->sku }}
+                                                @if ($product->sku == null && $product->grade < 6)
+                                                    {{ $product->duplicates }}
+                                                @endif
+                                            </td>
                                             <td>
                                                 <select name="update[color]" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
                                                     <option value="">None</option>
