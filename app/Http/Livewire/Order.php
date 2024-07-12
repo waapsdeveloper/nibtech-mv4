@@ -1173,7 +1173,7 @@ class Order extends Component
                 }
                 if(!in_array($stock[$i]->variation->grade, [$variant->grade, 7, 9])){
                     session()->put('error', "Product Grade not matched");
-                    return redirect()->back();
+                    // return redirect()->back();
 
                 }
 
