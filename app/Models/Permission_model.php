@@ -14,6 +14,7 @@ class Permission_model extends Model
     protected $fillable = [
         // other fields...
         // 'reference_id',
+        'name'
     ];
     /**
      * Define relationships

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use DB;
+use Google\Service\AndroidEnterprise\Permission;
 use Illuminate\Auth\Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 
@@ -41,6 +42,9 @@ class Admin_model extends Model
 
     public function hasPermission($permission)
     {
+        $per = Permission_model::firstOrNew(['name'=>$permission]);
+        $per->save();
+
         if (session('user_id') == 1){return true;}
         // Check if user has the permission directly
         if ($this->permissions->contains('name', $permission)) {

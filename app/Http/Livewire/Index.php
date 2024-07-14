@@ -42,11 +42,15 @@ class Index extends Component
         $data['colors'] = Color_model::pluck('name','id');
         $data['storages'] = Storage_model::pluck('name','id');
         $data['grades'] = Grade_model::pluck('name','id');
-        $data['variations'] = Variation_model::where('product_id',null)
+
+        // New Added Variations
+        $data['variations'] = Variation_model::withoutGlobalScope('Status_not_3_scope')
+        ->where('product_id',null)
         ->orderBy('name','desc')
         ->paginate($per_page)
         ->onEachSide(5)
         ->appends(request()->except('page'));
+        // New Added Variations
 
         $start_date = Carbon::now()->startOfDay();
         $end_date = date('Y-m-d 23:59:59');
@@ -56,31 +60,37 @@ class Index extends Component
         }
         // $products = Products_model::get()->toArray();
         // Retrieve the top 10 selling products from the order_items table
-        $variation_ids = Variation_model::select('id')
-        ->when(request('product') != '', function ($q) {
-            return $q->where('product_id', '=', request('product'));
-        })
-        ->when(request('category') != '', function ($q) {
-            return $q->whereHas('product', function ($qu) {
-                $qu->where('category', '=', request('category'));
-            });
-        })
-        ->when(request('brand') != '', function ($q) {
-            return $q->whereHas('product', function ($qu) {
-                $qu->where('brand', '=', request('brand'));
-            });
-        })
-        ->when(request('storage') != '', function ($q) {
-            return $q->where('variation.storage', 'LIKE', request('storage') . '%');
-        })
-        ->when(request('color') != '', function ($q) {
-            return $q->where('variation.color', 'LIKE', request('color') . '%');
-        })
-        ->when(request('grade') != '', function ($q) {
-            return $q->where('variation.grade', 'LIKE', request('grade') . '%');
-        })->pluck('id')->toArray();
+        $variation_ids = [];
+        if(request('submit') == 1){
 
-        $top_products = Order_item_model::whereIn('variation_id',$variation_ids)
+            $variation_ids = Variation_model::withoutGlobalScope('Status_not_3_scope')->select('id')
+            ->when(request('product') != '', function ($q) {
+                return $q->where('product_id', '=', request('product'));
+            })
+            ->when(request('category') != '', function ($q) {
+                return $q->whereHas('product', function ($qu) {
+                    $qu->where('category', '=', request('category'));
+                });
+            })
+            ->when(request('brand') != '', function ($q) {
+                return $q->whereHas('product', function ($qu) {
+                    $qu->where('brand', '=', request('brand'));
+                });
+            })
+            ->when(request('storage') != '', function ($q) {
+                return $q->where('variation.storage', 'LIKE', request('storage') . '%');
+            })
+            ->when(request('color') != '', function ($q) {
+                return $q->where('variation.color', 'LIKE', request('color') . '%');
+            })
+            ->when(request('grade') != '', function ($q) {
+                return $q->where('variation.grade', 'LIKE', request('grade') . '%');
+            })->pluck('id')->toArray();
+
+        }
+        $top_products = Order_item_model::when(request('submit') == 1, function($q) use ($variation_ids){
+            return $q->whereIn('variation_id', $variation_ids);
+        })
         ->whereHas('order', function ($q) use ($start_date, $end_date) {
             $q->where(['order_type_id'=>3, 'currency'=>4])
             ->whereBetween('created_at', [$start_date, $end_date]);
@@ -94,30 +104,42 @@ class Index extends Component
         $data['top_products'] = $top_products;
 
 
-        $data['total_orders'] = Order_model::where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date)->where('order_type_id',3)
+        $data['total_orders'] = Order_model::whereBetween('created_at', [$start_date, $end_date])->where('order_type_id',3)
         ->whereHas('order_items', function ($q) use ($variation_ids) {
-            $q->whereIn('variation_id', $variation_ids);
+            $q->when(request('submit') == 1, function($q) use ($variation_ids){
+                return $q->whereIn('variation_id', $variation_ids);
+            });
         })
         ->count();
 
-        $data['pending_orders'] = Order_model::where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date)->where('order_type_id',3)->where('status','<',3)
+        $data['pending_orders'] = Order_model::whereBetween('created_at', [$start_date, $end_date])->where('order_type_id',3)->where('status','<',3)
         ->whereHas('order_items', function ($q) use ($variation_ids) {
-            $q->whereIn('variation_id', $variation_ids);
+            $q->when(request('submit') == 1, function($q) use ($variation_ids){
+                return $q->whereIn('variation_id', $variation_ids);
+            });
         })
         ->count();
         $data['invoiced_orders'] = Order_model::where('processed_at', '>=', $start_date)->where('processed_at', '<=', $end_date)->where('order_type_id',3)
         ->whereHas('order_items', function ($q) use ($variation_ids) {
-            $q->whereIn('variation_id', $variation_ids);
+            $q->when(request('submit') == 1, function($q) use ($variation_ids){
+                return $q->whereIn('variation_id', $variation_ids);
+            });
         })
         ->count();
 
 
-        $data['total_conversations'] = Order_item_model::where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date)->where('care_id','!=',null)
-        ->whereIn('variation_id', $variation_ids)->whereHas('sale_order')
+        $data['total_conversations'] = Order_item_model::whereBetween('created_at', [$start_date, $end_date])->where('care_id','!=',null)
+        ->when(request('submit') == 1, function($q) use ($variation_ids){
+            return $q->whereIn('variation_id', $variation_ids);
+        })->whereHas('sale_order')
         ->count();
-        $data['average'] = Order_item_model::where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date)->whereHas('order', function ($q) {
+
+        $data['average'] = Order_item_model::whereBetween('created_at', [$start_date, $end_date])
+        ->whereHas('order', function ($q) {
             $q->where('currency',4);
-        })->whereIn('variation_id', $variation_ids)
+        })->when(request('submit') == 1, function($q) use ($variation_ids){
+            return $q->whereIn('variation_id', $variation_ids);
+        })
         ->avg('price');
 
 
@@ -166,7 +188,7 @@ class Index extends Component
 
 
         $testing_count = Admin_model::withCount(['stock_operations' => function($q) use ($start_date,$end_date) {
-            $q->select(DB::raw('count(distinct stock_id)'))->where('description','LIKE','%DrPhone')->where('created_at', '>=', $start_date)->where('created_at', '<=', $end_date);
+            $q->select(DB::raw('count(distinct stock_id)'))->where('description','LIKE','%DrPhone')->whereBetween('created_at', [$start_date, $end_date]);
         }])->get();
         $data['testing_count'] = $testing_count;
 

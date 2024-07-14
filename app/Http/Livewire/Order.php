@@ -1864,7 +1864,7 @@ class Order extends Component
         return redirect()->back();
     }
 
-    public function recheck($order_id, $refresh = false, $invoice = false, $tester = null){
+    public function recheck($order_id, $refresh = false, $invoice = false, $tester = null, $data = false){
 
         $bm = new BackMarketAPIController();
 
@@ -1901,7 +1901,9 @@ class Order extends Component
                 </script>';
             }
         }
-
+        if($data == true){
+            dd($orderObj);
+        }
         // return redirect()->back();
 
     }

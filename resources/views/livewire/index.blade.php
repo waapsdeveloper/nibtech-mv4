@@ -197,7 +197,7 @@
                                 <label for="end">{{ __('locale.End Date') }}</label>
                             </div>
                         </div>
-                            <button type="submit" class="btn btn-icon  btn-success me-1" form="index"><i class="fe fe-search"></i></button>
+                            <button type="submit" class="btn btn-icon  btn-success me-1" name="submit" value="1" form="index"><i class="fe fe-search"></i></button>
                             <a href="{{ url('/') }}" class="btn btn-icon btn-danger me-1" form="index"><i class="fe fe-x"></i></a>
                     </div>
                     <form action="" method="GET" id="index">
