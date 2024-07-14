@@ -502,10 +502,16 @@
                                                         {{-- @if ($item->order->processed_at > $last_hour || $user_id == 1) --}}
                                                         <a class="dropdown-item" id="correction_{{ $item->id }}" href="javascript:void(0);" data-bs-target="#correction_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}"> Correction </a>
                                                         {{-- @endif --}}
+                                                        @if (!$item->replacement)
                                                         <a class="dropdown-item" id="replacement_{{ $item->id }}" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}" data-bs-return="@if($item->check_return) 1 @endif"> Replacement </a>
+                                                        @endif
                                                         @if ($order->status >= 3)
 
                                                         <a class="dropdown-item" href="{{url(session('url').'order')}}/recheck/{{ $order->reference_id }}/true" target="_blank">Invoice</a>
+                                                        @endif
+                                                        @if ($user_id == 1)
+
+                                                        <a class="dropdown-item" href="{{url(session('url').'order')}}/recheck/{{ $order->reference_id }}/true/null/true" target="_blank">Data</a>
                                                         @endif
                                                         <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank">View in Backmarket</a>
                                                     </div>

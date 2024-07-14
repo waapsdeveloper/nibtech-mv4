@@ -36,7 +36,7 @@ class Index extends Component
             $per_page = 10;
         }
         $data['purchase_status'] = [2 => '(Pending)', 3 => ''];
-        $data['products'] = Products_model::orderBy('model','asc')->get();
+        $data['products'] = Products_model::select('id','model')->orderBy('model','asc')->get();
         $data['categories'] = Category_model::pluck('name','id');
         $data['brands'] = Brand_model::pluck('name','id');
         $data['colors'] = Color_model::pluck('name','id');
