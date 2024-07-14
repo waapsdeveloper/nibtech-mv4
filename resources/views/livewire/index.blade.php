@@ -266,7 +266,7 @@
                                                         @endphp
                                                         <tr>
                                                             <td>{{ $top+1 }}</td>
-                                                            <td>{{ $product->variation->product->model ?? null }} - {{ $product->variation->storage_id->name ?? null }} - {{ $product->variation->color_id->name ?? null }} - {{ $product->variation->grade_id->name ?? null }}</td>
+                                                            <td>{{ $product->variation->sku ?? null }} - {{ $product->variation->product->model ?? null }} - {{ $product->variation->storage_id->name ?? null }} - {{ $product->variation->color_id->name ?? null }} - {{ $product->variation->grade_id->name ?? null }}</td>
                                                             <td>{{ $product->total_quantity_sold }}</td>
                                                             @if (session('user')->hasPermission('view_price'))
                                                             <td>€{{ number_format($product->average_price,2) }}</td>
