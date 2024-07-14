@@ -3,6 +3,7 @@
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\TestingController;
 use App\Http\Livewire\Change;
+use App\Http\Livewire\Charge;
 use App\Http\Livewire\Customer;
 use App\Http\Livewire\Emptypage;
 use App\Http\Livewire\Error404;
@@ -199,16 +200,20 @@ Route::post('update-member/{id}', [Team::class,'update_member'])->name('edit_mem
 Route::get('customer', Customer::class)->name('view_customer');
 Route::get('add-customer', [Customer::class,'add_customer'])->name('add_customer');
 Route::post('insert-customer', [Customer::class,'insert_customer'])->name('add_customer');
-Route::get('update-status/{id}', [Customer::class,'update_status'])->name('edit_customer');
 Route::get('edit-customer/{id}', [Customer::class,'edit_customer'])->name('edit_customer');
 Route::post('update-customer/{id}', [Customer::class,'update_customer'])->name('edit_customer');
 
 Route::get('grade', Grade::class)->name('view_grade');
 Route::get('add-grade', [Grade::class,'add_grade'])->name('add_grade');
 Route::post('insert-grade', [Grade::class,'insert_grade'])->name('add_grade');
-Route::get('update-status/{id}', [Grade::class,'update_status'])->name('edit_grade');
 Route::get('edit-grade/{id}', [Grade::class,'edit_grade'])->name('edit_grade');
 Route::post('update-grade/{id}', [Grade::class,'update_grade'])->name('edit_grade');
+
+Route::get('charge', Charge::class)->name('view_charge');
+Route::get('add-charge', [Charge::class,'add_charge'])->name('add_charge');
+Route::post('insert-charge', [Charge::class,'insert_charge'])->name('add_charge');
+Route::get('edit-charge/{id}', [Charge::class,'edit_charge'])->name('edit_charge');
+Route::post('update-charge/{id}', [Charge::class,'update_charge'])->name('edit_charge');
 
 Route::get('get_permissions/{id}', [Team::class,'get_permissions'])->name('view_permissions');
 Route::post('toggle_role_permission/{roleId}/{permissionId}/{isChecked}', [Team::class, 'toggle_role_permission'])->name('change_permission');
