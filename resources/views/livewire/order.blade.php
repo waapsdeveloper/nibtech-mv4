@@ -511,7 +511,7 @@
                                                         @endif
                                                         @if ($user_id == 1)
 
-                                                        <a class="dropdown-item" href="{{url(session('url').'order')}}/recheck/{{ $order->reference_id }}/false/null/true" target="_blank">Data</a>
+                                                        <a class="dropdown-item" href="{{url(session('url').'order')}}/recheck/{{ $order->reference_id }}/false/false/null/true" target="_blank">Data</a>
                                                         @endif
                                                         <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank">View in Backmarket</a>
                                                     </div>
