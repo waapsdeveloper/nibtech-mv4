@@ -41,7 +41,7 @@ class Admin_model extends Model
 
     public function hasPermission($permission)
     {
-        if (session('user_id') == 1){return true;}
+        // if (session('user_id') == 1){return true;}
         // Check if user has the permission directly
         if ($this->permissions->contains('name', $permission)) {
             return true;
@@ -55,7 +55,7 @@ class Admin_model extends Model
         // }
         // Check if user has the required role but does not have the permission directly
         // foreach ($this->roles as $role) {
-            if ($this->role->permissions->isEmpty() && $this->role->name === 'required_role') {
+            if ($this->role->permissions->isEmpty() && $this->role->name === 'Super Admin') {
                 return true;
             }
         // }
