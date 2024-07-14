@@ -42,10 +42,10 @@ class Admin_model extends Model
 
     public function hasPermission($permission)
     {
-        $per = Permission_model::firstOrNew(['name'=>$permission]);
-        $per->save();
 
-        if (session('user_id') == 1){return true;}
+        if (session('user_id') == 1){
+
+            return true;}
         // Check if user has the permission directly
         if ($this->permissions->contains('name', $permission)) {
             return true;
@@ -63,6 +63,8 @@ class Admin_model extends Model
                 return true;
             }
         // }
+        $per = Permission_model::firstOrNew(['name'=>$permission]);
+        $per->save();
 
         return false;
     }
