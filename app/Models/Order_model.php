@@ -95,6 +95,11 @@ class Order_model extends Model
                     $order->label_url = $bm->getOrderLabel($orderObj->order_id)->results[0]->labelUrl;
                 }
             }
+            if($orderObj->payment_method != null){
+                $payment_method = Payment_method_model::firstOrNew(['name'=>$orderObj->payment_method]);
+                $payment_method->save();
+                $order->payment_method_id = $payment_method->id;
+            }
             if($invoice == true){
                 $order->processed_by = session('user_id');
                 $order->processed_at = now()->format('Y-m-d H:i:s');
