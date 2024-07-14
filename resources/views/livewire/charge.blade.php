@@ -157,7 +157,7 @@
                             </div>
                             <div class="form-group col-md-6">
                                 <label for="">Value</label>
-                                <input class="form-control" placeholder="input value" name="charge[value]" value="" type="number" required>
+                                <input class="form-control" placeholder="input value" name="charge[value]" step="0.01" value="" type="number" required>
                             </div>
                             <div class="form-group col-md-6">
                                 <label for="">Start Date</label>
