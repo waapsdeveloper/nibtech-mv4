@@ -1880,6 +1880,9 @@ class Order extends Component
             $order_model->updateOrderInDB($orderObj, $invoice, $bm, $currency_codes, $country_codes);
 
             $order_item_model->updateOrderItemsInDB($orderObj, $tester, $bm);
+            if($data == true){
+                dd($orderObj);
+            }
             if($refresh == true){
                 $order = Order_model::where('reference_id',$order_id)->first();
 
@@ -1900,9 +1903,6 @@ class Order extends Component
                 window.close();
                 </script>';
             }
-        }
-        if($data == true){
-            dd($orderObj);
         }
         // return redirect()->back();
 
