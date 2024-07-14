@@ -112,16 +112,6 @@
                         <form action="{{ url('add_charge') }}" method="POST" enctype="multipart/form-data">
                             @csrf
                             <div class="form-group">
-                                <label for="">Vendor</label>
-                                <select class="form-select" placeholder="Input Vendor" name="charge[vendor]" required>
-                                    <option>Select Vendor</option>
-                                    @foreach ($vendors as $id=>$vendor)
-                                        <option value="{{ $id }}">{{ $vendor }}</option>
-
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="form-group">
                                 <label for="">Charge Frequency</label>
                                 <select class="form-select" placeholder="Input Charge Frequency" name="charge[charge_frequency]" required>
                                     @foreach ($charge_frequencies as $id=>$name)
