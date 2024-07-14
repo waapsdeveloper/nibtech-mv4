@@ -102,7 +102,7 @@
             </div>
         </div>
         <div class="modal" id="modaldemo">
-            <div class="modal-dialog wd-xl-400" role="document">
+            <div class="modal-dialog wd-xl-600" role="document">
                 <div class="modal-content">
                     <div class="modal-body pd-sm-40">
                         <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
