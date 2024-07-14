@@ -123,7 +123,7 @@
                             <div class="form-group col-md-6">
                                 <label for="">Order Type</label>
                                 <select class="form-select" placeholder="Input Order Type" name="charge[order_type]">
-                                    <option>None</option>
+                                    <option value="">None</option>
                                     @foreach ($order_types as $id=>$name)
                                         <option value="{{ $id }}">{{ $name }}</option>
 
@@ -133,7 +133,7 @@
                             <div class="form-group col-md-6">
                                 <label for="">Payment Method</label>
                                 <select class="form-select" placeholder="Input Payment Method" name="charge[payment_method]">
-                                    <option>None / Any</option>
+                                    <option value="">None / Any</option>
                                     @foreach ($payment_methods as $id=>$name)
                                         <option value="{{ $id }}">{{ $name }}</option>
 
