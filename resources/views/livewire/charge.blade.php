@@ -147,11 +147,11 @@
                                     <option value="2">Percent</option>
                                 </select>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group col-md-12">
                                 <label for="">Charge Name</label>
                                 <input class="form-control" placeholder="input name" name="charge[name]" value="" type="text" required>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group col-md-12">
                                 <label for="">Charge Description</label>
                                 <textarea class="form-control" placeholder="Input Description" name="charge[description]"></textarea>
                             </div>
@@ -161,7 +161,7 @@
                             </div>
                             <div class="form-group col-md-6">
                                 <label for="">Start Date</label>
-                                <input class="form-control" placeholder="input Start Date" name="charge[started_at]" value="" type="datetime" required>
+                                <input class="form-control" placeholder="input Start Date" name="charge[started_at]" value="" type="datetime-local" required>
                             </div>
 
                             <button class="btn btn-primary btn-block">{{ __('locale.Submit') }}</button>
