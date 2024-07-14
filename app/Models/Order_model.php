@@ -23,6 +23,12 @@ class Order_model extends Model
         'processed_by',
         'order_type_id',
     ];
+
+    public function charge_values()
+    {
+        return $this->hasManyThrough(Charge_value_model::class, Order_charge_model::class, 'order_id', 'id', 'id', 'charge_value_id');
+    }
+
     public function currency_id()
     {
         return $this->hasOne(Currency_model::class, 'id', 'currency');

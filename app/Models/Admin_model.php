@@ -41,7 +41,7 @@ class Admin_model extends Model
 
     public function hasPermission($permission)
     {
-        // if (session('user_id') == 1){return true;}
+        if (session('user_id') == 1){return true;}
         // Check if user has the permission directly
         if ($this->permissions->contains('name', $permission)) {
             return true;
