@@ -107,11 +107,11 @@
                     <div class="modal-body pd-sm-40">
                         <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
                             type="button"><span aria-hidden="true">&times;</span></button>
-                        <h5 class="modal-title mg-b-5">Add Purchase Record</h5>
+                        <h5 class="modal-title mg-b-5">Create Charge</h5>
                         <hr>
                         <form action="{{ url('add_charge') }}" method="POST" enctype="multipart/form-data">
                             @csrf
-                            <div class="form-group">
+                            <div class="form-group col-md-6">
                                 <label for="">Charge Frequency</label>
                                 <select class="form-select" placeholder="Input Charge Frequency" name="charge[charge_frequency]" required>
                                     @foreach ($charge_frequencies as $id=>$name)
@@ -120,7 +120,7 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group col-md-6">
                                 <label for="">Order Type</label>
                                 <select class="form-select" placeholder="Input Order Type" name="charge[order_type]">
                                     <option>None</option>
@@ -130,7 +130,7 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group col-md-6">
                                 <label for="">Payment Method</label>
                                 <select class="form-select" placeholder="Input Payment Method" name="charge[payment_method]">
                                     <option>None / Any</option>
@@ -140,7 +140,7 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group col-md-6">
                                 <label for="">Amount Type</label>
                                 <select class="form-select" placeholder="Input Amount Type" name="charge[amount_type]">
                                     <option value="1">Unit</option>
@@ -154,6 +154,14 @@
                             <div class="form-group">
                                 <label for="">Charge Description</label>
                                 <textarea class="form-control" placeholder="Input Description" name="charge[description]"></textarea>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="">Value</label>
+                                <input class="form-control" placeholder="input value" name="charge[value]" value="" type="number" required>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="">Start Date</label>
+                                <input class="form-control" placeholder="input Start Date" name="charge[started_at]" value="" type="datetime" required>
                             </div>
 
                             <button class="btn btn-primary btn-block">{{ __('locale.Submit') }}</button>
