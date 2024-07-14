@@ -1874,15 +1874,15 @@ class Order extends Component
         $country_codes = Country_model::pluck('id','code');
 
         $orderObj = $bm->getOneOrder($order_id);
+        if($data == true){
+            dd($orderObj);
+        }
         if(!isset($orderObj->orderlines)){
 
         }else{
             $order_model->updateOrderInDB($orderObj, $invoice, $bm, $currency_codes, $country_codes);
 
             $order_item_model->updateOrderItemsInDB($orderObj, $tester, $bm);
-            if($data == true){
-                dd($orderObj);
-            }
             if($refresh == true){
                 $order = Order_model::where('reference_id',$order_id)->first();
 
