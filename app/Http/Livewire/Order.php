@@ -1112,7 +1112,7 @@ class Order extends Component
     }
     public function dispatch($id)
     {
-        $order = Order_model::where('id',$id)->first();
+        $order = Order_model::find($id);
         $bm = new BackMarketAPIController();
 
         // $orderObj = $bm->getOneOrder($order->reference_id);
@@ -1250,7 +1250,7 @@ class Order extends Component
                 $stock[$i]->save();
                 // $orderObj = $this->updateBMOrder($order->reference_id, true, $tester[$i], true);
             }
-            $order = Order_model::find($order->id);
+            // $order = Order_model::find($order->id);
             $items = $order->order_items;
             if(count($items) > 1 || $items[0]->quantity > 1){
                 $indexes = 0;
@@ -1312,7 +1312,7 @@ class Order extends Component
         }
 
         $orderObj = $this->updateBMOrder($order->reference_id, true);
-        $order = Order_model::find($order->id);
+        // $order = Order_model::find($order->id);
         if(!isset($detail)){
 
             $invoice_url = url(session('url').'export_invoice').'/'.$id;

@@ -167,7 +167,7 @@ class Wholesale extends Component
         ->
         orderBy('product_id', 'desc')
         ->get();
-        die;
+        // die;
 
         // Group by product_id and storage
         $variations = $variations->groupBy(['product_id', 'storage']);
