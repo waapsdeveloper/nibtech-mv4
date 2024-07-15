@@ -204,7 +204,7 @@
                                         <tr>
                                             <td>{{ $i + 1 }}</td>
                                             <td>{{ $products[$item->variation->product_id]}} {{$storages[$item->variation->storage] ?? null}} {{$colors[$item->variation->color] ?? null}} {{$grades[$item->variation->grade] }}</td>
-                                            <td><a title="Search Serial" href="{{url('imei')."?imei=".$item->imei.$item->serial_number}}" target="_blank"> {{ $item->imei.$item->serial_number }} </a></td>
+                                            <td>{{ $item->imei.$item->serial_number }}</td>
                                             <td>{{ $item->order->customer->first_name }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
                                             <td>{{ $currency.number_format($item->purchase_item->price,2) }}</td>
@@ -283,7 +283,7 @@
                                         <tr>
                                             <td>{{ $i }}</td>
                                             {{-- <td>{{ $item->order->customer->first_name }}</td> --}}
-                                            <td>{{ $item->imei.$item->serial_number }}</td>
+                                            <td><a title="Search Serial" href="{{url('imei')."?imei=".$item->imei.$item->serial_number}}" target="_blank"> {{ $item->imei.$item->serial_number }} </a></td>
                                             <td @if (session('user')->hasPermission('view_cost')) title="Cost Price: {{ $currency.$item->purchase_item->price }}" @endif>
                                                 {{ $item->order->customer->first_name }} {{ $currency.$item->purchase_item->price }}
                                             </td>
