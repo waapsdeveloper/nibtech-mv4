@@ -57,7 +57,7 @@ class BatchReportExport implements FromCollection, WithHeadings, WithMapping
     {
         // Initialize the row data with static columns
         $rowData = [
-            $row->grade,
+            // $row->grade,
             $row->v_grade,
         ];
 
