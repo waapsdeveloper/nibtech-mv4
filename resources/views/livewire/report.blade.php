@@ -16,7 +16,7 @@
 					<!-- breadcrumb -->
 					<div class="breadcrumb-header justify-content-between">
 						<div class="left-content">
-						<span class="main-content-title mg-b-0 mg-b-lg-1">{{ __('locale.Dashboards') }}</span>
+						<span class="main-content-title mg-b-0 mg-b-lg-1">Reports</span>
 						</div>
                         <div>
                             <div class="btn-group p-1" role="group">
