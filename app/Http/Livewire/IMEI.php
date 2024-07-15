@@ -152,7 +152,7 @@ class IMEI extends Component
                 if(in_array($last_item->order->order_type_id,[1,4])){
                     $message = 'IMEI is Available';
                     // if($stock->status == 2){
-                        if($process_stocks->where('status',2)->count() == 0){
+                        if($process_stocks->where('status',1)->count() == 0){
                             $stock->status = 1;
                             $stock->save();
                         }else{
