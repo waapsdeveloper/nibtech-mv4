@@ -143,6 +143,7 @@
                 <div class="card">
                     <div class="card-header pb-0">
                         <a href="{{ url('fortnight_return/print')}}" class="btn btn-secondary">Export</a>
+                        {{ $returns }}
                     </div>
                     <div class="card-body"><div class="table-responsive" id="reportPrinting">
 

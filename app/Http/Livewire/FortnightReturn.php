@@ -12,6 +12,8 @@ use App\Models\Products_model;
 use App\Models\Return_model;
 use App\Models\Storage_model;
 use Barryvdh\DomPDF\Facade\Pdf as FacadePdf;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class FortnightReturn extends Component
 {
@@ -34,6 +36,15 @@ class FortnightReturn extends Component
         $data['storages'] = Storage_model::pluck('name','id');
         $data['grades'] = Grade_model::all();
 
+        $start_date = Carbon::now()->startOfDay();
+        $end_date = date('Y-m-d 23:59:59');
+        if (request('start_date') != NULL && request('end_date') != NULL) {
+            $start_date = request('start_date') . " 00:00:00";
+            $end_date = request('end_date') . " 23:59:59";
+        }
+        $data['start_date'] = date('Y-m-d', strtotime($start_date));
+        $data['end_date'] = date("Y-m-d", strtotime($end_date));
+
         $latest_items = Order_item_model::whereHas('variation', function ($q) {
             $q->where('grade',10);
         })
@@ -55,7 +66,7 @@ class FortnightReturn extends Component
 
         $data['latest_items'] = $latest_items;
 
-
+        $data['returns'] = Return_model::whereBetween('returned_at', [$start_date, $end_date])->select('tested_by', DB::raw('COUNT(*) as quantity'))->groupBy('tested_by')->get();
         return view('livewire.fortnight_return', $data); // Return the Blade view instance with data
     }
 
