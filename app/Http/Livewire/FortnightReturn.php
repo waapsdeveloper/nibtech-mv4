@@ -36,7 +36,7 @@ class FortnightReturn extends Component
         $data['storages'] = Storage_model::pluck('name','id');
         $data['grades'] = Grade_model::all();
 
-        $start_date = Carbon::now()->startOfDay();
+        $start_date = Carbon::now()->startOfMonth();
         $end_date = date('Y-m-d 23:59:59');
         if (request('start_date') != NULL && request('end_date') != NULL) {
             $start_date = request('start_date') . " 00:00:00";
