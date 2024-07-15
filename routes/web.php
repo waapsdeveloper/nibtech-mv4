@@ -158,6 +158,7 @@ Route::get('export_note', [Order::class,'export_note'])->name('dispatch_order');
 Route::post('export_label', [Order::class,'export_label'])->name('dispatch_order');
 Route::get('export_ordersheet', [Order::class,'export_ordersheet'])->name('dispatch_order');
 Route::get('export_invoice/{id}', [Order::class,'export_invoice'])->name('dispatch_order');
+Route::get('order/export_refund_invoice/{id}', [Order::class,'export_refund_invoice'])->name('dispatch_order');
 Route::get('order/label/{id}', [Order::class,'getLabel'])->name('dispatch_order');
 
 Route::get('sales/allowed', [Order::class,'sales_allowed'])->name('dispatch_admin');
