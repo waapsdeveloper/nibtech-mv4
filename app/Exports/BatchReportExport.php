@@ -43,7 +43,7 @@ class BatchReportExport implements FromCollection, WithHeadings, WithMapping
     public function headings(): array
     {
         // Fetch dynamic grade headings
-        $gradeHeadings = DB::table('grades')
+        $gradeHeadings = DB::table('grade')
             ->select('name')
             ->pluck('name')
             ->toArray();
