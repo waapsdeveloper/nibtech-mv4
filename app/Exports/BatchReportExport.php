@@ -27,7 +27,7 @@ class BatchReportExport implements FromCollection, WithHeadings, WithMapping
                     ->whereRaw('purchase_item.order_id = stock.order_id');
             })
             ->leftJoin('vendor_grade', 'purchase_item.reference_id', '=', 'vendor_grade.id')
-            ->leftJoin('grade', 'variation.grade_id', '=', 'grade.id') // Joining the grades table
+            ->leftJoin('grade', 'variation.grade', '=', 'grade.id') // Joining the grades table
             ->select(
                 'variation.grade as grade',
                 'vendor_grade.name as v_grade',
