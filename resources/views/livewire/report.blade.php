@@ -21,7 +21,7 @@
                         <div>
                             <div class="btn-group p-1" role="group">
                                 <button type="button" class="btn-sm btn-secondary dropdown-toggle" id="pack_sheet" data-bs-toggle="dropdown" aria-expanded="false">
-                                Pack Sheet
+                                Orders Report
                                 </button>
                                 <ul class="dropdown-menu" aria-labelledby="pack_sheet">
                                     <li><a class="dropdown-item" href="{{url('report/export')}}?packlist=2&start_date={{$start_date}}&end_date={{$end_date}}">.xlsx</a></li>
