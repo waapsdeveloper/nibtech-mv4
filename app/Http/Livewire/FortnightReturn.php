@@ -66,7 +66,7 @@ class FortnightReturn extends Component
 
         $data['latest_items'] = $latest_items;
 
-        $data['returns'] = Return_model::whereBetween('returned_at', [$start_date, $end_date])->select('tested_by', DB::raw('COUNT(*) as quantity'))->groupBy('tested_by')->get();
+        $data['returns'] = Return_model::whereBetween('returned_at', [$start_date, $end_date])->select('tested_by', DB::raw('COUNT(*) as quantity'))->groupBy('tested_by')->orderByDesc('quantity')->get();
         return view('livewire.fortnight_return', $data); // Return the Blade view instance with data
     }
 
