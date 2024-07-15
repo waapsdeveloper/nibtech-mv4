@@ -1061,6 +1061,55 @@ class Order extends Component
         // Pass the PDF content to the view
         return view('livewire.show_pdf')->with(['pdfContent'=> $pdfContent, 'delivery_note'=>$order->delivery_note_url]);
     }
+    public function export_refund_invoice($orderId)
+    {
+
+        // Find the order
+        $order = Order_model::with('customer', 'order_items')->find($orderId);
+        $order_items = Order_item_model::where('order_id', $orderId);
+        if($order_items->count() > 1){
+            $order_items = $order_items->whereHas('stock', function($q) {
+                $q->where('status', 2)->orWhere('status',null);
+            })->get();
+        }else{
+            $order_items = $order_items->get();
+        }
+
+        // Generate PDF for the invoice content
+        $data = [
+            'order' => $order,
+            'customer' => $order->customer,
+            'orderItems' => $order_items,
+        ];
+
+        // Create a new TCPDF instance
+        $pdf = new TCPDF();
+
+        // Set document information
+        $pdf->SetCreator(PDF_CREATOR);
+        // $pdf->SetTitle('Invoice');
+        // $pdf->SetHeaderData('', 0, 'Invoice', '');
+
+        // Add a page
+        $pdf->AddPage();
+
+        // Set font
+        // $fontname = TCPDF_FONTS::addTTFfont(asset('assets/font/OpenSans_Condensed-Regular.ttf'), 'TrueTypeUnicode', '', 96);
+
+        $pdf->SetFont('dejavusans', '', 12);
+
+
+        // Additional content from your view
+        $html = view('export.refund_invoice', $data)->render();
+        $pdf->writeHTML($html, true, false, true, false, '');
+
+
+        $pdfContent = $pdf->Output('', 'S');
+        // Return a response or redirect
+
+        // Pass the PDF content to the view
+        return view('livewire.show_pdf')->with(['pdfContent'=> $pdfContent]);
+    }
     public function dispatch($id)
     {
         $order = Order_model::where('id',$id)->first();
