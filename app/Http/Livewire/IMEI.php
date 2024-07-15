@@ -150,23 +150,27 @@ class IMEI extends Component
             if($last_item){
 
                 if(in_array($last_item->order->order_type_id,[1,4])){
-
+                    $message = 'IMEI is Available';
                     if($stock->status == 2){
-                        if($process_stocks->where('status',1)->count() == 0){
-
+                        if($process_stocks->where('status',2)->count() == 0){
                             $stock->status = 1;
                             $stock->save();
+                        }else{
+                            $stock->status = 2;
+                            $stock->save();
+
+                            $message = "IMEI sent for repair";
                         }
                     }
-                        session()->put('success', 'IMEI is Available');
                 }else{
+                    $message = "IMEI Sold";
                     if($stock->status == 1){
                         $stock->status = 2;
                         $stock->save();
                     }
-                        session()->put('success', 'IMEI Sold');
                 }
             }
+                    session()->put('success', $message);
             // print_r($last_item);
             $orders = Order_item_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
             $data['stock'] = $stock;
