@@ -5,17 +5,13 @@ namespace App\Http\Livewire;
 use App\Models\Admin_model;
 use App\Models\Color_model;
 use Livewire\Component;
-use App\Models\Stock_model;
 use App\Models\Grade_model;
 use App\Models\Order_item_model;
 use App\Models\Order_model;
 use App\Models\Products_model;
-use App\Models\Stock_operations_model;
+use App\Models\Return_model;
 use App\Models\Storage_model;
-use Barryvdh\DomPDF\Facade as PDF; // Import the PDF facade
 use Barryvdh\DomPDF\Facade\Pdf as FacadePdf;
-use Carbon\Carbon;
-use TCPDF;
 
 class FortnightReturn extends Component
 {
@@ -46,6 +42,15 @@ class FortnightReturn extends Component
         })->whereHas('refund_order')->orderBy('created_at','desc')
         ->get();
 
+        foreach($latest_items as $item){
+            $return = Return_model::firstOrNew([
+                'order_id' => $item->refund_order->id,
+                'stock_id' => $item->stock_id,
+                'processed_by' => $item->refund_order->processed_by,
+                'tested_by' => $item->stock->tester
+            ])->save();
+        }
+
         $data['latest_items'] = $latest_items;
 
         if(request('print') == 1){
@@ -68,15 +73,6 @@ class FortnightReturn extends Component
 
         $pdf = FacadePdf::loadView('export.fortnight_return', compact('latest_items'));
         return $pdf->download('fortnight_returns.pdf');
-        $pdf = new TCPDF();
-
-        $pdf->SetCreator(PDF_CREATOR);
-        $pdf->AddPage('L');
-        $pdf->SetFont('times', '', 12);
-        $html = view('export.fortnight_return', $data)->render();
-        $pdf->writeHTML($html, true, false, true, false, '');
-        $pdfContent = $pdf->Output('', 'S');
-        return view('livewire.show_pdf')->with(['pdfContent'=> $pdfContent]);
 
     }
 
