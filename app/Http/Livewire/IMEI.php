@@ -150,8 +150,8 @@ class IMEI extends Component
             if($last_item){
 
                 if(in_array($last_item->order->order_type_id,[1,4])){
-                    $message = 'IMEI is Availablex';
-                    if($stock->status == 2){
+                    $message = 'IMEI is Available';
+                    // if($stock->status == 2){
                         if($process_stocks->where('status',2)->count() == 0){
                             $stock->status = 1;
                             $stock->save();
@@ -161,7 +161,9 @@ class IMEI extends Component
 
                             $message = "IMEI sent for repair";
                         }
-                    }
+                    // }else{
+
+                    // }
                 }else{
                     $message = "IMEI Sold";
                     if($stock->status == 1){
