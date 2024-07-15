@@ -429,69 +429,7 @@
 
         @endif
         @endif
-        @if (count($missing_stock)>0)
 
-        <div class="row">
-            <div class="col-xl-12">
-                <div class="card">
-                    <div class="card-header pb-0">
-                        <div class="d-flex justify-content-between">
-                            <h4 class="card-title mg-b-0">Missing IMEI Items</h4>
-                        </div>
-                    </div>
-                    <div class="card-body"><div class="table-responsive" style="max-height: 250px">
-                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
-                                <thead>
-                                    <tr>
-                                        <th><small><b>No</b></small></th>
-                                        <th><small><b>Variation</b></small></th>
-                                        <th><small><b>IMEI | Serial Number</b></small></th>
-                                        <th><small><b>Vendor</b></small></th>
-                                        @if (session('user')->hasPermission('view_cost'))
-                                        <th><small><b>Cost</b></small></th>
-                                        @endif
-                                        <th><small><b>Creation Date</b></small></th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @php
-                                        $i = 0;
-                                    @endphp
-                                    @foreach ($missing_stock as $item)
-                                        <tr>
-                                            <td>{{ $i + 1 }}</td>
-                                            <td>
-
-                                                @php
-                                                isset($item->variation->color_id)?$color = $item->variation->color_id->name:$color = null;
-                                                isset($item->variation->storage)?$storage = $storages[$item->variation->storage]:$storage = null;
-                                                @endphp
-                                                {{ $item->variation->product->model." ".$storage." ".$color." ".$item->variation->grade_id->name }}
-                                            </td>
-                                            <td data-stock="{{ $item->stock_id }}">{{ $item->stock->imei.$item->stock->serial_number }}</td>
-                                            <td>{{ $item->stock->order->customer->first_name }}</td>
-                                            @if (session('user')->hasPermission('view_cost'))
-                                            <td>{{ $currency.number_format($item->price,2) }}</td>
-                                            @endif
-                                            <td style="width:220px">{{ $item->created_at }}</td>
-                                            <td><a href="{{ url('delete_rma_item').'/'.$item->id }}"><i class="fa fa-trash"></i></a></td>
-                                        </tr>
-                                        @php
-                                            $i ++;
-                                        @endphp
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        <br>
-                    </div>
-
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        @endif
 
         @if (isset($variations) && (!request('status') || request('status') == 1))
         <div class="row">
@@ -540,16 +478,17 @@
                                         {{-- @if($item->order_item[0]->order_id == $order_id) --}}
                                         @php
                                         $i ++;
-                                        $prices[] = $item->purchase_item->price ?? 0;
+                                        $purchase_item = $item->purchase_item;
+                                        $prices[] = $purchase_item->price ?? 0;
                                     @endphp
                                         <tr>
                                             <td>{{ $i }}</td>
                                             <td data-stock="{{ $item->id }}">{{ $item->imei.$item->serial_number }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
-                                            <td>{{ $currency}}{{$item->purchase_item->price ?? "Error in Purchase Entry" }}</td>
+                                            <td>{{ $currency}}{{$purchase_item->price ?? "Error in Purchase Entry" }}</td>
                                             @endif
                                             @if (session('user')->hasPermission('delete_purchase_item'))
-                                            <td><a href="{{ url('delete_order_item').'/'}}{{$item->purchase_item->id ?? null }}"><i class="fa fa-trash"></i></a></td>
+                                            <td><a href="{{ url('delete_order_item').'/'}}{{$purchase_item->id ?? null }}"><i class="fa fa-trash"></i></a></td>
                                             @endif
                                         </tr>
                                         {{-- @endif --}}
@@ -600,6 +539,7 @@
                                     @foreach ($sold_stocks as $stock)
                                         @php
                                             $item = $stock->last_item();
+                                            $variation = $item->variation;
                                             if(in_array($item->order->order_type_id,[1,4])){
                                                 $stock->status = 1;
                                                 $stock->save();
@@ -611,10 +551,10 @@
                                             <td>
 
                                                 @php
-                                                isset($item->variation->color_id)?$color = $item->variation->color_id->name:$color = null;
-                                                isset($item->variation->storage)?$storage = $storages[$item->variation->storage]:$storage = null;
+                                                isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
+                                                isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
                                                 @endphp
-                                                {{ $item->variation->product->model." ".$storage." ".$color}} {{$item->variation->grade_id->name ?? "Not Assigned" }}
+                                                {{ $variation->product->model." ".$storage." ".$color}} {{$variation->grade_id->name ?? "Not Assigned" }}
                                             </td>
                                             <td title="Double click to change" data-stock="{{ $stock->id }}">{{ $stock->imei.$stock->serial_number }}</td>
                                             <td>{{ $item->order->customer->first_name }}</td>
