@@ -192,7 +192,7 @@ class Wholesale extends Component
         $data['order_id'] = $order_id;
         $data['currency'] = $data['order']->currency_id->sign;
 
-            die;
+            // die;
         // echo "<pre>";
         // // print_r($items->stocks);
         // print_r($items);
