@@ -162,7 +162,13 @@ class Wholesale extends Component
                     $query->where('order_id', $order_id);
                 });
             },
-            'stocks.order_items'
+            // 'stocks.order_items' => function ($query) use ($order_id) {
+            //     // $query->whereHas('order_item', function ($query) use ($order_id) {
+            //         $query->where('order_id', $order_id);
+            //     // });
+            // },
+            // 'stocks.order_items',
+            'stocks.order.customer'
         ])
         ->
         orderBy('product_id', 'desc')
@@ -185,7 +191,7 @@ class Wholesale extends Component
         $data['order_issues'] = $order_issues;
 
         $data['variations'] = $variations;
-        $last_ten = Order_item_model::where('order_id',$order_id)->with(['variation'])->orderBy('id','desc')->limit(10)->get();
+        $last_ten = Order_item_model::where('order_id',$order_id)->with(['variation','stock','stock.order.customer'])->orderBy('id','desc')->limit(10)->get();
         $data['last_ten'] = $last_ten;
         $data['all_variations'] = Variation_model::where('grade',9)->get();
         $data['order'] = Order_model::find($order_id);

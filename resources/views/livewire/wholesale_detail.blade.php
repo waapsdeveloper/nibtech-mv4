@@ -400,10 +400,11 @@
 
                                     @foreach ($stocks as $item)
                                         {{-- @dd($item->sale_item) --}}
-                                        @if($item->sale_item($order_id)->order_id == $order_id)
+                                        {{-- @if($item->sale_item($order_id)->order_id == $order_id) --}}
                                         @php
                                             $i ++;
-                                            $price = $item->sale_item($order_id)->price;
+                                            $sale_item = $item->sale_item($order_id);
+                                            $price = $sale_item->price;
                                             if($order->exchange_rate != null){
                                                 $ex_price = $price * $order->exchange_rate;
                                             }
@@ -420,11 +421,11 @@
                                             </td>
                                             @endif
                                             @if (session('user')->hasPermission('delete_wholesale_item'))
-                                            <td><a href="{{ url('delete_wholesale_item').'/'.$item->sale_item($order_id)->id }}"><i class="fa fa-trash"></i></a></td>
+                                            <td><a href="{{ url('delete_wholesale_item').'/'.$sale_item->id }}"><i class="fa fa-trash"></i></a></td>
                                             @endif
-                                            <input type="hidden" name="item_ids[]" value="{{ $item->sale_item($order_id)->id }}">
+                                            <input type="hidden" name="item_ids[]" value="{{ $sale_item->id }}">
                                         </tr>
-                                        @endif
+                                        {{-- @endif --}}
                                     @endforeach
                                     @endforeach
                                     </form>
