@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Exports\BatchReportExport;
 use App\Exports\OrderReportExport;
 use App\Http\Controllers\GoogleController;
 use App\Models\Admin_model;
@@ -254,6 +255,11 @@ class Report extends Component
         $data['end_date'] = date("Y-m-d", strtotime($end_date));
         return view('livewire.report')->with($data);
     }
+    public function export_batch_report($orderId)
+    {
+        return Excel::download(new BatchReportExport($orderId), 'batch_report.xlsx');
+    }
+
 
     public function export_report()
     {
