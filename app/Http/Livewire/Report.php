@@ -257,7 +257,8 @@ class Report extends Component
     }
     public function export_batch_report($orderId)
     {
-        return Excel::download(new BatchReportExport($orderId), 'batch_report.xlsx');
+        $order = Order_model::find($orderId);
+        return Excel::download(new BatchReportExport($orderId), $order->reference_id.'_batch_report.xlsx');
     }
 
 
