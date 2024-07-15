@@ -18,6 +18,8 @@ class Return_model extends Model
         'stock_id',
         'processed_by',
         'tested_by',
+        'processed_at',
+        'returned_at',
     ];
     public function admin()
     {

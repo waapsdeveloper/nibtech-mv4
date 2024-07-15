@@ -47,7 +47,9 @@ class FortnightReturn extends Component
                 'order_id' => $item->refund_order->id,
                 'stock_id' => $item->stock_id,
                 'processed_by' => $item->refund_order->processed_by,
-                'tested_by' => $item->stock->tester
+                'tested_by' => $item->stock->tester,
+                'processed_at' => $item->refund_order->processed_at,
+                'returned_at' => $item->created_at
             ])->save();
         }
 
