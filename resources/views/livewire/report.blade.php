@@ -261,7 +261,7 @@
                                     <td>{{ $order->reference_id }}</td>
                                     <td>{{ $order->reference }}</td>
                                     <td>{{ $order->vendor }}</td>
-                                    <td><a href="{{ url('report/export_batch')}}/{{$order->id}}/1"> {{ $total }} </a></td>
+                                    <td><a href="{{ url('report/export_batch')}}/{{$order}}/1"> {{ $total }} </a></td>
                                     @foreach ($grades as $g_id => $grade)
                                         @php
                                             $gradeReport = $orderReports->firstWhere('grade', $g_id);
