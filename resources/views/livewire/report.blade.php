@@ -261,7 +261,7 @@
                                     <td>{{ $order->reference_id }}</td>
                                     <td>{{ $order->reference }}</td>
                                     <td>{{ $order->vendor }}</td>
-                                    <td><a href="{{ url('report/export_batch')}}/{{$order->order_id}}" onclick="if (confirm('Delete selected item?')){return true;}else{event.stopPropagation(); event.preventDefault();};"> {{ $total }} </a></td>
+                                    <td><a href="{{ url('report/export_batch')}}/{{$order->order_id}}" onclick="if (confirm('Download Batch Grade Report?')){return true;}else{event.stopPropagation(); event.preventDefault();};"> {{ $total }} </a></td>
                                     @foreach ($grades as $g_id => $grade)
                                         @php
                                             $gradeReport = $orderReports->firstWhere('grade', $g_id);
