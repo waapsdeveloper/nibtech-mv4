@@ -10,11 +10,13 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 class BatchReportExport implements FromCollection, WithHeadings, WithMapping
 {
     protected $orderId;
+    protected $grades;
 
     // Constructor to accept order_id
     public function __construct($orderId)
     {
         $this->orderId = $orderId;
+        $this->grades = DB::table('grade')->pluck('name')->toArray();
     }
 
     // Collection method to fetch the data
@@ -27,41 +29,47 @@ class BatchReportExport implements FromCollection, WithHeadings, WithMapping
                     ->whereRaw('purchase_item.order_id = stock.order_id');
             })
             ->leftJoin('vendor_grade', 'purchase_item.reference_id', '=', 'vendor_grade.id')
-            ->leftJoin('grade', 'variation.grade', '=', 'grade.id') // Joining the grades table
+            ->leftJoin('grade', 'variation.grade', '=', 'grade.id') // Joining the grade table
             ->select(
                 'variation.grade as grade',
                 'vendor_grade.name as v_grade',
+                DB::raw('grade.name as grade_name'),
                 DB::raw('COUNT(*) as quantity')
             )
             ->where('stock.order_id', $this->orderId)
             ->whereNull('stock.deleted_at')
-            ->groupBy('variation.grade', 'purchase_item.reference_id', 'vendor_grade.name')
+            ->groupBy('variation.grade', 'purchase_item.reference_id', 'vendor_grade.name', 'grade.name')
             ->get();
     }
 
     // Method to specify the headings
     public function headings(): array
     {
-        // Fetch dynamic grade headings
-        $gradeHeadings = DB::table('grade')
-            ->select('name')
-            ->pluck('name')
-            ->toArray();
-
         // Static headings
-        $staticHeadings = ['Grade', 'Vendor Grade', 'Quantity'];
+        $staticHeadings = ['Grade', 'Vendor Grade'];
 
         // Merge static and dynamic headings
-        return array_merge($staticHeadings, $gradeHeadings);
+        return array_merge($staticHeadings, $this->grades);
     }
 
-    // Method to map data for each row (if needed)
+    // Method to map data for each row
     public function map($row): array
     {
-        return [
+        // Initialize the row data with static columns
+        $rowData = [
             $row->grade,
             $row->v_grade,
-            $row->quantity,
         ];
+
+        // Add quantities for each grade dynamically
+        foreach ($this->grades as $grade) {
+            if ($row->grade_name === $grade) {
+                $rowData[] = $row->quantity;
+            } else {
+                $rowData[] = 0;
+            }
+        }
+
+        return $rowData;
     }
 }
