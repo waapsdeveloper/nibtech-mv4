@@ -1248,7 +1248,7 @@ class Order extends Component
                 $stock[$i]->tester = $tester[$i];
                 $stock[$i]->status = 2;
                 $stock[$i]->save();
-                $orderObj = $this->updateBMOrder($order->reference_id, true, $tester[$i], true);
+                // $orderObj = $this->updateBMOrder($order->reference_id, true, $tester[$i], true);
             }
             $order = Order_model::find($order->id);
             $items = $order->order_items;
