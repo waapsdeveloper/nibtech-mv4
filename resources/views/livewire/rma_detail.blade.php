@@ -159,20 +159,23 @@
                                         $i = 0;
                                     @endphp
                                     @foreach ($last_ten as $item)
+                                        @php
+                                            $i ++;
+                                            $variation = $item->variation;
+                                            $stock = $item->stock;
+                                            $customer = $item->stock->order->customer;
+                                        @endphp
                                         <tr>
-                                            <td>{{ $i + 1 }}</td>
-                                            <td>{{ $products[$item->variation->product_id]}} {{$storages[$item->variation->storage] ?? null}} {{$colors[$item->variation->color] ?? null}} {{$grades[$item->variation->grade] }}</td>
-                                            <td>{{ $item->stock->imei.$item->stock->serial_number }}</td>
-                                            <td>{{ $item->stock->order->customer->first_name }}</td>
+                                            <td>{{ $i }}</td>
+                                            <td>{{ $products[$variation->product_id]}} {{$storages[$variation->storage] ?? null}} {{$colors[$variation->color] ?? null}} {{$grades[$variation->grade] }}</td>
+                                            <td>{{ $stock->imei.$stock->serial_number }}</td>
+                                            <td>{{ $customer->first_name }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
                                             <td>{{ $currency.number_format($item->price,2) }}</td>
                                             @endif
                                             <td style="width:220px">{{ $item->created_at }}</td>
                                             <td><a href="{{ url('delete_rma_item').'/'.$item->id }}"><i class="fa fa-trash"></i></a></td>
                                         </tr>
-                                        @php
-                                            $i ++;
-                                        @endphp
                                     @endforeach
                                 </tbody>
                             </table>
@@ -238,24 +241,25 @@
 
                                     @foreach ($stocks as $item)
                                         {{-- @dd($item->sale_item) --}}
-                                        @if($item->sale_item($order_id)->order_id == $order_id)
+                                        {{-- @if($item->sale_item($order_id)->order_id == $order_id) --}}
                                         @php
                                             $i ++;
+                                            $sale_order = $item->sale_item($order_id);
                                         @endphp
                                         <tr>
                                             <td>{{ $i }}</td>
                                             <td>{{ $colors[$variation->color] ?? null }} - {{ $grades[$variation->grade] ?? null }}</td>
                                             <td>{{ $item->imei.$item->serial_number }}</td>
                                             <td @if (session('user')->hasPermission('view_cost')) title="Cost Price: {{ $currency.$item->purchase_item->price }}" @endif>
-                                                {{ $item->order->customer->first_name }} {{ $currency.$item->sale_item($order_id)->price }}
+                                                {{ $item->order->customer->first_name }} {{ $currency.$sale_order->price }}
                                             </td>
 
                                             @if (session('user')->hasPermission('delete_rma_item'))
-                                            <td><a href="{{ url('delete_rma_item').'/'.$item->sale_item($order_id)->id }}"><i class="fa fa-trash"></i></a></td>
+                                            <td><a href="{{ url('delete_rma_item').'/'.$sale_order->id }}"><i class="fa fa-trash"></i></a></td>
                                             @endif
-                                            <input type="hidden" name="item_ids[]" value="{{ $item->sale_item($order_id)->id }}">
+                                            <input type="hidden" name="item_ids[]" value="{{ $sale_order->id }}">
                                         </tr>
-                                        @endif
+                                        {{-- @endif --}}
                                     @endforeach
                                     @endforeach
                                     @endforeach
