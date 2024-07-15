@@ -55,10 +55,7 @@ class FortnightReturn extends Component
 
         $data['latest_items'] = $latest_items;
 
-        if(request('print') == 1){
 
-
-        }
         return view('livewire.fortnight_return', $data); // Return the Blade view instance with data
     }
 
