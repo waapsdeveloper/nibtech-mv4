@@ -320,20 +320,25 @@
                                         $i = 0;
                                     @endphp
                                     @foreach ($last_ten as $item)
+
+                                        @php
+                                            $i ++;
+                                            $variation = $item->variation;
+                                            $stock = $item->stock;
+                                            $customer = $item->stock->order->customer;
+
+                                        @endphp
                                         <tr>
-                                            <td>{{ $i + 1 }}</td>
-                                            <td>{{ $products[$item->variation->product_id]}} {{$storages[$item->variation->storage] ?? null}} {{$colors[$item->variation->color] ?? null}} {{$grades[$item->variation->grade] }}</td>
-                                            <td>{{ $item->stock->imei.$item->stock->serial_number }}</td>
-                                            <td>{{ $item->stock->order->customer->first_name }}</td>
+                                            <td>{{ $i }}</td>
+                                            <td>{{ $products[$variation->product_id]}} {{$storages[$variation->storage] ?? null}} {{$colors[$variation->color] ?? null}} {{$grades[$variation->grade] }}</td>
+                                            <td>{{ $stock->imei.$stock->serial_number }}</td>
+                                            <td>{{ $customer->first_name }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
                                             <td>€{{ number_format($item->price,2) }}</td>
                                             @endif
                                             <td style="width:220px">{{ $item->created_at }}</td>
                                             <td><a href="{{ url('delete_wholesale_item').'/'.$item->id }}"><i class="fa fa-trash"></i></a></td>
                                         </tr>
-                                        @php
-                                            $i ++;
-                                        @endphp
                                     @endforeach
                                 </tbody>
                             </table>
@@ -404,19 +409,20 @@
                                         @php
                                             $i ++;
                                             $sale_item = $item->sale_item($order_id);
+                                            $purchase_item = $item->purchase_item;
                                             $price = $sale_item->price;
                                             if($order->exchange_rate != null){
                                                 $ex_price = $price * $order->exchange_rate;
                                             }
                                             $total += $price;
                                         @endphp
-                                        <tr @if($item->purchase_item->price != $price) style="background: LightGreen" @endif>
+                                        <tr @if($purchase_item->price != $price) style="background: LightGreen" @endif>
                                             <td>{{ $i }}</td>
                                             <td>{{ $colors[$variation->color] ?? null }} - {{ $grades[$variation->grade] ?? null }}</td>
                                             {{-- <td>{{ $item->order->customer->first_name }}</td> --}}
                                             <td>{{ $item->imei.$item->serial_number }}</td>
                                             @if (session('user')->hasPermission('view_price'))
-                                            <td @if (session('user')->hasPermission('view_cost')) title="Cost Price: €{{ $item->purchase_item->price }}" @endif>
+                                            <td @if (session('user')->hasPermission('view_cost')) title="Cost Price: €{{ $purchase_item->price }}" @endif>
                                                 {{ $item->order->customer->first_name }} €{{ $price }}
                                             </td>
                                             @endif
