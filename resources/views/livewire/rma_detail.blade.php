@@ -272,8 +272,11 @@
                                             <td>{{ $i }}</td>
                                             <td>{{ $colors[$variation->color] ?? null }} - {{ $grades[$variation->grade] ?? null }}</td>
                                             <td>{{ $item->imei.$item->serial_number }}</td>
-                                            <td @if (session('user')->hasPermission('view_cost')) title="Cost Price: €{{ $item->purchase_item->price }}" @endif>
+                                            <td @if (session('user')->hasPermission('view_cost') && $item->purchase_item != null) title="Cost Price: €{{ $item->purchase_item->price }}" @endif>
                                                 {{ $item->order->customer->first_name }} €{{ $sale_order->price }}
+                                                @if ($item->purchase_item == null)
+                                                    Missing Purchase Entry
+                                                @endif
                                             </td>
 
                                             @if (session('user')->hasPermission('delete_rma_item'))
