@@ -52,6 +52,10 @@ class MoveInventory extends Component
         if(request('description')){
             session()->put('description',request('description'));
         }
+        $per_page = 50;
+        if(request('per_page')){
+            $per_page = request('per_page');
+        }
 
 
         $stocks = Stock_operations_model::
@@ -66,7 +70,7 @@ class MoveInventory extends Component
             // })
         ->where('description','!=','Grade changed for Sell')
             ->orderBy('id','desc')
-            ->paginate(50)
+            ->paginate($per_page)
             ->onEachSide(5)
             ->appends(request()->except('page'));
 
