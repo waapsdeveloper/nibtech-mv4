@@ -46,19 +46,9 @@ class RMA extends Component
             }else{
                 $per_page = 10;
             }
-            switch (request('sort')){
-                case 2: $sort = "orders.reference_id"; $by = "ASC"; break;
-                case 3: $sort = "variation.name"; $by = "DESC"; break;
-                case 4: $sort = "variation.name"; $by = "ASC"; break;
-                default: $sort = "orders.reference_id"; $by = "DESC";
-            }
-            $data['orders'] = Order_model::select(
-                'orders.id',
-                'orders.reference_id',
-                'orders.customer_id',
-                'orders.currency',
-                'orders.created_at')
+            $data['orders'] = Order_model::withCount('order_items')->withSum('order_items','price')
             ->where('orders.order_type_id',2)
+            // ->join('order_items', 'orders.id', '=', 'order_items.order_id')
 
             ->when(request('start_date') != '', function ($q) {
                 return $q->where('orders.created_at', '>=', request('start_date', 0));
@@ -72,11 +62,38 @@ class RMA extends Component
             ->when(request('status') != '', function ($q) {
                 return $q->where('orders.status', request('status'));
             })
-            ->groupBy('orders.id', 'orders.reference_id', 'orders.customer_id', 'orders.currency', 'orders.created_at')
+            // ->groupBy('orders.id', 'orders.reference_id', 'orders.customer_id', 'orders.currency', 'orders.created_at')
             ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
+            // ->select('orders.*')
             ->paginate($per_page)
             ->onEachSide(5)
             ->appends(request()->except('page'));
+
+            // $data['orders'] = Order_model::select(
+            //     'orders.id',
+            //     'orders.reference_id',
+            //     'orders.customer_id',
+            //     'orders.currency',
+            //     'orders.created_at')
+            // ->where('orders.order_type_id',2)
+
+            // ->when(request('start_date') != '', function ($q) {
+            //     return $q->where('orders.created_at', '>=', request('start_date', 0));
+            // })
+            // ->when(request('end_date') != '', function ($q) {
+            //     return $q->where('orders.created_at', '<=', request('end_date', 0) . " 23:59:59");
+            // })
+            // ->when(request('order_id') != '', function ($q) {
+            //     return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
+            // })
+            // ->when(request('status') != '', function ($q) {
+            //     return $q->where('orders.status', request('status'));
+            // })
+            // ->groupBy('orders.id', 'orders.reference_id', 'orders.customer_id', 'orders.currency', 'orders.created_at')
+            // ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
+            // ->paginate($per_page)
+            // ->onEachSide(5)
+            // ->appends(request()->except('page'));
 
 
 
