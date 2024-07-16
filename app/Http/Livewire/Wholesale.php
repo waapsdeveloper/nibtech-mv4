@@ -675,8 +675,8 @@ class Wholesale extends Component
             'invoice' => $invoice
         ];
         $data['storages'] = Storage_model::pluck('name','id');
-        // $data['grades'] = Grade_model::pluck('name','id');
-        // $data['colors'] = Color_model::pluck('name','id');
+        $data['grades'] = Grade_model::pluck('name','id');
+        $data['colors'] = Color_model::pluck('name','id');
 
         // Create a new TCPDF instance
         $pdf = new TCPDF();
