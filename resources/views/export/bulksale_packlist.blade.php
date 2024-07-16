@@ -181,9 +181,14 @@
                             }else {
                                 $color = null;
                             }
+                            if($item->grade){
+                                $grade = $grades[$item->grade] . " - " ;
+                            }else {
+                                $grade = null;
+                            }
                         @endphp
                         <tr>
-                            <td width="320">{{ $item->model . " - " . $storage . $color . $grades[$item->grade] }}</td>
+                            <td width="320">{{ $item->model . " - " . $storage . $color . $grade }}</td>
                             <td width="80" align="right"></td>
                             <td width="40">{{ $item->total_quantity }}</td>
                             @if ($invoice != 1)
