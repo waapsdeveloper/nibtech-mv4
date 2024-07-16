@@ -306,6 +306,19 @@
     @endsection
 
     @section('scripts')
+        <script>
+            $(document).ready(function() {
+                $('#currency').on('input', function() {
+                    var selectedCurrency = $(this).val();
+                    var rate = $('#currencies').find('option[value="' + selectedCurrency + '"]').data('rate');
+                    if (rate !== undefined) {
+                        $('#rate').val(rate);
+                    } else {
+                        $('#rate').val(''); // Clear the rate field if the currency is not in the list
+                    }
+                });
+            });
+        </script>
 		<!--Internal Sparkline js -->
 		<script src="{{asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js')}}"></script>
 
