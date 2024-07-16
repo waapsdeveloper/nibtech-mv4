@@ -189,7 +189,7 @@ class Api_request_model extends Model
                             'new_variation_id' => $stock->variation->id,
                             'description' => $datas->Fail." | ".$datas->Comments." | IMEI changed from: ".$datas->Imei2." | DrPhone",
                             'admin_id' => $admin,
-                            'created_at' => Carbon::parse($datas->Time),
+                            'created_at' => Carbon::parse($datas->Time)->format('Y-m-d H:i:s'),
                         ]);
                         $stock->imei = $datas->Imei;
                     }
