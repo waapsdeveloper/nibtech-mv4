@@ -665,6 +665,23 @@ class Wholesale extends Component
             ->groupBy('products.model', 'variation.storage')
             ->orderBy('products.model', 'ASC')
             ->get();
+        $order_items_2 = Order_item_model::
+            join('variation', 'order_items.variation_id', '=', 'variation.id')
+            ->join('products', 'variation.product_id', '=', 'products.id')
+            ->select(
+                'variation.id as variation_id',
+                'products.model',
+                'variation.color',
+                'variation.storage',
+                'variation.grade',
+                DB::raw('AVG(order_items.price) as average_price'),
+                DB::raw('SUM(order_items.quantity) as total_quantity'),
+                DB::raw('SUM(order_items.price) as total_price')
+            )
+            ->where('order_items.order_id',$order_id)
+            ->groupBy('products.model', 'variation.id', 'variation.storage', 'variation.color', 'variation.grade')
+            ->orderBy('products.model', 'ASC')
+            ->get();
 
             // dd($order);
         // Generate PDF for the invoice content
@@ -672,6 +689,7 @@ class Wholesale extends Component
             'order' => $order,
             'customer' => $order->customer,
             'order_items' =>$order_items,
+            'order_items_2' =>$order_items_2,
             'invoice' => $invoice
         ];
         $data['storages'] = Storage_model::pluck('name','id');
