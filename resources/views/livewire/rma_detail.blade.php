@@ -193,7 +193,7 @@
                                             <td>{{ $stock->imei.$stock->serial_number }}</td>
                                             <td>{{ $customer->first_name }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
-                                            <td>{{ $currency.number_format($item->price,2) }}</td>
+                                            <td>€{{ number_format($item->price,2) }}</td>
                                             @endif
                                             <td style="width:220px">{{ $item->created_at }}</td>
                                             <td><a href="{{ url('delete_rma_item').'/'.$item->id }}"><i class="fa fa-trash"></i></a></td>
@@ -272,8 +272,8 @@
                                             <td>{{ $i }}</td>
                                             <td>{{ $colors[$variation->color] ?? null }} - {{ $grades[$variation->grade] ?? null }}</td>
                                             <td>{{ $item->imei.$item->serial_number }}</td>
-                                            <td @if (session('user')->hasPermission('view_cost')) title="Cost Price: {{ $currency.$item->purchase_item->price }}" @endif>
-                                                {{ $item->order->customer->first_name }} {{ $currency.$sale_order->price }}
+                                            <td @if (session('user')->hasPermission('view_cost')) title="Cost Price: €{{ $item->purchase_item->price }}" @endif>
+                                                {{ $item->order->customer->first_name }} €{{ $sale_order->price }}
                                             </td>
 
                                             @if (session('user')->hasPermission('delete_rma_item'))

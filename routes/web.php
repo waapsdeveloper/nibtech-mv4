@@ -124,7 +124,7 @@ Route::get('delete_rma/{id}', [RMA::class,'delete_order'])->name('delete_rma');
 Route::get('delete_rma_item/{id}', [RMA::class,'delete_order_item'])->name('delete_rma_item');
 Route::get('rma/detail/{id}', [RMA::class,'rma_detail'])->name('rma_detail');
 Route::post('rma/update_prices', [RMA::class,'update_prices'])->name('update_rma_item');
-Route::get('export_rma_invoice/{id}', [RMA::class,'export_rma_invoice'])->name('rma_detail');
+Route::get('export_rma_invoice/{id}/{invoice?}', [RMA::class,'export_rma_invoice'])->name('rma_detail');
 
 Route::get('imei', IMEI::class)->name('view_imei');
 Route::post('imei/refund/{id}', [IMEI::class,'refund'])->name('refund_imei');
