@@ -259,6 +259,14 @@ class Wholesale extends Component
         }
         $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
 
+        if($stock == null){
+            session()->put('error', 'Stock Not Found');
+            if($back != 1){
+                return redirect()->back();
+            }else{
+                return 1;
+            }
+        }
         if(request('variation')){
             $variation_id = request('variation');
         }
