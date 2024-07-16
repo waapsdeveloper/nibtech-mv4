@@ -31,6 +31,19 @@
                 <form class="form-inline" method="POST" action="{{url('wholesale/approve').'/'.$order->id}}">
                     @csrf
                     <div class="form-floating">
+                        <input type="text" list="currencies" id="currency" name="currency" class="form-control">
+                        <datalist id="currencies">
+                            @foreach ($exchange_rates as $target_currency => $rate)
+                                <option value="{{$target_currency}}" data-rate="{{$rate}}"></option>
+                            @endforeach
+                        </datalist>
+                        <label for="currency">Currency</label>
+                    </div>
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="rate" name="rate" placeholder="Enter Exchange Rate" >
+                        <label for="rate">Exchange Rate</label>
+                    </div>
+                    <div class="form-floating">
                         <input type="text" class="form-control" id="reference" name="reference" placeholder="Enter Vendor Reference" required>
                         <label for="reference">Vendor Reference</label>
                     </div>
@@ -94,15 +107,24 @@
                 });
             </script>
             <div class="p-2">
-                <a href="{{url(session('url').'export_rma_invoice')}}/{{ $order->id }}" target="_blank"><button class="btn-sm btn-secondary">Invoice</button></a>
+                @if ($order->customer->email == null)
+                    Customer Email Not Added
+                @else
+                <a href="{{url('rma_email')}}/{{ $order->id }}" target="_blank"><button class="btn-sm btn-secondary">Send Email</button></a>
+                @endif
+                <a href="{{url('export_rma_invoice')}}/{{ $order->id }}" target="_blank"><button class="btn-sm btn-secondary">Invoice</button></a>
 
+                @if ($order->exchange_rate != null)
+                <a href="{{url('export_rma_invoice')}}/{{ $order->id }}/1" target="_blank"><button class="btn-sm btn-secondary">{{$order->currency_id->sign}} Invoice</button></a>
+
+                @endif
                 <div class="btn-group" role="group">
                     <button type="button" class="btn-sm btn-secondary dropdown-toggle" id="pack_sheet" data-bs-toggle="dropdown" aria-expanded="false">
                     Pack Sheet
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="pack_sheet">
-                        <li><a class="dropdown-item" href="{{url(session('url').'export_rma_invoice')}}/{{ $order->id }}?packlist=2&id={{ $order->id }}">.xlsx</a></li>
-                        <li><a class="dropdown-item" href="{{url(session('url').'export_rma_invoice')}}/{{ $order->id }}?packlist=1" target="_blank">.pdf</a></li>
+                        <li><a class="dropdown-item" href="{{url('export_rma_invoice')}}/{{ $order->id }}?packlist=2&id={{ $order->id }}">.xlsx</a></li>
+                        <li><a class="dropdown-item" href="{{url('export_rma_invoice')}}/{{ $order->id }}?packlist=1" target="_blank">.pdf</a></li>
                     </ul>
                 </div>
             </div>
@@ -229,7 +251,7 @@
                                     @php
                                         $i = 0;
                                     @endphp
-                                    <form method="POST" action="{{url(session('url').'rma')}}/update_prices" id="update_prices_{{ $key."_".array_key_first($varss) }}">
+                                    <form method="POST" action="{{url('rma')}}/update_prices" id="update_prices_{{ $key."_".array_key_first($varss) }}">
                                         @csrf
                                     @foreach ($vars as $var)
                                     @foreach ($var as $variation)

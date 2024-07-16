@@ -14,6 +14,7 @@ use App\Models\Order_status_model;
 use App\Models\Customer_model;
 use App\Models\Currency_model;
 use App\Models\Color_model;
+use App\Models\ExchangeRate;
 use App\Models\Grade_model;
 use App\Models\Storage_model;
 use Illuminate\Support\Facades\DB;
@@ -68,32 +69,6 @@ class RMA extends Component
             ->paginate($per_page)
             ->onEachSide(5)
             ->appends(request()->except('page'));
-
-            // $data['orders'] = Order_model::select(
-            //     'orders.id',
-            //     'orders.reference_id',
-            //     'orders.customer_id',
-            //     'orders.currency',
-            //     'orders.created_at')
-            // ->where('orders.order_type_id',2)
-
-            // ->when(request('start_date') != '', function ($q) {
-            //     return $q->where('orders.created_at', '>=', request('start_date', 0));
-            // })
-            // ->when(request('end_date') != '', function ($q) {
-            //     return $q->where('orders.created_at', '<=', request('end_date', 0) . " 23:59:59");
-            // })
-            // ->when(request('order_id') != '', function ($q) {
-            //     return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
-            // })
-            // ->when(request('status') != '', function ($q) {
-            //     return $q->where('orders.status', request('status'));
-            // })
-            // ->groupBy('orders.id', 'orders.reference_id', 'orders.customer_id', 'orders.currency', 'orders.created_at')
-            // ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
-            // ->paginate($per_page)
-            // ->onEachSide(5)
-            // ->appends(request()->except('page'));
 
 
 
@@ -150,6 +125,11 @@ class RMA extends Component
     }
     public function rma_approve($order_id){
         $order = Order_model::find($order_id);
+        $currency = Currency_model::where('code',request('currency'))->first();
+        if($currency != null && $currency->id != 4){
+            $order->currency = $currency->id;
+            $order->exchange_rate = request('rate');
+        }
         $order->reference = request('reference');
         $order->tracking_number = request('tracking_number');
         $order->status = 3;
@@ -162,6 +142,7 @@ class RMA extends Component
 
         $data['title_page'] = "RMA Detail";
         // $data['imeis'] = Stock_model::whereIn('status',[1,3])->orderBy('serial_number','asc')->orderBy('imei','asc')->get();
+        $data['exchange_rates'] = ExchangeRate::pluck('rate','target_currency');
         $data['storages'] = Storage_model::pluck('name','id');
         $data['products'] = Products_model::pluck('model','id');
         $data['grades'] = Grade_model::pluck('name','id');
@@ -345,7 +326,7 @@ class RMA extends Component
     }
 
 
-    public function export_rma_invoice($order_id)
+    public function export_rma_invoice($order_id, $invoice = null)
     {
 
         // Find the order
@@ -374,7 +355,8 @@ class RMA extends Component
         $data = [
             'order' => $order,
             'customer' => $order->customer,
-            'order_items' =>$order_items
+            'order_items' =>$order_items,
+            'invoice' => $invoice
         ];
         $data['storages'] = Storage_model::pluck('name','id');
         $data['grades'] = Grade_model::pluck('name','id');
