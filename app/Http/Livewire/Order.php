@@ -1131,6 +1131,11 @@ class Order extends Component
 
         // $orderObj = $bm->getOneOrder($order->reference_id);
         $orderObj = $this->updateBMOrder($order->reference_id, false, null, true);
+        if($orderObj == null){
+
+            session()->put('error', "Order Not Found");
+            return redirect()->back();
+        }
         $tester = request('tester');
         $sku = request('sku');
         $imeis = request('imei');
