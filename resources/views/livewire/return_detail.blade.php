@@ -27,7 +27,7 @@
                     <form class="form-inline" method="POST" action="{{url('return/ship').'/'.$order->id}}">
                         @csrf
                         <div class="form-floating">
-                            <input type="text" class="form-control" id="tracking_number" name="tracking_number" placeholder="Enter Tracking Number" required>
+                            <input type="text" class="form-control" id="tracking_number" name="tracking_number" value="{{$order->tracking_number}}" placeholder="Enter Tracking Number" required>
                             <label for="tracking_number">Tracking Number</label>
                         </div>
                         <button type="submit" class="btn btn-success">Ship</button>
@@ -37,7 +37,7 @@
                         <form class="form-inline" method="POST" action="{{url('return/approve').'/'.$order->id}}">
                             @csrf
                             <div class="form-floating">
-                                <input type="text" class="form-control" id="reference" name="reference" placeholder="Enter Reference Message" required>
+                                <input type="text" class="form-control" id="reference" name="reference" placeholder="Enter Reference Message" value="{{$order->reference}}" required>
                                 <label for="reference">Reference Message</label>
                             </div>
                             <button type="submit" class="btn btn-success">Ship</button>

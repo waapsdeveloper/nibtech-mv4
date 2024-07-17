@@ -31,7 +31,7 @@
                 <form class="form-inline" method="POST" action="{{url('rma/approve').'/'.$order->id}}">
                     @csrf
                     <div class="form-floating">
-                        <input type="text" list="currencies" id="currency" name="currency" class="form-control">
+                        <input type="text" list="currencies" id="currency" name="currency" class="form-control" value="{{$order->currency_id->code}}">
                         <datalist id="currencies">
                             @foreach ($exchange_rates as $target_currency => $rate)
                                 <option value="{{$target_currency}}" data-rate="{{$rate}}"></option>
@@ -40,15 +40,15 @@
                         <label for="currency">Currency</label>
                     </div>
                     <div class="form-floating">
-                        <input type="text" class="form-control" id="rate" name="rate" placeholder="Enter Exchange Rate" >
+                        <input type="text" class="form-control" id="rate" name="rate" placeholder="Enter Exchange Rate" value="{{$order->exchange_rate}}" >
                         <label for="rate">Exchange Rate</label>
                     </div>
                     <div class="form-floating">
-                        <input type="text" class="form-control" id="reference" name="reference" placeholder="Enter Vendor Reference" required>
+                        <input type="text" class="form-control" id="reference" name="reference" placeholder="Enter Vendor Reference" value="{{$order->reference}}" required>
                         <label for="reference">Vendor Reference</label>
                     </div>
                     <div class="form-floating">
-                        <input type="text" class="form-control" id="tracking_number" name="tracking_number" placeholder="Enter Tracking Number" required>
+                        <input type="text" class="form-control" id="tracking_number" name="tracking_number" placeholder="Enter Tracking Number" value="{{$order->tracking_number}}" required>
                         <label for="tracking_number">Tracking Number</label>
                     </div>
                     <button type="submit" class="btn btn-success">Approve</button>
