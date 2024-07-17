@@ -236,7 +236,7 @@
                         <input type="hidden" name="purchase[type]" id="" value="1">
                         <div class="form-group">
                             <label for="">Reference ID</label>
-                            <input class="form-control" placeholder="input Reference No" name="purchase[reference_id]" value="{{ $latest_reference + 1}}" type="text" required readonly>
+                            <input class="form-control" placeholder="input Reference No" name="purchase[reference_id]" value="{{ $latest_reference + 1}}" type="text" required>
                         </div>
                         <div class="form-group">
                             <label for="">Vendor</label>
