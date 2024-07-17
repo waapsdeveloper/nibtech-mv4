@@ -19,7 +19,7 @@ class BackMarketAPIController extends Controller
     protected static $YOUR_USER_AGENT;
 
     public function __construct() {
-        self::$YOUR_ACCESS_TOKEN = "NzZhMGVhNTZlNmNjNGI1MTgzNzJjMzpCTVQtMmRhMTk3MWM1ZmVkNzJlMzRjMGZiYmFiMTdjYzkxZDEwMTM3MDU2Nw==";
+        self::$YOUR_ACCESS_TOKEN = "NzZhMGVhNTZlNmNjNGI1MTgzNxJjMzpCTVQtMmRhMTk3MWM1ZmVkNzJlMzRjMGZiYmFiMTdjYzkxZDEwMTM3MDU2Nw==";
         self::$YOUR_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36";
     }
     // public function requestGet($end_point){
