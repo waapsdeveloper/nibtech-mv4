@@ -84,14 +84,16 @@
         <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
 
             <div class="p-2">
+                @if ($order->status < 3)
                 <h4>Add BulkSale Item</h4>
                 <span class="form-check form-switch ms-4 p-2" title="Bypass Wholesale check" onclick="$('#bypass_check').check()">
                     <input type="checkbox" value="1" id="bypass_check" name="bypass_check" class="form-check-input" form="wholesale_item" @if (session('bypass_check') == 1) checked @endif>
                     <label class="form-check-label" for="bypass_check">Bypass check</label>
                 </span>
-
+                @endif
             </div>
             <div class="p-1">
+                @if ($order->status < 3)
                 <form class="form-inline" action="{{ url('check_wholesale_item').'/'.$order_id }}" method="POST" id="wholesale_item">
                     @csrf
                     <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
@@ -99,13 +101,16 @@
                     <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
 
                 </form>
+                @endif
             </div>
             <div class="p-2 tx-right">
+                @if ($order->status < 3)
                 <form method="POST" enctype="multipart/form-data" action="{{ url('wholesale/add_wholesale_sheet').'/'.$order_id}}" class="form-inline p-1">
                     @csrf
                     <input type="file" class="form-control form-control-sm" name="sheet">
                     <button type="submit" class="btn btn-sm btn-primary">Upload Sheet</button>
                 </form>
+                @endif
                 @if ($order->customer->email == null)
                     Customer Email Not Added
                 @else

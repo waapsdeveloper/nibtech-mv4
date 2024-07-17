@@ -72,6 +72,7 @@
         <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
 
             <div class="p-2">
+                @if ($order->status < 3)
                 <form action="" method="GET" id="search" class="form-inline">
                     <div class="form-floating">
                         <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset">
@@ -79,6 +80,7 @@
                     </div>
                         <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
                 </form>
+                @endif
             </div>
             @if (isset($stock) && $stock->status == 1)
 
