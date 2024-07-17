@@ -231,12 +231,12 @@
                         type="button"><span aria-hidden="true">&times;</span></button>
                     <h5 class="modal-title mg-b-5">Add Purchase Record</h5>
                     <hr>
-                    <form action="{{ url('add_purchase') }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ url('add_purchase') }}" method="POST" enctype="multipart/form-data" onsubmit="if ($('#reference').val() <  {{ $latest_reference + 1}}){ if (confirm('Add Items in Old Purchase Sheet?')){return true;}else{event.stopPropagation(); event.preventDefault();};};">
                         @csrf
                         <input type="hidden" name="purchase[type]" id="" value="1">
                         <div class="form-group">
                             <label for="">Reference ID</label>
-                            <input class="form-control" placeholder="input Reference No" name="purchase[reference_id]" value="{{ $latest_reference + 1}}" type="text" required>
+                            <input class="form-control" placeholder="input Reference No" name="purchase[reference_id]" value="{{ $latest_reference + 1}}" type="text" id="reference" required>
                         </div>
                         <div class="form-group">
                             <label for="">Vendor</label>
