@@ -181,7 +181,7 @@ class Api_request_model extends Model
                 $variation = Variation_model::firstOrNew($new_variation);
                 if($stock->status == 1){
 
-                    if($stock->imei == $datas->Imei2){
+                    if($stock->imei == $datas->Imei2 && $stock->imei != null){
 
                         $stock_operation = Stock_operations_model::create([
                             'stock_id' => $stock->id,
