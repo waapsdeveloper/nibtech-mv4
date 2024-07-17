@@ -17,6 +17,7 @@ use App\Models\Color_model;
 use App\Models\ExchangeRate;
 use App\Models\Grade_model;
 use App\Models\Order_issue_model;
+use App\Models\Stock_operations_model;
 use App\Models\Storage_model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -388,21 +389,35 @@ class Wholesale extends Component
         $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
 
         $variation = Variation_model::where(['id' => $stock->variation_id])->first();
+
+        if($stock->variation->grade != 11 && $stock->variation->grade > 6){
+            $new_variation = Variation_model::firstOrNew(['product_id'=>$variation->product_id, 'storage'=>$variation->storage, 'color'=>$variation->color, 'grade'=>11]);
+            $new_variation->save();
+
+            $stock_operation = Stock_operations_model::create([
+                'stock_id' => $stock->id,
+                'old_variation_id' => $stock->variation_id,
+                'new_variation_id' => $new_variation->id,
+                'description' => "Grade changed for Bulksale",
+                'admin_id' => session('user_id'),
+            ]);
+            $stock->variation_id = $new_variation->id;
+        }
         $stock->status = 2;
         $stock->save();
 
         $variation->stock -= 1;
         $variation->save();
 
-
         $order_item = new Order_item_model();
         $order_item->order_id = $order_id;
-        $order_item->variation_id = $variation->id;
+        $order_item->variation_id = $stock->variation_id;
         $order_item->stock_id = $stock->id;
         $order_item->quantity = 1;
         $order_item->price = $stock->purchase_item->price;
         $order_item->status = 3;
         $order_item->save();
+
 
         session()->put('success', 'Stock added successfully');
 
