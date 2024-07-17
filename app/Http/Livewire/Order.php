@@ -580,6 +580,14 @@ class Order extends Component
 
 
         $order = Order_model::firstOrNew(['reference_id' => $purchase->reference_id, 'order_type_id' => $purchase->type ]);
+
+        if($order->id != null){
+            if(session('user')->hasPermission('append_purchase_sheet')){}else{
+                session()->put('error', "Append Purchase Sheet not Allowed");
+                return redirect()->back();
+            }
+        }
+
         $order->customer_id = $purchase->vendor;
         $order->status = 2;
         $order->currency = 4;
