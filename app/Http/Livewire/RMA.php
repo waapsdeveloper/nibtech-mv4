@@ -224,7 +224,7 @@ class RMA extends Component
 
         }
 
-        if($stock->order->customer_id != $purchase_order->customer_id && $stock->order_id != 8441 && ($purchase_order->customer_id != 8 && $stock->order->customer_id != 13562)){
+        if($stock->order->customer_id == $purchase_order->customer_id && ($stock->order_id == 8441) && ($purchase_order->customer_id == 8 && $stock->order->customer_id == 13562)){}else{
             session()->put('error', 'Stock belong to different Vendor');
             return redirect()->back();
         }
