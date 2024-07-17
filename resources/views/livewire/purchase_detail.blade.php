@@ -139,6 +139,10 @@
             </div>
         </form>
         <hr style="border-bottom: 1px solid rgb(62, 45, 45);">
+        {{-- Sold Stocks:-
+        @foreach ($sold_summery as $sold_stock)
+
+        @endforeach --}}
         <br>
         @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">

@@ -46,7 +46,7 @@ class BatchReportExport implements FromCollection, WithHeadings, WithMapping
     public function headings(): array
     {
         // Static headings
-        $staticHeadings = ['Grade', 'Vendor Grade'];
+        $staticHeadings = ['Grade'];
 
         // Merge static and dynamic headings
         return array_merge($staticHeadings, $this->grades);

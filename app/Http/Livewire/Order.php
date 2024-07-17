@@ -504,7 +504,15 @@ class Order extends Component
             ->orderBy('variation_id', 'asc')
             ->get();
         }
-
+        // $sold_summery = Variation_model::withCount([
+        //     'stocks as quantity' => function ($query) use ($order_id) {
+        //         $query->where(['order_id'=> $order_id, 'status' => 2]);
+        //     }])
+        //     ->whereHas('stocks', function ($query) use ($order_id) {
+        //         $query->where(['order_id'=> $order_id, 'status'=>2]);
+        //     })->get();
+        // dd($sold_summery);
+        // $data['sold_summery'] = $sold_summery;
         $data['missing_stock'] = Order_item_model::where('order_id',$order_id)->whereHas('stock',function ($q) {
             $q->where(['imei'=>null,'serial_number'=>null]);
         })->get();
