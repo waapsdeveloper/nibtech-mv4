@@ -72,6 +72,7 @@ Route::get('delete_order/{id}', [Order::class,'delete_order'])->name('delete_pur
 Route::get('delete_order_item/{id}', [Order::class,'delete_order_item'])->name('delete_purchase_item');
 Route::get('purchase/detail/{id}', [Order::class,'purchase_detail'])->name('purchase_detail');
 Route::post('purchase/approve/{id}', [Order::class,'purchase_approve'])->name('purchase_approve');
+Route::post('purchase/revert_status/{id}', [Order::class,'purchase_revert_status'])->name('purchase_revert_status');
 Route::post('purchase/remove_issues', [Order::class,'remove_issues'])->name('remove_purchase_issues');
 
 Route::get('report', Report::class)->name('view_report');
@@ -86,6 +87,7 @@ Route::get('delete_return_item/{id}', [SalesReturn::class,'delete_return_item'])
 Route::get('return/detail/{id}', [SalesReturn::class,'return_detail'])->name('return_detail');
 Route::post('return/ship/{id}', [SalesReturn::class,'return_ship'])->name('return_ship');
 Route::post('return/approve/{id}', [SalesReturn::class,'return_approve'])->name('return_approve');
+Route::post('return/revert_status/{id}', [SalesReturn::class,'return_revert_status'])->name('return_revert_status');
 
 Route::get('repair', Repair::class)->name('view_repair');
 Route::post('add_repair', [Repair::class,'add_repair'])->name('add_repair');
@@ -114,6 +116,7 @@ Route::get('export_bulksale_invoice/{id}/{invoice?}', [Wholesale::class,'export_
 Route::get('bulksale_email/{id}', [Wholesale::class,'bulksale_email'])->name('wholesale_detail');
 Route::post('wholesale/add_wholesale_sheet/{id}', [Wholesale::class,'add_wholesale_sheet'])->name('add_wholesale_item');
 Route::post('wholesale/approve/{id}', [Wholesale::class,'wholesale_approve'])->name('wholesale_approve');
+Route::post('wholesale/revert_status/{id}', [Wholesale::class,'wholesale_revert_status'])->name('wholesale_revert_status');
 Route::post('wholesale/remove_issues', [Wholesale::class,'remove_issues'])->name('remove_wholesale_issues');
 
 Route::get('rma', RMA::class)->name('view_rma');
@@ -125,6 +128,8 @@ Route::get('delete_rma_item/{id}', [RMA::class,'delete_order_item'])->name('dele
 Route::get('rma/detail/{id}', [RMA::class,'rma_detail'])->name('rma_detail');
 Route::post('rma/update_prices', [RMA::class,'update_prices'])->name('update_rma_item');
 Route::get('export_rma_invoice/{id}/{invoice?}', [RMA::class,'export_rma_invoice'])->name('rma_detail');
+Route::post('rma/approve/{id}', [RMA::class,'rma_approve'])->name('rma_approve');
+Route::post('rma/revert_status/{id}', [RMA::class,'rma_revert_status'])->name('rma_revert_status');
 
 Route::get('imei', IMEI::class)->name('view_imei');
 Route::post('imei/refund/{id}', [IMEI::class,'refund'])->name('refund_imei');

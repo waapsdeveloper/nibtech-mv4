@@ -139,6 +139,12 @@ class Wholesale extends Component
 
         return redirect()->back();
     }
+    public function wholesale_revert_status($order_id){
+        $order = Order_model::find($order_id);
+        $order->status -= 1;
+        $order->save();
+        return redirect()->back();
+    }
     public function wholesale_detail($order_id){
 
         $data['title_page'] = "BulkSale Detail";

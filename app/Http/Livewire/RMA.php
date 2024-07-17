@@ -137,6 +137,13 @@ class RMA extends Component
 
         return redirect()->back();
     }
+    public function rma_revert_status($order_id){
+        $order = Order_model::find($order_id);
+        $order->status -= 1;
+        $order->save();
+        return redirect()->back();
+    }
+
     public function rma_detail($order_id){
 
 

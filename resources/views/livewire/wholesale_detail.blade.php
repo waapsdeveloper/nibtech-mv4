@@ -58,6 +58,11 @@
                 Tracking Number: <a href="https://www.dhl.com/gb-en/home/tracking/tracking-express.html?submit=1&tracking-id={{$order->tracking_number}}" target="_blank"> {{$order->tracking_number}}</a>
                 <br>
                 Reference: {{ $order->reference }}
+                <br>
+
+                @if (session('user')->hasPermission('wholesale_revert_status'))
+                    <a href="{{url('wholesale/revert_status').'/'.$order->id}}">Revert Back to Pending</a>
+                @endif
                 @endif
 
                 </div>

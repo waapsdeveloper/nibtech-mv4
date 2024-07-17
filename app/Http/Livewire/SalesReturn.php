@@ -89,6 +89,12 @@ class SalesReturn extends Component
 
         return redirect()->back();
     }
+    public function return_revert_status($order_id){
+        $order = Order_model::find($order_id);
+        $order->status -= 1;
+        $order->save();
+        return redirect()->back();
+    }
     public function delete_return($order_id){
 
         $stock = Stock_model::where(['order_id'=>$order_id,'status'=>2])->first();
