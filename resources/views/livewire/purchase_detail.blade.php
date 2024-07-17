@@ -388,7 +388,9 @@
 
             @foreach ($variations as $variation)
             <div class="col-md-4">
-                <div class="card">
+                <div class="card @if ($variation->grade == 9)
+                    highlight
+                @endif">
                     <div class="card-header pb-0">
                         @php
                             isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
