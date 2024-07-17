@@ -11,6 +11,7 @@ class BatchReportExport implements FromCollection, WithHeadings, WithMapping
 {
     protected $orderId;
     protected $grades;
+    protected $vendorData = [];
 
     // Constructor to accept order_id
     public function __construct($orderId)
@@ -22,52 +23,64 @@ class BatchReportExport implements FromCollection, WithHeadings, WithMapping
     // Collection method to fetch the data
     public function collection()
     {
-        return DB::table('stock')
+        $data = DB::table('stock')
             ->leftJoin('variation', 'stock.variation_id', '=', 'variation.id')
             ->leftJoin('order_items as purchase_item', function ($join) {
                 $join->on('stock.id', '=', 'purchase_item.stock_id')
                     ->whereRaw('purchase_item.order_id = stock.order_id');
             })
             ->leftJoin('vendor_grade', 'purchase_item.reference_id', '=', 'vendor_grade.id')
-            ->leftJoin('grade', 'variation.grade', '=', 'grade.id') // Joining the grade table
+            ->leftJoin('grade', 'variation.grade', '=', 'grade.id')
             ->select(
-                'variation.grade as grade',
                 'vendor_grade.name as v_grade',
-                DB::raw('grade.name as grade_name'),
+                'grade.name as grade_name',
                 DB::raw('COUNT(*) as quantity')
             )
             ->where('stock.order_id', $this->orderId)
             ->whereNull('stock.deleted_at')
-            ->groupBy('variation.grade', 'purchase_item.reference_id', 'vendor_grade.name', 'grade.name')
+            ->groupBy('vendor_grade.name', 'grade.name')
+            ->orderBy('vendor_grade.name')
+            ->orderBy('grade.name')
             ->get();
+
+        foreach ($data as $row) {
+            if (!isset($this->vendorData[$row->v_grade])) {
+                $this->vendorData[$row->v_grade] = array_fill_keys($this->grades, 0);
+            }
+            $this->vendorData[$row->v_grade][$row->grade_name] = $row->quantity;
+        }
+
+        $finalData = [];
+        foreach ($this->vendorData as $vendorGrade => $quantities) {
+            $row = ['vendor_grade' => $vendorGrade];
+            foreach ($this->grades as $grade) {
+                $row[$grade] = $quantities[$grade];
+            }
+            $finalData[] = $row;
+        }
+
+        return collect($finalData);
     }
 
     // Method to specify the headings
     public function headings(): array
     {
-        // Static headings
-        $staticHeadings = ['Grade'];
+        // Static heading for the first column
+        $staticHeadings = ['Vendor Grade'];
 
-        // Merge static and dynamic headings
+        // Merge static heading with dynamic grade names as headings
         return array_merge($staticHeadings, $this->grades);
     }
 
     // Method to map data for each row
     public function map($row): array
     {
-        // Initialize the row data with static columns
-        $rowData = [
-            // $row->grade,
-            $row->v_grade,
-        ];
+        // Initialize the row data with the vendor grade
+        $rowData = [$row['vendor_grade']];
 
-        // Add quantities for each grade dynamically
+        // Append quantities for each grade
         foreach ($this->grades as $grade) {
-            if ($row->grade_name === $grade) {
-                $rowData[] = $row->quantity;
-            } else {
-                $rowData[] = 0;
-            }
+            $rowData[] = $row[$grade];
         }
 
         return $rowData;
