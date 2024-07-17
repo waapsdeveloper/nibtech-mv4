@@ -79,18 +79,23 @@
 
         </div>
         <br>
-
-                <h4>Add RMA Item</h4>
+        @if ($order->status < 3)
+            <h4>Add RMA Item</h4>
+        @endif
         <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
 
             <div class="p-2">
+
+        @if ($order->status < 3)
                 <span class="form-check form-switch ms-4" title="Bypass Wholesale check" onclick="$('#bypass_check').check()">
                     <input type="checkbox" value="1" id="bypass_check" name="bypass_check" class="form-check-input" form="rma_item" @if (session('bypass_check') == 1) checked @endif>
                     <label class="form-check-label" for="bypass_check">Bypass check</label>
                 </span>
 
+                @endif
             </div>
             <div class="p-1">
+                @if ($order->status < 3)
                 <form class="form-inline" action="{{ url('check_rma_item').'/'.$order_id }}" method="POST" id="rma_item">
                 @csrf
 
@@ -99,7 +104,6 @@
                         <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
 
                 </form>
-            </div>
             <script>
                 window.onload = function() {
                     document.getElementById('imei').focus();
@@ -110,6 +114,8 @@
                     input.select();
                 });
             </script>
+                @endif
+            </div>
             <div class="p-2">
                 @if ($order->customer->email == null)
                     Customer Email Not Added
