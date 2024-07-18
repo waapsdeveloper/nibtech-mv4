@@ -428,9 +428,6 @@ class Inventory extends Component
             $data['last_ten'] = $last_ten;
             $scanned_total = Process_stock_model::where('process_id', $active_inventory_verification->id)->where('admin_id',session('user_id'))->orderBy('id','desc')->count();
             $data['scanned_total'] = $scanned_total;
-            if(request('reset_counter') == 1){
-                session()->forget('counter');
-            }
             if(!session('counter')){
                 session()->put('counter', 0);
             }
@@ -496,6 +493,10 @@ class Inventory extends Component
         return redirect()->back();
     }
     public function resume_verification() {
+        if(request('reset_counter') == 1){
+            session()->put('counter', 0);
+            return redirect()->back();
+        }
         $last = Process_model::where('process_type_id',20)->orderBy('id','desc')->first();
         $last->status = 1;
         $last->save();
