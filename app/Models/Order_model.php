@@ -49,6 +49,12 @@ class Order_model extends Model
     {
         return $this->hasMany(Order_item_model::class, 'order_id', 'id');
     }
+    public function order_items_available()
+    {
+        return $this->hasMany(Order_item_model::class, 'order_id', 'id')->whereHas('stock', function ($q) {
+            $q->where('status',1);
+        });
+    }
     public function exchange_items()
     {
         return $this->hasMany(Order_item_model::class, 'reference_id', 'reference_id')->whereHas('order', function ($q) {
