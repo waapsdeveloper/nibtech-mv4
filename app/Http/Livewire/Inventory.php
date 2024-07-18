@@ -434,7 +434,6 @@ class Inventory extends Component
             if(!session('counter')){
                 session()->put('counter', 0);
             }
-            return redirect()->back();
         }
         $data['active_inventory_verification'] = $active_inventory_verification;
         // dd($data['vendor_average_cost']);
