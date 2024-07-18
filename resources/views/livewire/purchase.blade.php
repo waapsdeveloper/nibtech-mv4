@@ -162,11 +162,11 @@
                                     @foreach ($orders as $index => $order)
                                         @php
                                             // echo request('stock');
-                                            if (request('stock') != null){
-                                                if(request('stock') != 1 && $order->available_stock >= 1){
-                                                    continue;
-                                                }
-                                            }
+                                            // if (request('stock') != null){
+                                            //     if(request('stock') != 1 && $order->available_stock >= 1){
+                                            //         continue;
+                                            //     }
+                                            // }
 
                                             if(in_array($order->id,$id)){
                                                 continue;
