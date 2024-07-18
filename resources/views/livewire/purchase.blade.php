@@ -168,12 +168,12 @@
                                             //     }
                                             // }
 
-                                            if(in_array($order->id,$id)){
-                                                continue;
-                                            }else {
-                                                $id[] = $order->id;
-                                            }
-                                            $items = $order->order_items;
+                                            // if(in_array($order->id,$id)){
+                                            //     continue;
+                                            // }else {
+                                            //     $id[] = $order->id;
+                                            // }
+                                            // $items = $order->order_items;
                                             $j = 0;
                                             // print_r($order);
                                         @endphp
