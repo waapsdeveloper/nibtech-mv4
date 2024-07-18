@@ -666,8 +666,8 @@ class Wholesale extends Component
 
     public function export_bulksale_invoice($order_id, $invoice = null)
     {
-        ini_set('pcre.backtrack_limit', '1000000');
-        ini_set('pcre.recursion_limit', '1000000');
+        ini_set('memory_limit', '512M');
+        ini_set('max_execution_time', '300');
 
 
         // Find the order
