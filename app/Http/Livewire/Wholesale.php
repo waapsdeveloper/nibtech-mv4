@@ -393,6 +393,7 @@ class Wholesale extends Component
 
         if($stock->variation->grade != 11 && $stock->variation->grade > 6){
             $new_variation = Variation_model::firstOrNew(['product_id'=>$variation->product_id, 'storage'=>$variation->storage, 'color'=>$variation->color, 'grade'=>11]);
+            $new_variation->status = 1;
             $new_variation->save();
 
             $stock_operation = Stock_operations_model::create([
