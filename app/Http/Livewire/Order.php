@@ -370,13 +370,13 @@ class Order extends Component
         ->when(request('status'), function ($q) {
             return $q->where('orders.status', request('status'));
         })
-        ->when(request('stock'), function ($q) {
-            if (request('stock') == 0) {
-                return $q->havingRaw('COUNT(CASE WHEN stock.status = 1 THEN order_items.id END) = 0');
-            } else {
-                return $q->havingRaw('COUNT(CASE WHEN stock.status = 1 THEN order_items.id END) > 0');
-            }
-        })
+        // ->when(request('stock'), function ($q) {
+        //     if (request('stock') == 0) {
+        //         return $q->havingRaw('COUNT(CASE WHEN stock.status = 1 THEN order_items.id END) = 0');
+        //     } else {
+        //         return $q->havingRaw('COUNT(CASE WHEN stock.status = 1 THEN order_items.id END) > 0');
+        //     }
+        // })
 
         ->groupBy('orders.id', 'orders.reference_id', 'orders.customer_id', 'orders.status', 'orders.created_at')
         ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
