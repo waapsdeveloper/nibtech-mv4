@@ -128,7 +128,8 @@ class Repair extends Component
         }
         if(request('imei') != null){
             $imei = trim(request('imei'));
-            $process_stock = Process_stock_model::where('imei', $imei)->orWhere('serial_number', $imei)->first();
+            $stock = Stock_model::where('imei', $imei)->orWhere('serial_number', $imei)->first();
+            $process_stock = Process_stock_model::where('stock_id', $stock->id)->where('process_id', request('process_id'))->first();
         }
 
         // Access the variation through process_stock->stock->variation

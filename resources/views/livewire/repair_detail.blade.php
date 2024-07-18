@@ -71,6 +71,7 @@
                     @csrf
                     <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
                     <input type="text" class="form-control form-control-sm" name="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
+                    <input type="hidden" name="process_id" value="{{$process->id}}">
                     <button class="btn-sm btn-secondary pd-x-20" type="submit">Remove</button>
 
                 </form>
