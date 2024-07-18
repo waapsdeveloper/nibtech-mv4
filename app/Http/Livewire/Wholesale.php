@@ -22,6 +22,7 @@ use App\Models\Storage_model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
+use Mpdf\Mpdf;
 use TCPDF;
 
 class Wholesale extends Component
@@ -663,8 +664,117 @@ class Wholesale extends Component
         return redirect()->back();
     }
 
+    private function splitHtml($html, $chunkSize = 50000)
+    {
+        $chunks = [];
+        while (strlen($html) > 0) {
+            $splitPos = strpos($html, '>', $chunkSize);
+            if ($splitPos !== false) {
+                $chunks[] = substr($html, 0, $splitPos + 1);
+                $html = substr($html, $splitPos + 1);
+            } else {
+                $chunks[] = $html;
+                break;
+            }
+        }
+        return $chunks;
+    }
+
+    public function export_bulksale_invoice_2($order_id, $invoice = null)
+    {
+        // Find the order
+        $order = Order_model::with('customer', 'order_items')->find($order_id);
+
+        if (request('packlist') != 1) {
+            $order_items = Order_item_model::
+                join('variation', 'order_items.variation_id', '=', 'variation.id')
+                ->join('products', 'variation.product_id', '=', 'products.id')
+                ->select(
+                    // 'variation.id as variation_id',
+                    'products.model',
+                    // 'variation.color',
+                    'variation.storage',
+                    // 'variation.grade',
+                    DB::raw('AVG(order_items.price) as average_price'),
+                    DB::raw('SUM(order_items.quantity) as total_quantity'),
+                    DB::raw('SUM(order_items.price) as total_price')
+                )
+                ->where('order_items.order_id', $order_id)
+                ->groupBy('products.model', 'variation.storage')
+                ->orderBy('products.model', 'ASC')
+                ->get();
+        } else {
+            $order_items = [];
+        }
+        $order_items_2 = Order_item_model::
+            join('variation', 'order_items.variation_id', '=', 'variation.id')
+            ->join('products', 'variation.product_id', '=', 'products.id')
+            ->select(
+                'variation.id as variation_id',
+                'products.model',
+                'variation.color',
+                'variation.storage',
+                'variation.grade',
+                DB::raw('AVG(order_items.price) as average_price'),
+                DB::raw('SUM(order_items.quantity) as total_quantity'),
+                DB::raw('SUM(order_items.price) as total_price')
+            )
+            ->where('order_items.order_id', $order_id)
+            ->groupBy('products.model', 'variation.id', 'variation.storage', 'variation.color', 'variation.grade')
+            ->orderBy('products.model', 'ASC')
+            ->get();
+
+        // Generate PDF for the invoice content
+        $data = [
+            'order' => $order,
+            'customer' => $order->customer,
+            'order_items' => $order_items,
+            'order_items_2' => $order_items_2,
+            'invoice' => $invoice
+        ];
+        $data['storages'] = Storage_model::pluck('name', 'id');
+        $data['grades'] = Grade_model::pluck('name', 'id');
+        $data['colors'] = Color_model::pluck('name', 'id');
+
+        // Create a new mPDF instance
+        $pdf = new Mpdf();
+
+        // Set document information
+        $pdf->SetCreator('PDF_CREATOR');
+        // $pdf->SetTitle('Invoice');
+        // $pdf->SetHeaderData('', 0, 'Invoice', '');
+
+        // Add a page
+        $pdf->AddPage();
+
+        // Set font
+        $pdf->SetFont('times', '', 12);
+
+        // Additional content from your view
+        if (request('packlist') == 1) {
+            $html = view('export.bulksale_packlist', $data)->render();
+        } elseif (request('packlist') == 2) {
+            return Excel::download(new PacksheetExport, 'orders.xlsx');
+        } else {
+            $html = view('export.bulksale_invoice', $data)->render();
+        }
+
+        // Split HTML into smaller chunks to avoid exceeding pcre.backtrack_limit
+        $htmlChunks = $this->splitHtml($html);
+
+        // Write each chunk to the PDF
+        foreach ($htmlChunks as $chunk) {
+            $pdf->WriteHTML($chunk);
+        }
+
+        // Output the PDF directly to the browser
+        $pdf->Output('invoice.pdf', 'I');
+    }
     public function export_bulksale_invoice($order_id, $invoice = null)
     {
+        ini_set('pcre.backtrack_limit', '1000000');
+        ini_set('pcre.recursion_limit', '1000000');
+
 
         // Find the order
         $order = Order_model::with('customer', 'order_items')->find($order_id);
