@@ -62,11 +62,22 @@
                 </div>
             </div>
         <!-- /breadcrumb -->
-        <div class="text-center" style="border-bottom: 1px solid rgb(216, 212, 212);">
+        <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
                 {{-- <center><h4>External Repair Order Detail</h4></center> --}}
-                <h5>Reference: {{ $process->reference_id }} | Repairer: {{ $process->customer->first_name }} | Total Items: {{ $process->process_stocks->count() }} | Total Price: {{ $currency.number_format($process->process_stocks->sum('price'),2) }}</h5>
+            <h5>Reference: {{ $process->reference_id }} | Repairer: {{ $process->customer->first_name }} | Total Items: {{ $process->process_stocks->count() }} | Total Price: {{ $currency.number_format($process->process_stocks->sum('price'),2) }}</h5>
+            @if ($process->status == 1)
+            <div class="p-1">
+                <form class="form-inline" action="{{ url('delete_repair_item') }}" method="POST" id="repair_item">
+                    @csrf
+                    <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
+                    <input type="text" class="form-control form-control-sm" name="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
+                    <button class="btn-sm btn-secondary pd-x-20" type="submit">Remove</button>
 
+                </form>
+            </div>
+            @endif
         </div>
+
         <br>
 
         <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">

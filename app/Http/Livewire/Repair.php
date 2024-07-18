@@ -122,9 +122,14 @@ class Repair extends Component
         return redirect()->back();
 
     }
-    public function delete_repair_item($process_stock_id){
-
-        $process_stock = Process_stock_model::find($process_stock_id);
+    public function delete_repair_item($process_stock_id = null){
+        if($process_stock_id != null){
+            $process_stock = Process_stock_model::find($process_stock_id);
+        }
+        if(request('imei') != null){
+            $imei = trim(request('imei'));
+            $process_stock = Process_stock_model::where('imei', $imei)->orWhere('serial_number', $imei)->first();
+        }
 
         // Access the variation through process_stock->stock->variation
         $variation = $process_stock->stock->variation;

@@ -97,6 +97,7 @@ Route::post('add_repair_item/{id}', [Repair::class,'add_repair_item'])->name('ad
 Route::post('repair/add_repair_sheet/{id}', [Repair::class,'add_repair_sheet'])->name('add_repair_item');
 Route::get('delete_repair/{id}', [Repair::class,'delete_repair'])->name('delete_repair');
 Route::get('delete_repair_item/{id}', [Repair::class,'delete_repair_item'])->name('delete_repair_item');
+Route::post('delete_repair_item/{id?}', [Repair::class,'delete_repair_item'])->name('delete_repair_item');
 Route::get('repair/detail/{id}', [Repair::class,'repair_detail'])->name('repair_detail');
 Route::post('repair/ship/{id}', [Repair::class,'repair_ship'])->name('repair_ship');
 Route::post('repair/approve/{id}', [Repair::class,'repair_approve'])->name('repair_approve');
