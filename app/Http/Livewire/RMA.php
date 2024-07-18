@@ -336,6 +336,8 @@ class RMA extends Component
     public function export_rma_invoice($order_id, $invoice = null)
     {
 
+        ini_set('memory_limit', '512M');
+        ini_set('max_execution_time', '300');
         // Find the order
         $order = Order_model::with('customer', 'order_items')->find($order_id);
 
