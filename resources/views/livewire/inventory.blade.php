@@ -225,6 +225,17 @@
                     </form>
 
                 </div>
+                <script>
+
+                    window.onload = function() {
+                        document.getElementById('imei').focus();
+                    };
+                    document.addEventListener('DOMContentLoaded', function() {
+                        var input = document.getElementById('imei');
+                        input.focus();
+                        input.select();
+                    });
+                </script>
             @endif
             <div class="">
                 @if ($active_inventory_verification == null)
