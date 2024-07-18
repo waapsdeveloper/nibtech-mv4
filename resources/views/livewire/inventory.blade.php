@@ -283,6 +283,8 @@
                     <div class="card-header pb-0">
                         <div class="d-flex justify-content-between">
                             <h4 class="card-title mg-b-0">Latest Scanned</h4>
+                            <h4 class="card-title mg-b-0">Counter: {{ session('counter') }} <a href="{{ url('inventory?reset_counter=1') }}">Reset</a></h4>
+
                             <h4 class="card-title mg-b-0">Total Scanned: {{$scanned_total}}</h4>
                         </div>
                     </div>

@@ -428,6 +428,12 @@ class Inventory extends Component
             $data['last_ten'] = $last_ten;
             $scanned_total = Process_stock_model::where('process_id', $active_inventory_verification->id)->where('admin_id',session('user_id'))->orderBy('id','desc')->count();
             $data['scanned_total'] = $scanned_total;
+            if(request('reset_counter') == 1){
+                session()->forget('counter');
+            }
+            if(!session('counter')){
+                session()->put('counter', 0);
+            }
         }
         $data['active_inventory_verification'] = $active_inventory_verification;
         // dd($data['vendor_average_cost']);
@@ -523,6 +529,14 @@ class Inventory extends Component
         $process_stock->status = 1;
         if($process_stock->id == null){
             $process_stock->save();
+            // Check if the session variable 'counter' is set
+            if (session()->has('counter')) {
+                // Increment the counter
+                session()->increment('counter');
+            } else {
+                // Initialize the counter if it doesn't exist
+                session()->put('counter', 1);
+            }
             session()->put('success', 'Stock Verified successfully');
         }else{
             session()->put('error', 'Stock already verified');
