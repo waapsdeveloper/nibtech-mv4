@@ -193,7 +193,7 @@
                                                 {{count($order->order_issues)}}
 
                                                 @endif</td>
-                                                <td style="width:180px" title="Last Updated: {{$order->last_update->updated_at }}">{{ $order->created_at}}</td>
+                                                <td style="width:180px" title="Last Updated: {{$order->last_update->updated_at ?? null }}">{{ $order->created_at}}</td>
                                                 <td>
                                                     <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                                     <div class="dropdown-menu">

@@ -371,12 +371,15 @@ class Order extends Component
         ->when(request('status'), function ($q) {
             return $q->where('orders.status', request('status'));
         })
-        ->when(request('stock') == 0, function ($query) {
-            return $query->having('available_stock', '=', 0);
-        })
-        ->when(request('stock') == 1, function ($query) {
-            return $query->having('available_stock', '>', 0);
-        })
+        // ->when(request('stock') == 0, function ($query) {
+        //     return $query->having('available_stock', '=', 0);
+        // })
+        // ->when(request('stock') == 1, function ($query) {
+        //     return $query->having('available_stock', '>', 0);
+        // })
+        // ->when(!request('stock'), function ($query) {
+        //     return $query->having('available_stock');
+        // })
         // ->when(request('stock'), function ($q) {
         //     if (request('stock') == 0) {
         //         return $q->havingRaw('COUNT(CASE WHEN stock.status = 1 THEN order_items.id END) = 0');
