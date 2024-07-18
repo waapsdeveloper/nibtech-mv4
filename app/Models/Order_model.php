@@ -45,6 +45,10 @@ class Order_model extends Model
     {
         return $this->hasOne(Multi_type_model::class, 'id', 'order_type_id');
     }
+    public function last_update()
+    {
+        return $this->hasOne(Stock_model::class, 'order_id', 'id')->orderBy('updated_at','desc');
+    }
     public function order_items()
     {
         return $this->hasMany(Order_item_model::class, 'order_id', 'id');
