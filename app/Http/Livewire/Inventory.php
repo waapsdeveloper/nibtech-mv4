@@ -508,7 +508,11 @@ class Inventory extends Component
             $s = request('imei');
         }
         $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
+        if($stock == null){
+            session()->put('error', 'IMIE Invalid / Not Found');
+            return redirect()->back();
 
+        }
         $process_stock = Process_stock_model::firstOrNew(['process_id'=>$process_id, 'stock_id'=>$stock->id]);
         $process_stock->admin_id = session('user_id');
         $process_stock->status = 1;
