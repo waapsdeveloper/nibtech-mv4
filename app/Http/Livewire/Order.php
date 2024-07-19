@@ -1781,7 +1781,7 @@ class Order extends Component
         return redirect()->back();
     }
 
-    public function replacement($london = 0){
+    public function replacement($london = 0, $allowed = 0){
         $item = Order_item_model::find(request('replacement')['item_id']);
         if(session('user')->hasPermission('replacement')){
             if(!$item->stock->order){
@@ -1831,12 +1831,16 @@ class Order extends Component
             if(($stock->variation->product_id == $item->variation->product_id) || ($item->variation->product_id == 144 && $stock->variation->product_id == 229) || ($item->variation->product_id == 142 && $stock->variation->product_id == 143) || ($item->variation->product_id == 54 && $stock->variation->product_id == 55) || ($item->variation->product_id == 55 && $stock->variation->product_id == 54) || ($item->variation->product_id == 58 && $stock->variation->product_id == 59) || ($item->variation->product_id == 59 && $stock->variation->product_id == 58) || ($item->variation->product_id == 200 && $stock->variation->product_id == 160)){
             }else{
                 session()->put('error', "Product Model not matched");
-                return redirect()->back();
+                if($allowed == 0){
+                    return redirect()->back();
+                }
             }
             if(($stock->variation->storage == $item->variation->storage) || ($item->variation->storage == 5 && in_array($stock->variation->storage,[0,6]) && $item->variation->product->brand == 2) || (in_array($item->variation->product_id, [78,58,59]) && $item->variation->storage == 4 && in_array($stock->variation->storage,[0,5]))){
             }else{
                 session()->put('error', "Product Storage not matched");
-                return redirect()->back();
+                if($allowed == 0){
+                    return redirect()->back();
+                }
             }
 
             if($london == 1){
