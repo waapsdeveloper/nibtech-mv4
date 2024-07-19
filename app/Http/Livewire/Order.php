@@ -1923,7 +1923,7 @@ class Order extends Component
             $item->stock->status = 1;
             $item->stock->save();
 
-            $stock->variation_id = $item->variation_id;
+            // $stock->variation_id = $item->variation_id;
             $stock->tester = request('replacement')['tester'];
             $stock->added_by = session('user_id');
             if($stock->status == 1){
