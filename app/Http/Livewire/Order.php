@@ -1914,7 +1914,7 @@ class Order extends Component
                 'stock_id' => $stock->id,
                 'order_item_id' => $item->id,
                 'old_variation_id' => $stock->variation_id,
-                'new_variation_id' => $item->variation_id,
+                'new_variation_id' => $stock->variation_id,
                 'description' => "Replacement | Order: ".$item->order->reference_id." | Old IMEI: ".$item->stock->imei.$item->stock->serial_number,
                 'admin_id' => session('user_id'),
             ]);
