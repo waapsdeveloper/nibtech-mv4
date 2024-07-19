@@ -69,7 +69,9 @@ class Stock_model extends Model
     }
     public function latest_operation()
     {
-        return $this->hasOne(Stock_operations_model::class, 'stock_id', 'id')->where('new_variation_id', $this->variation_id)->orderByDesc('id');
+        return $this->hasOne(Stock_operations_model::class, 'stock_id', 'id')
+        // ->where('new_variation_id', $this->variation_id)
+        ->orderByDesc('id');
     }
     public function stock_operation($process_id)
     {
