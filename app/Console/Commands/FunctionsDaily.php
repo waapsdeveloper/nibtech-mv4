@@ -11,6 +11,7 @@ use App\Models\Currency_model;
 use App\Models\Country_model;
 use App\Models\Listing_model;
 use App\Models\Process_model;
+use App\Models\Process_stock_model;
 use App\Models\Variation_model;
 use App\Models\Stock_model;
 use App\Models\Stock_operations_model;
@@ -84,31 +85,36 @@ class FunctionsDaily extends Command
                         $item2->delete();
                     }
                 }
+                $last_item = $stock->last_item();
             }
+            if($stock->purchase_item){
 
-            $items3 = Order_item_model::where(['stock_id'=>$stock->id, 'linked_id' => $stock->purchase_item->id])->whereHas('order', function ($query) {
-                $query->whereIn('order_type_id', [5,3,2]);
-            })->orderBy('id','asc')->get();
-            if($items3->count() > 1){
-                $i = 0;
-                foreach($items3 as $item3){
-                    $i ++;
-                    if($i == 1){
-                    }else{
-                        $item3->linked_id = null;
-                        $item3->save();
+                $items3 = Order_item_model::where(['stock_id'=>$stock->id, 'linked_id' => $stock->purchase_item->id])->whereHas('order', function ($query) {
+                    $query->whereIn('order_type_id', [5,3]);
+                })->orderBy('id','asc')->get();
+                if($items3->count() > 1){
+                    $i = 0;
+                    foreach($items3 as $item3){
+                        $i ++;
+                        if($i == 1){
+                        }else{
+                            $item3->linked_id = null;
+                            $item3->save();
+                        }
                     }
                 }
-            }
 
+            }
             $items4 = Order_item_model::where(['stock_id'=>$stock->id])->whereHas('order', function ($query) {
-                $query->whereIn('order_type_id', [5,3,2]);
+                $query->whereIn('order_type_id', [5,3]);
             })->orderBy('id','asc')->get();
             if($items4->count() == 1){
                 foreach($items4 as $item4){
-                    if($item4->linked_id != $stock->purchase_item->id && $item4->linked_id != null){
-                        $item4->linked_id = $stock->purchase_item->id;
-                        $item4->save();
+                    if($stock->purchase_item){
+                        if($item4->linked_id != $stock->purchase_item->id && $item4->linked_id != null){
+                            $item4->linked_id = $stock->purchase_item->id;
+                            $item4->save();
+                        }
                     }
                 }
             }
@@ -117,23 +123,51 @@ class FunctionsDaily extends Command
             })->orderBy('id','asc')->get();
             if($items5->count() == 1){
                 foreach($items5 as $item5){
-                    $last_item = $stock->last_item();
-                    $item5->linked_id = $last_item->id;
-                    $item5->save();
+                    if($stock->last_item()){
+
+                        $last_item = $stock->last_item();
+                        $item5->linked_id = $last_item->id;
+                        $item5->save();
+                    }
                 }
                     $last_item = $stock->last_item();
             }
-            $item = $stock->last_item();
-            if($item != null){
+                // if(session('user_id') == 1){
+                //     dd($last_item);
+                // }
 
-                if(in_array($item->order->order_type_id,[1,4])){
-                    $stock->status = 1;
-                    $stock->save();
+                $stock_id = $stock->id;
+
+            $process_stocks = Process_stock_model::where('stock_id', $stock_id)->whereHas('process', function ($query) {
+                $query->where('process_type_id', 9);
+            })->orderBy('id','desc')->get();
+            $data['process_stocks'] = $process_stocks;
+
+            if($last_item){
+
+                if(in_array($last_item->order->order_type_id,[1,4])){
+                    $message = 'IMEI is Available';
+                    // if($stock->status == 2){
+                        if($process_stocks->where('status',1)->count() == 0){
+                            $stock->status = 1;
+                            $stock->save();
+                        }else{
+                            $stock->status = 2;
+                            $stock->save();
+
+                            $message = "IMEI sent for repair";
+                        }
+                    // }else{
+
+                    // }
                 }else{
-                    $stock->status = 2;
-                    $stock->save();
-
+                    $message = "IMEI Sold";
+                    if($stock->status == 1){
+                        $stock->status = 2;
+                        $stock->save();
+                    }
                 }
+                    session()->put('success', $message);
             }
         }
 
