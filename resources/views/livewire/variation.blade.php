@@ -196,7 +196,7 @@
                                         <form method="post" action="{{url(session('url').'variation/update_product')}}/{{ $product->id }}" class="row form-inline">
                                             @csrf
                                         <tr>
-                                            <td>{{ $i + 1 }}</td>
+                                            <td title="{{ $product->id }}">{{ $i + 1 }}</td>
                                             <td>{{ $product->reference_id }}</td>
                                             <td>
                                                 <select name="update[product_id]" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
