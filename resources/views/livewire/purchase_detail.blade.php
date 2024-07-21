@@ -347,10 +347,15 @@
                                                         </div>
                                                         <button class="btn btn-primary m-0" name="change_imei" value="1">Insert</button>
 
-                                                    </form>
                                                     @else
                                                         {{ $row->message }}
                                                     @endif
+                                                    <form id="order_issues_{{$i}}" method="POST" action="{{ url('purchase/remove_issues') }}" class="form-inline">
+                                                        @csrf
+                                                        <input type="hidden" name="id" value="{{$row->id}}">
+                                                    <button class="btn btn-sm btn-danger m-0" name="remove_entry" value="1">Remove Entry</button>
+
+                                                    </form>
                                                 </td>
                                                 <td>{{ $row->created_at }}</td>
                                                 {{-- <td>

@@ -957,6 +957,11 @@ class Order extends Component
                 $issue->delete();
             }
         }
+        if(request('remove_entry') == 1){
+            // foreach ($issues as $issue) {
+                $issue->delete();
+            // }
+        }
         if(request('insert_variation') == 1){
             $variation = request('variation');
             foreach($issues as $issue){
