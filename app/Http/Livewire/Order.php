@@ -1923,7 +1923,6 @@ class Order extends Component
                 'description' => "Replacement | Order: ".$item->order->reference_id." | Old IMEI: ".$item->stock->imei.$item->stock->serial_number,
                 'admin_id' => session('user_id'),
             ]);
-
             $item->stock->variation_id = $variation->id;
             $item->stock->status = 1;
             $item->stock->save();
@@ -1940,7 +1939,11 @@ class Order extends Component
             $order_item->order_id = 8974;
             $order_item->reference_id = $item->order->reference_id;
             $order_item->care_id = $item->id;
-            $order_item->variation_id = $item->variation_id;
+            if($allowed == 0){
+                $order_item->variation_id = $item->variation_id;
+            }else{
+                $order_item->variation_id = $stock->variation_id;
+            }
             $order_item->stock_id = $stock->id;
             $order_item->quantity = 1;
             $order_item->price = $item->price;
