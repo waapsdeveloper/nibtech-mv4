@@ -491,7 +491,9 @@
                                                         {{-- @if ($item->order->processed_at > $last_hour || $user_id == 1) --}}
                                                         <a class="dropdown-item" id="correction_{{ $item->id }}" href="javascript:void(0);" data-bs-target="#correction_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}"> Correction </a>
                                                         {{-- @endif --}}
-                                                        <a class="dropdown-item" id="replacement_{{ $item->id }}" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}"> Replacement </a>
+                                                        @if (!$item->replacement)
+                                                        <a class="dropdown-item" id="replacement_{{ $item->id }}" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}" data-bs-return="@if($item->check_return) 1 @endif"> Replacement </a>
+                                                        @endif
                                                         @if ($order->status >= 3)
 
                                                         <a class="dropdown-item" href="{{url(session('url').'order')}}/recheck/{{ $order->reference_id }}/true" target="_blank">Invoice</a>
@@ -643,23 +645,30 @@
                             type="button"><span aria-hidden="true">&times;</span></button>
                         <h3 class="modal-title mg-b-5">Update Order</h3>
                         <hr>
-                        <form action="{{ url('order/replacement/1/1') }}" method="POST">
+                        @php
+                            if(session('user')->role_id == 4){
+                                $replacement_url = url('order/replacement');
+                            }else {
+                                $replacement_url = url('order/replacement/1');
+                            }
+                        @endphp
+                        <form action="{{ $replacement_url }}" method="POST">
                             @csrf
                             <div class="form-group">
                                 <label for="">Order Number</label>
                                 <input class="form-control" name="replacement[id]" type="text" id="order_reference" readonly>
                             </div>
                             <h4>Replace</h4>
-                            <div class="form-group">
+                            <div class="form-group bs_hide">
                                 <label for="">Move to</label>
-                                <select name="replacement[grade]" class="form-control form-select" required>
+                                <select name="replacement[grade]" id="move_grade" class="form-control form-select" required>
                                     <option value="">Move to</option>
-                                    @foreach ($grades as $grade)
-                                        <option value="{{ $grade->id }}">{{ $grade->name }}</option>
+                                    @foreach ($grades as $id=>$grade)
+                                        <option value="{{ $id }}">{{ $grade }}</option>
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group bs_hide">
                                 <label for="">Reason</label>
                                 <textarea class="form-control" name="replacement[reason]"></textarea>
                             </div>
@@ -705,10 +714,16 @@
         $('#replacement_model').on('show.bs.modal', function (event) {
             var button = $(event.relatedTarget) // Button that triggered the modal
             var reference = button.data('bs-reference') // Extract info from data-* attributesv
+            var retun = button.data('bs-return') // Extract info from data-* attributesv
             var item = button.data('bs-item') // Extract info from data-* attributes
             // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
             // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
             var modal = $(this)
+            if(retun == 1){
+                modal.find('.modal-body .bs_hide').addClass('d-none')
+                modal.find('.modal-body #move_grade').removeAttr('required')
+            }
+
             modal.find('.modal-body #order_reference').val(reference)
             modal.find('.modal-body #item_id').val(item)
             })
