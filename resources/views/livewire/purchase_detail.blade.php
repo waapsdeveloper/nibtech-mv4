@@ -350,11 +350,11 @@
                                                     @else
                                                         {{ $row->message }}
                                                     @endif
-                                                    <form id="delete_order_issues_{{$i}}" method="POST" action="{{ url('purchase/remove_issues') }}" class="form-inline" id="">
+                                                    <form id="delete_order_issues_{{$row->id}}" method="POST" action="{{ url('purchase/remove_issues') }}" class="form-inline" id="">
                                                         @csrf
                                                         <input type="hidden" name="id" value="{{$row->id}}">
                                                     </form>
-                                                    <button class="btn btn-sm btn-danger m-0" name="remove_entry" value="1" form="delete_order_issues_{{$i}}">Remove Entry</button>
+                                                    <button class="btn btn-sm btn-danger m-0" name="remove_entry" value="1" form="delete_order_issues_{{$row->id}}">Remove Entry</button>
 
                                                 </td>
                                                 <td>{{ $row->created_at }}</td>
