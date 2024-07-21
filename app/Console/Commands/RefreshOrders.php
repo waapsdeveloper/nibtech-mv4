@@ -8,16 +8,11 @@ use App\Http\Controllers\BackMarketAPIController;
 
 use App\Models\Order_model;
 use App\Models\Order_item_model;
-use App\Models\Customer_model;
 use App\Models\Currency_model;
 use App\Models\Country_model;
-use App\Models\Variation_model;
-use App\Models\Stock_model;
-use App\Models\Job_model;
 
 
 use Illuminate\Console\Command;
-use GuzzleHttp\Client;
 
 class RefreshOrders extends Command
 {

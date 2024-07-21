@@ -81,7 +81,7 @@ class OrdersExport
             })
             // ->groupBy('variation.sku', 'variation.name', 'grade.name')
             ->orderBy('orders.reference_id', 'DESC')
-            ->get();
+            ->distinct()->get();
 
         // Create a TCPDF instance
         $pdf = new TCPDF();
