@@ -1901,7 +1901,7 @@ class Order extends Component
 
                 print_r($return_item);
 
-                session()->put('success','Item returned');
+                // session()->put('success','Item returned');
 
                 $stock_operation = Stock_operations_model::create([
                     'stock_id' => $item->stock_id,
@@ -1912,7 +1912,7 @@ class Order extends Component
                     'admin_id' => session('user_id'),
                 ]);
             }else{
-                session()->put('error','Item already returned');
+                // session()->put('error','Item already returned');
 
             }
             $stock_operation_2 = Stock_operations_model::create([
