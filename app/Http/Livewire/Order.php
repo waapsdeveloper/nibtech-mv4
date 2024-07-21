@@ -494,6 +494,7 @@ class Order extends Component
         $data['title_page'] = "Purchase Detail";
         $data['storages'] = Storage_model::pluck('name','id');
         $data['colors'] = Color_model::pluck('name','id');
+        $data['grades'] = Grade_model::pluck('name','id');
 
         if (!request('status') || request('status') == 1){
             $data['variations'] = Variation_model::with(['stocks' => function ($query) use ($order_id) {
