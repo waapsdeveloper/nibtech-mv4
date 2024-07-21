@@ -649,7 +649,7 @@
                             if(session('user')->role_id == 4){
                                 $replacement_url = url('order/replacement');
                             }else {
-                                $replacement_url = url('order/replacement/1');
+                                $replacement_url = url('order/replacement/1/1');
                             }
                         @endphp
                         <form action="{{ $replacement_url }}" method="POST">
