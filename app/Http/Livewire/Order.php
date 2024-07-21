@@ -1805,6 +1805,10 @@ class Order extends Component
                 session()->put('error', 'Stock not found');
                 return redirect()->back();
             }
+            if($stock->id == $item->stock_id){
+                session()->put('error', 'Stock same as previous');
+                return redirect()->back();
+            }
             if($stock->status != 1){
                 session()->put('error', 'Stock already sold');
                 return redirect()->back();
