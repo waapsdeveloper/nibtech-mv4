@@ -358,13 +358,6 @@
 
                                                 </td>
                                                 <td>{{ $row->created_at }}</td>
-                                                {{-- <td>
-                                                    <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
-                                                    <div class="dropdown-menu">
-                                                        <a class="dropdown-item" href="">link</a>
-                                                        <a class="dropdown-item" href="" target="_blank">link</a>
-                                                    </div>
-                                                </td> --}}
                                             </tr>
 
                                             @php
