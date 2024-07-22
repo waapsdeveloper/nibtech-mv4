@@ -592,7 +592,7 @@ class Order extends Component
         $imei = array_search('imei', $arrayLower);
         // echo $imei;
         $cost = array_search('cost', $arrayLower);
-        if(!ctype_digit($data[1][$cost])){
+        if(!is_numeric($data[1][$cost])){
             session()->put('error', "Formula in Cost is not Allowed");
             return redirect()->back();
 
