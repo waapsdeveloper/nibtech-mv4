@@ -770,7 +770,7 @@ class Order extends Component
                     if($stock->order_id == $order->id && $stock->status == 1){
                         $issue[$dr]['message'] = 'Item already added in this order';
                     }else{
-                            $reference_id = $stock->order->reference_id ?? "MIssing";
+                            $reference_id = $stock->order->reference_id ?? "Missing";
                         if($stock->status != 2){
                             $issue[$dr]['message'] = 'Item already available in inventory under order reference '.$reference_id;
                         }else{
