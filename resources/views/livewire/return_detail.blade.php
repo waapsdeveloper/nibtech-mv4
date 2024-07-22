@@ -652,7 +652,7 @@
                                         // print_r($variation);
                                     @endphp
 
-                                    @foreach ($processed_stocks as $processed_stock)
+                                    @foreach ($received_items as $processed_stock)
                                         {{-- @dd($item->sale_item) --}}
                                         @php
                                             $item = $processed_stock->stock;

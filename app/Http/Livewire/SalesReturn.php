@@ -231,14 +231,14 @@ class SalesReturn extends Component
         $graded_stocks = Grade_model::with([
             'variations.stocks' => function ($query) use ($order_id) {
                 $query->whereHas('order_items', function ($query) use ($order_id) {
-                    $query->where('order_id', $order_id);
+                    $query->where('order_id', $order_id)->where('status','!=',2);
                 })->when(request('status') != '', function ($q) {
                     return $q->where('status', request('status'));
                 });
             }
         ], 'variations.stocks.latest_operation')
         ->whereHas('variations.stocks.order_items', function ($query) use ($order_id) {
-            $query->where('order_id', $order_id);
+            $query->where('order_id', $order_id)->where('status','!=',2);
         })
         ->when(request('status') != '', function ($q) {
             return $q->whereHas('variations.stocks', function ($q) {
@@ -255,6 +255,12 @@ class SalesReturn extends Component
         $data['last_ten'] = $last_ten;
 
 
+
+            $data['received_items'] = [];
+        if($data['order']->status == 2){
+            $received_items = Order_item_model::where('order_id', $order_id)->where('status',2)->get();
+            $data['received_items'] = $received_items;
+        }
         // echo "<pre>";
         // // print_r($items->stocks);
         // print_r($items);
