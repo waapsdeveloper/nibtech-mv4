@@ -485,7 +485,7 @@ class SalesReturn extends Component
 
 
         if($back != 1){
-            return redirect(url('repair/detail').'/'.$order_id);
+            return redirect()->back();
         }else{
             return 1;
         }
