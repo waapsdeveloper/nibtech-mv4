@@ -407,10 +407,8 @@
                                                 @if ($stock->latest_return)
                                                  &nbsp;<a title="Sales Return Details" href="{{url('return/detail').'/'.$stock->latest_return->order->id}}" target="_blank"> {{ $stock->latest_return->order->reference_id }} </a>
                                                 @endif
-                                                @if ($stock->stock_verifications->count() > 0)
-                                                 @foreach ($stock->stock_verifications as $verification)
-                                                    &nbsp; {{ $verification->process->reference_id }}
-                                                 @endforeach
+                                                @if ($stock->latest_verification)
+                                                    &nbsp; {{ $stock->latest_verification->process->reference_id }}
                                                 @endif
                                             </td>
                                             @if (session('user')->hasPermission('view_cost'))
