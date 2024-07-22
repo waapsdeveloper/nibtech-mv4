@@ -158,7 +158,7 @@
                                                 @elseif ($order->order_type_id == 5 && $order->reference_id != 999)
                                                     <td><a href="{{url(session('url').'wholesale/detail/'.$order->id)}}">{{ $order->reference_id."\n\r".$item->reference_id }}</a></td>
                                                 @elseif ($order->order_type_id == 5 && $order->reference_id == 999)
-                                                    <td><a href="https://www.backmarket.fr/bo_merchant/orders/all?orderId={{ $item->reference_id }}">{{ $item->reference_id }} <br> Replacement</a></td>
+                                                    <td><a href="https://www.backmarket.fr/bo_merchant/orders/all?orderId={{ $item->reference_id }}">Replacement <br> {{ $item->reference_id }}</a></td>
                                                 @elseif ($order->order_type_id == 4)
                                                     <td><a href="{{url(session('url').'return/detail/'.$order->id)}}">{{ $order->reference_id."\n\r".$item->reference_id }}</a></td>
                                                 @elseif ($order->order_type_id == 3)
