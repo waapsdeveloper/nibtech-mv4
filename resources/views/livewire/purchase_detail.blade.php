@@ -310,7 +310,7 @@
                                                 @endforeach
                                                 <td>
                                                     @if ($row->message == "IMEI not Provided" || $row->message == "IMEI/Serial Not Found")
-                                                    <form id="order_issues_{{$i}}" method="POST" action="{{ url('purchase/remove_issues') }}" class="form-inline">
+                                                    <form id="order_issues_{{$row->id}}" method="POST" action="{{ url('purchase/remove_issues') }}" class="form-inline">
                                                         @csrf
                                                         <input type="hidden" name="id" value="{{$row->id}}">
                                                         <div class="form-floating">
