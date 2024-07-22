@@ -528,7 +528,7 @@
         </div>
         <div class="row">
 
-            <div @if ($process->status != 1) class="col-md-8" @endif>
+            <div @if ($order->status != 1) class="col-md-8" @endif>
                 @foreach ($graded_stocks as $graded_stock)
                 @php
                     if($graded_stock->variations->count() == 0){
@@ -675,9 +675,9 @@
                                             <td>{{$processed_stock->price}}</td>
                                             @endif
                                             @if (session('user')->hasPermission('delete_return_item'))
-                                            {{-- <td><a href="{{ url('delete_return_item').'/'.$item->process_stock($process_id)->id }}"><i class="fa fa-trash"></i></a></td> --}}
+                                            {{-- <td><a href="{{ url('delete_return_item').'/'.$item->process_stock($order_id)->id }}"><i class="fa fa-trash"></i></a></td> --}}
                                             @endif
-                                            <input type="hidden" name="item_ids[]" value="{{ $item->process_stock($process_id)->id }}">
+                                            <input type="hidden" name="item_ids[]" value="{{ $item->process_stock($order_id)->id }}">
                                         </tr>
                                     @endforeach
                                     </form>
