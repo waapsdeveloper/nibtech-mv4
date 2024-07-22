@@ -466,6 +466,7 @@
             <div class="">
             </div>
         </div>
+        @if ($order->status != 1)
         <div class="row">
             <div class="col-xl-12">
                 <div class="card">
@@ -526,6 +527,7 @@
                 </div>
             </div>
         </div>
+        @endif
         <div class="row">
 
             <div @if ($order->status != 1) class="col-md-8" @endif>
