@@ -82,6 +82,7 @@ Route::get('report/export_batch/{orderId}', [Report::class,'export_batch_report'
 Route::get('return', SalesReturn::class)->name('view_return');
 Route::get('add_return', [SalesReturn::class,'add_return'])->name('add_return');
 Route::post('add_return_item/{id}', [SalesReturn::class,'add_return_item'])->name('add_return_item');
+Route::post('receive_return_item/{id}', [SalesReturn::class,'receive_return_item'])->name('receive_return_item');
 Route::get('delete_return/{id}', [SalesReturn::class,'delete_return'])->name('delete_return');
 Route::get('delete_return_item/{id}', [SalesReturn::class,'delete_return_item'])->name('delete_return_item');
 Route::get('return/detail/{id}', [SalesReturn::class,'return_detail'])->name('return_detail');

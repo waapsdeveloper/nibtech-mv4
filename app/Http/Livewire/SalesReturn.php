@@ -399,7 +399,7 @@ class SalesReturn extends Component
                     $order_item->stock_id = $stock->id;
                     $order_item->quantity = 1;
                     $order_item->price = $return['price'];
-                    $order_item->status = 3;
+                    $order_item->status = 1;
                     $order_item->linked_id = $return['linked_id'];
                     $order_item->admin_id = session('user_id');
                     $order_item->save();
@@ -433,110 +433,56 @@ class SalesReturn extends Component
         return redirect()->back();
 
     }
-    public function replacement(){
-        $item = Order_item_model::find(request('replacement')['item_id']);
-        if(session('user')->hasPermission('replacement')){
-            if(!$item->stock->order){
-                session()->put('error', 'Stock not purchased');
-                return redirect()->back();
-            }
-            $imei = request('replacement')['imei'];
-            $serial_number = null;
-            if(!ctype_digit($imei)){
-                $serial_number = $imei;
-                $imei = null;
-            }
 
-            $stock = Stock_model::where(['imei'=>$imei, 'serial_number'=>$serial_number])->first();
-            if(!$stock){
-                session()->put('error', 'Stock not found');
-                return redirect()->back();
-            }
-            if($stock->status != 1){
-                session()->put('error', 'Stock already sold');
-                return redirect()->back();
-            }
+    public function receive_return_item($order_id, $imei = null, $back = null){
 
-            $return_order = Order_model::where(['order_type_id'=>4,'status'=>1])->first();
-            if(!$return_order){
-                session()->put('error', 'No Active Return Order Found');
-                return redirect()->back();
-            }
-
-            if(!$return_order){
-                session()->put('error', 'No Active Return Order Found');
-                return redirect()->back();
-            }
-
-            $variation = Variation_model::firstOrNew(['product_id' => $item->variation->product_id, 'storage' => $item->variation->storage, 'color' => $item->variation->color, 'grade' => request('replacement')['grade']]);
-
-            $variation->stock += 1;
-            $variation->status = 1;
-            $variation->save();
-
-            $r_item = Order_item_model::where(['order_id'=>$return_order->id, 'stock_id' => $item->stock_id])->first();
-            // print_r($stock);
-            if($r_item == null){
-                $return_item = new Order_item_model();
-                $return_item->order_id = $return_order->id;
-                $return_item->reference_id = request('replacement')['id'];
-                $return_item->variation_id = $variation->id;
-                $return_item->stock_id = $item->stock_id;
-                $return_item->quantity = 1;
-                $return_item->price = $item->price;
-                $return_item->status = 3;
-                $return_item->linked_id = $item->id;
-                $return_item->admin_id = session('user_id');
-                $return_item->save();
-
-                print_r($return_item);
-
-                $stock_operation = Stock_operations_model::create([
-                    'stock_id' => $stock->id,
-                    'old_variation_id' => $stock->variation_id,
-                    'new_variation_id' => $variation->id,
-                    'description' => request('replacement')['reason'],
-                    'admin_id' => session('user_id'),
-                ]);
-
-                $item->stock->variation_id = $variation->id;
-                $item->stock->status = 1;
-                $item->stock->save();
-
-                session()->put('success','Item returned');
-            }else{
-                session()->put('error','Item already returned');
-            }
-
-            $stock->variation_id = $item->variation_id;
-            $stock->tester = request('replacement')['tester'];
-            $stock->added_by = session('user_id');
-            if($stock->status == 1){
-                $stock->status = 2;
-            }
-            $stock->save();
-
-            $order_id = Order_model::where(['order_type_id'=>4, 'status'=>1])->first()->id;
-            $order_item = new Order_item_model();
-            $order_item->order_id = $order_id;
-            $order_item->reference_id = $item->order->reference_id;
-            $order_item->variation_id = $item->variation_id;
-            $order_item->stock_id = $stock->id;
-            $order_item->quantity = 1;
-            $order_item->price = $item->price;
-            $order_item->status = 3;
-            $order_item->linked_id = $stock->purchase_item->id;
-            $order_item->admin_id = session('user_id');
-            $order_item->save();
-
-
-            $message = "Hi, here is the new IMEI/Serial number for this order. \n".$imei.$serial_number." ".$stock->tester."\n Regards, \n" . session('fname');
-            session()->put('success', $message);
-            session()->put('copy', $message);
-        }else{
-            session()->put('error', 'Unauthorized');
+        if(request('imei')){
+            $imei = request('imei');
         }
-        return redirect()->back();
+        if(ctype_digit($imei)){
+            $i = $imei;
+            $s = null;
+        }else{
+            $i = null;
+            $s = $imei;
+        }
+        $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
+
+        if($imei == '' || !$stock || $stock->status == null){
+            session()->put('error', 'IMEI Invalid / Not Found');
+            if($back != 1){
+                return redirect()->back();
+            }else{
+                return 1;
+            }
+
+        }
+        $order_item = Order_item_model::where(['order_id'=>$order_id,'stock_id'=>$stock->id])->first();
+        if(!$order_item){
+            session()->put('error', "Stock not found in this sheet");
+            if($back != 1){
+                return redirect()->back();
+            }else{
+                return 1;
+            }
+        }
+        if($order_item->status == 2){
+            session()->put('error', "Stock already added");
+            if($back != 1){
+                return redirect()->back();
+            }else{
+                return 1;
+            }
+        }
+        $order_item->status = 2;
+        $order_item->save();
+
+
+        if($back != 1){
+            return redirect(url('repair/detail').'/'.$order_id);
+        }else{
+            return 1;
+        }
     }
 
 
