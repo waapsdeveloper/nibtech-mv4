@@ -58,6 +58,12 @@
                             </datalist>
                         </div>
                         <div class="col-md">
+                            <div class="form-floating">
+                                <input type="text" name="sku" value="{{ Request::get('sku') }}" class="form-control" data-bs-placeholder="Select Model" form="index">
+                                <label for="sku">SKU</label>
+                            </div>
+                        </div>
+                        <div class="col-md">
                             <select name="storage" class="form-control form-select" form="index">
                                 <option value="">Storage</option>
                                 @foreach ($storages as $id=>$name)
@@ -233,6 +239,7 @@
                                                 <input type="hidden" name="start_date" value="{{ $start_date }}">
                                                 <input type="hidden" name="end_date" value="{{ $end_date }}">
                                                 <input type="hidden" name="product" value="{{ Request::get('product') }}">
+                                                <input type="hidden" name="sku" value="{{ Request::get('sku') }}">
                                                 <input type="hidden" name="storage" value="{{ Request::get('storage') }}">
                                                 <input type="hidden" name="color" value="{{ Request::get('color') }}">
                                                 <input type="hidden" name="grade" value="{{ Request::get('grade') }}">

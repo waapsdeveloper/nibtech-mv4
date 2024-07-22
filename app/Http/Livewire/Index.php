@@ -67,6 +67,9 @@ class Index extends Component
             ->when(request('product') != '', function ($q) {
                 return $q->where('product_id', '=', request('product'));
             })
+            ->when(request('sku') != '', function ($q) {
+                return $q->where('sku', '=', request('sku'));
+            })
             ->when(request('category') != '', function ($q) {
                 return $q->whereHas('product', function ($qu) {
                     $qu->where('category', '=', request('category'));
