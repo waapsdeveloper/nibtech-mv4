@@ -347,11 +347,11 @@
                                                         </div>
                                                         <button class="btn btn-primary m-0" name="change_imei" value="1">Insert</button>
 
-                                                    @else
-                                                        {{ $row->message }}
-                                                    @endif
-                                                    <button class="btn btn-sm btn-danger m-0" name="remove_entry" value="1" form="delete_order_issues_{{$row->id}}">Remove Entry</button>
-
+                                                        @else
+                                                            {{ $row->message }}
+                                                        @endif
+                                                        <button class="btn btn-danger m-0" name="remove_entry" value="1" form="order_issues_{{$row->id}}">Remove Entry</button>
+                                                    </form>
                                                 </td>
                                                 <td>{{ $row->created_at }}</td>
                                             </tr>
