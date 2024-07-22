@@ -671,9 +671,6 @@
                                                 {{ $variation->product->model." ".$storage." ".$color." ".$variation->grade_id->name }}
                                             </td>
 
-                                            @if ($process->status == 3 && session('user')->hasPermission('view_cost'))
-                                            <td>{{$processed_stock->price}}</td>
-                                            @endif
                                             @if (session('user')->hasPermission('delete_return_item'))
                                             {{-- <td><a href="{{ url('delete_return_item').'/'.$stock->process_stock($order_id)->id }}"><i class="fa fa-trash"></i></a></td> --}}
                                             @endif
