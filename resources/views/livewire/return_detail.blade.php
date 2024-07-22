@@ -87,7 +87,7 @@
                     @csrf
                     <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
                     <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
-                    <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
+                    <button class="btn-sm btn-primary pd-x-20" type="submit">Receive</button>
 
                 </form>
                 <script>
@@ -652,11 +652,11 @@
                                         // print_r($variation);
                                     @endphp
 
-                                    @foreach ($received_items as $processed_stock)
+                                    @foreach ($received_items as $item)
                                         {{-- @dd($item->sale_item) --}}
                                         @php
-                                            $item = $processed_stock->stock;
-                                            $variation = $item->variation;
+                                            $stock = $item->stock;
+                                            $variation = $stock->variation;
                                             $i ++;
 
                                             isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
@@ -665,8 +665,8 @@
                                         @endphp
                                         <tr>
                                             <td>{{ $i }}</td>
-                                            {{-- <td>{{ $item->order->customer->first_name }}</td> --}}
-                                            <td>{{ $item->imei.$item->serial_number }}</td>
+                                            {{-- <td>{{ $stock->order->customer->first_name }}</td> --}}
+                                            <td>{{ $stock->imei.$stock->serial_number }}</td>
                                             <td>
                                                 {{ $variation->product->model." ".$storage." ".$color." ".$variation->grade_id->name }}
                                             </td>
@@ -675,9 +675,9 @@
                                             <td>{{$processed_stock->price}}</td>
                                             @endif
                                             @if (session('user')->hasPermission('delete_return_item'))
-                                            {{-- <td><a href="{{ url('delete_return_item').'/'.$item->process_stock($order_id)->id }}"><i class="fa fa-trash"></i></a></td> --}}
+                                            {{-- <td><a href="{{ url('delete_return_item').'/'.$stock->process_stock($order_id)->id }}"><i class="fa fa-trash"></i></a></td> --}}
                                             @endif
-                                            <input type="hidden" name="item_ids[]" value="{{ $item->process_stock($order_id)->id }}">
+                                            <input type="hidden" name="item_ids[]" value="{{ $item->id }}">
                                         </tr>
                                     @endforeach
                                     </form>
