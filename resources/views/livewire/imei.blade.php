@@ -155,8 +155,10 @@
                                                     <td><a href="{{url(session('url').'purchase/detail/'.$order->id)}}?status=1">{{ $order->reference_id."\n\r".$item->reference_id }}</a></td>
                                                 @elseif ($order->order_type_id == 2)
                                                     <td><a href="{{url(session('url').'rma/detail/'.$order->id)}}">{{ $order->reference_id."\n\r".$item->reference_id }}</a></td>
-                                                @elseif ($order->order_type_id == 5)
+                                                @elseif ($order->order_type_id == 5 && $order->reference_id != 999)
                                                     <td><a href="{{url(session('url').'wholesale/detail/'.$order->id)}}">{{ $order->reference_id."\n\r".$item->reference_id }}</a></td>
+                                                @elseif ($order->order_type_id == 5 && $order->reference_id == 999)
+                                                    <td><a href="https://www.backmarket.fr/bo_merchant/orders/all?orderId={{ $item->reference_id }}">{{ $item->reference_id }} <br> Replacement</a></td>
                                                 @elseif ($order->order_type_id == 4)
                                                     <td><a href="{{url(session('url').'return/detail/'.$order->id)}}">{{ $order->reference_id."\n\r".$item->reference_id }}</a></td>
                                                 @elseif ($order->order_type_id == 3)
@@ -170,7 +172,7 @@
                                                     @if ($item->variation ?? false)
                                                         <strong>{{ $item->variation->sku }}</strong>{{ " - " . $item->variation->product->model . " - " . (isset($item->variation->storage_id)?$item->variation->storage_id->name . " - " : null) . (isset($item->variation->color_id)?$item->variation->color_id->name. " - ":null)}} <strong><u>{{ $item->variation->grade_id->name ?? "Missing Grade" }}</u></strong>
                                                     @endif
-                                                    @if ($item->care_id != null)
+                                                    @if ($item->care_id != null && $order->order_type_id == 3)
                                                         <a class="" href="https://backmarket.fr/bo_merchant/customer-request/{{ $item->care_id }}" target="_blank"><strong class="text-danger">Conversation</strong></a>
                                                     @endif
                                                 </td>
