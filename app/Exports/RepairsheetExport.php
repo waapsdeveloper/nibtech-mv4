@@ -28,7 +28,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
         })
         ->leftJoin('stock_operations', function ($join) {
             $join->on('stock.id', '=', 'stock_operations.stock_id')
-                 ->where('stock_operations.new_variation_id', '=', DB::raw('variation.id'))
+                //  ->where('stock_operations.new_variation_id', '=', DB::raw('variation.id'))
                  ->whereRaw('stock_operations.id = (SELECT id FROM stock_operations WHERE stock_operations.stock_id = stock.id ORDER BY id DESC LIMIT 1)');
         })
 
