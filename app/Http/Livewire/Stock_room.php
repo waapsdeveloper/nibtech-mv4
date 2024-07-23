@@ -34,11 +34,22 @@ class Stock_room extends Component
         $data['admins'] = Admin_model::where('id', '!=', 1)->get();
         $user_id = session('user_id');
         $user = session('user');
+        if(request('per_page') != null){
+            $per_page = request('per_page');
+        }else{
+            $per_page = 10;
+        }
 
         $data['stock_count'] = Stock_movement_model::where(['admin_id'=>$user_id, 'received_at'=>null])->count();
 
         if(request('show') == 1){
-            $data['stocks'] = Stock_movement_model::where(['admin_id'=>$user_id, 'received_at'=>null])->get();
+            $data['stocks'] = Stock_movement_model::where(['admin_id'=>$user_id, 'received_at'=>null])
+            
+            ->orderBy('id', 'desc') // Secondary order by reference_id
+            // ->select('orders.*')
+            ->paginate($per_page)
+            ->onEachSide(5)
+            ->appends(request()->except('page'));
             
         }
 
