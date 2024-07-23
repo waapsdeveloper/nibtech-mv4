@@ -143,7 +143,7 @@
                                 @php
                                     $i = $stocks->firstItem() - 1;
                                 @endphp
-                                @foreach ($stocks as $index => $stock)
+                                @foreach ($stocks as $stock)
                                     <tr>
                                         <td title="{{ $stock->id }}">{{ $i + 1 }}</td>
                                         <td><a title="Filter this variation" href="{{url('inventory').'?product='.$stock->variation->product_id.'&storage='.$stock->variation->storage.'&grade[]='.$stock->variation->grade}}">{{ $stock->variation->product->model . " " . (isset($stock->variation->storage) ? $storages[$stock->variation->storage] . " " : null) . " " .
