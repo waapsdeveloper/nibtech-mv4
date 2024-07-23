@@ -237,6 +237,7 @@
                                         <td align="right"> <strong> €{{number_format( $totalAmount,2) }}</strong></td>
                                         @else
                                         <td align="right"> <strong>{{ $process->currency_id->sign }}{{number_format( $totalAmount*$process->exchange_rate,2) }}</strong></td>
+                                        @endif
                                         {{-- <td align="right"> <strong>{{ $process->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td> --}}
                                     </tr>
                                     {{-- <tr>

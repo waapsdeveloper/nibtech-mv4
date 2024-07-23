@@ -66,7 +66,7 @@ class FunctionsDaily extends Command
         // }
 
 
-        $stocks = Stock_model::where('status','!=',null)->where('order_id','!=',null)->orderByDesc('id')->get();
+        $stocks = Stock_model::where('status',1)->where('order_id','!=',null)->orderByDesc('id')->get();
         foreach($stocks as $stock){
 
             $last_item = $stock->last_item();
