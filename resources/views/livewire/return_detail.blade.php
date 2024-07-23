@@ -418,7 +418,11 @@
                                         $i = 0;
                                     @endphp
                                     @foreach ($stocks as $operation)
-
+                                        @php
+                                            if(strpos($operation->description, "Replacement") != null){
+                                                $operation->stock->availability();
+                                            }
+                                        @endphp
                                             <tr>
                                                 <td title="{{ $operation->id }}">{{ $i + 1 }}</td>
                                                 <td>
