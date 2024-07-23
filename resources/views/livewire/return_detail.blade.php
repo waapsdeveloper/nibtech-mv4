@@ -420,7 +420,10 @@
                                     @foreach ($stocks as $operation)
                                         @php
                                             if(strpos($operation->description, "Replacement") != null){
-                                                $operation->stock->availability();
+                                                if($operation->stock->status != 2){
+
+                                                    $operation->stock->availability();
+                                                }
                                             }
                                         @endphp
                                             <tr>
