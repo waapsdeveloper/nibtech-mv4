@@ -81,6 +81,11 @@ class Repair extends Component
     }
     public function repair_ship($repair_id){
         $repair = Process_model::find($repair_id);
+        $currency = Currency_model::where('code',request('currency'))->first();
+        if($currency != null && $currency->id != 4){
+            $repair->currency = $currency->id;
+            $repair->exchange_rate = request('rate');
+        }
         $repair->description = request('tracking_number');
         $repair->status = 2;
         $repair->save();
