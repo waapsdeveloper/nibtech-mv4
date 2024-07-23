@@ -47,14 +47,21 @@
                         <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" id="imeiInput" onload="this.focus()" autofocus>
                         <label for="">IMEI</label>
                     </div>
-                        <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
+                        <button class="btn btn-primary pd-x-20" type="submit">Exit</button>
                     {{-- @if (isset($stock))
                         &nbsp;&nbsp;&nbsp;&nbsp;Current Variation:&nbsp;&nbsp;&nbsp;&nbsp;<h5 class="mb-0">{{ $stock->variation->product->model ?? "Variation Issue"}}{{" - " . (isset($stock->variation->storage_id)?$stock->variation->storage_id->name . " - " : null) . (isset($stock->variation->color_id)?$stock->variation->color_id->name. " - ":null)}} <strong><u>{{ $stock->variation->grade_id->name ?? null }}</u></strong></h5>
                     @endif --}}
                 </form>
             </div>
             <h6>
+                @if (session('user')->hasPermission('view_all_stock_movements'))
+                    @foreach ($stock_count as $count)
+                        <a href="{{url('stock_room')}}?show=1&admin_id={{$count->admin_id}}"> {{$count->admin->first_name}}: {{ $count->count }} </a> &nbsp;&nbsp;&nbsp;&nbsp;
+                        
+                    @endforeach
+                @else
                 <a href="{{url('stock_room')}}?show=1"> Count: {{ $stock_count }} </a>
+                @endif
             </h6>
             <script>
 
