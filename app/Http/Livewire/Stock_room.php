@@ -141,7 +141,7 @@ class Stock_room extends Component
             }
             
             $stock_movement = Stock_movement_model::where(['stock_id'=>$stock->id, 'received_at'=>null])->update([
-                'recieved_by' => $user_id,
+                'received_by' => $user_id,
                 'received_at' => Carbon::now()
             ]);
 
