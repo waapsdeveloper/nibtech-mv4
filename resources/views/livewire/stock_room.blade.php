@@ -41,6 +41,20 @@
         <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
 
             <div class="p-2">
+                @if (session('user')->hasPermission('receive_stock'))
+                
+                <form action="{{ url('stock_room/receive')}}" method="POST" id="search" class="form-inline">
+                    @csrf
+                    <div class="form-floating">
+                        <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" id="imeiInput" onload="this.focus()" autofocus>
+                        <label for="">IMEI</label>
+                    </div>
+                        <button class="btn btn-secondary pd-x-20" type="submit">Receive</button>
+                    {{-- @if (isset($stock))
+                        &nbsp;&nbsp;&nbsp;&nbsp;Current Variation:&nbsp;&nbsp;&nbsp;&nbsp;<h5 class="mb-0">{{ $stock->variation->product->model ?? "Variation Issue"}}{{" - " . (isset($stock->variation->storage_id)?$stock->variation->storage_id->name . " - " : null) . (isset($stock->variation->color_id)?$stock->variation->color_id->name. " - ":null)}} <strong><u>{{ $stock->variation->grade_id->name ?? null }}</u></strong></h5>
+                    @endif --}}
+                </form>
+                @else
                 <form action="{{ url('stock_room/exit')}}" method="POST" id="search" class="form-inline">
                     @csrf
                     <div class="form-floating">
@@ -52,6 +66,7 @@
                         &nbsp;&nbsp;&nbsp;&nbsp;Current Variation:&nbsp;&nbsp;&nbsp;&nbsp;<h5 class="mb-0">{{ $stock->variation->product->model ?? "Variation Issue"}}{{" - " . (isset($stock->variation->storage_id)?$stock->variation->storage_id->name . " - " : null) . (isset($stock->variation->color_id)?$stock->variation->color_id->name. " - ":null)}} <strong><u>{{ $stock->variation->grade_id->name ?? null }}</u></strong></h5>
                     @endif --}}
                 </form>
+                @endif
             </div>
             <h6>
                 @if (session('user')->hasPermission('view_all_stock_movements'))
