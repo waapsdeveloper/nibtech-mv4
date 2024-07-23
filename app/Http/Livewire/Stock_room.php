@@ -95,6 +95,19 @@ class Stock_room extends Component
                 return redirect()->back(); // Redirect here is not recommended
 
             }
+            $movement = Stock_movement_model::where(['stock_id'=>$stock->id,'received_at'=>null])->first();
+            if($movement == null){
+                if($movement->admin_id == $user_id){
+
+                    session()->put('error', 'IMEI Already added in your sheet');
+                }else{
+
+                    session()->put('error', 'IMEI Already added to '.$movement->admin->first_name);
+                }
+                return redirect()->back(); // Redirect here is not recommended
+
+            }
+
             $stock_movement = Stock_movement_model::create([
                 'stock_id' => $stock->id,
                 'admin_id' => $user_id,
