@@ -152,15 +152,15 @@
                                             <tr>
                                                 <td title="{{ $item->id }}">{{ $i + 1 }}</td>
                                                 @if ($order->order_type_id == 1)
-                                                    <td><a href="{{url(session('url').'purchase/detail/'.$order->id)}}?status=1">{{ $order->reference_id."\n\r".$item->reference_id }}</a></td>
+                                                    <td><a href="{{url('purchase/detail/'.$order->id)}}?status=1">{{ $order->reference_id."\n\r".$item->reference_id }}</a></td>
                                                 @elseif ($order->order_type_id == 2)
-                                                    <td><a href="{{url(session('url').'rma/detail/'.$order->id)}}">{{ $order->reference_id."\n\r".$item->reference_id }}</a></td>
+                                                    <td><a href="{{url('rma/detail/'.$order->id)}}">{{ $order->reference_id."\n\r".$item->reference_id }}</a></td>
                                                 @elseif ($order->order_type_id == 5 && $order->reference_id != 999)
-                                                    <td><a href="{{url(session('url').'wholesale/detail/'.$order->id)}}">{{ $order->reference_id."\n\r".$item->reference_id }}</a></td>
+                                                    <td><a href="{{url('wholesale/detail/'.$order->id)}}">{{ $order->reference_id."\n\r".$item->reference_id }}</a></td>
                                                 @elseif ($order->order_type_id == 5 && $order->reference_id == 999)
                                                     <td><a href="https://www.backmarket.fr/bo_merchant/orders/all?orderId={{ $item->reference_id }}" target="_blank">Replacement <br> {{ $item->reference_id }}</a></td>
                                                 @elseif ($order->order_type_id == 4)
-                                                    <td><a href="{{url(session('url').'return/detail/'.$order->id)}}">{{ $order->reference_id."\n\r".$item->reference_id }}</a></td>
+                                                    <td><a href="{{url('return/detail/'.$order->id)}}">{{ $order->reference_id."\n\r".$item->reference_id }}</a></td>
                                                 @elseif ($order->order_type_id == 3)
                                                     <td><a href="https://www.backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}" target="_blank">{{ $order->reference_id."\n\r".$item->reference_id }}</a></td>
                                                 @endif
@@ -270,7 +270,7 @@
 
                                         <tr>
                                             <td title="{{ $p_stock->id }}">{{ $i + 1 }}</td>
-                                            <td><a href="{{url(session('url').'repair/detail/'.$process->id)}}?status=1">{{ $process->reference_id }}</a></td>
+                                            <td><a href="{{url('repair/detail/'.$process->id)}}?status=1">{{ $process->reference_id }}</a></td>
                                             <td>@if ($process->customer)
                                                 {{ $process->customer->first_name." ".$process->customer->last_name }}
                                             @endif</td>

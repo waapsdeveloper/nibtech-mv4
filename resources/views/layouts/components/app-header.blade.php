@@ -7,7 +7,7 @@
     <div class="main-container container-fluid">
         <div class="main-header-left ">
             <div class="responsive-logo">
-                <a href="{{url(session('url').'index')}}" class="header-logo">
+                <a href="{{url('index')}}" class="header-logo">
                     <img src="{{asset('assets/img/brand/logo1.png')}}" class="mobile-logo logo-1" alt="logo" height="45">
                     <img src="{{asset('assets/img/brand/logo-white1.png')}}" class="mobile-logo dark-logo-1" alt="logo" height="45">
                 </a>
@@ -17,7 +17,7 @@
                 <a class="close-toggle" href="javascript:void(0);"><i class="header-icon fe fe-x"></i></a>
             </div>
             <div class="logo-horizontal">
-                <a href="{{url(session('url').'index')}}" class="header-logo">
+                <a href="{{url('index')}}" class="header-logo">
                     <img src="{{asset('assets/img/brand/logo1.png')}}" class="mobile-logo logo-1" alt="logo"  >
                     <img src="{{asset('assets/img/brand/logo-white1.png')}}" class="mobile-logo dark-logo-1" alt="logo"  >
                 </a>
@@ -52,8 +52,8 @@
                                 </div>
                             </a>
                             <div class="dropdown-menu">
-                                <a class="dropdown-item" href="{{url(session('url').'profile')}}"><i class="far fa-user-circle"></i></i>{{ __('locale.Profile') }}</a>
-                                <a class="dropdown-item" href="{{url(session('url').'logout')}}"><i class="far fa-arrow-alt-circle-left"></i> {{ __('locale.Sign Out') }}</a>
+                                <a class="dropdown-item" href="{{url('profile')}}"><i class="far fa-user-circle"></i></i>{{ __('locale.Profile') }}</a>
+                                <a class="dropdown-item" href="{{url('logout')}}"><i class="far fa-arrow-alt-circle-left"></i> {{ __('locale.Sign Out') }}</a>
                             </div>
                         </li>
                     </ul>

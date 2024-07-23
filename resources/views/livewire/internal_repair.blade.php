@@ -146,13 +146,13 @@
                                                 <td title="{{ $item->id }}">{{ $i + 1 }}</td>
                                                 @if ($order->order_type_id == 1)
 
-                                                    <td><a href="{{url(session('url').'purchase/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                    <td><a href="{{url('purchase/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
                                                 @elseif ($order->order_type_id == 2)
-                                                    <td><a href="{{url(session('url').'rma/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                    <td><a href="{{url('rma/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
                                                 @elseif ($order->order_type_id == 4)
-                                                    <td><a href="{{url(session('url').'order/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                    <td><a href="{{url('order/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
                                                 @elseif ($order->order_type_id == 5)
-                                                    <td><a href="{{url(session('url').'wholesale/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                    <td><a href="{{url('wholesale/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
                                                 @elseif ($order->order_type_id == 3)
                                                     <td>{{ $order->reference_id }}</td>
                                                 @endif
@@ -326,9 +326,9 @@
 
         <div class="d-flex justify-content-between">
             <div>
-                <a href="{{url(session('url').'repair/internal')}}?stock_status=1" class="btn btn-link @if (request('stock_status') == 1) bg-white @endif ">Inventory</a>
-                <a href="{{url(session('url').'repair/internal')}}?stock_status=2" class="btn btn-link @if (request('stock_status') == 2) bg-white @endif ">AfterSale</a>
-                <a href="{{url(session('url').'repair/internal')}}" class="btn btn-link @if (!request('stock_status')) bg-white @endif ">All</a>
+                <a href="{{url('repair/internal')}}?stock_status=1" class="btn btn-link @if (request('stock_status') == 1) bg-white @endif ">Inventory</a>
+                <a href="{{url('repair/internal')}}?stock_status=2" class="btn btn-link @if (request('stock_status') == 2) bg-white @endif ">AfterSale</a>
+                <a href="{{url('repair/internal')}}" class="btn btn-link @if (!request('stock_status')) bg-white @endif ">All</a>
             </div>
             <div class="">
             </div>

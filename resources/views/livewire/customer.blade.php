@@ -89,7 +89,7 @@
             </div>
             <div class="col-md-2 col-sm-6">
                 <button type="submit" class="btn btn-primary">Search</button>
-                <a href="{{url(session('url').'customer')}}" class="btn btn-default">Reset</a>
+                <a href="{{url('customer')}}" class="btn btn-default">Reset</a>
             </div>
 
         </div>

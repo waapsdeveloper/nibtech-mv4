@@ -83,7 +83,7 @@
             </div>
             <div class=" p-2">
                 <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
-                <a href="{{url(session('url').'order')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
+                <a href="{{url('order')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
             </div>
 
             <input type="hidden" name="page" value="{{ Request::get('page') }}">
@@ -268,7 +268,7 @@
                                         {{-- @foreach ($items as $itemIndex => $item) --}}
                                             <tr>
                                                 {{-- <td>{{ $i + 1 }}</td> --}}
-                                                <td><a href="{{url(session('url').'purchase/detail/'.$order->id)}}">{{ $order->reference_id }}</a> {{ $vendors[$order->customer_id] }}</td>
+                                                <td><a href="{{url('purchase/detail/'.$order->id)}}">{{ $order->reference_id }}</a> {{ $vendors[$order->customer_id] }}</td>
                                                 @foreach ($process_types as $type)
                                                     @php
                                                         $t = "total_quantity_".$type->id;
@@ -280,7 +280,7 @@
                                                 <td>
                                                     <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                                     <div class="dropdown-menu">
-                                                        <a class="dropdown-item" href="{{url(session('url').'delete_order') . "/" . $order->id }}"><i class="fe fe-arrows-rotate me-2 "></i>Delete</a>
+                                                        <a class="dropdown-item" href="{{url('delete_order') . "/" . $order->id }}"><i class="fe fe-arrows-rotate me-2 "></i>Delete</a>
                                                     </div>
                                                 </td> --}}
                                             </tr>

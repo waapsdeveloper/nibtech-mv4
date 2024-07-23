@@ -91,7 +91,7 @@
                     </select>
                 </div>
                 <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
-                <a href="{{url(session('url').'inventory')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
+                <a href="{{url('inventory')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
             </div>
 
             <input type="hidden" name="status" value="{{ Request::get('status') }}">
@@ -126,7 +126,7 @@
             function selectBrand(brandId) {
                 // Use the selectedCategoryId variable here to fetch stocks based on both category and brand
                 if (selectedCategoryId !== null) {
-                    fetch("{{ url(session('url').'inventory') }}/get_products?category=" + selectedCategoryId + "&brand=" + brandId)
+                    fetch("{{ url('inventory') }}/get_products?category=" + selectedCategoryId + "&brand=" + brandId)
                         .then(response => response.json())
                         .then(products => {
                             const productMenu = document.getElementById('product-menu');

@@ -71,7 +71,7 @@
             </div>
             <div class=" p-2">
                 <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
-                <a href="{{url(session('url').'product')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
+                <a href="{{url('product')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
             </div>
 
             <input type="hidden" name="page" value="{{ Request::get('page') }}">
@@ -164,7 +164,7 @@
                                         $i = $products->firstItem() - 1;
                                     @endphp
                                     @foreach ($products as $index => $product)
-                                        <form method="post" action="{{url(session('url').'product/update_product')}}/{{ $product->id }}" class="row form-inline">
+                                        <form method="post" action="{{url('product/update_product')}}/{{ $product->id }}" class="row form-inline">
                                             @csrf
                                         <tr>
                                             <td>{{ $i + 1 }}</td>

@@ -92,7 +92,7 @@
                 </div> --}}
                 <div class="">
                     <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
-                    <a href="{{url(session('url').'order')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
+                    <a href="{{url('order')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
                 </div>
             </div>
 
@@ -193,7 +193,7 @@
                                         <form class="form-inline" method="POST" action="{{ url('variation/merge').'/'.$product->id }}" id="merge_{{$product->id}}">
                                             @csrf
                                         </form>
-                                        <form method="post" action="{{url(session('url').'variation/update_product')}}/{{ $product->id }}" class="row form-inline">
+                                        <form method="post" action="{{url('variation/update_product')}}/{{ $product->id }}" class="row form-inline">
                                             @csrf
                                         <tr>
                                             <td title="{{ $product->id }}">{{ $i + 1 }}</td>

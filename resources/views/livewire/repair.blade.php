@@ -61,7 +61,7 @@
             </div>
             <div class=" p-2">
                 <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
-                <a href="{{url(session('url').'repair')}}" class="btn btn-default pd-x-20">Reset</a>
+                <a href="{{url('repair')}}" class="btn btn-default pd-x-20">Reset</a>
             </div>
 
             <input type="hidden" name="page" value="{{ Request::get('page') }}">
@@ -78,10 +78,10 @@
 
         <div class="d-flex justify-content-between">
             <div>
-                <a href="{{url(session('url').'repair')}}?status=1" class="btn btn-link @if (request('status') == 1) bg-white @endif ">Pending</a>
-                <a href="{{url(session('url').'repair')}}?status=2" class="btn btn-link @if (request('status') == 2) bg-white @endif ">Shipped</a>
-                <a href="{{url(session('url').'repair')}}?status=3" class="btn btn-link @if (request('status') == 3) bg-white @endif ">Closed</a>
-                <a href="{{url(session('url').'repair')}}" class="btn btn-link @if (!request('status')) bg-white @endif ">All</a>
+                <a href="{{url('repair')}}?status=1" class="btn btn-link @if (request('status') == 1) bg-white @endif ">Pending</a>
+                <a href="{{url('repair')}}?status=2" class="btn btn-link @if (request('status') == 2) bg-white @endif ">Shipped</a>
+                <a href="{{url('repair')}}?status=3" class="btn btn-link @if (request('status') == 3) bg-white @endif ">Closed</a>
+                <a href="{{url('repair')}}" class="btn btn-link @if (!request('status')) bg-white @endif ">All</a>
             </div>
             <div class="">
             </div>
@@ -173,7 +173,7 @@
                                         {{-- @foreach ($items as $itemIndex => $item) --}}
                                             <tr>
                                                     <td>{{ $i + 1 }}</td>
-                                                    <td><a href="{{url(session('url').'repair/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                    <td><a href="{{url('repair/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
                                                     <td>{{ $repairers[$order->customer_id] ?? null }}</td>
                                                 @if ((!request('status') || request('status') == 3) && session('user')->hasPermission('view_cost'))
                                                 <td>Є{{ number_format($order->process_stocks->sum('price'),2) }}</td>
@@ -185,7 +185,7 @@
                                                 <td>
                                                     <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                                     <div class="dropdown-menu">
-                                                        <a class="dropdown-item" href="{{url(session('url').'delete_repair') . "/" . $order->id }}"><i class="fe fe-arrows-rotate me-2 "></i>Delete</a>
+                                                        <a class="dropdown-item" href="{{url('delete_repair') . "/" . $order->id }}"><i class="fe fe-arrows-rotate me-2 "></i>Delete</a>
                                                     </div>
                                                 </td>
                                             </tr>

@@ -61,7 +61,7 @@
             </div>
             <div class=" p-2">
                 <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
-                <a href="{{url(session('url').'order')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
+                <a href="{{url('order')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
             </div>
 
             <input type="hidden" name="page" value="{{ Request::get('page') }}">
@@ -78,9 +78,9 @@
 
         <div class="d-flex justify-content-between">
             <div>
-                <a href="{{url(session('url').'rma')}}?status=2" class="btn btn-link @if (request('status') == 2) bg-white @endif ">Pending</a>
-                <a href="{{url(session('url').'rma')}}?status=3" class="btn btn-link @if (request('status') == 3) bg-white @endif ">Shipped</a>
-                <a href="{{url(session('url').'rma')}}" class="btn btn-link @if (!request('status')) bg-white @endif ">All</a>
+                <a href="{{url('rma')}}?status=2" class="btn btn-link @if (request('status') == 2) bg-white @endif ">Pending</a>
+                <a href="{{url('rma')}}?status=3" class="btn btn-link @if (request('status') == 3) bg-white @endif ">Shipped</a>
+                <a href="{{url('rma')}}" class="btn btn-link @if (!request('status')) bg-white @endif ">All</a>
             </div>
             <div class="">
             </div>
@@ -172,7 +172,7 @@
                                         {{-- @foreach ($items as $itemIndex => $item) --}}
                                             <tr>
                                                     <td>{{ $i + 1 }}</td>
-                                                    <td><a href="{{url(session('url').'rma/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                    <td><a href="{{url('rma/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
                                                 <td>{{ $vendors[$order->customer_id] }}</td>
                                                 @if (session('user')->hasPermission('view_cost'))
                                                 <td>€{{ number_format($order->order_items->sum('price'),2) }}</td>
@@ -182,7 +182,7 @@
                                                 <td>
                                                     <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                                     <div class="dropdown-menu">
-                                                        <a class="dropdown-item" href="{{url(session('url').'delete_rma') . "/" . $order->id }}"><i class="fe fe-arrows-rotate me-2 "></i>Delete</a>
+                                                        <a class="dropdown-item" href="{{url('delete_rma') . "/" . $order->id }}"><i class="fe fe-arrows-rotate me-2 "></i>Delete</a>
                                                         {{-- <a class="dropdown-item" href="{{ $order->delivery_note_url }}" target="_blank"><i class="fe fe-arrows-rotate me-2 "></i>Delivery Note</a>
                                                         <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a> --}}
                                                         {{-- <a class="dropdown-item" href="javascript:void(0);"><i class="fe fe-trash-2 me-2"></i>Delete</a> --}}

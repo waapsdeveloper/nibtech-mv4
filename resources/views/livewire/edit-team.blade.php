@@ -133,7 +133,7 @@
                                         })
                                         // function togglePermission(roleId, permissionId, isChecked) {
                                         //     // Send AJAX request to server to create or delete role permission
-                                        //     fetch(`{{ url(session('url').'toggle_role_permission') }}/${roleId}/${permissionId}/${isChecked}`, { method: 'POST' })
+                                        //     fetch(`{{ url('toggle_role_permission') }}/${roleId}/${permissionId}/${isChecked}`, { method: 'POST' })
                                         //         // .then(response => response.json())
                                         //         .then(data => {
                                         //             // Update UI based on server response
@@ -148,7 +148,7 @@
                                         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
                                         // Send AJAX request to server to create or delete role permission
-                                        fetch(`{{ url(session('url').'toggle_role_permission') }}/${roleId}/${permissionId}/${isChecked}`, {
+                                        fetch(`{{ url('toggle_role_permission') }}/${roleId}/${permissionId}/${isChecked}`, {
                                             method: 'POST',
                                             headers: {
                                                 // 'Content-Type': 'application/json',
@@ -168,7 +168,7 @@
 
                                         function fetchPermissions() {
                                             var roleId = document.getElementById('role').value;
-                                            fetch(`{{ url(session('url').'get_permissions') }}/${roleId}`)
+                                            fetch(`{{ url('get_permissions') }}/${roleId}`)
                                                 .then(response => response.json())
                                                 .then(data => {
                                                     var permissionsDiv = document.getElementById('permissions');

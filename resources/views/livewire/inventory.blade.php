@@ -102,7 +102,7 @@
                     </select>
                 </div>
                 <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
-                <a href="{{url(session('url').'inventory')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
+                <a href="{{url('inventory')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
             </div>
 
             <input type="hidden" name="replacement" value="{{ Request::get('replacement') }}">
@@ -138,7 +138,7 @@
             function selectBrand(brandId) {
                 // Use the selectedCategoryId variable here to fetch stocks based on both category and brand
                 if (selectedCategoryId !== null) {
-                    fetch("{{ url(session('url').'inventory') }}/get_products?category=" + selectedCategoryId + "&brand=" + brandId)
+                    fetch("{{ url('inventory') }}/get_products?category=" + selectedCategoryId + "&brand=" + brandId)
                         .then(response => response.json())
                         .then(products => {
                             const productMenu = document.getElementById('product-menu');
@@ -208,10 +208,10 @@
         <div class="d-flex justify-content-between">
             <div>
 
-                <a href="{{url(session('url').'inventory')}}?status=3&grade[]=2&grade[]=3&grade[]=5&grade[]=7&grade[]=9" class="btn btn-link">RTG</a>
-                <a href="{{url(session('url').'inventory')}}?status=3" class="btn btn-link">Active</a>
-                <a href="{{url(session('url').'inventory')}}?status=2" class="btn btn-link">Pending</a>
-                <a href="{{url(session('url').'inventory')}}" class="btn btn-link">All</a>
+                <a href="{{url('inventory')}}?status=3&grade[]=2&grade[]=3&grade[]=5&grade[]=7&grade[]=9" class="btn btn-link">RTG</a>
+                <a href="{{url('inventory')}}?status=3" class="btn btn-link">Active</a>
+                <a href="{{url('inventory')}}?status=2" class="btn btn-link">Pending</a>
+                <a href="{{url('inventory')}}" class="btn btn-link">All</a>
             </div>
 
             @if ($active_inventory_verification != null)
@@ -257,7 +257,7 @@
                 @endif
             </div>
         </div>
-        <form id="export" method="POST" target="_blank" action="{{url(session('url').'inventory/export')}}">
+        <form id="export" method="POST" target="_blank" action="{{url('inventory/export')}}">
             @csrf
             <input type="hidden" name="category" value="{{ Request::get('category') }}">
             <input type="hidden" name="brand" value="{{ Request::get('brand') }}">

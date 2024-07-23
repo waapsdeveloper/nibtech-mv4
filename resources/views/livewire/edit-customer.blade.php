@@ -177,7 +177,7 @@
                                                         <strong>{{ $item->variation->sku }}</strong>{{ " - " . $item->variation->product->model . " - " . (isset($item->variation->storage_id)?$item->variation->storage_id->name . " - " : null) . (isset($item->variation->color_id)?$item->variation->color_id->name. " - ":null)}} <strong><u>{{ $item->variation->grade_id->name }}</u></strong>
                                                     @endif
                                                     @if ($order->delivery_note_url == null || $order->label_url == null)
-                                                        <a class="" href="{{url(session('url').'order')}}/label/{{ $order->reference_id }}">
+                                                        <a class="" href="{{url('order')}}/label/{{ $order->reference_id }}">
                                                         @if ($order->delivery_note_url == null)
                                                             <strong class="text-danger">Missing Delivery Note</strong>
                                                         @endif
@@ -211,7 +211,7 @@
 
 
                                                             <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
-                                                            <a class="dropdown-item" href="{{url(session('url').'order')}}/refresh/{{ $order->reference_id }}"><i class="fe fe-arrows-rotate me-2 "></i>Refresh</a>
+                                                            <a class="dropdown-item" href="{{url('order')}}/refresh/{{ $order->reference_id }}"><i class="fe fe-arrows-rotate me-2 "></i>Refresh</a>
                                                         @endif
                                                     @endif
                                                     @isset($item->stock->imei) {{ $item->stock->imei }}&nbsp; @endisset
@@ -221,7 +221,7 @@
                                                     @isset($item->stock->tester) ({{ $item->stock->tester }}) @endisset
                                                     @if ($item->status == 2)
                                                         @if (count($items) < 2 && $item->quantity < 2)
-                                                            <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url(session('url').'order')}}/dispatch/{{ $order->id }}">
+                                                            <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url('order')}}/dispatch/{{ $order->id }}">
                                                                 @csrf
                                                                 <div class="input-group">
                                                                     <input type="text" name="tester[]" placeholder="Tester" class="form-control form-control-sm" style="max-width: 50px">
@@ -237,7 +237,7 @@
                                                             </form>
                                                         @elseif (count($items) < 2 && $item->quantity >= 2)
 
-                                                            <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url(session('url').'order')}}/dispatch/{{ $order->id }}">
+                                                            <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url('order')}}/dispatch/{{ $order->id }}">
                                                                 @csrf
                                                                 @for ($in = 1; $in <= $item->quantity; $in ++)
 
@@ -252,7 +252,7 @@
                                                                 </div>
                                                             </form>
                                                         @elseif (count($items) >= 2 && $item->quantity == 1)
-                                                            <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url(session('url').'order')}}/dispatch/{{ $order->id }}">
+                                                            <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url('order')}}/dispatch/{{ $order->id }}">
                                                                 @csrf
                                                                 @for ($in = 1; $in <= count($items); $in ++)
 
@@ -274,10 +274,10 @@
                                                 <td>
                                                     <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                                     <div class="dropdown-menu">
-                                                        <a class="dropdown-item" href="{{url(session('url').'order')}}/refresh/{{ $order->reference_id }}">Refresh</a>
+                                                        <a class="dropdown-item" href="{{url('order')}}/refresh/{{ $order->reference_id }}">Refresh</a>
                                                         @if ($order->status == 3)
 
-                                                        <a class="dropdown-item" href="{{url(session('url').'order')}}/recheck/{{ $order->reference_id }}/true" target="_blank">Invoice</a>
+                                                        <a class="dropdown-item" href="{{url('order')}}/recheck/{{ $order->reference_id }}/true" target="_blank">Invoice</a>
                                                         @endif
                                                         <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank">View in Backmarket</a>
                                                     </div>

@@ -1364,7 +1364,7 @@ class Order extends Component
         // $order = Order_model::find($order->id);
         if(!isset($detail)){
 
-            $invoice_url = url(session('url').'export_invoice').'/'.$id;
+            $invoice_url = url('export_invoice').'/'.$id;
             // JavaScript to open two tabs and print
             echo '<script>
             var newTab1 = window.open("'.$order->delivery_note_url.'", "_blank");
@@ -1414,7 +1414,7 @@ class Order extends Component
             </script>';
         }else{
 
-            $invoice_url = url(session('url').'export_invoice').'/'.$id;
+            $invoice_url = url('export_invoice').'/'.$id;
             // JavaScript to open two tabs and print
             echo '<script>
             var newTab1 = window.open("'.$order->delivery_note_url.'", "_blank");
@@ -1629,7 +1629,7 @@ class Order extends Component
         $order = Order_model::find($order->id);
         if(!isset($detail)){
 
-            $invoice_url = url(session('url').'export_invoice').'/'.$id;
+            $invoice_url = url('export_invoice').'/'.$id;
             // JavaScript to open two tabs and print
             echo '<script>
             var newTab1 = window.open("'.$order->delivery_note_url.'", "_blank");
@@ -1676,7 +1676,7 @@ class Order extends Component
             </script>';
         }else{
 
-            $invoice_url = url(session('url').'export_invoice').'/'.$id;
+            $invoice_url = url('export_invoice').'/'.$id;
             // JavaScript to open two tabs and print
             echo '<script>
             var newTab1 = window.open("'.$order->delivery_note_url.'", "_blank");
@@ -1995,7 +1995,7 @@ class Order extends Component
             if($refresh == true){
                 $order = Order_model::where('reference_id',$order_id)->first();
 
-                $invoice_url = url(session('url').'export_invoice').'/'.$order->id;
+                $invoice_url = url('export_invoice').'/'.$order->id;
                 // JavaScript to open two tabs and print
                 echo '<script>
                 var newTab2 = window.open("'.$invoice_url.'", "_blank");
@@ -2100,7 +2100,7 @@ class Order extends Component
         if($page == 1){
             for($i = 1; $i <= 10; $i++){
                 $j = $i*20;
-                echo $url = url(session('url').'refresh_order').'/'.$j;
+                echo $url = url('refresh_order').'/'.$j;
                 echo '<script>
                 var newTab1 = window.open("'.$url.'", "_blank");
                 </script>';

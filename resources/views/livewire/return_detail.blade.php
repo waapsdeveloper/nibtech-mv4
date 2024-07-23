@@ -318,13 +318,13 @@
                                                 <td title="{{ $item->id }}">{{ $i + 1 }}</td>
                                                 @if ($order->order_type_id == 1)
 
-                                                    <td><a href="{{url(session('url').'purchase/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                    <td><a href="{{url('purchase/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
                                                 @elseif ($order->order_type_id == 2)
-                                                    <td><a href="{{url(session('url').'rma/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                    <td><a href="{{url('rma/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
                                                 @elseif ($order->order_type_id == 4)
-                                                    <td><a href="{{url(session('url').'return/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                    <td><a href="{{url('return/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
                                                 @elseif ($order->order_type_id == 5)
-                                                    <td><a href="{{url(session('url').'wholesale/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                    <td><a href="{{url('wholesale/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
                                                 @elseif ($order->order_type_id == 3)
                                                     <td>{{ $order->reference_id }}</td>
                                                 @endif
@@ -645,7 +645,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {{-- <form method="POST" action="{{url(session('url').'return')}}/update_prices" id="update_prices_{{ $variation->id }}"> --}}
+                                    {{-- <form method="POST" action="{{url('return')}}/update_prices" id="update_prices_{{ $variation->id }}"> --}}
                                         @csrf
                                     @php
                                         $i = 0;
