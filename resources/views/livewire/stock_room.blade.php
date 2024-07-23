@@ -165,14 +165,14 @@
                                         @if (session('user')->hasPermission('view_cost'))
                                         <td>{{ $stock->order->currency_id->sign ?? null }}{{$stock->purchase_item->price ?? null }}</td>
                                         @endif
-                                        <td>{{ $stock->updated_at }}</td>
+                                        <td>{{ $stock_r->exit_at }}</td>
                                         @if ($stock->latest_operation)
                                         <td>{{ $stock->latest_operation->admin->first_name ?? null }}</td>
                                         <td>
-                                            {{ $stock->latest_operation->description }}
+                                            {{ $stock_r->latest_operation->description }}
                                         </td>
                                         @else
-                                        <td>{{ $stock->admin->first_name ?? null }}</td>
+                                        <td>{{ $stock_r->admin->first_name ?? null }}</td>
 
                                         @endif
                                     </tr>

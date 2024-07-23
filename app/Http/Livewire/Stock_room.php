@@ -15,7 +15,7 @@ use App\Models\Stock_operations_model;
 use App\Models\Storage_model;
 use App\Models\Variation_model;
 use Carbon\Carbon;
-
+use Illuminate\Support\Facades\DB;
 
 class Stock_room extends Component
 {
@@ -42,8 +42,21 @@ class Stock_room extends Component
         }else{
             $per_page = 10;
         }
+        if($user->hasPermission('view_all_stock_movements')){
+            // $data['stock_count'] = Stock_movement_model::where(['received_at'=>null])->select('admin_id', 'COUNT(*) as count')->pluck('count', 'admin_id');
 
-        $data['stock_count'] = Stock_movement_model::where(['admin_id'=>$user_id, 'received_at'=>null])->count();
+            $data['stock_count'] = Stock_movement_model::whereNull('received_at')
+            ->with('admin:id,first_name') // Load the related admin with only 'id' and 'first_name' fields
+            ->select('admin_id', DB::raw('COUNT(*) as count'))
+            ->groupBy('admin_id')
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return [$item->admin->first_name => $item->count];
+            });
+        }else{
+            $data['stock_count'] = Stock_movement_model::where(['admin_id'=>$user_id, 'received_at'=>null])->count();
+
+        }
 
         if(request('show') == 1){
             $data['stocks'] = Stock_movement_model::where(['admin_id'=>$user_id, 'received_at'=>null])
