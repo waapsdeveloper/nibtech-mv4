@@ -40,7 +40,7 @@ class Stock_room extends Component
         $data['stock_count'] = Stock_movement_model::where(['admin_id'=>$user_id, 'received_at'=>null])->count();
 
         if(request('show') == 1){
-            $data['stock_count'] = Stock_movement_model::where(['admin_id'=>$user_id, 'received_at'=>null])->get();
+            $data['stocks'] = Stock_movement_model::where(['admin_id'=>$user_id, 'received_at'=>null])->get();
             
         }
 

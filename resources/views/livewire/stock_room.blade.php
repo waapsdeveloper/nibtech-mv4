@@ -54,7 +54,7 @@
                 </form>
             </div>
             <h6>
-                Current Count: {{ $stock_count }}
+                <a href="{{url('stock_room')}}?show=1"> Count: {{ $stock_count }} </a>
             </h6>
             <script>
 
@@ -96,6 +96,97 @@
         @php
         session()->forget('error');
         @endphp
+        @endif
+
+        @if (isset($stock))
+        <div>
+            <div class="card">
+                <div class="card-header pb-0">
+                    <div class="d-flex justify-content-between">
+                        <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$stocks->firstItem()}} {{ __('locale.To') }} {{$stocks->lastItem()}} {{ __('locale.Out Of') }} {{$stocks->total()}} </h5>
+
+                        <div class=" mg-b-0">
+                            <form method="get" action="" class="row form-inline">
+                                <label for="perPage" class="card-title inline">per page:</label>
+                                <select name="per_page" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
+                                    <option value="10" {{ Request::get('per_page') == 10 ? 'selected' : '' }}>10</option>
+                                    <option value="20" {{ Request::get('per_page') == 20 ? 'selected' : '' }}>20</option>
+                                    <option value="50" {{ Request::get('per_page') == 50 ? 'selected' : '' }}>50</option>
+                                    <option value="100" {{ Request::get('per_page') == 100 ? 'selected' : '' }}>100</option>
+                                </select>
+                                <input type="hidden" name="show" value="1">
+                            </form>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="card-body"><div class="table-responsive">
+
+
+
+                        <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                            <thead>
+                                <tr>
+                                    <th><small><b>No</b></small></th>
+                                    <th><small><b>Product</b></small></th>
+                                    <th><small><b>IMEI / Serial Number</b></small></th>
+                                    <th><small><b>Vendor</b></small></th>
+                                    <th><small><b>Reference</b></small></th>
+                                    @if (session('user')->hasPermission('view_cost'))
+                                    <th><small><b>Cost</b></small></th>
+                                    @endif
+                                    <th><small><b>Datetime</b></small></th>
+                                    <th><small><b>Added By</b></small></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php
+                                    $i = $stocks->firstItem() - 1;
+                                @endphp
+                                @foreach ($stocks as $index => $stock)
+                                    <tr>
+                                        <td title="{{ $stock->id }}">{{ $i + 1 }}</td>
+                                        <td><a title="Filter this variation" href="{{url('inventory').'?product='.$stock->variation->product_id.'&storage='.$stock->variation->storage.'&grade[]='.$stock->variation->grade}}">{{ $stock->variation->product->model . " " . (isset($stock->variation->storage) ? $storages[$stock->variation->storage] . " " : null) . " " .
+                                        (isset($stock->variation->color) ? $colors[$stock->variation->color] . " " : null) . $grades[$stock->variation->grade] }} </a></td>
+                                        <td><a title="{{$stock->id}} | Search Serial" href="{{url('imei')."?imei=".$stock->imei.$stock->serial_number}}" target="_blank"> {{$stock->imei.$stock->serial_number }} </a></td>
+                                        <td><a title="Vendor Profile" href="{{url('edit-customer').'/'.$stock->order->customer_id}}" target="_blank"> {{ $stock->order->customer->first_name ?? null}} </a></td>
+                                        <td>
+                                            <a title="Purchase Order Details" href="{{url('purchase/detail').'/'.$stock->order_id}}?status=1" target="_blank"> {{ $stock->order->reference_id }} </a>
+                                            @if ($stock->latest_return)
+                                                &nbsp;<a title="Sales Return Details" href="{{url('return/detail').'/'.$stock->latest_return->order->id}}" target="_blank"> {{ $stock->latest_return->order->reference_id }} </a>
+                                            @endif
+                                            @if ($stock->latest_verification)
+                                                &nbsp; {{ $stock->latest_verification->process->reference_id }}
+                                            @endif
+                                        </td>
+                                        @if (session('user')->hasPermission('view_cost'))
+                                        <td>{{ $stock->order->currency_id->sign ?? null }}{{$stock->purchase_item->price ?? null }}</td>
+                                        @endif
+                                        <td>{{ $stock->updated_at }}</td>
+                                        @if ($stock->latest_operation)
+                                        <td>{{ $stock->latest_operation->admin->first_name ?? null }}</td>
+                                        <td>
+                                            {{ $stock->latest_operation->description }}
+                                        </td>
+                                        @else
+                                        <td>{{ $stock->admin->first_name ?? null }}</td>
+
+                                        @endif
+                                    </tr>
+
+                                    @php
+                                        $i ++;
+                                    @endphp
+                                @endforeach
+                            </tbody>
+                        </table>
+                    <br>
+                    {{ $stocks->onEachSide(1)->links() }} {{ __('locale.From') }} {{$stocks->firstItem()}} {{ __('locale.To') }} {{$stocks->lastItem()}} {{ __('locale.Out Of') }} {{$stocks->total()}}
+                </div>
+
+                </div>
+            </div>
+        </div>
         @endif
         {{-- @if (isset($stock))
 
