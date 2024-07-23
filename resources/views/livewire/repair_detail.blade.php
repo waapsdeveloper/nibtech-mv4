@@ -31,6 +31,19 @@
                 <form class="form-inline" method="POST" action="{{url('repair/ship').'/'.$process->id}}">
                     @csrf
                     <div class="form-floating">
+                        <input type="text" list="currencies" id="currency" name="currency" class="form-control" value="{{$process->currency_id->code}}">
+                        <datalist id="currencies">
+                            @foreach ($exchange_rates as $target_currency => $rate)
+                                <option value="{{$target_currency}}" data-rate="{{$rate}}"></option>
+                            @endforeach
+                        </datalist>
+                        <label for="currency">Currency</label>
+                    </div>
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="rate" name="rate" placeholder="Enter Exchange Rate" value="{{$process->exchange_rate}}" >
+                        <label for="rate">Exchange Rate</label>
+                    </div>
+                    <div class="form-floating">
                         <input type="text" class="form-control" id="tracking_number" name="tracking_number" placeholder="Enter Tracking Number" required>
                         <label for="tracking_number">Tracking Number</label>
                     </div>
@@ -104,6 +117,10 @@
                 </form>
                 <a href="{{url('repair_email')}}/{{ $process->id }}" target="_blank"><button class="btn-sm btn-secondary">Send Email</button></a>
                 <a href="{{url('export_repair_invoice')}}/{{ $process->id }}" target="_blank"><button class="btn-sm btn-secondary">Invoice</button></a>
+                @if ($process->exchange_rate != null)
+                <a href="{{url('export_repair_invoice')}}/{{ $process->id }}/1" target="_blank"><button class="btn-sm btn-secondary">{{$process->currency_id->sign}} Invoice</button></a>
+
+                @endif
 
                 <div class="btn-group p-1" role="group">
                     <button type="button" class="btn-sm btn-secondary dropdown-toggle" id="pack_sheet" data-bs-toggle="dropdown" aria-expanded="false">

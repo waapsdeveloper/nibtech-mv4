@@ -24,6 +24,7 @@ use Maatwebsite\Excel\Facades\Excel;
     use TCPDF;
     use App\Mail\InvoiceMail;
 use App\Models\Color_model;
+use App\Models\ExchangeRate;
 use App\Models\Grade_model;
 use App\Models\Order_issue_model;
 use App\Models\Process_model;
@@ -161,6 +162,7 @@ class Repair extends Component
 
         $data['title_page'] = "Repair Detail";
         // $data['imeis'] = Stock_model::whereIn('status',[1,3])->orderBy('serial_number','asc')->orderBy('imei','asc')->get();
+        $data['exchange_rates'] = ExchangeRate::pluck('rate','target_currency');
         $data['storages'] = Storage_model::pluck('name','id');
         $data['products'] = Products_model::pluck('model','id');
         $data['grades'] = Grade_model::pluck('name','id');
@@ -585,7 +587,7 @@ class Repair extends Component
     }
 
 
-    public function export_repair_invoice($process_id)
+    public function export_repair_invoice($process_id, $invoice = null)
     {
 
         // Find the order
@@ -620,7 +622,8 @@ class Repair extends Component
         $data = [
             'process' => $process,
             'customer' => $process->customer,
-            'process_stocks' =>$process_stocks
+            'process_stocks' =>$process_stocks,
+            'invoice' => $invoice
         ];
         $data['storages'] = Storage_model::pluck('name','id');
         $data['grades'] = Grade_model::pluck('name','id');

@@ -22,7 +22,7 @@ class Process_model extends Model
         // 'old_variation_id',
         // 'new_variation_id',
         // 'given_by_id',
-        // 'taken_by_id',
+        'exchange_rate',
         'process_type_id',
         // 'grade',
         'description',

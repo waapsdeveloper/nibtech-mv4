@@ -187,9 +187,19 @@
                         @endphp
                         <tr>
                             <td width="320">{{ $item->model . " - " . $storage . $color . $grades[$item->grade] }}</td>
-                            <td width="80" align="right">{{ $process->currency_id->sign }}{{ number_format($item->average_price,2) }}</td>
+                            @if ($invoice != 1)
+                            <td width="80" align="right">€{{ number_format($item->average_price,2) }}</td>
+                            @else
+                            <td width="80" align="right">{{ $process->currency_id->sign }}{{ number_format($item->average_price*$process->exchange_rate,2) }}</td>
+                            @endif
+                            {{-- <td width="80" align="right">{{ $process->currency_id->sign }}{{ number_format($item->average_price,2) }}</td> --}}
                             <td width="40">{{ $item->total_quantity }}</td>
-                            <td width="90" align="right">{{ $process->currency_id->sign }}{{ number_format($item->total_price,2) }}</td>
+                            @if ($invoice != 1)
+                            <td width="90" align="right">€{{ number_format($item->total_price,2) }}</td>
+                            @else
+                            <td width="90" align="right">{{ $process->currency_id->sign }}{{ number_format($item->total_price*$process->exchange_rate,2) }}</td>
+                            @endif
+                            {{-- <td width="90" align="right">{{ $process->currency_id->sign }}{{ number_format($item->total_price,2) }}</td> --}}
                         </tr>
                     @endforeach
                         {{-- <tr>
@@ -208,7 +218,12 @@
                                 <tr>
                                     <td>Sub Total:</td>
                                     {{-- <td>{{$totalQty}}</td> --}}
-                                    <td align="right"> <strong>{{ $process->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td>
+                                    {{-- <td align="right"> <strong>{{ $process->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td> --}}
+                                    @if ($invoice != 1)
+                                    <td align="right"> <strong> €{{number_format( $totalAmount,2) }}</strong></td>
+                                    @else
+                                    <td align="right"> <strong>{{ $process->currency_id->sign }}{{number_format( $totalAmount*$process->exchange_rate,2) }}</strong></td>
+                                    @endif
                                 </tr>
                                 <tr>
                                     <td>Qty:</td>
@@ -218,7 +233,11 @@
                                     <hr>
                                     <tr>
                                         <td>Amount Due:</td>
-                                        <td align="right"> <strong>{{ $process->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td>
+                                        @if ($invoice != 1)
+                                        <td align="right"> <strong> €{{number_format( $totalAmount,2) }}</strong></td>
+                                        @else
+                                        <td align="right"> <strong>{{ $process->currency_id->sign }}{{number_format( $totalAmount*$process->exchange_rate,2) }}</strong></td>
+                                        {{-- <td align="right"> <strong>{{ $process->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td> --}}
                                     </tr>
                                     {{-- <tr>
                                         <td>Back Market:</td>
