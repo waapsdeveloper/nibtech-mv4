@@ -14,7 +14,6 @@ use App\Http\Livewire\Grade;
 use App\Http\Livewire\IMEI;
 use App\Http\Livewire\Index;
 use App\Http\Livewire\Profile;
-use App\Http\Livewire\Searching;
 use App\Http\Livewire\Signin;
 use App\Http\Livewire\Order;
 use App\Http\Livewire\Wholesale;
@@ -24,7 +23,6 @@ use App\Http\Livewire\Listing;
 use App\Http\Livewire\Product;
 use App\Http\Livewire\Variation;
 use App\Http\Livewire\Process;
-use App\Http\Livewire\Payouts;
 use App\Http\Livewire\Logout;
 use App\Http\Livewire\MoveInventory;
 use App\Http\Livewire\Repair;
@@ -33,11 +31,11 @@ use App\Http\Livewire\RMA;
 use App\Http\Livewire\SalesReturn;
 use App\Http\Livewire\Team;
 use App\Http\Livewire\Testing;
+use App\Http\Controllers\ExchangeRateController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Middleware\GetAllowedRoutesMiddleware;
+use App\Http\Controllers\TwoFactorController;
 
-use App\Models\Routes_model;
-use Livewire\Commands\MoveCommand;
+use App\Http\Controllers\GoogleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -64,6 +62,15 @@ Route::post('profile', Profile::class)->name('profile');
 Route::get('signin', Signin::class)->name('login');
 Route::post('login', [Signin::class,'login'])->name('signin');
 Route::get('logout', Logout::class)->name('signin');
+
+Route::group(['middleware' => ['auth']], function () {
+    Route::get('/2fa', [TwoFactorController::class, 'show2faForm'])->name('2fa.form');
+    Route::post('/2fa', [TwoFactorController::class, 'verify2fa'])->name('2fa.verify');
+    Route::post('/2fa/setup', [TwoFactorController::class, 'setup2fa'])->name('2fa.setup');
+});
+
+
+Route::middleware(['auth', '2fa'])->group(function () {
 
 Route::get('purchase', [Order::class,'purchase'])->name('view_purchase');
 Route::post('add_purchase', [Order::class,'add_purchase'])->name('add_purchase');
@@ -233,11 +240,11 @@ Route::post('QomeBa27WU', [Change::class,'reset_page'])->name('profile');
 Route::post('reset', [Change::class,'reset_pass'])->name('profile');
 
 
-use App\Http\Controllers\GoogleController;
 
 Route::get('oauth2/google', [GoogleController::class, 'redirectToGoogle'])->name('google.auth');
 Route::get('oauth2/callback', [GoogleController::class, 'handleGoogleCallback'])->name('google.callback');
 
-use App\Http\Controllers\ExchangeRateController;
 
 Route::get('/exchange-rates', [ExchangeRateController::class, 'index']);
+
+});

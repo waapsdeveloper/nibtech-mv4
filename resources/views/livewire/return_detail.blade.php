@@ -276,16 +276,13 @@
                                         </div>
 
                                         <input type="hidden" name="imei" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset">
-                                        <button class="btn btn-secondary pd-x-20" name="grade" value="8" type="submit">return</button>
+                                        <button class="btn btn-secondary pd-x-20" name="grade" value="8" type="submit">Repair</button>
                                         <button class="btn btn-secondary pd-x-20" name="grade" value="12" type="submit">Hold</button>
                                     </form>
                                 @endif
                             </div>
                             <div>
 
-                                @if (session('user')->hasPermission('add_refund_items') && isset($restock))
-                                <a class="btn btn-primary" id="replacement" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $restock['reference_id'] }}" data-bs-item="{{ $restock['linked_id'] }}"> Replacement </a>
-                                @endif
                             </div>
 
                         </div>
