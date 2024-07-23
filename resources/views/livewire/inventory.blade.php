@@ -103,6 +103,7 @@
                 </div>
                 <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
                 <a href="{{url('inventory')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
+                <button class="btn btn-primary pd-x-20" name="verify" value="1" type="submit">Verify</button>
             </div>
 
             <input type="hidden" name="replacement" value="{{ Request::get('replacement') }}">
