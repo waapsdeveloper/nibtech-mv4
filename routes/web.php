@@ -33,6 +33,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TwoFactorController;
 
 use App\Http\Controllers\GoogleController;
+use App\Http\Livewire\Stock_room;
 
 /*
 |--------------------------------------------------------------------------
@@ -140,6 +141,11 @@ Route::get('rma/revert_status/{id}', [RMA::class,'rma_revert_status'])->name('rm
 
 Route::get('imei', IMEI::class)->name('view_imei');
 Route::post('imei/refund/{id}', [IMEI::class,'refund'])->name('refund_imei');
+
+Route::get('stock_room', Stock_room::class)->name('view_stock_room');
+Route::post('stock_room/exit', [Stock_room::class,'exit'])->name('exit_stock');
+Route::post('stock_room/receive', [Stock_room::class,'receive'])->name('receive_stock');
+
 
 Route::get('issue', Issue::class)->name('view_issue');
 
