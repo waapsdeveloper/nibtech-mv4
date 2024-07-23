@@ -595,15 +595,19 @@ class Repair extends Component
             join('stock', 'process_stock.stock_id', '=', 'stock.id')
             ->join('variation', 'stock.variation_id', '=', 'variation.id')
             ->join('products', 'variation.product_id', '=', 'products.id')
+            ->leftJoin('order_items as purchase_item', function ($join) {
+                $join->on('stock.id', '=', 'purchase_item.stock_id')
+                    ->whereRaw('purchase_item.order_id = stock.order_id');
+            })
             ->select(
                 'variation.id as variation_id',
                 'products.model',
                 'variation.color',
                 'variation.storage',
                 'variation.grade',
-                DB::raw('AVG(process_stock.price) as average_price'),
+                DB::raw('AVG(purchase_item.price) as average_price'),
                 DB::raw('COUNT(process_stock.id) as total_quantity'),
-                DB::raw('SUM(process_stock.price) as total_price')
+                DB::raw('SUM(purchase_item.price) as total_price')
             )
             ->where('process_stock.process_id',$process_id)
             ->where('process_stock.deleted_at',null)
