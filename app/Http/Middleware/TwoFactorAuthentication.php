@@ -9,7 +9,9 @@ class TwoFactorAuthentication
 {
     public function handle($request, Closure $next)
     {
-        if (Auth::check() && !session('2fa') && !in_array($request->route()->getName(), ['2fa.form', '2fa.verify', '2fa.setup', 'logout'])) {
+        $user = Auth::user();
+
+        if ($user->google2fa_enabled && !$request->session()->has('2fa_passed')) {
             return redirect()->route('2fa.form');
         }
 

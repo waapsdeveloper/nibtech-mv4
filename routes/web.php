@@ -1,11 +1,8 @@
 <?php
 
-use App\Http\Controllers\LanguageController;
-use App\Http\Controllers\TestingController;
 use App\Http\Livewire\Change;
 use App\Http\Livewire\Charge;
 use App\Http\Livewire\Customer;
-use App\Http\Livewire\Emptypage;
 use App\Http\Livewire\Error404;
 use App\Http\Livewire\Error500;
 use App\Http\Livewire\Error501;
@@ -33,7 +30,7 @@ use App\Http\Livewire\Team;
 use App\Http\Livewire\Testing;
 use App\Http\Controllers\ExchangeRateController;
 use Illuminate\Support\Facades\Route;
-// use App\Http\Controllers\TwoFactorController;
+use App\Http\Controllers\TwoFactorController;
 
 use App\Http\Controllers\GoogleController;
 
@@ -63,12 +60,13 @@ Route::get('signin', Signin::class)->name('login');
 Route::post('login', [Signin::class,'login'])->name('signin');
 Route::get('logout', Logout::class)->name('signin');
 
-// Route::group(['middleware' => ['auth']], function () {
+// Route::middleware('auth')->group(function () {
 //     Route::get('/2fa', [TwoFactorController::class, 'show2faForm'])->name('2fa.form');
-//     Route::post('/2fa', [TwoFactorController::class, 'verify2fa'])->name('2fa.verify');
 //     Route::post('/2fa/setup', [TwoFactorController::class, 'setup2fa'])->name('2fa.setup');
+//     Route::post('/2fa', [TwoFactorController::class, 'verify2fa'])->name('2fa.verify');
 // });
-
+// Route::get('/2fa', 'TwoFactorController@show')->name('2fa');
+// Route::post('/2fa', 'TwoFactorController@verify')->name('2fa.verify');
 
 // Route::middleware(['auth', '2fa'])->group(function () {
 

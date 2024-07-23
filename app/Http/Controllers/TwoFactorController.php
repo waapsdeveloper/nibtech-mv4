@@ -1,66 +1,115 @@
 <?php
 
-// namespace App\Http\Controllers;
+// TwoFactorController.php
+namespace App\Http\Controllers;
 
-// use Illuminate\Http\Request;
-// use PragmaRX\Google2FA\Google2FA;
-// use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use PragmaRX\Google2FALaravel\Support\Google2FA;
+use Auth;
+use Validator;
+use Illuminate\Validation\ValidationException;
 
-// class TwoFactorController extends Controller
-// {
-//     public function show2faForm(Request $request)
-//     {
-//         $google2fa = new Google2FA();
-//         $user = Auth::user();
-//         $secret = $google2fa->generateSecretKey();
-//         $inlineUrl = $google2fa->getQRCodeInline(
-//             config('app.name'),
-//             $user->email,
-//             $secret
-//         );
 
-//         return view('auth.2fa', ['inlineUrl' => $inlineUrl, 'secret' => $secret]);
-//     }
+class TwoFactorController extends Controller
+{
+    
+public function show(Request $request)
+{
+    return view('auth.2fa');
+}
 
-//     public function setup2fa(Request $request)
-//     {
-//         $request->validate([
-//             'secret' => 'required|string',
-//             'one_time_password' => 'required|string',
-//         ]);
+public function verify(Request $request)
+{
+    $request->validate([
+        'one_time_password' => 'required|string',
+    ]);
 
-//         $google2fa = new Google2FA();
+    $user_id = $request->session()->get('2fa:user:id');
+    $remember = $request->session()->get('2fa:auth:remember', false);
+    $attempt = $request->session()->get('2fa:auth:attempt', false);
 
-//         $user = Auth::user();
-//         $valid = $google2fa->verifyKey($request->secret, $request->one_time_password);
+    if (!$user_id || !$attempt) {
+        return redirect()->route('login');
+    }
 
-//         if ($valid) {
-//             $user->google2fa_secret = $request->secret;
-//             $user->save();
+    $user = User::find($user_id);
 
-//             return redirect('/home')->with('success', '2FA is enabled successfully.');
-//         }
+    if (!$user || !$user->uses_two_factor_auth) {
+        return redirect()->route('login');
+    }
 
-//         return redirect()->back()->with('error', 'Invalid OTP.');
-//     }
+    $google2fa = new Google2FA();
+    $otp_secret = $user->google2fa_secret;
 
-//     public function verify2fa(Request $request)
-//     {
-//         $request->validate([
-//             'one_time_password' => 'required|string',
-//         ]);
+    if (!$google2fa->verifyKey($otp_secret, $request->one_time_password)) {
+        throw ValidationException::withMessages([
+          'one_time_password' => [__('The one time password is invalid.')],
+        ]);
+    }
 
-//         $google2fa = new Google2FA();
-//         $user = Auth::user();
-//         $secret = $user->google2fa_secret;
+    $guard = config('auth.defaults.guard');
+    $credentials = [$user->getAuthIdentifierName() => $user->getAuthIdentifier(), 'password' => $user->getAuthPassword()];
+    
+    if ($remember) {
+        $guard = config('auth.defaults.remember_me_guard', $guard);
+    }
+    
+    if ($attempt) {
+        $guard = config('auth.defaults.attempt_guard', $guard);
+    }
+    
+    if (Auth::guard($guard)->attempt($credentials, $remember)) {
+        $request->session()->remove('2fa:user:id');
+        $request->session()->remove('2fa:auth:remember');
+        $request->session()->remove('2fa:auth:attempt');
+    
+        return redirect()->intended('/');
+    }
+    
+    return redirect()->route('login')->withErrors([
+        'password' => __('The provided credentials are incorrect.'),
+    ]);
+}
+    public function show2faForm(Request $request)
+    {
+        $user = Auth::user();
+        $google2fa_url = "";
 
-//         $valid = $google2fa->verifyKey($secret, $request->one_time_password);
+        if ($user->google2fa_secret) {
+            $google2fa = app('pragmarx.google2fa');
+            $google2fa_url = $google2fa->getQRCodeInline(
+                config('app.name'),
+                $user->email,
+                $user->google2fa_secret
+            );
+        }
 
-//         if ($valid) {
-//             session(['2fa' => true]);
-//             return redirect('/home');
-//         }
+        return view('auth.2fa', ['user' => $user, 'google2fa_url' => $google2fa_url]);
+    }
 
-//         return redirect()->back()->with('error', 'Invalid OTP.');
-//     }
-// }
+    public function setup2fa(Request $request)
+    {
+        $user = Auth::user();
+        $google2fa = app('pragmarx.google2fa');
+        $user->google2fa_secret = $google2fa->generateSecretKey();
+        $user->save();
+
+        return redirect()->route('2fa.form');
+    }
+
+    public function verify2fa(Request $request)
+    {
+        $user = Auth::user();
+        $google2fa = app('pragmarx.google2fa');
+        $valid = $google2fa->verifyKey($user->google2fa_secret, $request->one_time_password);
+
+        if ($valid) {
+            $user->google2fa_enabled = true;
+            $user->save();
+
+            return redirect()->route('home');
+        } else {
+            return redirect()->route('2fa.form')->withErrors(['Invalid OTP']);
+        }
+    }
+}
