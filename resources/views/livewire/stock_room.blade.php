@@ -42,6 +42,7 @@
 
             <div class="p-2">
                 <form action="{{ url('stock_room/exit')}}" method="POST" id="search" class="form-inline">
+                    @csrf
                     <div class="form-floating">
                         <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" id="imeiInput" onload="this.focus()" autofocus>
                         <label for="">IMEI</label>
