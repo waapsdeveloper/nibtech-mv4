@@ -70,7 +70,7 @@ Route::group(['middleware' => ['auth']], function () {
 });
 
 
-Route::middleware(['auth', '2fa'])->group(function () {
+// Route::middleware(['auth', '2fa'])->group(function () {
 
 Route::get('purchase', [Order::class,'purchase'])->name('view_purchase');
 Route::post('add_purchase', [Order::class,'add_purchase'])->name('add_purchase');
@@ -247,4 +247,4 @@ Route::get('oauth2/callback', [GoogleController::class, 'handleGoogleCallback'])
 
 Route::get('/exchange-rates', [ExchangeRateController::class, 'index']);
 
-});
+// });
