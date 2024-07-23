@@ -127,7 +127,7 @@
                                                     $i = 0;
                                                 @endphp
                                                 @foreach ($variations as $index => $product)
-                                                    <form method="post" action="{{url(session('url').'variation/update_product')}}/{{ $product->id }}" class="row form-inline">
+                                                    <form method="post" action="{{url('variation/update_product')}}/{{ $product->id }}" class="row form-inline">
                                                         @csrf
                                                     <tr>
                                                         <td>{{ $i + 1 }}</td>
@@ -282,10 +282,10 @@
                                                             <td>
                                                                 <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                                                 <div class="dropdown-menu">
-                                                                    {{-- <a class="dropdown-item" href="{{url(session('url').'order')}}/refresh/{{ $order->reference_id }}"><i class="fe fe-arrows-rotate me-2 "></i>Refresh</a> --}}
+                                                                    {{-- <a class="dropdown-item" href="{{url('order')}}/refresh/{{ $order->reference_id }}"><i class="fe fe-arrows-rotate me-2 "></i>Refresh</a> --}}
                                                                     {{-- <a class="dropdown-item" href="{{ $order->delivery_note_url }}" target="_blank"><i class="fe fe-arrows-rotate me-2 "></i>Delivery Note</a> --}}
                                                                     <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/listings/active?sku={{ $product->variation->sku }}" target="_blank"><i class="fe fe-caret me-2"></i>View Listing in BackMarket</a>
-                                                                    {{-- <a class="dropdown-item" href="{{url(session('url').'order')}}?sku={{ $product->variation->sku }}&start_date={{ $start_date }}&end_date={{ $end_date }}" target="_blank"><i class="fe fe-caret me-2"></i>View Orders</a> --}}
+                                                                    <a class="dropdown-item" href="{{url('order')}}?sku={{ $product->variation->sku }}&start_date={{ $start_date }}&end_date={{ $end_date }}" target="_blank"><i class="fe fe-caret me-2"></i>View Orders</a>
                                                                     <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?sku={{ $product->variation->sku }}&startDate={{ $start_date }}&endDate={{ $end_date }}" target="_blank"><i class="fe fe-caret me-2"></i>View Orders in BackMarket</a>
                                                                     {{-- <a class="dropdown-item" href="javascript:void(0);"><i class="fe fe-trash-2 me-2"></i>Delete</a> --}}
                                                                 </div>
@@ -318,24 +318,24 @@
                                             <table class="w-100">
                                                 <tr>
                                                     <td>Total:</td>
-                                                    <td class="tx-right"><a href="{{url(session('url').'order')}}?start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ $total_orders }}</a></td>
+                                                    <td class="tx-right"><a href="{{url('order')}}?start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ $total_orders }}</a></td>
                                                 </tr>
                                                 <tr>
                                                     <td>Pending:</td>
-                                                    <td class="tx-right"><a href="{{url(session('url').'order')}}?status=2&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ $pending_orders }}</a></td>
+                                                    <td class="tx-right"><a href="{{url('order')}}?status=2&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ $pending_orders }}</a></td>
                                                 </tr>
                                                 <tr>
                                                     <td>Conversation:</td>
-                                                    <td class="tx-right"><a href="{{url(session('url').'order')}}?care=1&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ $total_conversations }}</a></td>
+                                                    <td class="tx-right"><a href="{{url('order')}}?care=1&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ $total_conversations }}</a></td>
                                                 </tr>
                                                 <tr>
                                                     <td>Invoiced:</td>
-                                                    <td class="tx-right"><a href="{{url(session('url').'order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ $invoiced_orders }}</a></td>
+                                                    <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ $invoiced_orders }}</a></td>
                                                 </tr>
                                                 @if (session('user')->hasPermission('view_price'))
                                                 <tr>
                                                     <td title="Average Price">Average:</td>
-                                                    <td class="tx-right"><a href="{{url(session('url').'order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ number_format($average,2) }}</a></td>
+                                                    <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ number_format($average,2) }}</a></td>
                                                 </tr>
                                                 @endif
                                             </table>
@@ -356,7 +356,7 @@
 
                                                     <tr>
                                                         <td>{{ $testing->first_name}}:</td>
-                                                        <td class="tx-right"><a href="{{url(session('url').'move_inventory')}}?start_date={{ $start_date }}&end_date={{ $end_date }}&adm={{ $testing->id }}" title="Go to Move Inventory page">{{ $testing->stock_operations_count }}</a></td>
+                                                        <td class="tx-right"><a href="{{url('move_inventory')}}?start_date={{ $start_date }}&end_date={{ $end_date }}&adm={{ $testing->id }}" title="Go to Move Inventory page">{{ $testing->stock_operations_count }}</a></td>
                                                     </tr>
                                                     @endif
                                                 @endforeach
@@ -376,20 +376,20 @@
                                             @foreach ($aftersale_inventory as $inv)
                                                 <tr>
                                                     <td>{{ $inv->grade }}:</td>
-                                                    <td class="tx-right"><a href="{{url(session('url').'inventory')}}?grade[]={{ $inv->grade_id }}&status={{ $inv->status_id }}&stock_status={{ $inv->stock_status }}" title="Go to orders page">{{ $inv->quantity }}</a></td>
+                                                    <td class="tx-right"><a href="{{url('inventory')}}?grade[]={{ $inv->grade_id }}&status={{ $inv->status_id }}&stock_status={{ $inv->stock_status }}" title="Go to orders page">{{ $inv->quantity }}</a></td>
                                                 </tr>
                                             @endforeach
                                             <tr>
                                                 <td title="Waiting for Approval">Returns:</td>
-                                                <td class="tx-right"><a href="{{url(session('url').'return')}}" title="Returns in Progress">{{$returns_in_progress}}</a></td>
+                                                <td class="tx-right"><a href="{{url('return')}}" title="Returns in Progress">{{$returns_in_progress}}</a></td>
                                             </tr>
                                             <tr>
                                                 <td>RMA:</td>
-                                                <td class="tx-right"><a href="{{url(session('url').'inventory')}}?rma=1" title="Not Returned RMA">{{$rma}}</a></td>
+                                                <td class="tx-right"><a href="{{url('inventory')}}?rma=1" title="Not Returned RMA">{{$rma}}</a></td>
                                             </tr>
                                             <tr>
                                                 <td title="Awaiting Replacements">Replacements:</td>
-                                                <td class="tx-right"><a href="{{url(session('url').'inventory')}}?stock_status=1&replacement=1" title="Pending Replacements">{{$awaiting_replacement}}</a></td>
+                                                <td class="tx-right"><a href="{{url('inventory')}}?stock_status=1&replacement=1" title="Pending Replacements">{{$awaiting_replacement}}</a></td>
                                             </tr>
                                             </table>
                                         </div>
@@ -431,7 +431,7 @@
                                         </div>
                                         <div class="card-body row">
                                             @foreach ($graded_inventory as $inv)
-                                                <div class="col-lg-3 col-md-4"><h6><a href="{{url(session('url').'inventory')}}?grade[]={{ $inv->grade_id }}&status={{ $inv->status_id }}" title="Go to orders page">{{ $inv->grade.": ".$inv->quantity." ".$purchase_status[$inv->status_id] }}</a></h6></div>
+                                                <div class="col-lg-3 col-md-4"><h6><a href="{{url('inventory')}}?grade[]={{ $inv->grade_id }}&status={{ $inv->status_id }}" title="Go to orders page">{{ $inv->grade.": ".$inv->quantity." ".$purchase_status[$inv->status_id] }}</a></h6></div>
                                             @endforeach
                                         </div>
                                             <h6 class="tx-right mb-3">
