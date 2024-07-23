@@ -46,7 +46,7 @@ class FunctionsDaily extends Command
     public function handle()
     {
         ini_set('max_execution_time', 1200);
-        $this->remove_extra_variations();
+        // $this->remove_extra_variations();
         $this->check_stock_status();
     }
 
@@ -66,7 +66,7 @@ class FunctionsDaily extends Command
         // }
 
 
-        $stocks = Stock_model::where('status',1)->where('order_id','!=',null)->orderByDesc('id')->get();
+        $stocks = Stock_model::where('status','!=',null)->where('order_id','!=',null)->orderByDesc('id')->get();
         foreach($stocks as $stock){
 
             $last_item = $stock->last_item();
