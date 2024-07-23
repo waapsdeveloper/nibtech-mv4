@@ -32,6 +32,9 @@ class Stock_room extends Component
 
         $data['title_page'] = "Stock Room";
         $data['admins'] = Admin_model::where('id', '!=', 1)->get();
+        $data['colors'] = Color_model::pluck('name','id');
+        $data['storages'] = Storage_model::pluck('name','id');
+        $data['grades'] = Grade_model::pluck('name','id');
         $user_id = session('user_id');
         $user = session('user');
         if(request('per_page') != null){
