@@ -63,11 +63,11 @@ Route::get('signin', Signin::class)->name('login');
 Route::post('login', [Signin::class,'login'])->name('signin');
 Route::get('logout', Logout::class)->name('signin');
 
-Route::group(['middleware' => ['auth']], function () {
-    Route::get('/2fa', [TwoFactorController::class, 'show2faForm'])->name('2fa.form');
-    Route::post('/2fa', [TwoFactorController::class, 'verify2fa'])->name('2fa.verify');
-    Route::post('/2fa/setup', [TwoFactorController::class, 'setup2fa'])->name('2fa.setup');
-});
+// Route::group(['middleware' => ['auth']], function () {
+//     Route::get('/2fa', [TwoFactorController::class, 'show2faForm'])->name('2fa.form');
+//     Route::post('/2fa', [TwoFactorController::class, 'verify2fa'])->name('2fa.verify');
+//     Route::post('/2fa/setup', [TwoFactorController::class, 'setup2fa'])->name('2fa.setup');
+// });
 
 
 // Route::middleware(['auth', '2fa'])->group(function () {
