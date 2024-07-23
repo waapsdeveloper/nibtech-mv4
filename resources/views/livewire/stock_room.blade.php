@@ -98,7 +98,7 @@
         @endphp
         @endif
 
-        @if (isset($stock))
+        @if (isset($stocks))
         <div>
             <div class="card">
                 <div class="card-header pb-0">

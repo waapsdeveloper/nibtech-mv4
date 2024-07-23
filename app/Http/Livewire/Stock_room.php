@@ -35,8 +35,6 @@ class Stock_room extends Component
         $user_id = session('user_id');
         $user = session('user');
 
-        $data['stocks'] = [];
-
         $data['stock_count'] = Stock_movement_model::where(['admin_id'=>$user_id, 'received_at'=>null])->count();
 
         if(request('show') == 1){
