@@ -551,7 +551,14 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @php
+                                    $total = 0;
+                                @endphp
                                 @foreach ($graded_count as $count)
+
+                                        @php
+                                            $total += $count->quantity;
+                                        @endphp
                                     <tr>
                                         {{-- <td>{{ $i }}</td> --}}
                                         <td data-stock="{{ $item->id }}">{{ $count->grade }}</td>
@@ -560,6 +567,14 @@
                                     {{-- @endif --}}
                                 @endforeach
                             </tbody>
+
+                            <tfoot>
+                                <tr>
+                                    {{-- <th><small><b>No</b></small></th> --}}
+                                    <th><small><b>Total</b></small></th>
+                                    <th><small><b>{{ $total }}</b></small></th>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 </div>
