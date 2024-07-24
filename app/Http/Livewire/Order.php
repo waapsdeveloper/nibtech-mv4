@@ -511,7 +511,7 @@ class Order extends Component
             ->withSum([
                 'stocks.purchase_item as cost' => function ($query) use ($order_id) {
                     $query->where('order_id', $order_id)->where('status',2);
-                }
+                }, 'price'
             ])
             ->orderBy('quantity', 'desc')
             ->get();
