@@ -72,7 +72,10 @@ class Stock_room extends Component
 
         if(request('show') == 1){
             if($user->hasPermission('view_all_stock_movements')){
-                $data['stocks'] = Stock_movement_model::where(['admin_id'=>request('admin_id'), 'received_at'=>null])
+                $data['stocks'] = Stock_movement_model::where(['admin_id'=>request('admin_id')])
+                ->when(request('description') != null, function ($q) {
+                    return $q->where('description', request('description'));
+                })
                 ->orderBy('id', 'desc') // Secondary order by reference_id
                 // ->select('orders.*')
                 ->paginate($per_page)
