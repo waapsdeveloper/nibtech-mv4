@@ -513,6 +513,7 @@ class Order extends Component
                     $query->where('order_id', $order_id)->where('status',2);
                 }
             ])
+            ->select('product_id','storage','quantity')
             ->orderBy('quantity', 'desc')
             ->get();
             // // die;
