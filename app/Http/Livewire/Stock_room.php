@@ -175,6 +175,10 @@ class Stock_room extends Component
                 'received_by' => $user_id,
                 'received_at' => Carbon::now()
             ]);
+            if(request('description') != null){
+                $stock_movement->description = request('description');
+                $stock_movement->save();
+            }
 
             $model = $stock->variation->product->model ?? '?';
             $storage = $stock->variation->storage_id->name ?? '?';

@@ -49,7 +49,12 @@
                         <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" id="imeiInput" onload="this.focus()" autofocus>
                         <label for="">IMEI</label>
                     </div>
-                        <button class="btn btn-secondary pd-x-20" type="submit">Receive</button>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" name="description" value="Replacement">
+                        <label class="form-check-label" for="flexSwitchCheckDefault">Replacement</label>
+                    </div>
+                    <button class="btn btn-secondary pd-x-20" type="submit">Receive</button>
+
                     {{-- @if (isset($stock))
                         &nbsp;&nbsp;&nbsp;&nbsp;Current Variation:&nbsp;&nbsp;&nbsp;&nbsp;<h5 class="mb-0">{{ $stock->variation->product->model ?? "Variation Issue"}}{{" - " . (isset($stock->variation->storage_id)?$stock->variation->storage_id->name . " - " : null) . (isset($stock->variation->color_id)?$stock->variation->color_id->name. " - ":null)}} <strong><u>{{ $stock->variation->grade_id->name ?? null }}</u></strong></h5>
                     @endif --}}
