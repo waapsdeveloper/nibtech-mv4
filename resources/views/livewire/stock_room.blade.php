@@ -170,8 +170,7 @@
                                     <th><small><b>No</b></small></th>
                                     <th><small><b>Product</b></small></th>
                                     <th><small><b>IMEI / Serial Number</b></small></th>
-                                    <th><small><b>Vendor</b></small></th>
-                                    <th><small><b>Reference</b></small></th>
+                                    <th><small><b>Purchase Batch</b></small></th>
                                     {{-- @if (session('user')->hasPermission('view_cost'))
                                     <th><small><b>Cost</b></small></th>
                                     @endif --}}
