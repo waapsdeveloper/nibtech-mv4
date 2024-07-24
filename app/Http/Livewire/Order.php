@@ -508,7 +508,7 @@ class Order extends Component
                     $query->where('order_id', $order_id);
                 }
             ])
-            ->orderBy('quantity', 'desc')
+            ->orderBy('quantity', 'desc')->limit(20)
             ->get();
             // die;
 
