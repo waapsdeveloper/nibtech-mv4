@@ -215,7 +215,6 @@
                                         <td>{{ $stock_r->received_at }}</td>
                                         <td>{{ $stock_r->receiver->first_name ?? "Invoice" }}</td>
 
-                                        @endif
                                     </tr>
 
                                     @php
