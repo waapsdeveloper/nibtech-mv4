@@ -89,7 +89,7 @@
 
                             <a href="{{url('stock_room')}}?show=1&admin_id={{$count->admin_id}}">{{ $admin }}</a> &nbsp;&nbsp;&nbsp;&nbsp;
                         @endif
-                        <a href="{{url('stock_room')}}?show=1&admin_id={{$count->admin_id}}&description={{$count->description}}">{{$count->description}}: {{ $count->count }} </a> &nbsp;&nbsp;&nbsp;&nbsp;
+                        <a href="{{url('stock_room')}}?show=1&admin_id={{$count->admin_id}}&description={{$count->description}}">{{$count->description}}: <strong>{{ $count->available_count . '/' . $count->count }}</strong> </a> &nbsp;&nbsp;&nbsp;&nbsp;
 
                     @endforeach
                 @else

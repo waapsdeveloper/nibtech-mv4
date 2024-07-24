@@ -37,19 +37,34 @@ class Stock_room extends Component
         $data['grades'] = Grade_model::pluck('name','id');
         $user_id = session('user_id');
         $user = session('user');
+
         if(request('per_page') != null){
             $per_page = request('per_page');
         }else{
             $per_page = 10;
         }
+        $start_date = Carbon::now()->startOfDay();
+        $end_date = date('Y-m-d 23:59:59');
+        if (request('start_date') != NULL && request('end_date') != NULL) {
+            $start_date = request('start_date') . " 00:00:00";
+            $end_date = request('end_date') . " 23:59:59";
+        }
+        $data['start_date'] = date('Y-m-d', strtotime($start_date));
+        $data['end_date'] = date("Y-m-d", strtotime($end_date));
+
         if($user->hasPermission('view_all_stock_movements')){
             // $data['stock_count'] = Stock_movement_model::where(['received_at'=>null])->select('admin_id', 'COUNT(*) as count')->pluck('count', 'admin_id');
 
-            $data['stock_count'] = Stock_movement_model::whereNull('received_at')
-            ->with('admin:id,first_name') // Load the related admin with only 'id' and 'first_name' fields
-            ->select('admin_id', 'description', DB::raw('COUNT(*) as count'))
+            // $data['stock_count'] = Stock_movement_model::whereNull('received_at')
+            // ->with('admin:id,first_name') // Load the related admin with only 'id' and 'first_name' fields
+            // ->select('admin_id', 'description', DB::raw('COUNT(*) as count'))
+            // ->groupBy('admin_id', 'description')
+            // ->get();
+            $data['stock_count_all'] = Stock_movement_model::with('admin:id,first_name') // Load the related admin with only 'id' and 'first_name' fields
+            ->select('admin_id', 'description', DB::raw('COUNT(*) as count'), DB::raw('COUNT(CASE WHEN received_at IS NULL THEN id END) as available_count'))
             ->groupBy('admin_id', 'description')
             ->get();
+
         }else{
             $data['stock_count'] = Stock_movement_model::where(['admin_id'=>$user_id, 'received_at'=>null])->count();
 
