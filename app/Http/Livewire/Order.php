@@ -1977,6 +1977,13 @@ class Order extends Component
             $order_item->admin_id = session('user_id');
             $order_item->save();
 
+            $stock_movement = Stock_movement_model::where(['stock_id'=>$stock->id, 'received_at'=>null])->first();
+            if($stock_movement != null){
+                Stock_movement_model::where(['stock_id'=>$stock->id, 'received_at'=>null])->update([
+                    'received_at' => Carbon::now(),
+                ]);
+            }
+
 
             $message = "Hi, here is the new IMEI/Serial number for this order. \n".$imei.$serial_number." ".$stock->tester."\n Regards, \n" . session('fname');
             session()->put('success', $message);
