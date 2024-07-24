@@ -42,7 +42,7 @@
 
             <div class="p-2">
                 @if (session('user')->hasPermission('receive_stock'))
-                
+
                 <form action="{{ url('stock_room/receive')}}" method="POST" id="search" class="form-inline">
                     @csrf
                     <div class="form-floating">
@@ -72,7 +72,7 @@
                 @if (session('user')->hasPermission('view_all_stock_movements'))
                     @foreach ($stock_count as $count)
                         <a href="{{url('stock_room')}}?show=1&admin_id={{$count->admin_id}}"> {{$count->admin->first_name}}: {{ $count->count }} </a> &nbsp;&nbsp;&nbsp;&nbsp;
-                        
+
                     @endforeach
                 @else
                 <a href="{{url('stock_room')}}?show=1"> Count: {{ $stock_count }} </a>
@@ -191,7 +191,7 @@
                                         @if ($stock->latest_operation)
                                         <td>{{ $stock->latest_operation->admin->first_name ?? null }}</td>
                                         <td>
-                                            {{ $stock_r->latest_operation->description }}
+                                            {{ $stock_r->description }}
                                         </td>
                                         @else
                                         <td>{{ $stock_r->admin->first_name ?? null }}</td>
