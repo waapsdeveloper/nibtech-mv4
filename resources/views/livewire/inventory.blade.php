@@ -194,6 +194,7 @@
         session()->forget('error');
         @endphp
         @endif
+        @if (session('user')->hasPermission('view_inventory_summery') && request('summery') != 1)
         @if (session('user')->hasPermission('view_cost') && $stocks->count() > 0)
             <div class="">
                 Vendor wise average:
@@ -205,6 +206,7 @@
 
                 @endforeach
             </div>
+            @endif
         @endif
         <div class="d-flex justify-content-between">
             <div>
@@ -213,8 +215,12 @@
                 <a href="{{url('inventory')}}?status=3" class="btn btn-link">Active</a>
                 <a href="{{url('inventory')}}?status=2" class="btn btn-link">Pending</a>
                 <a href="{{url('inventory')}}" class="btn btn-link">All</a>
+                @if (session('user')->hasPermission('view_inventory_summery'))
+                <a href="{{url('inventory')}}?summery=1" class="btn btn-link">Summery</a>
+                @endif
             </div>
 
+            @if (session('user')->hasPermission('view_inventory_summery') && request('summery') != 1)
             @if ($active_inventory_verification != null)
                 <div>
                     <form class="form-inline" action="{{ url('inventory/add_verification_imei').'/'.$active_inventory_verification->id }}" method="POST" id="wholesale_item">
@@ -257,6 +263,7 @@
 
                 @endif
             </div>
+            @endif
         </div>
         <form id="export" method="POST" target="_blank" action="{{url('inventory/export')}}">
             @csrf
@@ -277,6 +284,53 @@
             <input type="hidden" name="vendor" value="{{ Request::get('vendor') }}">
         </form>
         <br>
+
+
+        @if (session('user')->hasPermission('view_inventory_summery') && request('summery') && request('summery') == 1)
+        <div class="card">
+            <div class="card-header pb-0">
+                Available Stock Summery
+            </div>
+            <div class="card-body"><div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                    <thead>
+                        <tr>
+                            <th><small><b>No</b></small></th>
+                            <th><small><b>Model</b></small></th>
+                            <th><small><b>Quantity</b></small></th>
+                            <th><small><b>Cost</b></small></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                            $i = 0;
+                        @endphp
+                        @foreach ($available_stock_summery as $summery)
+
+                        @php
+                            // print_r($summery);
+                            // continue;
+                            if($summery['storage'] > 0){
+                                $storage = $storages[$summery['storage']];
+                            }else{
+                                $storage = null;
+                            }
+                        @endphp
+                            <tr>
+                                <td>{{ ++$i }}</td>
+                                <td>{{ $products[$summery['product_id']]." ".$storage }}</td>
+                                <td>{{ $summery['quantity'] }}</td>
+                                <td title="{{ $summery['average_cost'] }}">{{ number_format($summery['total_cost'],2) }}</td>
+                            </tr>
+                            {{-- @endif --}}
+                        @endforeach
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+        @else
+
         @if ($active_inventory_verification != null)
         <div class="row">
             <div class="col-xl-12">
@@ -531,6 +585,8 @@
                 </div>
             </div>
         </div>
+
+        @endif
     @endsection
 
     @section('scripts')

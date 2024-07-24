@@ -172,7 +172,7 @@
                 <a href="{{url('purchase/detail')."/".$order->id}}?status=1" class="btn btn-link @if (request('status') == 1) bg-white @endif ">Available</a>
                 <a href="{{url('purchase/detail')."/".$order->id}}?status=2" class="btn btn-link @if (request('status') == 2) bg-white @endif ">Sold</a>
                 <a href="{{url('purchase/detail')."/".$order->id}}" class="btn btn-link @if (!request('status')) bg-white @endif " >All</a>
-                @if (session('user')->hasPermission('view_summery'))
+                @if (session('user')->hasPermission('view_purchase_summery'))
                 <a href="{{url('purchase/detail')."/".$order->id}}?summery=1" class="btn btn-link @if (request('summery') == 1) bg-white @endif ">Summery</a>
 
                 @endif
@@ -180,7 +180,7 @@
             <div class="">
             </div>
         </div>
-        @if (session('user')->hasPermission('view_summery') && request('summery') && request('summery') == 1)
+        @if (session('user')->hasPermission('view_purchase_summery') && request('summery') && request('summery') == 1)
         <div class="card">
             <div class="card-header pb-0">
                 Sold Stock Summery
@@ -205,8 +205,8 @@
                                 <td>{{ $i++ }}</td>
                                 <td>{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</td>
                                 <td>{{ $summery['quantity'] }}</td>
-                                <td title="{{ $summery['average_cost'] }}">{{ $summery['total_cost'] }}</td>
-                                <td title="{{ $summery['average_price'] }}">{{ $summery['total_price'] }}</td>
+                                <td title="{{ $summery['average_cost'] }}">{{ number_format($summery['total_cost'],2) }}</td>
+                                <td title="{{ $summery['average_price'] }}">{{ number_format($summery['total_price'],2) }}</td>
                             </tr>
                             {{-- @endif --}}
                         @endforeach
@@ -217,7 +217,7 @@
         </div>
         <div class="card">
             <div class="card-header pb-0">
-                available Stock Summery
+                Available Stock Summery
             </div>
             <div class="card-body"><div class="table-responsive">
                 <table class="table table-bordered table-hover mb-0 text-md-nowrap">
@@ -238,7 +238,7 @@
                                 <td>{{ ++$i }}</td>
                                 <td>{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</td>
                                 <td>{{ $summery['quantity'] }}</td>
-                                <td title="{{ $summery['average_cost'] }}">{{ $summery['total_cost'] }}</td>
+                                <td title="{{ $summery['average_cost'] }}">{{ number_format($summery['total_cost'],2) }}</td>
                             </tr>
                             {{-- @endif --}}
                         @endforeach
