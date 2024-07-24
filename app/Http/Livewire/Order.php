@@ -1573,6 +1573,12 @@ class Order extends Component
                 $stock[$i]->tester = $tester[$i];
                 $stock[$i]->status = 2;
                 $stock[$i]->save();
+                $stock_movement = Stock_movement_model::where(['stock_id'=>$stock[$i]->id, 'received_at'=>null])->first();
+                if($stock_movement != null){
+                    Stock_movement_model::where(['stock_id'=>$stock[$i]->id, 'received_at'=>null])->update([
+                        'received_at' => Carbon::now(),
+                    ]);
+                }
                 $orderObj = $this->updateBMOrder($order->reference_id, true, $tester[$i], true);
             }
             $order = Order_model::find($order->id);
