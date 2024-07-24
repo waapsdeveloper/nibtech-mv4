@@ -515,21 +515,41 @@ class Order extends Component
                     $query->where('order_id', $order_id)->where('status', 2);
                 }
             ])
+            ->withSum([
+                'stocks.order_item as total_price' => function ($query) use ($order_id) {
+                    $query->where('order_id', $order_id)->where('status', 2);
+                }
+            ], 'price')
             ->orderBy('quantity', 'desc')
             ->get(['product_id', 'storage', 'quantity']);
 
             // Group the variations by product_id and storage
-            $groupedVariations = $variations->groupBy(['product_id', 'storage']);
+// Group the variations by product_id and storage
+$groupedVariations = $variations->groupBy(function ($item) {
+    return $item->product_id . '.' . $item->storage;
+});
 
-            // Prepare the result with only product_id, storage, and quantity
-            $result = $groupedVariations->map(function ($items, $key) {
-                // We need to get the product_id and storage from the items since they are grouped
-                $firstItem = $items->first();
-                return [
-                    'product_id' => $firstItem->product_id,
-                    'storage' => $firstItem->storage,
-                    'quantity' => $items->sum('quantity')
-                ];
+$result = $groupedVariations->map(function ($items, $key) {
+    list($product_id, $storage) = explode('.', $key);
+
+
+    $totalPurchasePrice = $items->sum('total_price');
+    $totalQuantity = $items->sum('quantity');
+
+    $averagePurchasePrice = $totalQuantity > 0 ? $totalPurchasePrice / $totalQuantity : 0;
+
+    return [
+        'product_id' => $product_id,
+        'storage' => $storage,
+        'quantity' => $totalQuantity,
+        'total_purchase_price' => $totalPurchasePrice,
+        'average_purchase_price' => $averagePurchasePrice
+    ];
+    // return [
+    //     'product_id' => $product_id,
+    //     'storage' => $storage,
+    //     'quantity' => $items->sum('quantity')
+    // ];
             })->values();
 
             dd($result); // Output the result for verification

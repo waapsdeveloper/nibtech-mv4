@@ -10,6 +10,7 @@ use App\Models\Order_item_model;
 use App\Models\Grade_model;
 use App\Models\Process_stock_model;
 use App\Models\Products_model;
+use App\Models\Stock_movement_model;
 use App\Models\Stock_operations_model;
 use App\Models\Storage_model;
 use App\Models\Variation_model;
@@ -54,6 +55,13 @@ class IMEI extends Component
                 // return redirect()->back(); // Redirect here is not recommended
                 return view('livewire.imei', $data); // Return the Blade view instance with data
             }
+            $stock_movement = Stock_movement_model::where(['stock_id'=>$stock->id, 'received_at'=>null])->first();
+            if($stock_movement != null && $stock->status == 2){
+                Stock_movement_model::where(['stock_id'=>$stock->id, 'received_at'=>null])->update([
+                    'received_at' => Carbon::now(),
+                ]);
+            }
+
             // $sale_status = Order_item_model::where(['stock_id'=>$stock->id,'linked_id'=>$stock->purchase_item->id])->first();
             // if($stock->status == 1){
             //     if($sale_status != null){
