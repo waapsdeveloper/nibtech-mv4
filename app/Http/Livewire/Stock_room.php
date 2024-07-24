@@ -47,8 +47,8 @@ class Stock_room extends Component
 
             $data['stock_count'] = Stock_movement_model::whereNull('received_at')
             ->with('admin:id,first_name') // Load the related admin with only 'id' and 'first_name' fields
-            ->select('admin_id', DB::raw('COUNT(*) as count'))
-            ->groupBy('admin_id')
+            ->select('admin_id', 'description', DB::raw('COUNT(*) as count'))
+            ->groupBy('admin_id', 'description')
             ->get();
         }else{
             $data['stock_count'] = Stock_movement_model::where(['admin_id'=>$user_id, 'received_at'=>null])->count();
@@ -111,7 +111,7 @@ class Stock_room extends Component
             $stock_movement = Stock_movement_model::create([
                 'stock_id' => $stock->id,
                 'admin_id' => $user_id,
-                'description' => $stock->description,
+                'description' => Carbon::now()->format('d-m-Y h A'),
                 'exit_at' => Carbon::now()
             ]);
             $model = $stock->variation->product->model ?? '?';
