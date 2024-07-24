@@ -49,17 +49,17 @@
                     <div class="form-floating">
                         <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" id="imeiInput" onload="this.focus()" autofocus>
                         <label for="">IMEI</label>
-                    </div>&nbsp;&nbsp;
+                    </div>&nbsp;&nbsp;&nbsp;&nbsp;
                     <div>
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" name="description" value="Replacement">
-                            <label class="form-check-label" for="flexSwitchCheckDefault">Replacement</label>
+                            <input class="form-check-input" type="radio" id="com" name="description" value="Change of mind" checked>
+                            <label class="form-check-label" for="com">Change of mind</label>
                         </div>
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" name="description" value="Change of mind">
-                            <label class="form-check-label" for="flexSwitchCheckDefault">Change of mind</label>
+                            <input class="form-check-input" type="radio" id="replacement" name="description" value="Replacement">
+                            <label class="form-check-label" for="replacement">Replacement</label>
                         </div>
-                    </div> &nbsp;&nbsp;
+                    </div> &nbsp;&nbsp;&nbsp;&nbsp;
                     <button class="btn btn-secondary pd-x-20" type="submit">Receive</button>
 
                     {{-- @if (isset($stock))
