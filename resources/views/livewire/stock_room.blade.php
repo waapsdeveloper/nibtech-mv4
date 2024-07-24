@@ -38,9 +38,9 @@
         </div>
         <br>
 
-        <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
+        <div class="row" style="border-bottom: 1px solid rgb(216, 212, 212);">
 
-            <div class="p-2">
+            <div class="col-md-6">
                 @if (session('user')->hasPermission('receive_stock'))
 
                 <form action="{{ url('stock_room/receive')}}" method="POST" id="search" class="form-inline">
@@ -80,7 +80,7 @@
                 </form>
                 @endif
             </div>
-            <h6>
+            <h6 class="col-md-6">
                 @if (session('user')->hasPermission('view_all_stock_movements'))
                     @php
                         $admin = null;
