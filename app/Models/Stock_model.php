@@ -58,6 +58,10 @@ class Stock_model extends Model
     {
         return $this->hasMany(Process_stock_model::class, 'stock_id', 'id');
     }
+    public function stock()
+    {
+        return $this->belongsTo(Stock_model::class, 'stock_id', 'id');
+    }
     public function stock_verifications()
     {
         return $this->hasMany(Process_stock_model::class, 'stock_id', 'id')->whereHas('process', function ($q) {

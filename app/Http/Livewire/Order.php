@@ -515,11 +515,11 @@ class Order extends Component
                     $query->where('order_id', $order_id)->where('status', 2);
                 }
             ])
-            ->withSum([
-                'stocks.order_item as total_price' => function ($query) use ($order_id) {
-                    $query->where('order_id', $order_id)->where('status', 2);
+            ->with([
+                'stocks.order_items as total_price' => function ($query) use ($order_id) {
+                    $query->where('order_id', $order_id);
                 }
-            ], 'price')
+            ])
             ->orderBy('quantity', 'desc')
             ->get(['product_id', 'storage', 'quantity']);
 
