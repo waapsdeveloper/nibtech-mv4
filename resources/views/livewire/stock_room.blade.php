@@ -80,7 +80,7 @@
                 </form>
                 @endif
             </div>
-            <h6 class="col-md-6">
+            <h6 class="col-md-6 tx-right">
                 @if (session('user')->hasPermission('view_all_stock_movements'))
                     @php
                         $admin = null;
