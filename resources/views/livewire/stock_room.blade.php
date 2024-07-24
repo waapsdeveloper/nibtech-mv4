@@ -74,7 +74,7 @@
                         $admin = null;
                     @endphp
                     @foreach ($stock_count as $count)
-                        @if ($admin != $count->admin->first_name." ".$count->admin->last_name)
+                        @if ($admin != null && $admin != $count->admin->first_name." ".$count->admin->last_name)
 
                             @php
                                 $admin = null;
@@ -87,7 +87,7 @@
                                 $admin = $count->admin->first_name." ".$count->admin->last_name;
                             @endphp
 
-                            <a href="{{url('stock_room')}}?show=1&admin_id={{$count->admin_id}}&description={{$count->description}}">{{ $admin }}</a>
+                            <a href="{{url('stock_room')}}?show=1&admin_id={{$count->admin_id}}">{{ $admin }}</a> &nbsp;&nbsp;&nbsp;&nbsp;
                         @endif
                         <a href="{{url('stock_room')}}?show=1&admin_id={{$count->admin_id}}&description={{$count->description}}">{{$count->description}}: {{ $count->count }} </a> &nbsp;&nbsp;&nbsp;&nbsp;
 
