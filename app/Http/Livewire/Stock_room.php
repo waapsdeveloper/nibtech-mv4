@@ -53,16 +53,10 @@ class Stock_room extends Component
         $data['end_date'] = date("Y-m-d", strtotime($end_date));
 
         if($user->hasPermission('view_all_stock_movements')){
-            // $data['stock_count'] = Stock_movement_model::where(['received_at'=>null])->select('admin_id', 'COUNT(*) as count')->pluck('count', 'admin_id');
-
-            // $data['stock_count'] = Stock_movement_model::whereNull('received_at')
-            // ->with('admin:id,first_name') // Load the related admin with only 'id' and 'first_name' fields
-            // ->select('admin_id', 'description', DB::raw('COUNT(*) as count'))
-            // ->groupBy('admin_id', 'description')
-            // ->get();
             $data['stock_count'] = Stock_movement_model::with('admin:id,first_name') // Load the related admin with only 'id' and 'first_name' fields
             ->select('admin_id', 'description', DB::raw('COUNT(*) as count'), DB::raw('COUNT(CASE WHEN received_at IS NULL THEN id END) as available_count'))
             ->groupBy('admin_id', 'description')
+            ->whereBetween('exit_at', [$start_date, $end_date])
             ->get();
 
         }else{
@@ -76,6 +70,7 @@ class Stock_room extends Component
                 ->when(request('description') != null, function ($q) {
                     return $q->where('description', request('description'));
                 })
+                ->whereBetween('exit_at', [$start_date, $end_date])
                 ->orderBy('id', 'desc') // Secondary order by reference_id
                 // ->select('orders.*')
                 ->paginate($per_page)
