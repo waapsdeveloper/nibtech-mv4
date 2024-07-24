@@ -505,34 +505,6 @@ class Order extends Component
             // })
 
             // Retrieve variations with product_id, storage, and quantity where stocks meet the given conditions
-            $variations = Variation_model::whereHas('stocks', function ($query) use ($order_id) {
-                $query->where('order_id', $order_id)->where('status', 2);
-            })
-            ->withCount([
-                'stocks as quantity' => function ($query) use ($order_id) {
-                    $query->where('order_id', $order_id)->where('status', 2);
-                }
-            ])
-            ->orderBy('quantity', 'desc')
-            ->get(['product_id', 'storage']);
-
-            // Group the variations by product_id and storage
-            $groupedVariations = $variations->groupBy(['product_id', 'storage'])->map(function ($items) {
-                return $items->sum('quantity');
-            });
-
-            // Prepare the result with only product_id, storage, and quantity
-            $result = $groupedVariations->map(function ($quantity, $key) {
-                list($product_id, $storage) = explode('.', $key);
-                return [
-                    'product_id' => $product_id,
-                    'storage' => $storage,
-                    'quantity' => $quantity
-                ];
-            })->values();
-
-            dd($result);use App\Models\Variation; // Assuming your model is Variation
-            use Illuminate\Support\Facades\DB;
 
             // Retrieve variations with product_id, storage, and quantity where stocks meet the given conditions
             $variations = Variation::whereHas('stocks', function ($query) use ($order_id) {
