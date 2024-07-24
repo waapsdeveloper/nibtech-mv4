@@ -499,6 +499,11 @@ class Order extends Component
 
         if(request('summery') == 1){
 
+            // $available_summery = Order_item_model::where(['order_id'=>$order_id])
+            // ->whereHas('stock', function ($query) {
+            //     $query->where('status',1);
+            // })
+
             $variations = Variation_model::
             whereHas('stocks', function ($query) use ($order_id) {
                 $query->where('order_id', $order_id)->where('status',2);
@@ -508,17 +513,12 @@ class Order extends Component
                     $query->where('order_id', $order_id)->where('status',2);
                 }
             ])
-            ->withSum([
-                'stocks.purchase_item() as cost' => function ($query) use ($order_id) {
-                    $query->where('order_id', $order_id)->where('status',2);
-                }
-            ], 'price')
             ->orderBy('quantity', 'desc')
             ->get();
-            // die;
+            // // die;
 
-            // Group by product_id and storage
-            $variations = $variations->groupBy(['product_id', 'storage']);
+            // // Group by product_id and storage
+            $variations = $variations->groupBy(['product_id', 'storage'])->select('product_id','storage','quantity');
 
             dd($variations);
         }
