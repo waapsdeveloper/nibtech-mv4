@@ -214,7 +214,7 @@
                                             {{ $stock_r->description }}
                                         </td>
                                         <td>{{ $stock_r->received_at }}</td>
-                                        <td>{{ $stock_r->receiver->first_name ?? "Invoice" }}</td>
+                                        <td>{{ $stock_r->receiver->first_name ?? null }}</td>
 
                                     </tr>
 
