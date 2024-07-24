@@ -507,7 +507,7 @@ class Order extends Component
             // Retrieve variations with product_id, storage, and quantity where stocks meet the given conditions
 
             // Retrieve variations with product_id, storage, and quantity where stocks meet the given conditions
-            $variations = Variation::whereHas('stocks', function ($query) use ($order_id) {
+            $variations = Variation_model::whereHas('stocks', function ($query) use ($order_id) {
                 $query->where('order_id', $order_id)->where('status', 2);
             })
             ->withCount([
