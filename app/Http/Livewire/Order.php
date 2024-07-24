@@ -499,58 +499,117 @@ class Order extends Component
 
         if(request('summery') == 1){
 
-            // $available_summery = Order_item_model::where(['order_id'=>$order_id])
-            // ->whereHas('stock', function ($query) {
-            //     $query->where('status',1);
-            // })
 
-            // Retrieve variations with product_id, storage, and quantity where stocks meet the given conditions
+// Retrieve variations with related stocks
+$variations = Variation_model::whereHas('stocks', function ($query) use ($order_id) {
+    $query->where('order_id', $order_id)->where('status', 2);
+})
+->withCount([
+    'stocks as quantity' => function ($query) use ($order_id) {
+        $query->where('order_id', $order_id)->where('status', 2);
+    }
+])
+->with([
+    'stocks' => function ($query) use ($order_id) {
+        $query->where('order_id', $order_id)->where('status', 2);
+    }
+])
+->get(['product_id', 'storage']);
 
-            // Retrieve variations with product_id, storage, and quantity where stocks meet the given conditions
-            $variations = Variation_model::whereHas('stocks', function ($query) use ($order_id) {
-                $query->where('order_id', $order_id)->where('status', 2);
-            })
-            ->withCount([
-                'stocks as quantity' => function ($query) use ($order_id) {
-                    $query->where('order_id', $order_id)->where('status', 2);
-                }
-            ])
-            ->with([
-                'stocks.order_items as total_price' => function ($query) use ($order_id) {
-                    $query->where('order_id', $order_id);
-                }
-            ])
-            ->orderBy('quantity', 'desc')
-            ->get(['product_id', 'storage', 'quantity']);
+// Process the retrieved data to get stock IDs
+$result = $variations->map(function ($variation) {
+    $stocks = $variation->stocks;
 
-            // Group the variations by product_id and storage
-// Group the variations by product_id and storage
-$groupedVariations = $variations->groupBy(function ($item) {
-    return $item->product_id . '.' . $item->storage;
+    // Collect all stock IDs
+    $stockIds = $stocks->pluck('id');
+
+    return [
+        'product_id' => $variation->product_id,
+        'storage' => $variation->storage,
+        'quantity' => $variation->quantity, // Use quantity from withCount
+        'stock_ids' => $stockIds->toArray() // Convert collection to array
+    ];
 });
 
-$result = $groupedVariations->map(function ($items, $key) {
+// Group the results by product_id and storage
+$groupedResult = $result->groupBy(function ($item) {
+    return $item['product_id'] . '.' . $item['storage'];
+})->map(function ($items, $key) {
     list($product_id, $storage) = explode('.', $key);
 
+    // Merge all stock IDs for the group
+    $stockIds = $items->flatMap(function ($item) {
+        return $item['stock_ids'];
+    })->unique()->values()->toArray(); // Convert to array
 
-    $totalPurchasePrice = $items->sum('total_price');
-    $totalQuantity = $items->sum('quantity');
-
-    $averagePurchasePrice = $totalQuantity > 0 ? $totalPurchasePrice / $totalQuantity : 0;
+    // Sum the quantity
+    $quantity = $items->sum('quantity'); // Sum the quantities
 
     return [
         'product_id' => $product_id,
         'storage' => $storage,
-        'quantity' => $totalQuantity,
-        'total_purchase_price' => $totalPurchasePrice,
-        'average_purchase_price' => $averagePurchasePrice
+        'quantity' => $quantity,
+        'stock_ids' => $stockIds // Already an array
     ];
-    // return [
-    //     'product_id' => $product_id,
-    //     'storage' => $storage,
-    //     'quantity' => $items->sum('quantity')
-    // ];
-            })->values();
+})->values();
+
+// Sort the results by quantity in descending order
+$sortedResult = $groupedResult->sortByDesc('quantity');
+
+dd($sortedResult);
+
+            $variations = Variation_model::whereHas('stocks', function ($query) use ($order_id) {
+                $query->where('order_id', $order_id)->where('status', 2);
+            })
+            ->with([
+                'stocks' => function ($query) use ($order_id) {
+                    $query->where('order_id', $order_id)->where('status', 2);
+                }
+            ])
+            ->get(['product_id', 'storage']);
+
+// Process the retrieved data to get stock IDs
+$result = $variations->map(function ($variation) {
+    $stocks = $variation->stocks;
+
+    // Collect all stock IDs
+    $stockIds = $stocks->pluck('id');
+
+    return [
+        'product_id' => $variation->product_id,
+        'storage' => $variation->storage,
+        'stock_ids' => $stockIds
+    ];
+});
+// Group the results by product_id and storage
+$groupedResult = $result->groupBy(function ($item) {
+    return $item['product_id'] . '.' . $item['storage'];
+})->map(function ($items, $key) {
+    list($product_id, $storage) = explode('.', $key);
+
+    // Merge all stock IDs for the group
+    $stockIds = $items->flatMap('stock_ids')->unique()->values();
+
+    return [
+        'product_id' => $product_id,
+        'storage' => $storage,
+        'stock_ids' => $stockIds
+    ];
+})->values();
+            // Group the variations by product_id and storage
+// Group the variations by product_id and storage
+// $groupedVariations = $variations->groupBy(function ($item) {
+//     return $item->product_id . '.' . $item->storage;
+// });
+
+// $result = $groupedVariations->map(function ($items, $key) {
+//     list($product_id, $storage) = explode('.', $key);
+//     return [
+//         'product_id' => $product_id,
+//         'storage' => $storage,
+//         'quantity' => $items->sum('quantity')
+//     ];
+//             })->values();
 
             dd($result); // Output the result for verification
 
