@@ -519,7 +519,7 @@ class Order extends Component
             // // die;
 
             // // Group by product_id and storage
-            $variations = $variations->groupBy(['product_id', 'storage'])->select('product_id','storage','quantity');
+            $variations = $variations->groupBy(['product_id', 'storage']);
 
             dd($variations);
         }
