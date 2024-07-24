@@ -172,11 +172,82 @@
                 <a href="{{url('purchase/detail')."/".$order->id}}?status=1" class="btn btn-link @if (request('status') == 1) bg-white @endif ">Available</a>
                 <a href="{{url('purchase/detail')."/".$order->id}}?status=2" class="btn btn-link @if (request('status') == 2) bg-white @endif ">Sold</a>
                 <a href="{{url('purchase/detail')."/".$order->id}}" class="btn btn-link @if (!request('status')) bg-white @endif " >All</a>
+                @if (session('user')->hasPermission('view_summery'))
+                <a href="{{url('purchase/detail')."/".$order->id}}?summery=1" class="btn btn-link @if (request('summery') == 1) bg-white @endif ">Summery</a>
+
+                @endif
             </div>
             <div class="">
             </div>
         </div>
+        @if (session('user')->hasPermission('view_summery') && request('summery') && request('summery') == 1)
+        <div class="card">
+            <div class="card-header pb-0">
+                Sold Stock Summery
+            </div>
+            <div class="card-body"><div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                    <thead>
+                        <tr>
+                            <th><small><b>No</b></small></th>
+                            <th><small><b>Model</b></small></th>
+                            <th><small><b>Quantity</b></small></th>
+                            <th><small><b>Cost</b></small></th>
+                            <th><small><b>Price</b></small></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                            $i = 0;
+                        @endphp
+                        @foreach ($sold_stock_summery as $summery)
+                            <tr>
+                                <td>{{ $i++ }}</td>
+                                <td>{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</td>
+                                <td>{{ $summery['quantity'] }}</td>
+                                <td title="{{ $summery['average_cost'] }}">{{ $summery['total_cost'] }}</td>
+                                <td title="{{ $summery['average_price'] }}">{{ $summery['total_price'] }}</td>
+                            </tr>
+                            {{-- @endif --}}
+                        @endforeach
+                    </tbody>
 
+                </table>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header pb-0">
+                available Stock Summery
+            </div>
+            <div class="card-body"><div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                    <thead>
+                        <tr>
+                            <th><small><b>No</b></small></th>
+                            <th><small><b>Model</b></small></th>
+                            <th><small><b>Quantity</b></small></th>
+                            <th><small><b>Cost</b></small></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                            $i = 0;
+                        @endphp
+                        @foreach ($available_stock_summery as $summery)
+                            <tr>
+                                <td>{{ ++$i }}</td>
+                                <td>{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</td>
+                                <td>{{ $summery['quantity'] }}</td>
+                                <td title="{{ $summery['average_cost'] }}">{{ $summery['total_cost'] }}</td>
+                            </tr>
+                            {{-- @endif --}}
+                        @endforeach
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+        @else
         @if (session('user')->hasPermission('view_issues'))
         @if (count($order_issues)>0)
 
@@ -580,6 +651,8 @@
                 </div>
             </div>
         </div>
+
+        @endif
     @endsection
 
     @section('scripts')
