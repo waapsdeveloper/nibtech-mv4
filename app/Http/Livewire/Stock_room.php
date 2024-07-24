@@ -71,14 +71,14 @@ class Stock_room extends Component
                 ->onEachSide(5)
                 ->appends(request()->except('page'));
             }
-            
+
         }
 
         return view('livewire.stock_room', $data); // Return the Blade view instance with data
     }
 
     public function exit(){
-        
+
         $user_id = session('user_id');
         if (request('imei')) {
             if (ctype_digit(request('imei'))) {
@@ -96,7 +96,7 @@ class Stock_room extends Component
 
             }
             $movement = Stock_movement_model::where(['stock_id'=>$stock->id,'received_at'=>null])->first();
-            if($movement == null){
+            if($movement != null){
                 if($movement->admin_id == $user_id){
 
                     session()->put('error', 'IMEI Already added in your sheet');
@@ -118,7 +118,7 @@ class Stock_room extends Component
             $storage = $stock->variation->storage_id->name ?? '?';
             $color = $stock->variation->color_id->name ?? '?';
             $grade = $stock->variation->grade_id->name ?? '?';
-            
+
             session()->put('success', 'Stock Exit: '.$model.' - '.$storage.' - '.$color.' - '.$grade);
             return redirect()->back(); // Redirect here is not recommended
 
@@ -128,7 +128,7 @@ class Stock_room extends Component
 
     }
     public function receive(){
-        
+
         $user_id = session('user_id');
         if (request('imei')) {
             if (ctype_digit(request('imei'))) {
@@ -146,13 +146,13 @@ class Stock_room extends Component
 
             }
             $stock_movement = Stock_movement_model::where(['stock_id'=>$stock->id, 'received_at'=>null])->first();
-            
+
             if($stock_movement == null){
                 session()->put('error', 'Exit Entry Missing');
                 return redirect()->back(); // Redirect here is not recommended
 
             }
-            
+
             $stock_movement = Stock_movement_model::where(['stock_id'=>$stock->id, 'received_at'=>null])->update([
                 'received_by' => $user_id,
                 'received_at' => Carbon::now()
@@ -162,7 +162,7 @@ class Stock_room extends Component
             $storage = $stock->variation->storage_id->name ?? '?';
             $color = $stock->variation->color_id->name ?? '?';
             $grade = $stock->variation->grade_id->name ?? '?';
-            
+
             session()->put('success', 'Stock Received: '.$model.' - '.$storage.' - '.$color.' - '.$grade);
             return redirect()->back(); // Redirect here is not recommended
         }
