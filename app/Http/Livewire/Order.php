@@ -501,14 +501,19 @@ class Order extends Component
 
             $variations = Variation_model::
             whereHas('stocks', function ($query) use ($order_id) {
-                $query->where('order_id', $order_id);
+                $query->where('order_id', $order_id)->where('status',2);
             })
             ->withCount([
                 'stocks as quantity' => function ($query) use ($order_id) {
-                    $query->where('order_id', $order_id);
+                    $query->where('order_id', $order_id)->where('status',2);
                 }
             ])
-            ->orderBy('quantity', 'desc')->limit(20)
+            ->withSum([
+                'stocks.purchase_item as cost' => function ($query) use ($order_id) {
+                    $query->where('order_id', $order_id)->where('status',2);
+                }
+            ])
+            ->orderBy('quantity', 'desc')
             ->get();
             // die;
 
