@@ -48,11 +48,11 @@
                     <div class="form-floating">
                         <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" id="imeiInput" onload="this.focus()" autofocus>
                         <label for="">IMEI</label>
-                    </div>
+                    </div>&nbsp;&nbsp;
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" name="description" value="Replacement">
                         <label class="form-check-label" for="flexSwitchCheckDefault">Replacement</label>
-                    </div>
+                    </div> &nbsp;&nbsp;
                     <button class="btn btn-secondary pd-x-20" type="submit">Receive</button>
 
                     {{-- @if (isset($stock))
