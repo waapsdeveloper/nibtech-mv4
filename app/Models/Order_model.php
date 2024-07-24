@@ -100,7 +100,7 @@ class Order_model extends Model
             $order->order_type_id = 3;
             $order->price = $orderObj->price;
             $order->delivery_note_url = $orderObj->delivery_note;
-            if($order->label_url == null && $bm->getOrderLabel($orderObj->order_id) != null){
+            if($order->label_url == null && $bm->getOrderLabel($orderObj->order_id) != null && $bm->getOrderLabel($orderObj->order_id)->results != null){
                 if($bm->getOrderLabel($orderObj->order_id) != null){
                     $order->label_url = $bm->getOrderLabel($orderObj->order_id)->results[0]->labelUrl;
                 }
