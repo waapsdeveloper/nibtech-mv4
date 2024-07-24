@@ -571,8 +571,8 @@
                             <tfoot>
                                 <tr>
                                     {{-- <th><small><b>No</b></small></th> --}}
-                                    <th><small><b>Total</b></small></th>
-                                    <th><small><b>{{ $total }}</b></small></th>
+                                    <th><b>Total</b></th>
+                                    <th><b>{{ $total }}</b></th>
                                 </tr>
                             </tfoot>
                         </table>
