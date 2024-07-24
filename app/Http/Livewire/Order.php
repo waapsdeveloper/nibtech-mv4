@@ -497,6 +497,26 @@ class Order extends Component
         $data['colors'] = Color_model::pluck('name','id');
         $data['grades'] = Grade_model::pluck('name','id');
 
+        if(request('summery') == 1){
+
+            $variations = Variation_model::
+            whereHas('stocks', function ($query) use ($order_id) {
+                $query->where('order_id', $order_id);
+            })
+            ->withCount([
+                'stocks as quantity' => function ($query) use ($order_id) {
+                    $query->where('order_id', $order_id);
+                }
+            ])
+            ->orderBy('quantity', 'desc')
+            ->get();
+            // die;
+
+            // Group by product_id and storage
+            $variations = $variations->groupBy(['product_id', 'storage']);
+
+            dd($variations);
+        }
         if (!request('status') || request('status') == 1){
             $data['variations'] = Variation_model::with(['stocks' => function ($query) use ($order_id) {
                 $query->where(['order_id'=> $order_id, 'status'=>1]);
