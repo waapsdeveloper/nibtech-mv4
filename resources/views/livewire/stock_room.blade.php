@@ -70,8 +70,26 @@
             </div>
             <h6>
                 @if (session('user')->hasPermission('view_all_stock_movements'))
+                    @php
+                        $admin = null;
+                    @endphp
                     @foreach ($stock_count as $count)
-                        <a href="{{url('stock_room')}}?show=1&admin_id={{$count->admin_id}}&description={{$count->description}}"> {{$count->admin->first_name}}: {{ $count->count }} </a> &nbsp;&nbsp;&nbsp;&nbsp;
+                        @if ($admin != $count->admin->first_name." ".$count->admin->last_name)
+
+                            @php
+                                $admin = null;
+                            @endphp
+                            <br>
+                        @endif
+                        @if ($admin == null)
+
+                            @php
+                                $admin = $count->admin->first_name." ".$count->admin->last_name;
+                            @endphp
+
+                            <a href="{{url('stock_room')}}?show=1&admin_id={{$count->admin_id}}&description={{$count->description}}">{{ $admin }}</a>
+                        @endif
+                        <a href="{{url('stock_room')}}?show=1&admin_id={{$count->admin_id}}&description={{$count->description}}">{{$count->description}}: {{ $count->count }} </a> &nbsp;&nbsp;&nbsp;&nbsp;
 
                     @endforeach
                 @else
