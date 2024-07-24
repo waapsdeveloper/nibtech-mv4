@@ -28,4 +28,8 @@ class Stock_movement_model extends Model
     {
         return $this->hasOne(Admin_model::class, 'id', 'admin_id');
     }
+    public function receiver()
+    {
+        return $this->hasOne(Admin_model::class, 'id', 'received_by');
+    }
 }

@@ -172,11 +172,14 @@
                                     <th><small><b>IMEI / Serial Number</b></small></th>
                                     <th><small><b>Vendor</b></small></th>
                                     <th><small><b>Reference</b></small></th>
-                                    @if (session('user')->hasPermission('view_cost'))
+                                    {{-- @if (session('user')->hasPermission('view_cost'))
                                     <th><small><b>Cost</b></small></th>
-                                    @endif
-                                    <th><small><b>Datetime</b></small></th>
-                                    <th><small><b>Added By</b></small></th>
+                                    @endif --}}
+                                    <th><small><b>Exit At</b></small></th>
+                                    <th><small><b>Exit By</b></small></th>
+                                    <th><small><b>Description</b></small></th>
+                                    <th><small><b>Received At</b></small></th>
+                                    <th><small><b>Received By</b></small></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -192,7 +195,6 @@
                                         <td><a title="Filter this variation" href="{{url('inventory').'?product='.$stock->variation->product_id.'&storage='.$stock->variation->storage.'&grade[]='.$stock->variation->grade}}">{{ $stock->variation->product->model . " " . (isset($stock->variation->storage) ? $storages[$stock->variation->storage] . " " : null) . " " .
                                         (isset($stock->variation->color) ? $colors[$stock->variation->color] . " " : null) . $grades[$stock->variation->grade] }} </a></td>
                                         <td><a title="{{$stock->id}} | Search Serial" href="{{url('imei')."?imei=".$stock->imei.$stock->serial_number}}" target="_blank"> {{$stock->imei.$stock->serial_number }} </a></td>
-                                        <td><a title="Vendor Profile" href="{{url('edit-customer').'/'.$stock->order->customer_id}}" target="_blank"> {{ $stock->order->customer->first_name ?? null}} </a></td>
                                         <td>
                                             <a title="Purchase Order Details" href="{{url('purchase/detail').'/'.$stock->order_id}}?status=1" target="_blank"> {{ $stock->order->reference_id }} </a>
                                             @if ($stock->latest_return)
@@ -202,17 +204,16 @@
                                                 &nbsp; {{ $stock->latest_verification->process->reference_id }}
                                             @endif
                                         </td>
-                                        @if (session('user')->hasPermission('view_cost'))
+                                        {{-- @if (session('user')->hasPermission('view_cost'))
                                         <td>{{ $stock->order->currency_id->sign ?? null }}{{$stock->purchase_item->price ?? null }}</td>
-                                        @endif
+                                        @endif --}}
                                         <td>{{ $stock_r->exit_at }}</td>
-                                        @if ($stock->latest_operation)
-                                        <td>{{ $stock->latest_operation->admin->first_name ?? null }}</td>
+                                        <td>{{ $stock_r->admin->first_name ?? null }}</td>
                                         <td>
                                             {{ $stock_r->description }}
                                         </td>
-                                        @else
-                                        <td>{{ $stock_r->admin->first_name ?? null }}</td>
+                                        <td>{{ $stock_r->received_at }}</td>
+                                        <td>{{ $stock_r->receiver->first_name ?? "Invoice" }}</td>
 
                                         @endif
                                     </tr>
