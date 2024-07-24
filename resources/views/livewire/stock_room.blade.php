@@ -155,6 +155,8 @@
                                     <option value="100" {{ Request::get('per_page') == 100 ? 'selected' : '' }}>100</option>
                                 </select>
                                 <input type="hidden" name="show" value="1">
+                                <input type="hidden" name="admin_id" value="{{request('admin_id')}}">
+                                <input type="hidden" name="description" value="{{request('description')}}">
                             </form>
                         </div>
 
