@@ -60,7 +60,7 @@ class Stock_room extends Component
             // ->select('admin_id', 'description', DB::raw('COUNT(*) as count'))
             // ->groupBy('admin_id', 'description')
             // ->get();
-            $data['stock_count_all'] = Stock_movement_model::with('admin:id,first_name') // Load the related admin with only 'id' and 'first_name' fields
+            $data['stock_count'] = Stock_movement_model::with('admin:id,first_name') // Load the related admin with only 'id' and 'first_name' fields
             ->select('admin_id', 'description', DB::raw('COUNT(*) as count'), DB::raw('COUNT(CASE WHEN received_at IS NULL THEN id END) as available_count'))
             ->groupBy('admin_id', 'description')
             ->get();
