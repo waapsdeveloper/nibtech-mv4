@@ -20,7 +20,7 @@
 
 
         <!-- breadcrumb -->
-            <div class="breadcrumb-header justify-content-between">
+            <div class="breadcrumb-header justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
                 <div class="left-content">
                 {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">Purchase</span> --}}
                     @if ($order->status == 2)
@@ -71,6 +71,10 @@
                     @endif
 
                 </div>
+            <div class="tx-center">
+                <center><h4>@if ($order->status == 2)<small>(Pending)</small>@endif Purchase Order Detail</h4></center>
+                <h5>Reference: {{ $order->reference_id }} | Vendor: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->count() }} | Total Cost: {{ $order->currency_id->sign.number_format($order->order_items->sum('price'),2) }}</h5>
+            </div>
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
@@ -80,10 +84,6 @@
             </div>
         <!-- /breadcrumb -->
         <div class="row">
-            <div class="col-md-12 tx-center" style="border-bottom: 1px solid rgb(216, 212, 212);">
-                <center><h4>@if ($order->status == 2)<small>(Pending)</small>@endif Purchase Order Detail</h4></center>
-                <h5>Reference: {{ $order->reference_id }} | Vendor: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->count() }} | Total Cost: {{ $order->currency_id->sign.number_format($order->order_items->sum('price'),2) }}</h5>
-            </div>
         </div>
         <br>
 
@@ -143,7 +143,7 @@
         @foreach ($sold_summery as $sold_stock)
 
         @endforeach --}}
-        <br>
+        {{-- <br> --}}
         @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <span class="alert-inner--icon"><i class="fe fe-thumbs-up"></i></span>
@@ -541,7 +541,7 @@
                     <div class="card-header pb-0">
                         Graded Total
                     </div>
-                    <div class="card-body"><div class="table-responsive" style="max-height: 400px">
+                    <div class="card-body"><div class="table-responsive">
                         <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                             <thead>
                                 <tr>
