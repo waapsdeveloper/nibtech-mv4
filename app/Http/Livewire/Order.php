@@ -508,6 +508,7 @@ class Order extends Component
             })
             ->orderBy('grade', 'desc')
             ->get();
+
         }
 
         if (!request('status') || request('status') == 2){
@@ -515,7 +516,21 @@ class Order extends Component
             $data['sold_stocks'] = Stock_model::where(['order_id'=> $order_id, 'status'=>2])
             ->orderBy('variation_id', 'asc')
             ->get();
+
+
         }
+
+        $data['graded_count'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', DB::raw('COUNT(*) as quantity'))
+        ->when(request('status'), function ($q) {
+            return $q->where('stock.status', request('status'));
+        })
+        ->where('stock.order_id', $order_id)
+        ->join('variation', 'stock.variation_id', '=', 'variation.id')
+        ->join('grade', 'variation.grade', '=', 'grade.id')
+        ->groupBy('variation.grade', 'grade.name')
+        ->orderBy('grade_id')
+        ->get();
+
         // $sold_summery = Variation_model::withCount([
         //     'stocks as quantity' => function ($query) use ($order_id) {
         //         $query->where(['order_id'=> $order_id, 'status' => 2]);

@@ -379,161 +379,192 @@
 
         @endif
         @endif
-
-
-        @if (isset($variations) && (!request('status') || request('status') == 1))
         <div class="row">
+            <div class="col-lg-10">
+                @if (isset($variations) && (!request('status') || request('status') == 1))
+                <div class="row">
 
-            @foreach ($variations as $variation)
-            <div class="col-md-4">
-                <div class="card @if ($variation->grade == 9)
-                    highlight
-                @endif">
-                    <div class="card-header pb-0">
-                        @php
-                            isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
-                            isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
-                            isset($variation->grade)?$grade = $grades[$variation->grade]:$grade = null;
-                        @endphp
-                        {{ $variation->product->model." ".$storage." ".$color." ".$grade }}
-                    </div>
-                            {{-- {{ $variation }} --}}
-                    <div class="card-body"><div class="table-responsive" style="max-height: 400px">
+                    @foreach ($variations as $variation)
+                    <div class="col-md-4">
+                        <div class="card @if ($variation->grade == 9)
+                            highlight
+                        @endif">
+                            <div class="card-header pb-0">
+                                @php
+                                    isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
+                                    isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
+                                    isset($variation->grade)?$grade = $grades[$variation->grade]:$grade = null;
+                                @endphp
+                                {{ $variation->product->model." ".$storage." ".$color." ".$grade }}
+                            </div>
+                                    {{-- {{ $variation }} --}}
+                            <div class="card-body"><div class="table-responsive" style="max-height: 400px">
 
-                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
-                                <thead>
-                                    <tr>
-                                        <th><small><b>No</b></small></th>
-                                        <th><small><b>IMEI/Serial</b></small></th>
-                                        @if (session('user')->hasPermission('view_cost'))
-                                        <th><small><b>Cost</b></small></th>
-                                        @endif
-                                        @if (session('user')->hasPermission('delete_purchase_item'))
-                                        <th></th>
-                                        @endif
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @php
-                                        $i = 0;
-                                        $id = [];
-                                    @endphp
-                                    @php
-                                        $stocks = $variation->stocks;
-                                        // $items = $stocks->order_item;
-                                        $j = 0;
-                                        $prices = [];
-                                        // print_r($stocks);
-                                    @endphp
+                                    <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                                        <thead>
+                                            <tr>
+                                                <th><small><b>No</b></small></th>
+                                                <th><small><b>IMEI/Serial</b></small></th>
+                                                @if (session('user')->hasPermission('view_cost'))
+                                                <th><small><b>Cost</b></small></th>
+                                                @endif
+                                                @if (session('user')->hasPermission('delete_purchase_item'))
+                                                <th></th>
+                                                @endif
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @php
+                                                $i = 0;
+                                                $id = [];
+                                            @endphp
+                                            @php
+                                                $stocks = $variation->stocks;
+                                                // $items = $stocks->order_item;
+                                                $j = 0;
+                                                $prices = [];
+                                                // print_r($stocks);
+                                            @endphp
 
-                                    @foreach ($stocks as $item)
-                                        {{-- @dd($item) --}}
-                                        {{-- @if($item->order_item[0]->order_id == $order_id) --}}
-                                        @php
-                                        $i ++;
-                                        $purchase_item = $item->purchase_item;
-                                        $prices[] = $purchase_item->price ?? 0;
-                                    @endphp
-                                        <tr>
-                                            <td>{{ $i }}</td>
-                                            <td data-stock="{{ $item->id }}">{{ $item->imei.$item->serial_number }}</td>
-                                            @if (session('user')->hasPermission('view_cost'))
-                                            <td>{{ $currency}}{{$purchase_item->price ?? "Error in Purchase Entry" }}</td>
-                                            @endif
-                                            @if (session('user')->hasPermission('delete_purchase_item'))
-                                            <td><a href="{{ url('delete_order_item').'/'}}{{$purchase_item->id ?? null }}"><i class="fa fa-trash"></i></a></td>
-                                            @endif
-                                        </tr>
-                                        {{-- @endif --}}
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        <br>
-                    </div>
-                    <div class="text-end">Average Cost: {{array_sum($prices)/count($prices) }} &nbsp;&nbsp;&nbsp; Total: {{$i }}</div>
-                    </div>
-                </div>
-            </div>
-            @endforeach
-        </div>
-        @endif
-        @if (isset($sold_stocks) && count($sold_stocks)>0 && (!request('status') || request('status') == 2))
-
-        <div class="row">
-            <div class="col-xl-12">
-                <div class="card">
-                    <div class="card-header pb-0">
-                        <div class="d-flex justify-content-between">
-                            <h4 class="card-title mg-b-0">Sold Stock Items</h4>
-                            <h5>Total: {{count($sold_stocks)}}</h5>
+                                            @foreach ($stocks as $item)
+                                                {{-- @dd($item) --}}
+                                                {{-- @if($item->order_item[0]->order_id == $order_id) --}}
+                                                @php
+                                                $i ++;
+                                                $purchase_item = $item->purchase_item;
+                                                $prices[] = $purchase_item->price ?? 0;
+                                            @endphp
+                                                <tr>
+                                                    <td>{{ $i }}</td>
+                                                    <td data-stock="{{ $item->id }}">{{ $item->imei.$item->serial_number }}</td>
+                                                    @if (session('user')->hasPermission('view_cost'))
+                                                    <td>{{ $currency}}{{$purchase_item->price ?? "Error in Purchase Entry" }}</td>
+                                                    @endif
+                                                    @if (session('user')->hasPermission('delete_purchase_item'))
+                                                    <td><a href="{{ url('delete_order_item').'/'}}{{$purchase_item->id ?? null }}"><i class="fa fa-trash"></i></a></td>
+                                                    @endif
+                                                </tr>
+                                                {{-- @endif --}}
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                <br>
+                            </div>
+                            <div class="text-end">Average Cost: {{array_sum($prices)/count($prices) }} &nbsp;&nbsp;&nbsp; Total: {{$i }}</div>
+                            </div>
                         </div>
                     </div>
-                    <div class="card-body"><div class="table-responsive">
-                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
-                                <thead>
-                                    <tr>
-                                        <th><small><b>No</b></small></th>
-                                        <th><small><b>Variation</b></small></th>
-                                        <th><small><b>IMEI | Serial Number</b></small></th>
-                                        <th><small><b>Customer</b></small></th>
-                                        @if (session('user')->hasPermission('view_cost'))
-                                        <th><small><b>Cost</b></small></th>
-                                        @endif
-                                        @if (session('user')->hasPermission('view_price'))
-                                        <th><small><b>Price</b></small></th>
-                                        @endif
-                                        <th><small><b>Creation Date</b></small></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @php
-                                        $i = 0;
-                                    @endphp
-                                    @foreach ($sold_stocks as $stock)
-                                        @php
-                                            $item = $stock->last_item();
-                                            $variation = $item->variation;
-                                            if(in_array($item->order->order_type_id,[1,4])){
-                                                $stock->status = 1;
-                                                $stock->save();
-                                                continue;
-                                            }
-                                        @endphp
-                                        <tr>
-                                            <td>{{ $i + 1 }}</td>
-                                            <td>
+                    @endforeach
+                </div>
+                @endif
+                @if (isset($sold_stocks) && count($sold_stocks)>0 && (!request('status') || request('status') == 2))
 
+                <div class="row">
+                    <div class="col-xl-12">
+                        <div class="card">
+                            <div class="card-header pb-0">
+                                <div class="d-flex justify-content-between">
+                                    <h4 class="card-title mg-b-0">Sold Stock Items</h4>
+                                    <h5>Total: {{count($sold_stocks)}}</h5>
+                                </div>
+                            </div>
+                            <div class="card-body"><div class="table-responsive">
+                                    <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                                        <thead>
+                                            <tr>
+                                                <th><small><b>No</b></small></th>
+                                                <th><small><b>Variation</b></small></th>
+                                                <th><small><b>IMEI | Serial Number</b></small></th>
+                                                <th><small><b>Customer</b></small></th>
+                                                @if (session('user')->hasPermission('view_cost'))
+                                                <th><small><b>Cost</b></small></th>
+                                                @endif
+                                                @if (session('user')->hasPermission('view_price'))
+                                                <th><small><b>Price</b></small></th>
+                                                @endif
+                                                <th><small><b>Creation Date</b></small></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @php
+                                                $i = 0;
+                                            @endphp
+                                            @foreach ($sold_stocks as $stock)
                                                 @php
-                                                isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
-                                                isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
+                                                    $item = $stock->last_item();
+                                                    $variation = $item->variation;
+                                                    if(in_array($item->order->order_type_id,[1,4])){
+                                                        $stock->status = 1;
+                                                        $stock->save();
+                                                        continue;
+                                                    }
                                                 @endphp
-                                                {{ $variation->product->model." ".$storage." ".$color}} {{$variation->grade_id->name ?? "Not Assigned" }}
-                                            </td>
-                                            <td title="Double click to change" data-stock="{{ $stock->id }}">{{ $stock->imei.$stock->serial_number }}</td>
-                                            <td>{{ $item->order->customer->first_name }}</td>
-                                            @if (session('user')->hasPermission('view_cost'))
-                                            <td>{{ $currency.number_format($stock->purchase_item->price,2) }}</td>
-                                            @endif
-                                            @if (session('user')->hasPermission('view_cost'))
-                                            <td>{{ $currency.number_format($item->price,2) }}</td>
-                                            @endif
-                                            <td style="width:220px">{{ $item->created_at }}</td>
-                                        </tr>
-                                        @php
-                                            $i ++;
-                                        @endphp
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        <br>
-                    </div>
+                                                <tr>
+                                                    <td>{{ $i + 1 }}</td>
+                                                    <td>
 
+                                                        @php
+                                                        isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
+                                                        isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
+                                                        @endphp
+                                                        {{ $variation->product->model." ".$storage." ".$color}} {{$variation->grade_id->name ?? "Not Assigned" }}
+                                                    </td>
+                                                    <td title="Double click to change" data-stock="{{ $stock->id }}">{{ $stock->imei.$stock->serial_number }}</td>
+                                                    <td>{{ $item->order->customer->first_name }}</td>
+                                                    @if (session('user')->hasPermission('view_cost'))
+                                                    <td>{{ $currency.number_format($stock->purchase_item->price,2) }}</td>
+                                                    @endif
+                                                    @if (session('user')->hasPermission('view_cost'))
+                                                    <td>{{ $currency.number_format($item->price,2) }}</td>
+                                                    @endif
+                                                    <td style="width:220px">{{ $item->created_at }}</td>
+                                                </tr>
+                                                @php
+                                                    $i ++;
+                                                @endphp
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                <br>
+                            </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @endif
+            </div>
+            <div class="col-lg-2">
+
+                <div class="card">
+                    <div class="card-header pb-0">
+                        Graded Total
+                    </div>
+                    <div class="card-body"><div class="table-responsive" style="max-height: 400px">
+                        <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                            <thead>
+                                <tr>
+                                    {{-- <th><small><b>No</b></small></th> --}}
+                                    <th><small><b>Grade</b></small></th>
+                                    <th><small><b>Count</b></small></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($graded_count as $count)
+                                    <tr>
+                                        {{-- <td>{{ $i }}</td> --}}
+                                        <td data-stock="{{ $item->id }}">{{ $count->grade }}</td>
+                                        <td data-stock="{{ $item->id }}">{{ $count->quantity }}</td>
+                                    </tr>
+                                    {{-- @endif --}}
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
-
-        @endif
     @endsection
 
     @section('scripts')
