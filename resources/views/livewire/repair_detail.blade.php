@@ -393,8 +393,10 @@
                                             $variation = $item->variation;
                                             $i ++;
 
-                                            isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
+                                            isset($variation->product)?$product = $products[$variation->product_id]:$product = null;
                                             isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
+                                            isset($variation->color)?$color = $colors[$variation->color]:$color = null;
+                                            isset($variation->grade)?$grade = $grades[$variation->grade]:$grade = null;
 
                                         @endphp
                                         <tr>
@@ -402,7 +404,7 @@
                                             {{-- <td>{{ $item->order->customer->first_name }}</td> --}}
                                             <td>{{ $item->imei.$item->serial_number }}</td>
                                             <td>
-                                                {{ $variation->product->model." ".$storage." ".$color." ".$variation->grade_id->name }}
+                                                {{ $product." ".$storage." ".$color." ".$grade }}
                                             </td>
 
                                             @if ($process->status == 3 && session('user')->hasPermission('view_cost'))
@@ -436,7 +438,7 @@
     @section('scripts')
 
         <script>
-            
+
         $(document).ready(function() {
             $('#currency').on('input', function() {
                 var selectedCurrency = $(this).val();
