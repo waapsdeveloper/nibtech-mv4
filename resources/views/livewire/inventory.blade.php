@@ -69,7 +69,7 @@
                         <label for="product">Product</label>
                     </div>
                     <datalist id="product-menu">
-                        <option value="">select</option>
+                        <option value="">Select</option>
                         @foreach ($products as $id => $model)
                             <option value="{{ $id }}" @if(isset($_GET['product']) && $id == $_GET['product']) {{'selected'}}@endif>{{ $model }}</option>
                         @endforeach

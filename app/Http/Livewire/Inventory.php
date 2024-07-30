@@ -273,20 +273,6 @@ class Inventory extends Component
                     $q->where('orders.status', request('status'));
                 });
             })
-            ->when(request('replacement') != '', function ($q) use ($replacements) {
-                return $q->whereHas('order_items.order', function ($q) use ($replacements) {
-                    $q->where(['status'=>3, 'order_type_id'=>3])
-                    ->whereNotIn('orders.reference_id', $replacements);
-                });
-            })
-
-            ->when(request('rma') != '', function ($query) use ($rmas) {
-                return $query->whereDoesntHave('order_items', function ($q) use ($rmas) {
-                    $q->whereIn('order_items.order_id', $rmas);
-                })->whereHas('variation', function ($q) {
-                    $q->where('variation.grade', 10);
-                })->where('stock.status',2);
-            })
             ->when(request('storage') != '', function ($q) {
                 return $q->whereHas('variation', function ($q) {
                     $q->where('storage', request('storage'));
@@ -342,20 +328,6 @@ class Inventory extends Component
                 $q->where('status', request('status'));
             });
         })
-        ->when(request('replacement') != '', function ($q) use ($replacements) {
-            return $q->whereHas('order_items.order', function ($q) use ($replacements) {
-                $q->where(['status'=>3, 'order_type_id'=>3])
-                ->whereNotIn('reference_id', $replacements);
-            })->Where('stock.status',1);
-        })
-
-        ->when(request('rma') != '', function ($query) use ($rmas) {
-            return $query->whereDoesntHave('order_items', function ($q) use ($rmas) {
-                $q->whereIn('order_id', $rmas);
-            })->whereHas('variation', function ($q) {
-                $q->where('grade', 10);
-            })->Where('stock.status',2);
-        })
         ->when(request('storage') != '', function ($q) {
             return $q->whereHas('variation', function ($q) {
                 $q->where('storage', request('storage'));
@@ -385,6 +357,7 @@ class Inventory extends Component
         // ->join('order_items', 'stock.id', '=', 'order_items.stock_id')
         ->join('order_items', function ($join) {
             $join->on('stock.id', '=', 'order_items.stock_id')
+                ->where('order_items.deleted_at', null)
                 ->whereRaw('order_items.order_id = stock.order_id');
         })
         ->selectRaw('AVG(order_items.price) as average_price')
