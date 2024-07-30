@@ -139,11 +139,11 @@
             <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
         </div>
         <script>
-            $(document).ready(function() {
-                $("#my_audio").get(0).play();
+            // $(document).ready(function() {
+            //     $("#my_audio").get(0).play();
+            // });
             var audio = new Audio("{{asset('assets/audio/beep.mp3')}}");
             audio.play();
-            });
 
         </script>
         <br>
