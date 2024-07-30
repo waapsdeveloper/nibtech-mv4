@@ -309,6 +309,10 @@ class Inventory extends Component
         $data['average_cost'] = Stock_model::where('stock.deleted_at',null)->where('order_items.deleted_at',null)
 
 
+        ->when(request('aftersale') != 1, function ($q) use ($aftersale) {
+            return $q->whereNotIn('stock.id',$aftersale);
+        })
+
         ->when(request('variation') != '', function ($q) {
             return $q->where('stock.variation_id', request('variation'));
         })
