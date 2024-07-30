@@ -128,7 +128,11 @@
             </div>
         </div> --}}
         <br>
-        @if (session('success'))
+        {{-- @if (session('success')) --}}
+        <audio controls autoplay>
+            <source src="{{assets('assets/audio/beep.mp3')}}" type="audio/mpeg">
+          Your browser does not support the audio element.
+          </audio>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <span class="alert-inner--icon"><i class="fe fe-thumbs-up"></i></span>
             <span class="alert-inner--text"><strong>{{session('success')}}</strong></span>
@@ -138,7 +142,7 @@
         @php
         session()->forget('success');
         @endphp
-        @endif
+        {{-- @endif --}}
         @if (session('error'))
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <span class="alert-inner--icon"><i class="fe fe-thumbs-down"></i></span>
