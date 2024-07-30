@@ -296,7 +296,12 @@ class Repair extends Component
             'color' => $color,
             'grade' => $grade,
         ]);
+        if($new_variation->id == null){
+            $new_variation->status = 1;
+        }
+
         $new_variation->save();
+
         $stock_operation = Stock_operations_model::create([
             'stock_id' => $stock->id,
             'old_variation_id' => $stock->variation_id,
