@@ -668,7 +668,8 @@ class Order extends Component
 
         if (!request('status') || request('status') == 2){
 
-            $data['sold_stocks'] = Stock_model::where(['order_id'=> $order_id, 'status'=>2])
+            $data['sold_stocks'] = Stock_model::with('order_items')
+            ->where(['order_id'=> $order_id, 'status'=>2])
             ->orderBy('variation_id', 'asc')
             ->get();
 
