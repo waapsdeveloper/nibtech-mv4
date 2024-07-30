@@ -264,7 +264,7 @@
         @endif
 
         <div @if ($process->status != 1)  class="row" @endif>
-            <div @if ($process->status != 1) class="col-md-8 row" @else class="row" @endif>
+            <div @if ($process->status != 1) class="col-md-7 row" @else class="row" @endif>
 
             @foreach ($variations as $variation)
             <div @if ($process->status == 1) class="col-md-4" @else class="col-md-6" @endif>
@@ -346,7 +346,7 @@
             </div>
             @if ($process->status != 1)
 
-            <div class="col-md-4">
+            <div class="col-md-5">
                 <div class="card">
                     <div class="card-header pb-0">
                         Received Items
@@ -366,6 +366,7 @@
                                         @if ($process->status == 3 && session('user')->hasPermission('view_cost'))
                                         <th><small><b>Cost</b></small></th>
                                         @endif
+                                        <th><small><b>Last Updated</b></small></th>
 
                                         @if (session('user')->hasPermission('delete_repair_item'))
                                         {{-- <th></th> --}}
@@ -410,6 +411,7 @@
                                             @if ($process->status == 3 && session('user')->hasPermission('view_cost'))
                                             <td>{{$processed_stock->price}}</td>
                                             @endif
+                                            <td>{{$processed_stock->updated_at}}</td>
                                             @if (session('user')->hasPermission('delete_repair_item'))
                                             {{-- <td><a href="{{ url('delete_repair_item').'/'.$item->process_stock($process_id)->id }}"><i class="fa fa-trash"></i></a></td> --}}
                                             @endif
