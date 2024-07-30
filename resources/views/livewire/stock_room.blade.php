@@ -130,7 +130,7 @@
         <br>
         {{-- @if (session('success')) --}}
         <audio controls autoplay>
-            <source src="{{asset('audio/beep.mp3')}}" type="audio/mpeg">
+            <source src="{{asset('assets/audio/beep.mp3')}}" type="audio/mpeg">
           Your browser does not support the audio element.
           </audio>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
