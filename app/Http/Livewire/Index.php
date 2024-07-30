@@ -150,7 +150,7 @@ class Index extends Component
             $q->where('order_type_id',4)->where('status','<',3);
         })->pluck('stock_id')->toArray();
         $data['returns_in_progress'] = count($aftersale);
-        $rmas = Order_model::where(['order_type_id'=>2])->pluck('id')->toArray();
+        $rmas = Order_model::whereIn('order_type_id',[2,5])->pluck('id')->toArray();
         $rma = Stock_model::whereDoesntHave('order_items', function ($q) use ($rmas) {
                 $q->whereIn('order_id', $rmas);
             })->whereHas('variation', function ($q) {

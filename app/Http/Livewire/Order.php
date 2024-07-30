@@ -673,7 +673,13 @@ class Order extends Component
             ->orderBy('variation_id', 'asc')
             ->get();
 
+            // $data['sold_stock_order_items'] = Order_item_model::whereHas('stock', function($q) use ($order_id){
+            //     $q->where(['order_id'=> $order_id, 'status'=>2]);
+            // // })->whereHas('order', function($q){
+            // //     $q->whereIn('order_type_id', [2,3,5]);
+            // })->latest()->distinct('stock_id')->get();
 
+            // dd($data['sold_stock_order_items']);
         }
 
         $data['graded_count'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', DB::raw('COUNT(*) as quantity'))

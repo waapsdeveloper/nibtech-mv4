@@ -601,6 +601,43 @@
                                                     $i ++;
                                                 @endphp
                                             @endforeach
+                                            {{-- @foreach ($sold_stock_order_items as $item)
+                                                @php
+                                                    // $item = $stock->last_item();
+                                                    $stock = $item->stock;
+                                                    $variation = $item->variation;
+                                                    if(in_array($item->order->order_type_id,[1,4])){
+                                                        $stock->status = 1;
+                                                        $stock->save();
+                                                        continue;
+                                                    }
+                                                @endphp
+                                                <tr>
+                                                    <td>{{ $i + 1 }}</td>
+                                                    <td>
+
+                                                        @php
+                                                        isset($variation->product_id)?$product = $products[$variation->product_id]:$product = null;
+                                                        isset($variation->color)?$color = $colors[$variation->color]:$color = null;
+                                                        isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
+                                                        isset($variation->grade)?$grade = $grades[$variation->grade]:$grade = null;
+                                                        @endphp
+                                                        {{ $product." ".$storage." ".$color}} {{$grade }}
+                                                    </td>
+                                                    <td title="Double click to change" data-stock="{{ $stock->id }}">{{ $stock->imei.$stock->serial_number }}</td>
+                                                    <td>{{ $item->order->customer->first_name }}</td>
+                                                    @if (session('user')->hasPermission('view_cost'))
+                                                    <td>{{ $currency.number_format($stock->purchase_item->price,2) }}</td>
+                                                    @endif
+                                                    @if (session('user')->hasPermission('view_cost'))
+                                                    <td>{{ $currency.number_format($item->price,2) }}</td>
+                                                    @endif
+                                                    <td style="width:220px">{{ $item->created_at }}</td>
+                                                </tr>
+                                                @php
+                                                    $i ++;
+                                                @endphp
+                                            @endforeach --}}
                                         </tbody>
                                     </table>
                                 <br>
