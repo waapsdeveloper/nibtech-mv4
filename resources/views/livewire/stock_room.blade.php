@@ -141,7 +141,10 @@
         <script>
             $(document).ready(function() {
                 $("#my_audio").get(0).play();
+            var audio = new Audio({{asset('assets/audio/beep.mp3')}});
+            audio.play();
             });
+
         </script>
         <br>
         @php
