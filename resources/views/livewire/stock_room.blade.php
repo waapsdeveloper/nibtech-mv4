@@ -133,6 +133,22 @@
             {{-- <source type="audio/mpeg">
           Your browser does not support the audio element. --}}
           </audio>
+          <audio src="{{asset('assets/audio/beep.mp3')}}" autoplay>
+              {{-- <source type="audio/mpeg">
+            Your browser does not support the audio element. --}}
+            </audio>
+            <audio src="{{asset('assets/audio/beep.mp3')}}" autoplay>
+                {{-- <source type="audio/mpeg">
+              Your browser does not support the audio element. --}}
+              </audio>
+              <audio src="{{asset('assets/audio/beep.mp3')}}" autoplay>
+                  {{-- <source type="audio/mpeg">
+                Your browser does not support the audio element. --}}
+                </audio>
+                <audio src="{{asset('assets/audio/beep.mp3')}}" autoplay>
+                    {{-- <source type="audio/mpeg">
+                  Your browser does not support the audio element. --}}
+                  </audio>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <span class="alert-inner--icon"><i class="fe fe-thumbs-up"></i></span>
             <span class="alert-inner--text"><strong>{{session('success')}}</strong></span>
