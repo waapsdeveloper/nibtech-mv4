@@ -580,10 +580,12 @@
                                                     <td>
 
                                                         @php
-                                                        isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
+                                                        isset($variation->product_id)?$product = $products[$variation->product_id]:$product = null;
+                                                        isset($variation->color)?$color = $colors[$variation->color]:$color = null;
                                                         isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
+                                                        isset($variation->grade)?$grade = $grades[$variation->grade]:$grade = null;
                                                         @endphp
-                                                        {{ $variation->product->model." ".$storage." ".$color}} {{$variation->grade_id->name ?? "Not Assigned" }}
+                                                        {{ $product." ".$storage." ".$color}} {{$grade }}
                                                     </td>
                                                     <td title="Double click to change" data-stock="{{ $stock->id }}">{{ $stock->imei.$stock->serial_number }}</td>
                                                     <td>{{ $item->order->customer->first_name }}</td>
