@@ -129,31 +129,20 @@
         </div> --}}
         <br>
         {{-- @if (session('success')) --}}
-        <audio src="{{asset('assets/audio/beep.mp3')}}" autoplay>
+        <audio src="{{asset('assets/audio/beep.mp3')}}" id="my_audio">
             {{-- <source type="audio/mpeg">
           Your browser does not support the audio element. --}}
-          </audio>
-          <audio src="{{asset('assets/audio/beep.mp3')}}" autoplay>
-              {{-- <source type="audio/mpeg">
-            Your browser does not support the audio element. --}}
-            </audio>
-            <audio src="{{asset('assets/audio/beep.mp3')}}" autoplay>
-                {{-- <source type="audio/mpeg">
-              Your browser does not support the audio element. --}}
-              </audio>
-              <audio src="{{asset('assets/audio/beep.mp3')}}" autoplay>
-                  {{-- <source type="audio/mpeg">
-                Your browser does not support the audio element. --}}
-                </audio>
-                <audio src="{{asset('assets/audio/beep.mp3')}}" autoplay>
-                    {{-- <source type="audio/mpeg">
-                  Your browser does not support the audio element. --}}
-                  </audio>
+        </audio>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <span class="alert-inner--icon"><i class="fe fe-thumbs-up"></i></span>
             <span class="alert-inner--text"><strong>{{session('success')}}</strong></span>
             <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
         </div>
+        <script>
+            $(document).ready(function() {
+                $("#my_audio").get(0).play();
+            });
+        </script>
         <br>
         @php
         session()->forget('success');
