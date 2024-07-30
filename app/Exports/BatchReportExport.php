@@ -51,11 +51,22 @@ class BatchReportExport implements FromCollection, WithHeadings, WithMapping
         }
 
         $finalData = [];
+        // foreach ($this->vendorData as $vendorGrade => $quantities) {
+        //     $row = ['vendor_grade' => $vendorGrade];
+        //     foreach ($this->grades as $grade) {
+        //         $row[$grade] = $quantities[$grade];
+        //     }
+        //     $finalData[] = $row;
+        // }
         foreach ($this->vendorData as $vendorGrade => $quantities) {
             $row = ['vendor_grade' => $vendorGrade];
+            $totalQuantity = 0;
             foreach ($this->grades as $grade) {
-                $row[$grade] = $quantities[$grade];
+                $quantity = $quantities[$grade];
+                $row[$grade] = $quantity;
+                $totalQuantity += $quantity;
             }
+            $row['total_quantity'] = $totalQuantity;
             $finalData[] = $row;
         }
 
@@ -69,7 +80,7 @@ class BatchReportExport implements FromCollection, WithHeadings, WithMapping
         $staticHeadings = ['Vendor Grade'];
 
         // Merge static heading with dynamic grade names as headings
-        return array_merge($staticHeadings, $this->grades);
+        return array_merge($staticHeadings, ['Total Quantity'], $this->grades);
     }
 
     // Method to map data for each row
@@ -77,6 +88,9 @@ class BatchReportExport implements FromCollection, WithHeadings, WithMapping
     {
         // Initialize the row data with the vendor grade
         $rowData = [$row['vendor_grade']];
+
+        // Append total quantity
+        $rowData[] = $row['total_quantity'];
 
         // Append quantities for each grade
         foreach ($this->grades as $grade) {
