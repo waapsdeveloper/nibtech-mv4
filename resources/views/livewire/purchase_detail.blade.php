@@ -97,6 +97,11 @@
                             <option value="">Select</option>
                             @foreach ($all_variations as $variation)
                                 @php
+                                    if($variation->product_id){
+                                        $product = $products[$variation->product_id];
+                                    }else{
+                                        $product = null;
+                                    }
                                     if($variation->storage){
                                         $storage = $storages[$variation->storage];
                                     }else{
@@ -108,7 +113,7 @@
                                         $color = null;
                                     }
                                 @endphp
-                                <option value="{{$variation->id}}" @if(isset($_GET['variation']) && $variation->id == $_GET['variation']) {{'selected'}}@endif>{{$variation->product->model." ".$storage." ".$color}}</option>
+                                <option value="{{$variation->id}}" @if(isset($_GET['variation']) && $variation->id == $_GET['variation']) {{'selected'}}@endif>{{$product." ".$storage." ".$color}}</option>
                             @endforeach
                         </datalist>
                         <label for="variation">Variation</label>
