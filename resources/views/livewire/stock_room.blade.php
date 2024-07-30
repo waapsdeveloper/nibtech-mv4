@@ -129,9 +129,9 @@
         </div> --}}
         <br>
         {{-- @if (session('success')) --}}
-        <audio src="{{asset('assets/audio/beep.mp3')}}" id="my_audio">
-            {{-- <source type="audio/mpeg">
-          Your browser does not support the audio element. --}}
+        <audio id="my_audio" autoplay>
+            <source type="audio/mpeg">
+          Your browser does not support the audio element.
         </audio>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <span class="alert-inner--icon"><i class="fe fe-thumbs-up"></i></span>
@@ -139,6 +139,7 @@
             <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
         </div>
         <script>
+            document.getElementById('myaudio').play();
             $(document).ready(function() {
                 $("#my_audio").get(0).play();
             });
