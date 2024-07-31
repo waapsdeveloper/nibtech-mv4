@@ -152,6 +152,10 @@
                                         <th><small><b>Qty</b></small></th>
                                         <th><small><b>Issues</b></small></th>
                                         <th><small><b>Creation Date</b></small></th>
+                                        @if (request('status') != 2)
+
+                                        <th><small><b>Approval Date</b></small></th>
+                                        @endif
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -194,6 +198,10 @@
 
                                                 @endif</td>
                                                 <td style="width:180px" title="Last Updated: {{$order->last_update->updated_at ?? null }}">{{ $order->created_at}}</td>
+                                                @if (request('status') != 2)
+
+                                                <td style="width:180px">{{ $order->processed_at}}</td>
+                                                @endif
                                                 <td>
                                                     <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                                     <div class="dropdown-menu">
