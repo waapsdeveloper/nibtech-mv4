@@ -405,6 +405,7 @@ class Order extends Component
         $order->tracking_number = request('tracking_number');
         if(request('approve') == 1){
             $order->status = 3;
+            $order->processed_at = now()->format('Y-m-d H:i:s');
         }
         $order->save();
 
