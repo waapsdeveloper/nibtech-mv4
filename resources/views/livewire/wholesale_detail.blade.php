@@ -74,24 +74,26 @@
                 </div>
             </div>
         <!-- /breadcrumb -->
-        <div class="text-center" style="border-bottom: 1px solid rgb(216, 212, 212);">
-                {{-- <center><h4>BulkSale Order Detail</h4></center> --}}
-                <h5>Reference: {{ $order->reference_id }} | Purchaser: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->count() }} | Total Price: {{ $order->currency_id->sign.number_format($order->order_items->sum('price'),2) }}</h5>
+        <div class="d-flex justify-content-between">
+            <div class="" style="border-bottom: 1px solid rgb(216, 212, 212);">
+                    {{-- <center><h4>BulkSale Order Detail</h4></center> --}}
+                    <h5>Reference: {{ $order->reference_id }} | Purchaser: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->count() }} | Total Price: {{ $order->currency_id->sign.number_format($order->order_items->sum('price'),2) }}</h5>
 
-        </div>
-        <div class="">
-            <form method="POST" action="{{ url('purchase/approve').'/'.$order->id }}">
-            <h6>Creation Date: {{ $order->created_at }}</h6>
-            <h6>Approval Date: {{ $order->processed_at }}</h6>
-            <h6>Vendor:
-                <select name="customer_id" class="form-select" onchange="this.form.submit()">
-                    @foreach ($vendors as $id=>$vendor)
-                        <option value="{{ $id }}" {{ $order->customer_id == $id ? 'selected' : '' }}>{{ $vendor }}</option>
+            </div>
+            <div class="">
 
-                    @endforeach
-                </select>
-            </h6>
-            </form>
+                <h6>Creation Date: {{ $order->created_at }}</h6>
+                <h6>Approval Date: {{ $order->processed_at }}</h6>
+                <form method="POST" action="{{ url('purchase/approve').'/'.$order->id }}" class="form-inline">
+                <label>Vendor: </label>
+                    <select name="customer_id" class="form-select" onchange="this.form.submit()">
+                        @foreach ($vendors as $id=>$vendor)
+                            <option value="{{ $id }}" {{ $order->customer_id == $id ? 'selected' : '' }}>{{ $vendor }}</option>
+
+                        @endforeach
+                    </select>
+                </form>
+            </div>
         </div>
         <br>
 
