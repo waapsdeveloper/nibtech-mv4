@@ -55,6 +55,20 @@
                                     <input class="form-control" placeholder="Enter customer's lastname" name="customer[last_name]" value="{{$customer->last_name}}" type="text">
                                 </div>
                             </div>
+                            <div class="row row-xs align-items-center mg-b-20">
+                                <div class="col-md-3">
+                                    <label class="form-label mg-b-0">Type</label>
+                                </div>
+                                <div class="col-md-9 mg-t-5 mg-md-t-0">
+
+                                    <select name="customer[type]" class="form-select">
+                                        <option value="1" {{ $customer->type == 1 ? 'selected' : '' }}>Vendors</option>
+                                        <option value="2" {{ $customer->type == 2 ? 'selected' : '' }}>BulkSale Purchasers</option>
+                                        <option value="3" {{ $customer->type == 3 ? 'selected' : '' }}>Repairer</option>
+                                        <option value="4" {{ $customer->type == 4 ? 'selected' : '' }}>Customers</option>
+                                    </select>
+                                </div>
+                            </div>
 
                         </div>
                         <div class="col-md-4">
