@@ -80,15 +80,15 @@
                         <li class="breadcrumb-item active" aria-current="page">BulkSale Detail</li>
                     </ol>
                     <br>
-                    <h6>Creation Date: {{ $order->created_at }}</h6>
-                    <h6>Approval Date: {{ $order->processed_at }}</h6>
+                    Creation Date: {{ $order->created_at }}<br>
+                    Approval Date: {{ $order->processed_at }}
                 </div>
             </div>
         <!-- /breadcrumb -->
         <br>
             <div class="text-center" style="border-bottom: 1px solid rgb(216, 212, 212);">
                     {{-- <center><h4>BulkSale Order Detail</h4></center> --}}
-                    <h5>Reference: {{ $order->reference_id }} | Purchaser: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->count() }} | Total Price: {{ $order->currency_id->sign.number_format($order->order_items->sum('price'),2) }} | Creation Date: {{ $order->created_at }} @if ($order->status == 3) | Approval Date: {{ $order->processed_at }} @endif</h5>
+                    <h5>Reference: {{ $order->reference_id }} | Purchaser: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->count() }} | Total Price: {{ $order->currency_id->sign.number_format($order->order_items->sum('price'),2) }}</h5>
 
             </div>
         <br>
