@@ -138,6 +138,7 @@ class Wholesale extends Component
         $order->reference = request('reference');
         $order->tracking_number = request('tracking_number');
         $order->status = 3;
+        $order->processed_at = now()->format('Y-m-d H:i:s');
         $order->save();
 
         return redirect()->back();
