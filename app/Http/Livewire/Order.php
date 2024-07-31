@@ -2122,6 +2122,7 @@ class Order extends Component
                     'description' => request('replacement')['reason']." | Order: ".$item->order->reference_id." | New IMEI: ".$imei.$serial_number,
                     'admin_id' => session('user_id'),
                 ]);
+                $item->stock->variation_id = $variation->id;
             }else{
                 // session()->put('error','Item already returned');
 
@@ -2134,7 +2135,6 @@ class Order extends Component
                 'description' => "Replacement | Order: ".$item->order->reference_id." | Old IMEI: ".$item->stock->imei.$item->stock->serial_number,
                 'admin_id' => session('user_id'),
             ]);
-            $item->stock->variation_id = $variation->id;
             $item->stock->status = 1;
             $item->stock->save();
 
