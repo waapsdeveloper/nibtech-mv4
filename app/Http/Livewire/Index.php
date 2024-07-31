@@ -62,7 +62,7 @@ class Index extends Component
         // $products = Products_model::get()->toArray();
         // Retrieve the top 10 selling products from the order_items table
         $variation_ids = [];
-        if(request('submit') == 1){
+        if(request('data') == 1){
 
             $variation_ids = Variation_model::withoutGlobalScope('Status_not_3_scope')->select('id')
             ->when(request('product') != '', function ($q) {
@@ -92,7 +92,7 @@ class Index extends Component
             })->pluck('id')->toArray();
 
         }
-        $top_products = Order_item_model::when(request('submit') == 1, function($q) use ($variation_ids){
+        $top_products = Order_item_model::when(request('data') == 1, function($q) use ($variation_ids){
             return $q->whereIn('variation_id', $variation_ids);
         })
         ->whereHas('order', function ($q) use ($start_date, $end_date) {
@@ -110,7 +110,7 @@ class Index extends Component
 
         $data['total_orders'] = Order_model::whereBetween('created_at', [$start_date, $end_date])->where('order_type_id',3)
         ->whereHas('order_items', function ($q) use ($variation_ids) {
-            $q->when(request('submit') == 1, function($q) use ($variation_ids){
+            $q->when(request('data') == 1, function($q) use ($variation_ids){
                 return $q->whereIn('variation_id', $variation_ids);
             });
         })
@@ -118,14 +118,14 @@ class Index extends Component
 
         $data['pending_orders'] = Order_model::whereBetween('created_at', [$start_date, $end_date])->where('order_type_id',3)->where('status','<',3)
         ->whereHas('order_items', function ($q) use ($variation_ids) {
-            $q->when(request('submit') == 1, function($q) use ($variation_ids){
+            $q->when(request('data') == 1, function($q) use ($variation_ids){
                 return $q->whereIn('variation_id', $variation_ids);
             });
         })
         ->count();
         $data['invoiced_orders'] = Order_model::where('processed_at', '>=', $start_date)->where('processed_at', '<=', $end_date)->where('order_type_id',3)
         ->whereHas('order_items', function ($q) use ($variation_ids) {
-            $q->when(request('submit') == 1, function($q) use ($variation_ids){
+            $q->when(request('data') == 1, function($q) use ($variation_ids){
                 return $q->whereIn('variation_id', $variation_ids);
             });
         })
@@ -133,7 +133,7 @@ class Index extends Component
 
 
         $data['total_conversations'] = Order_item_model::whereBetween('created_at', [$start_date, $end_date])->where('care_id','!=',null)
-        ->when(request('submit') == 1, function($q) use ($variation_ids){
+        ->when(request('data') == 1, function($q) use ($variation_ids){
             return $q->whereIn('variation_id', $variation_ids);
         })->whereHas('sale_order')
         ->count();
@@ -141,7 +141,7 @@ class Index extends Component
         $data['average'] = Order_item_model::whereBetween('created_at', [$start_date, $end_date])
         ->whereHas('order', function ($q) {
             $q->where('currency',4);
-        })->when(request('submit') == 1, function($q) use ($variation_ids){
+        })->when(request('data') == 1, function($q) use ($variation_ids){
             return $q->whereIn('variation_id', $variation_ids);
         })
         ->avg('price');

@@ -204,7 +204,7 @@
                             </div>
                         </div>
                         <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
-                            <button type="submit" class="btn btn-icon  btn-success me-1" name="submit" value="1" form="index"><i class="fe fe-search"></i></button>
+                            <button type="submit" class="btn btn-icon  btn-success me-1" name="data" value="1" form="index"><i class="fe fe-search"></i></button>
                             <a href="{{ url('/') }}" class="btn btn-icon btn-danger me-1" form="index"><i class="fe fe-x"></i></a>
                     </div>
                     <form action="" method="GET" id="index">
@@ -246,7 +246,7 @@
                                                 <input type="hidden" name="grade" value="{{ Request::get('grade') }}">
                                                 <input type="hidden" name="category" value="{{ Request::get('category') }}">
                                                 <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
-                                                <input type="hidden" name="submit" value="{{ Request::get('submit') }}">
+                                                <input type="hidden" name="data" value="{{ Request::get('data') }}">
                                             </form>
                                             </div>
 										</div>
