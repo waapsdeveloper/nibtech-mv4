@@ -138,19 +138,8 @@
                 </div>
                 <button class="btn btn-primary pd-x-20" type="submit">Insert</button>
                 <div class="col-md col-sm-6">
-                    <form method="POST" action="{{ url('purchase/approve').'/'.$order->id }}">
                     <h6>Creation Date: {{ $order->created_at }}</h6>
                     <h6>Approval Date: {{ $order->processed_at }}</h6>
-                    <h6>Vendor:
-                        <select name="customer_id" class="form-select" onchange="this.form.submit()">
-                            <option>Select Vendor</option>
-                            @foreach ($vendors as $id=>$vendor)
-                                <option value="{{ $id }}">{{ $vendor }}</option>
-
-                            @endforeach
-                        </select>
-                    </h6>
-                    </form>
                 </div>
             </div>
         </form>
