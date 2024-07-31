@@ -115,6 +115,11 @@ class Customer extends Component
 
         return view('livewire.edit-customer')->with($data);
     }
+    public function delete_customer($id){
+        Customer_model::find($id)->delete();
+        session()->put('success',"Customer has been deleted successfully");
+        return redirect(url('customer'));
+    }
     public function update_customer($id)
     {
         $data = request('customer');

@@ -141,7 +141,9 @@
                         </div>
                     </div>
                     <button class="btn btn-primary pd-x-30 mg-r-5 mg-t-5" >Update</button>
-
+                    @if ($customer->orders->count() == 0)
+                        <a href="{{url('customer/delete')}}/{{$customer->id}}">Delete</a>
+                    @endif
                 </form>
             </div>
         </div>
