@@ -84,6 +84,7 @@ Route::post('purchase/remove_issues', [Order::class,'remove_issues'])->name('rem
 Route::get('report', Report::class)->name('view_report');
 Route::get('report/export', [Report::class,'export_report'])->name('view_report');
 Route::get('report/export_batch/{orderId}', [Report::class,'export_batch_report'])->name('view_report');
+Route::get('report/pnl', [Report::class,'pnl_by_product'])->name('pnl_by_product');
 
 Route::get('return', SalesReturn::class)->name('view_return');
 Route::get('add_return', [SalesReturn::class,'add_return'])->name('add_return');

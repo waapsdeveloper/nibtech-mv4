@@ -14,7 +14,6 @@
         }
     </style>
     @endsection
-<br>
     @section('content')
         <!-- breadcrumb -->
             <div class="breadcrumb-header justify-content-between">

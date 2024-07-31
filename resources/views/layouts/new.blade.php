@@ -49,34 +49,9 @@
 
 		<!-- Page -->
 		<div class="page">
-			<div>
-
-                @include('layouts.components.app-header')
-
-                @include('layouts.components.app-sidebar')
-
-			</div>
-
-			<!-- main-content -->
-			<div class="main-content app-content">
-
-				<!-- container -->
-				<div class="main-container container-fluid">
 
                     @yield('content')
 
-				</div>
-				<!-- Container closed -->
-			</div>
-			<!-- main-content closed -->
-
-            {{-- @include('layouts.components.sidebar-right') --}}
-
-            {{-- @include('layouts.components.modal') --}}
-
-            @yield('modal')
-
-            @include('layouts.components.footer')
 
 		</div>
 		<!-- End Page -->

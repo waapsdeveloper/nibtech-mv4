@@ -261,6 +261,119 @@ class Report extends Component
         return Excel::download(new BatchReportExport($orderId), $order->reference_id.'_batch_report.xlsx');
     }
 
+    public function pnl_by_product(){
+
+        $data['products'] = Products_model::pluck('model','id');
+
+        $start_date = Carbon::now()->startOfMonth();
+        // $start_date = date('Y-m-d 00:00:00',);
+        $end_date = date('Y-m-d 23:59:59');
+        if (request('start_date') != NULL && request('end_date') != NULL) {
+            $start_date = request('start_date') . " 23:00:00";
+            $end_date = request('end_date') . " 22:59:59";
+        }
+        $data['start_date'] = date('Y-m-d', strtotime($start_date));
+        $data['end_date'] = date("Y-m-d", strtotime($end_date));
+
+
+        $aggregates = DB::table('products')
+            ->join('variation', 'products.id', '=', 'variation.product_id')
+            ->join('order_items', 'variation.id', '=', 'order_items.variation_id')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->leftJoin('stock', 'order_items.stock_id', '=', 'stock.id')
+            ->leftJoin('process_stock', 'stock.id', '=', 'process_stock.stock_id')
+            ->leftJoin('process', 'process_stock.process_id', '=', 'process.id')
+            ->select(
+                'products.id as product_id',
+                DB::raw('COUNT(orders.id) as orders_qty'),
+                DB::raw('SUM(CASE WHEN orders.status = 3 THEN 1 ELSE 0 END) as approved_orders_qty'),
+                DB::raw('SUM(CASE WHEN orders.currency = 4 THEN order_items.price ELSE 0 END) as eur_items_sum'),
+                DB::raw('SUM(CASE WHEN orders.currency = 4 AND orders.status = 3 THEN order_items.price ELSE 0 END) as eur_approved_items_sum'),
+                DB::raw('SUM(CASE WHEN orders.currency = 5 THEN order_items.price ELSE 0 END) as gbp_items_sum'),
+                DB::raw('SUM(CASE WHEN orders.currency = 5 AND orders.status = 3 THEN order_items.price ELSE 0 END) as gbp_approved_items_sum'),
+                DB::raw('GROUP_CONCAT(stock.id) as stock_ids'),
+                // DB::raw('SUM(CASE WHEN orders.currency = 5 AND orders.status = 3 THEN order_items.price ELSE 0 END) as gbp_approved_items_sum'),
+                // DB::raw('SUM(purchase_items.price) as items_cost_sum'),
+                DB::raw('SUM(CASE WHEN process.process_type_id = 9 THEN process_stock.price ELSE 0 END) as items_repair_sum')
+            )
+            ->whereBetween('orders.processed_at', [$start_date, $end_date])
+            ->where('orders.order_type_id', 3)
+            ->Where('orders.deleted_at',null)
+            ->Where('order_items.deleted_at',null)
+            ->Where('stock.deleted_at',null)
+            ->Where('process_stock.deleted_at',null)
+            ->whereIn('orders.status', [3,6])
+            ->whereIn('order_items.status', [3,6])
+            ->groupBy('products.id')
+            ->get();
+
+        $aggregated_cost = [];
+        foreach ($aggregates as $agg) {
+
+            if (empty($agg->stock_ids)) {
+                $aggregated_cost[$agg->product_id] = 0;
+                continue;
+            }
+            $aggregated_cost[$agg->product_id] = Order_item_model::whereIn('stock_id',explode(',',$agg->stock_ids))->whereHas('order', function ($q) {
+                $q->where('order_type_id',1);
+            })->sum('price');
+        }
+
+        $data['aggregated_sales'] = $aggregates;
+        $data['aggregated_sales_cost'] = $aggregated_cost;
+
+        $aggregate_returns = DB::table('category')
+            ->join('products', 'category.id', '=', 'products.category')
+            ->join('variation', 'products.id', '=', 'variation.product_id')
+            ->join('order_items', 'variation.id', '=', 'order_items.variation_id')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->leftJoin('stock', 'order_items.stock_id', '=', 'stock.id')
+            ->leftJoin('process_stock', 'stock.id', '=', 'process_stock.stock_id')
+            ->leftJoin('process', 'process_stock.process_id', '=', 'process.id')
+            ->select(
+                'category.id as product_id',
+                DB::raw('COUNT(orders.id) as orders_qty'),
+                DB::raw('SUM(CASE WHEN orders.status = 3 THEN 1 ELSE 0 END) as approved_orders_qty'),
+                DB::raw('SUM(CASE WHEN orders.currency = 4 THEN order_items.price ELSE 0 END) as eur_items_sum'),
+                DB::raw('SUM(CASE WHEN orders.currency = 4 AND orders.status = 3 THEN order_items.price ELSE 0 END) as eur_approved_items_sum'),
+                DB::raw('SUM(CASE WHEN orders.currency = 5 THEN order_items.price ELSE 0 END) as gbp_items_sum'),
+                DB::raw('SUM(CASE WHEN orders.currency = 5 AND orders.status = 3 THEN order_items.price ELSE 0 END) as gbp_approved_items_sum'),
+                DB::raw('GROUP_CONCAT(stock.id) as stock_ids'),
+                // DB::raw('SUM(CASE WHEN orders.currency = 5 AND orders.status = 3 THEN order_items.price ELSE 0 END) as gbp_approved_items_sum'),
+                // DB::raw('SUM(purchase_items.price) as items_cost_sum'),
+                DB::raw('SUM(CASE WHEN process.process_type_id = 9 THEN process_stock.price ELSE 0 END) as items_repair_sum')
+            )
+            ->whereBetween('orders.created_at', [$start_date, $end_date])
+            ->where('orders.order_type_id', 4)
+            ->Where('orders.deleted_at',null)
+            ->Where('order_items.deleted_at',null)
+            ->Where('stock.deleted_at',null)
+            ->Where('process_stock.deleted_at',null)
+            // ->whereIn('orders.status', [3,6])
+            ->groupBy('category.id')
+            ->get();
+        // $costs = Category_model::select(
+        //     'category.'
+        // )
+        $aggregated_return_cost = [];
+        foreach ($aggregate_returns as $agg) {
+
+            if (empty($agg->stock_ids)) {
+                $aggregated_return_cost[$agg->product_id] = 0;
+                continue;
+            }
+            $aggregated_return_cost[$agg->product_id] = Order_item_model::whereIn('stock_id',explode(',',$agg->stock_ids))->whereHas('order', function ($q) {
+                $q->where('order_type_id',1);
+            })->sum('price');
+        }
+
+        $data['aggregated_returns'] = $aggregate_returns;
+        $data['aggregated_return_cost'] = $aggregated_return_cost;
+
+        return view('livewire.pnl_new')->with($data);
+
+    }
+
 
     public function export_report()
     {
