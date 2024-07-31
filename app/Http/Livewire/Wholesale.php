@@ -151,7 +151,7 @@ class Wholesale extends Component
 
         $data['title_page'] = "BulkSale Detail";
 
-        $data['vendors'] = Customer_model::where('is_vendor','!=',null)->pluck('company','id');
+        $data['vendors'] = Customer_model::where('type',2)->pluck('company','id');
         // $data['imeis'] = Stock_model::whereIn('status',[1,3])->orderBy('serial_number','asc')->orderBy('imei','asc')->get();
         $data['exchange_rates'] = ExchangeRate::pluck('rate','target_currency');
         $data['storages'] = Storage_model::pluck('name','id');
