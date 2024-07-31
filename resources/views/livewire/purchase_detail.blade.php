@@ -137,7 +137,7 @@
                     </div>
                 </div>
                 <button class="btn btn-primary pd-x-20" type="submit">Insert</button>
-                <div class="col-md col-sm-6">
+                <div class="col-md col-sm-6 text-right">
                     <h6>Creation Date: {{ $order->created_at }}</h6>
                     <h6>Approval Date: {{ $order->processed_at }}</h6>
                 </div>
