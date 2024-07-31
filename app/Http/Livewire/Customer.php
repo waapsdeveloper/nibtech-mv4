@@ -117,8 +117,9 @@ class Customer extends Component
     }
     public function update_customer($id)
     {
-
-        Customer_model::where('id',$id)->update(request('customer'));
+        $data = request('customer');
+        $data['is_vendor'] = $data['type'];
+        Customer_model::where('id',$id)->update($data);
         session()->put('success',"Customer has been updated successfully");
         return redirect()->back();
     }
