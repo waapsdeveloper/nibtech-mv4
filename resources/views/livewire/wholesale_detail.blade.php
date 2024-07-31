@@ -30,6 +30,12 @@
                 @if ($order->status == 2)
                 <form class="form-inline" method="POST" action="{{url('wholesale/approve').'/'.$order->id}}">
                     @csrf
+                    <select name="customer_id" class="form-select">
+                        @foreach ($vendors as $id=>$vendor)
+                            <option value="{{ $id }}" {{ $order->customer_id == $id ? 'selected' : '' }}>{{ $vendor }}</option>
+
+                        @endforeach
+                    </select>
                     <div class="form-floating">
                         <input type="text" list="currencies" id="currency" name="currency" class="form-control" value="{{$order->currency_id->code}}">
                         <datalist id="currencies">
@@ -74,27 +80,11 @@
                 </div>
             </div>
         <!-- /breadcrumb -->
-        <div class="d-flex justify-content-between">
-            <div class="" style="border-bottom: 1px solid rgb(216, 212, 212);">
+            <div class="text-center" style="border-bottom: 1px solid rgb(216, 212, 212);">
                     {{-- <center><h4>BulkSale Order Detail</h4></center> --}}
-                    <h5>Reference: {{ $order->reference_id }} | Purchaser: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->count() }} | Total Price: {{ $order->currency_id->sign.number_format($order->order_items->sum('price'),2) }}</h5>
+                    <h5>Reference: {{ $order->reference_id }} | Purchaser: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->count() }} | Total Price: {{ $order->currency_id->sign.number_format($order->order_items->sum('price'),2) }} | Creation Date: {{ $order->created_at }} | Approval Date: {{ $order->processed_at }}</h5>
 
             </div>
-            <div class="">
-
-                <h6>Creation Date: {{ $order->created_at }}</h6>
-                <h6>Approval Date: {{ $order->processed_at }}</h6>
-                <form method="POST" action="{{ url('purchase/approve').'/'.$order->id }}" class="form-inline">
-                <label>Vendor: </label>
-                    <select name="customer_id" class="form-select" onchange="this.form.submit()">
-                        @foreach ($vendors as $id=>$vendor)
-                            <option value="{{ $id }}" {{ $order->customer_id == $id ? 'selected' : '' }}>{{ $vendor }}</option>
-
-                        @endforeach
-                    </select>
-                </form>
-            </div>
-        </div>
         <br>
 
         <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
