@@ -401,11 +401,17 @@ class Order extends Component
     }
     public function purchase_approve($order_id){
         $order = Order_model::find($order_id);
-        $order->reference = request('reference');
-        $order->tracking_number = request('tracking_number');
-        if(request('approve') == 1){
-            $order->status = 3;
-            $order->processed_at = now()->format('Y-m-d H:i:s');
+        if(request('change_vendor') == 1){
+
+            $order->customer_id = request('customer_id');
+
+        }else{
+            $order->reference = request('reference');
+            $order->tracking_number = request('tracking_number');
+            if(request('approve') == 1){
+                $order->status = 3;
+                $order->processed_at = now()->format('Y-m-d H:i:s');
+            }
         }
         $order->save();
 
@@ -494,6 +500,7 @@ class Order extends Component
 
         DB::statement("SET SESSION group_concat_max_len = 1000000;");
         $data['title_page'] = "Purchase Detail";
+        $data['vendors'] = Customer_model::where('is_vendor',1)->pluck('first_name','id');
         $data['products'] = Products_model::pluck('model','id');
         $data['storages'] = Storage_model::pluck('name','id');
         $data['colors'] = Color_model::pluck('name','id');
