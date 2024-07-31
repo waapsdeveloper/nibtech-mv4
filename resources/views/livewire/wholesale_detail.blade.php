@@ -74,7 +74,7 @@
                 @endif
 
                 </div>
-                <div class="justify-content-center mt-2">
+                <div class="justify-content-center mt-2 text-end">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
                         <li class="breadcrumb-item active" aria-current="page">BulkSale Detail</li>

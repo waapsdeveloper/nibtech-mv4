@@ -139,7 +139,10 @@
                 <button class="btn btn-primary pd-x-20" type="submit">Insert</button>
                 <div class="col-md col-sm-6 text-end">
                     <h6>Creation Date: {{ $order->created_at }}</h6>
+                    @if ($order->status == 3)
+
                     <h6>Approval Date: {{ $order->processed_at }}</h6>
+                    @endif
                 </div>
             </div>
         </form>
