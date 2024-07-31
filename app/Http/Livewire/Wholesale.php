@@ -134,6 +134,7 @@ class Wholesale extends Component
             $order->currency = $currency->id;
             $order->exchange_rate = request('rate');
         }
+        $order->customer_id = request('customer_id');
         $order->reference = request('reference');
         $order->tracking_number = request('tracking_number');
         $order->status = 3;

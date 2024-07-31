@@ -401,17 +401,11 @@ class Order extends Component
     }
     public function purchase_approve($order_id){
         $order = Order_model::find($order_id);
-        if(request('change_vendor') == 1){
-
-            $order->customer_id = request('customer_id');
-
-        }else{
-            $order->reference = request('reference');
-            $order->tracking_number = request('tracking_number');
-            if(request('approve') == 1){
-                $order->status = 3;
-                $order->processed_at = now()->format('Y-m-d H:i:s');
-            }
+        $order->reference = request('reference');
+        $order->tracking_number = request('tracking_number');
+        if(request('approve') == 1){
+            $order->status = 3;
+            $order->processed_at = now()->format('Y-m-d H:i:s');
         }
         $order->save();
 
