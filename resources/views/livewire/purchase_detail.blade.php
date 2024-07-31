@@ -136,11 +136,11 @@
                         <label for="price">Cost</label>
                     </div>
                 </div>
-                <div class="col-md col-sm-6 align-self-end mb-1 tx-center">
-                    <button class="btn btn-primary pd-x-20" type="submit">Insert</button>
+                <button class="btn btn-primary pd-x-20" type="submit">Insert</button>
+                <div class="col-md col-sm-6">
+                    <h6>Creation Date: {{ $order->created_at }}</h6>
+                    <h6>Approval Date: {{ $order->processed_at }}</h6>
                 </div>
-                <br>
-                <br>
             </div>
         </form>
         <hr style="border-bottom: 1px solid rgb(62, 45, 45);">

@@ -230,7 +230,7 @@ class Wholesale extends Component
         $error = "";
 
 
-        $customer = Customer_model::firstOrNew(['first_name' => $wholesale->vendor, ['is_vendor','!=',null] ]);
+        $customer = Customer_model::firstOrNew(['company' => $wholesale->vendor, ['is_vendor','!=',null] ]);
         if($customer->id == null){
             $customer->is_vendor = 2;
         }
