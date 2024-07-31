@@ -30,12 +30,14 @@
                 @if ($order->status == 2)
                 <form class="form-inline" method="POST" action="{{url('wholesale/approve').'/'.$order->id}}">
                     @csrf
-                    <select name="customer_id" class="form-select">
-                        @foreach ($vendors as $id=>$vendor)
-                            <option value="{{ $id }}" {{ $order->customer_id == $id ? 'selected' : '' }}>{{ $vendor }}</option>
+                    <div class="form-floating">
+                        <select name="customer_id" class="form-select">
+                            @foreach ($vendors as $id=>$vendor)
+                                <option value="{{ $id }}" {{ $order->customer_id == $id ? 'selected' : '' }}>{{ $vendor }}</option>
 
-                        @endforeach
-                    </select>
+                            @endforeach
+                        </select>
+                    </div>
                     <div class="form-floating">
                         <input type="text" list="currencies" id="currency" name="currency" class="form-control" value="{{$order->currency_id->code}}">
                         <datalist id="currencies">
