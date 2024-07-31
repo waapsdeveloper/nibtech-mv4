@@ -79,7 +79,7 @@
                         <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
                         <li class="breadcrumb-item active" aria-current="page">BulkSale Detail</li>
                     </ol>
-
+                    <br>
                     <h6>Creation Date: {{ $order->created_at }}</h6>
                     <h6>Approval Date: {{ $order->processed_at }}</h6>
                 </div>
