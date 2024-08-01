@@ -79,7 +79,7 @@
                                     $total_approved_return_gbp_items += $returns->gbp_approved_items_sum;
                                     $total_return_cost += $aggregated_return_cost[$returns->product_id][$returns->storage];
                                     $total_repair_return_cost += $returns->items_repair_sum;
-                                        $total_eur_loss = $returns->eur_items_sum - $aggregated_return_cost[$returns->product_id][$returns->storage] - $returns->items_repair_sum;
+                                        $eur_loss = $returns->eur_items_sum - $aggregated_return_cost[$returns->product_id][$returns->storage] - $returns->items_repair_sum;
                                         $total_eur = $total_eur - $total_eur_loss;
                                         $total_gbp = $total_gbp - $returns->gbp_items_sum;
                                     }
