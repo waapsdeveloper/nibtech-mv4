@@ -43,6 +43,7 @@
                     <div class="mb-0">
                         <h4 class="card-title mb-0">Sales & Returns</h4>
                         <form class="form-inline" method="POST" target="print_popup" action="{{url('report')}}/pnl" onsubmit="window.open('about:blank','print_popup','width=1600,height=800');">
+                            @csrf
                             <input type="hidden" name="start_date" value="{{$start_date}}">
                             <input type="hidden" name="end_date" value="{{$end_date}}">
                         <button class="btn btn-link" type="submit">Profit & Loss by Products</button>
