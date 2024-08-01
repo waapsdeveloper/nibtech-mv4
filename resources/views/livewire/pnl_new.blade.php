@@ -1,5 +1,12 @@
 @extends('layouts.new')
 
+@section('styles')
+<style type="text/css" media="print">
+    @page { size: landscape; }
+  </style>
+
+
+@endsection
 
     @section('content')
 
