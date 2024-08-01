@@ -34,6 +34,7 @@
                         <tbody>
                             @php
                                 $sales_products = [];
+
                                 $total_sale_orders = 0;
                                 $total_approved_sale_orders = 0;
                                 $total_sale_eur_items = 0;
@@ -43,17 +44,16 @@
                                 $total_sale_cost = 0;
                                 $total_repair_cost = 0;
                                 $total_eur_profit = 0;
-                            @endphp
-                            @php
-                            $total_return_orders = 0;
-                            $total_approved_return_orders = 0;
-                            $total_return_eur_items = 0;
-                            $total_approved_return_eur_items = 0;
-                            $total_return_gbp_items = 0;
-                            $total_approved_return_gbp_items = 0;
-                            $total_return_cost = 0;
-                            $total_repair_return_cost = 0;
-                            $total_eur_loss = 0;
+
+                                $total_return_orders = 0;
+                                $total_approved_return_orders = 0;
+                                $total_return_eur_items = 0;
+                                $total_approved_return_eur_items = 0;
+                                $total_return_gbp_items = 0;
+                                $total_approved_return_gbp_items = 0;
+                                $total_return_cost = 0;
+                                $total_repair_return_cost = 0;
+                                $total_eur_loss = 0;
                             @endphp
                             <tr>
                                 <td colspan="9" align="center"><b>Sales</b></td>
@@ -64,11 +64,8 @@
                                     $sales_products[] = $sales->product_id;
 
                                     $total_sale_orders += $sales->orders_qty;
-                                    $total_approved_sale_orders += $sales->approved_orders_qty;
                                     $total_sale_eur_items += $sales->eur_items_sum;
-                                    $total_approved_sale_eur_items += $sales->eur_approved_items_sum;
                                     $total_sale_gbp_items += $sales->gbp_items_sum;
-                                    $total_approved_sale_gbp_items += $sales->gbp_approved_items_sum;
                                     $total_sale_cost += $aggregated_sales_cost[$sales->product_id];
                                     $total_repair_cost += $sales->items_repair_sum;
                                     $total_eur_profit += $sales->eur_items_sum - $aggregated_sales_cost[$sales->product_id] - $sales->items_repair_sum;
@@ -76,11 +73,10 @@
                                 <tr>
                                     <td>{{ $s+1 }}</td>
                                     <td>{{ $products[$sales->product_id] }}</td>
-                                    <td>{{ $sales->orders_qty }} {{ isset($returns->orders_qty) ? "- " . $returns->orders_qty : null }}
-                                    </td>
+                                    <td>{{ $sales->orders_qty }}</td>
                                     @if (session('user')->hasPermission('view_price'))
-                                    <td>€{{ number_format($sales->eur_items_sum,2) }} @if ($returns != null) - €{{ number_format($returns->eur_items_sum,2) }} @endif</td>
-                                    <td>£{{ number_format($sales->gbp_items_sum,2) }} @if ($returns != null) - £{{ number_format($returns->gbp_items_sum,2) }} @endif</td>
+                                    <td>€{{ number_format($sales->eur_items_sum,2) }}</td>
+                                    <td>£{{ number_format($sales->gbp_items_sum,2) }}</td>
                                     @endif
                                     @if (session('user')->hasPermission('view_cost'))
                                     <td title="{{count(explode(',',$sales->stock_ids))}}">€{{ number_format($aggregated_sales_cost[$sales->product_id],2) }}</td>
@@ -89,6 +85,24 @@
                                     <td>€{{ number_format($sales->eur_items_sum - $aggregated_sales_cost[$sales->product_id] - $sales->items_repair_sum,2) }} + £{{ number_format($sales->gbp_items_sum,2) }}</td>
                                     @endif
                                 </tr>
+                                @if ($returns != null)
+
+                                <tr>
+                                    <td>{{ $s+1 }}</td>
+                                    <td>{{ $products[$returns->product_id] }}</td>
+                                    <td>{{ $returns->orders_qty }}</td>
+                                    @if (session('user')->hasPermission('view_price'))
+                                    <td>€{{ number_format($returns->eur_items_sum,2) }}</td>
+                                    <td>£{{ number_format($returns->gbp_items_sum,2) }}</td>
+                                    @endif
+                                    @if (session('user')->hasPermission('view_cost'))
+                                    <td title="{{count(explode(',',$returns->stock_ids))}}">€{{ number_format($aggregated_return_cost[$returns->product_id],2) }}</td>
+                                    <td>€{{ number_format($returns->items_repair_sum,2) }}</td>
+                                    <td>{{ number_format(0,2) }}</td>
+                                    <td>€{{ number_format(-$returns->eur_items_sum + $aggregated_return_cost[$returns->product_id] + $returns->items_repair_sum,2) }} + £{{ number_format($returns->gbp_items_sum,2) }}</td>
+                                    @endif
+                                </tr>
+                                @endif
                             @endforeach
                             @foreach ($aggregated_returns->whereNotIn('product_id',$sales_products) as $s => $returns)
                                 @php
