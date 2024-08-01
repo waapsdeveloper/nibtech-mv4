@@ -266,7 +266,7 @@ class Report extends Component
         $data['products'] = Products_model::pluck('model','id');
         $data['storages'] = Storage_model::pluck('name','id');
 
-        $start_date = Carbon::now()->startOfMonth()->subMonth(1);
+        $start_date = Carbon::now()->startOfMonth();
         // $start_date = date('Y-m-d 00:00:00',);
         $end_date = date('Y-m-d 23:59:59');
         if (request('start_date') != NULL && request('end_date') != NULL) {
