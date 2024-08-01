@@ -73,10 +73,11 @@
                                 <tr>
                                     <td>{{ $s+1 }}</td>
                                     <td>{{ $products[$sales->product_id] }}</td>
-                                    <td>{{ $sales->orders_qty }}</td>
+                                    <td>{{ $sales->orders_qty }} {{ isset($returns->orders_qty) ? "( " . $returns->orders_qty.")" : null }}
+                                    </td>
                                     @if (session('user')->hasPermission('view_price'))
-                                    <td>€{{ number_format($sales->eur_items_sum,2) }}</td>
-                                    <td>£{{ number_format($sales->gbp_items_sum,2) }}</td>
+                                    <td>€{{ number_format($sales->eur_items_sum,2) }} @if ($returns != null) (€{{ number_format($returns->eur_items_sum,2) }}) @endif</td>
+                                    <td>£{{ number_format($sales->gbp_items_sum,2) }} @if ($returns != null) (£{{ number_format($returns->gbp_items_sum,2) }}) @endif</td>
                                     @endif
                                     @if (session('user')->hasPermission('view_cost'))
                                     <td title="{{count(explode(',',$sales->stock_ids))}}">€{{ number_format($aggregated_sales_cost[$sales->product_id],2) }}</td>
@@ -85,24 +86,6 @@
                                     <td>€{{ number_format($sales->eur_items_sum - $aggregated_sales_cost[$sales->product_id] - $sales->items_repair_sum,2) }} + £{{ number_format($sales->gbp_items_sum,2) }}</td>
                                     @endif
                                 </tr>
-                                @if ($returns != null)
-
-                                <tr>
-                                    <td>{{ $s+1 }}</td>
-                                    <td>{{ $products[$returns->product_id] }}</td>
-                                    <td>{{ $returns->orders_qty }}</td>
-                                    @if (session('user')->hasPermission('view_price'))
-                                    <td>€{{ number_format($returns->eur_items_sum,2) }}</td>
-                                    <td>£{{ number_format($returns->gbp_items_sum,2) }}</td>
-                                    @endif
-                                    @if (session('user')->hasPermission('view_cost'))
-                                    <td title="{{count(explode(',',$returns->stock_ids))}}">€{{ number_format($aggregated_return_cost[$returns->product_id],2) }}</td>
-                                    <td>€{{ number_format($returns->items_repair_sum,2) }}</td>
-                                    <td>{{ number_format(0,2) }}</td>
-                                    <td>€{{ number_format(-$returns->eur_items_sum + $aggregated_return_cost[$returns->product_id] + $returns->items_repair_sum,2) }} + £{{ number_format($returns->gbp_items_sum,2) }}</td>
-                                    @endif
-                                </tr>
-                                @endif
                             @endforeach
                             @foreach ($aggregated_returns->whereNotIn('product_id',$sales_products) as $s => $returns)
                                 @php
