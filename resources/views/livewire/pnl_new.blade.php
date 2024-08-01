@@ -131,7 +131,7 @@
                                     @endif
                                 </tr>
                             @endforeach
-                            <tr>
+                            {{-- <tr>
                                 <td colspan="2"><strong>Profit</strong></td>
                                 <td><strong>{{ $total_sale_orders." (".$total_approved_sale_orders.")" }}</strong></td>
                                 @if (session('user')->hasPermission('view_price'))
@@ -144,7 +144,7 @@
                                 <td><strong>{{ number_format(0,2) }}</strong></td>
                                 <td><strong>€{{ number_format($total_eur_profit) }} + £{{ number_format($total_sale_gbp_items,2) }}</strong></td>
                                 @endif
-                            </tr>
+                            </tr> --}}
 
                             {{-- <tr>
                                 <td colspan="9" align="center"><b>Returns</b></td>
