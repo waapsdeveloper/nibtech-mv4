@@ -95,7 +95,7 @@
                                     </td>
                                     @if (session('user')->hasPermission('view_cost'))
                                     <td title="{{count(explode(',',$sales->stock_ids))}}">€{{ number_format($aggregated_sales_cost[$sales->product_id][$sales->storage],2) }} @if ($returns != null) (€{{ number_format($aggregated_return_cost[$returns->product_id][$returns->storage],2) }}) @endif</td>
-                                    <td>€{{ number_format($sales->items_repair_sum,2) }} @if ($returns != null) (€{{ number_format($total_repair_cost-$total_repair_return_cost,2) }}) @endif</td>
+                                    <td>€{{ number_format($sales->items_repair_sum,2) }} @if ($returns != null) (€{{ number_format($returns->items_repair_sum,2) }}) @endif</td>
                                     <td>{{ number_format(0,2) }} @if ($returns != null) () @endif</td>
                                    @endif
                                     @if (session('user')->hasPermission('view_price'))
