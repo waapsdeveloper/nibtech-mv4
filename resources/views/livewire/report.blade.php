@@ -42,7 +42,11 @@
                 <div class="card-header mb-0 d-flex justify-content-between">
                     <div class="mb-0">
                         <h4 class="card-title mb-0">Sales & Returns</h4>
-                        <a href="#" onClick="MyWindow=window.open('{{url('report')}}/pnl','MyWindow','width=1600,height=600'); return false;">Profit & Loss by Products</a>
+                        <form class="form-inline" method="POST" target="print_popup" action="{{url('report')}}/pnl" onsubmit="window.open('about:blank','print_popup','width=1600,height=800');">
+                            <input type="hidden" name="start_date" value="{{$start_date}}">
+                            <input type="hidden" name="end_date" value="{{$end_date}}">
+                        <button class="btn btn-link" type="submit">Profit & Loss by Products</button>
+                        </form>
                     </div>
                     <div class="">
 
