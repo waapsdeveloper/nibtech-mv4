@@ -264,6 +264,7 @@ class Report extends Component
     public function pnl_by_product(){
 
         $data['products'] = Products_model::pluck('model','id');
+        $data['storages'] = Storage_model::pluck('name','id');
 
         $start_date = Carbon::now()->startOfMonth()->subMonth(1);
         // $start_date = date('Y-m-d 00:00:00',);
@@ -276,15 +277,16 @@ class Report extends Component
         $data['end_date'] = date("Y-m-d", strtotime($end_date));
 
 
-        $aggregates = DB::table('products')
-            ->join('variation', 'products.id', '=', 'variation.product_id')
+        $aggregates = DB::table('variation')
+            // ->join('variation', 'products.id', '=', 'variation.product_id')
             ->join('order_items', 'variation.id', '=', 'order_items.variation_id')
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->leftJoin('stock', 'order_items.stock_id', '=', 'stock.id')
             ->leftJoin('process_stock', 'stock.id', '=', 'process_stock.stock_id')
             ->leftJoin('process', 'process_stock.process_id', '=', 'process.id')
             ->select(
-                'products.id as product_id',
+                'variation.product_id as product_id',
+                'variation.storage as storage',
                 DB::raw('COUNT(orders.id) as orders_qty'),
                 DB::raw('SUM(CASE WHEN orders.status = 3 THEN 1 ELSE 0 END) as approved_orders_qty'),
                 DB::raw('SUM(CASE WHEN orders.currency = 4 THEN order_items.price ELSE 0 END) as eur_items_sum'),
@@ -304,17 +306,18 @@ class Report extends Component
             ->Where('process_stock.deleted_at',null)
             ->whereIn('orders.status', [3,6])
             ->whereIn('order_items.status', [3,6])
-            ->groupBy('products.id')
+            // ->groupBy('products.id')
+            ->groupBy('variation.product_id', 'variation.storage')
             ->get();
 
         $aggregated_cost = [];
         foreach ($aggregates as $agg) {
 
             if (empty($agg->stock_ids)) {
-                $aggregated_cost[$agg->product_id] = 0;
+                $aggregated_cost[$agg->product_id][$agg->storage] = 0;
                 continue;
             }
-            $aggregated_cost[$agg->product_id] = Order_item_model::whereIn('stock_id',explode(',',$agg->stock_ids))->whereHas('order', function ($q) {
+            $aggregated_cost[$agg->product_id][$agg->storage] = Order_item_model::whereIn('stock_id',explode(',',$agg->stock_ids))->whereHas('order', function ($q) {
                 $q->where('order_type_id',1);
             })->sum('price');
         }
@@ -322,15 +325,15 @@ class Report extends Component
         $data['aggregated_sales'] = $aggregates;
         $data['aggregated_sales_cost'] = $aggregated_cost;
 
-        $aggregate_returns = DB::table('products')
-            ->join('variation', 'products.id', '=', 'variation.product_id')
+        $aggregate_returns = DB::table('variation')
             ->join('order_items', 'variation.id', '=', 'order_items.variation_id')
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->leftJoin('stock', 'order_items.stock_id', '=', 'stock.id')
             ->leftJoin('process_stock', 'stock.id', '=', 'process_stock.stock_id')
             ->leftJoin('process', 'process_stock.process_id', '=', 'process.id')
             ->select(
-                'products.id as product_id',
+                'variation.product_id as product_id',
+                'variation.storage as storage',
                 DB::raw('COUNT(orders.id) as orders_qty'),
                 DB::raw('SUM(CASE WHEN orders.status = 3 THEN 1 ELSE 0 END) as approved_orders_qty'),
                 DB::raw('SUM(CASE WHEN orders.currency = 4 THEN order_items.price ELSE 0 END) as eur_items_sum'),
@@ -349,7 +352,8 @@ class Report extends Component
             ->Where('stock.deleted_at',null)
             ->Where('process_stock.deleted_at',null)
             // ->whereIn('orders.status', [3,6])
-            ->groupBy('products.id')
+            // ->groupBy('products.id')
+            ->groupBy('variation.product_id', 'variation.storage')
             ->get();
         // $costs = Category_model::select(
         //     'category.'
@@ -358,10 +362,10 @@ class Report extends Component
         foreach ($aggregate_returns as $agg) {
 
             if (empty($agg->stock_ids)) {
-                $aggregated_return_cost[$agg->product_id] = 0;
+                $aggregated_return_cost[$agg->product_id][$agg->storage] = 0;
                 continue;
             }
-            $aggregated_return_cost[$agg->product_id] = Order_item_model::whereIn('stock_id',explode(',',$agg->stock_ids))->whereHas('order', function ($q) {
+            $aggregated_return_cost[$agg->product_id][$agg->storage] = Order_item_model::whereIn('stock_id',explode(',',$agg->stock_ids))->whereHas('order', function ($q) {
                 $q->where('order_type_id',1);
             })->sum('price');
         }
