@@ -25,8 +25,8 @@
                                 @endif
                                 @if (session('user')->hasPermission('view_cost'))
                                     <th style="width: 250px;"><small><b>Cost</b></small></th>
-                                    <th style="width: 200px;"><small><b>Repair</b></small></th>
-                                    <th style="width: 200px;"><small><b>Fee</b></small></th>
+                                    <th style="width: 150px;"><small><b>Repair</b></small></th>
+                                    <th style="width: 150px;"><small><b>Fee</b></small></th>
                                     <th style="width: 250px;"><small><b>Profit</b></small></th>
                                 @endif
                             </tr>
