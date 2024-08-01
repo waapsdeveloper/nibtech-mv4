@@ -123,9 +123,9 @@
                                         <option value="2" {{ Request::get('sort') == 2 ? 'selected' : '' }}>Product Name DESC</option>
                                     </select>
                                     {{-- <button type="submit">Apply</button> --}}
-                                    <input type="hidden" name="status" value="{{ Request::get('status') }}">
-                                    <input type="hidden" name="sku" value="{{ Request::get('sku') }}">
-                                    <input type="hidden" name="imei" value="{{ Request::get('imei') }}">
+                                    <input type="hidden" name="category" value="{{ Request::get('category') }}">
+                                    <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
+                                    <input type="hidden" name="model" value="{{ Request::get('model') }}">
                                     <input type="hidden" name="page" value="{{ Request::get('page') }}">
                                     <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
                                 </form>
@@ -138,9 +138,9 @@
                                         <option value="100" {{ Request::get('per_page') == 100 ? 'selected' : '' }}>100</option>
                                     </select>
                                     {{-- <button type="submit">Apply</button> --}}
-                                    <input type="hidden" name="status" value="{{ Request::get('status') }}">
-                                    <input type="hidden" name="sku" value="{{ Request::get('sku') }}">
-                                    <input type="hidden" name="imei" value="{{ Request::get('imei') }}">
+                                    <input type="hidden" name="category" value="{{ Request::get('category') }}">
+                                    <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
+                                    <input type="hidden" name="model" value="{{ Request::get('model') }}">
                                     <input type="hidden" name="page" value="{{ Request::get('page') }}">
                                     <input type="hidden" name="sort" value="{{ Request::get('sort') }}">
                                 </form>

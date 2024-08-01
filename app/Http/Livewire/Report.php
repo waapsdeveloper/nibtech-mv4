@@ -265,7 +265,7 @@ class Report extends Component
 
         $data['products'] = Products_model::pluck('model','id');
 
-        $start_date = Carbon::now()->startOfMonth();
+        $start_date = Carbon::now()->startOfMonth()->subMonth(1);
         // $start_date = date('Y-m-d 00:00:00',);
         $end_date = date('Y-m-d 23:59:59');
         if (request('start_date') != NULL && request('end_date') != NULL) {
@@ -322,8 +322,7 @@ class Report extends Component
         $data['aggregated_sales'] = $aggregates;
         $data['aggregated_sales_cost'] = $aggregated_cost;
 
-        $aggregate_returns = DB::table('category')
-            ->join('products', 'category.id', '=', 'products.category')
+        $aggregate_returns = DB::table('products')
             ->join('variation', 'products.id', '=', 'variation.product_id')
             ->join('order_items', 'variation.id', '=', 'order_items.variation_id')
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
@@ -331,7 +330,7 @@ class Report extends Component
             ->leftJoin('process_stock', 'stock.id', '=', 'process_stock.stock_id')
             ->leftJoin('process', 'process_stock.process_id', '=', 'process.id')
             ->select(
-                'category.id as product_id',
+                'products.id as product_id',
                 DB::raw('COUNT(orders.id) as orders_qty'),
                 DB::raw('SUM(CASE WHEN orders.status = 3 THEN 1 ELSE 0 END) as approved_orders_qty'),
                 DB::raw('SUM(CASE WHEN orders.currency = 4 THEN order_items.price ELSE 0 END) as eur_items_sum'),
@@ -350,7 +349,7 @@ class Report extends Component
             ->Where('stock.deleted_at',null)
             ->Where('process_stock.deleted_at',null)
             // ->whereIn('orders.status', [3,6])
-            ->groupBy('category.id')
+            ->groupBy('products.id')
             ->get();
         // $costs = Category_model::select(
         //     'category.'
