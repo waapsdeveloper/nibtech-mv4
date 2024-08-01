@@ -270,8 +270,8 @@ class Report extends Component
         // $start_date = date('Y-m-d 00:00:00',);
         $end_date = date('Y-m-d 23:59:59');
         if (request('start_date') != NULL && request('end_date') != NULL) {
-            $start_date = request('start_date') . " 23:00:00";
-            $end_date = request('end_date') . " 22:59:59";
+            $start_date = request('start_date') . " 00:00:00";
+            $end_date = request('end_date') . " 23:59:59";
         }
         $data['start_date'] = date('Y-m-d', strtotime($start_date));
         $data['end_date'] = date("Y-m-d", strtotime($end_date));
