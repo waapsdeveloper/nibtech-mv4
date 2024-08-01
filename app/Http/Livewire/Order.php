@@ -801,7 +801,7 @@ class Order extends Component
 
         $storages = Storage_model::pluck('name','id')->toArray();
         $colors = Color_model::pluck('name','id')->toArray();
-        $grades = ['mix','a','a-','b+','b','c','asis'];
+        $grades = ['mix','a','a-','b+','b','c','asis','asis+','cpo','new'];
 
         $products = Products_model::pluck('model','id')->toArray();
 
