@@ -42,7 +42,7 @@
                 <div class="card-header mb-0 d-flex justify-content-between">
                     <div class="mb-0">
                         <h4 class="card-title mb-0">Sales & Returns</h4>
-                        <a href="#" onClick="MyWindow=window.open('{{url('report')}}/pnl','MyWindow','width=1400,height=600'); return false;">Profit & Loss by Products</a>
+                        <a href="#" onClick="MyWindow=window.open('{{url('report')}}/pnl','MyWindow','width=1600,height=600'); return false;">Profit & Loss by Products</a>
                     </div>
                     <div class="">
 
