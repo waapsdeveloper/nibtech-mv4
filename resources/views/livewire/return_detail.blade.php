@@ -581,7 +581,7 @@
                                             @php
                                             $row = $stock->latest_operation;
                                             $i ++;
-                                            if(strpos($row->description, "Replacement") != null){
+                                            if(strpos($row->description, "Replacement") !== null){
                                                 if($stock->status != 2){
 
                                                     $stock->availability();
