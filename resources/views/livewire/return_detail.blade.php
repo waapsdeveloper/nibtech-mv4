@@ -415,14 +415,6 @@
                                         $i = 0;
                                     @endphp
                                     @foreach ($stocks as $operation)
-                                        @php
-                                            if(strpos($operation->description, "Replacement") != null){
-                                                if($operation->stock->status != 2){
-
-                                                    $operation->stock->availability();
-                                                }
-                                            }
-                                        @endphp
                                             <tr>
                                                 <td title="{{ $operation->id }}">{{ $i + 1 }}</td>
                                                 <td>
@@ -470,7 +462,6 @@
             <div class="">
             </div>
         </div>
-        @if ($order->status != 1)
         <div class="row">
             <div class="col-xl-12">
                 <div class="card">
@@ -531,7 +522,6 @@
                 </div>
             </div>
         </div>
-        @endif
         <div class="row">
 
             <div @if ($order->status != 1) class="col-md-8" @endif>
@@ -591,6 +581,12 @@
                                             @php
                                             $row = $stock->latest_operation;
                                             $i ++;
+                                            if(strpos($row->description, "Replacement") != null){
+                                                if($stock->status != 2){
+
+                                                    $stock->availability();
+                                                }
+                                            }
                                         @endphp
                                             <tr>
                                                 <td>{{ $i }}</td>
