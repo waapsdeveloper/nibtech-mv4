@@ -4,15 +4,10 @@
     @section('content')
 
             <div class="card m-0">
-                <div class="card-header m-0 d-flex justify-content-between">
-                    <div class="mb-0">
-                        <h4 class="card-title mb-0">P&L by Products</h4>
-                    </div>
-                    <div class="">
-
-                    </div>
+                <div class="card-header m-0">
+                    <h4 class="card-title mb-0">P&L by Products</h4>
                 </div>
-                <div class="card-body m-0">
+                <div class="card-body m-0 p-2">
                     <table class="table table-bordered table-hover text-md-nowrap">
                         <thead>
                             <tr>
