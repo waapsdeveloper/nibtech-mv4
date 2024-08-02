@@ -262,7 +262,7 @@ class Report extends Component
     }
 
     public function pnl_by_product(){
-        DB::statement("SET SESSION group_concat_max_len = 1000000;");
+        DB::statement("SET SESSION group_concat_max_len = 1500000;");
 
         $data['products'] = Products_model::pluck('model','id');
         $data['storages'] = Storage_model::pluck('name','id');
