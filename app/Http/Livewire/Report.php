@@ -6,6 +6,7 @@ use App\Exports\BatchReportExport;
 use App\Exports\OrderReportExport;
 use App\Http\Controllers\GoogleController;
 use App\Models\Admin_model;
+use App\Models\Brand_model;
 use App\Models\Category_model;
 use Carbon\Carbon;
 use Livewire\Component;
@@ -14,6 +15,7 @@ use App\Models\Order_model;
 use App\Models\Order_item_model;
 use App\Models\Products_model;
 use App\Models\Color_model;
+use App\Models\Customer_model;
 use App\Models\Storage_model;
 use App\Models\Grade_model;
 use App\Models\Process_stock_model;
@@ -47,7 +49,9 @@ class Report extends Component
         }
         $data['purchase_status'] = [2 => '(Pending)', 3 => ''];
         $data['purchase_orders'] = Order_model::where('order_type_id',1)->pluck('reference_id','id');
+        $data['vendors'] = Customer_model::where('is_vendor',1)->pluck('first_name','id');
         $data['categories'] = Category_model::pluck('name','id');
+        $data['brands'] = Brand_model::pluck('name','id');
         $data['products'] = Products_model::orderBy('model','asc')->get();
         $data['colors'] = Color_model::pluck('name','id');
         $data['storages'] = Storage_model::pluck('name','id');
@@ -67,7 +71,7 @@ class Report extends Component
         }
 
         $variation_ids = [];
-        if(request('data') == 1){
+        // if(request('data') == 1){
 
             $variation_ids = Variation_model::withoutGlobalScope('Status_not_3_scope')->select('id')
             ->when(request('category') != '', function ($q) {
@@ -84,22 +88,27 @@ class Report extends Component
                 return $q->where('product_id', '=', request('product'));
             })
             ->when(request('storage') != '', function ($q) {
-                return $q->where('storage', 'LIKE', request('storage') . '%');
+                return $q->where('storage', request('storage'));
             })
             ->when(request('color') != '', function ($q) {
-                return $q->where('color', 'LIKE', request('color') . '%');
+                return $q->where('color', request('color'));
             })
             ->when(request('grade') != '', function ($q) {
-                return $q->where('grade', 'LIKE', request('grade') . '%');
+                return $q->where('grade', request('grade'));
             })
             ->when(request('vendor') != '', function ($q) {
                 return $q->whereHas('stocks.order', function ($q) {
                     $q->where('customer_id', request('vendor'));
                 });
             })
+            ->when(request('batch') != '', function ($q) {
+                return $q->whereHas('stocks.order', function ($q) {
+                    $q->where('reference_id', request('batch'));
+                });
+            })
             ->pluck('id')->toArray();
 
-        }
+        // }
 
         $aggregates = DB::table('category')
             ->join('products', 'category.id', '=', 'products.category')
@@ -123,6 +132,7 @@ class Report extends Component
                 DB::raw('SUM(CASE WHEN process.process_type_id = 9 THEN process_stock.price ELSE 0 END) as items_repair_sum')
             )
             ->whereBetween('orders.processed_at', [$start_date, $end_date])
+            ->whereIn('variation-id', $variation_ids)
             ->where('orders.order_type_id', 3)
             ->Where('orders.deleted_at',null)
             ->Where('order_items.deleted_at',null)
@@ -172,6 +182,7 @@ class Report extends Component
                 DB::raw('SUM(CASE WHEN process.process_type_id = 9 THEN process_stock.price ELSE 0 END) as items_repair_sum')
             )
             ->whereBetween('order_items.created_at', [$start_date, $end_date])
+            ->whereIn('variation-id', $variation_ids)
             ->where('orders.order_type_id', 4)
             ->Where('orders.deleted_at',null)
             ->Where('order_items.deleted_at',null)
@@ -311,6 +322,45 @@ class Report extends Component
         $data['start_date'] = date('Y-m-d', strtotime($start_date));
         $data['end_date'] = date("Y-m-d", strtotime($end_date));
 
+        $variation_ids = [];
+        // if(request('data') == 1){
+
+            $variation_ids = Variation_model::withoutGlobalScope('Status_not_3_scope')->select('id')
+            ->when(request('category') != '', function ($q) {
+                return $q->whereHas('product', function ($qu) {
+                    $qu->where('category', '=', request('category'));
+                });
+            })
+            ->when(request('brand') != '', function ($q) {
+                return $q->whereHas('product', function ($qu) {
+                    $qu->where('brand', '=', request('brand'));
+                });
+            })
+            ->when(request('product') != '', function ($q) {
+                return $q->where('product_id', '=', request('product'));
+            })
+            ->when(request('storage') != '', function ($q) {
+                return $q->where('storage', request('storage'));
+            })
+            ->when(request('color') != '', function ($q) {
+                return $q->where('color', request('color'));
+            })
+            ->when(request('grade') != '', function ($q) {
+                return $q->where('grade', request('grade'));
+            })
+            ->when(request('vendor') != '', function ($q) {
+                return $q->whereHas('stocks.order', function ($q) {
+                    $q->where('customer_id', request('vendor'));
+                });
+            })
+            ->when(request('batch') != '', function ($q) {
+                return $q->whereHas('stocks.order', function ($q) {
+                    $q->where('reference_id', request('batch'));
+                });
+            })
+            ->pluck('id')->toArray();
+
+        // }
 
         $aggregates = DB::table('variation')
             // ->join('variation', 'products.id', '=', 'variation.product_id')
@@ -334,6 +384,7 @@ class Report extends Component
                 DB::raw('SUM(CASE WHEN process.process_type_id = 9 THEN process_stock.price ELSE 0 END) as items_repair_sum')
             )
             ->whereBetween('orders.processed_at', [$start_date, $end_date])
+            ->whereIn('variation-id', $variation_ids)
             ->where('orders.order_type_id', 3)
             ->Where('orders.deleted_at',null)
             ->Where('order_items.deleted_at',null)
@@ -382,6 +433,7 @@ class Report extends Component
                 DB::raw('SUM(CASE WHEN process.process_type_id = 9 THEN process_stock.price ELSE 0 END) as items_repair_sum')
             )
             ->whereBetween('order_items.created_at', [$start_date, $end_date])
+            ->whereIn('variation-id', $variation_ids)
             ->where('orders.order_type_id', 4)
             ->Where('orders.deleted_at',null)
             ->Where('order_items.deleted_at',null)

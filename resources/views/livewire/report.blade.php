@@ -38,6 +38,83 @@
 					</div>
 					<!-- /breadcrumb -->
 
+                    <div class="row mb-3">
+
+                        <div class="col-md">
+                            <select name="vendor" class="form-control form-select">
+                                <option value="">Vendor</option>
+                                @foreach ($vendors as $id=>$name)
+                                    <option value="{{ $id }}" @if(isset($_GET['vendor']) && $id == $_GET['vendor']) {{'selected'}}@endif>{{ $name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md">
+                            <div class="form-floating">
+                                <input type="text" name="batch" value="{{ Request::get('batch') }}" class="form-control" data-bs-placeholder="Select Model" form="index">
+                                <label for="batch">Batch</label>
+                            </div>
+                        </div>
+                        <div class="col-md">
+                            <select name="category" class="form-control form-select" form="index">
+                                <option value="">Category</option>
+                                @foreach ($categories as $id=>$name)
+                                    <option value="{{ $id }}" @if(isset($_GET['category']) && $id == $_GET['category']) {{'selected'}}@endif>{{ $name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md">
+                            <select name="brand" class="form-control form-select" form="index">
+                                <option value="">Brand</option>
+                                @foreach ($brands as $id=>$name)
+                                    <option value="{{ $id }}" @if(isset($_GET['brand']) && $id == $_GET['brand']) {{'selected'}}@endif>{{ $name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="col-md">
+                            <div class="form-floating">
+                                <input type="text" name="product" value="{{ Request::get('product') }}" class="form-control" data-bs-placeholder="Select Model" list="product-menu" form="index">
+                                <label for="product">Product</label>
+                            </div>
+                            <datalist id="product-menu">
+                                <option value="">Products</option>
+                                @foreach ($products as $product)
+                                    <option value="{{ $product->id }}" @if(isset($_GET['product']) && $product->id == $_GET['product']) {{'selected'}}@endif>{{ $product->model }}</option>
+                                @endforeach
+                            </datalist>
+                        </div>
+                        <div class="col-md">
+                            <select name="storage" class="form-control form-select" form="index">
+                                <option value="">Storage</option>
+                                @foreach ($storages as $id=>$name)
+                                    <option value="{{ $id }}" @if(isset($_GET['storage']) && $id == $_GET['storage']) {{'selected'}}@endif>{{ $name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md">
+                            {{-- <div class="card-header">
+                                <h4 class="card-title mb-1">Storage</h4>
+                            </div> --}}
+                            <select name="color" class="form-control form-select" form="index">
+                                <option value="">Color</option>
+                                @foreach ($colors as $id=>$name)
+                                    <option value="{{ $id }}" @if(isset($_GET['color']) && $id == $_GET['color']) {{'selected'}}@endif>{{ $name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md">
+                            {{-- <div class="card-header">
+                                <h4 class="card-title mb-1">Grade</h4>
+                            </div> --}}
+                            <select name="grade" class="form-control form-select" form="index">
+                                <option value="">Grade</option>
+                                @foreach ($grades as $id=>$name)
+                                    <option value="{{ $id }}" @if(isset($_GET['grade']) && $id == $_GET['grade']) {{'selected'}}@endif>{{ $name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                    </div>
             <div class="card">
                 <div class="card-header mb-0 d-flex justify-content-between">
                     <div class="mb-0">
