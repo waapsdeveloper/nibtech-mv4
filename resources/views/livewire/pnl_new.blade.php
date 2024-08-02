@@ -114,7 +114,7 @@
                                             break;
                                         }
                                     }
-                                    if($skip){
+                                    if(isset($skip)){
                                         continue;
                                     }
                                     $total_return_orders += $returns->orders_qty;
