@@ -123,6 +123,14 @@
                             @csrf
                             <input type="hidden" name="start_date" value="{{$start_date}}">
                             <input type="hidden" name="end_date" value="{{$end_date}}">
+                            <input type="hidden" name="product" value="{{ Request::get('product') }}">
+                            <input type="hidden" name="vendor" value="{{ Request::get('vendor') }}">
+                            <input type="hidden" name="batch" value="{{ Request::get('batch') }}">
+                            <input type="hidden" name="storage" value="{{ Request::get('storage') }}">
+                            <input type="hidden" name="color" value="{{ Request::get('color') }}">
+                            <input type="hidden" name="grade" value="{{ Request::get('grade') }}">
+                            <input type="hidden" name="category" value="{{ Request::get('category') }}">
+                            <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
                         <button class="btn btn-link" type="submit">Profit & Loss by Products</button>
                         </form>
                     </div>
