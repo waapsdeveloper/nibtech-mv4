@@ -20,7 +20,7 @@
 
 
         <!-- breadcrumb -->
-            <div class="breadcrumb-header justify-content-between">
+            <div class="breadcrumb-header justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
                 <div class="left-content">
                     {{-- <span class="ms-3 form-check form-switch ms-4">
                         <input type="checkbox" value="1" name="bypass_check" class="form-check-input" form="wholesale_item" @if (session('bypass_check') == 1) checked @endif>
@@ -74,7 +74,7 @@
                 @endif
 
                 </div>
-                <div class="text-center" style="border-bottom: 1px solid rgb(216, 212, 212);">
+                <div class="text-center">
                         <h4>BulkSale Order Detail</h4>
                         <h5>Reference: {{ $order->reference_id }} | Purchaser: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->count() }} | Total Price: {{ $order->currency_id->sign.number_format($order->order_items->sum('price'),2) }}</h5>
 
