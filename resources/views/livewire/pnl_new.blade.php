@@ -141,7 +141,7 @@
                                     <td>(€{{ number_format($returns->eur_items_sum,2) }})</td>
                                     <td>(£{{ number_format($returns->gbp_items_sum,2) }})</td>
                                     @endif
-                                    <td>(€{{ number_format(-$returns->eur_items_sum + $aggregated_return_cost[$returns->product_id] + $returns->items_repair_sum,2) }} + £{{ number_format($returns->gbp_items_sum,2) }})</td>
+                                    <td>(€{{ number_format(-$returns->eur_items_sum + $aggregated_return_cost[$returns->product_id][$returns->storage] + $returns->items_repair_sum,2) }} + £{{ number_format($returns->gbp_items_sum,2) }})</td>
                                 </tr>
                             @endforeach
                             {{-- <tr>
