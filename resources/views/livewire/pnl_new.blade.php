@@ -62,7 +62,7 @@
                             @foreach ($aggregated_sales as $s => $sales)
                                 @php
                                     $returns = $aggregated_returns->where('product_id', $sales->product_id)->where('storage', $sales->storage)->first();
-                                    $sales_products[] = $sales->product_id;
+                                    $sales_products[] = $sales->product_id.','.$sales->storage;
                                     $sales_storages[] = $sales->storage;
 
                                     $total_sale_orders += $sales->orders_qty;
@@ -105,8 +105,18 @@
                                     <td>€{{ number_format($total_eur,2)  }} + £{{ number_format($total_gbp,2) }}</td>
                                  </tr>
                             @endforeach
-                            @foreach ($aggregated_returns->whereNotIn(['product_id'=>$sales_products,'storage'=>$sales_storages]) as $s => $returns)
+                            @foreach ($aggregated_returns as $s => $returns)
                                 @php
+                                    foreach ($sales_products as $key => $product) {
+                                        $pro = explode(',',$product)
+                                        if ($returns->product_id == $pro[0] && $returns->storage == $pro[1]) {
+                                            $skip = true;
+                                            break;
+                                        }
+                                    }
+                                    if($skip){
+                                        continue;
+                                    }
                                     $total_return_orders += $returns->orders_qty;
                                     $total_approved_return_orders += $returns->approved_orders_qty;
                                     $total_return_eur_items += $returns->eur_items_sum;
