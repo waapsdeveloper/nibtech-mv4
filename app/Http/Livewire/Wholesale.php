@@ -353,7 +353,7 @@ class Wholesale extends Component
         }else{
             session()->forget('bypass_check');
             // request()->merge(['bypass_check' => null]);
-            if($variation->grade != 10){
+            if($variation->grade != 11){
                 echo "<p>This IMEI does not belong to Wholesale. Do you want to continue?</p>";
                 echo "<form id='continueForm' action='" . url('add_wholesale_item') . "/" . $order_id . "' method='POST'>";
                 echo "<input type='hidden' name='_token' value='" . csrf_token() . "'>";
