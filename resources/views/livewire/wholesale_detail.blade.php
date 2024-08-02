@@ -26,9 +26,9 @@
                         <input type="checkbox" value="1" name="bypass_check" class="form-check-input" form="wholesale_item" @if (session('bypass_check') == 1) checked @endif>
                         <label class="form-check-label" for="bypass_check">Bypass Wholesale check</label>
                     </span> --}}
-                <span class="main-content-title mg-b-0 mg-b-lg-1">BulkSale Order Detail</span><br>
+                {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">BulkSale Order Detail</span><br> --}}
                 @if ($order->status == 2)
-                <form class="form-inline" method="POST" action="{{url('wholesale/approve').'/'.$order->id}}">
+                <form class="form-inline" style="max-width: 600px" method="POST" action="{{url('wholesale/approve').'/'.$order->id}}">
                     @csrf
                     <div class="">
                         <select name="customer_id" class="form-select">

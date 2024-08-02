@@ -66,6 +66,40 @@ class Report extends Component
             $end_date = request('end_date') . " 23:59:59";
         }
 
+        $variation_ids = [];
+        if(request('data') == 1){
+
+            $variation_ids = Variation_model::withoutGlobalScope('Status_not_3_scope')->select('id')
+            ->when(request('category') != '', function ($q) {
+                return $q->whereHas('product', function ($qu) {
+                    $qu->where('category', '=', request('category'));
+                });
+            })
+            ->when(request('brand') != '', function ($q) {
+                return $q->whereHas('product', function ($qu) {
+                    $qu->where('brand', '=', request('brand'));
+                });
+            })
+            ->when(request('product') != '', function ($q) {
+                return $q->where('product_id', '=', request('product'));
+            })
+            ->when(request('storage') != '', function ($q) {
+                return $q->where('storage', 'LIKE', request('storage') . '%');
+            })
+            ->when(request('color') != '', function ($q) {
+                return $q->where('color', 'LIKE', request('color') . '%');
+            })
+            ->when(request('grade') != '', function ($q) {
+                return $q->where('grade', 'LIKE', request('grade') . '%');
+            })
+            ->when(request('vendor') != '', function ($q) {
+                return $q->whereHas('stocks.order', function ($q) {
+                    $q->where('customer_id', request('vendor'));
+                });
+            })
+            ->pluck('id')->toArray();
+
+        }
 
         $aggregates = DB::table('category')
             ->join('products', 'category.id', '=', 'products.category')

@@ -93,7 +93,6 @@
                         </thead>
                         <tbody>
                             @php
-                                $cost_counter = 0;
                                 $total_sale_orders = 0;
                                 $total_approved_sale_orders = 0;
                                 $total_sale_eur_items = 0;
@@ -116,9 +115,6 @@
                                     $total_sale_gbp_items += $sales->gbp_items_sum;
                                     $total_approved_sale_gbp_items += $sales->gbp_approved_items_sum;
                                     $total_sale_cost += $aggregated_sales_cost[$sales->category_id];
-                                    if($aggregated_sales_cost[$sales->category_id] > 0){
-                                        $cost_counter++;
-                                    }
                                     $total_repair_cost += $sales->items_repair_sum;
                                     $total_eur_profit += $sales->eur_items_sum - $aggregated_sales_cost[$sales->category_id] - $sales->items_repair_sum;
                                 @endphp
@@ -131,7 +127,7 @@
                                     <td>£{{ number_format($sales->gbp_items_sum,2) }}</td>
                                     @endif
                                     @if (session('user')->hasPermission('view_cost'))
-                                    <td title="{{count(explode(',',$sales->stock_ids))." ".$cost_counter}}">€{{ number_format($aggregated_sales_cost[$sales->category_id],2) }}</td>
+                                    <td title="{{count(explode(',',$sales->stock_ids))}}">€{{ number_format($aggregated_sales_cost[$sales->category_id],2) }}</td>
                                     <td>€{{ number_format($sales->items_repair_sum,2) }}</td>
                                     <td>{{ number_format(0,2) }}</td>
                                     <td>€{{ number_format($sales->eur_items_sum - $aggregated_sales_cost[$sales->category_id] - $sales->items_repair_sum,2) }} + £{{ number_format($sales->gbp_items_sum,2) }}</td>
