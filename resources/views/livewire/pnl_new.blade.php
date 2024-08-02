@@ -105,7 +105,7 @@
                                     <td>€{{ number_format($total_eur,2)  }} + £{{ number_format($total_gbp,2) }}</td>
                                  </tr>
                             @endforeach
-                            @foreach ($aggregated_returns->whereNotIn('product_id',$sales_products)->whereNotIn('storage',$sales_storages) as $s => $returns)
+                            @foreach ($aggregated_returns->whereNotIn(['product_id'=>$sales_products,'storage'=>$sales_storages]) as $s => $returns)
                                 @php
                                     $total_return_orders += $returns->orders_qty;
                                     $total_approved_return_orders += $returns->approved_orders_qty;
