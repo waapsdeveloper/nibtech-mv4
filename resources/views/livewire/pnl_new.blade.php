@@ -91,7 +91,7 @@
                                 <tr>
                                     <td>{{ $s+1 }}</td>
                                     <td>{{ $products[$sales->product_id] ." ". $storages[$sales->storage] }}</td>
-                                    <td>{{ $sales->orders_qty }} {{ isset($returns->orders_qty) ? "( " . $returns->orders_qty.")" : null }}
+                                    <td>{{ $sales->orders_qty }} {{ isset($returns->orders_qty) ? "(" . $returns->orders_qty.")" : null }}
                                     </td>
                                     @if (session('user')->hasPermission('view_cost'))
                                     <td title="{{count(explode(',',$sales->stock_ids))}}">€{{ number_format($aggregated_sales_cost[$sales->product_id][$sales->storage],2) }} @if ($returns != null) (€{{ number_format($aggregated_return_cost[$returns->product_id][$returns->storage],2) }}) @endif</td>
