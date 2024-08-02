@@ -83,9 +83,6 @@
                 </div>
             </div>
         <!-- /breadcrumb -->
-        <div class="row">
-        </div>
-        <br>
 
         <form action="{{ url('add_purchase_item').'/'.$order_id }}" method="POST">
             @csrf
