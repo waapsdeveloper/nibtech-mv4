@@ -30,10 +30,10 @@ class Report extends Component
     public function mount()
     {
 
+        DB::statement("SET SESSION group_concat_max_len = 1000000;");
     }
     public function render(Request $request)
     {
-        DB::statement("SET SESSION group_concat_max_len = 1000000;");
 
 
         $data['title_page'] = "Reports";

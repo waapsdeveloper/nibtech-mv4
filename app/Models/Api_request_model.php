@@ -179,7 +179,7 @@ class Api_request_model extends Model
                     $new_variation['grade'] = $grade;
                 }
                 $variation = Variation_model::firstOrNew($new_variation);
-                if($stock->status == 1 || in_array($stock->last_item()->order->order_type_id,[1,4])){
+                if($stock->status == 1){
 
                     if($stock->imei == $datas->Imei2 && $stock->imei != null){
 
