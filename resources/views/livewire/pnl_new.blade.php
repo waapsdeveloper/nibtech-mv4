@@ -107,6 +107,7 @@
                             @endforeach
                             @foreach ($aggregated_returns as $s => $returns)
                                 @php
+                                    $skip = false;
                                     foreach ($sales_products as $key => $product) {
                                         $pro = explode(',',$product);
                                         if ($returns->product_id == $pro[0] && $returns->storage == $pro[1]) {
@@ -114,7 +115,7 @@
                                             break;
                                         }
                                     }
-                                    if(isset($skip)){
+                                    if($skip == true){
                                         continue;
                                     }
                                     $total_return_orders += $returns->orders_qty;
