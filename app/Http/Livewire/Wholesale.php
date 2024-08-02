@@ -368,6 +368,14 @@ class Wholesale extends Component
                     }
                 </script>";
                 exit;
+            }else{
+                $this->add_wholesale_item($order_id, $imei, $variation_id, $back);
+                if($back != 1){
+                    return redirect()->back();
+                }else{
+                    return 1;
+                }
+
             }
         }
 
