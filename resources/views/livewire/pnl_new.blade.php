@@ -108,7 +108,7 @@
                             @foreach ($aggregated_returns as $s => $returns)
                                 @php
                                     foreach ($sales_products as $key => $product) {
-                                        $pro = explode(',',$product)
+                                        $pro = explode(',',$product);
                                         if ($returns->product_id == $pro[0] && $returns->storage == $pro[1]) {
                                             $skip = true;
                                             break;
