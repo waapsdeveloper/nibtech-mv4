@@ -190,7 +190,7 @@ Route::get('inventory/get_variations/{id}', [Inventory::class,'get_variations'])
 Route::post('inventory/export', [Inventory::class,'export'])->name('view_inventory');
 
 Route::get('inventory/start_verification', [Inventory::class,'start_verification'])->name('inventory_verification');
-Route::get('inventory/verification', [Inventory::class,'verification'])->name('inventory_verificaion');
+Route::get('inventory/verification', [Inventory::class,'verification'])->name('inventory_verification');
 Route::get('inventory/resume_verification', [Inventory::class,'resume_verification'])->name('inventory_verification');
 Route::post('inventory/end_verification', [Inventory::class,'end_verification'])->name('inventory_verification');
 Route::post('inventory/add_verification_imei/{id}', [Inventory::class,'add_verification_imei'])->name('inventory_verification');
