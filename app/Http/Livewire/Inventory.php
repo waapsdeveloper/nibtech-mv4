@@ -745,7 +745,12 @@ class Inventory extends Component
                 // Initialize the counter if it doesn't exist
                 session()->put('counter', 1);
             }
-            session()->put('success', 'Stock Verified successfully');
+            $model = $stock->variation->product->model ?? '?';
+            $storage = $stock->variation->storage_id->name ?? '?';
+            $color = $stock->variation->color_id->name ?? '?';
+            $grade = $stock->variation->grade_id->name ?? '?';
+
+            session()->put('success', 'Stock Verified successfully: '.$model.' - '.$storage.' - '.$color.' - '.$grade);
         }else{
             session()->put('error', 'Stock already verified');
         }
