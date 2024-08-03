@@ -1,0 +1,87 @@
+@extends('layouts.new')
+
+@section('styles')
+<style type="text/css" media="print">
+    @page { size: landscape; }
+  </style>
+
+
+@endsection
+
+    @section('content')
+
+    <div>
+        <form class="form-inline" action="{{ url('inventory/add_verification_imei').'/'.$active_inventory_verification->id }}" method="POST" id="wholesale_item">
+            @csrf
+            <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
+            <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
+            <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
+
+        </form>
+
+    </div>
+    <script>
+
+        window.onload = function() {
+            document.getElementById('imei').focus();
+        };
+        document.addEventListener('DOMContentLoaded', function() {
+            var input = document.getElementById('imei');
+            input.focus();
+            input.select();
+        });
+    </script>
+
+    <div class="card">
+        <div class="card-header pb-0">
+            <div class="d-flex justify-content-between">
+                <h4 class="card-title mg-b-0">Latest Scanned</h4>
+                <h4 class="card-title mg-b-0">Counter: {{ session('counter') }} <a href="{{ url('inventory/resume_verification?reset_counter=1') }}">Reset</a></h4>
+
+                <h4 class="card-title mg-b-0">Total Scanned: {{$scanned_total}}</h4>
+            </div>
+        </div>
+        <div class="card-body"><div class="table-responsive" style="max-height: 250px">
+                <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                    <thead>
+                        <tr>
+                            <th><small><b>No</b></small></th>
+                            <th><small><b>Variation</b></small></th>
+                            <th><small><b>IMEI | Serial Number</b></small></th>
+                            <th><small><b>Vendor</b></small></th>
+                            <th><small><b>Creation Date</b></small></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                            $i = 0;
+                        @endphp
+                        @foreach ($last_ten as $item)
+                            <tr>
+                                @if ($item->stock == null)
+                                    {{$item->stock_id}}
+                                    @continue
+                                @endif
+                                <td>{{ $i + 1 }}</td>
+                                <td>{{ $item->stock->variation->product->model ?? "Variation Model Not added"}} {{$storages[$item->stock->variation->storage] ?? null}} {{$colors[$item->stock->variation->color] ?? null}} {{$grades[$item->stock->variation->grade] ?? "Variation Grade Not added Reference: ".$item->stock->variation->reference_id }}</td>
+                                <td>{{ $item->stock->imei.$item->stock->serial_number }}</td>
+                                <td>{{ $item->stock->order->customer->first_name }}</td>
+                                <td style="width:220px">{{ $item->created_at }}</td>
+                            </tr>
+                            @php
+                                $i ++;
+                            @endphp
+                        @endforeach
+                    </tbody>
+                </table>
+            <br>
+        </div>
+
+        </div>
+    </div>
+
+    @endsection
+
+    @section('scripts')
+
+    @endsection

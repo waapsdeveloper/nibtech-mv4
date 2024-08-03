@@ -25,7 +25,7 @@
                                 </button>
                                 <ul class="dropdown-menu" aria-labelledby="pack_sheet">
                                     <li><a class="dropdown-item" href="{{url('report/export')}}?packlist=2&start_date={{$start_date}}&end_date={{$end_date}}">.xlsx</a></li>
-                                    <li><a class="dropdown-item" href="{{url('export_bulksale_invoice')}}?packlist=1" target="_blank">.pdf</a></li>
+                                    {{-- <li><a class="dropdown-item" href="{{url('export_bulksale_invoice')}}?packlist=1" target="_blank">.pdf</a></li> --}}
                                 </ul>
                             </div>
                         </div>

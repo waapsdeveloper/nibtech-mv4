@@ -224,7 +224,7 @@
                 @endif
             </div>
 
-            @if (session('user')->hasPermission('view_inventory_summery') && request('summery') != 1)
+            @if (request('summery') != 1)
             @if ($active_inventory_verification != null)
                 <div>
                     <form class="form-inline" action="{{ url('inventory/add_verification_imei').'/'.$active_inventory_verification->id }}" method="POST" id="wholesale_item">
