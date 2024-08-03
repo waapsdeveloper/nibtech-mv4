@@ -247,6 +247,7 @@
                         input.select();
                     });
                 </script>
+                <a onclick="window.open('{{url('inventory/verification')}}','print_popup','width=1600,height=600');" class="btn btn-link">Verification Window</a>
             @endif
             <div class="">
                 @if ($active_inventory_verification == null)
