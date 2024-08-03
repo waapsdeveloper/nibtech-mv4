@@ -630,6 +630,8 @@ class Inventory extends Component
         }
         return view('livewire.inventory')->with($data);
     }
+
+
     public function get_products(){
 
 
