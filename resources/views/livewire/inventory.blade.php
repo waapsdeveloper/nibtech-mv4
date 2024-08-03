@@ -372,7 +372,7 @@
                                             <td>{{ $i + 1 }}</td>
                                             <td>{{ $item->stock->variation->product->model ?? "Variation Model Not added"}} {{$storages[$item->stock->variation->storage] ?? null}} {{$colors[$item->stock->variation->color] ?? null}} {{$grades[$item->stock->variation->grade] ?? "Variation Grade Not added Reference: ".$item->stock->variation->reference_id }}</td>
                                             <td>{{ $item->stock->imei.$item->stock->serial_number }}</td>
-                                            <td>{{ $item->stock->order->customer->first_name }}</td>
+                                            <td>{{ $item->stock->order->customer->first_name ?? "Purchase Entry Error" }}</td>
                                             <td style="width:220px">{{ $item->created_at }}</td>
                                         </tr>
                                         @php
