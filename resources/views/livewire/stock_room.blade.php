@@ -128,7 +128,7 @@
             </div>
         </div> --}}
         <br>
-        {{-- @if (session('success')) --}}
+        @if (session('success'))
         <audio id="my_audio" autoplay>
             <source src="{{asset('assets/audio/beep.mp3')}}" type="audio/mpeg">
           Your browser does not support the audio element.
@@ -150,7 +150,7 @@
         @php
         session()->forget('success');
         @endphp
-        {{-- @endif --}}
+        @endif
         @if (session('error'))
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <span class="alert-inner--icon"><i class="fe fe-thumbs-down"></i></span>
