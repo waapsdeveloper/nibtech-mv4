@@ -62,10 +62,10 @@
                                 <div class="col-md-9 mg-t-5 mg-md-t-0">
 
                                     <select name="customer[type]" class="form-select">
+                                        <option value="" {{ $customer->type == Null ? 'selected' : '' }}>Customers</option>
                                         <option value="1" {{ $customer->type == 1 ? 'selected' : '' }}>Vendors</option>
                                         <option value="2" {{ $customer->type == 2 ? 'selected' : '' }}>BulkSale Purchasers</option>
                                         <option value="3" {{ $customer->type == 3 ? 'selected' : '' }}>Repairer</option>
-                                        <option value="4" {{ $customer->type == 4 ? 'selected' : '' }}>Customers</option>
                                     </select>
                                 </div>
                             </div>
