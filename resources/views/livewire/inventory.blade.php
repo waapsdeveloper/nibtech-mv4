@@ -467,6 +467,9 @@
                                                 @if ($stock->latest_return)
                                                  &nbsp;<a title="Sales Return Details" href="{{url('return/detail').'/'.$stock->latest_return->order->id}}" target="_blank"> {{ $stock->latest_return->order->reference_id }} </a>
                                                 @endif
+                                                @if ($stock->latest_repair)
+                                                    &nbsp; {{ $stock->latest_repair->process->reference_id }}
+                                                @endif
                                                 @if ($stock->latest_verification)
                                                     &nbsp; {{ $stock->latest_verification->process->reference_id }}
                                                 @endif
