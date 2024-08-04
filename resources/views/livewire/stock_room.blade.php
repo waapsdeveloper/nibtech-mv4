@@ -22,6 +22,19 @@
             <div class="breadcrumb-header justify-content-between">
                 <div class="left-content">
                 {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">Stock Exit & Receive</span> --}}
+                    <form method="get" action="" class="row form-inline">
+
+                        <div class="form-floating">
+                            <input class="form-control" id="start_date_input" name="start_date" id="datetimepicker" type="date" value="@isset($_GET['start_date']){{$_GET['start_date']}}@endisset" oninput="this.form.submit()">
+                            <label for="start_date_input">{{ __('locale.Start Date') }}</label>
+                        </div>
+                        <div class="form-floating">
+                            <input class="form-control" id="end_date_input" name="end_date" id="datetimepicker" type="date" value="@isset($_GET['end_date']){{$_GET['end_date']}}@endisset" oninput="this.form.submit()">
+                            <label for="end_date_input">{{ __('locale.End Date') }}</label>
+                        </div>
+                        <input type="hidden" name="show" value="{{request('show')}}">
+                        <input type="hidden" name="per_page" value="{{request('per_page')}}">
+                    </form>
                 </div>
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
@@ -99,10 +112,10 @@
                                 $admin = $count->admin->first_name." ".$count->admin->last_name;
                             @endphp
 
-                            <a href="{{url('stock_room')}}?show=1&admin_id={{$count->admin_id}}">{{ $admin }}</a>
+                            <a href="{{url('stock_room')}}?show=1&admin_id={{$count->admin_id}}&start_date={{$start_date}}&end_date={{$end_date}}">{{ $admin }}</a>
                         @endif
                         &nbsp;&nbsp;&nbsp;&nbsp;
-                        <a href="{{url('stock_room')}}?show=1&admin_id={{$count->admin_id}}&description={{$count->description}}">{{$count->description}}: <strong>{{ $count->available_count . '/' . $count->count }}</strong> </a>
+                        <a href="{{url('stock_room')}}?show=1&admin_id={{$count->admin_id}}&description={{$count->description}}&start_date={{$start_date}}&end_date={{$end_date}}">{{$count->description}}: <strong>{{ $count->available_count . '/' . $count->count }}</strong> </a>
 
                     @endforeach
                 @else
@@ -182,6 +195,8 @@
                                 <input type="hidden" name="show" value="1">
                                 <input type="hidden" name="admin_id" value="{{request('admin_id')}}">
                                 <input type="hidden" name="description" value="{{request('description')}}">
+                                <input type="hidden" name="start_date" value="{{$start_date}}">
+                                <input type="hidden" name="end_date" value="{{$end_date}}">
                             </form>
                         </div>
 
