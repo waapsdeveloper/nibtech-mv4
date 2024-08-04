@@ -164,16 +164,16 @@
                                 <th><small><b>No</b></small></th>
                                 <th><small><b>Categories</b></small></th>
                                 <th><small><b>Qty</b></small></th>
-                                @if (session('user')->hasPermission('view_price'))
-                                <th title=""><small><b>EUR Price</b></small></th>
-                                <th title=""><small><b>GBP Price</b></small></th>
-                                @endif
                                 @if (session('user')->hasPermission('view_cost'))
                                     <th title=""><small><b>Cost</b></small></th>
                                     <th title=""><small><b>Repair</b></small></th>
                                     <th title=""><small><b>Fee</b></small></th>
-                                    <th title=""><small><b>Profit</b></small></th>
                                 @endif
+                                @if (session('user')->hasPermission('view_price'))
+                                <th title=""><small><b>EUR Price</b></small></th>
+                                <th title=""><small><b>GBP Price</b></small></th>
+                                @endif
+                                <th title=""><small><b>Profit</b></small></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -207,31 +207,31 @@
                                     <td>{{ $s+1 }}</td>
                                     <td>{{ $categories[$sales->category_id] }}</td>
                                     <td>{{ $sales->orders_qty }}</td>
-                                    @if (session('user')->hasPermission('view_price'))
-                                    <td>€{{ number_format($sales->eur_items_sum,2) }}</td>
-                                    <td>£{{ number_format($sales->gbp_items_sum,2) }}</td>
-                                    @endif
                                     @if (session('user')->hasPermission('view_cost'))
-                                    <td title="{{count(explode(',',$sales->stock_ids))}}">€{{ number_format($aggregated_sales_cost[$sales->category_id],2) }}</td>
-                                    <td>€{{ number_format($sales->items_repair_sum,2) }}</td>
-                                    <td>{{ number_format(0,2) }}</td>
-                                    <td>€{{ number_format($sales->eur_items_sum - $aggregated_sales_cost[$sales->category_id] - $sales->items_repair_sum,2) }} + £{{ number_format($sales->gbp_items_sum,2) }}</td>
+                                        <td title="{{count(explode(',',$sales->stock_ids))}}">€{{ number_format($aggregated_sales_cost[$sales->category_id],2) }}</td>
+                                        <td>€{{ number_format($sales->items_repair_sum,2) }}</td>
+                                        <td>{{ number_format(0,2) }}</td>
                                     @endif
+                                    @if (session('user')->hasPermission('view_price'))
+                                        <td>€{{ number_format($sales->eur_items_sum,2) }}</td>
+                                        <td>£{{ number_format($sales->gbp_items_sum,2) }}</td>
+                                    @endif
+                                    <td>€{{ number_format($sales->eur_items_sum - $aggregated_sales_cost[$sales->category_id] - $sales->items_repair_sum,2) }} + £{{ number_format($sales->gbp_items_sum,2) }}</td>
                                 </tr>
                             @endforeach
                             <tr>
                                 <td colspan="2"><strong>Profit</strong></td>
                                 <td><strong>{{ $total_sale_orders." (".$total_approved_sale_orders.")" }}</strong></td>
-                                @if (session('user')->hasPermission('view_price'))
-                                <td><strong>€{{ number_format($total_sale_eur_items,2)." (€".number_format($total_approved_sale_eur_items,2).")" }}</strong></td>
-                                <td><strong>£{{ number_format($total_sale_gbp_items,2)." (£".number_format($total_approved_sale_gbp_items,2).")" }}</strong></td>
-                                @endif
                                 @if (session('user')->hasPermission('view_cost'))
-                                <td title=""><strong>€{{ number_format($total_sale_cost,2) }}</strong></td>
-                                <td><strong>€{{ number_format($total_repair_cost,2) }}</strong></td>
-                                <td><strong>{{ number_format(0,2) }}</strong></td>
-                                <td><strong>€{{ number_format($total_eur_profit) }} + £{{ number_format($total_sale_gbp_items,2) }}</strong></td>
+                                    <td title=""><strong>€{{ number_format($total_sale_cost,2) }}</strong></td>
+                                    <td><strong>€{{ number_format($total_repair_cost,2) }}</strong></td>
+                                    <td><strong>{{ number_format(0,2) }}</strong></td>
                                 @endif
+                                @if (session('user')->hasPermission('view_price'))
+                                    <td><strong>€{{ number_format($total_sale_eur_items,2)." (€".number_format($total_approved_sale_eur_items,2).")" }}</strong></td>
+                                    <td><strong>£{{ number_format($total_sale_gbp_items,2)." (£".number_format($total_approved_sale_gbp_items,2).")" }}</strong></td>
+                                @endif
+                                <td><strong>€{{ number_format($total_eur_profit) }} + £{{ number_format($total_sale_gbp_items,2) }}</strong></td>
                             </tr>
 
                             <tr>
@@ -264,45 +264,45 @@
                                     <td>{{ $s+1 }}</td>
                                     <td>{{ $categories[$returns->category_id] }}</td>
                                     <td>{{ $returns->orders_qty }}</td>
-                                    @if (session('user')->hasPermission('view_price'))
-                                    <td>€{{ number_format($returns->eur_items_sum,2) }}</td>
-                                    <td>£{{ number_format($returns->gbp_items_sum,2) }}</td>
-                                    @endif
                                     @if (session('user')->hasPermission('view_cost'))
-                                    <td title="{{count(explode(',',$returns->stock_ids))}}">€{{ number_format($aggregated_return_cost[$returns->category_id],2) }}</td>
-                                    <td>€{{ number_format($returns->items_repair_sum,2) }}</td>
-                                    <td>{{ number_format(0,2) }}</td>
-                                    <td>€{{ number_format(-$returns->eur_items_sum + $aggregated_return_cost[$returns->category_id] + $returns->items_repair_sum,2) }} + £{{ number_format($returns->gbp_items_sum,2) }}</td>
+                                        <td title="{{count(explode(',',$returns->stock_ids))}}">€{{ number_format($aggregated_return_cost[$returns->category_id],2) }}</td>
+                                        <td>€{{ number_format($returns->items_repair_sum,2) }}</td>
+                                        <td>{{ number_format(0,2) }}</td>
                                     @endif
+                                    @if (session('user')->hasPermission('view_price'))
+                                        <td>€{{ number_format($returns->eur_items_sum,2) }}</td>
+                                        <td>£{{ number_format($returns->gbp_items_sum,2) }}</td>
+                                    @endif
+                                    <td>€{{ number_format(-$returns->eur_items_sum + $aggregated_return_cost[$returns->category_id] + $returns->items_repair_sum,2) }} + £{{ number_format($returns->gbp_items_sum,2) }}</td>
                                 </tr>
                             @endforeach
                             <tr>
                                 <td colspan="2"><strong>Loss</strong></td>
                                 <td><strong>{{ $total_return_orders }}</strong></td>
-                                @if (session('user')->hasPermission('view_price'))
-                                <td><strong>€{{ number_format($total_return_eur_items,2) }}</strong></td>
-                                <td><strong>£{{ number_format($total_return_gbp_items,2) }}</strong></td>
-                                @endif
                                 @if (session('user')->hasPermission('view_cost'))
-                                <td title=""><strong>€{{ number_format($total_return_cost,2) }}</strong></td>
-                                <td><strong>€{{ number_format($total_repair_return_cost,2) }}</strong></td>
-                                <td><strong>{{ number_format(0,2) }}</strong></td>
-                                <td><strong>€{{ number_format($total_eur_loss) }} + £{{ number_format($total_return_gbp_items,2) }}</strong></td>
+                                    <td title=""><strong>€{{ number_format($total_return_cost,2) }}</strong></td>
+                                    <td><strong>€{{ number_format($total_repair_return_cost,2) }}</strong></td>
+                                    <td><strong>{{ number_format(0,2) }}</strong></td>
                                 @endif
+                                @if (session('user')->hasPermission('view_price'))
+                                    <td><strong>€{{ number_format($total_return_eur_items,2) }}</strong></td>
+                                    <td><strong>£{{ number_format($total_return_gbp_items,2) }}</strong></td>
+                                @endif
+                                <td><strong>€{{ number_format($total_eur_loss) }} + £{{ number_format($total_return_gbp_items,2) }}</strong></td>
                             </tr>
                             <tr>
                                 <td colspan="2"><strong>Net</strong></td>
                                 <td><strong>{{ $total_sale_orders-$total_return_orders }}</strong></td>
-                                @if (session('user')->hasPermission('view_price'))
-                                <td><strong>€{{ number_format($total_sale_eur_items-$total_return_eur_items,2) }}</strong></td>
-                                <td><strong>£{{ number_format($total_sale_gbp_items-$total_return_gbp_items,2) }}</strong></td>
-                                @endif
                                 @if (session('user')->hasPermission('view_cost'))
-                                <td title=""><strong>€{{ number_format($total_sale_cost-$total_return_cost,2) }}</strong></td>
-                                <td><strong>€{{ number_format($total_repair_cost-$total_repair_return_cost,2) }}</strong></td>
-                                <td><strong>{{ number_format(0,2) }}</strong></td>
-                                <td><strong>€{{ number_format($total_eur_profit-$total_eur_loss) }} + £{{ number_format($total_sale_gbp_items-$total_return_gbp_items,2) }}</strong></td>
+                                    <td title=""><strong>€{{ number_format($total_sale_cost-$total_return_cost,2) }}</strong></td>
+                                    <td><strong>€{{ number_format($total_repair_cost-$total_repair_return_cost,2) }}</strong></td>
+                                    <td><strong>{{ number_format(0,2) }}</strong></td>
                                 @endif
+                                @if (session('user')->hasPermission('view_price'))
+                                    <td><strong>€{{ number_format($total_sale_eur_items-$total_return_eur_items,2) }}</strong></td>
+                                    <td><strong>£{{ number_format($total_sale_gbp_items-$total_return_gbp_items,2) }}</strong></td>
+                                @endif
+                                <td><strong>€{{ number_format($total_eur_profit-$total_eur_loss) }} + £{{ number_format($total_sale_gbp_items-$total_return_gbp_items,2) }}</strong></td>
                             </tr>
                         </tbody>
                     </table>
