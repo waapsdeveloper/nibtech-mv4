@@ -372,10 +372,10 @@ class Order extends Component
         ->when(request('status'), function ($q) {
             return $q->where('orders.status', request('status'));
         })
-        ->when(request('stock') == 0, function ($query) {
+        ->when(request('status') == 3 && request('stock') == 0, function ($query) {
             return $query->having('available_stock', '=', 0);
         })
-        ->when(request('stock') == 1, function ($query) {
+        ->when(request('status') == 3 && request('stock') == 1, function ($query) {
             return $query->having('available_stock', '>', 0);
         })
         // ->when(!request('stock'), function ($query) {
