@@ -131,7 +131,9 @@
                             <input type="hidden" name="grade" value="{{ Request::get('grade') }}">
                             <input type="hidden" name="category" value="{{ Request::get('category') }}">
                             <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
-                        <button class="btn btn-link" type="submit">Profit & Loss by Products</button>
+                            <button class="btn btn-link" type="submit" name="bp" value="1">Profit & Loss by Products</button>
+                            <button class="btn btn-link" type="submit" name="bc" value="1">Profit & Loss by Customers</button>
+                            <button class="btn btn-link" type="submit" name="bv" value="1">Profit & Loss by Vendors</button>
                         </form>
                     </div>
                     <div class="">

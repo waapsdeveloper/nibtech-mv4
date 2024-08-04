@@ -42,7 +42,9 @@ class Customer extends Component
         ->when(request('email') != '', function ($q) {
             return $q->where('email', 'LIKE', '%' . request('email') . '%');
         })
-        ->paginate(50);
+        ->paginate(50)
+        ->onEachSide(5)
+        ->appends(request()->except('page'));
 
         // foreach($data['customers'] as $customer){
         //     if($customer->orders->count() == 0){
