@@ -623,7 +623,7 @@ class Report extends Component
 
         $data['aggregated_returns'] = $aggregate_returns;
         $data['aggregated_return_cost'] = $aggregated_return_cost;
-        dd($data);
+        // dd($data);
         return $data;
 
     }
