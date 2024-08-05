@@ -125,6 +125,7 @@
                                     $total_repair_cost += $sales->items_repair_sum;
                                     $total_eur = $sales->eur_items_sum - $sale_cost - $sales->items_repair_sum;
                                     $total_gbp = $sales->gbp_items_sum ?? 0;
+                                    $gbp_items_sum = $sales->gbp_items_sum ?? 0;
                                     if($returns != null){
                                         $total_return_orders += $returns->orders_qty;
                                         $total_approved_return_orders += $returns->approved_orders_qty;
@@ -161,7 +162,7 @@
                                    @endif
                                     @if (session('user')->hasPermission('view_price'))
                                     <td>€{{ number_format($sales->eur_items_sum,2) }} @if ($returns != null) (€{{ number_format($returns->eur_items_sum,2) }}) @endif</td>
-                                    <td>£{{ number_format($sales->gbp_items_sum,2) ?? 0 }} @if ($returns != null) (£{{ number_format($returns->gbp_items_sum,2) ?? 0 }}) @endif</td>
+                                    <td>£{{ number_format($gbp_items_sum,2) }} @if ($returns != null && isset($returns->gbp_items_sum)) (£{{ number_format($returns->gbp_items_sum,2) }}) @endif</td>
                                     @endif
                                     <td>€{{ number_format($total_eur,2)  }} + £{{ number_format($total_gbp,2) }}</td>
                                  </tr>
