@@ -161,7 +161,7 @@
                                    @endif
                                     @if (session('user')->hasPermission('view_price'))
                                     <td>€{{ number_format($sales->eur_items_sum,2) }} @if ($returns != null) (€{{ number_format($returns->eur_items_sum,2) }}) @endif</td>
-                                    <td>£{{ number_format($sales->gbp_items_sum,2) }} @if ($returns != null) (£{{ number_format($returns->gbp_items_sum,2) }}) @endif</td>
+                                    <td>£{{ number_format($sales->gbp_items_sum,2) ?? 0 }} @if ($returns != null) (£{{ number_format($returns->gbp_items_sum,2) ?? 0 }}) @endif</td>
                                     @endif
                                     <td>€{{ number_format($total_eur,2)  }} + £{{ number_format($total_gbp,2) }}</td>
                                  </tr>
