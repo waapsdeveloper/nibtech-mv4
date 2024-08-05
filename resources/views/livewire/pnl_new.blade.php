@@ -120,11 +120,11 @@
 
                                     $total_sale_orders += $sales->orders_qty;
                                     $total_sale_eur_items += $sales->eur_items_sum;
-                                    $total_sale_gbp_items += $sales->gbp_items_sum;
+                                    $total_sale_gbp_items += $sales->gbp_items_sum ?? 0;
                                     $total_sale_cost += $sale_cost;
                                     $total_repair_cost += $sales->items_repair_sum;
                                     $total_eur = $sales->eur_items_sum - $sale_cost - $sales->items_repair_sum;
-                                    $total_gbp = $sales->gbp_items_sum;
+                                    $total_gbp = $sales->gbp_items_sum ?? 0;
                                     if($returns != null){
                                         $total_return_orders += $returns->orders_qty;
                                         $total_approved_return_orders += $returns->approved_orders_qty;
