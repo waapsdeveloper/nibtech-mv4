@@ -12,14 +12,36 @@
 
             <div class="card m-0">
                 <div class="card-header m-0">
+                    @if (request('bp') == 1)
                     <h4 class="card-title mb-0">P&L by Products</h4>
+
+                    @endif
+                    @if (request('bc') == 1)
+                    <h4 class="card-title mb-0">P&L by Customers</h4>
+
+                    @endif
+                    @if (request('bv') == 1)
+                    <h4 class="card-title mb-0">P&L by Vendors</h4>
+
+                    @endif
                 </div>
                 <div class="card-body m-0 p-2">
                     <table class="table table-bordered table-hover text-md-nowrap">
                         <thead>
                             <tr>
                                 <th><small><b>No</b></small></th>
-                                <th><small><b>products</b></small></th>
+                                @if (request('bp') == 1)
+                                <th><small><b>Products</b></small></th>
+
+                                @endif
+                                @if (request('bc') == 1)
+                                <th><small><b>Customers</b></small></th>
+
+                                @endif
+                                @if (request('bv') == 1)
+                                <th><small><b>Vendors</b></small></th>
+
+                                @endif
                                 <th style="width: 100px;"><small><b>Qty</b></small></th>
                                 @if (session('user')->hasPermission('view_cost'))
                                     <th style="width: 230px;"><small><b>Cost</b></small></th>
@@ -35,8 +57,16 @@
                         </thead>
                         <tbody>
                             @php
-                                $sales_products = [];
-                                $sales_storages = [];
+                                if (request('bp') == 1){
+                                    $sales_products = [];
+                                    $sales_storages = [];
+                                }
+                                if (request('bc') == 1){
+                                    $sales_customers = [];
+                                }
+                                if (request('bv') == 1){
+                                    $sales_vendors = [];
+                                }
 
                                 $total_sale_orders = 0;
                                 $total_approved_sale_orders = 0;
@@ -61,9 +91,19 @@
                             @endphp
                             @foreach ($aggregated_sales as $s => $sales)
                                 @php
-                                    $returns = $aggregated_returns->where('product_id', $sales->product_id)->where('storage', $sales->storage)->first();
-                                    $sales_products[] = $sales->product_id.','.$sales->storage;
-                                    $sales_storages[] = $sales->storage;
+                                    if (request('bp') == 1){
+                                        $returns = $aggregated_returns->where('product_id', $sales->product_id)->where('storage', $sales->storage)->first();
+                                        $sales_products[] = $sales->product_id.','.$sales->storage;
+                                        $sales_storages[] = $sales->storage;
+                                    }
+                                    if (request('bc') == 1){
+                                        $returns = $aggregated_returns->where('customer_id', $sales->customer_id)->first();
+                                        $sales_customers[] = $sales->customer_id;
+                                    }
+                                    if (request('bv') == 1){
+                                        $returns = $aggregated_returns->where('customer_id', $sales->customer_id)->first();
+                                        $sales_vendors[] = $sales->customer_id;
+                                    }
 
                                     $total_sale_orders += $sales->orders_qty;
                                     $total_sale_eur_items += $sales->eur_items_sum;
@@ -90,7 +130,15 @@
                                 @endphp
                                 <tr>
                                     <td>{{ $s+1 }}</td>
+                                    @if (request('bp') == 1)
                                     <td>{{ $products[$sales->product_id] ." ". $storages[$sales->storage] }}</td>
+                                    @endif
+                                    @if (request('bc') == 1)
+                                    <td>{{ $customers[$sales->customer_id] }}</td>
+                                    @endif
+                                    @if (request('bv') == 1)
+                                    <td>{{ $vendors[$sales->customer_id] }}</td>
+                                    @endif
                                     <td>{{ $sales->orders_qty }} {{ isset($returns->orders_qty) ? "(" . $returns->orders_qty.")" : null }}
                                     </td>
                                     @if (session('user')->hasPermission('view_cost'))
@@ -108,13 +156,28 @@
                             @foreach ($aggregated_returns as $s => $returns)
                                 @php
                                     $skip = false;
-                                    foreach ($sales_products as $key => $product) {
-                                        $pro = explode(',',$product);
-                                        if ($returns->product_id == $pro[0] && $returns->storage == $pro[1]) {
+                                    if (request('bp') == 1){
+                                        foreach ($sales_products as $key => $product) {
+                                            $pro = explode(',',$product);
+                                            if ($returns->product_id == $pro[0] && $returns->storage == $pro[1]) {
+                                                $skip = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if (request('bc') == 1){
+                                        if (in_array($returns->customer_id, $sales_customers)) {
                                             $skip = true;
                                             break;
                                         }
                                     }
+                                    if (request('bv') == 1){
+                                        if (in_array($returns->customer_id, $sales_vendors)) {
+                                            $skip = true;
+                                            break;
+                                        }
+                                    }
+
                                     if($skip == true){
                                         continue;
                                     }
@@ -130,7 +193,15 @@
                                 @endphp
                                 <tr>
                                     <td>{{ $s+1 }}</td>
-                                    <td>{{ $products[$returns->product_id]." ".$storages[$returns->storage] }}</td>
+                                    @if (request('bp') == 1)
+                                    <td>{{ $products[$returns->product_id] ." ". $storages[$returns->storage] }}</td>
+                                    @endif
+                                    @if (request('bc') == 1)
+                                    <td>{{ $customers[$returns->customer_id] }}</td>
+                                    @endif
+                                    @if (request('bv') == 1)
+                                    <td>{{ $vendors[$returns->customer_id] }}</td>
+                                    @endif
                                     <td>({{ $returns->orders_qty }})</td>
                                     @if (session('user')->hasPermission('view_cost'))
                                     <td title="{{count(explode(',',$returns->stock_ids))}}">(€{{ number_format($aggregated_return_cost[$returns->product_id][$returns->storage],2) }})</td>
