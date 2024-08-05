@@ -95,22 +95,35 @@
                                         $returns = $aggregated_returns->where('product_id', $sales->product_id)->where('storage', $sales->storage)->first();
                                         $sales_products[] = $sales->product_id.','.$sales->storage;
                                         $sales_storages[] = $sales->storage;
+                                        $sale_cost = $aggregated_sales_cost[$sales->product_id][$sales->storage];
+                                        if($returns != null){
+                                            $return_cost = $aggregated_return_cost[$returns->product_id][$returns->storage];
+                                        }
                                     }
                                     if (request('bc') == 1){
                                         $returns = $aggregated_returns->where('customer_id', $sales->customer_id)->first();
                                         $sales_customers[] = $sales->customer_id;
+                                        $sale_cost = $aggregated_sales_cost[$sales->customer_id];
+                                        if($returns != null){
+                                            $return_cost = $aggregated_return_cost[$returns->customer_id];
+                                        }
+
                                     }
                                     if (request('bv') == 1){
                                         $returns = $aggregated_returns->where('customer_id', $sales->customer_id)->first();
                                         $sales_vendors[] = $sales->customer_id;
+                                        $sale_cost = $aggregated_sales_cost[$sales->customer_id];
+                                        if($returns != null){
+                                            $return_cost = $aggregated_return_cost[$returns->customer_id];
+                                        }
                                     }
 
                                     $total_sale_orders += $sales->orders_qty;
                                     $total_sale_eur_items += $sales->eur_items_sum;
                                     $total_sale_gbp_items += $sales->gbp_items_sum;
-                                    $total_sale_cost += $aggregated_sales_cost[$sales->product_id][$sales->storage];
+                                    $total_sale_cost += $sale_cost;
                                     $total_repair_cost += $sales->items_repair_sum;
-                                    $total_eur = $sales->eur_items_sum - $aggregated_sales_cost[$sales->product_id][$sales->storage] - $sales->items_repair_sum;
+                                    $total_eur = $sales->eur_items_sum - $sale_cost - $sales->items_repair_sum;
                                     $total_gbp = $sales->gbp_items_sum;
                                     if($returns != null){
                                         $total_return_orders += $returns->orders_qty;
@@ -119,9 +132,9 @@
                                         $total_approved_return_eur_items += $returns->eur_approved_items_sum;
                                         $total_return_gbp_items += $returns->gbp_items_sum;
                                         $total_approved_return_gbp_items += $returns->gbp_approved_items_sum;
-                                        $total_return_cost += $aggregated_return_cost[$returns->product_id][$returns->storage];
+                                        $total_return_cost += $return_cost;
                                         $total_repair_return_cost += $returns->items_repair_sum;
-                                        $eur_loss = $returns->eur_items_sum - $aggregated_return_cost[$returns->product_id][$returns->storage] - $returns->items_repair_sum;
+                                        $eur_loss = $returns->eur_items_sum - $return_cost - $returns->items_repair_sum;
                                         $total_eur = $total_eur - $eur_loss;
                                         $total_gbp = $total_gbp - $returns->gbp_items_sum;
                                     }
@@ -142,7 +155,7 @@
                                     <td>{{ $sales->orders_qty }} {{ isset($returns->orders_qty) ? "(" . $returns->orders_qty.")" : null }}
                                     </td>
                                     @if (session('user')->hasPermission('view_cost'))
-                                    <td title="{{count(explode(',',$sales->stock_ids))}}">€{{ number_format($aggregated_sales_cost[$sales->product_id][$sales->storage],2) }} @if ($returns != null) (€{{ number_format($aggregated_return_cost[$returns->product_id][$returns->storage],2) }}) @endif</td>
+                                    <td title="{{count(explode(',',$sales->stock_ids))}}">€{{ number_format($sale_cost,2) }} @if ($returns != null) (€{{ number_format($return_cost,2) }}) @endif</td>
                                     <td>€{{ number_format($sales->items_repair_sum,2) }} @if ($returns != null) (€{{ number_format($returns->items_repair_sum,2) }}) @endif</td>
                                     <td>{{ number_format(0,2) }} @if ($returns != null) () @endif</td>
                                    @endif
@@ -164,18 +177,21 @@
                                                 break;
                                             }
                                         }
+                                        $return_cost = $aggregated_return_cost[$returns->product_id][$returns->storage];
                                     }
                                     if (request('bc') == 1){
                                         if (in_array($returns->customer_id, $sales_customers)) {
                                             $skip = true;
                                             break;
                                         }
+                                        $return_cost = $aggregated_return_cost[$returns->customer_id];
                                     }
                                     if (request('bv') == 1){
                                         if (in_array($returns->customer_id, $sales_vendors)) {
                                             $skip = true;
                                             break;
                                         }
+                                        $return_cost = $aggregated_return_cost[$returns->customer_id];
                                     }
 
                                     if($skip == true){
@@ -187,9 +203,9 @@
                                     $total_approved_return_eur_items += $returns->eur_approved_items_sum;
                                     $total_return_gbp_items += $returns->gbp_items_sum;
                                     $total_approved_return_gbp_items += $returns->gbp_approved_items_sum;
-                                    $total_return_cost += $aggregated_return_cost[$returns->product_id][$returns->storage];
+                                    $total_return_cost += $return_cost;
                                     $total_repair_return_cost += $returns->items_repair_sum;
-                                    $total_eur_loss += $returns->eur_items_sum - $aggregated_return_cost[$returns->product_id][$returns->storage] - $returns->items_repair_sum;
+                                    $total_eur_loss += $returns->eur_items_sum - $return_cost - $returns->items_repair_sum;
                                 @endphp
                                 <tr>
                                     <td>{{ $s+1 }}</td>
@@ -204,7 +220,7 @@
                                     @endif
                                     <td>({{ $returns->orders_qty }})</td>
                                     @if (session('user')->hasPermission('view_cost'))
-                                    <td title="{{count(explode(',',$returns->stock_ids))}}">(€{{ number_format($aggregated_return_cost[$returns->product_id][$returns->storage],2) }})</td>
+                                    <td title="{{count(explode(',',$returns->stock_ids))}}">(€{{ number_format($return_cost,2) }})</td>
                                     <td>(€{{ number_format($returns->items_repair_sum,2) }})</td>
                                     <td>({{ number_format(0,2) }})</td>
                                     @endif
@@ -212,7 +228,7 @@
                                     <td>(€{{ number_format($returns->eur_items_sum,2) }})</td>
                                     <td>(£{{ number_format($returns->gbp_items_sum,2) }})</td>
                                     @endif
-                                    <td>(€{{ number_format(-$returns->eur_items_sum + $aggregated_return_cost[$returns->product_id][$returns->storage] + $returns->items_repair_sum,2) }} + £{{ number_format($returns->gbp_items_sum,2) }})</td>
+                                    <td>(€{{ number_format(-$returns->eur_items_sum + $return_cost + $returns->items_repair_sum,2) }} + £{{ number_format($returns->gbp_items_sum,2) }})</td>
                                 </tr>
                             @endforeach
                             {{-- <tr>
