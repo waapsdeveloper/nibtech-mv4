@@ -477,7 +477,7 @@ class Report extends Component
     private function pnl_by_customer(){
         DB::statement("SET SESSION group_concat_max_len = 1500000;");
 
-        $data['customers'] = Customer_model::pluck('company','id');
+        $data['customers'] = Customer_model::where('type',2)->pluck('company','id');
         $start_date = Carbon::now()->startOfMonth();
         // $start_date = date('Y-m-d 00:00:00',);
         $end_date = date('Y-m-d 23:59:59');
@@ -547,7 +547,7 @@ class Report extends Component
                 // DB::raw('SUM(purchase_items.price) as items_cost_sum'),
                 DB::raw('SUM(CASE WHEN process.process_type_id = 9 THEN process_stock.price ELSE 0 END) as items_repair_sum')
             )
-            ->whereBetween('orders.processed_at', [$start_date, $end_date])
+            ->whereBetween('orders.created_at', [$start_date, $end_date])
             ->whereIn('variation.id', $variation_ids)
             ->where('orders.order_type_id', 5)
             ->Where('orders.deleted_at',null)
@@ -623,7 +623,7 @@ class Report extends Component
 
         $data['aggregated_returns'] = $aggregate_returns;
         $data['aggregated_return_cost'] = $aggregated_return_cost;
-
+        dd($data);
         return $data;
 
     }
