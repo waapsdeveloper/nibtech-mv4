@@ -123,7 +123,7 @@
                                 <div class="col-md-9 mg-t-5 mg-md-t-0">
 
                                     <select class="form-select" name="customer[country]">
-                                        <option>Select</option>
+                                        <option value="">Select</option>
                                         @foreach ($countries as $country)
                                             <option value="{{ $country->id }}" @if($country->id == $customer->country) selected @endif>{{ $country->title }}</option>
                                         @endforeach
