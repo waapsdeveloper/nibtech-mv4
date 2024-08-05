@@ -307,16 +307,17 @@ class Report extends Component
     }
     public function pnl(){
         if(request('bp') == 1){
-            $this->pnl_by_product();
+            $data = $this->pnl_by_product();
         }
         if(request('bc') == 1){
-            $this->pnl_by_customer();
+            $data = $this->pnl_by_customer();
         }
         if(request('bv') == 1){
-            $this->pnl_by_vendor();
+            $data = $this->pnl_by_vendor();
         }
+        return view('livewire.pnl_new')->with($data);
     }
-    public function pnl_by_product(){
+    private function pnl_by_product(){
         DB::statement("SET SESSION group_concat_max_len = 1500000;");
 
         $data['products'] = Products_model::pluck('model','id');
@@ -471,10 +472,9 @@ class Report extends Component
         $data['aggregated_returns'] = $aggregate_returns;
         $data['aggregated_return_cost'] = $aggregated_return_cost;
 
-        return view('livewire.pnl_new')->with($data);
-
+        return $data;
     }
-    public function pnl_by_customer(){
+    private function pnl_by_customer(){
         DB::statement("SET SESSION group_concat_max_len = 1500000;");
 
         $data['customers'] = Customer_model::pluck('company','id');
@@ -624,7 +624,7 @@ class Report extends Component
         $data['aggregated_returns'] = $aggregate_returns;
         $data['aggregated_return_cost'] = $aggregated_return_cost;
 
-        return view('livewire.pnl_new')->with($data);
+        return $data;
 
     }
 
