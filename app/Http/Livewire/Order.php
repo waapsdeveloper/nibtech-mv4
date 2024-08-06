@@ -1952,6 +1952,7 @@ class Order extends Component
             }else{
                 $color = null;
             }
+            $variant = $item->variation;
             if(($stock->variation->product_id == $variant->product_id) || ($variant->product_id == 144 && $stock->variation->product_id == 229) || ($variant->product_id == 142 && $stock->variation->product_id == 143) || ($variant->product_id == 54 && $stock->variation->product_id == 55) || ($variant->product_id == 55 && $stock->variation->product_id == 54) || ($variant->product_id == 58 && $stock->variation->product_id == 59) || ($variant->product_id == 59 && $stock->variation->product_id == 58) || ($variant->product_id == 200 && $stock->variation->product_id == 160)){
             }else{
                 session()->put('error', "Product Model not matched");
