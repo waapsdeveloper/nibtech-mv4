@@ -1961,7 +1961,7 @@ class Order extends Component
             if(($stock->variation->storage == $variant->storage) || ($variant->storage == 5 && in_array($stock->variation->storage,[0,6]) && $variant->product->brand == 2) || (in_array($variant->product_id, [78,58,59]) && $variant->storage == 4 && in_array($stock->variation->storage,[0,5]))){
             }else{
                 session()->put('error', "Product Storage not matched");
-                return redirect()->back();
+                // return redirect()->back();
             }
             if(!in_array($stock->variation->grade, [$variant->grade, 7, 9])){
                 session()->put('error', "Product Grade not matched");
