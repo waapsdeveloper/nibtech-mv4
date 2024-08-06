@@ -1059,7 +1059,7 @@ class Order extends Component
         }
 
         $stock = Stock_model::firstOrNew(['imei' => $i, 'serial_number' => $s]);
-        if($stock->id && $stock->status != null && $stock->order_id != null){
+        if($stock->id && $stock->status != null && $stock->order_id != null && $stock->status != 2){
             $issue['data']['variation'] = $variation_id;
             $issue['data']['imei'] = $i.$s;
             $issue['data']['cost'] = $price;
@@ -1937,6 +1937,35 @@ class Order extends Component
             if($stock->order->status != 3){
                 session()->put('error', 'Stock list awaiting approval');
                 return redirect()->back();
+            }
+            if($stock->variation->grade == 17){
+                session()->put('error', "IMEI Flagged | Contact Admin");
+                return redirect()->back();
+            }
+            if($stock->variation->storage != null){
+                $storage = $stock->variation->storage_id->name . " - ";
+            }else{
+                $storage = null;
+            }
+            if($stock->variation->color != null){
+                $color = $stock->variation->color_id->name . " - ";
+            }else{
+                $color = null;
+            }
+            if(($stock->variation->product_id == $variant->product_id) || ($variant->product_id == 144 && $stock->variation->product_id == 229) || ($variant->product_id == 142 && $stock->variation->product_id == 143) || ($variant->product_id == 54 && $stock->variation->product_id == 55) || ($variant->product_id == 55 && $stock->variation->product_id == 54) || ($variant->product_id == 58 && $stock->variation->product_id == 59) || ($variant->product_id == 59 && $stock->variation->product_id == 58) || ($variant->product_id == 200 && $stock->variation->product_id == 160)){
+            }else{
+                session()->put('error', "Product Model not matched");
+                return redirect()->back();
+            }
+            if(($stock->variation->storage == $variant->storage) || ($variant->storage == 5 && in_array($stock->variation->storage,[0,6]) && $variant->product->brand == 2) || (in_array($variant->product_id, [78,58,59]) && $variant->storage == 4 && in_array($stock->variation->storage,[0,5]))){
+            }else{
+                session()->put('error', "Product Storage not matched");
+                return redirect()->back();
+            }
+            if(!in_array($stock->variation->grade, [$variant->grade, 7, 9])){
+                session()->put('error', "Product Grade not matched");
+                return redirect()->back();
+
             }
             $stock->variation_id = $item->variation_id;
             $stock->tester = request('correction')['tester'];
