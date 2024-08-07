@@ -1429,6 +1429,11 @@ class Order extends Component
                     session()->put('error', "IMEI Flagged | Contact Admin");
                     return redirect()->back();
                 }
+                $stock_movement = Stock_movement_model::where(['stock_id'=>$stock[$i]->id, 'received_at'=>null])->first();
+                if($stock_movement == null){
+                    session()->put('error', "Missing Exit Entry");
+                    return redirect()->back();
+                }
                 if($stock[$i]->variation->storage != null){
                     $storage = $stock[$i]->variation->storage_id->name . " - ";
                 }else{
@@ -1966,7 +1971,6 @@ class Order extends Component
             if(!in_array($stock->variation->grade, [$variant->grade, 7, 9])){
                 session()->put('error', "Product Grade not matched");
                 return redirect()->back();
-
             }
             $stock->variation_id = $item->variation_id;
             $stock->tester = request('correction')['tester'];
