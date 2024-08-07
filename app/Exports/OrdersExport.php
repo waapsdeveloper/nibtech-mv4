@@ -85,7 +85,7 @@ class OrdersExport
 
         // Create a TCPDF instance
         $pdf = new TCPDF();
-        $pdf->SetMargins(10, 10, 10);
+        $pdf->SetMargins(10, 15, 10);
 
         // Add a new page
         $pdf->AddPage();
