@@ -667,7 +667,7 @@
                                                                 @php
                                                                     $def = 1;
                                                                 @endphp
-                                                                <td rowspan="{{ count($order->customer->orders)-1 }}" colspan="2">{{ $ord->customer->first_name." ".$ord->customer->last_name." ".$ord->customer->phone }}</td>
+                                                                <td rowspan="{{ count($order->customer->orders->order_items)-1 }}" colspan="2">{{ $ord->customer->first_name." ".$ord->customer->last_name." ".$ord->customer->phone }}</td>
                                                             @endif
                                                             <td>{{ $ord->reference_id }}</td>
                                                             <td>
