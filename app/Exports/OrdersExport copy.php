@@ -3,6 +3,8 @@
 namespace App\Exports;
 
 use Illuminate\Support\Facades\DB;
+use TCPDF;
+// use Picqer\Barcode\BarcodeGeneratorPNG;
 
 class OrdersExport
 {
@@ -23,10 +25,11 @@ class OrdersExport
                 'products.model',
                 'color.name as color',
                 'storage.name as storage',
-                'grade.name as grade_name'
+                'grade.name as grade_name',
+                // DB::raw('SUM(order_items.quantity) as total_quantity')
             )
-            ->where('orders.deleted_at', null)
-            ->where('orders.order_type_id', 3)
+            ->where('orders.deleted_at',null)
+            ->where('orders.order_type_id',3)
             ->when(request('start_date') != '', function ($q) {
                 return $q->where('orders.created_at', '>=', request('start_date', 0));
             })
@@ -37,28 +40,28 @@ class OrdersExport
                 return $q->where('orders.status', request('status'));
             })
             ->when(request('order_id') != '', function ($q) {
-                if (str_contains(request('order_id'), '<')) {
-                    $order_ref = str_replace('<', '', request('order_id'));
+                if(str_contains(request('order_id'),'<')){
+                    $order_ref = str_replace('<','',request('order_id'));
                     return $q->where('orders.reference_id', '<', $order_ref);
-                } elseif (str_contains(request('order_id'), '>')) {
-                    $order_ref = str_replace('>', '', request('order_id'));
+                }elseif(str_contains(request('order_id'),'>')){
+                    $order_ref = str_replace('>','',request('order_id'));
                     return $q->where('orders.reference_id', '>', $order_ref);
-                } elseif (str_contains(request('order_id'), '<=')) {
-                    $order_ref = str_replace('<=', '', request('order_id'));
+                }elseif(str_contains(request('order_id'),'<=')){
+                    $order_ref = str_replace('<=','',request('order_id'));
                     return $q->where('orders.reference_id', '<=', $order_ref);
-                } elseif (str_contains(request('order_id'), '>=')) {
-                    $order_ref = str_replace('>=', '', request('order_id'));
+                }elseif(str_contains(request('order_id'),'>=')){
+                    $order_ref = str_replace('>=','',request('order_id'));
                     return $q->where('orders.reference_id', '>=', $order_ref);
-                } elseif (str_contains(request('order_id'), '-')) {
-                    $order_ref = explode('-', request('order_id'));
+                }elseif(str_contains(request('order_id'),'-')){
+                    $order_ref = explode('-',request('order_id'));
                     return $q->whereBetween('orders.reference_id', $order_ref);
-                } elseif (str_contains(request('order_id'), ',')) {
-                    $order_ref = explode(',', request('order_id'));
+                }elseif(str_contains(request('order_id'),',')){
+                    $order_ref = explode(',',request('order_id'));
                     return $q->whereIn('orders.reference_id', $order_ref);
-                } elseif (str_contains(request('order_id'), ' ')) {
-                    $order_ref = explode(' ', request('order_id'));
+                }elseif(str_contains(request('order_id'),' ')){
+                    $order_ref = explode(' ',request('order_id'));
                     return $q->whereIn('orders.reference_id', $order_ref);
-                } else {
+                }else{
                     return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
                 }
             })
@@ -69,42 +72,63 @@ class OrdersExport
                 return $q->whereHas('order_items.variation', function ($q) {
                     $q->where('sku', 'LIKE', '%' . request('sku') . '%');
                 });
+                // where('orders.order_items.variation.sku', 'LIKE', '%' . request('sku') . '%');
             })
             ->when(request('imei') != '', function ($q) {
                 return $q->whereHas('order_items.stock', function ($q) {
                     $q->where('imei', 'LIKE', '%' . request('imei') . '%');
                 });
             })
+            // ->groupBy('variation.sku', 'variation.name', 'grade.name')
             ->orderBy('orders.reference_id', 'DESC')
             ->distinct()->get();
 
-        // Create a CustomTCPDF instance
-        $pdf = new CustomTCPDF();
-        $pdf->SetMargins(10, 16, 10); // Adjust top margin to make space for header
+        // Create a TCPDF instance
+        $pdf = new TCPDF();
+        $pdf->SetMargins(10, 10, 10);
 
         // Add a new page
         $pdf->AddPage();
-        $pdf->SetAutoPageBreak(TRUE, 10);
+        // Add heading cell at the top center
+        $pdf->Cell(0, 5, 'Order list', 0, 1, 'C');
+        // $pdf->setPrintHeader(false);
+        // $pdf->SetFooterMargin(0);
+        // $pdf->setPrintFooter(false);
+        $pdf->SetAutoPageBreak(TRUE, 15);
+        // Set font
+        $pdf->SetFont('times', 'B', 12);
+
+        // Add headings
+        $pdf->Cell(8, 0, 'No');
+        $pdf->Cell(20, 0, 'Order');
+        $pdf->Cell(25, 0, 'SKU');
+        $pdf->Cell(15, 0, 'Qty');
+        $pdf->Cell(105, 0, 'Product Name');
+        $pdf->Cell(0, 0, 'Grade');
 
         // Set font for data
         $pdf->SetFont('times', '', 12);
 
-        // Iterate through data and add to PDF
+        // Create a BarcodeGenerator instance
+        // $barcodeGenerator = new BarcodeGeneratorPNG();
         $i = 0;
+        // Iterate through data and add to PDF
         foreach ($data as $order) {
             $i++;
             $pdf->Ln();
             // Set line style for all borders
             $pdf->SetLineStyle(['width' => 0.1, 'color' => [0, 0, 0]]);
+            // $pdf->Cell(110, 10, $order->name, 1);
             // Add Product Name (ellipsize to fit within 110)
-            $variationName = $this->ellipsize($order->model . " - " . $order->storage . " - " . $order->color, 60);
+            $pdf->Cell(8, 0, $i, 1);
+            $variationName = $this->ellipsize($order->model." - ".$order->storage." - ".$order->color, 60);
             $sku = $this->ellipsize($order->sku, 13);
-            $pdf->Cell(8, 5, $i, 1);
-            $pdf->Cell(20, 5, $order->reference_id, 1);
-            $pdf->Cell(25, 5, $sku, 1);
-            $pdf->Cell(7, 5, $this->bold($order->quantity), 1);
-            $pdf->Cell(110, 5, $variationName, 1);
-            $pdf->Cell(0, 5, $order->grade_name, 1);
+            $pdf->Cell(20, 0, $order->reference_id, 1);
+            $pdf->Cell(25, 0, $sku, 1);
+            $pdf->Cell(8, 0, $this->bold($order->quantity), 1);
+            $pdf->Cell(110, 0, $variationName, 1);
+            $pdf->Cell(0, 0, $order->grade_name, 1);
+
         }
 
         // Output PDF to the browser
@@ -112,20 +136,19 @@ class OrdersExport
     }
 
     // Custom function for ellipsizing text
-    private function ellipsize($text, $max_length)
-    {
+    private function ellipsize($text, $max_length) {
         if (mb_strlen($text, 'UTF-8') > $max_length) {
             $text = mb_substr($text, 0, $max_length - 3, 'UTF-8') . '...';
         }
         return $text;
     }
-
-    // Custom function for bolding text
-    private function bold($text)
-    {
+    // Custom function for ellipsizing text
+    private function bold($text) {
         if ($text > 1) {
-            $text = "(" . $text . ")";
+            $text = "(".$text.")";
         }
         return $text;
     }
+
+
 }
