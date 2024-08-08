@@ -161,6 +161,8 @@
                                                     <td><a href="https://www.backmarket.fr/bo_merchant/orders/all?orderId={{ $item->reference_id }}" target="_blank">Replacement <br> {{ $item->reference_id }}</a></td>
                                                 @elseif ($order->order_type_id == 4)
                                                     <td><a href="{{url('return/detail/'.$order->id)}}">{{ $order->reference_id."\n\r".$item->reference_id }}</a></td>
+                                                @elseif ($order->order_type_id == 6)
+                                                    <td><a href="{{url('wholesale_return/detail/'.$order->id)}}">{{ $order->reference_id."\n\r".$item->reference_id }}</a></td>
                                                 @elseif ($order->order_type_id == 3)
                                                     <td><a href="https://www.backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}" target="_blank">{{ $order->reference_id."\n\r".$item->reference_id }}</a></td>
                                                 @endif

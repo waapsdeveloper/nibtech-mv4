@@ -193,7 +193,7 @@ class Wholesale_return extends Component
             if($stock->purchase_item){
 
                 $last_item = $stock->last_item();
-                if(in_array($last_item->order->order_type_id,[1,4])){
+                if(in_array($last_item->order->order_type_id,[1,4,6])){
 
                     if($stock->status == 2){
                         $stock->status = 1;
@@ -270,9 +270,9 @@ class Wholesale_return extends Component
 
     }
     public function add_wholesale_return(){
-        $last_order = Order_model::where('order_type_id',4)->orderBy('id','desc')->first();
+        $last_order = Order_model::where('order_type_id',6)->orderBy('id','desc')->first();
         if($last_order == null){
-            $ref = 3001;
+            $ref = 5001;
         }else{
             $ref = $last_order->reference_id+1;
             if($last_order->order_items->count() == 0){
@@ -284,7 +284,7 @@ class Wholesale_return extends Component
             'reference_id' => $ref,
             'status' => 1,
             'currency' => 4,
-            'order_type_id' => 4,
+            'order_type_id' => 6,
             'processed_by' => session('user_id')
         ]);
 

@@ -145,7 +145,7 @@ class FunctionsDaily extends Command
 
             // if($last_item){
 
-            //     if(in_array($last_item->order->order_type_id,[1,4])){
+            //     if(in_array($last_item->order->order_type_id,[1,4,6])){
             //         $message = 'IMEI is Available';
             //         // if($stock->status == 2){
             //             if($process_stocks->where('status',1)->count() == 0){

@@ -1406,7 +1406,7 @@ class Order extends Component
                     // if(session('user_id') == 1){
                     //     dd($last_item);
                     // }
-                    if(in_array($last_item->order->order_type_id,[1,4])){
+                    if(in_array($last_item->order->order_type_id,[1,4,6])){
 
                         if($stock[$i]->status == 2){
                             $stock[$i]->status = 1;
@@ -1694,7 +1694,7 @@ class Order extends Component
                     // if(session('user_id') == 1){
                     //     dd($last_item);
                     // }
-                    if(in_array($last_item->order->order_type_id,[1,4])){
+                    if(in_array($last_item->order->order_type_id,[1,4,6])){
 
                         if($stock[$i]->status == 2){
                             $stock[$i]->status = 1;

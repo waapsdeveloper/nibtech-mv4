@@ -112,6 +112,17 @@
 
                 </form>
                 @endif
+                <script>
+
+                    window.onload = function() {
+                        document.getElementById('imei').focus();
+                    };
+                    document.addEventListener('DOMContentLoaded', function() {
+                        var input = document.getElementById('imei');
+                        input.focus();
+                        input.select();
+                    });
+                </script>
             </div>
             <div class="p-2 tx-right">
                 @if ($order->status < 3)

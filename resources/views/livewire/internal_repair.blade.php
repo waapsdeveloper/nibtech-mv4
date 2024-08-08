@@ -151,6 +151,8 @@
                                                     <td><a href="{{url('rma/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
                                                 @elseif ($order->order_type_id == 4)
                                                     <td><a href="{{url('order/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                @elseif ($order->order_type_id == 6)
+                                                    <td><a href="{{url('wholesale_return/detail/'.$order->id)}}">{{ $order->reference_id."\n\r".$item->reference_id }}</a></td>
                                                 @elseif ($order->order_type_id == 5)
                                                     <td><a href="{{url('wholesale/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
                                                 @elseif ($order->order_type_id == 3)

@@ -38,7 +38,7 @@ class Stock_model extends Model
     public function latest_return()
     {
         return $this->hasOne(Order_item_model::class, 'stock_id', 'id')->whereHas('order', function ($q) {
-            $q->where('order_type_id', 4);
+            $q->whereIn('order_type_id', [4,6]);
         })->orderByDesc('id');
     }
 
@@ -188,7 +188,7 @@ class Stock_model extends Model
             }
         }
         $items5 = Order_item_model::where(['stock_id'=>$stock->id,'linked_id'=>null])->whereHas('order', function ($query) {
-            $query->whereIn('order_type_id', [2,3,4,5]);
+            $query->whereIn('order_type_id', [2,3,4,5,6]);
         })->orderBy('id','asc')->get();
         if($items5->count() == 1){
             foreach($items5 as $item5){
@@ -214,7 +214,7 @@ class Stock_model extends Model
 
         if($last_item){
 
-            if(in_array($last_item->order->order_type_id,[1,4])){
+            if(in_array($last_item->order->order_type_id,[1,4,6])){
                 $message = 'IMEI is Available';
                 // if($stock->status == 2){
                     if($process_stocks->where('status',1)->count() == 0){

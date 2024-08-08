@@ -194,7 +194,7 @@ class SalesReturn extends Component
             if($stock->purchase_item){
 
                 $last_item = $stock->last_item();
-                if(in_array($last_item->order->order_type_id,[1,4])){
+                if(in_array($last_item->order->order_type_id,[1,4,6])){
 
                     if($stock->status == 2){
                         $stock->status = 1;

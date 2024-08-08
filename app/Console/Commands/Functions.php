@@ -49,7 +49,7 @@ class Functions extends Command
         })->get();
         foreach($items as $item){
             $it = Order_item_model::where(['stock_id'=>$item->stock_id])->whereHas('order', function ($q) {
-                $q->whereIn('order_type_id',[1,4]);
+                $q->whereIn('order_type_id',[1,4,6]);
             })->orderByDesc('id')->first();
             if($it != null){
                 Order_item_model::where('id',$item->id)->update(['linked_id'=>$it->id]);

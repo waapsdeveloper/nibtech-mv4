@@ -569,7 +569,7 @@
                                                 @php
                                                     $item = $stock->last_item();
                                                     $variation = $item->variation;
-                                                    if(in_array($item->order->order_type_id,[1,4])){
+                                                    if(in_array($item->order->order_type_id,[1,4,6])){
                                                         $stock->status = 1;
                                                         $stock->save();
                                                         continue;
