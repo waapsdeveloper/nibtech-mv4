@@ -34,6 +34,7 @@ use App\Http\Controllers\TwoFactorController;
 
 use App\Http\Controllers\GoogleController;
 use App\Http\Livewire\Stock_room;
+use App\Http\Livewire\Wholesale_return;
 
 /*
 |--------------------------------------------------------------------------
@@ -127,6 +128,17 @@ Route::post('wholesale/add_wholesale_sheet/{id}', [Wholesale::class,'add_wholesa
 Route::post('wholesale/approve/{id}', [Wholesale::class,'wholesale_approve'])->name('wholesale_approve');
 Route::get('wholesale/revert_status/{id}', [Wholesale::class,'wholesale_revert_status'])->name('wholesale_revert_status');
 Route::post('wholesale/remove_issues', [Wholesale::class,'remove_issues'])->name('remove_wholesale_issues');
+
+Route::get('wholesale_return', Wholesale_return::class)->name('view_wholesale_return');
+Route::get('add_wholesale_return', [Wholesale_return::class,'add_wholesale_return'])->name('add_wholesale_return');
+Route::post('add_wholesale_return_item/{id}', [Wholesale_return::class,'add_wholesale_return_item'])->name('add_wholesale_return_item');
+Route::post('receive_wholesale_return_item/{id}', [Wholesale_return::class,'receive_wholesale_return_item'])->name('receive_wholesale_return_item');
+Route::get('delete_wholesale_return/{id}', [Wholesale_return::class,'delete_wholesale_return'])->name('delete_wholesale_return');
+Route::get('delete_wholesale_return_item/{id}', [Wholesale_return::class,'delete_wholesale_return_item'])->name('delete_wholesale_return_item');
+Route::get('wholesale_return/detail/{id}', [Wholesale_return::class,'wholesale_return_detail'])->name('wholesale_return_detail');
+Route::post('wholesale_return/ship/{id}', [Wholesale_return::class,'wholesale_return_ship'])->name('wholesale_return_ship');
+Route::post('wholesale_return/approve/{id}', [Wholesale_return::class,'wholesale_return_approve'])->name('wholesale_return_approve');
+Route::get('wholesale_return/revert_status/{id}', [Wholesale_return::class,'wholesale_return_revert_status'])->name('wholesale_return_revert_status');
 
 Route::get('rma', RMA::class)->name('view_rma');
 Route::post('add_rma', [RMA::class,'add_rma'])->name('add_rma');

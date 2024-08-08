@@ -70,9 +70,9 @@ class Wholesale_return extends Component
 
 
         // dd($data['orders']);
-        return view('livewire.return')->with($data);
+        return view('livewire.wholesale_return')->with($data);
     }
-    public function return_ship($order_id){
+    public function wholesale_return_ship($order_id){
         $order = Order_model::find($order_id);
         $order->tracking_number = request('tracking_number');
         $order->status = 2;
@@ -80,7 +80,7 @@ class Wholesale_return extends Component
 
         return redirect()->back();
     }
-    public function return_approve($order_id){
+    public function wholesale_return_approve($order_id){
         $order = Order_model::find($order_id);
         $order->reference = request('reference');
         $order->status = 3;
@@ -88,13 +88,13 @@ class Wholesale_return extends Component
 
         return redirect()->back();
     }
-    public function return_revert_status($order_id){
+    public function wholesale_return_revert_status($order_id){
         $order = Order_model::find($order_id);
         $order->status -= 1;
         $order->save();
         return redirect()->back();
     }
-    public function delete_return($order_id){
+    public function delete_wholesale_return($order_id){
 
         $stock = Stock_model::where(['order_id'=>$order_id,'status'=>2])->first();
         if($stock != null){
@@ -121,7 +121,7 @@ class Wholesale_return extends Component
         return redirect()->back();
 
     }
-    public function delete_return_item($item_id){
+    public function delete_wholesale_return_item($item_id){
 
         $orderItem = Order_item_model::find($item_id);
 
@@ -147,7 +147,7 @@ class Wholesale_return extends Component
         return redirect()->back();
 
     }
-    public function return_detail($order_id){
+    public function wholesale_return_detail($order_id){
 
         $data['title_page'] = "Return Detail";
 
@@ -177,7 +177,7 @@ class Wholesale_return extends Component
             if (request('imei') == '' || !$stock || $stock->status == null) {
                 session()->put('error', 'IMEI Invalid / Not Found');
                 // return redirect()->back(); // Redirect here is not recommended
-                return view('livewire.return_detail', $data); // Return the Blade view instance with data
+                return view('livewire.wholesale_return_detail', $data); // Return the Blade view instance with data
             }
             $check_old_sale = Order_item_model::where(['stock_id'=>$stock->id, 'linked_id'=>null])
             ->whereHas('order', function ($query) {
@@ -266,17 +266,17 @@ class Wholesale_return extends Component
 
         // echo "</pre>";
         // dd($data['variations']);
-        return view('livewire.return_detail')->with($data);
+        return view('livewire.wholesale_return_detail')->with($data);
 
     }
-    public function add_return(){
+    public function add_wholesale_return(){
         $last_order = Order_model::where('order_type_id',4)->orderBy('id','desc')->first();
         if($last_order == null){
             $ref = 3001;
         }else{
             $ref = $last_order->reference_id+1;
             if($last_order->order_items->count() == 0){
-                return redirect(url('return/detail').'/'.$last_order->id);
+                return redirect(url('wholesale_return/detail').'/'.$last_order->id);
             }
         }
 
@@ -288,9 +288,9 @@ class Wholesale_return extends Component
             'processed_by' => session('user_id')
         ]);
 
-        return redirect(url('return/detail').'/'.$order->id);
+        return redirect(url('wholesale_return/detail').'/'.$order->id);
     }
-    private function insert_return_item($products, $storages, $order, $n, $c, $i, $s, $g = null, $dr = null){
+    private function insert_wholesale_return_item($products, $storages, $order, $n, $c, $i, $s, $g = null, $dr = null){
 
         $names = explode(" ",$n);
         $last = end($names);
@@ -317,7 +317,7 @@ class Wholesale_return extends Component
                 if($stock->status != 2){
                     $issue['message'] = 'IMEI Available In Inventory';
                 }else{
-                    $issue['message'] = 'IMEI Rereturn';
+                    $issue['message'] = 'IMEI Rewholesale_return';
                 }
             }
 
@@ -378,34 +378,32 @@ class Wholesale_return extends Component
         }
 
     }
-    public function add_return_item($order_id){
-        $return = request('return');
-        // print_r($return);
-        if($order_id == $return['order_id']){
-            $variation = Variation_model::firstOrNew(['product_id' => $return['product'], 'storage' => $return['storage'], 'color' => $return['color'], 'grade' => $return['grade']]);
+    public function add_wholesale_return_item($order_id){
+        $wholesale_return = request('wholesale_return');
+        // print_r($wholesale_return);
+        if($order_id == $wholesale_return['order_id']){
+            $variation = Variation_model::firstOrNew(['product_id' => $wholesale_return['product'], 'storage' => $wholesale_return['storage'], 'color' => $wholesale_return['color'], 'grade' => $wholesale_return['grade']]);
 
             $variation->stock += 1;
             $variation->status = 1;
             $variation->save();
 
-            $stock = Stock_model::find($return['stock_id']);
+            $stock = Stock_model::find($wholesale_return['stock_id']);
 
             if($stock->id){
                 $item = Order_item_model::where(['order_id'=>$order_id, 'stock_id' => $stock->id])->first();
                 // print_r($stock);
                 if($item == null){
 
-
-
                     $order_item = new Order_item_model();
                     $order_item->order_id = $order_id;
-                    $order_item->reference_id = $return['reference_id'];
+                    $order_item->reference_id = $wholesale_return['reference_id'];
                     $order_item->variation_id = $variation->id;
                     $order_item->stock_id = $stock->id;
                     $order_item->quantity = 1;
-                    $order_item->price = $return['price'];
+                    $order_item->price = $wholesale_return['price'];
                     $order_item->status = 1;
-                    $order_item->linked_id = $return['linked_id'];
+                    $order_item->linked_id = $wholesale_return['linked_id'];
                     $order_item->admin_id = session('user_id');
                     $order_item->save();
 
@@ -415,7 +413,7 @@ class Wholesale_return extends Component
                         'stock_id' => $stock->id,
                         'old_variation_id' => $stock->variation_id,
                         'new_variation_id' => $variation->id,
-                        'description' => $return['description'],
+                        'description' => $wholesale_return['description'],
                         'admin_id' => session('user_id'),
                     ]);
 
@@ -439,7 +437,7 @@ class Wholesale_return extends Component
 
     }
 
-    public function receive_return_item($order_id, $imei = null, $back = null){
+    public function receive_wholesale_return_item($order_id, $imei = null, $back = null){
 
         if(request('imei')){
             $imei = request('imei');
