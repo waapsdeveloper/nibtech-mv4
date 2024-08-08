@@ -392,7 +392,7 @@
                         @php
                             $varss = $vars->toArray();
                         @endphp
-                        {{ $products[$key]." ".$storages[$key2] }}
+                        {{ $products[$key] }} {{ $storages[$key2] ?? null }}
                         {{-- @dd($vars) --}}
                         {{-- @php
                             isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
