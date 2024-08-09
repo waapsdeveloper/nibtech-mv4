@@ -100,13 +100,13 @@
                 </div>
                 <div class="col-md col-sm-6">
                     <div class="form-floating">
-                        <input class="form-control" id="start_date_input" name="start_date" id="datetimepicker" type="date" value="@isset($_GET['start_date']){{$_GET['start_date']}}@endisset">
+                        <input class="form-control" id="start_date_input" name="start_date" id="datetimepicker" type="datetime" value="@isset($_GET['start_date']){{$_GET['start_date']}}@endisset">
                         <label for="start_date_input">{{ __('locale.Start Date') }}</label>
                     </div>
                 </div>
                 <div class="col-md col-sm-6">
                     <div class="form-floating">
-                        <input class="form-control" id="end_date_input" name="end_date" id="datetimepicker" type="date" value="@isset($_GET['end_date']){{$_GET['end_date']}}@endisset">
+                        <input class="form-control" id="end_date_input" name="end_date" id="datetimepicker" type="datetime" value="@isset($_GET['end_date']){{$_GET['end_date']}}@endisset">
                         <label for="end_date_input">{{ __('locale.End Date') }}</label>
                     </div>
                 </div>
