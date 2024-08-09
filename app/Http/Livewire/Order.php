@@ -85,9 +85,9 @@ class Order extends Component
         })
         ->when(request('end_date') != '', function ($q) {
             if(request('adm') > 0){
-                return $q->where('orders.processed_at', '<=', request('end_date', 0) . " 23:59:59")->orderBy('orders.processed_at','desc');
+                return $q->where('orders.processed_at', '<=', request('end_date', 0))->orderBy('orders.processed_at','desc');
             }else{
-                return $q->where('orders.created_at', '<=', request('end_date', 0) . " 23:59:59");
+                return $q->where('orders.created_at', '<=', request('end_date', 0));
             }
         })
         ->when(request('status') != '', function ($q) {
