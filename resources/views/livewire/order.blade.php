@@ -198,7 +198,9 @@
         <form id="picklist" method="POST" target="_blank" action="{{url('export_order')}}">
             @csrf
             <input type="hidden" name="start_date" value="{{ Request::get('start_date') }}">
+            <input type="hidden" name="start_time" value="{{ Request::get('start_time') }}">
             <input type="hidden" name="end_date" value="{{ Request::get('end_date') }}">
+            <input type="hidden" name="end_time" value="{{ Request::get('end_time') }}">
             <input type="hidden" name="status" value="{{ Request::get('status') }}">
             <input type="hidden" name="adm" value="{{ Request::get('adm') }}">
             <input type="hidden" name="order_id" value="{{ Request::get('order_id') }}">
@@ -281,7 +283,9 @@
                                     </select>
                                     {{-- <button type="submit">Apply</button> --}}
                                     <input type="hidden" name="start_date" value="{{ Request::get('start_date') }}">
+                                    <input type="hidden" name="start_time" value="{{ Request::get('start_time') }}">
                                     <input type="hidden" name="end_date" value="{{ Request::get('end_date') }}">
+                                    <input type="hidden" name="end_time" value="{{ Request::get('end_time') }}">
                                     <input type="hidden" name="status" value="{{ Request::get('status') }}">
                                     <input type="hidden" name="adm" value="{{ Request::get('adm') }}">
                                     <input type="hidden" name="order_id" value="{{ Request::get('order_id') }}">
@@ -301,7 +305,9 @@
                                     </select>
                                     {{-- <button type="submit">Apply</button> --}}
                                     <input type="hidden" name="start_date" value="{{ Request::get('start_date') }}">
+                                    <input type="hidden" name="start_time" value="{{ Request::get('start_time') }}">
                                     <input type="hidden" name="end_date" value="{{ Request::get('end_date') }}">
+                                    <input type="hidden" name="end_time" value="{{ Request::get('end_time') }}">
                                     <input type="hidden" name="status" value="{{ Request::get('status') }}">
                                     <input type="hidden" name="adm" value="{{ Request::get('adm') }}">
                                     <input type="hidden" name="order_id" value="{{ Request::get('order_id') }}">

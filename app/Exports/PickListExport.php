@@ -32,10 +32,24 @@ class PickListExport
             ->where('orders.deleted_at',null)
             ->where('orders.order_type_id',3)
             ->when(request('start_date') != '', function ($q) {
-                return $q->where('orders.created_at', '>=', request('start_date', 0));
+                if(request('start_date') != '' && request('start_time') != ''){
+                    $start_date = request('start_date').' '.request('start_time');
+                }elseif(request('start_date') != ''){
+                    $start_date = request('start_date');
+                }else{
+                    $start_date = 0;
+                }
+                return $q->where('orders.created_at', '>=', $start_date);
             })
             ->when(request('end_date') != '', function ($q) {
-                return $q->where('orders.created_at', '<=', request('end_date', 0) . " 23:59:59");
+                if(request('end_date') != '' && request('end_time') != ''){
+                    $end_date = request('end_date').' '.request('end_time');
+                }elseif(request('end_date') != ''){
+                    $end_date = request('end_date')." 23:59:59";
+                }else{
+                    $end_date = now();
+                }
+                return $q->where('orders.created_at', '<=', $end_date);
             })
             ->when(request('status') != '', function ($q) {
                 return $q->where('orders.status', request('status'));
