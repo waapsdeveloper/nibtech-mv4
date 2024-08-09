@@ -10,6 +10,20 @@ class PickListExport
 {
     public function generatePdf()
     {
+        if(request('start_date') != '' && request('start_time') != ''){
+            $start_date = request('start_date').' '.request('start_time');
+        }elseif(request('start_date') != ''){
+            $start_date = request('start_date');
+        }else{
+            $start_date = 0;
+        }
+        if(request('end_date') != '' && request('end_time') != ''){
+            $end_date = request('end_date').' '.request('end_time');
+        }elseif(request('end_date') != ''){
+            $end_date = request('end_date')." 23:59:59";
+        }else{
+            $end_date = now();
+        }
         // Fetch data from the database
         $data = DB::table('orders')
             ->join('order_items', 'orders.id', '=', 'order_items.order_id')
@@ -31,24 +45,10 @@ class PickListExport
             )
             ->where('orders.deleted_at',null)
             ->where('orders.order_type_id',3)
-            ->when(request('start_date') != '', function ($q) {
-                if(request('start_date') != '' && request('start_time') != ''){
-                    $start_date = request('start_date').' '.request('start_time');
-                }elseif(request('start_date') != ''){
-                    $start_date = request('start_date');
-                }else{
-                    $start_date = 0;
-                }
+            ->when(request('start_date') != '', function ($q) use ($start_date) {
                 return $q->where('orders.created_at', '>=', $start_date);
             })
-            ->when(request('end_date') != '', function ($q) {
-                if(request('end_date') != '' && request('end_time') != ''){
-                    $end_date = request('end_date').' '.request('end_time');
-                }elseif(request('end_date') != ''){
-                    $end_date = request('end_date')." 23:59:59";
-                }else{
-                    $end_date = now();
-                }
+            ->when(request('end_date') != '', function ($q) use ($end_date) {
                 return $q->where('orders.created_at', '<=', $end_date);
             })
             ->when(request('status') != '', function ($q) {
@@ -128,9 +128,11 @@ class PickListExport
         // Create a BarcodeGenerator instance
         $barcodeGenerator = new BarcodeGeneratorPNG();
         $i = 0;
+        $j = 0;
         // Iterate through data and add to PDF
         foreach ($data as $order) {
             $i++;
+            $j += $order->total_quantity;
             $pdf->Ln();
             // Set line style for all borders
             $pdf->SetLineStyle(['width' => 0.1, 'color' => [0, 0, 0]]);
@@ -146,6 +148,19 @@ class PickListExport
             $barcodeImage = $this->generateBarcodeWithSku($barcodeGenerator, $order->sku);
             $pdf->Image($barcodeImage, $pdf->GetX() + 2, $pdf->GetY() + 1, 50, 13);
         }
+
+
+        $pdf->Ln();
+        $pdf->Cell(150, 10, "Total Item");
+        $pdf->Cell(22, 10, $j);
+
+        $pdf->Ln();
+        $pdf->Cell(150, 10, "Start Date & Time");
+        $pdf->Cell(22, 10, $start_date);
+
+        $pdf->Ln();
+        $pdf->Cell(150, 10, "End Date & Time");
+        $pdf->Cell(22, 10, $end_date);
 
         // Output PDF to the browser
         $pdf->Output('orders.pdf', 'I');
