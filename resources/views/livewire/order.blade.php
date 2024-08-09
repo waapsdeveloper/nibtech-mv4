@@ -100,14 +100,26 @@
                 </div>
                 <div class="col-md col-sm-6">
                     <div class="form-floating">
-                        <input class="form-control" id="start_date_input" name="start_date" id="datetimepicker" type="datetime-local" value="@isset($_GET['start_date']){{$_GET['start_date']}}@endisset">
+                        <input class="form-control" id="start_date_input" name="start_date" id="datetimepicker" type="date" value="@isset($_GET['start_date']){{$_GET['start_date']}}@endisset">
                         <label for="start_date_input">{{ __('locale.Start Date') }}</label>
                     </div>
                 </div>
                 <div class="col-md col-sm-6">
                     <div class="form-floating">
-                        <input class="form-control" id="end_date_input" name="end_date" id="datetimepicker" type="datetime-local" value="@isset($_GET['end_date']){{$_GET['end_date']}}@endisset">
+                        <input class="form-control" id="start_time_input" name="start_time" id="timetimepicker" type="time" value="@isset($_GET['start_time']){{$_GET['start_time']}}@endisset">
+                        <label for="start_time_input">Time</label>
+                    </div>
+                </div>
+                <div class="col-md col-sm-6">
+                    <div class="form-floating">
+                        <input class="form-control" id="end_date_input" name="end_date" id="datetimepicker" type="date" value="@isset($_GET['end_date']){{$_GET['end_date']}}@endisset">
                         <label for="end_date_input">{{ __('locale.End Date') }}</label>
+                    </div>
+                </div>
+                <div class="col-md col-sm-6">
+                    <div class="form-floating">
+                        <input class="form-control" id="end_time_input" name="end_time" id="timetimepicker" type="time" value="@isset($_GET['end_time']){{$_GET['end_time']}}@endisset">
+                        <label for="end_time_input">Time</label>
                     </div>
                 </div>
                 <div class="col-md col-sm-6">

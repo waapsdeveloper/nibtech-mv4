@@ -72,22 +72,37 @@ class Order extends Component
             case 4: $sort = "products.model"; $by = "ASC"; break;
             default: $sort = "orders.reference_id"; $by = "DESC";
         }
+        if(request('start_date') != '' && request('start_time') != ''){
+            $start_date = request('start_date').' '.request('start_time');
+        }elseif(request('start_date') != ''){
+            $start_date = request('start_date');
+        }else{
+            $start_date = 0;
+        }
+
+        if(request('end_date') != '' && request('end_time') != ''){
+            $end_date = request('end_date').' '.request('end_time');
+        }elseif(request('end_date') != ''){
+            $end_date = request('end_date')." 23:59:59";
+        }else{
+            $end_date = now();
+        }
 
         $orders = Order_model::with(['customer','customer.orders','order_items','order_items.variation','order_items.variation.product', 'order_items.variation.grade_id', 'order_items.stock'])
         ->where('orders.order_type_id',3)
-        ->when(request('start_date') != '', function ($q) {
+        ->when(request('start_date') != '', function ($q) use ($start_date) {
             if(request('adm') > 0){
-                return $q->where('orders.processed_at', '>=', request('start_date', 0));
+                return $q->where('orders.processed_at', '>=', $start_date);
             }else{
-                return $q->where('orders.created_at', '>=', request('start_date', 0));
+                return $q->where('orders.created_at', '>=', $start_date);
 
             }
         })
-        ->when(request('end_date') != '', function ($q) {
+        ->when(request('end_date') != '', function ($q) use ($end_date) {
             if(request('adm') > 0){
-                return $q->where('orders.processed_at', '<=', request('end_date', 0))->orderBy('orders.processed_at','desc');
+                return $q->where('orders.processed_at', '<=',$end_date)->orderBy('orders.processed_at','desc');
             }else{
-                return $q->where('orders.created_at', '<=', request('end_date', 0));
+                return $q->where('orders.created_at', '<=',$end_date);
             }
         })
         ->when(request('status') != '', function ($q) {
