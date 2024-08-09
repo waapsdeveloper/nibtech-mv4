@@ -151,15 +151,16 @@ class PickListExport
 
 
         $pdf->Ln();
-        $pdf->Cell(150, 10, "Total Item");
+        $pdf->Ln();
+        $pdf->Cell(110, 10, "Total Item");
         $pdf->Cell(22, 10, $j);
 
         $pdf->Ln();
-        $pdf->Cell(150, 10, "Start Date & Time");
+        $pdf->Cell(110, 10, "Start Date & Time");
         $pdf->Cell(22, 10, $start_date);
 
         $pdf->Ln();
-        $pdf->Cell(150, 10, "End Date & Time");
+        $pdf->Cell(110, 10, "End Date & Time");
         $pdf->Cell(22, 10, $end_date);
 
         // Output PDF to the browser
