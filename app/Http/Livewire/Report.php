@@ -45,7 +45,7 @@ class Report extends Component
         if(request('per_page') != null){
             $per_page = request('per_page');
         }else{
-            $per_page = 10;
+            $per_page = 20;
         }
         $data['purchase_status'] = [2 => '(Pending)', 3 => ''];
         $data['purchase_orders'] = Order_model::where('order_type_id',1)->pluck('reference_id','id');
@@ -216,7 +216,9 @@ class Report extends Component
         ->join('customer', 'orders.customer_id', '=', 'customer.id')
         ->groupBy('variation.grade', 'orders.id', 'orders.reference_id', 'orders.reference', 'customer.first_name')
         ->orderByDesc('order_id')
-        ->get();
+        ->paginate($per_page)
+        ->onEachSide(5)
+        ->appends(request()->except('page'));
 
         // dd($data['Vendor_grade_report']);
 
