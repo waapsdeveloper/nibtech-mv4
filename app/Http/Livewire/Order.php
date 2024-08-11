@@ -2382,7 +2382,7 @@ class Order extends Component
 
     public function updateBMOrdersNew($return = false)
     {
-        Artisan::command('refresh:new');
+        Artisan::command('refresh:new', 'Success');
         return redirect()->back();
         die;
         $bm = new BackMarketAPIController();
