@@ -745,13 +745,24 @@ class Report extends Component
         $data['aggregated_sales_cost'] = $aggregated_cost;
 
         $aggregate_returns = DB::table('orders')
-            ->join('order_items', 'orders.id', '=', 'order_items.order_id')
+            ->join('order_items', function ($join) {
+                $join->on('orders.id', '=', 'order_items.order_id')
+                    ->whereIn('order_items.id', function ($query) {
+                        $query->selectRaw('MAX(order_items2.id)')
+                            ->from('order_items as order_items2')
+                            ->groupBy('order_items2.stock_id');
+                    });
+            })
             ->leftJoin('stock', 'order_items.stock_id', '=', 'stock.id')
+            ->leftJoin('orders as purchase_order', 'stock.order_id', '=', 'purchase_order.id')
+            // ->join('order_items', 'orders.id', '=', 'order_items.order_id')
+            // ->leftJoin('stock', 'order_items.stock_id', '=', 'stock.id')
             ->join('variation', 'stock.variation_id', '=', 'variation.id')
             ->leftJoin('process_stock', 'stock.id', '=', 'process_stock.stock_id')
             ->leftJoin('process', 'process_stock.process_id', '=', 'process.id')
             ->select(
-                'orders.customer_id as customer_id',
+                // 'orders.customer_id as customer_id',
+                'purchase_order.customer_id as customer_id',
                 DB::raw('COUNT(orders.id) as orders_qty'),
                 DB::raw('SUM(CASE WHEN orders.status = 3 THEN 1 ELSE 0 END) as approved_orders_qty'),
                 DB::raw('SUM(CASE WHEN orders.currency = 4 THEN order_items.price ELSE 0 END) as eur_items_sum'),
@@ -765,14 +776,14 @@ class Report extends Component
             )
             ->whereBetween('order_items.created_at', [$start_date, $end_date])
             ->whereIn('variation.id', $variation_ids)
-            ->where('orders.order_type_id', 6)
+            ->whereIn('orders.order_type_id', [4,6])
             ->Where('orders.deleted_at',null)
             ->Where('order_items.deleted_at',null)
             ->Where('stock.deleted_at',null)
             ->Where('process_stock.deleted_at',null)
             // ->whereIn('orders.status', [3,6])
             // ->groupBy('products.id')
-            ->groupBy('orders.customer_id')
+            ->groupBy('purchase_order.customer_id')
             ->get();
         // $costs = Category_model::select(
         //     'category.'
