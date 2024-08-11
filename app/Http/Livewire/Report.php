@@ -217,10 +217,9 @@ class Report extends Component
         ->groupBy('variation.grade', 'orders.id', 'orders.reference_id', 'orders.reference', 'customer.first_name')
         ->orderByDesc('order_id')
         ->get();
-        $data['batch_grade_reports'] = $data['batch_grade_reports']->groupBy('order_id')
-        ->paginate($per_page)
-        ->onEachSide(5)
-        ->appends(request()->except('page'));
+        // ->paginate($per_page)
+        // ->onEachSide(5)
+        // ->appends(request()->except('page'));
 
         // dd($data['Vendor_grade_report']);
 

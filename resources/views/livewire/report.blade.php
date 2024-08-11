@@ -344,7 +344,7 @@
                             @php
                                 $i = 0;
                             @endphp
-                            @foreach ($batch_grade_reports as $orderReports)
+                            @foreach ($batch_grade_reports->groupBy('order_id') as $orderReports)
                                 @php
                                     $order = $orderReports->first();
                                     $total = $orderReports->sum('quantity');
