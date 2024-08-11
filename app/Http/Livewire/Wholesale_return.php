@@ -42,7 +42,7 @@ class Wholesale_return extends Component
         $data['orders'] = Order_model::select(
             'orders.id',
             'orders.reference_id',
-            // DB::raw('SUM(order_items.price) as total_price'),
+            DB::raw('SUM(order_items.price) as total_price'),
             DB::raw('COUNT(order_items.id) as total_quantity'),
             DB::raw('COUNT(CASE WHEN stock.status = 1 THEN order_items.id END) as available_stock'),
             'orders.created_at')
