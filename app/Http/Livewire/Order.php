@@ -2381,8 +2381,8 @@ class Order extends Component
 
     public function updateBMOrdersNew($return = false)
     {
-        exec('nohup php artisan refresh:new > /dev/null &');
-        die;
+        // exec('nohup php artisan refresh:new > /dev/null &');
+        // die;
         // return redirect()->back();
         $bm = new BackMarketAPIController();
         $resArray = $bm->getNewOrders();
