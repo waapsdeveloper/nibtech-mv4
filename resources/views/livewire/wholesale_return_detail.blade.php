@@ -26,6 +26,14 @@
                     @if ($order->status == 1)
                     <form class="form-inline" method="POST" action="{{url('wholesale_return/ship').'/'.$order->id}}">
                         @csrf
+                        <div class="">
+                            <select name="customer_id" class="form-select">
+                                @foreach ($vendors as $id=>$vendor)
+                                    <option value="{{ $id }}" {{ $order->customer_id == $id ? 'selected' : '' }}>{{ $vendor }}</option>
+
+                                @endforeach
+                            </select>
+                        </div>
                         <div class="form-floating">
                             <input type="text" class="form-control" id="tracking_number" name="tracking_number" value="{{$order->tracking_number}}" placeholder="Enter Tracking Number" required>
                             <label for="tracking_number">Tracking Number</label>

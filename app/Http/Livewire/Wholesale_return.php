@@ -105,6 +105,7 @@ class Wholesale_return extends Component
     }
     public function wholesale_return_ship($order_id){
         $order = Order_model::find($order_id);
+        $order->customer_id = request('customer_id');
         $order->tracking_number = request('tracking_number');
         $order->status = 2;
         $order->save();
@@ -182,6 +183,7 @@ class Wholesale_return extends Component
 
         $data['title_page'] = "Return Detail";
 
+        $data['vendors'] = Customer_model::where('is_vendor',2)->pluck('company','id');
         $data['storages'] = Storage_model::pluck('name','id');
         $data['products'] = Products_model::pluck('model','id');
         $data['grades'] = Grade_model::pluck('name','id');
