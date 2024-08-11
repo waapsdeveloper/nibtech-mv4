@@ -236,6 +236,7 @@ class Wholesale extends Component
         $customer = Customer_model::firstOrNew(['company' => $wholesale->vendor, ['is_vendor','!=',null] ]);
         if($customer->id == null){
             $customer->is_vendor = 2;
+            $customer->type = 2;
         }
         $customer->save();
 
