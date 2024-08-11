@@ -48,7 +48,7 @@ class Wholesale_return extends Component
         //     // DB::raw('SUM(order_items.price) as total_price'),
         //     // DB::raw('COUNT(order_items.id) as total_quantity'),
         //     'orders.created_at')
-        ->where('orders.order_type_id',5)
+        ->where('orders.order_type_id',6)
         // ->join('order_items', 'orders.id', '=', 'order_items.order_id')
 
         ->when(request('start_date') != '', function ($q) {
