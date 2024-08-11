@@ -148,7 +148,7 @@
                                     <td>{{ $products[$sales->product_id] ." ". $storages[$sales->storage] }}</td>
                                     @endif
                                     @if (request('bc') == 1)
-                                    <td>{{ $customers[$sales->customer_id] }}</td>
+                                    <td>{{ $customers[$sales->customer_id] ?? "Unknown" }}</td>
                                     @endif
                                     @if (request('bv') == 1)
                                     <td>{{ $vendors[$sales->customer_id] }}</td>
