@@ -175,7 +175,7 @@
                                             <tr>
                                                 <td>{{ $i + 1 }}</td>
                                                 <td><a href="{{url('wholesale_return/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
-                                                <td><a href="{{url('edit-customer/'.$order->customer_id)}}">{{ $order->customer->company }}</a></td>
+                                                <td><a href="{{url('edit-customer/'.$order->customer_id)}}">{{ $order->customer->company ?? null }}</a></td>
                                                 @if (session('user')->hasPermission('view_price'))
                                                 <td>Є{{ number_format($order->total_price,2) }}</td>
                                                 @endif
