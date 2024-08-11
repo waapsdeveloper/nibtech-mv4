@@ -20,7 +20,6 @@ namespace App\Http\Livewire;
     use App\Exports\LabelsExport;
     use App\Exports\DeliveryNotesExport;
     use App\Exports\OrdersheetExport;
-use App\Http\Controllers\GoogleController;
 use Illuminate\Support\Facades\DB;
     use Maatwebsite\Excel\Facades\Excel;
     use TCPDF;
@@ -30,6 +29,7 @@ use App\Models\Grade_model;
 use App\Models\Order_issue_model;
 use App\Models\Stock_operations_model;
 use App\Models\Stock_movement_model;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Mail;
 use TCPDF_FONTS;
 
@@ -2382,6 +2382,9 @@ class Order extends Component
 
     public function updateBMOrdersNew($return = false)
     {
+        Artisan::command('refresh:new');
+        return redirect()->back();
+        die;
         $bm = new BackMarketAPIController();
         $resArray = $bm->getNewOrders();
         $orders = [];
