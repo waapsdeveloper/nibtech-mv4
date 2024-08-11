@@ -146,8 +146,9 @@
                                     <tr>
                                         <th><small><b>No</b></small></th>
                                         <th><small><b>Order ID</b></small></th>
-                                        @if (session('user')->hasPermission('view_cost'))
-                                        <th><small><b>Cost</b></small></th>
+                                        <th><small><b>Customer</b></small></th>
+                                        @if (session('user')->hasPermission('view_price'))
+                                        <th><small><b>Price</b></small></th>
                                         @endif
                                         <th><small><b>Qty</b></small></th>
                                         <th><small><b>Creation Date</b></small></th>
@@ -172,9 +173,10 @@
 
                                         {{-- @foreach ($items as $itemIndex => $item) --}}
                                             <tr>
-                                                    <td>{{ $i + 1 }}</td>
-                                                    <td><a href="{{url('wholesale_return/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
-                                                @if (session('user')->hasPermission('view_cost'))
+                                                <td>{{ $i + 1 }}</td>
+                                                <td><a href="{{url('wholesale_return/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                <td><a href="{{url('edit-customer/'.$order->customer_id)}}">{{ $order->customer->company }}</a></td>
+                                                @if (session('user')->hasPermission('view_price'))
                                                 <td>Є{{ number_format($order->total_price,2) }}</td>
                                                 @endif
                                                 <td>{{ $order->available_stock."/".$order->total_quantity }}@if ($order->status == 2)
