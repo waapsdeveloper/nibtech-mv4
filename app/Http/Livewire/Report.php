@@ -726,7 +726,7 @@ class Report extends Component
             // ->whereIn('order_items.status', [3,6])
             // ->groupBy('products.id')
             ->groupBy('purchase_order.customer_id')
-            ->orderByDesc('order_items.created_at')
+            // ->orderByDesc('order_items.created_at')
             ->get();
 
         $aggregated_cost = [];
