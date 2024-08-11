@@ -455,7 +455,7 @@
 
                                                     @if ($item->status == 2)
                                                         @if (count($items) < 2 && $item->quantity < 2)
-                                                            <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url('order')}}/dispatch/{{ $order->id }}" @if (request('sort') == 4) target="_blank" @endif>
+                                                            <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url('order')}}/dispatch/{{ $order->id }}" @if (request('sort') == 4) @endif>
                                                                 @csrf
                                                                 <input type="hidden" name="sort" value="{{request('sort')}}">
                                                                 <div class="input-group">
