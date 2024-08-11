@@ -363,7 +363,12 @@
                                                 @if ($itemIndex == 0)
                                                     <td rowspan="{{ count($items) }}"><input type="checkbox" name="ids[]" value="{{ $order->id }}" form="pdf"></td>
                                                     <td rowspan="{{ count($items) }}">{{ $i + 1 }}</td>
-                                                    <td rowspan="{{ count($items) }}">{{ $order->reference_id }}</td>
+                                                    <td rowspan="{{ count($items) }}">
+                                                        {{ $order->reference_id }}<br>
+                                                        {{ $order->customer->company }}<br>
+                                                        {{ $order->customer->first_name.' '.$order->customer->last_name }}
+
+                                                    </td>
                                                 @endif
                                                 <td>
                                                     @if ($item->variation ?? false)
