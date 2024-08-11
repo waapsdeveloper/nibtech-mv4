@@ -537,9 +537,9 @@ class Report extends Component
             ->select(
                 'orders.customer_id as customer_id',
                 DB::raw('COUNT(orders.id) as orders_qty'),
-                DB::raw('SUM(CASE WHEN orders.status = 3 THEN 1 ELSE 0 END) as approved_orders_qty'),
+                // DB::raw('SUM(CASE WHEN orders.status = 3 THEN 1 ELSE 0 END) as approved_orders_qty'),
                 DB::raw('SUM(order_items.price) as eur_items_sum'),
-                DB::raw('SUM(CASE WHEN orders.status = 3 THEN order_items.price ELSE 0 END) as eur_approved_items_sum'),
+                // DB::raw('SUM(CASE WHEN orders.status = 3 THEN order_items.price ELSE 0 END) as eur_approved_items_sum'),
                 // DB::raw('SUM(CASE WHEN orders.currency = 5 THEN order_items.price ELSE 0 END) as gbp_items_sum'),
                 // DB::raw('SUM(CASE WHEN orders.currency = 5 AND orders.status = 3 THEN order_items.price ELSE 0 END) as gbp_approved_items_sum'),
                 DB::raw('GROUP_CONCAT(stock.id) as stock_ids'),
