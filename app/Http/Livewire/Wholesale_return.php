@@ -39,34 +39,65 @@ class Wholesale_return extends Component
             $per_page = 20;
         }
 
-        $data['orders'] = Order_model::select(
-            'orders.id',
-            'orders.reference_id',
-            DB::raw('SUM(order_items.price) as total_price'),
-            DB::raw('COUNT(order_items.id) as total_quantity'),
-            DB::raw('COUNT(CASE WHEN stock.status = 1 THEN order_items.id END) as available_stock'),
-            'orders.created_at')
-        ->where('orders.order_type_id', 6)
-        ->join('order_items', 'orders.id', '=', 'order_items.order_id')
-        ->join('stock', 'order_items.stock_id', '=', 'stock.id')
-        ->when(request('start_date'), function ($q) {
-            return $q->where('orders.created_at', '>=', request('start_date'));
+        $data['orders'] = Order_model::withCount('order_items')->withSum('order_items','price')
+        // select(
+        //     'orders.id',
+        //     'orders.reference_id',
+        //     'orders.customer_id',
+        //     'orders.currency',
+        //     // DB::raw('SUM(order_items.price) as total_price'),
+        //     // DB::raw('COUNT(order_items.id) as total_quantity'),
+        //     'orders.created_at')
+        ->where('orders.order_type_id',5)
+        // ->join('order_items', 'orders.id', '=', 'order_items.order_id')
+
+        ->when(request('start_date') != '', function ($q) {
+            return $q->where('orders.created_at', '>=', request('start_date', 0));
         })
-        ->when(request('end_date'), function ($q) {
-            return $q->where('orders.created_at', '<=', request('end_date') . " 23:59:59");
+        ->when(request('end_date') != '', function ($q) {
+            return $q->where('orders.created_at', '<=', request('end_date', 0) . " 23:59:59");
         })
-        ->when(request('order_id'), function ($q) {
+        ->when(request('order_id') != '', function ($q) {
             return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
         })
-        ->when(request('status'), function ($q) {
+        ->when(request('status') != '', function ($q) {
             return $q->where('orders.status', request('status'));
         })
-        ->where('order_items.deleted_at',null)
-        ->groupBy('orders.id', 'orders.reference_id', 'orders.created_at')
+        // ->groupBy('orders.id', 'orders.reference_id', 'orders.customer_id', 'orders.currency', 'orders.created_at')
         ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
+        // ->select('orders.*')
         ->paginate($per_page)
         ->onEachSide(5)
         ->appends(request()->except('page'));
+
+        // $data['orders'] = Order_model::select(
+        //     'orders.id',
+        //     'orders.reference_id',
+        //     DB::raw('SUM(order_items.price) as total_price'),
+        //     DB::raw('COUNT(order_items.id) as total_quantity'),
+        //     DB::raw('COUNT(CASE WHEN stock.status = 1 THEN order_items.id END) as available_stock'),
+        //     'orders.created_at')
+        // ->where('orders.order_type_id', 6)
+        // ->join('order_items', 'orders.id', '=', 'order_items.order_id')
+        // ->join('stock', 'order_items.stock_id', '=', 'stock.id')
+        // ->when(request('start_date'), function ($q) {
+        //     return $q->where('orders.created_at', '>=', request('start_date'));
+        // })
+        // ->when(request('end_date'), function ($q) {
+        //     return $q->where('orders.created_at', '<=', request('end_date') . " 23:59:59");
+        // })
+        // ->when(request('order_id'), function ($q) {
+        //     return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
+        // })
+        // ->when(request('status'), function ($q) {
+        //     return $q->where('orders.status', request('status'));
+        // })
+        // ->where('order_items.deleted_at',null)
+        // ->groupBy('orders.id', 'orders.reference_id', 'orders.created_at')
+        // ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
+        // ->paginate($per_page)
+        // ->onEachSide(5)
+        // ->appends(request()->except('page'));
 
 
         // dd($data['orders']);
