@@ -29,7 +29,6 @@ use App\Models\Grade_model;
 use App\Models\Order_issue_model;
 use App\Models\Stock_operations_model;
 use App\Models\Stock_movement_model;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Mail;
 use TCPDF_FONTS;
 
@@ -2382,9 +2381,7 @@ class Order extends Component
 
     public function updateBMOrdersNew($return = false)
     {
-        Artisan::command('refresh:new', 'Success');
-        return redirect()->back();
-        die;
+
         $bm = new BackMarketAPIController();
         $resArray = $bm->getNewOrders();
         $orders = [];
