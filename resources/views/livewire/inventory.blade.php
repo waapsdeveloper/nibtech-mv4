@@ -203,7 +203,7 @@
             <div class="">
                 Vendor wise average:
                 @foreach ($vendor_average_cost as $v_cost)
-                    {{ $vendors[$v_cost->customer_id] }}:
+                    {{ $vendors[$v_cost->customer_id] ?? "Vendor Type Not Defined Correctly" }}:
                     {{ number_format($v_cost->average_price,2) }} x
                     {{ $v_cost->total_qty }} =
                     {{ number_format($v_cost->total_price,2) }} ({{number_format($v_cost->total_qty/$stocks->total()*100,2)}}%) ||
