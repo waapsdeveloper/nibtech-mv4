@@ -2154,6 +2154,7 @@ class Order extends Component
                 $return_item->variation_id = $variation->id;
                 $return_item->stock_id = $item->stock_id;
                 $return_item->quantity = 1;
+                $return_item->currency = $item->order->currency;
                 $return_item->price = $item->price;
                 $return_item->status = 3;
                 $return_item->linked_id = $item->id;

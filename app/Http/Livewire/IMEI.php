@@ -249,6 +249,7 @@ class IMEI extends Component
         $order_item->stock_id = $stock->id;
         $order_item->quantity = 1;
         $order_item->price = $item->price;
+        $order_item->currency = $item->order->currency;
         $order_item->status = 3;
         $order_item->linked_id = $item->id;
         $order_item->admin_id = session('user_id');

@@ -405,6 +405,7 @@ class SalesReturn extends Component
                     $order_item->stock_id = $stock->id;
                     $order_item->quantity = 1;
                     $order_item->price = $return['price'];
+                    $order_item->currency = $stock->last_item()->order->currency;
                     $order_item->status = 1;
                     $order_item->linked_id = $return['linked_id'];
                     $order_item->admin_id = session('user_id');
