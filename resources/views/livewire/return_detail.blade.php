@@ -596,7 +596,7 @@
                                                 <td data-stock="{{ $stock->id }}">{{ $stock->imei.$stock->serial_number }}</td>
                                                 <td>{{ $stock->order->customer->first_name." ".$stock->order->reference_id }}</td>
                                                 @if (session('user')->hasPermission('view_cost'))
-                                                <td>{{ $currency.$stock->sale_item($order_id)->price }}</td>
+                                                <td>{{ $item->currency_id->sign ?? $currency }}{{ $stock->sale_item($order_id)->price }}</td>
                                                 @endif
                                                 <td>{{ $row->description ?? null }}</td>
                                                 <td>{{ $row->admin->first_name ?? null }}</td>
