@@ -52,7 +52,7 @@ class Functions extends Command
         ->get();
         foreach($items as $item){
             $sale_order = Order_model::where('reference_id', $item->reference_id)->first();
-            if($sale_order->currency != 4){
+            if($sale_order->order_type_id == 3){
                 $item->currency = $sale_order->currency;
                 $item->save();
             }
