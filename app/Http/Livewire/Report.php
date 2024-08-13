@@ -4,7 +4,6 @@ namespace App\Http\Livewire;
 
 use App\Exports\BatchReportExport;
 use App\Exports\OrderReportExport;
-use App\Http\Controllers\GoogleController;
 use App\Models\Admin_model;
 use App\Models\Brand_model;
 use App\Models\Category_model;
@@ -18,12 +17,9 @@ use App\Models\Color_model;
 use App\Models\Customer_model;
 use App\Models\Storage_model;
 use App\Models\Grade_model;
-use App\Models\Process_stock_model;
 use App\Models\Variation_model;
 use App\Models\Stock_model;
-use App\Models\Stock_operations_model;
 use Symfony\Component\HttpFoundation\Request;
-use Illuminate\Support\Facades\Route;
 use Maatwebsite\Excel\Facades\Excel;
 use TCPDF;
 
@@ -133,7 +129,7 @@ class Report extends Component
             )
             ->whereBetween('orders.processed_at', [$start_date, $end_date])
             ->whereIn('variation.id', $variation_ids)
-            ->where('orders.order_type_id', 3)
+            ->whereIn('orders.order_type_id', [2,3,5])
             ->Where('orders.deleted_at',null)
             ->Where('order_items.deleted_at',null)
             ->Where('stock.deleted_at',null)
@@ -172,9 +168,9 @@ class Report extends Component
                 'category.id as category_id',
                 DB::raw('COUNT(orders.id) as orders_qty'),
                 DB::raw('SUM(CASE WHEN orders.status = 3 THEN 1 ELSE 0 END) as approved_orders_qty'),
-                DB::raw('SUM(CASE WHEN orders.currency = 4 THEN order_items.price ELSE 0 END) as eur_items_sum'),
-                DB::raw('SUM(CASE WHEN orders.currency = 4 AND orders.status = 3 THEN order_items.price ELSE 0 END) as eur_approved_items_sum'),
-                DB::raw('SUM(CASE WHEN orders.currency = 5 THEN order_items.price ELSE 0 END) as gbp_items_sum'),
+                DB::raw('SUM(CASE WHEN order_items.currency = null THEN order_items.price ELSE 0 END) as eur_items_sum'),
+                DB::raw('SUM(CASE WHEN order_items.currency = null AND orders.status = 3 THEN order_items.price ELSE 0 END) as eur_approved_items_sum'),
+                DB::raw('SUM(CASE WHEN order_items.currency = 5 THEN order_items.price ELSE 0 END) as gbp_items_sum'),
                 DB::raw('SUM(CASE WHEN orders.currency = 5 AND orders.status = 3 THEN order_items.price ELSE 0 END) as gbp_approved_items_sum'),
                 DB::raw('GROUP_CONCAT(stock.id) as stock_ids'),
                 // DB::raw('SUM(CASE WHEN orders.currency = 5 AND orders.status = 3 THEN order_items.price ELSE 0 END) as gbp_approved_items_sum'),
