@@ -21,6 +21,7 @@ class Order_item_model extends Model
         'variation_id',
         'stock_id',
         'care_id',
+        'currency',
         'price',
         'quantity',
         'status',
