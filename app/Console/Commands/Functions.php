@@ -42,6 +42,23 @@ class Functions extends Command
         $this->duplicate_orders();
         $this->push_testing_api();
     }
+    private function refund_currency(){
+
+        $items = Order_item_model::whereHas('order', function ($q) {
+            $q->where('order_type_id',4);
+        })
+        ->where('currency',null)
+        ->get();
+        foreach($items as $item){
+            $sale_order = Order_model::where('reference_id', $item->reference_id)->first();
+            if($sale_order->currency != 4){
+                $item->currency = $sale_order->currency;
+                $item->save();
+            }
+        }
+
+
+    }
     private function check_linked_orders(){
 
         $items = Order_item_model::where(['linked_id'=>null])->whereHas('order', function ($q) {
