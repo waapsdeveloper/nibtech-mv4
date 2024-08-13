@@ -38,6 +38,10 @@ class Order_item_model extends Model
     {
         return $this->hasOne(Variation_model::class, 'id', 'variation_id');
     }
+    public function currency_id()
+    {
+        return $this->hasOne(Currency_model::class, 'id', 'currency');
+    }
 
     public function admin()
     {

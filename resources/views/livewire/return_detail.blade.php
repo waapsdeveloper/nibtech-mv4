@@ -504,7 +504,7 @@
                                             <td>{{ $item->stock->imei.$item->stock->serial_number }}</td>
                                             <td>{{ $item->stock->order->customer->first_name }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
-                                            <td>{{ $currency.number_format($item->price,2) }}</td>
+                                            <td>{{ $item->currency_id->sign ?? $currency }}{{ number_format($item->price,2) }}</td>
                                             @endif
                                             <td style="width:220px">{{ $item->created_at }}</td>
                                             @if (session('user')->hasPermission('delete_return_item'))
