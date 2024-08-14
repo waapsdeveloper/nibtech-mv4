@@ -151,7 +151,7 @@
                                     <td>{{ $customers[$sales->customer_id] ?? "Unknown" }}</td>
                                     @endif
                                     @if (request('bv') == 1)
-                                    <td><a href="#" onclick="window.open('{{url('report')}}/vendor/{{$sales->customer_id}}','print_popup','width=1600,height=800');">{{ $vendors[$sales->customer_id] }} </a></td>
+                                    <td><a href="#" onclick="window.open('{{url('report')}}/vendor/{{$sales->customer_id}}','_blank','print_popup','width=1600,height=800');">{{ $vendors[$sales->customer_id] }} </a></td>
                                     @endif
                                     <td>{{ $sales->orders_qty }} {{ isset($returns->orders_qty) ? "(" . $returns->orders_qty.")" : null }}
                                     </td>
