@@ -811,7 +811,13 @@ class Report extends Component
         return $data;
 
     }
+    public function vendor_report($vendor_id){
+        $vendor = Customer_model::find($vendor_id);
+        $data['vendor'] = $vendor;
 
+
+        return view('livewire.vendor_report_new')->with($data);
+    }
 
     public function export_report()
     {
