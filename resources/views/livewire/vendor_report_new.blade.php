@@ -42,26 +42,26 @@
         <div class="card-body m-2 p-2 d-flex justify-content-between">
 
             <div class="text-center row">
-                <div class="col-6">Total Items Purchased:</div><div class="col-6">{{ $vendor->company }}</div>
-                <div class="col-6">Total Purchase Cost:</div><div class="col-6">{{ $vendor->company }}</div>
-                <div class="col-6">Total RMA:</div><div class="col-6">{{ $vendor->company }}</div>
-                <div class="col-6">Total RMA Cost:</div><div class="col-6">{{ $vendor->company }}</div>
+                <div class="col-6"><h5>Total Items Purchased:</h5></div><div class="col-6"><h5>{{ $vendor->company }}</h5></div>
+                <div class="col-6"><h5>Total Purchase Cost:</h5></div><div class="col-6"><h5>{{ $vendor->company }}</h5></div>
+                <div class="col-6"><h5>Total RMA:</h5></div><div class="col-6"><h5>{{ $vendor->company }}</h5></div>
+                <div class="col-6"><h5>Total RMA Cost:</h5></div><div class="col-6"><h5>{{ $vendor->company }}</h5></div>
 
             </div>
 
             <div class="text-center row">
-                <div class="col-6">Total Items Sold:</div><div class="col-6">{{ $vendor->company }}</div>
-                <div class="col-6">Total Sale Price:</div><div class="col-6">{{ $vendor->company }}</div>
-                <div class="col-6">Total Item Remaining:</div><div class="col-6">{{ $vendor->company }}</div>
-                <div class="col-6">Total Remaining Cost:</div><div class="col-6">{{ $vendor->company }}</div>
+                <div class="col-6"><h5>Total Items Sold:</h5></div><div class="col-6"><h5>{{ $vendor->company }}</h5></div>
+                <div class="col-6"><h5>Total Sale Price:</h5></div><div class="col-6"><h5>{{ $vendor->company }}</h5></div>
+                <div class="col-6"><h5>Total Item Remaining:</h5></div><div class="col-6"><h5>{{ $vendor->company }}</h5></div>
+                <div class="col-6"><h5>Total Remaining Cost:</h5></div><div class="col-6"><h5>{{ $vendor->company }}</h5></div>
 
             </div>
 
             <div class="text-center row">
-                <div class="col-6">Total Profit:</div><div class="col-6">{{ $vendor->company }}</div>
-                <div class="col-6">Total Repaired:</div><div class="col-6">{{ $vendor->company }}</div>
-                <div class="col-6">Total RMA:</div><div class="col-6">{{ $vendor->company }}</div>
-                <div class="col-6">Total RMA Cost:</div><div class="col-6">{{ $vendor->company }}</div>
+                <div class="col-6"><h5>Total Profit:</h5></div><div class="col-6"><h5>{{ $vendor->company }}</h5></div>
+                <div class="col-6"><h5>Total Repaired:</h5></div><div class="col-6"><h5>{{ $vendor->company }}</h5></div>
+                <div class="col-6"><h5>Total RMA:</h5></div><div class="col-6"><h5>{{ $vendor->company }}</h5></div>
+                <div class="col-6"><h5>Total RMA Cost:</h5></div><div class="col-6"><h5>{{ $vendor->company }}</h5></div>
 
             </div>
 
