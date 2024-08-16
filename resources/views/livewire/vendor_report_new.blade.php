@@ -103,29 +103,6 @@
                     <br>
                 </div>
 
-                <div class="text-center row">
-                    <div class="col-6"><h6>Total Items Purchased:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-                    <div class="col-6"><h6>Total Purchase Cost:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-                    <div class="col-6"><h6>Total RMA:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-                    <div class="col-6"><h6>Total RMA Cost:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-
-                </div>
-
-                <div class="text-center row">
-                    <div class="col-6"><h6>Total Items Sold:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-                    <div class="col-6"><h6>Total Sale Price:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-                    <div class="col-6"><h6>Total Item Remaining:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-                    <div class="col-6"><h6>Total Remaining Cost:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-
-                </div>
-
-                <div class="text-center row">
-                    <div class="col-6"><h6>Total Profit:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-                    <div class="col-6"><h6>Total Repaired:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-                    <div class="col-6"><h6>Total RMA:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-                    <div class="col-6"><h6>Total RMA Cost:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-
-                </div>
 
 
             </div>
@@ -161,30 +138,6 @@
                         </tbody>
                     </table>
                     <br>
-                </div>
-
-                <div class="text-center row">
-                    <div class="col-6"><h6>Total Items Purchased:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-                    <div class="col-6"><h6>Total Purchase Cost:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-                    <div class="col-6"><h6>Total RMA:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-                    <div class="col-6"><h6>Total RMA Cost:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-
-                </div>
-
-                <div class="text-center row">
-                    <div class="col-6"><h6>Total Items Sold:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-                    <div class="col-6"><h6>Total Sale Price:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-                    <div class="col-6"><h6>Total Item Remaining:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-                    <div class="col-6"><h6>Total Remaining Cost:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-
-                </div>
-
-                <div class="text-center row">
-                    <div class="col-6"><h6>Total Profit:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-                    <div class="col-6"><h6>Total Repaired:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-                    <div class="col-6"><h6>Total RMA:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-                    <div class="col-6"><h6>Total RMA Cost:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-
                 </div>
 
 
