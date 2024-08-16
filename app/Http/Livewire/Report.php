@@ -815,7 +815,37 @@ class Report extends Component
         $vendor = Customer_model::find($vendor_id);
         $data['vendor'] = $vendor;
 
+        $rma_report = Stock_model::whereHas('order',function ($q) use ($vendor_id){
+                $q->where('customer_id', $vendor_id);
+            })->whereHas('variation', function ($q){
+                $q->where('grade', 10);
+            })->with('latest_operation')
+            ->get()
+            ->groupBy('latest_operation.description');
 
+        $data['rma_report'] = $rma_report;
+        $repair_report = Stock_model::whereHas('order',function ($q) use ($vendor_id){
+                $q->where('customer_id', $vendor_id);
+            })->whereHas('stock_operations.new_variation', function ($q){
+                $q->where('grade', 10);
+            // })->whereHas('stock_operations', function ($q){
+            //     $q->whereNotNull('description');
+            })->with(['stock_operations'=> function ($q) {
+                $q->whereHas('new_variation', function ($qq) {
+                    $qq->where('grade',10);
+                });
+            }])
+            ->get();
+
+            // ->groupBy('stock_operations.description');
+
+        // Group the results by the 'description' field of the first related stock_operation
+        $repair_report = $repair_report->groupBy(function($stock) {
+            return $stock->stock_operations->first()->description ?? 'no_description';
+        });
+        $data['repair_report'] = $repair_report;
+
+        // dd($repair_report);
         return view('livewire.vendor_report_new')->with($data);
     }
 

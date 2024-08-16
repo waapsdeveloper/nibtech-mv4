@@ -145,11 +145,11 @@
                         window.onload = function() {
                             document.getElementById('imeiInput').focus();
                         };
-                document.addEventListener('DOMContentLoaded', function() {
-                    var input = document.getElementById('imeiInput');
-                    input.focus();
-                    input.select();
-                });
+                        document.addEventListener('DOMContentLoaded', function() {
+                            var input = document.getElementById('imeiInput');
+                            input.focus();
+                            input.select();
+                        });
                     </script>
                 </form>
             </div>

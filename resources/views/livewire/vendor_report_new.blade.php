@@ -68,6 +68,129 @@
 
         </div>
     </div>
+    <div class="row">
+
+        <div class="card col-6">
+            <div class="card-header m-0">
+                <h4 class="card-title mb-0">RMA Report</h4>
+
+            </div>
+            <div class="card-body m-2 p-2">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                        <thead>
+                            <tr>
+                                <th><small><b>No</b></small></th>
+                                <th><small><b>Message</b></small></th>
+                                <th><small><b>Count</b></small></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                                $i = 0;
+                            @endphp
+                            @foreach ($rma_report as $key => $value)
+                                <tr class="bg-light tx-center">
+                                    <td>{{ ++$i }}</td>
+                                    <td>{{ $key }}</td>
+                                    <td>{{ count($value) }}</td>
+                                    <td></td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                    <br>
+                </div>
+
+                <div class="text-center row">
+                    <div class="col-6"><h6>Total Items Purchased:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+                    <div class="col-6"><h6>Total Purchase Cost:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+                    <div class="col-6"><h6>Total RMA:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+                    <div class="col-6"><h6>Total RMA Cost:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+
+                </div>
+
+                <div class="text-center row">
+                    <div class="col-6"><h6>Total Items Sold:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+                    <div class="col-6"><h6>Total Sale Price:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+                    <div class="col-6"><h6>Total Item Remaining:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+                    <div class="col-6"><h6>Total Remaining Cost:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+
+                </div>
+
+                <div class="text-center row">
+                    <div class="col-6"><h6>Total Profit:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+                    <div class="col-6"><h6>Total Repaired:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+                    <div class="col-6"><h6>Total RMA:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+                    <div class="col-6"><h6>Total RMA Cost:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+
+                </div>
+
+
+            </div>
+        </div>
+        <div class="card col-6">
+            <div class="card-header m-0">
+                <h4 class="card-title mb-0">Repair Report</h4>
+
+            </div>
+            <div class="card-body m-2 p-2">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                        <thead>
+                            <tr>
+                                <th><small><b>No</b></small></th>
+                                <th><small><b>Message</b></small></th>
+                                <th><small><b>Count</b></small></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                                $i = 0;
+                            @endphp
+                            @foreach ($repair_report as $key => $value)
+                                <tr class="bg-light tx-center">
+                                    <td>{{ ++$i }}</td>
+                                    <td>{{ $key }}</td>
+                                    <td>{{ count($value) }}</td>
+                                    <td></td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                    <br>
+                </div>
+
+                <div class="text-center row">
+                    <div class="col-6"><h6>Total Items Purchased:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+                    <div class="col-6"><h6>Total Purchase Cost:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+                    <div class="col-6"><h6>Total RMA:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+                    <div class="col-6"><h6>Total RMA Cost:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+
+                </div>
+
+                <div class="text-center row">
+                    <div class="col-6"><h6>Total Items Sold:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+                    <div class="col-6"><h6>Total Sale Price:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+                    <div class="col-6"><h6>Total Item Remaining:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+                    <div class="col-6"><h6>Total Remaining Cost:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+
+                </div>
+
+                <div class="text-center row">
+                    <div class="col-6"><h6>Total Profit:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+                    <div class="col-6"><h6>Total Repaired:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+                    <div class="col-6"><h6>Total RMA:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+                    <div class="col-6"><h6>Total RMA Cost:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+
+                </div>
+
+
+            </div>
+        </div>
+    </div>
 
     @endsection
 
