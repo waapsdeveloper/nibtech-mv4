@@ -92,6 +92,9 @@
                                 $j = 0;
                             @endphp
                             @foreach ($rma_report as $key => $value)
+                                @php
+                                    $j++;
+                                @endphp
                                 <tr class="bg-light tx-center">
                                     <td>{{ ++$i }}</td>
                                     <td>{{ $key }}</td>
@@ -145,7 +148,6 @@
                             @foreach ($repair_report as $key => $value)
                                 @php
                                     $k++;
-                                    $json_array = [];
                                 @endphp
                                 <tr class="bg-light tx-center">
                                     <td>{{ ++$i }}</td>
