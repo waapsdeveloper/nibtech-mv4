@@ -68,7 +68,7 @@
 
         </div>
     </div>
-    <div class="row">
+    <div class="row p-3">
 
         <div class="card col-6">
             <div class="card-header m-0">
@@ -95,7 +95,7 @@
                                 @php
                                     $j++;
                                 @endphp
-                                <tr class="bg-light tx-center">
+                                <tr class="">
                                     <td>{{ ++$i }}</td>
                                     <td>{{ $key }}</td>
                                     <td><a id="test{{$j}}" href="#">{{ count($value) }}</a></td>
