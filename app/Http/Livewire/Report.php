@@ -827,12 +827,12 @@ class Report extends Component
         $repair_report = Stock_model::whereHas('order',function ($q) use ($vendor_id){
                 $q->where('customer_id', $vendor_id);
             })->whereHas('stock_operations.new_variation', function ($q){
-                $q->where('grade', 10);
+                $q->where('grade', 8);
             // })->whereHas('stock_operations', function ($q){
             //     $q->whereNotNull('description');
             })->with(['stock_operations'=> function ($q) {
                 $q->whereHas('new_variation', function ($qq) {
-                    $qq->where('grade',10);
+                    $qq->where('grade',8);
                 });
             }])
             ->get();
