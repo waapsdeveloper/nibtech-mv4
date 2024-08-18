@@ -73,7 +73,7 @@
                 <h4 class="card-title mb-0">RMA Report</h4>
 
             </div>
-            <div class="card-body m-2 p-2">
+            <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                         <thead>
@@ -127,7 +127,7 @@
                 <h4 class="card-title mb-0">Repair Report</h4>
 
             </div>
-            <div class="card-body m-2 p-2">
+            <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                         <thead>
@@ -147,7 +147,7 @@
                                 @php
                                     $k++;
                                 @endphp
-                                <tr class="bg-light tx-center">
+                                <tr class="">
                                     <td>{{ ++$i }}</td>
                                     <td>{{ $key }}</td>
                                     <td><a id="test{{$k}}" href="#">{{ count($value) }}</a></td>
