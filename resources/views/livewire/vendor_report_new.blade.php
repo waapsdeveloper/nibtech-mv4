@@ -95,8 +95,21 @@
                                 <tr class="bg-light tx-center">
                                     <td>{{ ++$i }}</td>
                                     <td>{{ $key }}</td>
-                                    <td>{{ count($value) }}</td>
+                                    <td><a id="test{{$j}}" href="#">{{ count($value) }}</a></td>
                                     <td></td>
+                                    <script type="text/javascript">
+
+
+                                        document.getElementById("test{{$j}}").onclick = function(){
+                                            @php
+                                                foreach ($value as $val) {
+                                                    echo "window.open('".url("imei")."?imei=".$val->imei.$val->serial_number."','_blank');
+                                                    ";
+                                                }
+
+                                            @endphp
+                                        }
+                                    </script>
                                 </tr>
                             @endforeach
                         </tbody>
