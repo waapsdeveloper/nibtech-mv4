@@ -96,8 +96,14 @@
                                 <tr class="">
                                     <td>{{ ++$i }}</td>
                                     <td>{{ $key }}</td>
-                                    <td><a id="test{{$j}}" href="#">{{ count($value) }}</a></td>
-                                    <td></td>
+                                    <td>{{ count($value) }}</td>
+                                    <td>
+
+                                        <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
+                                        <div class="dropdown-menu">
+                                            <a class="dropdown-item" id="test{{$j}}" href="#">Open All</a>
+                                        </div>
+                                    </td>
                                     <script type="text/javascript">
 
 
