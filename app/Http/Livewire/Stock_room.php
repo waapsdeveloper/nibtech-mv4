@@ -129,7 +129,7 @@ class Stock_room extends Component
             if($movement != null){
                 if($movement->admin_id == $user_id){
 
-                    session()->put('error', 'IMEI Already added in your sheet');
+                    session()->put('error', 'IMEI Already added in your sheet '.json_encode($stock).' '.json_encode($movement));
                 }else{
 
                     session()->put('error', 'IMEI Already added to '.$movement->admin->first_name);
