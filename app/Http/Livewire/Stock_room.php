@@ -114,7 +114,7 @@ class Stock_room extends Component
             if (ctype_digit(request('imei'))) {
                 $i = request('imei');
                 $s = null;
-                $s = null;
+                $t = null;
             } else {
                 $i = null;
                 $s = request('imei');
