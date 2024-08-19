@@ -114,12 +114,14 @@ class Stock_room extends Component
             if (ctype_digit(request('imei'))) {
                 $i = request('imei');
                 $s = null;
+                $s = null;
             } else {
                 $i = null;
                 $s = request('imei');
+                $t = mb_substr(request('imei'),1);
             }
 
-            $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->orWhere(['imei' => $i, 'serial_number' => mb_substr($s,1)])->first();
+            $stock = Stock_model::where(['imei' => $i])->whereIn('serial_number', [$s, $t])->first();
             if($stock == null){
                 session()->put('error', 'IMEI Invalid / Not Found');
                 return redirect()->back(); // Redirect here is not recommended
