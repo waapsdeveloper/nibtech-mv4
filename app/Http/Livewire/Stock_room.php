@@ -114,14 +114,12 @@ class Stock_room extends Component
             if (ctype_digit(request('imei'))) {
                 $i = request('imei');
                 $s = null;
-                $t = null;
             } else {
                 $i = null;
                 $s = request('imei');
-                $t = mb_substr(request('imei'),1);
             }
 
-            $stock = Stock_model::where(['imei' => $i])->orWhere('serial_number', $s)->first();
+            $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
             if($stock == null){
                 session()->put('error', 'IMEI Invalid / Not Found');
                 return redirect()->back(); // Redirect here is not recommended
@@ -131,7 +129,7 @@ class Stock_room extends Component
             if($movement != null){
                 if($movement->admin_id == $user_id){
 
-                    session()->put('error', 'IMEI Already added in your sheet '.json_encode($stock).' '.json_encode($movement));
+                    session()->put('error', 'IMEI Already added in your sheet');
                 }else{
 
                     session()->put('error', 'IMEI Already added to '.$movement->admin->first_name);
