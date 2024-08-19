@@ -92,6 +92,7 @@ class Stock_room extends Component
     public function exit_scan(){
         $admin_id = request('admin_id');
         if(session()->get('admin_id') != null){
+            echo "Hello";
             $admin_id = session('admin_id');
         }
         $data['admin_id'] = $admin_id;
