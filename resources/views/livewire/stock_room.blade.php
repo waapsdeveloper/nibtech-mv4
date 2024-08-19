@@ -51,9 +51,9 @@
         </div>
         <br>
 
-        <div class="row" style="border-bottom: 1px solid rgb(216, 212, 212);">
+        <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
 
-            <div class="col-md-6">
+            <div class="">
                 @if (session('user')->hasPermission('receive_stock'))
 
                 <form action="{{ url('stock_room/receive')}}" method="POST" id="search" class="form-inline">
@@ -80,6 +80,19 @@
                     @endif --}}
                 </form>
 
+                {{-- <form action="{{ url('stock_room/exit')}}" method="POST" id="search" class="form-inline">
+                    @csrf
+                    <div class="form-floating">
+                        <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" id="imeiInput" onload="this.focus()" autofocus>
+                        <label for="">IMEI</label>
+                    </div>
+                        <button class="btn btn-primary pd-x-20" type="submit">Exit</button>
+                </form> --}}
+                @endif
+            </div>
+            <div class="">
+                @if (session('user')->hasPermission('exit_stock'))
+
                 <form class="form-inline" method="POST" target="print_popup" action="{{url('stock_room/exit_scan')}}" onsubmit="window.open('about:blank','print_popup','width=1600,height=800');">
                     @csrf
                     <select id="adm_input" name="admin_id" class="form-control form-select" data-bs-placeholder="Select Processed By">
@@ -91,21 +104,9 @@
 
                     <button class="btn btn-link" type="submit" name="bp" value="1">Exit Stock</button>
                 </form>
-                @else
-                <form action="{{ url('stock_room/exit')}}" method="POST" id="search" class="form-inline">
-                    @csrf
-                    <div class="form-floating">
-                        <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" id="imeiInput" onload="this.focus()" autofocus>
-                        <label for="">IMEI</label>
-                    </div>
-                        <button class="btn btn-primary pd-x-20" type="submit">Exit</button>
-                    {{-- @if (isset($stock))
-                        &nbsp;&nbsp;&nbsp;&nbsp;Current Variation:&nbsp;&nbsp;&nbsp;&nbsp;<h5 class="mb-0">{{ $stock->variation->product->model ?? "Variation Issue"}}{{" - " . (isset($stock->variation->storage_id)?$stock->variation->storage_id->name . " - " : null) . (isset($stock->variation->color_id)?$stock->variation->color_id->name. " - ":null)}} <strong><u>{{ $stock->variation->grade_id->name ?? null }}</u></strong></h5>
-                    @endif --}}
-                </form>
                 @endif
             </div>
-            <h6 class="col-md-6 tx-right">
+            <h6 class=" tx-right">
                 @if (session('user')->hasPermission('view_all_stock_movements'))
                     @php
                         $admin = null;
