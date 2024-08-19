@@ -24,6 +24,7 @@
                 <input type="text" class="form-control" name="imei" id="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" id="imeiInput" onload="this.focus()" autofocus>
                 <label for="">IMEI</label>
             </div>
+            <input type="hidden" name="admin_id" value="{{request('admin_id')}}">
                 <button class="btn btn-primary pd-x-20" type="submit">Exit</button>
         </form>
 
