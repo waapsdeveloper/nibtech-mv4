@@ -119,7 +119,7 @@ class Stock_room extends Component
                 $s = request('imei');
             }
 
-            $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
+            $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->orWhere(['imei' => $i, 'serial_number' => mb_substr($s,1)])->first();
             if($stock == null){
                 session()->put('error', 'IMEI Invalid / Not Found');
                 return redirect()->back(); // Redirect here is not recommended
