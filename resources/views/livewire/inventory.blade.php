@@ -262,7 +262,7 @@
 
                 <form action="{{ url('inventory/end_verification')}}" method="POST" class="form-inline">
                     @csrf
-                    <input type="text" class="form-control form-control-sm" name="description" placeholder="Enter Reason" id="description" required>
+                    <input type="text" class="form-control form-control-sm" name="description" value="{{$active_inventory_verification->description}}" placeholder="Enter Reason" id="description" required>
                     <button class="btn btn-sm btn-primary pd-x-20" type="submit">End Verification</button>
                 </form>
 
