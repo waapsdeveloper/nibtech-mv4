@@ -102,7 +102,7 @@
                         @endforeach
                     </select>
 
-                    <button class="btn btn-secondary" type="submit" name="bp" value="1">Exit Stock</button>
+                    <button class="btn btn-primary" type="submit" name="bp" value="1">Exit Stock</button>
                 </form>
                 @endif
             </div>
