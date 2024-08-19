@@ -11,12 +11,20 @@
     @section('content')
 
     <div>
-        <form class="form-inline" action="{{ url('stock_room/exit') }}" method="POST" id="">
+        {{-- <form class="form-inline" action="{{ url('stock_room/exit') }}" method="POST" id="">
             @csrf
             <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
             <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
             <button class="btn-sm btn-primary pd-x-20" type="submit">Exit</button>
 
+        </form> --}}
+        <form action="{{ url('stock_room/exit')}}" method="POST" id="search" class="form-inline">
+            @csrf
+            <div class="form-floating">
+                <input type="text" class="form-control" name="imei" id="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" id="imeiInput" onload="this.focus()" autofocus>
+                <label for="">IMEI</label>
+            </div>
+                <button class="btn btn-primary pd-x-20" type="submit">Exit</button>
         </form>
 
     </div>
