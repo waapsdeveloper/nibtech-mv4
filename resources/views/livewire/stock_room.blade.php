@@ -79,6 +79,18 @@
                         &nbsp;&nbsp;&nbsp;&nbsp;Current Variation:&nbsp;&nbsp;&nbsp;&nbsp;<h5 class="mb-0">{{ $stock->variation->product->model ?? "Variation Issue"}}{{" - " . (isset($stock->variation->storage_id)?$stock->variation->storage_id->name . " - " : null) . (isset($stock->variation->color_id)?$stock->variation->color_id->name. " - ":null)}} <strong><u>{{ $stock->variation->grade_id->name ?? null }}</u></strong></h5>
                     @endif --}}
                 </form>
+
+                <form class="form-inline" method="POST" target="print_popup" action="{{url('stock_room/exit_scan')}}" onsubmit="window.open('about:blank','print_popup','width=1600,height=800');">
+                    @csrf
+                    <select id="adm_input" name="admin_id" class="form-control form-select" data-bs-placeholder="Select Processed By">
+                        <option value="">Exit To</option>
+                        @foreach ($admins as $adm)
+                            <option value="{{$adm->id}}" @if(isset($_GET['adm']) && $adm->id == $_GET['adm']) {{'selected'}}@endif>{{$adm->first_name." ".$adm->last_name}}</option>
+                        @endforeach
+                    </select>
+
+                    <button class="btn btn-link" type="submit" name="bp" value="1">Exit Stock</button>
+                </form>
                 @else
                 <form action="{{ url('stock_room/exit')}}" method="POST" id="search" class="form-inline">
                     @csrf

@@ -89,6 +89,18 @@ class Stock_room extends Component
 
         return view('livewire.stock_room', $data); // Return the Blade view instance with data
     }
+    public function exit_scan(){
+        $admin_id = request('admin_id');
+        $data['admin_id'] = $admin_id;
+        $last_ten = Stock_movement_model::where(['admin_id'=>$admin_id, 'received_at'=>null])->orderBy('id','desc')->limit(10)->get();
+        $data['last_ten'] = $last_ten;
+        $scanned_total = Stock_movement_model::where(['admin_id'=>$admin_id, 'received_at'=>null])->orderBy('id','desc')->count();
+        $data['scanned_total'] = $scanned_total;
+        if(!session('counter')){
+            session()->put('counter', 0);
+        }
+        return view('livewire.stock_room_exit_new')->with($data);
+    }
 
     public function exit(){
 
