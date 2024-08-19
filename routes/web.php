@@ -158,7 +158,6 @@ Route::post('imei/refund/{id}', [IMEI::class,'refund'])->name('refund_imei');
 
 Route::get('stock_room', Stock_room::class)->name('view_stock_room');
 Route::get('stock_room/exit_scan', [Stock_room::class,'exit_scan'])->name('exit_stock');
-Route::post('stock_room/exit_scan', [Stock_room::class,'exit_scan'])->name('exit_stock');
 Route::post('stock_room/exit', [Stock_room::class,'exit'])->name('exit_stock');
 Route::post('stock_room/receive', [Stock_room::class,'receive'])->name('receive_stock');
 
