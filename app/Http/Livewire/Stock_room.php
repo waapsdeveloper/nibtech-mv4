@@ -91,6 +91,9 @@ class Stock_room extends Component
     }
     public function exit_scan(){
         $admin_id = request('admin_id');
+        if(session('admin_id')){
+            $admin_id = session('admin_id');
+        }
         $data['admin_id'] = $admin_id;
         $last_ten = Stock_movement_model::where(['admin_id'=>$admin_id, 'received_at'=>null])->orderBy('id','desc')->limit(10)->get();
         $data['last_ten'] = $last_ten;
@@ -105,6 +108,9 @@ class Stock_room extends Component
     public function exit(){
 
         $user_id = session('user_id');
+        if(request('admin_id')){
+            $user_id = request('admin_id');
+        }
         if (request('imei')) {
             if (ctype_digit(request('imei'))) {
                 $i = request('imei');
@@ -143,7 +149,7 @@ class Stock_room extends Component
             $storage = $stock->variation->storage_id->name ?? '?';
             $color = $stock->variation->color_id->name ?? '?';
             $grade = $stock->variation->grade_id->name ?? '?';
-
+            session()->put('admin_id', $user_id);
             session()->put('success', 'Stock Exit: '.$model.' - '.$storage.' - '.$color.' - '.$grade);
             return redirect()->back(); // Redirect here is not recommended
 
