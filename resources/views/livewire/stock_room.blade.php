@@ -79,15 +79,15 @@
                         &nbsp;&nbsp;&nbsp;&nbsp;Current Variation:&nbsp;&nbsp;&nbsp;&nbsp;<h5 class="mb-0">{{ $stock->variation->product->model ?? "Variation Issue"}}{{" - " . (isset($stock->variation->storage_id)?$stock->variation->storage_id->name . " - " : null) . (isset($stock->variation->color_id)?$stock->variation->color_id->name. " - ":null)}} <strong><u>{{ $stock->variation->grade_id->name ?? null }}</u></strong></h5>
                     @endif --}}
                 </form>
-
-                {{-- <form action="{{ url('stock_room/exit')}}" method="POST" id="search" class="form-inline">
+                @else
+                <form action="{{ url('stock_room/exit')}}" method="POST" id="search" class="form-inline">
                     @csrf
                     <div class="form-floating">
                         <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" id="imeiInput" onload="this.focus()" autofocus>
                         <label for="">IMEI</label>
                     </div>
                         <button class="btn btn-primary pd-x-20" type="submit">Exit</button>
-                </form> --}}
+                </form>
                 @endif
             </div>
             <div class="">
