@@ -147,6 +147,13 @@ class Stock_room extends Component
             $color = $stock->variation->color_id->name ?? '?';
             $grade = $stock->variation->grade_id->name ?? '?';
 
+            if (session()->has('counter')) {
+                // Increment the counter
+                session()->increment('counter');
+            } else {
+                // Initialize the counter if it doesn't exist
+                session()->put('counter', 1);
+            }
             session()->put('success', 'Stock Exit: '.$model.' - '.$storage.' - '.$color.' - '.$grade);
             return redirect()->back(); // Redirect here is not recommended
 
