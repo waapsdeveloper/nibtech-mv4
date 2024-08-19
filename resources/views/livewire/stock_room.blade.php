@@ -65,7 +65,7 @@
                     </div>&nbsp;&nbsp;&nbsp;&nbsp;
                     <div>
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="radio" id="com" name="description" value="Change of mind" checked>
+                            <input class="form-check-input" type="radio" id="com" name="description" value="Change of mind">
                             <label class="form-check-label" for="com">Change of mind</label>
                         </div>
                         <div class="form-check form-switch">
