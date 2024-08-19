@@ -162,6 +162,12 @@ class Stock_room extends Component
 
 
     }
+
+    public function reset_counter() {
+        session()->put('counter', 0);
+        return redirect()->back();
+    }
+
     public function receive(){
 
         $user_id = session('user_id');
