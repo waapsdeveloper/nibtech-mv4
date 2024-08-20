@@ -40,10 +40,10 @@
         <div class="card-body m-2 p-2 d-flex justify-content-between">
 
             <div class="text-center row">
-                <div class="col-6"><h6>Total Items Purchased:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-                <div class="col-6"><h6>Total Purchase Cost:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-                <div class="col-6"><h6>Total RMA:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-                <div class="col-6"><h6>Total RMA Cost:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+                <div class="col-6"><h6>Total Purchased:</h6></div><div class="col-6"><h6>{{ $vendor->purchase_qty }}</h6></div>
+                <div class="col-6"><h6>Total Purchase Cost:</h6></div><div class="col-6"><h6>€{{ number_format($vendor->purchase_cost,2) }}</h6></div>
+                <div class="col-6"><h6>Total RMA:</h6></div><div class="col-6"><h6>{{ $vendor->rma_qty }}</h6></div>
+                <div class="col-6"><h6>Total RMA Cost:</h6></div><div class="col-6"><h6>€{{ number_format($vendor->rma_price,2) }}</h6></div>
 
             </div>
 

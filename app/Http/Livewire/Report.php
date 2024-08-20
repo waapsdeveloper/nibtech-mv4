@@ -812,8 +812,28 @@ class Report extends Component
 
     }
     public function vendor_report($vendor_id){
-        $vendor = Customer_model::find($vendor_id);
+        $vendor = Customer_model::withCount([
+
+            'orders as purchase_qty' => function ($query) {
+                $query->where('orders.order_type_id', 1)->join('order_items', 'orders.id', '=', 'order_items.order_id')
+                    ->select(DB::raw('SUM(order_items.quantity)'));
+            },
+            'orders as purchase_cost' => function ($query) {
+                $query->where('orders.order_type_id', 1)->join('order_items', 'orders.id', '=', 'order_items.order_id')
+                    ->select(DB::raw('SUM(order_items.price)'));
+            },
+            'orders as rma_qty' => function ($query) {
+                $query->where('orders.order_type_id', 2)->join('order_items', 'orders.id', '=', 'order_items.order_id')
+                    ->select(DB::raw('SUM(order_items.quantity)'));
+            },
+            'orders as rma_price' => function ($query) {
+                $query->where('orders.order_type_id', 2)->join('order_items', 'orders.id', '=', 'order_items.order_id')
+                    ->select(DB::raw('SUM(order_items.price)'));
+            },
+        ])
+        ->find($vendor_id);
         $data['vendor'] = $vendor;
+
 
         $rma_report = Stock_model::whereHas('order',function ($q) use ($vendor_id){
                 $q->where('customer_id', $vendor_id);

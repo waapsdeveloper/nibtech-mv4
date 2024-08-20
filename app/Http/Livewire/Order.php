@@ -1846,15 +1846,15 @@ class Order extends Component
             $invoice_url = url('export_invoice').'/'.$id;
             // JavaScript to open two tabs and print
             echo '<script>
-            var newTab1 = window.open("'.$order->delivery_note_url.'", "_blank");
-            var newTab2 = window.open("'.$invoice_url.'", "_blank");
+            // var newTab1 = window.open("'.$order->delivery_note_url.'", "_blank");
+            // var newTab2 = window.open("'.$invoice_url.'", "_blank");
 
-            newTab2.onload = function() {
-                newTab2.print();
-            };
-            newTab1.onload = function() {
-                newTab1.print();
-            };
+            // newTab2.onload = function() {
+            //     newTab2.print();
+            // };
+            // newTab1.onload = function() {
+            //     newTab1.print();
+            // };
 
             window.location.href = document.referrer;
             </script>';
@@ -1893,15 +1893,15 @@ class Order extends Component
             $invoice_url = url('export_invoice').'/'.$id;
             // JavaScript to open two tabs and print
             echo '<script>
-            var newTab1 = window.open("'.$order->delivery_note_url.'", "_blank");
-            var newTab2 = window.open("'.$invoice_url.'", "_blank");
+            // var newTab1 = window.open("'.$order->delivery_note_url.'", "_blank");
+            // var newTab2 = window.open("'.$invoice_url.'", "_blank");
 
-            newTab2.onload = function() {
-                newTab2.print();
-            };
-            newTab1.onload = function() {
-                newTab1.print();
-            };
+            // newTab2.onload = function() {
+            //     newTab2.print();
+            // };
+            // newTab1.onload = function() {
+            //     newTab1.print();
+            // };
 
             window.location.href = document.referrer;
             </script>';
