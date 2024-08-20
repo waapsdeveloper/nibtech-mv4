@@ -4,16 +4,16 @@
 
 <style>
     body {
-        font-family: Arial, sans-serif;
-        font-size: 14px;
-        font-weight: 600 !important;
+        font-family: 'Times New Roman', Times, serif, Arial, sans-serif;
+        font-size: 18px;
+        font-weight: 700 !important;
         margin: 0;
         padding: 0;
         color: #000;
         background-color: #fff !important;
     }
     p {
-        font-size: 16px;
+        font-size: 18px;
     }
     .invoice-container {
         width: 100%;
@@ -30,7 +30,7 @@
         margin-bottom: 20px;
     }
     .invoice-headers img {
-        max-height: 60px;
+        max-height: 80px;
     }
     .invoice-headers .company-info {
         /* text-align: right; */
@@ -46,19 +46,19 @@
     .invoice-details .invoice-info {
         /* width: 20%; */
         text-align: right;
-        font-size: 16px;
+        font-size: 18px;
     }
     .invoice-details h3, .invoice-details h4 {
         margin: 5px 0;
     }
     .invoice-details p {
-        font-size: 16px;
+        font-size: 18px;
     }
     .invoice-items {
         width: 100%;
         border-collapse: collapse;
         margin-bottom: 20px;
-        font-size: 16px;
+        font-size: 18px;
     }
     .invoice-items th, .invoice-items td {
         border: 1px solid #ddd;
@@ -318,7 +318,7 @@ canvas {
 <br>
         <div class="invoice-details">
             <div class="bill-to ">
-                <h3>Bill To:</h3>
+                <h2><strong>Bill To:</strong></h2>
                 @if($customer->company != null)
                     <p class="mb-0">{{ $customer->company }}</p>
                 @endif
@@ -339,7 +339,7 @@ canvas {
                 @endif
             </div>
             <div class="invoice-info">
-                <h1>INVOICE</h1>
+                <h1><strong>INVOICE</strong></h1>
                 <table>
                     <tr>
                         <td class="px-2"><strong>Order ID:</strong></td>
@@ -366,7 +366,7 @@ canvas {
         <br>
 
         <!-- Order Items -->
-        <h3>Order Items</h3>
+        <h2><strong>Order Items</strong></h2>
         <table class="invoice-items">
             <thead>
                 <tr>
