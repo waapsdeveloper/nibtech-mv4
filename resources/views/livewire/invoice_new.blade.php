@@ -12,7 +12,7 @@
     }
     .invoice-container {
         width: 100%;
-        max-width: 900px;
+        /* max-width: 1000px; */
         margin: 20px auto;
         padding: 20px;
         border: 1px solid #ddd;
@@ -82,7 +82,6 @@
     body{
         background-color: #fff !important;
     }
-    @page { size: landscape; }
     /* #pdf-container {
     display: flex;
     flex-direction: column;
