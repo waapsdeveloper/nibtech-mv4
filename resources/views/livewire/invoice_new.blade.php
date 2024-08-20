@@ -21,9 +21,6 @@
         background-color: #f9f9f9;
     }
     .invoice-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
         border-bottom: 2px solid #333;
         padding-bottom: 10px;
         margin-bottom: 20px;
@@ -303,6 +300,8 @@ canvas {
         <div class="invoice-header">
             <div class="company-info">
                 <img src="{{ asset('assets/img/brand/logo1.png') }}" alt="Company Logo">
+                <br>
+                <br>
                 <h4><strong>(NI) Britain Tech Ltd</strong></h4>
                 <p>Cromac Square, Forsyth House, Belfast, BT2 8LA</p>
             </div>
