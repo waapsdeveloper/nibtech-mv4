@@ -486,7 +486,7 @@ canvas {
                 console.error(reason);
             });
         });
-        window.onload = function() { window.print(); }
+        window.onload = function() { setTimeout(() => {window.print();},4000) }
     </script>
 
     @endsection
