@@ -302,7 +302,7 @@ canvas {
     <div class="invoice-container">
         <div class="invoice-header">
             <div class="company-info">
-                <img src="{{ assets('assets/img/brand/logo1.png') }}" alt="Company Logo">
+                <img src="{{ asset('assets/img/brand/logo1.png') }}" alt="Company Logo">
                 <h4><strong>(NI) Britain Tech Ltd</strong></h4>
                 <p>Cromac Square, Forsyth House, Belfast, BT2 8LA</p>
             </div>
