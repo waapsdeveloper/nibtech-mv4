@@ -36,18 +36,27 @@ class ApiRequestController extends Controller
     public function store(Request $request)
     {
 
+        if($request->Serial != '' || $request->Imei != '' || $request->Imei2 != ''){
 
-        // Create or update the resource
-        $api_request = Api_request_model::create([
-            'request' => json_encode($request->getContent()),
-        ]);
+            // Create or update the resource
+            $api_request = Api_request_model::create([
+                'request' => json_encode($request->getContent()),
+            ]);
 
-        // Return response
-        return response()->json([
-            'status' => 'Success',
-            'message' => 'Data received',
-            'system_reference' => $api_request->id,
-        ], 200);
+            // Return response
+            return response()->json([
+                'status' => 'Success',
+                'message' => 'Data received',
+                'system_reference' => $api_request->id,
+            ], 200);
+        }else{
+            // Return response
+            return response()->json([
+                'status' => 'Failed',
+                'message' => 'Missing IMEI and Serial',
+            ], 400);
+
+        }
 
     }
 
