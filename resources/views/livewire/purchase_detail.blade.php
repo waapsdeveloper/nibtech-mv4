@@ -509,10 +509,15 @@
                                                 $i ++;
                                                 $purchase_item = $item->purchase_item;
                                                 $prices[] = $purchase_item->price ?? 0;
+                                                if($item->variation->grade == 9 && count($item->stock_operations) == 0){
+                                                    $class = "text-danger"
+                                                }else {
+                                                    $class = "";
+                                                }
                                             @endphp
                                                 <tr>
                                                     <td>{{ $i }}</td>
-                                                    <td data-stock="{{ $item->id }}">{{ $item->imei.$item->serial_number }}</td>
+                                                    <td data-stock="{{ $item->id }}" class="{{$class}}">{{ $item->imei.$item->serial_number }}</td>
                                                     @if (session('user')->hasPermission('view_cost'))
                                                     <td>{{ $currency}}{{$purchase_item->price ?? "Error in Purchase Entry" }}</td>
                                                     @endif
