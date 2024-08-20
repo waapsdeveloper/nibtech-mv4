@@ -42,7 +42,7 @@
         width: 50%;
     }
     .invoice-details .invoice-info {
-        width: 20%;
+        /* width: 20%; */
         text-align: right;
     }
     .invoice-details h3, .invoice-details h4 {
