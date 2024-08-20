@@ -302,6 +302,7 @@ canvas {
     <br>
     <br>
     <div class="invoice-container">
+
         <div class="invoice-headers">
             <div class="company-info">
                 <img src="{{ asset('assets/img/brand/logo1.png') }}" alt="Company Logo" height="100">
@@ -485,7 +486,7 @@ canvas {
                 console.error(reason);
             });
         });
-
+        window.onload = function() { window.print(); }
     </script>
 
     @endsection
