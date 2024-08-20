@@ -6,9 +6,10 @@
     body {
         font-family: Arial, sans-serif;
         font-size: 14px;
+        font-weight: 900;
         margin: 0;
         padding: 0;
-        color: #333;
+        color: #000;
         background-color: #fff !important;
     }
     p {
@@ -21,18 +22,18 @@
         padding: 20px;
         border: 1px solid #ddd;
         border-radius: 8px;
-        background-color: #f9f9f9;
+        background-color: #ffffff;
     }
-    .invoice-header {
-        border-bottom: 2px solid #333;
+    .invoice-headers {
+        border-bottom: 2px solid #000;
         padding-bottom: 10px;
         margin-bottom: 20px;
     }
-    .invoice-header img {
-        max-height: 50px;
+    .invoice-headers img {
+        max-height: 60px;
     }
-    .invoice-header .company-info {
-        text-align: right;
+    .invoice-headers .company-info {
+        /* text-align: right; */
     }
     .invoice-details {
         display: flex;
@@ -68,7 +69,7 @@
         background-color: #f4f4f4;
     }
     .invoice-items tfoot {
-        border-top: 2px solid #333;
+        border-top: 2px solid #000;
     }
     .invoice-items tfoot td {
         border: none;
@@ -77,7 +78,7 @@
     }
     .store-policy {
         margin-top: 20px;
-        border-top: 2px solid #333;
+        border-top: 2px solid #000;
         padding-top: 10px;
     }
     .store-policy h3, .store-policy h4 {
@@ -301,7 +302,7 @@ canvas {
     <br>
     <br>
     <div class="invoice-container">
-        <div class="invoice-header">
+        <div class="invoice-headers">
             <div class="company-info">
                 <img src="{{ asset('assets/img/brand/logo1.png') }}" alt="Company Logo" height="100">
                 <br>
