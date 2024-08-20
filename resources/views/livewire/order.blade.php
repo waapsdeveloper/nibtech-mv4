@@ -188,7 +188,10 @@
 
                 <input type="text" class="form-control pd-x-20" name="last_order" placeholder="Last Order (Optional)" value="" form="picklist" style="width: 170px;">
                 <button class="btn btn-sm btn-secondary pd-x-20 " type="submit" form="picklist" name="order" value="1">Order List</button>
+                @if (session('user')->hasPermission('order_picklist'))
                 <button class="btn btn-sm btn-secondary pd-x-20 " type="submit" form="picklist" name="picklist" value="1">Pick List</button>
+
+                @endif
                 <button class="btn btn-sm btn-secondary pd-x-20 " type="submit" form="picklist" name="ordersheet" value="1">Order Sheet</button>
                 @if (session('user')->hasPermission('send_bulk_invoice'))
                 <button class="btn btn-sm btn-primary pd-x-20 " type="submit" form="search" name="bulk_invoice" value="1">Send Bulk Invoice Email</button>
