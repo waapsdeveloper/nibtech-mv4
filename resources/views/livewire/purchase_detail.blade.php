@@ -510,7 +510,7 @@
                                                 $purchase_item = $item->purchase_item;
                                                 $prices[] = $purchase_item->price ?? 0;
                                                 if($item->variation->grade == 9 && count($item->stock_operations) == 0){
-                                                    $class = "text-danger"
+                                                    $class = "text-danger";
                                                 }else {
                                                     $class = "";
                                                 }
