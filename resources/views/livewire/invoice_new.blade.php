@@ -11,6 +11,9 @@
         color: #333;
         background-color: #fff !important;
     }
+    p {
+        font-size: 15px;
+    }
     .invoice-container {
         width: 100%;
         /* max-width: 1000px; */
@@ -42,6 +45,7 @@
     .invoice-details .invoice-info {
         /* width: 20%; */
         text-align: right;
+        font-size: 14px;
     }
     .invoice-details h3, .invoice-details h4 {
         margin: 5px 0;
@@ -299,7 +303,7 @@ canvas {
     <div class="invoice-container">
         <div class="invoice-header">
             <div class="company-info">
-                <img src="{{ asset('assets/img/brand/logo1.png') }}" alt="Company Logo">
+                <img src="{{ asset('assets/img/brand/logo1.png') }}" alt="Company Logo" height="100">
                 <br>
                 <br>
                 <h4><strong>(NI) Britain Tech Ltd</strong></h4>
@@ -309,7 +313,7 @@ canvas {
                 <!-- Empty space for alignment -->
             </div>
         </div>
-
+<br>
         <div class="invoice-details">
             <div class="bill-to ">
                 <h3>Bill To:</h3>
@@ -336,26 +340,28 @@ canvas {
                 <h1>INVOICE</h1>
                 <table>
                     <tr>
-                        <td><strong>Order ID:</strong></td>
+                        <td class="px-2"><strong>Order ID:</strong></td>
                         <td>{{ $order->reference_id }}</td>
                     </tr>
                     @if ($order->admin)
                         <tr>
-                            <td><strong>Sales Rep:</strong></td>
+                            <td class="px-2"><strong>Sales Rep:</strong></td>
                             <td>{{ $order->admin->first_name }}</td>
                         </tr>
                     @endif
                     <tr>
-                        <td><strong>Order Date:</strong></td>
+                        <td class="px-2"><strong>Order Date:</strong></td>
                         <td>{{ \Carbon\Carbon::parse($order->created_at)->format('d-m-Y') }}</td>
                     </tr>
                     <tr>
-                        <td><strong>Invoice Date:</strong></td>
+                        <td class="px-2"><strong>Invoice Date:</strong></td>
                         <td>{{ \Carbon\Carbon::parse($order->processed_at)->format('d-m-Y') }}</td>
                     </tr>
                 </table>
             </div>
         </div>
+        <br>
+        <br>
 
         <!-- Order Items -->
         <h3>Order Items</h3>
@@ -410,7 +416,8 @@ canvas {
                     <td align="right">{{ $order->currency_id->sign }}0.00</td>
                 </tr>
             </tbody>
-            <tfoot>
+<br>
+<tfoot>
                 <tr>
                     <td colspan="3" style="text-align: right;"><strong>Sub Total:</strong></td>
                     <td align="right"><strong>{{ $order->currency_id->sign }}{{ number_format($totalAmount, 2) }}</strong></td>
@@ -429,6 +436,7 @@ canvas {
                 </tr>
             </tfoot>
         </table>
+        <br>
 
         <!-- Store Policy -->
         <div class="store-policy">
