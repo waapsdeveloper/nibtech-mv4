@@ -44,6 +44,7 @@ class ApiRequestController extends Controller
 
         // Return response
         return response()->json([
+            'status' => 'Success',
             'message' => 'Data received',
             'system_reference' => $api_request->id,
         ], 200);
