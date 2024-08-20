@@ -1751,15 +1751,15 @@ class Order extends Component
                     session()->put('error', "Product Storage not matched");
                     // return redirect()->back();
                 }
-                echo "<script>
-                if (confirm('System Model: " . $stock[$i]->variation->product->model . " - " . $storage . $color . $stock[$i]->variation->grade_id->name . "\\nRequired Model: " . $variant->product->model . " - " . $storage2 . $color2 . $variant->grade_id->name . "')) {
-                    // User clicked OK, do nothing or perform any other action
-                } else {
-                    // User clicked Cancel, redirect to the previous page
-                    window.history.back();
-                }
-                </script>";
                 if($stock[$i]->variation_id != $variant->id){
+                    echo "<script>
+                    if (confirm('System Model: " . $stock[$i]->variation->product->model . " - " . $storage . $color . $stock[$i]->variation->grade_id->name . "\\nRequired Model: " . $variant->product->model . " - " . $storage2 . $color2 . $variant->grade_id->name . "')) {
+                        // User clicked OK, do nothing or perform any other action
+                    } else {
+                        // User clicked Cancel, redirect to the previous page
+                        window.history.back();
+                    }
+                    </script>";
 
                     $stock_operation = Stock_operations_model::create([
                         'stock_id' => $stock[$i]->id,
