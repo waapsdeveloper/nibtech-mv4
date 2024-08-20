@@ -5,6 +5,7 @@
 <style>
     body {
         font-family: Arial, sans-serif;
+        font-size: 14px;
         margin: 0;
         padding: 0;
         color: #333;
@@ -39,7 +40,7 @@
         margin-bottom: 20px;
     }
     .invoice-details .bill-to {
-        width: 50%;
+        width: 30%;
     }
     .invoice-details .invoice-info {
         /* width: 20%; */
@@ -48,10 +49,14 @@
     .invoice-details h3, .invoice-details h4 {
         margin: 5px 0;
     }
+    .invoice-details p {
+        font-size: 14px;
+    }
     .invoice-items {
         width: 100%;
         border-collapse: collapse;
         margin-bottom: 20px;
+        font-size: 14px;
     }
     .invoice-items th, .invoice-items td {
         border: 1px solid #ddd;
@@ -307,7 +312,7 @@ canvas {
         </div>
 
         <div class="invoice-details">
-            <div class="bill-to">
+            <div class="bill-to ">
                 <h3>Bill To:</h3>
                 @if($customer->company != null)
                     <p class="mb-0">{{ $customer->company }}</p>
