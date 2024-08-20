@@ -20,8 +20,8 @@
         /* max-width: 1000px; */
         margin: 20px auto;
         padding: 20px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
+        /* border: 1px solid #ddd;
+        border-radius: 8px; */
         background-color: #ffffff;
     }
     .invoice-headers {
@@ -46,7 +46,7 @@
     .invoice-details .invoice-info {
         /* width: 20%; */
         text-align: right;
-        font-size: 14px;
+        font-size: 16px;
     }
     .invoice-details h3, .invoice-details h4 {
         margin: 5px 0;
