@@ -6,14 +6,14 @@
     body {
         font-family: Arial, sans-serif;
         font-size: 14px;
-        font-weight: 900;
+        font-weight: 1400;
         margin: 0;
         padding: 0;
         color: #000;
         background-color: #fff !important;
     }
     p {
-        font-size: 15px;
+        font-size: 16px;
     }
     .invoice-container {
         width: 100%;
@@ -52,13 +52,13 @@
         margin: 5px 0;
     }
     .invoice-details p {
-        font-size: 14px;
+        font-size: 16px;
     }
     .invoice-items {
         width: 100%;
         border-collapse: collapse;
         margin-bottom: 20px;
-        font-size: 14px;
+        font-size: 16px;
     }
     .invoice-items th, .invoice-items td {
         border: 1px solid #ddd;
@@ -307,7 +307,7 @@ canvas {
                 <img src="{{ asset('assets/img/brand/logo1.png') }}" alt="Company Logo" height="100">
                 <br>
                 <br>
-                <h4><strong>(NI) Britain Tech Ltd</strong></h4>
+                <h3><strong>(NI) Britain Tech Ltd</strong></h3>
                 <p>Cromac Square, Forsyth House, Belfast, BT2 8LA</p>
             </div>
             <div class="invoice-logo">
