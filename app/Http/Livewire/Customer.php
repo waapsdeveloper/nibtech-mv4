@@ -4,17 +4,19 @@ namespace App\Http\Livewire;
 
 use App\Models\Country_model;
 use Livewire\Component;
+use Livewire\WithPagination;
 use App\Models\Customer_model;
 use App\Models\Order_model;
 
 
 class Customer extends Component
 {
-    public function render()
-    {
+    use WithPagination;
+    protected $customers;
 
-        $data['title_page'] = "Customers";
-        $data['customers'] = Customer_model::with('country_id')->withCount('orders')
+    public function mount()
+    {
+        $this->customers = Customer_model::with('country_id')->withCount('orders')
         ->when(request('type') && request('type') != 0, function($q){
             if(request('type') == 4){
                 return $q->where('is_vendor',null);
@@ -45,6 +47,17 @@ class Customer extends Component
         ->paginate(50)
         ->onEachSide(5)
         ->appends(request()->except('page'));
+
+        // Redirect if only one customer is found and order_id is present
+        if ($this->customers->count() == 1 && request('order_id') != '') {
+            return redirect()->to(url('edit-customer') . '/' . $this->customers->first()->id);
+        }
+    }
+    public function render()
+    {
+
+        $data['title_page'] = "Customers";
+        $data['customers'] = $this->customers;
         // foreach($data['customers'] as $customer){
         //     if($customer->orders->count() == 0){
         //         $customer->delete();
