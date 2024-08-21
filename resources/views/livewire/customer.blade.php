@@ -1,3 +1,9 @@
+@php
+
+    if($customers->count() == 1 && request('order_id') != ''){
+            redirect()->to(url('edit-customer').'/'.$customers->first()->id);
+        }
+@endphp
 @extends('layouts.app')
 
     @section('styles')
