@@ -45,7 +45,9 @@ class Customer extends Component
         ->paginate(50)
         ->onEachSide(5)
         ->appends(request()->except('page'));
-
+        if($data['customers']->count() == 1 && request('order_id') != ''){
+            return redirect()->to(url('edit-customer').'/'.$data['customers']->first()->id);
+        }
         // foreach($data['customers'] as $customer){
         //     if($customer->orders->count() == 0){
         //         $customer->delete();
