@@ -28,7 +28,7 @@ class LabelsExport
                 ->orderBy('variation.grade', 'DESC')
                 ->orderBy('orders.reference_id', 'ASC');
         })
-        ->when(request('sort') == 1, function ($q) {
+        ->when(request('sort') == 1 || request('sort') == '', function ($q) {
             return $q->orderBy('orders.reference_id', 'ASC'); // Secondary order by reference_id
         })
         ->select('orders.id','orders.label_url','orders.reference_id')
