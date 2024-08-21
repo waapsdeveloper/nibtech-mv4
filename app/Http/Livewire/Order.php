@@ -1713,9 +1713,9 @@ class Order extends Component
             // newTab2.onload = function() {
             //     newTab2.print();
             // };
-            newTab1.onload = function() {
-                newTab1.print();
-            };
+            // newTab1.onload = function() {
+            //     newTab1.print();
+            // };
 
             window.location.href = document.referrer;
             </script>';
