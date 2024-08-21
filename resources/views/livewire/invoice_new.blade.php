@@ -479,6 +479,7 @@ canvas {
 
                         page.render(renderContext).promise.then(function () {
                             console.log('Page rendered');
+                            window.print();
                         });
                     });
                 }
@@ -486,7 +487,7 @@ canvas {
                 console.error(reason);
             });
         });
-        window.onload = function() { setTimeout(() => {window.print();},4000) }
+        // window.onload = function() { setTimeout(() => {window.print();},4000) }
     </script>
 
     @endsection
