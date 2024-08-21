@@ -66,10 +66,14 @@ class FunctionsDaily extends Command
         // }
 
 
-        $stocks = Stock_model::where('status','!=',null)->where('order_id','!=',null)->orderByDesc('id')->get();
+        $stocks = Stock_model::where('status',2)->where('order_id','!=',null)->where('sale_order_id',null)->get();
         foreach($stocks as $stock){
 
-            // $last_item = $stock->last_item();
+            $last_item = $stock->last_item();
+            if(in_array($last_item->order->order_type_id, [3,5])){
+                $stock->sale_order_id = $last_item->order_id;
+                $stock->save();
+            }
 
             // $items2 = Order_item_model::where(['stock_id'=>$stock->id,'linked_id'=>null])->whereHas('order', function ($query) {
             //     $query->where('order_type_id', 1)->where('reference_id','<=',10009);
