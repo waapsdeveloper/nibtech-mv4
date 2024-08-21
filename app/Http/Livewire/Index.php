@@ -132,7 +132,7 @@ class Index extends Component
         ->count();
         $data['invoiced_items'] = Order_item_model::whereHas('order', function ($q) use ($start_date, $end_date) {
             $q->where('processed_at', '>=', $start_date)->where('processed_at', '<=', $end_date)->where('order_type_id',3);
-        })->where('status',3)
+        })->where('stock_id','!=',null)
         ->when(request('data') == 1, function($q) use ($variation_ids){
                 return $q->whereIn('variation_id', $variation_ids);
             })
