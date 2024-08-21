@@ -332,7 +332,7 @@
                                                 </tr>
                                                 <tr>
                                                     <td>Invoiced:</td>
-                                                    <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ $invoiced_orders }}</a></td>
+                                                    <td class="tx-right" title="{{ $invoiced_items }}"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ $invoiced_orders }}</a></td>
                                                 </tr>
                                                 @if (session('user')->hasPermission('view_price'))
                                                 <tr>

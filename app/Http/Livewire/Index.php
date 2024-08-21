@@ -130,6 +130,13 @@ class Index extends Component
             });
         })
         ->count();
+        $data['invoiced_items'] = Order_item_model::whereHas('order', function ($q) use ($start_date, $end_date) {
+            $q->where('processed_at', '>=', $start_date)->where('processed_at', '<=', $end_date)->where('order_type_id',3);
+        })->where('status',3)
+        ->when(request('data') == 1, function($q) use ($variation_ids){
+                return $q->whereIn('variation_id', $variation_ids);
+            })
+        ->count();
 
 
         $data['total_conversations'] = Order_item_model::whereBetween('created_at', [$start_date, $end_date])->where('care_id','!=',null)
