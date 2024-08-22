@@ -136,7 +136,7 @@
                                                             <datalist id="models">
                                                                 <option value="">None</option>
                                                                 @foreach ($products as $id => $prod)
-                                                                    <option value="{{ $id }}" {{ $product->product_id == $id ? 'selected' : '' }}>{{ $prod->series." ".$prod }}</option>
+                                                                    <option value="{{ $id }}" {{ $product->product_id == $id ? 'selected' : '' }}>{{ $prod }}</option>
                                                                 @endforeach
                                                             </datalist>
                                                         </td>
