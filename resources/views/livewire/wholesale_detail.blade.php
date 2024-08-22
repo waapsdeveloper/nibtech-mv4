@@ -103,7 +103,45 @@
                 @endif
             </div>
             <div class="p-1">
-                @if ($order->status < 3)
+                @if ($order->status == 1)
+                <form class="form-inline" action="{{ url('wholesale_item_po').'/'.$order_id }}" method="POST" id="wholesale_item">
+                    @csrf
+                    {{-- <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
+                    <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required> --}}
+
+                    <div class="form-floating">
+                        <input type="text" name="product" value="{{ Request::get('product') }}" class="form-control" data-bs-placeholder="Select Model" list="product-menu">
+                        <label for="product">Product</label>
+                    </div>
+                    <datalist id="product-menu">
+                        <option value="">Select</option>
+                        @foreach ($products as $id => $model)
+                            <option value="{{ $id }}" @if(isset($_GET['product']) && $id == $_GET['product']) {{'selected'}}@endif>{{ $model }}</option>
+                        @endforeach
+                    </datalist>
+                    <select name="storage" class="form-control form-select">
+                        <option value="">Storage</option>
+                        @foreach ($storages as $id=>$name)
+                            <option value="{{ $id }}" @if(isset($_GET['storage']) && $id == $_GET['storage']) {{'selected'}}@endif>{{ $name }}</option>
+                        @endforeach
+                    </select>
+                    <select name="color" class="form-control form-select">
+                        <option value="">Color</option>
+                        @foreach ($colors as $id=>$name)
+                            <option value="{{ $id }}" @if(isset($_GET['color']) && $id == $_GET['color']) {{'selected'}}@endif>{{ $name }}</option>
+                        @endforeach
+                    </select>
+                    <select name="grade[]" class="form-control form-select select2" multiple>
+                        <option value="">Grade</option>
+                        @foreach ($grades as $id=>$name)
+                            <option value="{{ $id }}" @if(isset($_GET['grade']) && in_array($id,$_GET['grade'])) {{'selected'}}@endif>{{ $name }}</option>
+                        @endforeach
+                    </select>
+                    <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
+
+                </form>
+                @endif
+                @if ($order->status == 2)
                 <form class="form-inline" action="{{ url('check_wholesale_item').'/'.$order_id }}" method="POST" id="wholesale_item">
                     @csrf
                     <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>

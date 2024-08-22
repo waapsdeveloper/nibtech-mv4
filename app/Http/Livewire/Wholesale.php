@@ -153,6 +153,7 @@ class Wholesale extends Component
 
         $data['title_page'] = "BulkSale Detail";
 
+        DB::statement("SET SESSION group_concat_max_len = 1000000;");
         $data['vendors'] = Customer_model::where('is_vendor',2)->pluck('company','id');
         // $data['imeis'] = Stock_model::whereIn('status',[1,3])->orderBy('serial_number','asc')->orderBy('imei','asc')->get();
         $data['exchange_rates'] = ExchangeRate::pluck('rate','target_currency');
