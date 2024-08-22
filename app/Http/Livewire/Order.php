@@ -49,11 +49,11 @@ class Order extends Component
         $data['colors'] = Color_model::pluck('name','id');
         $data['grades'] = Grade_model::pluck('name','id');
         $data['last_hour'] = Carbon::now()->subHour(2);
-        $data['admins'] = Admin_model::where('id','!=',1)->get();
+        $data['admins'] = Admin_model::where('id','!=',1)->pluck('first_name','id');
         $user_id = session('user_id');
         $data['user_id'] = $user_id;
         $data['pending_orders_count'] = Order_model::where('order_type_id',3)->where('status',2)->count();
-        $data['order_statuses'] = Order_status_model::get();
+        $data['order_statuses'] = Order_status_model::pluck('name','id');
         if(request('per_page') != null){
             $per_page = request('per_page');
         }else{

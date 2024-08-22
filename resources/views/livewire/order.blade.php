@@ -132,8 +132,8 @@
                     {{-- <div class="form-floating"> --}}
                         <select id="status_input" name="status" class="form-control form-select" data-bs-placeholder="Select Status">
                             <option value="">Status</option>
-                            @foreach ($order_statuses as $status)
-                                <option value="{{$status->id}}" @if(isset($_GET['status']) && $status->id == $_GET['status']) {{'selected'}}@endif>{{$status->name}}</option>
+                            @foreach ($order_statuses as $id => $status)
+                                <option value="{{$id}}" @if(isset($_GET['status']) && $id == $_GET['status']) {{'selected'}}@endif>{{$status}}</option>
                             @endforeach
                         </select>
                         {{-- <label for="status_input">Status</label>
@@ -155,8 +155,8 @@
                         <select id="adm_input" name="adm" class="form-control form-select" data-bs-placeholder="Select Processed By">
                             <option value="">Processed by</option>
                             <option value="0">None</option>
-                            @foreach ($admins as $adm)
-                                <option value="{{$adm->id}}" @if(isset($_GET['adm']) && $adm->id == $_GET['adm']) {{'selected'}}@endif>{{$adm->first_name." ".$adm->last_name}}</option>
+                            @foreach ($admins as $id => $adm)
+                                <option value="{{$id}}" @if(isset($_GET['adm']) && $id == $_GET['adm']) {{'selected'}}@endif>{{$adm }}</option>
                             @endforeach
                         </select>
                         {{-- <label for="adm_input">Processed By</label> --}}
@@ -225,12 +225,12 @@
         <br>
 
         @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <span class="alert-inner--icon"><i class="fe fe-thumbs-up"></i></span>
-            <span class="alert-inner--text"><strong>{{session('success')}}</strong></span>
-            <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
-        </div>
-        <br>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <span class="alert-inner--icon"><i class="fe fe-thumbs-up"></i></span>
+                <span class="alert-inner--text"><strong>{{session('success')}}</strong></span>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <br>
         @php
         session()->forget('success');
         @endphp
@@ -333,407 +333,425 @@
                             <input type="hidden" name="sort" value="{{ Request::get('sort') }}">
 
                         </form>
-                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
-                                <thead>
-                                    <tr>
-                                        <th></th>
-                                        <th><small><b>No</b></small></th>
-                                        <th><small><b>Order ID</b></small></th>
-                                        <th><small><b>Product</b></small></th>
-                                        <th><small><b>Qty</b></small></th>
-                                        <th><small><b>IMEI</b></small></th>
-                                        <th><small><b>Creation Date | TN</b></small></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
+                        <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th><small><b>No</b></small></th>
+                                    <th><small><b>Order ID</b></small></th>
+                                    <th><small><b>Product</b></small></th>
+                                    <th><small><b>Qty</b></small></th>
+                                    <th><small><b>IMEI</b></small></th>
+                                    <th><small><b>Creation Date | TN</b></small></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php
+                                    $i = $orders->firstItem() - 1;
+                                    $id = [];
+                                    $total_items = 0;
+                                @endphp
+                                @foreach ($orders as $index => $order)
                                     @php
-                                        $i = $orders->firstItem() - 1;
-                                        $id = [];
+                                        if(in_array($order->id,$id)){
+                                            continue;
+                                        }else {
+                                            $id[] = $order->id;
+                                        }
+                                        $items = $order->order_items;
+                                        $j = 0;
+                                        $items_count = count($items);
+                                        $total_items += $items_count;
+                                        $customer = $order->customer;
                                     @endphp
-                                    @foreach ($orders as $index => $order)
+
+                                    @foreach ($items as $itemIndex => $item)
                                         @php
-                                            if(in_array($order->id,$id)){
-                                                continue;
-                                            }else {
-                                                $id[] = $order->id;
-                                            }
-                                            $items = $order->order_items;
-                                            $j = 0;
+                                            $stock = $item->stock;
+                                            $variation = $item->variation;
                                         @endphp
+                                        <tr @if ($customer->orders->count() > 1) class="bg-light" @endif>
+                                            @if ($itemIndex == 0)
+                                                <td rowspan="{{ $items_count }}"><input type="checkbox" name="ids[]" value="{{ $order->id }}" form="pdf"></td>
+                                                <td rowspan="{{ $items_count }}">{{ $i + 1 }}</td>
+                                                <td rowspan="{{ $items_count }}">
+                                                    {{ $order->reference_id }}<br>
+                                                    {{ $customer->company }}<br>
+                                                    {{ $customer->first_name.' '.$customer->last_name }}
 
-                                        @foreach ($items as $itemIndex => $item)
-                                            <tr @if ($order->customer->orders->count() > 1) class="bg-light" @endif>
-                                                @if ($itemIndex == 0)
-                                                    <td rowspan="{{ count($items) }}"><input type="checkbox" name="ids[]" value="{{ $order->id }}" form="pdf"></td>
-                                                    <td rowspan="{{ count($items) }}">{{ $i + 1 }}</td>
-                                                    <td rowspan="{{ count($items) }}">
-                                                        {{ $order->reference_id }}<br>
-                                                        {{ $order->customer->company }}<br>
-                                                        {{ $order->customer->first_name.' '.$order->customer->last_name }}
-
-                                                    </td>
+                                                </td>
+                                            @endif
+                                            <td>
+                                                @if ($variation ?? false)
+                                                    <strong>{{ $variation->sku }}</strong> - {{$variation->product->model ?? "Model not defined"}} - {{(isset($variation->storage)?$storages[$variation->storage] . " - " : null) . (isset($variation->color)?$colors[$variation->color]. " - ":null)}} <strong><u>{{ $grades[$variation->grade] ?? "Issue wih Grade" }}</u></strong>
                                                 @endif
-                                                <td>
-                                                    @if ($item->variation ?? false)
-                                                        <strong>{{ $item->variation->sku }}</strong> - {{$item->variation->product->model ?? "Model not defined"}} - {{(isset($item->variation->storage)?$storages[$item->variation->storage] . " - " : null) . (isset($item->variation->color)?$colors[$item->variation->color]. " - ":null)}} <strong><u>{{ $grades[$item->variation->grade] ?? "Issue wih Grade" }}</u></strong>
+                                                @if ($order->delivery_note_url == null || $order->label_url == null)
+                                                    <a class="" href="{{url('order')}}/label/{{ $order->reference_id }}">
+                                                    @if ($order->delivery_note_url == null)
+                                                        <strong class="text-danger">Missing Delivery Note</strong>
                                                     @endif
-                                                    @if ($order->delivery_note_url == null || $order->label_url == null)
-                                                        <a class="" href="{{url('order')}}/label/{{ $order->reference_id }}">
-                                                        @if ($order->delivery_note_url == null)
-                                                            <strong class="text-danger">Missing Delivery Note</strong>
-                                                        @endif
-                                                        @if ($order->label_url == null)
+                                                    @if ($order->label_url == null)
 
-                                                            <strong class="text-danger">Missing Label</strong>
-                                                        @endif
-                                                        </a>
+                                                        <strong class="text-danger">Missing Label</strong>
                                                     @endif
-                                                    @if ($item->care_id != null)
-                                                        <a class="" href="https://backmarket.fr/bo_merchant/customer-request/{{ $item->care_id }}" target="_blank"><strong class="text-danger">Conversation</strong></a>
-                                                    @endif
-                                                </td>
-                                                <td>{{ $item->quantity }}</td>
-                                                @if ($order->status == 3)
-                                                <td style="width:240px" class="text-success text-uppercase" id="copy_imei_{{ $order->id }}">
-                                                    @isset($item->stock->imei) {{ $item->stock->imei }}&nbsp; @endisset
-                                                    @isset($item->stock->serial_number) {{ $item->stock->serial_number }}&nbsp; @endisset
-                                                    @isset($order->processed_by) | {{ $order->admin->first_name[0] }} | @endisset
-                                                    @isset($item->stock->tester) ({{ $item->stock->tester }}) @endisset
+                                                    </a>
+                                                @endif
+                                                @if ($item->care_id != null)
+                                                    <a class="" href="https://backmarket.fr/bo_merchant/customer-request/{{ $item->care_id }}" target="_blank"><strong class="text-danger">Conversation</strong></a>
+                                                @endif
+                                            </td>
+                                            <td>{{ $item->quantity }}</td>
+                                            @if ($order->status == 3)
+                                            <td style="width:240px" class="text-success text-uppercase" id="copy_imei_{{ $order->id }}">
+                                                @isset($stock->imei) {{ $stock->imei }}&nbsp; @endisset
+                                                @isset($stock->serial_number) {{ $stock->serial_number }}&nbsp; @endisset
+                                                @isset($order->processed_by) | {{ $admins[$order->processed_by][0] }} | @endisset
+                                                @isset($stock->tester) ({{ $stock->tester }}) @endisset
 
-                                                </td>
-                                                @if ($item->quantity > 1 && $item->stock_id != null)
-                                                @php
-                                                    $content2 = "Hi, here are the IMEIs/Serial numbers for this order. \n";
-                                                    foreach ($items as $im) {
-                                                        if($im->stock_id == null){ continue;}
-                                                        $content2 .= $im->stock->imei . $im->stock->serial_number . " " . $im->stock->tester . "\n";
-                                                    }
-                                                    $content2 .= "Regards \n".session('fname');
-                                                @endphp
+                                            </td>
+                                            @if ($item->quantity > 1 && $item->stock_id != null)
+                                            @php
+                                                $content2 = "Hi, here are the IMEIs/Serial numbers for this order. \n";
+                                                foreach ($items as $im) {
+                                                    if($im->stock_id == null){ continue;}
+                                                    $content2 .= $im->stock->imei . $im->stock->serial_number . " " . $im->stock->tester . "\n";
+                                                }
+                                                $content2 .= "Regards \n".session('fname');
+                                            @endphp
 
-                                                <script>
-                                                    document.addEventListener('DOMContentLoaded', function() {
-                                                        var imeiElement = document.getElementById('copy_imei_{{ $order->id }}');
+                                            <script>
+                                                document.addEventListener('DOMContentLoaded', function() {
+                                                    var imeiElement = document.getElementById('copy_imei_{{ $order->id }}');
 
-                                                        // Add event listener to the IMEI element
-                                                        imeiElement.addEventListener('click', function() {
-                                                            // Create a temporary input element to hold the text
-                                                            var tempInput2 = document.createElement('textarea');
-                                                            tempInput2.value = `{{ $content2 }}`; // Properly escape PHP content
+                                                    // Add event listener to the IMEI element
+                                                    imeiElement.addEventListener('click', function() {
+                                                        // Create a temporary input element to hold the text
+                                                        var tempInput2 = document.createElement('textarea');
+                                                        tempInput2.value = `{{ $content2 }}`; // Properly escape PHP content
 
-                                                            // Append the input element to the body
-                                                            document.body.appendChild(tempInput2);
+                                                        // Append the input element to the body
+                                                        document.body.appendChild(tempInput2);
 
-                                                            // Select the text inside the input element
-                                                            tempInput2.select();
+                                                        // Select the text inside the input element
+                                                        tempInput2.select();
 
-                                                            // Copy the selected text to the clipboard
-                                                            document.execCommand('copy');
+                                                        // Copy the selected text to the clipboard
+                                                        document.execCommand('copy');
 
-                                                            // Remove the temporary input element
-                                                            document.body.removeChild(tempInput2);
+                                                        // Remove the temporary input element
+                                                        document.body.removeChild(tempInput2);
 
-                                                            // Optionally, provide feedback to the user
-                                                            alert('IMEI numbers copied to clipboard:\n' + tempInput2.value);
-                                                        });
+                                                        // Optionally, provide feedback to the user
+                                                        alert('IMEI numbers copied to clipboard:\n' + tempInput2.value);
                                                     });
-                                                </script>
+                                                });
+                                            </script>
+                                            @endif
+
+
+                                            @endif
+                                            @if ($itemIndex == 0 && $order->status != 3)
+                                            <td style="width:240px" rowspan="{{ count($items) }}">
+                                                @if ($item->status > 3)
+                                                    <strong class="text-danger">{{ $order_statuses[$order->status] }}</strong>
+                                                {{-- @else
+                                                    @if(!isset($stock->imei) && !isset($stock->serial_number) && $item->status > 2 && $item->quantity == 1)
+
+
+                                                        <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
+                                                        <a class="dropdown-item" href="{{url('order')}}/refresh/{{ $order->reference_id }}"><i class="fe fe-arrows-rotate me-2 "></i>Refresh</a>
+                                                    @endif --}}
                                                 @endif
+                                                @isset($stock->imei) {{ $stock->imei }}&nbsp; @endisset
+                                                @isset($stock->serial_number) {{ $stock->serial_number }}&nbsp; @endisset
+
+                                                @isset($order->processed_by) | {{ $admins[$order->processed_by][0] }} | @endisset
+                                                @isset($stock->tester) ({{ $stock->tester }}) @endisset
 
 
-                                                @endif
-                                                @if ($itemIndex == 0 && $order->status != 3)
-                                                <td style="width:240px" rowspan="{{ count($items) }}">
-                                                    @if ($item->status > 3)
-                                                        <strong class="text-danger">{{ $order->order_status->name }}</strong>
-                                                    {{-- @else
-                                                        @if(!isset($item->stock->imei) && !isset($item->stock->serial_number) && $item->status > 2 && $item->quantity == 1)
+                                                @if ($item->status == 2)
+                                                    @if (count($items) < 2 && $item->quantity < 2)
+                                                        <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url('order')}}/dispatch/{{ $order->id }}" @if (request('sort') == 4) @endif>
+                                                            @csrf
+                                                            <input type="hidden" name="sort" value="{{request('sort')}}">
+                                                            <div class="input-group">
+                                                                <input type="text" name="tester[]" placeholder="Tester" class="form-control form-control-sm" style="max-width: 50px">
+                                                                <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm">
 
+                                                                <input type="hidden" name="sku[]" value="{{ $variation->sku ?? "Variation Issue" }}">
 
-                                                            <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
-                                                            <a class="dropdown-item" href="{{url('order')}}/refresh/{{ $order->reference_id }}"><i class="fe fe-arrows-rotate me-2 "></i>Refresh</a>
-                                                        @endif --}}
-                                                    @endif
-                                                    @isset($item->stock->imei) {{ $item->stock->imei }}&nbsp; @endisset
-                                                    @isset($item->stock->serial_number) {{ $item->stock->serial_number }}&nbsp; @endisset
+                                                                <div class="input-group-append">
+                                                                    <input type="submit" name="imei_send" value=">" class="form-control form-control-sm" form="dispatch_{{ $i."_".$j }}">
+                                                                </div>
 
-                                                    @isset($order->processed_by) | {{ $order->admin->first_name[0] }} | @endisset
-                                                    @isset($item->stock->tester) ({{ $item->stock->tester }}) @endisset
+                                                            </div>
+                                                        </form>
+                                                    @elseif (count($items) < 2 && $item->quantity >= 2)
 
+                                                        <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url('order')}}/dispatch/{{ $order->id }}">
+                                                            @csrf
+                                                            @for ($in = 1; $in <= $item->quantity; $in ++)
 
-                                                    @if ($item->status == 2)
-                                                        @if (count($items) < 2 && $item->quantity < 2)
-                                                            <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url('order')}}/dispatch/{{ $order->id }}" @if (request('sort') == 4) @endif>
-                                                                @csrf
-                                                                <input type="hidden" name="sort" value="{{request('sort')}}">
                                                                 <div class="input-group">
                                                                     <input type="text" name="tester[]" placeholder="Tester" class="form-control form-control-sm" style="max-width: 50px">
-                                                                    <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm">
-
-                                                                    <input type="hidden" name="sku[]" value="{{ $item->variation->sku ?? "Variation Issue" }}">
-
-                                                                    <div class="input-group-append">
-                                                                        <input type="submit" name="imei_send" value=">" class="form-control form-control-sm" form="dispatch_{{ $i."_".$j }}">
-                                                                    </div>
-
+                                                                    <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm" required>
                                                                 </div>
-                                                            </form>
-                                                        @elseif (count($items) < 2 && $item->quantity >= 2)
+                                                            <input type="hidden" name="sku[]" value="{{ $variation->sku }}">
+                                                            @endfor
+                                                            <div class="w-100">
+                                                                <input type="submit" name="imei_send" value="Submit IMEIs" class="form-control form-control-sm w-100" form="dispatch_{{ $i."_".$j }}">
+                                                            </div>
+                                                        </form>
+                                                    @elseif (count($items) >= 2)
+                                                        <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url('order')}}/dispatch/{{ $order->id }}">
+                                                            @csrf
+                                                            @foreach ($items as $itm)
 
-                                                            <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url('order')}}/dispatch/{{ $order->id }}">
-                                                                @csrf
-                                                                @for ($in = 1; $in <= $item->quantity; $in ++)
+                                                                @for ($in = 1; $in <= $itm->quantity; $in++)
 
                                                                     <div class="input-group">
                                                                         <input type="text" name="tester[]" placeholder="Tester" class="form-control form-control-sm" style="max-width: 50px">
-                                                                        <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm" required>
+                                                                        <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm" required title="for SKU:{{ $itm->variation->sku }}">
                                                                     </div>
-                                                                <input type="hidden" name="sku[]" value="{{ $item->variation->sku }}">
+                                                                    <input type="hidden" name="sku[]" value="{{ $itm->variation->sku }}">
                                                                 @endfor
-                                                                <div class="w-100">
-                                                                    <input type="submit" name="imei_send" value="Submit IMEIs" class="form-control form-control-sm w-100" form="dispatch_{{ $i."_".$j }}">
-                                                                </div>
-                                                            </form>
-                                                        @elseif (count($items) >= 2)
-                                                            <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url('order')}}/dispatch/{{ $order->id }}">
-                                                                @csrf
-                                                                @foreach ($items as $itm)
-
-                                                                    @for ($in = 1; $in <= $itm->quantity; $in++)
-
-                                                                        <div class="input-group">
-                                                                            <input type="text" name="tester[]" placeholder="Tester" class="form-control form-control-sm" style="max-width: 50px">
-                                                                            <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm" required title="for SKU:{{ $itm->variation->sku }}">
-                                                                        </div>
-                                                                        <input type="hidden" name="sku[]" value="{{ $itm->variation->sku }}">
-                                                                    @endfor
-                                                                @endforeach
-                                                                <div class="w-100">
-                                                                    <input type="submit" name="imei_send" value="Submit IMEIs" class="form-control form-control-sm w-100" form="dispatch_{{ $i."_".$j }}">
-                                                                </div>
-                                                            </form>
-                                                        @endif
+                                                            @endforeach
+                                                            <div class="w-100">
+                                                                <input type="submit" name="imei_send" value="Submit IMEIs" class="form-control form-control-sm w-100" form="dispatch_{{ $i."_".$j }}">
+                                                            </div>
+                                                        </form>
                                                     @endif
-                                                </td>
                                                 @endif
-                                                <td style="width:220px">{{ $order->created_at}} <br> {{ $order->processed_at}}<br>
-                                                    @if ($order->tracking_number != null)
-                                                    <a href="{{url('order/track/').'/'.$order->id}}" target="_blank">{{$order->tracking_number}}</a>
+                                            </td>
+                                            @endif
+                                            <td style="width:220px">{{ $order->created_at}} <br> {{ $order->processed_at}}<br>
+                                                @if ($order->tracking_number != null)
+                                                <a href="{{url('order/track/').'/'.$order->id}}" target="_blank">{{$order->tracking_number}}</a>
 
-                                                @endif</td>
+                                            @endif</td>
+                                            <td>
+                                                <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
+                                                <div class="dropdown-menu">
+                                                    <a class="dropdown-item" href="{{url('order')}}/refresh/{{ $order->reference_id }}">Refresh</a>
+                                                    {{-- @if ($item->order->processed_at > $last_hour || $user_id == 1) --}}
+                                                    <a class="dropdown-item" id="correction_{{ $item->id }}" href="javascript:void(0);" data-bs-target="#correction_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}"> Correction </a>
+                                                    {{-- @endif --}}
+                                                    @if (!$item->replacement)
+                                                    <a class="dropdown-item" id="replacement_{{ $item->id }}" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}" data-bs-return="@if($item->check_return) 1 @endif"> Replacement </a>
+                                                    @endif
+                                                    @if ($order->status >= 3)
+
+                                                    <a class="dropdown-item" href="{{url('order')}}/recheck/{{ $order->reference_id }}/true" target="_blank">Invoice</a>
+                                                    @endif
+                                                    @if ($order->status == 6)
+
+                                                    <a class="dropdown-item" href="{{url('order')}}/export_refund_invoice/{{ $order->id }}" target="_blank">Refund Invoice</a>
+                                                    @endif
+                                                    @if ($user_id == 1)
+
+                                                    <a class="dropdown-item" href="{{url('order')}}/recheck/{{ $order->reference_id }}/false/false/null/true" target="_blank">Data</a>
+                                                    @endif
+                                                    <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank">View in Backmarket</a>
+                                                    <a class="dropdown-item" href="#" onclick="window.open('{{url('order')}}/export_invoice_new/{{$order->id}}','_blank','print_popup');">Invoice 2</a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        @php
+                                            $j++;
+                                        @endphp
+                                    @if ($item->replacement)
+                                        @php
+                                            $replacement = $item->replacement;
+                                        @endphp
+                                        @while ($replacement != null)
+                                            @php
+                                                $itm = $replacement;
+                                                $replacement = $replacement->replacement;
+
+                                            @endphp
+
+                                            {{-- @foreach ($order->exchange_items as $ind => $itm) --}}
+
+                                            <tr class="bg-secondary text-white">
+                                                <td colspan="2">{{ $customer->first_name." ".$customer->last_name." ".$customer->phone }}</td>
+
+                                                <td>Exchanged With</td>
                                                 <td>
-                                                    <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
+
+                                                    @if ($itm->variation ?? false)
+                                                        <strong>{{ $itm->variation->sku }}</strong>{{ " - " . $itm->variation->product->model . " - " . (isset($itm->variation->storage)?$storages[$itm->variation->storage] . " - " : null) . (isset($itm->variation->color)?$colors[$itm->variation->color]. " - ":null)}} <strong><u>{{ $grades[$itm->variation->grade] }}</u></strong>
+                                                    @endif
+
+                                                </td>
+                                                <td>{{ $itm->quantity }}</td>
+                                                <td>
+                                                    {{ $order->order_status->name }}
+                                                    @isset($itm->stock->imei) {{ $itm->stock->imei }}&nbsp; @endisset
+                                                    @isset($itm->stock->serial_number) {{ $itm->stock->serial_number }}&nbsp; @endisset
+                                                </td>
+
+                                                <td title="{{$itm->id}}">{{ $itm->created_at }}</td>
+                                                <td>
+                                                    <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical text-white tx-18"></i></a>
                                                     <div class="dropdown-menu">
-                                                        <a class="dropdown-item" href="{{url('order')}}/refresh/{{ $order->reference_id }}">Refresh</a>
-                                                        {{-- @if ($item->order->processed_at > $last_hour || $user_id == 1) --}}
-                                                        <a class="dropdown-item" id="correction_{{ $item->id }}" href="javascript:void(0);" data-bs-target="#correction_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}"> Correction </a>
-                                                        {{-- @endif --}}
-                                                        @if (!$item->replacement)
-                                                        <a class="dropdown-item" id="replacement_{{ $item->id }}" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}" data-bs-return="@if($item->check_return) 1 @endif"> Replacement </a>
-                                                        @endif
-                                                        @if ($order->status >= 3)
-
-                                                        <a class="dropdown-item" href="{{url('order')}}/recheck/{{ $order->reference_id }}/true" target="_blank">Invoice</a>
-                                                        @endif
-                                                        @if ($order->status == 6)
-
-                                                        <a class="dropdown-item" href="{{url('order')}}/export_refund_invoice/{{ $order->id }}" target="_blank">Refund Invoice</a>
-                                                        @endif
-                                                        @if ($user_id == 1)
-
-                                                        <a class="dropdown-item" href="{{url('order')}}/recheck/{{ $order->reference_id }}/false/false/null/true" target="_blank">Data</a>
-                                                        @endif
-                                                        <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank">View in Backmarket</a>
-                                                        <a class="dropdown-item" href="#" onclick="window.open('{{url('order')}}/export_invoice_new/{{$order->id}}','_blank','print_popup');">Invoice 2</a>
+                                                        <a class="dropdown-item" href="{{url('order/delete_replacement_item').'/'.$itm->id}}"><i class="fe fe-trash-2 me-2"></i>Delete</a>
+                                                        <a class="dropdown-item" id="replacement_{{ $itm->id }}" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $itm->order->reference_id }}" data-bs-item="{{ $itm->id }}" data-bs-return="@if($itm->check_return) 1 @endif"> Replacement </a>
+                                                        <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
+                                                        {{-- <a class="dropdown-item" href="javascript:void(0);"><i class="fe fe-trash-2 me-2"></i>Delete</a> --}}
                                                     </div>
                                                 </td>
                                             </tr>
-                                            @php
-                                                $j++;
-                                            @endphp
-                                        @if ($item->replacement)
-                                            @php
-                                                $replacement = $item->replacement;
-                                            @endphp
-                                            @while ($replacement != null)
-                                                @php
-                                                    $itm = $replacement;
-                                                    $replacement = $replacement->replacement;
+                                        {{-- @endforeach --}}
+                                        @endwhile
+                                    @elseif ($order->exchange_items->count() > 0)
+                                        @foreach ($order->exchange_items as $ind => $itm)
 
-                                                @endphp
+                                            <tr class="bg-secondary text-white">
+                                                    <td colspan="2">{{ $customer->first_name." ".$customer->last_name." ".$customer->phone }}</td>
 
-                                                {{-- @foreach ($order->exchange_items as $ind => $itm) --}}
+                                                <td>Exchanged With</td>
+                                                <td>
 
-                                                <tr class="bg-secondary text-white">
-                                                    <td colspan="2">{{ $order->customer->first_name." ".$order->customer->last_name." ".$order->customer->phone }}</td>
+                                                    @if ($itm->variation ?? false)
+                                                        <strong>{{ $itm->variation->sku }}</strong>{{ " - " . $itm->variation->product->model . " - " . (isset($itm->variation->storage)?$storages[$itm->variation->storage] . " - " : null) . (isset($itm->variation->color)?$colors[$itm->variation->color]. " - ":null)}} <strong><u>{{ $grades[$itm->variation->grade] }}</u></strong>
+                                                    @endif
 
-                                                    <td>Exchanged With</td>
-                                                    <td>
+                                                </td>
+                                                <td>{{ $itm->quantity }}</td>
+                                                <td>
+                                                    {{ $order->order_status->name }}
+                                                    @isset($itm->stock->imei) {{ $itm->stock->imei }}&nbsp; @endisset
+                                                    @isset($itm->stock->serial_number) {{ $itm->stock->serial_number }}&nbsp; @endisset
+                                                </td>
 
-                                                        @if ($itm->variation ?? false)
-                                                            <strong>{{ $itm->variation->sku }}</strong>{{ " - " . $itm->variation->product->model . " - " . (isset($itm->variation->storage)?$storages[$itm->variation->storage] . " - " : null) . (isset($itm->variation->color)?$colors[$itm->variation->color]. " - ":null)}} <strong><u>{{ $grades[$itm->variation->grade] }}</u></strong>
-                                                        @endif
+                                                <td title="{{$itm->id}}">{{ $itm->created_at }}</td>
+                                                <td>
+                                                    <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical text-white tx-18"></i></a>
+                                                    <div class="dropdown-menu">
+                                                        <a class="dropdown-item" href="{{url('order/delete_replacement_item').'/'.$itm->id}}"><i class="fe fe-trash-2 me-2"></i>Delete</a>
+                                                        <a class="dropdown-item" id="replacement_{{ $itm->id }}" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $itm->order->reference_id }}" data-bs-item="{{ $itm->id }}" data-bs-return="@if($itm->check_return) 1 @endif"> Replacement </a>
+                                                        <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
+                                                        {{-- <a class="dropdown-item" href="javascript:void(0);"><i class="fe fe-trash-2 me-2"></i>Delete</a> --}}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    @endif
+                                    @if (isset($itm) && $itm->replacement)
+                                                    @php
+                                                        if ($item->replacement){
+                                                            $replacement = $item->replacement;
+                                                        }else{
+                                                            $replacement = $itm->replacement;
+                                                        }
 
-                                                    </td>
-                                                    <td>{{ $itm->quantity }}</td>
-                                                    <td>
-                                                        {{ $order->order_status->name }}
-                                                        @isset($itm->stock->imei) {{ $itm->stock->imei }}&nbsp; @endisset
-                                                        @isset($itm->stock->serial_number) {{ $itm->stock->serial_number }}&nbsp; @endisset
-                                                    </td>
-
-                                                    <td title="{{$itm->id}}">{{ $itm->created_at }}</td>
-                                                    <td>
-                                                        <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical text-white tx-18"></i></a>
-                                                        <div class="dropdown-menu">
-                                                            <a class="dropdown-item" href="{{url('order/delete_replacement_item').'/'.$itm->id}}"><i class="fe fe-trash-2 me-2"></i>Delete</a>
-                                                            <a class="dropdown-item" id="replacement_{{ $itm->id }}" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $itm->order->reference_id }}" data-bs-item="{{ $itm->id }}" data-bs-return="@if($itm->check_return) 1 @endif"> Replacement </a>
-                                                            <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
-                                                            {{-- <a class="dropdown-item" href="javascript:void(0);"><i class="fe fe-trash-2 me-2"></i>Delete</a> --}}
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            {{-- @endforeach --}}
-                                            @endwhile
-                                        @elseif ($order->exchange_items->count() > 0)
-                                            @foreach ($order->exchange_items as $ind => $itm)
-
-                                                <tr class="bg-secondary text-white">
-                                                        <td colspan="2">{{ $order->customer->first_name." ".$order->customer->last_name." ".$order->customer->phone }}</td>
-
-                                                    <td>Exchanged With</td>
-                                                    <td>
-
-                                                        @if ($itm->variation ?? false)
-                                                            <strong>{{ $itm->variation->sku }}</strong>{{ " - " . $itm->variation->product->model . " - " . (isset($itm->variation->storage)?$storages[$itm->variation->storage] . " - " : null) . (isset($itm->variation->color)?$colors[$itm->variation->color]. " - ":null)}} <strong><u>{{ $grades[$itm->variation->grade] }}</u></strong>
-                                                        @endif
-
-                                                    </td>
-                                                    <td>{{ $itm->quantity }}</td>
-                                                    <td>
-                                                        {{ $order->order_status->name }}
-                                                        @isset($itm->stock->imei) {{ $itm->stock->imei }}&nbsp; @endisset
-                                                        @isset($itm->stock->serial_number) {{ $itm->stock->serial_number }}&nbsp; @endisset
-                                                    </td>
-
-                                                    <td title="{{$itm->id}}">{{ $itm->created_at }}</td>
-                                                    <td>
-                                                        <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical text-white tx-18"></i></a>
-                                                        <div class="dropdown-menu">
-                                                            <a class="dropdown-item" href="{{url('order/delete_replacement_item').'/'.$itm->id}}"><i class="fe fe-trash-2 me-2"></i>Delete</a>
-                                                            <a class="dropdown-item" id="replacement_{{ $itm->id }}" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $itm->order->reference_id }}" data-bs-item="{{ $itm->id }}" data-bs-return="@if($itm->check_return) 1 @endif"> Replacement </a>
-                                                            <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
-                                                            {{-- <a class="dropdown-item" href="javascript:void(0);"><i class="fe fe-trash-2 me-2"></i>Delete</a> --}}
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        @endif
-                                        @if (isset($itm) && $itm->replacement)
+                                                    @endphp
+                                                    @while ($replacement != null)
                                                         @php
-                                                            if ($item->replacement){
-                                                                $replacement = $item->replacement;
-                                                            }else{
-                                                                $replacement = $itm->replacement;
-                                                            }
+                                                            $itm = $replacement;
+                                                            $replacement = $replacement->replacement;
 
                                                         @endphp
-                                                        @while ($replacement != null)
-                                                            @php
-                                                                $itm = $replacement;
-                                                                $replacement = $replacement->replacement;
 
-                                                            @endphp
-
-                                                            {{-- @foreach ($order->exchange_items as $ind => $itm) --}}
-
-                                                            <tr class="bg-secondary text-white">
-                                                                <td colspan="2">{{ $order->customer->first_name." ".$order->customer->last_name." ".$order->customer->phone }}</td>
-
-                                                                <td>Exchanged With</td>
-                                                                <td>
-
-                                                                    @if ($itm->variation ?? false)
-                                                                        <strong>{{ $itm->variation->sku }}</strong>{{ " - " . $itm->variation->product->model . " - " . (isset($itm->variation->storage)?$storages[$itm->variation->storage] . " - " : null) . (isset($itm->variation->color)?$colors[$itm->variation->color]. " - ":null)}} <strong><u>{{ $grades[$itm->variation->grade] }}</u></strong>
-                                                                    @endif
-
-                                                                </td>
-                                                                <td>{{ $itm->quantity }}</td>
-                                                                <td>
-                                                                    {{ $order->order_status->name }}
-                                                                    @isset($itm->stock->imei) {{ $itm->stock->imei }}&nbsp; @endisset
-                                                                    @isset($itm->stock->serial_number) {{ $itm->stock->serial_number }}&nbsp; @endisset
-                                                                </td>
-
-                                                                <td title="{{$itm->id}}">{{ $itm->created_at }}</td>
-                                                                <td>
-                                                                    <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical text-white tx-18"></i></a>
-                                                                    <div class="dropdown-menu">
-                                                                        <a class="dropdown-item" href="{{url('order/delete_replacement_item').'/'.$itm->id}}"><i class="fe fe-trash-2 me-2"></i>Delete</a>
-                                                                        <a class="dropdown-item" id="replacement_{{ $itm->id }}" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $itm->order->reference_id }}" data-bs-item="{{ $itm->id }}" data-bs-return="@if($itm->check_return) 1 @endif"> Replacement </a>
-                                                                        <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
-                                                                        {{-- <a class="dropdown-item" href="javascript:void(0);"><i class="fe fe-trash-2 me-2"></i>Delete</a> --}}
-                                                                    </div>
-                                                                </td>
-                                                            </tr>
-                                                        {{-- @endforeach --}}
-                                                        @endwhile
-                                        @endif
-                                        @endforeach
-                                        @if ($order->customer->orders->count() > 1)
-                                            @php
-                                                $def = 0;
-                                            @endphp
-                                            @foreach ($order->customer->orders as $ins => $ord)
-                                                @if ($ord->id != $order->id)
-
-                                                    @foreach ($ord->order_items as $ind => $itm)
+                                                        {{-- @foreach ($order->exchange_items as $ind => $itm) --}}
 
                                                         <tr class="bg-secondary text-white">
-                                                            @if (!$def)
-                                                                @php
-                                                                    $def = 1;
-                                                                @endphp
-                                                                <td rowspan="{{ count($order->customer->orders)-1 }}" colspan="2">{{ $ord->customer->first_name." ".$ord->customer->last_name." ".$ord->customer->phone }}</td>
-                                                            @endif
-                                                            <td>{{ $ord->reference_id }}</td>
+                                                            <td colspan="2">{{ $customer->first_name." ".$customer->last_name." ".$customer->phone }}</td>
+
+                                                            <td>Exchanged With</td>
                                                             <td>
 
                                                                 @if ($itm->variation ?? false)
                                                                     <strong>{{ $itm->variation->sku }}</strong>{{ " - " . $itm->variation->product->model . " - " . (isset($itm->variation->storage)?$storages[$itm->variation->storage] . " - " : null) . (isset($itm->variation->color)?$colors[$itm->variation->color]. " - ":null)}} <strong><u>{{ $grades[$itm->variation->grade] }}</u></strong>
                                                                 @endif
 
-                                                                @if ($itm->care_id != null)
-                                                                    <a class="" href="https://backmarket.fr/bo_merchant/customer-request/{{ $itm->care_id }}" target="_blank"><strong class="text-white">Conversation</strong></a>
-                                                                @endif
                                                             </td>
                                                             <td>{{ $itm->quantity }}</td>
                                                             <td>
-                                                                {{ $ord->order_status->name }}
+                                                                {{ $order->order_status->name }}
                                                                 @isset($itm->stock->imei) {{ $itm->stock->imei }}&nbsp; @endisset
                                                                 @isset($itm->stock->serial_number) {{ $itm->stock->serial_number }}&nbsp; @endisset
                                                             </td>
 
-                                                            <td>{{ $ord->created_at }}</td>
+                                                            <td title="{{$itm->id}}">{{ $itm->created_at }}</td>
                                                             <td>
                                                                 <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical text-white tx-18"></i></a>
                                                                 <div class="dropdown-menu">
-                                                                    <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $ord->reference_id }}&see-order-details={{ $ord->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
+                                                                    <a class="dropdown-item" href="{{url('order/delete_replacement_item').'/'.$itm->id}}"><i class="fe fe-trash-2 me-2"></i>Delete</a>
+                                                                    <a class="dropdown-item" id="replacement_{{ $itm->id }}" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $itm->order->reference_id }}" data-bs-item="{{ $itm->id }}" data-bs-return="@if($itm->check_return) 1 @endif"> Replacement </a>
+                                                                    <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
+                                                                    {{-- <a class="dropdown-item" href="javascript:void(0);"><i class="fe fe-trash-2 me-2"></i>Delete</a> --}}
                                                                 </div>
                                                             </td>
                                                         </tr>
-                                                    @endforeach
-                                                @endif
-                                            @endforeach
-                                        @endif
-                                        @php
-                                            $i ++;
-                                        @endphp
+                                                    {{-- @endforeach --}}
+                                                    @endwhile
+                                    @endif
                                     @endforeach
-                                </tbody>
-                            </table>
+                                    @if ($customer->orders->count() > 1)
+                                        @php
+                                            $def = 0;
+                                        @endphp
+                                        @foreach ($customer->orders as $ins => $ord)
+                                            @if ($ord->id != $order->id)
+
+                                                @foreach ($ord->order_items as $ind => $itm)
+
+                                                    <tr class="bg-secondary text-white">
+                                                        @if (!$def)
+                                                            @php
+                                                                $def = 1;
+                                                            @endphp
+                                                            <td rowspan="{{ count($customer->orders)-1 }}" colspan="2">{{ $ord->customer->first_name." ".$ord->customer->last_name." ".$ord->customer->phone }}</td>
+                                                        @endif
+                                                        <td>{{ $ord->reference_id }}</td>
+                                                        <td>
+
+                                                            @if ($itm->variation ?? false)
+                                                                <strong>{{ $itm->variation->sku }}</strong>{{ " - " . $itm->variation->product->model . " - " . (isset($itm->variation->storage)?$storages[$itm->variation->storage] . " - " : null) . (isset($itm->variation->color)?$colors[$itm->variation->color]. " - ":null)}} <strong><u>{{ $grades[$itm->variation->grade] }}</u></strong>
+                                                            @endif
+
+                                                            @if ($itm->care_id != null)
+                                                                <a class="" href="https://backmarket.fr/bo_merchant/customer-request/{{ $itm->care_id }}" target="_blank"><strong class="text-white">Conversation</strong></a>
+                                                            @endif
+                                                        </td>
+                                                        <td>{{ $itm->quantity }}</td>
+                                                        <td>
+                                                            {{ $ord->order_status->name }}
+                                                            @isset($itm->stock->imei) {{ $itm->stock->imei }}&nbsp; @endisset
+                                                            @isset($itm->stock->serial_number) {{ $itm->stock->serial_number }}&nbsp; @endisset
+                                                        </td>
+
+                                                        <td>{{ $ord->created_at }}</td>
+                                                        <td>
+                                                            <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical text-white tx-18"></i></a>
+                                                            <div class="dropdown-menu">
+                                                                <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $ord->reference_id }}&see-order-details={{ $ord->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            @endif
+                                        @endforeach
+                                    @endif
+                                    @php
+                                        $i ++;
+                                    @endphp
+                                @endforeach
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="4">
+                                        {{ $orders->onEachSide(1)->links() }} {{ __('locale.From') }} {{$orders->firstItem()}} {{ __('locale.To') }} {{$orders->lastItem()}} {{ __('locale.Out Of') }} {{$orders->total()}}
+
+                                    </td>
+                                    <td colspan="4">
+                                        Total Items in this page: {{ $total_items }}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
                         <br>
-                        {{ $orders->onEachSide(1)->links() }} {{ __('locale.From') }} {{$orders->firstItem()}} {{ __('locale.To') }} {{$orders->lastItem()}} {{ __('locale.Out Of') }} {{$orders->total()}}
                     </div>
 
                     </div>
@@ -827,13 +845,6 @@
                 </div>
             </div>
         </div>
-        @script
-        <script>
-            setInterval(() => {
-                $wire.$refresh()
-            }, 2000)
-        </script>
-        @endscript
     @endsection
 
     @section('scripts')
