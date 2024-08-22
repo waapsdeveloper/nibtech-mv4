@@ -464,7 +464,7 @@
 							<div class="card custom-card overflow-hidden">
 								<div class="card-header border-bottom-0">
 									<div class="d-flex justify-content-between">
-										<h3 class="card-title mb-2 ">Sales for past 6 months</h3>
+										<h3 class="card-title mb-2 ">Sales for past 3 months</h3>
                                         <a href="{{url('index/refresh_sales_chart')}}">Refresh</a>
 									</div>
 								</div>
