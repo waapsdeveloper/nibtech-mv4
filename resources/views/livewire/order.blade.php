@@ -745,7 +745,7 @@
                                         {{ $orders->onEachSide(1)->links() }} {{ __('locale.From') }} {{$orders->firstItem()}} {{ __('locale.To') }} {{$orders->lastItem()}} {{ __('locale.Out Of') }} {{$orders->total()}}
 
                                     </td>
-                                    <td colspan="4">
+                                    <td colspan="4" align="right">
                                         Total Items in this page: {{ $total_items }}
                                     </td>
                                 </tr>
