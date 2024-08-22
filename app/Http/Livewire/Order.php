@@ -182,7 +182,7 @@ class Order extends Component
                 ->orderBy('variation.storage', 'ASC')
                 ->orderBy('variation.color', 'ASC')
                 ->orderBy('variation.grade', 'ASC')
-                // ->orderBy('variation.sku', 'ASC')
+                ->orderBy('variation.sku', 'ASC')
                 ->select('orders.id','orders.reference_id','orders.customer_id','orders.delivery_note_url','orders.label_url','orders.tracking_number','orders.status','orders.processed_by','orders.created_at','orders.processed_at');
         })
         // })
