@@ -49,7 +49,7 @@ class Order extends Component
         $data['colors'] = Color_model::pluck('name','id');
         $data['grades'] = Grade_model::pluck('name','id');
         $data['last_hour'] = Carbon::now()->subHour(2);
-        $data['admins'] = Admin_model::where('id','!=',1)->pluck('first_name','id');
+        $data['admins'] = Admin_model::pluck('first_name','id');
         $user_id = session('user_id');
         $data['user_id'] = $user_id;
         $data['pending_orders_count'] = Order_model::where('order_type_id',3)->where('status',2)->count();
@@ -182,6 +182,7 @@ class Order extends Component
                 ->orderBy('variation.storage', 'ASC')
                 ->orderBy('variation.color', 'ASC')
                 ->orderBy('variation.grade', 'ASC')
+                // ->orderBy('variation.sku', 'ASC')
                 ->select('orders.id','orders.reference_id','orders.customer_id','orders.delivery_note_url','orders.label_url','orders.tracking_number','orders.status','orders.processed_by','orders.created_at','orders.processed_at');
         })
         // })

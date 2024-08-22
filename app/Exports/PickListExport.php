@@ -54,31 +54,35 @@ class PickListExport
             ->when(request('status') != '', function ($q) {
                 return $q->where('orders.status', request('status'));
             })
+            // ->when(request('order_id') != '', function ($q) {
+            //     if(str_contains(request('order_id'),'<')){
+            //         $order_ref = str_replace('<','',request('order_id'));
+            //         return $q->where('orders.reference_id', '<', $order_ref);
+            //     }elseif(str_contains(request('order_id'),'>')){
+            //         $order_ref = str_replace('>','',request('order_id'));
+            //         return $q->where('orders.reference_id', '>', $order_ref);
+            //     }elseif(str_contains(request('order_id'),'<=')){
+            //         $order_ref = str_replace('<=','',request('order_id'));
+            //         return $q->where('orders.reference_id', '<=', $order_ref);
+            //     }elseif(str_contains(request('order_id'),'>=')){
+            //         $order_ref = str_replace('>=','',request('order_id'));
+            //         return $q->where('orders.reference_id', '>=', $order_ref);
+            //     }elseif(str_contains(request('order_id'),'-')){
+            //         $order_ref = explode('-',request('order_id'));
+            //         return $q->whereBetween('orders.reference_id', $order_ref);
+            //     }elseif(str_contains(request('order_id'),',')){
+            //         $order_ref = explode(',',request('order_id'));
+            //         return $q->whereIn('orders.reference_id', $order_ref);
+            //     }elseif(str_contains(request('order_id'),' ')){
+            //         $order_ref = explode(' ',request('order_id'));
+            //         return $q->whereIn('orders.reference_id', $order_ref);
+            //     }else{
+            //         return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
+            //     }
+            // })
+
             ->when(request('order_id') != '', function ($q) {
-                if(str_contains(request('order_id'),'<')){
-                    $order_ref = str_replace('<','',request('order_id'));
-                    return $q->where('orders.reference_id', '<', $order_ref);
-                }elseif(str_contains(request('order_id'),'>')){
-                    $order_ref = str_replace('>','',request('order_id'));
-                    return $q->where('orders.reference_id', '>', $order_ref);
-                }elseif(str_contains(request('order_id'),'<=')){
-                    $order_ref = str_replace('<=','',request('order_id'));
-                    return $q->where('orders.reference_id', '<=', $order_ref);
-                }elseif(str_contains(request('order_id'),'>=')){
-                    $order_ref = str_replace('>=','',request('order_id'));
-                    return $q->where('orders.reference_id', '>=', $order_ref);
-                }elseif(str_contains(request('order_id'),'-')){
-                    $order_ref = explode('-',request('order_id'));
-                    return $q->whereBetween('orders.reference_id', $order_ref);
-                }elseif(str_contains(request('order_id'),',')){
-                    $order_ref = explode(',',request('order_id'));
-                    return $q->whereIn('orders.reference_id', $order_ref);
-                }elseif(str_contains(request('order_id'),' ')){
-                    $order_ref = explode(' ',request('order_id'));
-                    return $q->whereIn('orders.reference_id', $order_ref);
-                }else{
-                    return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
-                }
+                return $this->filterOrderId($q, request('order_id'));
             })
             ->when(request('last_order') != '', function ($q) {
                 return $q->where('orders.reference_id', '>', request('last_order'));
@@ -100,9 +104,30 @@ class PickListExport
             ->orderBy('variation.storage', 'ASC')
             ->orderBy('variation.color', 'ASC')
             ->orderBy('variation.grade', 'ASC')
+            ->orderBy('variation.sku', 'ASC')
             // ->orderBy('grade.name', 'ASC')
             ->get();
 
+        // Calculate the total number of distinct orders
+        $totalOrders = DB::table('orders')
+            ->where('deleted_at', null)
+            ->where('order_type_id', 3)
+            ->when(request('start_date') != '', function ($q) use ($start_date) {
+                return $q->where('created_at', '>=', $start_date);
+            })
+            ->when(request('end_date') != '', function ($q) use ($end_date) {
+                return $q->where('created_at', '<=', $end_date);
+            })
+            ->when(request('status') != '', function ($q) {
+                return $q->where('status', request('status'));
+            })
+            ->when(request('order_id') != '', function ($q) {
+                return $this->filterOrderId($q, request('order_id'));
+            })
+            ->when(request('last_order') != '', function ($q) {
+                return $q->where('reference_id', '>', request('last_order'));
+            })
+            ->count();
         // Create a TCPDF instance
         $pdf = new TCPDF();
         $pdf->SetMargins(10, 10, 10);
@@ -154,6 +179,10 @@ class PickListExport
         $pdf->Ln();
         $pdf->Cell(110, 10, "Total Item");
         $pdf->Cell(22, 10, $j);
+
+        $pdf->Ln();
+        $pdf->Cell(110, 10, "Total Orders", 0, 0);
+        $pdf->Cell(22, 10, $totalOrders);
 
         $pdf->Ln();
         $pdf->Cell(110, 10, "Start Date & Time");
@@ -210,6 +239,35 @@ class PickListExport
         imagepng($combinedImage, $path . $filename);
 
         return $path . $filename;
+    }
+
+    private function filterOrderId($query, $order_id)
+    {
+        // Function to handle complex order_id filtering logic
+        if (str_contains($order_id, '<')) {
+            $order_ref = str_replace('<', '', $order_id);
+            return $query->where('orders.reference_id', '<', $order_ref);
+        } elseif (str_contains($order_id, '>')) {
+            $order_ref = str_replace('>', '', $order_id);
+            return $query->where('orders.reference_id', '>', $order_ref);
+        } elseif (str_contains($order_id, '<=')) {
+            $order_ref = str_replace('<=', '', $order_id);
+            return $query->where('orders.reference_id', '<=', $order_ref);
+        } elseif (str_contains($order_id, '>=')) {
+            $order_ref = str_replace('>=', '', $order_id);
+            return $query->where('orders.reference_id', '>=', $order_ref);
+        } elseif (str_contains($order_id, '-')) {
+            $order_ref = explode('-', $order_id);
+            return $query->whereBetween('orders.reference_id', $order_ref);
+        } elseif (str_contains($order_id, ',')) {
+            $order_ref = explode(',', $order_id);
+            return $query->whereIn('orders.reference_id', $order_ref);
+        } elseif (str_contains($order_id, ' ')) {
+            $order_ref = explode(' ', $order_id);
+            return $query->whereIn('orders.reference_id', $order_ref);
+        } else {
+            return $query->where('orders.reference_id', 'LIKE', $order_id . '%');
+        }
     }
 
 }

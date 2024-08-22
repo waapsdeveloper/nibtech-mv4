@@ -26,6 +26,7 @@ class LabelsExport
                 ->orderBy('variation.storage', 'DESC')
                 ->orderBy('variation.color', 'DESC')
                 ->orderBy('variation.grade', 'DESC')
+                // ->orderBy('variation.sku', 'DESC')
                 ->orderBy('orders.reference_id', 'ASC');
         })
         ->when(request('sort') == 1 || request('sort') == '', function ($q) {
