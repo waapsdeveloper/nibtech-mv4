@@ -52,8 +52,8 @@
                             </div>
                             <datalist id="product-menu">
                                 <option value="">Products</option>
-                                @foreach ($products as $product)
-                                    <option value="{{ $product->id }}" @if(isset($_GET['product']) && $product->id == $_GET['product']) {{'selected'}}@endif>{{ $product->model }}</option>
+                                @foreach ($products as $id => $product)
+                                    <option value="{{ $id }}" @if(isset($_GET['product']) && $id == $_GET['product']) {{'selected'}}@endif>{{ $product }}</option>
                                 @endforeach
                             </datalist>
                         </div>
