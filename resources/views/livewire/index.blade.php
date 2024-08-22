@@ -135,8 +135,8 @@
                                                             <input type="text" name="update[product_id]" list="models" class="form-select form-select-sm" required>
                                                             <datalist id="models">
                                                                 <option value="">None</option>
-                                                                @foreach ($products as $prod)
-                                                                    <option value="{{ $prod->id }}" {{ $product->product_id == $prod->id ? 'selected' : '' }}>{{ $prod->series." ".$prod->model }}</option>
+                                                                @foreach ($products as $id => $prod)
+                                                                    <option value="{{ $id }}" {{ $product->product_id == $id ? 'selected' : '' }}>{{ $prod->series." ".$prod }}</option>
                                                                 @endforeach
                                                             </datalist>
                                                         </td>
@@ -272,10 +272,11 @@
                                                     @foreach ($top_products as $top => $product)
                                                         @php
                                                             $weighted_average += $product->total_quantity_sold / $total * $product->average_price;
+                                                            $variation = $product->variation;
                                                         @endphp
                                                         <tr>
                                                             <td>{{ $top+1 }}</td>
-                                                            <td>{{ $product->variation->product->model ?? null }} - {{ $product->variation->storage_id->name ?? null }} - {{ $product->variation->color_id->name ?? null }} - {{ $product->variation->grade_id->name ?? null }} - {{ $product->variation->sku ?? null }}</td>
+                                                            <td>{{ $products[$variation->product_id] ?? null }} - {{ $storages[$variation->storage] ?? null }} - {{ $colors[$variation->color] ?? null }} - {{ $grades[$variation->grade] ?? null }} - {{ $variation->sku ?? null }}</td>
                                                             <td>{{ $product->total_quantity_sold }}</td>
                                                             @if (session('user')->hasPermission('view_price'))
                                                             <td>€{{ number_format($product->average_price,2) }}</td>
@@ -286,9 +287,9 @@
                                                                 <div class="dropdown-menu">
                                                                     {{-- <a class="dropdown-item" href="{{url('order')}}/refresh/{{ $order->reference_id }}"><i class="fe fe-arrows-rotate me-2 "></i>Refresh</a> --}}
                                                                     {{-- <a class="dropdown-item" href="{{ $order->delivery_note_url }}" target="_blank"><i class="fe fe-arrows-rotate me-2 "></i>Delivery Note</a> --}}
-                                                                    <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/listings/active?sku={{ $product->variation->sku }}" target="_blank"><i class="fe fe-caret me-2"></i>View Listing in BackMarket</a>
-                                                                    <a class="dropdown-item" href="{{url('order')}}?sku={{ $product->variation->sku }}&start_date={{ $start_date }}&end_date={{ $end_date }}" target="_blank"><i class="fe fe-caret me-2"></i>View Orders</a>
-                                                                    <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?sku={{ $product->variation->sku }}&startDate={{ $start_date }}&endDate={{ $end_date }}" target="_blank"><i class="fe fe-caret me-2"></i>View Orders in BackMarket</a>
+                                                                    <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/listings/active?sku={{ $variation->sku }}" target="_blank"><i class="fe fe-caret me-2"></i>View Listing in BackMarket</a>
+                                                                    <a class="dropdown-item" href="{{url('order')}}?sku={{ $variation->sku }}&start_date={{ $start_date }}&end_date={{ $end_date }}" target="_blank"><i class="fe fe-caret me-2"></i>View Orders</a>
+                                                                    <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?sku={{ $variation->sku }}&startDate={{ $start_date }}&endDate={{ $end_date }}" target="_blank"><i class="fe fe-caret me-2"></i>View Orders in BackMarket</a>
                                                                     {{-- <a class="dropdown-item" href="javascript:void(0);"><i class="fe fe-trash-2 me-2"></i>Delete</a> --}}
                                                                 </div>
                                                             </td>
