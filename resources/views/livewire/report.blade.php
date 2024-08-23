@@ -196,11 +196,11 @@
                             @foreach ($aggregated_sales as $s => $sales)
                                 @php
                                     $total_sale_orders += $sales->orders_qty;
-                                    $total_approved_sale_orders += $sales->approved_orders_qty;
+                                    // $total_approved_sale_orders += $sales->approved_orders_qty;
                                     $total_sale_eur_items += $sales->eur_items_sum;
-                                    $total_approved_sale_eur_items += $sales->eur_approved_items_sum;
+                                    // $total_approved_sale_eur_items += $sales->eur_approved_items_sum;
                                     $total_sale_gbp_items += $sales->gbp_items_sum;
-                                    $total_approved_sale_gbp_items += $sales->gbp_approved_items_sum;
+                                    // $total_approved_sale_gbp_items += $sales->gbp_approved_items_sum;
                                     $total_sale_cost += $aggregated_sales_cost[$sales->category_id];
                                     $total_repair_cost += $sales->items_repair_sum;
                                     $total_eur_profit += $sales->eur_items_sum - $aggregated_sales_cost[$sales->category_id] - $sales->items_repair_sum;
