@@ -2,24 +2,10 @@
 
 namespace App\Console\Commands;
 
-use App\Http\Controllers\BackMarketAPIController;
-use App\Http\Livewire\Listing;
-use App\Models\Order_model;
-use App\Models\Order_item_model;
-use App\Models\Customer_model;
-use App\Models\Currency_model;
-use App\Models\Country_model;
-use App\Models\Listing_model;
-use App\Models\Process_model;
-use App\Models\Process_stock_model;
-use App\Models\Variation_model;
 use App\Models\Stock_model;
-use App\Models\Stock_operations_model;
-use Carbon\Carbon;
 
 
 use Illuminate\Console\Command;
-use GuzzleHttp\Client;
 
 class FunctionsDaily extends Command
 {
@@ -66,7 +52,7 @@ class FunctionsDaily extends Command
         // }
 
 
-        $stocks = Stock_model::where('status',2)->where('order_id','!=',null)->where('sale_order_id',null)->get();
+        $stocks = Stock_model::where('status',2)->where('order_id','!=',null)->where('sale_order_id',null)->orderByDesc('id')->get();
         foreach($stocks as $stock){
 
             $last_item = $stock->last_item();
