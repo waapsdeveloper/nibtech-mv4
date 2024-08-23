@@ -206,8 +206,15 @@ class PickListExport
 
     private function generateBarcodeWithSku($barcodeGenerator, $sku)
     {
+
+        // Sanitize SKU to remove any special characters that may cause issues
+        $sanitizedSku = preg_replace('/[^A-Za-z0-9_\-]/', '_', $sku);
+
         // Generate barcode image
-        $barcodeImage = imagecreatefromstring($barcodeGenerator->getBarcode($sku, $barcodeGenerator::TYPE_CODE_128));
+        $barcodeImage = imagecreatefromstring($barcodeGenerator->getBarcode($sanitizedSku, $barcodeGenerator::TYPE_CODE_128));
+
+        // Generate barcode image
+        // $barcodeImage = imagecreatefromstring($barcodeGenerator->getBarcode($sku, $barcodeGenerator::TYPE_CODE_128));
 
         // Create a new image with space for SKU below the barcode
         $combinedImageWidth = imagesx($barcodeImage) + 20; // Adjust the space as needed
