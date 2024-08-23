@@ -243,7 +243,7 @@ class PickListExport
         // Save the combined image
         $path = storage_path('app/barcodes/');
         $filename = $sku . '.png';
-        imagepng($combinedImage, $path . $filename);
+        imagepng($combinedImage, "'".$path . $filename."'");
 
         return $path . $filename;
     }
