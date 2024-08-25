@@ -689,7 +689,19 @@ class Report extends Component
                 DB::raw('GROUP_CONCAT(stock.id) as stock_ids'),
                 DB::raw('SUM(CASE WHEN process.process_type_id = 9 THEN process_stock.price ELSE 0 END) as items_repair_sum')
             )
-            ->whereBetween('orders.created_at', [$start_date, $end_date])
+            ->where(function ($query) use ($start_date, $end_date) {
+                $query->where(function ($subQuery) use ($start_date, $end_date) {
+                    // Where order_type_id is 3, filter by processed_at
+                    $subQuery->where('orders.order_type_id', 3)
+                             ->whereBetween('orders.processed_at', [$start_date, $end_date]);
+                })
+                ->orWhere(function ($subQuery) use ($start_date, $end_date) {
+                    // For other order_type_ids, filter by created_at
+                    $subQuery->where('orders.order_type_id', '!=', 3)
+                             ->whereBetween('orders.created_at', [$start_date, $end_date]);
+                });
+            })
+            // ->whereBetween('orders.created_at', [$start_date, $end_date])
             ->whereIn('variation.id', $variation_ids)
             ->whereIn('orders.order_type_id', [2,3,5])
             ->where('stock.status',2)
