@@ -314,11 +314,13 @@ class Index extends Component
                 $dates[$k] = date('25 M', strtotime("-".$i." months")) . " - " . date('05 M', strtotime("+1 months"));
             }
         }
-        echo '<script> sessionStorage.setItem("total2", "' . implode(',', $order) . '");</script>';
-        echo '<script> sessionStorage.setItem("approved2", "' . implode(',', $eur) . '");</script>';
-        echo '<script> sessionStorage.setItem("failed2", "' . implode(',', $gbp) . '");</script>';
-        echo '<script> sessionStorage.setItem("dates2", "' . implode(',', $dates) . '");</script>';
+        echo '<script> ';
+        echo 'sessionStorage.setItem("total2", "' . implode(',', $order) . '");';
+        echo 'sessionStorage.setItem("approved2", "' . implode(',', $eur) . '");';
+        echo 'sessionStorage.setItem("failed2", "' . implode(',', $gbp) . '");';
+        echo 'sessionStorage.setItem("dates2", "' . implode(',', $dates) . '");';
+        echo 'window.location.href = document.referrer; </script>';
         sleep(2);
-        return redirect()->back();
+        // return redirect()->back();
     }
 }
