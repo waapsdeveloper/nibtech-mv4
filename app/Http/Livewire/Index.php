@@ -320,7 +320,7 @@ class Index extends Component
         echo 'sessionStorage.setItem("failed2", "' . implode(',', $gbp) . '");';
         echo 'sessionStorage.setItem("dates2", "' . implode(',', $dates) . '");';
         echo 'window.location.href = document.referrer; </script>';
-        sleep(2);
+        // sleep(2);
         // return redirect()->back();
     }
 }
