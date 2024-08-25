@@ -129,7 +129,7 @@ class Report extends Component
             )
             ->whereBetween('orders.processed_at', [$start_date, $end_date])
             ->whereIn('variation.id', $variation_ids)
-            ->whereIn('orders.order_type_id', [3,5])
+            ->whereIn('orders.order_type_id', [2,3,5])
             ->Where('orders.deleted_at',null)
             ->Where('order_items.deleted_at',null)
             ->Where('stock.deleted_at',null)
