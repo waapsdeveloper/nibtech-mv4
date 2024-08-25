@@ -318,7 +318,7 @@ class Index extends Component
         echo '<script> sessionStorage.setItem("approved2", "' . implode(',', $eur) . '");</script>';
         echo '<script> sessionStorage.setItem("failed2", "' . implode(',', $gbp) . '");</script>';
         echo '<script> sessionStorage.setItem("dates2", "' . implode(',', $dates) . '");</script>';
-
+        sleep(2);
         return redirect()->back();
     }
 }
