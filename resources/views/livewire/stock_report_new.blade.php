@@ -131,7 +131,7 @@
                                         <td>
                                             {{ $i_order->order_type->name }}<br>
                                             {{ $i_order->reference_id }}<br>
-                                            {{ $item->currency_id->name ?? $i_order->currency_id->name }}{{ $item->price }}
+                                            {{ $item->currency_id->sign ?? $i_order->currency_id->sign }}{{ $item->price }}
                                         </td>
                                     @endforeach
                                     {{-- @if (session('user')->hasPermission('view_price'))
