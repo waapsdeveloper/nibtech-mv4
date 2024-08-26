@@ -131,7 +131,9 @@
                                         <td>
                                             {{ $order_types[$i_order->order_type_id] }}<br>
                                             {{ $i_order->reference_id }}<br>
-                                            {{ $currencies[$item->currency] ?? $currencies[$i_order->currency] }}{{ $item->price }}
+                                            {{ $currencies[$item->currency] ?? $currencies[$i_order->currency] }}{{ $item->price }}<br>
+                                            {{ $i_order->created_at }}<br>
+                                            {{ $i_order->processed_at }}
                                         </td>
                                     @endforeach
                                     {{-- @if (session('user')->hasPermission('view_price'))
