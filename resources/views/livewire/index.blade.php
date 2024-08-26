@@ -424,7 +424,7 @@
                             </div>
 								{{-- Welcome Box end --}}
 								{{-- Date search section --}}
-                            @if (session('user')->hasPermission('view_inventory'))
+                            @if (session('user')->hasPermission('dashboard_view_inventory'))
                             <div class="card custom-card">
                                 {{-- <div class="row">
                                     <div class="col-lg-9 overflow-hidden"> --}}
