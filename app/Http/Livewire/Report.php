@@ -372,7 +372,7 @@ class Report extends Component
 
         // // }
 
-        $stocks = Stock_model::whereIn('id',explode(',',request('stock_ids')))->get();
+        $stocks = Stock_model::whereIn('id',explode(',',request('stock_ids')))->with('variation','order_items','order')->get();
         $data['stocks'] = $stocks;
 
         // $aggregates = DB::table('variation')
