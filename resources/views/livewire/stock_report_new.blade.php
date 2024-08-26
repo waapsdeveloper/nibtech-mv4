@@ -129,9 +129,9 @@
                                             $i_order = $item->order;
                                         @endphp
                                         <td>
-                                            {{ $i_order->order_type->name }}<br>
+                                            {{ $order_types[$i_order->order_type_id] }}<br>
                                             {{ $i_order->reference_id }}<br>
-                                            {{ $item->currency_id->sign ?? $i_order->currency_id->sign }}{{ $item->price }}
+                                            {{ $currencies[$item->currency] ?? $currencies[$i_order->currency] }}{{ $item->price }}
                                         </td>
                                     @endforeach
                                     {{-- @if (session('user')->hasPermission('view_price'))

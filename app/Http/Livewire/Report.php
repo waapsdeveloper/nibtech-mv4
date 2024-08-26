@@ -14,9 +14,11 @@ use App\Models\Order_model;
 use App\Models\Order_item_model;
 use App\Models\Products_model;
 use App\Models\Color_model;
+use App\Models\Currency_model;
 use App\Models\Customer_model;
 use App\Models\Storage_model;
 use App\Models\Grade_model;
+use App\Models\Multi_type_model;
 use App\Models\Variation_model;
 use App\Models\Stock_model;
 use Symfony\Component\HttpFoundation\Request;
@@ -317,6 +319,8 @@ class Report extends Component
         $data['grades'] = Grade_model::pluck('name','id');
 
         $data['vendors'] = Customer_model::where('type',1)->pluck('company','id');
+        $data['currencies'] = Currency_model::pluck('sign','id');
+        $data['order_types'] = Multi_type_model::where('table_name','orders')->pluck('name','id');
 
         // $start_date = Carbon::now()->startOfMonth();
         // // $start_date = date('Y-m-d 00:00:00',);
