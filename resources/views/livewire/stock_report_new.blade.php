@@ -58,7 +58,7 @@
                                 // $total_repair_return_cost = 0;
                                 // $total_eur_loss = 0;
                             @endphp
-                            @foreach ($stocks as $stock)
+                            @foreach ($stocks as $s => $stock)
                                 @php
                                     $variation = $stock->variation;
                                     $purchase_order = $stock->order;
