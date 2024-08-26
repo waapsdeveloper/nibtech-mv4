@@ -62,7 +62,7 @@
                                 @php
                                     $variation = $stock->variation;
                                     $purchase_order = $stock->order;
-                                    $order_items = $stock->order_items->where('order_id', '!=', $stock->order_id);
+                                    $order_items = $stock->order_items;
                                     // if (request('bp') == 1){
                                     //     $returns = $aggregated_returns->where('product_id', $sales->product_id)->where('storage', $sales->storage)->first();
                                     //     $sales_products[] = $sales->product_id.','.$sales->storage;
