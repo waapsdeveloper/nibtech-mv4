@@ -160,6 +160,9 @@
                     </div>
                 </div>
                 <div class="card-body mt-0">
+                    <form method="POST" id="stock_report" action="{{ url('report/stock_report')}}">
+                        @csrf
+                    </form>
                     <table class="table table-bordered table-hover text-md-nowrap">
                         <thead>
                             <tr>
@@ -208,7 +211,7 @@
                                 <tr>
                                     <td>{{ $s+1 }}</td>
                                     <td>{{ $categories[$sales->category_id] }}</td>
-                                    <td>{{ $sales->orders_qty }}</td>
+                                    <td><button class="btn btn-link" form="stock_report" type="submit" name="stock_ids" value="{{$sales->stock_ids}}">{{ $sales->orders_qty }}</button></td>
                                     @if (session('user')->hasPermission('view_cost'))
                                         <td title="{{count(explode(',',$sales->stock_ids))}}">€{{ number_format($aggregated_sales_cost[$sales->category_id],2) }}</td>
                                         <td>€{{ number_format($sales->items_repair_sum,2) }}</td>

@@ -68,6 +68,12 @@ class Stock_model extends Model
             $q->where('process_type_id', 20);
         });
     }
+    public function stock_repairs()
+    {
+        return $this->hasMany(Process_stock_model::class, 'stock_id', 'id')->whereHas('process', function ($q) {
+            $q->where('process_type_id', 9);
+        });
+    }
     public function latest_repair()
     {
         return $this->hasOne(Process_stock_model::class, 'stock_id', 'id')->whereHas('process', function ($q) {
