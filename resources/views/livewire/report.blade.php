@@ -160,7 +160,7 @@
                     </div>
                 </div>
                 <div class="card-body mt-0">
-                    <form method="POST" id="stock_report" action="{{ url('report/stock_report')}}">
+                    <form method="POST" id="stock_report" action="{{ url('report/stock_report')}}" onsubmit="window.open('about:blank','print_popup','width=1600,height=800');">
                         @csrf
                     </form>
                     <table class="table table-bordered table-hover text-md-nowrap">
