@@ -312,6 +312,7 @@ class Report extends Component
     }
     public function stock_report(){
         ini_set('memory_limit', '256M');
+        ini_set('max_execution_time', '1200s');
         // DB::statement("SET SESSION group_concat_max_len = 1500000;");
 
         $data['products'] = Products_model::pluck('model','id');
