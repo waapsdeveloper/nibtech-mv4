@@ -199,7 +199,7 @@
                                         continue;
                                     }
                                     $total_return_orders += $returns->orders_qty;
-                                    $total_approved_return_orders += $returns->approved_orders_qty;
+                                    // $total_approved_return_orders += $returns->approved_orders_qty;
                                     $total_return_eur_items += $returns->eur_items_sum;
                                     // $total_approved_return_eur_items += $returns->eur_approved_items_sum;
                                     $total_return_gbp_items += $returns->gbp_items_sum;
