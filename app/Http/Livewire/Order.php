@@ -615,7 +615,7 @@ class Order extends Component
                 'stocks' => function ($query) use ($order_id) {
                     $query->where('order_id', $order_id)->where('status', 1);
                 }
-            ])->with('stocks.stock_operations')
+            ])
             ->get(['product_id', 'storage']);
 
             // Process the retrieved data to get stock IDs
@@ -668,72 +668,72 @@ class Order extends Component
             // dd($available_stocks_2);
             $data['available_stock_summery'] = $available_stocks_2;
         }else{
-        if (!request('status') || request('status') == 1){
-            $data['variations'] = Variation_model::with(['stocks' => function ($query) use ($order_id) {
-                $query->where(['order_id'=> $order_id, 'status'=>1]);
-            },
-            'product'
-            ])
-            ->whereHas('stocks', function ($query) use ($order_id) {
-                $query->where(['order_id'=> $order_id, 'status'=>1]);
+            if (!request('status') || request('status') == 1){
+                $data['variations'] = Variation_model::with(['stocks' => function ($query) use ($order_id) {
+                    $query->where(['order_id'=> $order_id, 'status'=>1]);
+                },
+                'stocks.stock_operations','stocks.order_items'
+                ])
+                ->whereHas('stocks', function ($query) use ($order_id) {
+                    $query->where(['order_id'=> $order_id, 'status'=>1]);
+                })
+                ->orderBy('grade', 'desc')
+                ->get();
+
+            }
+
+            if (!request('status') || request('status') == 2){
+
+                $data['sold_stocks'] = Stock_model::with('order_items')
+                ->where(['order_id'=> $order_id, 'status'=>2])
+                ->orderBy('variation_id', 'asc')
+                ->get();
+
+                // $data['sold_stock_order_items'] = Order_item_model::whereHas('stock', function($q) use ($order_id){
+                //     $q->where(['order_id'=> $order_id, 'status'=>2]);
+                // // })->whereHas('order', function($q){
+                // //     $q->whereIn('order_type_id', [2,3,5]);
+                // })->latest()->distinct('stock_id')->get();
+
+                // dd($data['sold_stock_order_items']);
+            }
+
+            $data['graded_count'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', DB::raw('COUNT(*) as quantity'))
+            ->when(request('status'), function ($q) {
+                return $q->where('stock.status', request('status'));
             })
-            ->orderBy('grade', 'desc')
+            ->where('stock.order_id', $order_id)
+            ->join('variation', 'stock.variation_id', '=', 'variation.id')
+            ->join('grade', 'variation.grade', '=', 'grade.id')
+            ->groupBy('variation.grade', 'grade.name')
+            ->orderBy('grade_id')
             ->get();
 
-        }
-
-        if (!request('status') || request('status') == 2){
-
-            $data['sold_stocks'] = Stock_model::with('order_items')
-            ->where(['order_id'=> $order_id, 'status'=>2])
-            ->orderBy('variation_id', 'asc')
+            // $sold_summery = Variation_model::withCount([
+            //     'stocks as quantity' => function ($query) use ($order_id) {
+            //         $query->where(['order_id'=> $order_id, 'status' => 2]);
+            //     }])
+            //     ->whereHas('stocks', function ($query) use ($order_id) {
+            //         $query->where(['order_id'=> $order_id, 'status'=>2]);
+            //     })->get();
+            // dd($sold_summery);
+            // $data['sold_summery'] = $sold_summery;
+            $data['missing_stock'] = Order_item_model::where('order_id',$order_id)->whereHas('stock',function ($q) {
+                $q->where(['imei'=>null,'serial_number'=>null]);
+            })->get();
+            // $order_issues = Order_issue_model::where('order_id',$order_id)->orderBy('message','ASC')->get();
+            $order_issues = Order_issue_model::where('order_id',$order_id)->select(
+                DB::raw('JSON_UNQUOTE(JSON_EXTRACT(data, "$.name")) AS name'),
+                'message',
+                DB::raw('COUNT(*) as count'),
+                DB::raw('GROUP_CONCAT(JSON_OBJECT("id", id, "order_id", order_id, "data", data, "message", message, "created_at", created_at, "updated_at", updated_at)) AS all_rows')
+            )
+            ->groupBy('name', 'message')
             ->get();
+            // dd($order_issues);
 
-            // $data['sold_stock_order_items'] = Order_item_model::whereHas('stock', function($q) use ($order_id){
-            //     $q->where(['order_id'=> $order_id, 'status'=>2]);
-            // // })->whereHas('order', function($q){
-            // //     $q->whereIn('order_type_id', [2,3,5]);
-            // })->latest()->distinct('stock_id')->get();
-
-            // dd($data['sold_stock_order_items']);
-        }
-
-        $data['graded_count'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', DB::raw('COUNT(*) as quantity'))
-        ->when(request('status'), function ($q) {
-            return $q->where('stock.status', request('status'));
-        })
-        ->where('stock.order_id', $order_id)
-        ->join('variation', 'stock.variation_id', '=', 'variation.id')
-        ->join('grade', 'variation.grade', '=', 'grade.id')
-        ->groupBy('variation.grade', 'grade.name')
-        ->orderBy('grade_id')
-        ->get();
-
-        // $sold_summery = Variation_model::withCount([
-        //     'stocks as quantity' => function ($query) use ($order_id) {
-        //         $query->where(['order_id'=> $order_id, 'status' => 2]);
-        //     }])
-        //     ->whereHas('stocks', function ($query) use ($order_id) {
-        //         $query->where(['order_id'=> $order_id, 'status'=>2]);
-        //     })->get();
-        // dd($sold_summery);
-        // $data['sold_summery'] = $sold_summery;
-        $data['missing_stock'] = Order_item_model::where('order_id',$order_id)->whereHas('stock',function ($q) {
-            $q->where(['imei'=>null,'serial_number'=>null]);
-        })->get();
-        // $order_issues = Order_issue_model::where('order_id',$order_id)->orderBy('message','ASC')->get();
-        $order_issues = Order_issue_model::where('order_id',$order_id)->select(
-            DB::raw('JSON_UNQUOTE(JSON_EXTRACT(data, "$.name")) AS name'),
-            'message',
-            DB::raw('COUNT(*) as count'),
-            DB::raw('GROUP_CONCAT(JSON_OBJECT("id", id, "order_id", order_id, "data", data, "message", message, "created_at", created_at, "updated_at", updated_at)) AS all_rows')
-        )
-        ->groupBy('name', 'message')
-        ->get();
-        // dd($order_issues);
-
-        $data['order_issues'] = $order_issues;
-        // dd($data['missing_stock']);
+            $data['order_issues'] = $order_issues;
+            // dd($data['missing_stock']);
         }
         $data['all_variations'] = Variation_model::where('grade',9)->get();
         $data['order'] = Order_model::find($order_id);
