@@ -304,6 +304,8 @@
                             <tr>
                                 <th colspan="4">Total</th>
                                 <th>{{$total_cost}}</th>
+                                <th></th>
+                                <th></th>
                                 @foreach ($total as $ind)
                                     <th>
                                     @foreach ($ind as $curr => $price)
