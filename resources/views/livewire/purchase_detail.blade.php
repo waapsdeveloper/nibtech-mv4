@@ -512,7 +512,7 @@
                                                 {{-- @if($item->order_item[0]->order_id == $order_id) --}}
                                                 @php
                                                 $i ++;
-                                                $purchase_item = $item->purchase_item;
+                                                $purchase_item = $item->order_items->where('order_id',$order_id)->first();
                                                 $prices[] = $purchase_item->price ?? 0;
                                                 if($variation->grade == 9){
                                                     if($item->stock_operations->count() == 0){
