@@ -362,7 +362,7 @@ class Order extends Component
             $per_page = 50;
         }
 
-        $data['orders'] = Order_model::with('order_items', 'order_issues')->withCount('order_items_available as available_stock')->withSum('order_items as total_price','price')
+        $data['orders'] = Order_model::with('order_items', 'order_issues', 'order_items_available')->withCount('order_items_available as available_stock')->withSum('order_items as total_price','price')
         // select(
         //     'orders.id',
         //     'orders.reference_id',
