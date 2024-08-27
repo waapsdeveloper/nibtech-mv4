@@ -62,7 +62,14 @@
                                 @php
                                     $variation = $stock->variation;
                                     $purchase_order = $stock->order;
+                                    $purchase_item = $stock->purchase_item;
                                     $order_items = $stock->order_items->where('order_id', '!=',$stock->order_id);
+
+                                    if($total_cost){
+                                        $total_cost += $purchase_item->price;
+                                    }else{
+                                        $total_cost = $purchase_item->price;
+                                    }
                                     // if (request('bp') == 1){
                                     //     $returns = $aggregated_returns->where('product_id', $sales->product_id)->where('storage', $sales->storage)->first();
                                     //     $sales_products[] = $sales->product_id.','.$sales->storage;
@@ -120,18 +127,28 @@
                                     <td><a href="#" onclick="window.open('{{url('report')}}/vendor_report/{{$purchase_order->customer_id}}?start_date={{request('start_date')}}&end_date={{request('end_date')}}','_blank','print_popup','width=1800,height=800');">{{ $vendors[$purchase_order->customer_id] }} </a></td>
                                     <td><a title="{{$stock->id}} | Search Serial" href="{{url('imei')."?imei=".$stock->imei.$stock->serial_number}}" target="_blank"> {{$stock->imei.$stock->serial_number }} </a></td>
                                     @if (session('user')->hasPermission('view_cost'))
-                                    <td>€{{ number_format($stock->purchase_item->price,2) }}</td>
+                                    <td>€{{ number_format($purchase_item->price,2) }}</td>
                                     <td title="Count: {{$stock->stock_repairs->count()}}">€{{ number_format($stock->stock_repairs->sum('price'),2) }}</td>
                                     <td>{{ number_format(0,2) }}</td>
                                    @endif
-                                    @foreach ($order_items as $item)
+                                    @foreach ($order_items as $ind => $item)
                                         @php
                                             $i_order = $item->order;
+                                            if($item->currency == null){
+                                                $curr = $i_order->currency;
+                                            }else{
+                                                $curr = $item->currency;
+                                            }
+                                            if($total[$ind][$curr]){
+                                                $total[$ind][$curr] += $item->price;
+                                            }else{
+                                                $total[$ind][$curr] = $item->price;
+                                            }
                                         @endphp
                                         <td>
                                             {{ $order_types[$i_order->order_type_id] }}<br>
                                             {{ $i_order->reference_id }}<br>
-                                            {{ $currencies[$item->currency] ?? $currencies[$i_order->currency] }}{{ $item->price }}<br>
+                                            {{ $currencies[$curr] }}{{ $item->price }}<br>
                                             {{ $i_order->created_at }}<br>
                                             {{ $i_order->processed_at }}
                                         </td>
@@ -283,6 +300,19 @@
                                 <td><strong>€{{ number_format($total_eur_profit-$total_eur_loss) }} + £{{ number_format($total_sale_gbp_items-$total_return_gbp_items,2) }}</strong></td>
                             </tr> --}}
                         </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="4">Total</th>
+                                <th>{{$total_cost}}</th>
+                                @foreach ($total as $ind)
+                                    <th>
+                                    @foreach ($ind as $curr => $price)
+                                        {{$currencies[$curr].$price}}<br>
+                                    @endforeach
+                                    </th>
+                                @endforeach
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
