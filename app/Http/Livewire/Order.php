@@ -613,7 +613,7 @@ class Order extends Component
             ])
             ->with([
                 'stocks' => function ($query) use ($order_id) {
-                    $query->where('order_id', $order_id)->where('status', 1)->with('purchase_item','stock_operations');
+                    $query->where('order_id', $order_id)->where('status', 1);
                 }
             ])->with('stocks.stock_operations')
             ->get(['product_id', 'storage']);
