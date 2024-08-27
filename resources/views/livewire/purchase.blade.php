@@ -190,7 +190,7 @@
                                                 @if (session('user')->hasPermission('view_cost'))
                                                 <td>Є{{ number_format($order->order_items->sum('price'),2) }}</td>
                                                 @endif
-                                                <td>{{ $order->order_items_available->count()."/".$order->order_items->count() }} @if ($order->status < 3)
+                                                <td>{{ $order->available_stocks->count()."/".$order->order_items->count() }} @if ($order->status < 3)
                                                     (Pending)
                                                 @endif</td>
                                                 <td>@if ($order->order_issues->count() > 0)
