@@ -467,7 +467,7 @@
                         @endif">
                             <div class="card-header pb-0">
                                 @php
-                                    isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
+                                    isset($variation->color)?$color = $colors[$variation->color]:$color = null;
                                     isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
                                     isset($variation->grade)?$grade = $grades[$variation->grade]:$grade = null;
                                 @endphp
