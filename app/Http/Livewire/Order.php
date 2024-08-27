@@ -1577,6 +1577,7 @@ class Order extends Component
                 }
                 $stock[$i]->variation_id = $variant->id;
                 $stock[$i]->tester = $tester[$i];
+                $stock[$i]->sale_order_id = $id;
                 $stock[$i]->status = 2;
                 $stock[$i]->save();
 
@@ -1854,6 +1855,7 @@ class Order extends Component
                 }
                 $stock[$i]->variation_id = $variant->id;
                 $stock[$i]->tester = $tester[$i];
+                $stock[$i]->sale_order_id = $id;
                 $stock[$i]->status = 2;
                 $stock[$i]->save();
                 $stock_movement = Stock_movement_model::where(['stock_id'=>$stock[$i]->id, 'received_at'=>null])->first();
