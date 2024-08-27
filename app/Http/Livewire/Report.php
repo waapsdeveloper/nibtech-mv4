@@ -141,7 +141,7 @@ class Report extends Component
                     $q->where('reference_id', request('batch'));
                 });
             });
-        })->whereIn('orders.order_type_id', [2,3,5])->whereIn('orders.status', [3,6])->pluck('id')->toArray();
+        })->whereIn('order_type_id', [2,3,5])->whereIn('status', [3,6])->pluck('id')->toArray();
 
 
         $aggregates = DB::table('category')
