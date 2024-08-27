@@ -65,7 +65,7 @@
                                     $purchase_item = $stock->purchase_item;
                                     $order_items = $stock->order_items->where('order_id', '!=',$stock->order_id);
 
-                                    if($total_cost){
+                                    if(isset($total_cost)){
                                         $total_cost += $purchase_item->price;
                                     }else{
                                         $total_cost = $purchase_item->price;
@@ -139,7 +139,7 @@
                                             }else{
                                                 $curr = $item->currency;
                                             }
-                                            if($total[$ind][$curr]){
+                                            if(isset($total[$ind][$curr])){
                                                 $total[$ind][$curr] += $item->price;
                                             }else{
                                                 $total[$ind][$curr] = $item->price;
