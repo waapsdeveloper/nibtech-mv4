@@ -471,7 +471,7 @@
                                     isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
                                     isset($variation->grade)?$grade = $grades[$variation->grade]:$grade = null;
                                 @endphp
-                                {{ $variation->product->model." ".$storage." ".$color." ".$grade }}
+                                {{ $products[$variation->product_id]." ".$storage." ".$color." ".$grade }}
                             </div>
                                     {{-- {{ $variation }} --}}
                             <div class="card-body"><div class="table-responsive" style="max-height: 400px">
