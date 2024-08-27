@@ -193,8 +193,8 @@
                                                 <td>{{ $order->available_stock."/".$order->order_items->count() }} @if ($order->status < 3)
                                                     (Pending)
                                                 @endif</td>
-                                                <td>@if (count($order->order_issues) > 0)
-                                                {{count($order->order_issues)}}
+                                                <td>@if ($order->order_issues->count() > 0)
+                                                {{$order->order_issues->count()}}
 
                                                 @endif</td>
                                                 <td style="width:180px" title="Last Updated: {{$order->last_update->updated_at ?? null }}">{{ $order->created_at}}</td>
