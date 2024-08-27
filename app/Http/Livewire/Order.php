@@ -672,7 +672,7 @@ class Order extends Component
                 $data['variations'] = Variation_model::with(['stocks' => function ($query) use ($order_id) {
                     $query->where(['order_id'=> $order_id, 'status'=>1]);
                 },
-                'stocks.stock_operations','stocks.purchase_items'
+                'stocks.stock_operations','stocks.purchase_item'
                 ])
                 ->whereHas('stocks', function ($query) use ($order_id) {
                     $query->where(['order_id'=> $order_id, 'status'=>1]);
