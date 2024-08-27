@@ -362,7 +362,7 @@ class Order extends Component
             $per_page = 50;
         }
 
-        $data['orders'] = Order_model::with('order_items', 'order_issues', 'available_stocks')
+        $data['orders'] = Order_model::with('order_items', 'order_issues')->withCount('order_items_available as available_stock')
         // select(
         //     'orders.id',
         //     'orders.reference_id',
@@ -388,12 +388,10 @@ class Order extends Component
             return $q->where('orders.status', request('status'));
         })
         ->when(request('status') == 3 && request('stock') == 0, function ($query) {
-            // return $query->having('available_stock', '=', 0);
-            return $query->has('available_stocks', '=', 0);
+            return $query->having('available_stock', '=', 0);
         })
         ->when(request('status') == 3 && request('stock') == 1, function ($query) {
-            // return $query->having('available_stock', '>', 0);
-            return $query->has('available_stocks', '>', 0);
+            return $query->having('available_stock', '>', 0);
         })
         // ->when(!request('stock'), function ($query) {
         //     return $query->having('available_stock');
