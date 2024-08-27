@@ -122,7 +122,7 @@
                                     <select name="per_page" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
                                         <option value="10" {{ Request::get('per_page') == 10 ? 'selected' : '' }}>10</option>
                                         <option value="20" {{ Request::get('per_page') == 20 ? 'selected' : '' }}>20</option>
-                                        <option value="50" {{ Request::get('per_page') == 50 ? 'selected' : '' }}>50</option>
+                                        <option value="50" {{ Request::get('per_page') == 50 ? 'selected' : '' }} selected>50</option>
                                         <option value="100" {{ Request::get('per_page') == 100 ? 'selected' : '' }}>100</option>
                                     </select>
                                     {{-- <button type="submit">Apply</button> --}}
