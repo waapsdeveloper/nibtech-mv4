@@ -108,7 +108,8 @@ class Report extends Component
 
 
         $order_ids = Order_model::whereHas('order_items.variation', function ($p) {
-            $p->when(request('category') != '', function ($q) {
+            $p->withoutGlobalScope('Status_not_3_scope')
+            ->when(request('category') != '', function ($q) {
                 return $q->whereHas('product', function ($qu) {
                     $qu->where('category', '=', request('category'));
                 });
