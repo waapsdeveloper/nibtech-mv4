@@ -500,7 +500,7 @@
                                                 $id = [];
                                             @endphp
                                             @php
-                                                $stocks = $variation->stocks->with('purchase_item','stock_operations');
+                                                $stocks = $variation->stocks;
                                                 // $items = $stocks->order_item;
                                                 $j = 0;
                                                 $prices = [];
