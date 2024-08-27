@@ -615,7 +615,7 @@ class Order extends Component
                 'stocks' => function ($query) use ($order_id) {
                     $query->where('order_id', $order_id)->where('status', 1);
                 }
-            ])
+            ])->with('stocks.stock_operation')
             ->get(['product_id', 'storage']);
 
             // Process the retrieved data to get stock IDs
