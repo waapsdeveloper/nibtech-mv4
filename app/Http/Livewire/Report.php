@@ -141,7 +141,7 @@ class Report extends Component
                     $q->where('reference_id', request('batch'));
                 });
             });
-        })->whereIn('order_type_id', [2,3,5])->whereIn('status', [3,6])->pluck('id')->toArray();
+        })->pluck('id')->toArray();
 
 
         $aggregates = DB::table('category')
@@ -161,13 +161,13 @@ class Report extends Component
                 DB::raw('SUM(CASE WHEN process.process_type_id = 9 THEN process_stock.price ELSE 0 END) as items_repair_sum')
             )
             // ->whereBetween('orders.processed_at', [$start_date, $end_date])
-            ->whereIn('orders.id', $order_ids)
-
+            ->whereIn('order.id', $order_ids)
+            ->whereIn('orders.order_type_id', [2,3,5])
             ->Where('orders.deleted_at',null)
             ->Where('order_items.deleted_at',null)
             ->Where('stock.deleted_at',null)
             ->Where('process_stock.deleted_at',null)
-
+            ->whereIn('orders.status', [3,6])
             ->whereIn('order_items.status', [3,6])
             ->groupBy('category.id')
             ->get();
