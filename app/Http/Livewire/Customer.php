@@ -113,18 +113,18 @@ class Customer extends Component
         $data['countries'] = Country_model::all();
         $data['customer'] = Customer_model::where('id',$id)->first();
 
-        $orders = Order_model::join('order_items', 'orders.id', '=', 'order_items.order_id')
-        ->join('variation', 'order_items.variation_id', '=', 'variation.id')
-        ->join('products', 'variation.product_id', '=', 'products.id')
-        ->with(['order_items.variation', 'order_items.variation.grade_id', 'order_items.stock'])
+        $orders = Order_model::with(['order_items.variation', 'order_items.variation.grade_id', 'order_items.stock'])
+        // join('order_items', 'orders.id', '=', 'order_items.order_id')
+        // ->join('variation', 'order_items.variation_id', '=', 'variation.id')
+        // ->join('products', 'variation.product_id', '=', 'products.id')
+        // ->
         ->where('orders.customer_id',$id)
 
         ->orderBy('orders.reference_id', 'desc')
         ->select('orders.*')
-        // ->paginate(50)
-        // ->onEachSide(5)
-        // ->appends(request()->except('page'));
-        ->get();
+        ->paginate(10)
+        ->onEachSide(5)
+        ->appends(request()->except('page'));
         $data['orders'] = $orders;
         // dd($orders);
 
