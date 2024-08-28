@@ -88,7 +88,12 @@ class Order extends Component
         }
 
         $orders = Order_model::with(['customer','customer.orders','order_items','order_items.variation','order_items.variation.product', 'order_items.variation.grade_id', 'order_items.stock'])
-        ->where('orders.order_type_id',3)
+        // ->where('orders.order_type_id',3)
+
+        ->when(request('type') == '', function ($q) {
+            return $q->where('orders.order_type_id',3);
+        })
+
         ->when(request('start_date') != '', function ($q) use ($start_date) {
             if(request('adm') > 0){
                 return $q->where('orders.processed_at', '>=', $start_date);
