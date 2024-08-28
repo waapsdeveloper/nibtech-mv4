@@ -80,7 +80,7 @@
                                                 $total[$ind][$curr] = $item->price;
                                             }
                                             if (in_array($i_order->order_type_id,[2,3,5])) {
-                                                if (request('start_date') <= $i_order->created_at <= request('end_date') || request('start_date') <= $i_order->processed_at <= request('end_date')) {
+                                                if ((request('start_date') <= $i_order->created_at && $i_order->created_at <= request('end_date')) || (request('start_date') <= $i_order->processed_at && $i_order->processed_at <= request('end_date'))) {
                                                     $count ++;
                                                     if(isset($price[$curr])){
                                                         $price[$curr] += $item->price;
