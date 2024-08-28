@@ -162,6 +162,8 @@
                 <div class="card-body mt-0">
                     <form method="POST" id="stock_report" target="print_popup" action="{{ url('report/stock_report')}}" onsubmit="window.open('about:blank','print_popup','width=1600,height=800');">
                         @csrf
+                        <input type="hidden" name="start_date" value="{{$start_date}}">
+                        <input type="hidden" name="end_date" value="{{$end_date}}">
                     </form>
                     <table class="table table-bordered table-hover text-md-nowrap">
                         <thead>
