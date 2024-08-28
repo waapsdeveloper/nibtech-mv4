@@ -185,10 +185,11 @@
 
                                         @foreach ($items as $itemIndex => $item)
                                             <tr>
-                                                @if ($itemIndex == 0)
+                                                {{-- @if ($itemIndex == 0)
                                                     <td rowspan="{{ count($items) }}">{{ $i + 1 }}</td>
                                                     <td rowspan="{{ count($items) }}">{{ $order->reference_id }}</td>
-                                                @endif
+                                                @endif --}}
+                                                    <td>{{ $order->reference_id }}</td>
                                                 <td>
                                                     @if ($item->variation ?? false)
                                                         <strong>{{ $item->variation->sku }}</strong>{{ " - " . $item->variation->product->model . " - " . (isset($item->variation->storage_id)?$item->variation->storage_id->name . " - " : null) . (isset($item->variation->color_id)?$item->variation->color_id->name. " - ":null)}} <strong><u>{{ $item->variation->grade_id->name }}</u></strong>
@@ -198,7 +199,7 @@
                                                     @endif
                                                 </td>
                                                 <td>{{ $item->quantity }}</td>
-                                                @if ($order->status == 3)
+                                                {{-- @if ($order->status == 3) --}}
                                                 <td style="width:240px" class="text-success text-uppercase" id="copy_imei_{{ $order->id }}">
                                                     @isset($item->stock->imei) {{ $item->stock->imei }}&nbsp; @endisset
                                                     @isset($item->stock->serial_number) {{ $item->stock->serial_number }}&nbsp; @endisset
@@ -207,26 +208,26 @@
                                                 </td>
 
 
-                                                @endif
-                                                @if ($itemIndex == 0 && $order->status != 3)
-                                                <td style="width:240px" rowspan="{{ count($items) }}">
-                                                    {{-- @if ($item->status >= 5) --}}
+                                                {{-- @endif
+                                                @if ($itemIndex == 0 && $order->status != 3) --}}
+                                                {{-- <td style="width:240px" rowspan="{{ count($items) }}">
+                                                    @if ($item->status >= 5)
                                                         <strong class="text-danger">{{ $order->order_status->name }}</strong>
-                                                    {{-- @else
+                                                    @else
                                                         @if(!isset($item->stock->imei) && !isset($item->stock->serial_number) && $item->status > 2 && $item->quantity == 1)
 
 
                                                             <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
                                                             <a class="dropdown-item" href="{{url('order')}}/refresh/{{ $order->reference_id }}"><i class="fe fe-arrows-rotate me-2 "></i>Refresh</a>
                                                         @endif
-                                                    @endif --}}
+                                                    @endif
                                                     @isset($item->stock->imei) {{ $item->stock->imei }}&nbsp; @endisset
                                                     @isset($item->stock->serial_number) {{ $item->stock->serial_number }}&nbsp; @endisset
 
                                                     @isset($order->processed_by) | {{ $order->admin->first_name[0] }} | @endisset
                                                     @isset($item->stock->tester) ({{ $item->stock->tester }}) @endisset
                                                 </td>
-                                                @endif
+                                                @endif --}}
                                                 <td style="width:220px">{{ $order->created_at}} <br> {{ $order->processed_at." ".$order->tracking_number }}</td>
                                                 <td>
                                                     <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
