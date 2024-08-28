@@ -189,6 +189,7 @@
                                                     <td rowspan="{{ count($items) }}">{{ $i + 1 }}</td>
                                                     <td rowspan="{{ count($items) }}">{{ $order->reference_id }}</td>
                                                 @endif --}}
+                                                    <td>{{ $i+1 }}</td>
                                                     <td>{{ $order->reference_id }}</td>
                                                 <td>
                                                     @if ($item->variation ?? false)
