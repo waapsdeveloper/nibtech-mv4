@@ -36,7 +36,8 @@
                         </thead>
                         <tbody>
                             @php
-
+                                $count = 0;
+                                $price = [];
 
                             @endphp
                             @foreach ($stocks as $s => $stock)
@@ -80,7 +81,12 @@
                                             }
                                             if (in_array($i_order->order_type_id,[2,3,5])) {
                                                 if (request('start_date') <= $i_order->created_at <= request('end_date') || request('start_date') <= $i_order->processed_at <= request('end_date')) {
-
+                                                    $count ++;
+                                                    if(isset($price[$curr])){
+                                                        $price[$curr] += $item->price;
+                                                    }else{
+                                                        $price[$curr] = $item->price;
+                                                    }
                                                 }
                                             }
                                         @endphp
@@ -241,7 +247,13 @@
                         </tbody>
                         <tfoot>
                             <tr>
-                                <th colspan="4">Total</th>
+                                <th colspan="2">Total</th>
+                                <th>{{$count}}</th>
+                                <th>
+                                    @foreach ($price as $curr => $price)
+                                        {{$currencies[$curr].$price}}<br>
+                                    @endforeach
+                                </th>
                                 <th>{{$total_cost}}</th>
                                 <th></th>
                                 <th></th>
