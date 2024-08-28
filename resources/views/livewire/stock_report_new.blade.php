@@ -145,7 +145,7 @@
                                                 $total[$ind][$curr] = $item->price;
                                             }
                                         @endphp
-                                        <td>
+                                        <td title="{{$item->id}}">
                                             {{ $order_types[$i_order->order_type_id] }}<br>
                                             {{ $i_order->reference_id }}<br>
                                             {{ $currencies[$curr] }}{{ $item->price }}<br>
