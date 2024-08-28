@@ -139,6 +139,9 @@
                                             }else{
                                                 $curr = $item->currency;
                                             }
+                                            if(!in_array($i_order->order_type_id,[4,3])){
+                                                $curr = 4;
+                                            }
                                             if(isset($total[$ind][$curr])){
                                                 $total[$ind][$curr] += $item->price;
                                             }else{
