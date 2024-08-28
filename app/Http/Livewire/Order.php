@@ -44,6 +44,7 @@ class Order extends Component
     }
     public function render()
     {
+        ini_set('memory_limit', '256M');
         $data['title_page'] = "Sales";
         $data['storages'] = Storage_model::pluck('name','id');
         $data['colors'] = Color_model::pluck('name','id');
