@@ -365,7 +365,7 @@ class Order extends Component
         if(request('per_page') != null){
             $per_page = request('per_page');
         }else{
-            $per_page = 50;
+            $per_page = 10;
         }
 
         $data['orders'] = Order_model::with('order_items', 'order_issues')->withCount('order_items_available as available_stock')
