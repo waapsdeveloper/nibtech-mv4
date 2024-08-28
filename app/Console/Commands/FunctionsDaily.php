@@ -33,7 +33,7 @@ class FunctionsDaily extends Command
     {
         ini_set('max_execution_time', 1200);
         // $this->remove_extra_variations();
-        $this->check_stock_status();
+        // $this->check_stock_status();
     }
 
     private function check_stock_status(){

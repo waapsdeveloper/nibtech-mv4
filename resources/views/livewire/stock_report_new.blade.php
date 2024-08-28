@@ -37,26 +37,7 @@
                         <tbody>
                             @php
 
-                                // $total_sale_orders = 0;
-                                // $total_approved_sale_orders = 0;
-                                // $total_sale_eur_items = 0;
-                                // $total_approved_sale_eur_items = 0;
-                                // $total_sale_gbp_items = 0;
-                                // $total_approved_sale_gbp_items = 0;
-                                // $total_sale_cost = 0;
-                                // $total_repair_cost = 0;
-                                // $total_eur_profit = 0;
-                                // $total_gbp_profit = 0;
 
-                                // $total_return_orders = 0;
-                                // $total_approved_return_orders = 0;
-                                // $total_return_eur_items = 0;
-                                // $total_approved_return_eur_items = 0;
-                                // $total_return_gbp_items = 0;
-                                // $total_approved_return_gbp_items = 0;
-                                // $total_return_cost = 0;
-                                // $total_repair_return_cost = 0;
-                                // $total_eur_loss = 0;
                             @endphp
                             @foreach ($stocks as $s => $stock)
                                 @php
@@ -70,56 +51,6 @@
                                     }else{
                                         $total_cost = $purchase_item->price;
                                     }
-                                    // if (request('bp') == 1){
-                                    //     $returns = $aggregated_returns->where('product_id', $sales->product_id)->where('storage', $sales->storage)->first();
-                                    //     $sales_products[] = $sales->product_id.','.$sales->storage;
-                                    //     $sales_storages[] = $sales->storage;
-                                    //     $sale_cost = $aggregated_sales_cost[$sales->product_id][$sales->storage];
-                                    //     if($returns != null){
-                                    //         $return_cost = $aggregated_return_cost[$returns->product_id][$returns->storage];
-                                    //     }
-                                    // }
-                                    // if (request('bc') == 1){
-                                    //     $returns = $aggregated_returns->where('customer_id', $sales->customer_id)->first();
-                                    //     $sales_customers[] = $sales->customer_id;
-                                    //     $sale_cost = $aggregated_sales_cost[$sales->customer_id];
-                                    //     if($returns != null){
-                                    //         $return_cost = $aggregated_return_cost[$returns->customer_id];
-                                    //     }
-
-                                    // }
-                                    // if (request('bv') == 1){
-                                    //     $returns = $aggregated_returns->where('customer_id', $sales->customer_id)->first();
-                                    //     $sales_vendors[] = $sales->customer_id;
-                                    //     $sale_cost = $aggregated_sales_cost[$sales->customer_id];
-                                    //     if($returns != null){
-                                    //         $return_cost = $aggregated_return_cost[$returns->customer_id];
-                                    //     }
-                                    // }
-
-                                    // $total_sale_orders += $sales->orders_qty;
-                                    // $total_sale_eur_items += $sales->eur_items_sum;
-                                    // $total_sale_gbp_items += $sales->gbp_items_sum ?? 0;
-                                    // $total_sale_cost += $sale_cost;
-                                    // $total_repair_cost += $sales->items_repair_sum;
-                                    // $total_eur = $sales->eur_items_sum - $sale_cost - $sales->items_repair_sum;
-                                    // $total_gbp = $sales->gbp_items_sum ?? 0;
-                                    // $gbp_items_sum = $sales->gbp_items_sum ?? 0;
-                                    // if($returns != null){
-                                    //     $total_return_orders += $returns->orders_qty;
-                                    //     // $total_approved_return_orders += $returns->approved_orders_qty;
-                                    //     $total_return_eur_items += $returns->eur_items_sum;
-                                    //     // $total_approved_return_eur_items += $returns->eur_approved_items_sum;
-                                    //     $total_return_gbp_items += $returns->gbp_items_sum;
-                                    //     // $total_approved_return_gbp_items += $returns->gbp_approved_items_sum;
-                                    //     $total_return_cost += $return_cost;
-                                    //     $total_repair_return_cost += $returns->items_repair_sum;
-                                    //     $eur_loss = $returns->eur_items_sum - $return_cost - $returns->items_repair_sum;
-                                    //     $total_eur = $total_eur - $eur_loss;
-                                    //     $total_gbp = $total_gbp - $returns->gbp_items_sum;
-                                    // }
-                                    // $total_eur_profit += $total_eur;
-                                    // $total_gbp_profit += $total_gbp;
                                 @endphp
                                 <tr>
                                     <td>{{ $s+1 }}</td>
@@ -146,6 +77,11 @@
                                                 $total[$ind][$curr] += $item->price;
                                             }else{
                                                 $total[$ind][$curr] = $item->price;
+                                            }
+                                            if (in_array($i_order->order_type_id,[2,3,5])) {
+                                                if (request('start_date') <= $i_order->created_at <= request('end_date') || request('start_date') <= $i_order->processed_at <= request('end_date')) {
+
+                                                }
                                             }
                                         @endphp
                                         <td title="{{$item->id}}">
