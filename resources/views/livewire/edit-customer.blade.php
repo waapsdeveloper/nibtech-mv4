@@ -208,7 +208,7 @@
 
 
                                                 @endif
-                                                {{-- @if ($itemIndex == 0 && $order->status != 3) --}}
+                                                @if ($itemIndex == 0 && $order->status != 3)
                                                 <td style="width:240px" rowspan="{{ count($items) }}">
                                                     {{-- @if ($item->status >= 5) --}}
                                                         <strong class="text-danger">{{ $order->order_status->name }}</strong>
@@ -226,7 +226,7 @@
                                                     @isset($order->processed_by) | {{ $order->admin->first_name[0] }} | @endisset
                                                     @isset($item->stock->tester) ({{ $item->stock->tester }}) @endisset
                                                 </td>
-                                                {{-- @endif --}}
+                                                @endif
                                                 <td style="width:220px">{{ $order->created_at}} <br> {{ $order->processed_at." ".$order->tracking_number }}</td>
                                                 <td>
                                                     <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
