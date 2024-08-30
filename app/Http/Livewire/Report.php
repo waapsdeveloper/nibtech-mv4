@@ -4,7 +4,6 @@ namespace App\Http\Livewire;
 
 use App\Exports\BatchReportExport;
 use App\Exports\OrderReportExport;
-use App\Models\Admin_model;
 use App\Models\Brand_model;
 use App\Models\Category_model;
 use Carbon\Carbon;

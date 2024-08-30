@@ -41,58 +41,58 @@ class Listing extends Component
         $data['storages'] = Storage_model::pluck('name','id');
         $data['colors'] = Color_model::pluck('name','id');
         $data['grades'] = Grade_model::pluck('name','id')->toArray();
-        $data['variations'] = Variation_model::
-        when(request('reference_id') != '', function ($q) {
-            return $q->where('reference_id', request('reference_id'));
-        })
-        ->when(request('category') != '', function ($q) {
-            return $q->whereHas('product', function ($q) {
-                $q->where('category', request('category'));
-            });
-        })
-        ->when(request('brand') != '', function ($q) {
-            return $q->whereHas('product', function ($q) {
-                $q->where('brand', request('brand'));
-            });
-        })
-        ->when(request('product') != '', function ($q) {
-            return $q->where('product_id', request('product'));
-        })
-        ->when(request('sku') != '', function ($q) {
-            return $q->where('sku', request('sku'));
-        })
-        ->when(request('color') != '', function ($q) {
-            return $q->where('color', request('color'));
-        })
-        ->when(request('storage') != '', function ($q) {
-            return $q->where('storage', request('storage'));
-        })
-        ->when(request('grade') != '', function ($q) {
-            return $q->where('grade', request('grade'));
-        })
-        ->when(request('listed_stock') != '', function ($q) {
-            if(request('listed_stock') == 1){
-                return $q->where('listed_stock', '>', 0);
-            }elseif(request('listed_stock') == 2){
-                return $q->where('listed_stock', '<=', 0);
-            }
-        })
-        ->when(request('available_stock') != '', function ($q) {
-            if(request('available_stock') == 1){
-                return $q->whereHas('available_stocks');
-            }elseif(request('available_stock') == 2){
-                return $q->whereDoesntHave('available_stocks');
-            }
-        })
-        ->when(request('state') != '', function ($q) {
-            return $q->where('state', request('state'));
-        })
-        ->with('listings', 'listings.country_id', 'listings.currency', 'product','available_stocks','pending_orders')
-        ->where('sku', '!=', null)
-        ->orderBy('listed_stock', 'desc')
-        ->paginate(10)
-        ->onEachSide(5)
-        ->appends(request()->except('page'));
+
+        $data['variations'] = Variation_model::with('listings', 'listings.country_id', 'listings.currency', 'product','available_stocks','pending_orders')
+            ->when(request('reference_id') != '', function ($q) {
+                return $q->where('reference_id', request('reference_id'));
+            })
+            ->when(request('category') != '', function ($q) {
+                return $q->whereHas('product', function ($q) {
+                    $q->where('category', request('category'));
+                });
+            })
+            ->when(request('brand') != '', function ($q) {
+                return $q->whereHas('product', function ($q) {
+                    $q->where('brand', request('brand'));
+                });
+            })
+            ->when(request('product') != '', function ($q) {
+                return $q->where('product_id', request('product'));
+            })
+            ->when(request('sku') != '', function ($q) {
+                return $q->where('sku', request('sku'));
+            })
+            ->when(request('color') != '', function ($q) {
+                return $q->where('color', request('color'));
+            })
+            ->when(request('storage') != '', function ($q) {
+                return $q->where('storage', request('storage'));
+            })
+            ->when(request('grade') != '', function ($q) {
+                return $q->where('grade', request('grade'));
+            })
+            ->when(request('listed_stock') != '', function ($q) {
+                if(request('listed_stock') == 1){
+                    return $q->where('listed_stock', '>', 0);
+                }elseif(request('listed_stock') == 2){
+                    return $q->where('listed_stock', '<=', 0);
+                }
+            })
+            ->when(request('available_stock') != '', function ($q) {
+                if(request('available_stock') == 1){
+                    return $q->whereHas('available_stocks');
+                }elseif(request('available_stock') == 2){
+                    return $q->whereDoesntHave('available_stocks');
+                }
+            })
+            ->when(request('state') != '', function ($q) {
+                return $q->where('state', request('state'));
+            })
+            ->where('sku', '!=', null)
+            ->orderBy('listed_stock', 'desc')
+            ->paginate(10)
+            ->onEachSide(5)
+            ->appends(request()->except('page'));
 
         return view('livewire.listing')->with($data);
     }

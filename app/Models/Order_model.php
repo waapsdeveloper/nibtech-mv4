@@ -135,7 +135,7 @@ class Order_model extends Model
         // echo $order->state." ";
 
         // if the state of order or is 0 or 1, then the order status is 'Created'
-        if ($order->state == 0 || $order->state == 1) return 1;
+        if ($order->state == null || $order->state == 0 || $order->state == 1) return 1;
 
         if ($order->state == 3) {
         foreach($orderlines as $key => $value) {
