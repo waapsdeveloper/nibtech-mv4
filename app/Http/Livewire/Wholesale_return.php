@@ -31,7 +31,7 @@ class Wholesale_return extends Component
 
         $data['title_page'] = "Bulksale Returns";
 
-        // $data['latest_reference'] = Order_model::where('order_type_id',4)->orderBy('reference_id','DESC')->first()->reference_id;
+        $data['latest_reference'] = Order_model::where('order_type_id',4)->orderBy('reference_id','DESC')->first()->reference_id;
         $data['order_statuses'] = Order_status_model::get();
         if(request('per_page') != null){
             $per_page = request('per_page');
@@ -40,17 +40,7 @@ class Wholesale_return extends Component
         }
 
         $data['orders'] = Order_model::withCount('order_items')->withSum('order_items','price')
-        // select(
-        //     'orders.id',
-        //     'orders.reference_id',
-        //     'orders.customer_id',
-        //     'orders.currency',
-        //     // DB::raw('SUM(order_items.price) as total_price'),
-        //     // DB::raw('COUNT(order_items.id) as total_quantity'),
-        //     'orders.created_at')
         ->where('orders.order_type_id',6)
-        // ->join('order_items', 'orders.id', '=', 'order_items.order_id')
-
         ->when(request('start_date') != '', function ($q) {
             return $q->where('orders.created_at', '>=', request('start_date', 0));
         })
@@ -63,50 +53,17 @@ class Wholesale_return extends Component
         ->when(request('status') != '', function ($q) {
             return $q->where('orders.status', request('status'));
         })
-        // ->groupBy('orders.id', 'orders.reference_id', 'orders.customer_id', 'orders.currency', 'orders.created_at')
         ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
         // ->select('orders.*')
         ->paginate($per_page)
         ->onEachSide(5)
         ->appends(request()->except('page'));
 
-        // $data['orders'] = Order_model::select(
-        //     'orders.id',
-        //     'orders.reference_id',
-        //     DB::raw('SUM(order_items.price) as total_price'),
-        //     DB::raw('COUNT(order_items.id) as total_quantity'),
-        //     DB::raw('COUNT(CASE WHEN stock.status = 1 THEN order_items.id END) as available_stock'),
-        //     'orders.created_at')
-        // ->where('orders.order_type_id', 6)
-        // ->join('order_items', 'orders.id', '=', 'order_items.order_id')
-        // ->join('stock', 'order_items.stock_id', '=', 'stock.id')
-        // ->when(request('start_date'), function ($q) {
-        //     return $q->where('orders.created_at', '>=', request('start_date'));
-        // })
-        // ->when(request('end_date'), function ($q) {
-        //     return $q->where('orders.created_at', '<=', request('end_date') . " 23:59:59");
-        // })
-        // ->when(request('order_id'), function ($q) {
-        //     return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
-        // })
-        // ->when(request('status'), function ($q) {
-        //     return $q->where('orders.status', request('status'));
-        // })
-        // ->where('order_items.deleted_at',null)
-        // ->groupBy('orders.id', 'orders.reference_id', 'orders.created_at')
-        // ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
-        // ->paginate($per_page)
-        // ->onEachSide(5)
-        // ->appends(request()->except('page'));
-
-
-        // dd($data['orders']);
         return view('livewire.wholesale_return')->with($data);
     }
     public function wholesale_return_ship($order_id){
         $order = Order_model::find($order_id);
         $order->customer_id = request('customer_id');
-        $order->tracking_number = request('tracking_number');
         $order->status = 2;
         $order->save();
 
@@ -115,6 +72,7 @@ class Wholesale_return extends Component
     public function wholesale_return_approve($order_id){
         $order = Order_model::find($order_id);
         $order->reference = request('reference');
+        $order->tracking_number = request('tracking_number');
         $order->status = 3;
         $order->save();
 
@@ -196,70 +154,6 @@ class Wholesale_return extends Component
         $data['order_id'] = $order_id;
         $data['currency'] = $data['order']->currency_id->sign;
 
-        if (request('imei')) {
-            if (ctype_digit(request('imei'))) {
-                $i = request('imei');
-                $s = null;
-            } else {
-                $i = null;
-                $s = request('imei');
-            }
-
-            $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
-
-            if (request('imei') == '' || !$stock || $stock->status == null) {
-                session()->put('error', 'IMEI Invalid / Not Found');
-                // return redirect()->back(); // Redirect here is not recommended
-                return view('livewire.wholesale_return_detail', $data); // Return the Blade view instance with data
-            }
-            $check_old_sale = Order_item_model::where(['stock_id'=>$stock->id, 'linked_id'=>null])
-            ->whereHas('order', function ($query) {
-                $query->whereIn('order_type_id', [2,3,5]);
-            })->first();
-            if($check_old_sale != null){
-                if($stock->purchase_item != null){
-                    $check_old_sale->linked_id = $stock->last_item()->id;
-                    $check_old_sale->save();
-                }
-
-            }
-            if($stock->purchase_item){
-
-                $last_item = $stock->last_item();
-                if(in_array($last_item->order->order_type_id,[1,4,6])){
-
-                    if($stock->status == 2){
-                        $stock->status = 1;
-                        $stock->save();
-                    }
-                        session()->put('success', 'IMEI Available');
-                }else{
-                    if($stock->status == 1){
-                        $stock->status = 2;
-                        $stock->save();
-                    }
-                        session()->put('success', 'IMEI Sold');
-                }
-            if($stock->status == 2){
-                    $data['restock']['order_id'] = $order_id;
-                    $data['restock']['reference_id'] = $last_item->order->reference_id;
-                    $data['restock']['stock_id'] = $stock->id;
-                    $data['restock']['price'] = $last_item->price;
-                    $data['restock']['linked_id'] = $last_item->id;
-            }
-            }
-            $stock_id = $stock->id;
-            $orders = Order_item_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
-            $data['stock'] = $stock;
-            $data['orders'] = $orders;
-            // dd($orders);
-
-            $stocks = Stock_operations_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
-            if($stocks->count() > 0){
-                $data['stocks'] = $stocks;
-            }
-
-        }
         $graded_stocks = Grade_model::with([
             'variations.stocks' => function ($query) use ($order_id) {
                 $query->whereHas('order_items', function ($query) use ($order_id) {
@@ -268,18 +162,18 @@ class Wholesale_return extends Component
                     return $q->where('status', request('status'));
                 });
             }
-        ], 'variations.stocks.latest_operation')
-        ->whereHas('variations.stocks.order_items', function ($query) use ($order_id) {
-            $query->where('order_id', $order_id)->where('status','!=',2);
-        })
-        ->when(request('status') != '', function ($q) {
-            return $q->whereHas('variations.stocks', function ($q) {
-                $q->where('status', request('status'));
+            ], 'variations.stocks.latest_operation')
+            ->whereHas('variations.stocks.order_items', function ($query) use ($order_id) {
+                $query->where('order_id', $order_id)->where('status','!=',2);
+            })
+            ->when(request('status') != '', function ($q) {
+                return $q->whereHas('variations.stocks', function ($q) {
+                    $q->where('status', request('status'));
 
-            });
-        })
-        ->orderBy('id', 'asc')
-        ->get();
+                });
+            })
+            ->orderBy('id', 'asc')
+            ->get();
         // dd($graded_stock);
         $data['graded_stocks'] = $graded_stocks;
 
@@ -323,99 +217,82 @@ class Wholesale_return extends Component
 
         return redirect(url('wholesale_return/detail').'/'.$order->id);
     }
-    private function insert_wholesale_return_item($products, $storages, $order, $n, $c, $i, $s, $g = null, $dr = null){
 
-        $names = explode(" ",$n);
-        $last = end($names);
-        if(in_array($last, $storages)){
-            $gb = array_search($last,$storages);
-            array_pop($names);
-            $n = implode(" ", $names);
-        }else{
-            $gb = 0;
-        }
-
-        $stock = Stock_model::firstOrNew(['imei' => $i, 'serial_number' => $s]);
-        if($stock->id != null){
-            if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
-            $issue['data']['row'] = $dr;
-            $issue['data']['name'] = $n;
-            $issue['data']['storage'] = $st;
-            $issue['data']['imei'] = $i.$s;
-            $issue['data']['cost'] = $c;
-            $issue['data']['stock_id'] = $stock->id;
-            if($stock->order_id == $order->id && $stock->status == 1){
-                $issue['message'] = 'Duplicate IMEI';
-            }else{
-                if($stock->status != 2){
-                    $issue['message'] = 'IMEI Available In Inventory';
-                }else{
-                    $issue['message'] = 'IMEI Rewholesale_return';
+    public function add_wholesale_return_item($order_id){
+        $order = Order_model::find($order_id);
+        // print_r($wholesale_return);
+            if (request('imei')) {
+                if (ctype_digit(request('imei'))) {
+                    $i = request('imei');
+                    $s = null;
+                } else {
+                    $i = null;
+                    $s = request('imei');
                 }
-            }
 
-        }else{
-            if(in_array(strtolower($n), array_map('strtolower',$products)) && ($i != null || $s != null)){
-                $product = array_search(strtolower($n), array_map('strtolower',$products));
-                $storage = $gb;
+                $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
 
-                // echo $product." ".$grade." ".$storage." | ";
-
-                $variation = Variation_model::firstOrNew(['product_id' => $product, 'grade' => 9, 'storage' => $storage]);
-
-                $variation->stock += 1;
-                $variation->status = 1;
-                $variation->save();
-
-                $stock->product_id = $product;
-                $stock->variation_id = $variation->id;
-                $stock->added_by = session('user_id');
-                $stock->order_id = $order->id;
-                $stock->status = 1;
-                $stock->save();
-
-                $order_item = Order_item_model::firstOrNew(['order_id' => $order->id, 'variation_id' => $variation->id, 'stock_id' => $stock->id]);
-                $order_item->quantity = 1;
-                $order_item->price = $c;
-                $order_item->status = 3;
-                $order_item->save();
-
-
-            }else{
-                if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
-                if($n != null){
-                    $error = $n . " " . $st . " " . $i.$s . " || ";
-                    $issue['data']['row'] = $dr;
-                    $issue['data']['name'] = $n;
-                    $issue['data']['storage'] = $st;
-                    $issue['data']['imei'] = $i.$s;
-                    $issue['data']['cost'] = $c;
-                    $issue['data']['stock_id'] = '';
-                    if($i == null && $s == null){
-                        $issue['message'] = 'IMEI Not Found';
-                    }else{
-                        $issue['message'] = 'Product Name Not Accepted';
+                if (request('imei') == '' || !$stock || $stock->status == null) {
+                    session()->put('error', 'IMEI Invalid / Not Found');
+                    // return redirect()->back(); // Redirect here is not recommended
+                    return redirect()->back();
+                }
+                $check_old_sale = Order_item_model::where(['stock_id'=>$stock->id, 'linked_id'=>null])
+                    ->whereHas('order', function ($query) {
+                        $query->whereIn('order_type_id', [2,3,5]);
+                    })->first();
+                if($check_old_sale != null){
+                    if($stock->purchase_item != null){
+                        $check_old_sale->linked_id = $stock->last_item()->id;
+                        $check_old_sale->save();
                     }
 
                 }
+                if($stock->purchase_item){
+
+                    $last_item = $stock->last_item();
+                    if(in_array($last_item->order->order_type_id,[1,4,6])){
+
+                        if($stock->status == 2){
+                            $stock->status = 1;
+                            $stock->save();
+                        }
+                    }else{
+                        if($stock->status == 1){
+                            $stock->status = 2;
+                            $stock->save();
+                        }
+                    }
+                }
+                if($stock->status == 2){
+                        $restock['order_id'] = $order_id;
+                        $restock['reference_id'] = $last_item->order->reference_id;
+                        $restock['stock_id'] = $stock->id;
+                        $restock['price'] = $last_item->price;
+                        $restock['linked_id'] = $last_item->id;
+                }else{
+                    session()->put('error', 'IMEI Already Available');
+                    return redirect()->back();
+                }
+                if($last_item->order->customer_id != $order->customer_id){
+                    session()->put('error', 'IMEI Sold to different customer');
+                    return redirect()->back();
+                }
+                $stock_id = $stock->id;
+                $orders = Order_item_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
+                $data['stock'] = $stock;
+                $data['orders'] = $orders;
+                // dd($orders);
+
+                $stocks = Stock_operations_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
+                if($stocks->count() > 0){
+                    $data['stocks'] = $stocks;
+                }
+
             }
-        }
-
-
-        if($issue != []){
-            Order_issue_model::create([
-                'order_id' => $order->id,
-                'data' => json_encode($issue['data']),
-                'message' => $issue['message'],
-            ]);
-        }
-
-    }
-    public function add_wholesale_return_item($order_id){
-        $wholesale_return = request('wholesale_return');
-        // print_r($wholesale_return);
-        if($order_id == $wholesale_return['order_id']){
-            $variation = Variation_model::firstOrNew(['product_id' => $wholesale_return['product'], 'storage' => $wholesale_return['storage'], 'color' => $wholesale_return['color'], 'grade' => $wholesale_return['grade']]);
+            $wholesale_return = $restock;
+            $s_variation = $stock->variation;
+            $variation = Variation_model::firstOrNew(['product_id' => $s_variation->product_id, 'storage' => $s_variation->storage, 'color' => $s_variation->color, 'grade' => request('grade')]);
 
             $variation->stock += 1;
             $variation->status = 1;
@@ -446,7 +323,7 @@ class Wholesale_return extends Component
                         'stock_id' => $stock->id,
                         'old_variation_id' => $stock->variation_id,
                         'new_variation_id' => $variation->id,
-                        'description' => $wholesale_return['description'],
+                        'description' => request('description'),
                         'admin_id' => session('user_id'),
                     ]);
 
@@ -462,64 +339,11 @@ class Wholesale_return extends Component
                 session()->put('error','Stock Not Found');
             }
 
-        }else{
-            session()->put('error',"Don't ANGRY ME");
-        }
 
         return redirect()->back();
 
     }
 
-    public function receive_wholesale_return_item($order_id, $imei = null, $back = null){
-
-        if(request('imei')){
-            $imei = request('imei');
-        }
-        if(ctype_digit($imei)){
-            $i = $imei;
-            $s = null;
-        }else{
-            $i = null;
-            $s = $imei;
-        }
-        $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
-
-        if($imei == '' || !$stock || $stock->status == null){
-            session()->put('error', 'IMEI Invalid / Not Found');
-            if($back != 1){
-                return redirect()->back();
-            }else{
-                return 1;
-            }
-
-        }
-        $order_item = Order_item_model::where(['order_id'=>$order_id,'stock_id'=>$stock->id])->first();
-        if(!$order_item){
-            session()->put('error', "Stock not found in this sheet");
-            if($back != 1){
-                return redirect()->back();
-            }else{
-                return 1;
-            }
-        }
-        if($order_item->status == 2){
-            session()->put('error', "Stock already added");
-            if($back != 1){
-                return redirect()->back();
-            }else{
-                return 1;
-            }
-        }
-        $order_item->status = 2;
-        $order_item->save();
-
-
-        if($back != 1){
-            return redirect()->back();
-        }else{
-            return 1;
-        }
-    }
 
 
 }

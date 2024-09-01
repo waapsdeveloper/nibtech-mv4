@@ -118,7 +118,16 @@
                 {{-- <td></td> --}}
                 <td style="text-align: right; padding:0; margin:0; line-height:10px" width="170">
                     <br><br>
-                    <h1 style="font-size: 26px; text-align:right;">INVOICE</h1>
+                    @if ($order->order_type_id == 5)
+
+                        <h1 style="font-size: 26px; text-align:right;">INVOICE</h1>
+
+                    @endif
+                    @if ($order->order_type_id == 6)
+
+                        <h1 style="font-size: 24px; text-align:right;">CREDIT NOTE</h1>
+
+                    @endif
                     <table cellspacing="4">
 
                     <br><br><br><br>
