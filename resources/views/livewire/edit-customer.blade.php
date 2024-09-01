@@ -180,9 +180,42 @@
                                                 $id[] = $order->id;
                                             }
                                             $items = $order->order_items;
+                                            $price = $order->order_items_sum_price;
                                             $j = 0;
                                         @endphp
+                                        @if ($order->order_type_id != 3)
 
+                                            <tr>
+                                                <td>{{ $i + 1 }}</td>
+
+                                                @if ($order->order_type_id == 1)
+                                                    <td><a href="{{url('purchase/detail/'.$order->id)}}?status=1">{{ $order->reference_id }}</a></td>
+                                                @elseif ($order->order_type_id == 2)
+                                                    <td><a href="{{url('rma/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                @elseif ($order->order_type_id == 4)
+                                                    <td><a href="{{url('return/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                @elseif ($order->order_type_id == 5)
+                                                    <td><a href="{{url('wholesale/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                @elseif ($order->order_type_id == 6)
+                                                    <td><a href="{{url('wholesale_return/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                @endif
+                                                <td>{{ $order->order_type->name }}</td>
+                                                <td>{{ $order->order_items_count }}</td>
+                                                @if (session('user')->hasPermission('view_price'))
+                                                <td>€{{ number_format($price,2) }}</td>
+                                                @endif
+                                                <td style="width:220px">{{ $order->created_at }}</td>
+                                                <td>
+                                                    <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
+                                                    <div class="dropdown-menu">
+                                                        <a class="dropdown-item" href="{{url('delete_wholesale') . "/" . $order->id }}"><i class="fe fe-arrows-rotate me-2 "></i>Delete</a>
+                                                        {{-- <a class="dropdown-item" href="{{ $order->delivery_note_url }}" target="_blank"><i class="fe fe-arrows-rotate me-2 "></i>Delivery Note</a>
+                                                        <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a> --}}
+                                                        {{-- <a class="dropdown-item" href="javascript:void(0);"><i class="fe fe-trash-2 me-2"></i>Delete</a> --}}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @else
                                         @foreach ($items as $itemIndex => $item)
                                             <tr>
                                                 {{-- @if ($itemIndex == 0)
@@ -246,6 +279,7 @@
                                                 $j++;
                                             @endphp
                                         @endforeach
+                                        @endif
                                         @php
                                             $i ++;
                                         @endphp

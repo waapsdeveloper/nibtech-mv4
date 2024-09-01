@@ -114,17 +114,19 @@ class Customer extends Component
         $data['customer'] = Customer_model::where('id',$id)->first();
 
         $orders = Order_model::with(['order_items.variation', 'order_items.variation.grade_id', 'order_items.stock'])
+        ->withCount('order_items')->withSum('order_items','price')
         // join('order_items', 'orders.id', '=', 'order_items.order_id')
         // ->join('variation', 'order_items.variation_id', '=', 'variation.id')
         // ->join('products', 'variation.product_id', '=', 'products.id')
         // ->
         ->where('orders.customer_id',$id)
 
-        ->orderBy('orders.reference_id', 'desc')
-        ->select('orders.*')
-        ->paginate(5)
-        ->onEachSide(5)
-        ->appends(request()->except('page'));
+        ->orderBy('orders.created_at', 'desc')
+        // ->select('orders.*')
+        // ->paginate(10)
+        // ->onEachSide(5)
+        // ->appends(request()->except('page'));
+        ->get();
         $data['orders'] = $orders;
         // dd($orders);
 
