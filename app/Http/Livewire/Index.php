@@ -152,6 +152,8 @@ class Index extends Component
             ->selectRaw('SUM(CASE WHEN orders.currency = 4 THEN order_items.price END) as total_eur')
             ->selectRaw('SUM(CASE WHEN orders.currency = 5 THEN order_items.price END) as total_gbp')
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->Where('orders.deleted_at',null)
+            ->Where('order_items.deleted_at',null)
             ->first();
 
         $data['average'] = $data['order_items']->average_eur;
