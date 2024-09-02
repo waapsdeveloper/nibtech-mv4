@@ -56,6 +56,7 @@
 
                 window.onload = function() {
                     document.getElementById('imeiInput').focus();
+                    document.getElementById('imeiInput').click();
                     setTimeout(
                     function()
                     {
@@ -71,6 +72,7 @@
                     var input = document.getElementById('imeiInput');
                     input.focus();
                     input.select();
+                    document.getElementById('imeiInput').click();
                     setTimeout(
                     function()
                     {
