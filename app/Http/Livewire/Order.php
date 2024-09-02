@@ -2033,57 +2033,60 @@ class Order extends Component
                 }
             }
             $imei = request('correction')['imei'];
-            $serial_number = null;
-            if(!ctype_digit($imei)){
-                $serial_number = $imei;
-                $imei = null;
-            }
+            if(request('correction')['imei'] != ''){
 
-            $stock = Stock_model::where(['imei'=>$imei, 'serial_number'=>$serial_number])->first();
-            if(!$stock){
-                session()->put('error', 'Stock not found');
-                return redirect()->back();
+                $serial_number = null;
+                if(!ctype_digit($imei)){
+                    $serial_number = $imei;
+                    $imei = null;
+                }
+
+                $stock = Stock_model::where(['imei'=>$imei, 'serial_number'=>$serial_number])->first();
+                if(!$stock){
+                    session()->put('error', 'Stock not found');
+                    return redirect()->back();
+                }
+                if($stock->order->status != 3){
+                    session()->put('error', 'Stock list awaiting approval');
+                    return redirect()->back();
+                }
+                if($stock->variation->grade == 17){
+                    session()->put('error', "IMEI Flagged | Contact Admin");
+                    return redirect()->back();
+                }
+                if($stock->variation->storage != null){
+                    $storage = $stock->variation->storage_id->name . " - ";
+                }else{
+                    $storage = null;
+                }
+                if($stock->variation->color != null){
+                    $color = $stock->variation->color_id->name . " - ";
+                }else{
+                    $color = null;
+                }
+                $variant = $item->variation;
+                if(($stock->variation->product_id == $variant->product_id) || ($variant->product_id == 144 && $stock->variation->product_id == 229) || ($variant->product_id == 142 && $stock->variation->product_id == 143) || ($variant->product_id == 54 && $stock->variation->product_id == 55) || ($variant->product_id == 55 && $stock->variation->product_id == 54) || ($variant->product_id == 58 && $stock->variation->product_id == 59) || ($variant->product_id == 59 && $stock->variation->product_id == 58) || ($variant->product_id == 200 && $stock->variation->product_id == 160)){
+                }else{
+                    session()->put('error', "Product Model not matched");
+                    return redirect()->back();
+                }
+                if(($stock->variation->storage == $variant->storage) || ($variant->storage == 5 && in_array($stock->variation->storage,[0,6]) && $variant->product->brand == 2) || (in_array($variant->product_id, [78,58,59]) && $variant->storage == 4 && in_array($stock->variation->storage,[0,5]))){
+                }else{
+                    session()->put('error', "Product Storage not matched");
+                    return redirect()->back();
+                }
+                if(!in_array($stock->variation->grade, [$variant->grade, 7, 9])){
+                    session()->put('error', "Product Grade not matched");
+                    return redirect()->back();
+                }
+                $stock->variation_id = $item->variation_id;
+                $stock->tester = request('correction')['tester'];
+                $stock->added_by = session('user_id');
+                if($stock->status == 1){
+                    $stock->status = 2;
+                }
+                $stock->save();
             }
-            if($stock->order->status != 3){
-                session()->put('error', 'Stock list awaiting approval');
-                return redirect()->back();
-            }
-            if($stock->variation->grade == 17){
-                session()->put('error', "IMEI Flagged | Contact Admin");
-                return redirect()->back();
-            }
-            if($stock->variation->storage != null){
-                $storage = $stock->variation->storage_id->name . " - ";
-            }else{
-                $storage = null;
-            }
-            if($stock->variation->color != null){
-                $color = $stock->variation->color_id->name . " - ";
-            }else{
-                $color = null;
-            }
-            $variant = $item->variation;
-            if(($stock->variation->product_id == $variant->product_id) || ($variant->product_id == 144 && $stock->variation->product_id == 229) || ($variant->product_id == 142 && $stock->variation->product_id == 143) || ($variant->product_id == 54 && $stock->variation->product_id == 55) || ($variant->product_id == 55 && $stock->variation->product_id == 54) || ($variant->product_id == 58 && $stock->variation->product_id == 59) || ($variant->product_id == 59 && $stock->variation->product_id == 58) || ($variant->product_id == 200 && $stock->variation->product_id == 160)){
-            }else{
-                session()->put('error', "Product Model not matched");
-                return redirect()->back();
-            }
-            if(($stock->variation->storage == $variant->storage) || ($variant->storage == 5 && in_array($stock->variation->storage,[0,6]) && $variant->product->brand == 2) || (in_array($variant->product_id, [78,58,59]) && $variant->storage == 4 && in_array($stock->variation->storage,[0,5]))){
-            }else{
-                session()->put('error', "Product Storage not matched");
-                return redirect()->back();
-            }
-            if(!in_array($stock->variation->grade, [$variant->grade, 7, 9])){
-                session()->put('error', "Product Grade not matched");
-                return redirect()->back();
-            }
-            $stock->variation_id = $item->variation_id;
-            $stock->tester = request('correction')['tester'];
-            $stock->added_by = session('user_id');
-            if($stock->status == 1){
-                $stock->status = 2;
-            }
-            $stock->save();
             if($item->stock_id != null){
                 if($item->stock->purchase_item){
                     $last_operation = Stock_operations_model::where('stock_id',$item->stock_id)->orderBy('id','desc')->first();
@@ -2113,9 +2116,13 @@ class Order extends Component
                 }
 
             }
-
-            $item->stock_id = $stock->id;
-            $item->linked_id = $stock->purchase_item->id;
+            if(request('correction')['imei'] != ''){
+                $item->stock_id = $stock->id;
+                $item->linked_id = $stock->purchase_item->id;
+            }else{
+                $item->stock_id = null;
+                $item->linked_id = null;
+            }
             $item->save();
             $stock_movement = Stock_movement_model::where(['stock_id'=>$stock->id, 'received_at'=>null])->first();
             if($stock_movement != null){
