@@ -32,12 +32,12 @@ class FunctionsDaily extends Command
     {
         ini_set('max_execution_time', 1200);
         // $this->remove_extra_variations();
-        // $this->check_stock_status();
+        $this->check_stock_status();
     }
 
     private function check_stock_status(){
-        // Stock_operations_model::where('description','LIKE','% | DrPhone')->update(['process_id'=>1]);
-        // die;
+        Stock_operations_model::where('description','LIKE','% | DrPhone')->update(['process_id'=>1]);
+        die;
         // $items = Order_item_model::where('linked_id',null)->where('stock_id','!=',null)->whereHas('order', function ($query) {
         //     $query->where('order_type_id', '!=', 1);
         // })->get();
