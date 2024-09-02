@@ -2119,17 +2119,18 @@ class Order extends Component
             if(request('correction')['imei'] != ''){
                 $item->stock_id = $stock->id;
                 $item->linked_id = $stock->purchase_item->id;
+
+                $stock_movement = Stock_movement_model::where(['stock_id'=>$stock->id, 'received_at'=>null])->first();
+                if($stock_movement != null){
+                    Stock_movement_model::where(['stock_id'=>$stock->id, 'received_at'=>null])->update([
+                        'received_at' => Carbon::now(),
+                    ]);
+                }
             }else{
                 $item->stock_id = null;
                 $item->linked_id = null;
             }
             $item->save();
-            $stock_movement = Stock_movement_model::where(['stock_id'=>$stock->id, 'received_at'=>null])->first();
-            if($stock_movement != null){
-                Stock_movement_model::where(['stock_id'=>$stock->id, 'received_at'=>null])->update([
-                    'received_at' => Carbon::now(),
-                ]);
-            }
 
 
             $message = "Hi, here is the correct IMEI/Serial number for this order. \n".$imei.$serial_number." ".$stock->tester."\n Regards, \n" . session('fname');
