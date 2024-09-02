@@ -144,13 +144,13 @@
             </div>
                 <br>
             <div class="row">
-                <div class="col-lg-2 col-xl-2 col-md-4 col-sm-6">
+                <div class="col-lg-2 col-xl-2 col-md-3 col-sm-6">
                     <div class="form-floating">
                         <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset">
                         <label for="">IMEI</label>
                     </div>
                 </div>
-                <div class="col-lg-2 col-xl-2 col-md-4 col-sm-6">
+                <div class="col-lg-2 col-xl-2 col-md-3 col-sm-6">
                     {{-- <div class="form-floating"> --}}
                         <select id="adm_input" name="adm" class="form-control form-select" data-bs-placeholder="Select Processed By">
                             <option value="">Processed by</option>
@@ -162,13 +162,19 @@
                         {{-- <label for="adm_input">Processed By</label> --}}
                     {{-- </div> --}}
                 </div>
-                <div class="col-lg-2 col-xl-2 col-md-4 col-sm-6">
+                <div class="col-lg-2 col-xl-2 col-md-3 col-sm-6">
                     <div class="form-floating">
                         <input type="text" class="form-control" name="tracking_number" placeholder="Enter Tracking Number" value="@isset($_GET['tracking_number']){{$_GET['tracking_number']}}@endisset">
                         <label for="">Tracking Number</label>
                     </div>
                 </div>
 
+                <div class="col-lg-2 col-xl-2 col-md-3 col-sm-6">
+                    <select name="with_stock" class="form-control form-select" data-bs-placeholder="Select With Stock">
+                        <option value="1" @if(isset($_GET['with_stock']) && $_GET['with_stock'] == 1) {{'selected'}}@endif>With Stock</option>
+                        <option value="2" @if(isset($_GET['with_stock']) && $_GET['with_stock'] == 2) {{'selected'}}@endif>Without Stock</option>
+                    </select>
+                </div>
                 <input type="hidden" name="page" value="{{ Request::get('page') }}">
                 <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
                 <input type="hidden" name="sort" value="{{ Request::get('sort') }}">

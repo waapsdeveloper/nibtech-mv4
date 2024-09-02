@@ -168,6 +168,11 @@ class Order extends Component
             }
             return $q->where('tracking_number', 'LIKE', '%' . $tracking . '%');
         })
+        ->when(request('with_stock') == 2, function ($q) {
+            return $q->whereHas('order_items', function ($q) {
+                $q->where('stock_id', null);
+            });
+        })
         // ->orderBy($sort, $by) // Order by variation name
         // ->when(request('sort') == 4, function ($q) {
         //     return $q->whereHas('order_items.variation.product', function ($q) {
