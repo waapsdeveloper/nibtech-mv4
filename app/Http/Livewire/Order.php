@@ -2126,16 +2126,17 @@ class Order extends Component
                         'received_at' => Carbon::now(),
                     ]);
                 }
+
+                $message = "Hi, here is the correct IMEI/Serial number for this order. \n".$imei.$serial_number." ".$stock->tester."\n Regards, \n" . session('fname');
+                session()->put('success', $message);
+                session()->put('copy', $message);
             }else{
                 $item->stock_id = null;
                 $item->linked_id = null;
+                session()->put('success', 'IMEI removed from Order');
             }
             $item->save();
 
-
-            $message = "Hi, here is the correct IMEI/Serial number for this order. \n".$imei.$serial_number." ".$stock->tester."\n Regards, \n" . session('fname');
-            session()->put('success', $message);
-            session()->put('copy', $message);
         }else{
             session()->put('error', 'Update deadline exceeded');
         }
