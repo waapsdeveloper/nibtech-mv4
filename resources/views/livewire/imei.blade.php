@@ -57,14 +57,14 @@
                 window.onload = function() {
                     document.getElementById('imeiInput').focus();
                     document.getElementById('imeiInput').click();
-                    setTimeout(function(){ $('#imeiInput'). focus (); }, 500);
+                    setTimeout(function(){ document.getElementById('#imeiInput'). focus ();$('#imeiInput'). focus (); }, 500);
                 };
                 document.addEventListener('DOMContentLoaded', function() {
                     var input = document.getElementById('imeiInput');
                     input.focus();
                     input.select();
                     document.getElementById('imeiInput').click();
-                    setTimeout(function(){ $('#imeiInput'). focus (); }, 500);
+                    setTimeout(function(){ document.getElementById('#imeiInput'). focus ();$('#imeiInput'). focus (); }, 500);
                 });
 
             </script>
