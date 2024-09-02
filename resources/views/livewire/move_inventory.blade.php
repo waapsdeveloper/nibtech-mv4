@@ -142,13 +142,18 @@
                             <button class="btn btn-primary pd-x-20" type="submit">Send</button>
                     </div>
                     <script>
+
                         window.onload = function() {
                             document.getElementById('imeiInput').focus();
+                            document.getElementById('imeiInput').click();
+                            setTimeout(function(){ document.getElementById('imeiInput').focus();$('#imeiInput').focus(); }, 500);
                         };
                         document.addEventListener('DOMContentLoaded', function() {
                             var input = document.getElementById('imeiInput');
                             input.focus();
                             input.select();
+                            document.getElementById('imeiInput').click();
+                            setTimeout(function(){ document.getElementById('imeiInput').focus();$('#imeiInput').focus(); }, 500);
                         });
                     </script>
                 </form>
