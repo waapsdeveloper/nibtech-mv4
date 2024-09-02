@@ -356,6 +356,7 @@
                                     $i = $orders->firstItem() - 1;
                                     $id = [];
                                     $total_items = 0;
+                                    $replacement_items = [];
                                 @endphp
                                 @foreach ($orders as $index => $order)
                                     @php
@@ -573,7 +574,11 @@
                                             @php
                                                 $itm = $replacement;
                                                 $replacement = $replacement->replacement;
-
+                                                if(in_array($itm->id,$replacement_items)){
+                                                    continue;
+                                                }else {
+                                                    $replacement_items[] = $itm->id;
+                                                }
                                             @endphp
 
                                             {{-- @foreach ($order->exchange_items as $ind => $itm) --}}
@@ -611,7 +616,14 @@
                                         @endwhile
                                     @elseif ($order->exchange_items->count() > 0)
                                         @foreach ($order->exchange_items as $ind => $itm)
+                                            @php
 
+                                                if(in_array($itm->id,$replacement_items)){
+                                                    continue;
+                                                }else {
+                                                    $replacement_items[] = $itm->id;
+                                                }
+                                            @endphp
                                             <tr class="bg-secondary text-white">
                                                     <td colspan="2">{{ $customer->first_name." ".$customer->last_name." ".$customer->phone }}</td>
 
@@ -657,6 +669,11 @@
                                                             $itm = $replacement;
                                                             $replacement = $replacement->replacement;
 
+                                                            if(in_array($itm->id,$replacement_items)){
+                                                                continue;
+                                                            }else {
+                                                                $replacement_items[] = $itm->id;
+                                                            }
                                                         @endphp
 
                                                         {{-- @foreach ($order->exchange_items as $ind => $itm) --}}
