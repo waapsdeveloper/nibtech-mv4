@@ -2033,14 +2033,14 @@ class Order extends Component
                 }
             }
             $imei = request('correction')['imei'];
+
+            $serial_number = null;
+            if(!ctype_digit($imei)){
+                $serial_number = $imei;
+                $imei = null;
+            }
+
             if(request('correction')['imei'] != ''){
-
-                $serial_number = null;
-                if(!ctype_digit($imei)){
-                    $serial_number = $imei;
-                    $imei = null;
-                }
-
                 $stock = Stock_model::where(['imei'=>$imei, 'serial_number'=>$serial_number])->first();
                 if(!$stock){
                     session()->put('error', 'Stock not found');
