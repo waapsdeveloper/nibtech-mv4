@@ -566,150 +566,153 @@
                                         @php
                                             $j++;
                                         @endphp
-                                    @if ($item->replacement)
-                                        @php
-                                            $replacement = $item->replacement;
-                                        @endphp
-                                        @while ($replacement != null)
+                                    @endforeach
+                                    @foreach ($items as $itemIndex => $item)
+                                        @if ($item->replacement)
                                             @php
-                                                $itm = $replacement;
-                                                $replacement = $replacement->replacement;
-                                                if(in_array($itm->id,$replacement_items)){
-                                                    continue;
-                                                }else {
-                                                    $replacement_items[] = $itm->id;
-                                                }
+                                                $replacement = $item->replacement;
                                             @endphp
+                                            @while ($replacement != null)
+                                                @php
+                                                    $itm = $replacement;
+                                                    $replacement = $replacement->replacement;
+                                                    if(in_array($itm->id,$replacement_items)){
+                                                        continue;
+                                                    }else {
+                                                        $replacement_items[] = $itm->id;
+                                                    }
+                                                @endphp
 
-                                            {{-- @foreach ($order->exchange_items as $ind => $itm) --}}
+                                                {{-- @foreach ($order->exchange_items as $ind => $itm) --}}
 
-                                            <tr class="bg-secondary text-white">
-                                                <td colspan="2">{{ $customer->first_name." ".$customer->last_name." ".$customer->phone }}</td>
-
-                                                <td>Exchanged With</td>
-                                                <td>
-
-                                                    @if ($itm->variation ?? false)
-                                                        <strong>{{ $itm->variation->sku }}</strong>{{ " - " . $itm->variation->product->model . " - " . (isset($itm->variation->storage)?$storages[$itm->variation->storage] . " - " : null) . (isset($itm->variation->color)?$colors[$itm->variation->color]. " - ":null)}} <strong><u>{{ $grades[$itm->variation->grade] }}</u></strong>
-                                                    @endif
-
-                                                </td>
-                                                <td>{{ $itm->quantity }}</td>
-                                                <td>
-                                                    {{ $order->order_status->name }}
-                                                    @isset($itm->stock->imei) {{ $itm->stock->imei }}&nbsp; @endisset
-                                                    @isset($itm->stock->serial_number) {{ $itm->stock->serial_number }}&nbsp; @endisset
-                                                </td>
-
-                                                <td title="{{$itm->id}}">{{ $itm->created_at }}</td>
-                                                <td>
-                                                    <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical text-white tx-18"></i></a>
-                                                    <div class="dropdown-menu">
-                                                        <a class="dropdown-item" href="{{url('order/delete_replacement_item').'/'.$itm->id}}"><i class="fe fe-trash-2 me-2"></i>Delete</a>
-                                                        <a class="dropdown-item" id="replacement_{{ $itm->id }}" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $itm->order->reference_id }}" data-bs-item="{{ $itm->id }}" data-bs-return="@if($itm->check_return) 1 @endif"> Replacement </a>
-                                                        <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
-                                                        {{-- <a class="dropdown-item" href="javascript:void(0);"><i class="fe fe-trash-2 me-2"></i>Delete</a> --}}
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        {{-- @endforeach --}}
-                                        @endwhile
-                                    @elseif ($order->exchange_items->count() > 0)
-                                        @foreach ($order->exchange_items as $ind => $itm)
-                                            @php
-
-                                                if(in_array($itm->id,$replacement_items)){
-                                                    continue;
-                                                }else {
-                                                    $replacement_items[] = $itm->id;
-                                                }
-                                            @endphp
-                                            <tr class="bg-secondary text-white">
+                                                <tr class="bg-secondary text-white">
                                                     <td colspan="2">{{ $customer->first_name." ".$customer->last_name." ".$customer->phone }}</td>
 
-                                                <td>Exchanged With</td>
-                                                <td>
+                                                    <td>Exchanged With</td>
+                                                    <td>
 
-                                                    @if ($itm->variation ?? false)
-                                                        <strong>{{ $itm->variation->sku }}</strong>{{ " - " . $itm->variation->product->model . " - " . (isset($itm->variation->storage)?$storages[$itm->variation->storage] . " - " : null) . (isset($itm->variation->color)?$colors[$itm->variation->color]. " - ":null)}} <strong><u>{{ $grades[$itm->variation->grade] }}</u></strong>
-                                                    @endif
+                                                        @if ($itm->variation ?? false)
+                                                            <strong>{{ $itm->variation->sku }}</strong>{{ " - " . $itm->variation->product->model . " - " . (isset($itm->variation->storage)?$storages[$itm->variation->storage] . " - " : null) . (isset($itm->variation->color)?$colors[$itm->variation->color]. " - ":null)}} <strong><u>{{ $grades[$itm->variation->grade] }}</u></strong>
+                                                        @endif
 
-                                                </td>
-                                                <td>{{ $itm->quantity }}</td>
-                                                <td>
-                                                    {{ $order->order_status->name }}
-                                                    @isset($itm->stock->imei) {{ $itm->stock->imei }}&nbsp; @endisset
-                                                    @isset($itm->stock->serial_number) {{ $itm->stock->serial_number }}&nbsp; @endisset
-                                                </td>
+                                                    </td>
+                                                    <td>{{ $itm->quantity }}</td>
+                                                    <td>
+                                                        {{ $order->order_status->name }}
+                                                        @isset($itm->stock->imei) {{ $itm->stock->imei }}&nbsp; @endisset
+                                                        @isset($itm->stock->serial_number) {{ $itm->stock->serial_number }}&nbsp; @endisset
+                                                    </td>
 
-                                                <td title="{{$itm->id}}">{{ $itm->created_at }}</td>
-                                                <td>
-                                                    <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical text-white tx-18"></i></a>
-                                                    <div class="dropdown-menu">
-                                                        <a class="dropdown-item" href="{{url('order/delete_replacement_item').'/'.$itm->id}}"><i class="fe fe-trash-2 me-2"></i>Delete</a>
-                                                        <a class="dropdown-item" id="replacement_{{ $itm->id }}" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $itm->order->reference_id }}" data-bs-item="{{ $itm->id }}" data-bs-return="@if($itm->check_return) 1 @endif"> Replacement </a>
-                                                        <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
-                                                        {{-- <a class="dropdown-item" href="javascript:void(0);"><i class="fe fe-trash-2 me-2"></i>Delete</a> --}}
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    @endif
-                                    @if (isset($itm) && $itm->replacement)
-                                                    @php
-                                                        if ($item->replacement){
-                                                            $replacement = $item->replacement;
-                                                        }else{
-                                                            $replacement = $itm->replacement;
-                                                        }
+                                                    <td title="{{$itm->id}}">{{ $itm->created_at }}</td>
+                                                    <td>
+                                                        <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical text-white tx-18"></i></a>
+                                                        <div class="dropdown-menu">
+                                                            <a class="dropdown-item" href="{{url('order/delete_replacement_item').'/'.$itm->id}}"><i class="fe fe-trash-2 me-2"></i>Delete</a>
+                                                            <a class="dropdown-item" id="replacement_{{ $itm->id }}" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $itm->order->reference_id }}" data-bs-item="{{ $itm->id }}" data-bs-return="@if($itm->check_return) 1 @endif"> Replacement </a>
+                                                            <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
+                                                            {{-- <a class="dropdown-item" href="javascript:void(0);"><i class="fe fe-trash-2 me-2"></i>Delete</a> --}}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            {{-- @endforeach --}}
+                                            @endwhile
+                                        @elseif ($order->exchange_items->count() > 0)
+                                            @foreach ($order->exchange_items as $ind => $itm)
+                                                @php
 
-                                                    @endphp
-                                                    @while ($replacement != null)
+                                                    if(in_array($itm->id,$replacement_items)){
+                                                        continue;
+                                                    }else {
+                                                        $replacement_items[] = $itm->id;
+                                                    }
+                                                @endphp
+                                                <tr class="bg-secondary text-white">
+                                                        <td colspan="2">{{ $customer->first_name." ".$customer->last_name." ".$customer->phone }}</td>
+
+                                                    <td>Exchanged With</td>
+                                                    <td>
+
+                                                        @if ($itm->variation ?? false)
+                                                            <strong>{{ $itm->variation->sku }}</strong>{{ " - " . $itm->variation->product->model . " - " . (isset($itm->variation->storage)?$storages[$itm->variation->storage] . " - " : null) . (isset($itm->variation->color)?$colors[$itm->variation->color]. " - ":null)}} <strong><u>{{ $grades[$itm->variation->grade] }}</u></strong>
+                                                        @endif
+
+                                                    </td>
+                                                    <td>{{ $itm->quantity }}</td>
+                                                    <td>
+                                                        {{ $order->order_status->name }}
+                                                        @isset($itm->stock->imei) {{ $itm->stock->imei }}&nbsp; @endisset
+                                                        @isset($itm->stock->serial_number) {{ $itm->stock->serial_number }}&nbsp; @endisset
+                                                    </td>
+
+                                                    <td title="{{$itm->id}}">{{ $itm->created_at }}</td>
+                                                    <td>
+                                                        <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical text-white tx-18"></i></a>
+                                                        <div class="dropdown-menu">
+                                                            <a class="dropdown-item" href="{{url('order/delete_replacement_item').'/'.$itm->id}}"><i class="fe fe-trash-2 me-2"></i>Delete</a>
+                                                            <a class="dropdown-item" id="replacement_{{ $itm->id }}" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $itm->order->reference_id }}" data-bs-item="{{ $itm->id }}" data-bs-return="@if($itm->check_return) 1 @endif"> Replacement </a>
+                                                            <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
+                                                            {{-- <a class="dropdown-item" href="javascript:void(0);"><i class="fe fe-trash-2 me-2"></i>Delete</a> --}}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        @endif
+                                        @if (isset($itm) && $itm->replacement)
                                                         @php
-                                                            $itm = $replacement;
-                                                            $replacement = $replacement->replacement;
-
-                                                            if(in_array($itm->id,$replacement_items)){
-                                                                continue;
-                                                            }else {
-                                                                $replacement_items[] = $itm->id;
+                                                            if ($item->replacement){
+                                                                $replacement = $item->replacement;
+                                                            }else{
+                                                                $replacement = $itm->replacement;
                                                             }
+
                                                         @endphp
+                                                        @while ($replacement != null)
+                                                            @php
+                                                                $itm = $replacement;
+                                                                $replacement = $replacement->replacement;
 
-                                                        {{-- @foreach ($order->exchange_items as $ind => $itm) --}}
+                                                                if(in_array($itm->id,$replacement_items)){
+                                                                    continue;
+                                                                }else {
+                                                                    $replacement_items[] = $itm->id;
+                                                                }
+                                                            @endphp
 
-                                                        <tr class="bg-secondary text-white">
-                                                            <td colspan="2">{{ $customer->first_name." ".$customer->last_name." ".$customer->phone }}</td>
+                                                            {{-- @foreach ($order->exchange_items as $ind => $itm) --}}
 
-                                                            <td>Exchanged With</td>
-                                                            <td>
+                                                            <tr class="bg-secondary text-white">
+                                                                <td colspan="2">{{ $customer->first_name." ".$customer->last_name." ".$customer->phone }}</td>
 
-                                                                @if ($itm->variation ?? false)
-                                                                    <strong>{{ $itm->variation->sku }}</strong>{{ " - " . $itm->variation->product->model . " - " . (isset($itm->variation->storage)?$storages[$itm->variation->storage] . " - " : null) . (isset($itm->variation->color)?$colors[$itm->variation->color]. " - ":null)}} <strong><u>{{ $grades[$itm->variation->grade] }}</u></strong>
-                                                                @endif
+                                                                <td>Exchanged With</td>
+                                                                <td>
 
-                                                            </td>
-                                                            <td>{{ $itm->quantity }}</td>
-                                                            <td>
-                                                                {{ $order->order_status->name }}
-                                                                @isset($itm->stock->imei) {{ $itm->stock->imei }}&nbsp; @endisset
-                                                                @isset($itm->stock->serial_number) {{ $itm->stock->serial_number }}&nbsp; @endisset
-                                                            </td>
+                                                                    @if ($itm->variation ?? false)
+                                                                        <strong>{{ $itm->variation->sku }}</strong>{{ " - " . $itm->variation->product->model . " - " . (isset($itm->variation->storage)?$storages[$itm->variation->storage] . " - " : null) . (isset($itm->variation->color)?$colors[$itm->variation->color]. " - ":null)}} <strong><u>{{ $grades[$itm->variation->grade] }}</u></strong>
+                                                                    @endif
 
-                                                            <td title="{{$itm->id}}">{{ $itm->created_at }}</td>
-                                                            <td>
-                                                                <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical text-white tx-18"></i></a>
-                                                                <div class="dropdown-menu">
-                                                                    <a class="dropdown-item" href="{{url('order/delete_replacement_item').'/'.$itm->id}}"><i class="fe fe-trash-2 me-2"></i>Delete</a>
-                                                                    <a class="dropdown-item" id="replacement_{{ $itm->id }}" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $itm->order->reference_id }}" data-bs-item="{{ $itm->id }}" data-bs-return="@if($itm->check_return) 1 @endif"> Replacement </a>
-                                                                    <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
-                                                                    {{-- <a class="dropdown-item" href="javascript:void(0);"><i class="fe fe-trash-2 me-2"></i>Delete</a> --}}
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    {{-- @endforeach --}}
-                                                    @endwhile
-                                    @endif
+                                                                </td>
+                                                                <td>{{ $itm->quantity }}</td>
+                                                                <td>
+                                                                    {{ $order->order_status->name }}
+                                                                    @isset($itm->stock->imei) {{ $itm->stock->imei }}&nbsp; @endisset
+                                                                    @isset($itm->stock->serial_number) {{ $itm->stock->serial_number }}&nbsp; @endisset
+                                                                </td>
+
+                                                                <td title="{{$itm->id}}">{{ $itm->created_at }}</td>
+                                                                <td>
+                                                                    <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical text-white tx-18"></i></a>
+                                                                    <div class="dropdown-menu">
+                                                                        <a class="dropdown-item" href="{{url('order/delete_replacement_item').'/'.$itm->id}}"><i class="fe fe-trash-2 me-2"></i>Delete</a>
+                                                                        <a class="dropdown-item" id="replacement_{{ $itm->id }}" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $itm->order->reference_id }}" data-bs-item="{{ $itm->id }}" data-bs-return="@if($itm->check_return) 1 @endif"> Replacement </a>
+                                                                        <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
+                                                                        {{-- <a class="dropdown-item" href="javascript:void(0);"><i class="fe fe-trash-2 me-2"></i>Delete</a> --}}
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        {{-- @endforeach --}}
+                                                        @endwhile
+                                        @endif
+
                                     @endforeach
                                     @if ($customer->orders->count() > 1)
                                         @php
