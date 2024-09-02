@@ -213,7 +213,8 @@ class Index extends Component
 
 
         $testing_count = Admin_model::withCount(['stock_operations' => function($q) use ($start_date,$end_date) {
-            $q->select(DB::raw('count(distinct stock_id)'))->where('description','LIKE','%DrPhone')->whereBetween('created_at', [$start_date, $end_date]);
+            // $q->select(DB::raw('count(distinct stock_id)'))->where('description','LIKE','%DrPhone')->whereBetween('created_at', [$start_date, $end_date]);
+            $q->select(DB::raw('count(distinct stock_id)'))->where('process_id',1)->whereBetween('created_at', [$start_date, $end_date]);
         }])->get();
         $data['testing_count'] = $testing_count;
 
