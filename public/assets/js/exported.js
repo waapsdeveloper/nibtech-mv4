@@ -250,6 +250,11 @@
           statistics1(sessionStorage.getItem('total2'),sessionStorage.getItem('approved2'),sessionStorage.getItem('failed2'),sessionStorage.getItem('dates2'));
         }, 1000);
       }
+    if (document.querySelector('#statistics4') !== null) {
+        setTimeout(function () {
+        statistics4(sessionStorage.getItem('total3'),sessionStorage.getItem('approved3'),sessionStorage.getItem('failed3'),sessionStorage.getItem('dates3'));
+        }, 1000);
+    }
     //   if (document.querySelector('#statistics1') !== null) {
     //     setTimeout(function () {
     //       statistics1(sessionStorage.getItem('total'),sessionStorage.getItem('approved'),sessionStorage.getItem('failed'),sessionStorage.getItem('dates'));
@@ -281,9 +286,9 @@
      } // For index2.html
 
 
-     if (document.querySelector('#statistics3') !== null) {
-       statistics3();
-     }
+    //  if (document.querySelector('#statistics3') !== null) {
+    //    statistics3();
+    //  }
 
      if (document.querySelector('#Viewers2') !== null) {
        viewers2();
@@ -520,7 +525,7 @@
     //     name: 'Orders',
     //     data: datas.split(',')
     //   }, {
-        name: 'EUR',
+        name: 'Orders',
         data: data1.split(',')
     //   }, {
     //     name: 'GBP',
@@ -604,6 +609,100 @@
     };
     document.getElementById('statistics2').innerHTML = '';
     var chart1 = new ApexCharts(document.querySelector("#statistics2"), options1);
+    chart1.render();
+  } //Visitors chart
+
+  function statistics4 (datas,data1,data2,dates) {
+
+    var options1 = {
+      series: [{
+        name: 'Orders',
+        data: datas.split(',')
+      }, {
+        name: 'EUR',
+        data: data1.split(',')
+      }, {
+        name: 'GBP',
+        data: data2.split(',')
+      }],
+      chart: {
+        type: 'line',
+        height: 280
+      },
+      grid: {
+        borderColor: '#f2f6f7'
+      },
+      colors: [myVarVal, "Red", "Green"],
+      plotOptions: {
+        line: {
+          colors: {
+            ranges: [{
+              from: -100,
+              to: -46,
+              color: 'Red'
+            }, {
+              from: -45,
+              to: 0,
+              color: 'Green'
+            }]
+          },
+          columnWidth: '100%'
+        }
+      },
+      dataLabels: {
+        enabled: false
+      },
+      stroke: {
+        curve: 'smooth',
+        show: true,
+        width: 4,
+        // colors: ['transparent']
+      },
+      legend: {
+        show: true,
+        position: 'top'
+      },
+      yaxis: {
+        title: {
+          text: 'Orders',
+          style: {
+            color: '#adb5be',
+            fontSize: '14px',
+            fontFamily: 'poppins, sans-serif',
+            fontWeight: 600,
+            cssClass: 'apexcharts-yaxis-label'
+          }
+        },
+        labels: {
+          formatter: function formatter(y) {
+            return y.toFixed(0) + "";
+          }
+        }
+      },
+      xaxis: {
+        type: 'month',
+        categories: dates.split(','),
+        axisBorder: {
+          show: true,
+          color: 'rgba(119, 119, 142, 0.05)',
+          offsetX: 0,
+          offsetY: 0
+        },
+        axisTicks: {
+          show: true,
+          borderType: 'solid',
+          color: 'rgba(119, 119, 142, 0.05)',
+          width: 6,
+          offsetX: 0,
+          offsetY: 0
+        },
+        labels: {
+          rotate: -90
+        }
+      }
+    };
+    document.getElementById('statistics4').innerHTML = '';
+    var chart1 = new ApexCharts(document.querySelector("#statistics4"), options1);
     chart1.render();
   } //Visitors chart
 

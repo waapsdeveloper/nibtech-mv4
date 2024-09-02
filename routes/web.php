@@ -53,6 +53,7 @@ use App\Http\Livewire\Wholesale_return;
 Route::get('/', Index::class)->name('index');
 Route::get('index', Index::class)->name('index');
 Route::get('index/refresh_sales_chart', [Index::class,'refresh_sales_chart'])->name('10_day_sales_chart');
+Route::get('index/refresh_10_days_chart', [Index::class,'refresh_10_days_chart'])->name('10_day_sales_chart');
 // Route::post('change', Change::class);
 Route::get('error404', Error404::class)->name('error');
 Route::get('error500', Error500::class)->name('error');

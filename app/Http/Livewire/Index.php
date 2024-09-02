@@ -331,4 +331,53 @@ class Index extends Component
         // sleep(2);
         // return redirect()->back();
     }
+    public function refresh_10_days_chart(){
+        $order = [];
+        $eur = [];
+        $gbp = [];
+        $dates = [];
+        $k = 0;
+        $today = date('d');
+        if($today > 25){
+            $i = 25;
+        }elseif($today > 15){
+            $i = 15;
+        }elseif($today > 5){
+            $i = 5;
+        }else{
+            $i = 25;
+        }
+        for ($i; $i <= date('d'); $i++) {
+            $j = $i+1;
+            $k++;
+            $start = date('Y-m-' . $i . ' 00:00:00');
+            $end = date('Y-m-' . $i . ' 23:59:59');
+            if($today < 6){
+                $month = date('m', strtotime("-1 months"));
+                $start = date('Y-'.$month.'-' . $i . ' 00:00:00');
+            }
+            $orders = Order_model::where('created_at', '>', $start)->where('order_type_id',3)
+                ->where('created_at', '<=', $end)->count();
+            $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
+                $q->where('processed_at', '>=', $start)->where('order_type_id',3)
+                ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',4);
+            })->whereIn('status',[3,6])->sum('price');
+            $pound = Order_item_model::whereHas('order', function($q) use ($start,$end) {
+                $q->where('processed_at', '>=', $start)->where('order_type_id',3)
+                ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',5);
+            })->whereIn('status',[3,6])->sum('price');
+            $order[$k] = $orders;
+            $eur[$k] = $euro;
+            $gbp[$k] = $pound;
+            $dates[$k] = $i;
+        }
+        echo '<script> ';
+        echo 'sessionStorage.setItem("total3", "' . implode(',', $order) . '");';
+        echo 'sessionStorage.setItem("approved3", "' . implode(',', $eur) . '");';
+        echo 'sessionStorage.setItem("failed3", "' . implode(',', $gbp) . '");';
+        echo 'sessionStorage.setItem("dates3", "' . implode(',', $dates) . '");';
+        echo 'window.location.href = document.referrer; </script>';
+        // sleep(2);
+        // return redirect()->back();
+    }
 }

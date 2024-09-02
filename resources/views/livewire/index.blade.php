@@ -308,6 +308,21 @@
                                             </table>
                                         </div>
                                     </div>
+
+                            @if (session('user')->hasPermission('10_day_sales_chart'))
+
+							<div class="card custom-card overflow-hidden">
+								<div class="card-header border-bottom-0">
+									<div class="d-flex justify-content-between">
+										<h3 class="card-title mb-2 ">Sales for 10 Days</h3>
+                                        <a href="{{url('index/refresh_10_days_chart')}}">Refresh</a>
+									</div>
+								</div>
+								<div class="card-body">
+									<div id="statistics4"></div>
+								</div>
+							</div>
+                            @endif
 						</div>
 						<div class="col-xl-7 col-lg-12 col-md-12 col-sm-12">
                             <div class="row">
