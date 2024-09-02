@@ -154,11 +154,15 @@
 
                     window.onload = function() {
                         document.getElementById('imei').focus();
+                        document.getElementById('imei').click();
+                        setTimeout(function(){ document.getElementById('imei').focus();$('#imei').focus(); }, 500);
                     };
                     document.addEventListener('DOMContentLoaded', function() {
                         var input = document.getElementById('imei');
                         input.focus();
                         input.select();
+                        document.getElementById('imei').click();
+                        setTimeout(function(){ document.getElementById('imei').focus();$('#imei').focus(); }, 500);
                     });
                 </script>
             </div>
