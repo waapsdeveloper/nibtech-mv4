@@ -144,7 +144,7 @@ class Index extends Component
             return $q->whereIn('variation_id', $variation_ids);
         })->whereHas('sale_order')
         ->count();
-        $data['order_items'] = Order_item_model::whereBetween('created_at', [$start_date, $end_date])
+        $data['order_items'] = Order_item_model::whereBetween('order_items.created_at', [$start_date, $end_date])
             ->when(request('data') == 1, function($q) use ($variation_ids){
                 return $q->whereIn('variation_id', $variation_ids);
             })
