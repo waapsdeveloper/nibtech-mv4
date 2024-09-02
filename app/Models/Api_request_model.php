@@ -201,6 +201,7 @@ class Api_request_model extends Model
 
                     $stock_operation = Stock_operations_model::create([
                         'stock_id' => $stock->id,
+                        'process_id' => 1,
                         'old_variation_id' => $stock->variation_id,
                         'new_variation_id' => $variation->id,
                         'description' => $fail." | ".$datas->Comments." | DrPhone",
