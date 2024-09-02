@@ -52,7 +52,7 @@ class Variation extends Component
             return $q->where('product_id', request('product'));
         })
         ->when(request('sku') != '', function ($q) {
-            return $q->where('sku', request('sku'));
+            return $q->where('sku', 'LIKE', '%'.request('sku').'%');
         })
         ->when(request('color') != '', function ($q) {
             return $q->where('color', request('color'));
