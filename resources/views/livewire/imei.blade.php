@@ -57,15 +57,6 @@
                 window.onload = function() {
                     document.getElementById('imeiInput').focus();
                     document.getElementById('imeiInput').click();
-                    setTimeout(
-                    function()
-                    {
-                    document.getElementById('imeiInput').click();
-                        //do something special
-                    }, 2000);
-                    setInterval(function(){
-                        $("#imeiInput").click();
-                        },2000);
 
                 };
                 document.addEventListener('DOMContentLoaded', function() {
@@ -73,15 +64,6 @@
                     input.focus();
                     input.select();
                     document.getElementById('imeiInput').click();
-                    setTimeout(
-                    function()
-                    {
-                    document.getElementById('imeiInput').click();
-                        //do something special
-                    }, 2000);
-                    setInterval(function(){
-                        $("#imeiInput").click();
-                        },2000);
                 });
             </script>
             @if (session('user')->hasPermission('refund_imei') && isset($stock) && $stock->status == 2 && $stock->last_item()->order->order_type_id != 2)
