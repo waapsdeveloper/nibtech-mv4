@@ -152,6 +152,20 @@ class Index extends Component
             return $q->whereIn('variation_id', $variation_ids);
         })
         ->avg('price');
+        $data['total_eur'] = Order_item_model::whereBetween('created_at', [$start_date, $end_date])
+        ->whereHas('order', function ($q) {
+            $q->where('currency',4);
+        })->when(request('data') == 1, function($q) use ($variation_ids){
+            return $q->whereIn('variation_id', $variation_ids);
+        })
+        ->sum('price');
+        $data['total_gbp'] = Order_item_model::whereBetween('created_at', [$start_date, $end_date])
+        ->whereHas('order', function ($q) {
+            $q->where('currency',5);
+        })->when(request('data') == 1, function($q) use ($variation_ids){
+            return $q->whereIn('variation_id', $variation_ids);
+        })
+        ->sum('price');
 
 
         $aftersale = Order_item_model::whereHas('order', function ($q) {
