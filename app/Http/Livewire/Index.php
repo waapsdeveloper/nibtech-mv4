@@ -144,28 +144,19 @@ class Index extends Component
             return $q->whereIn('variation_id', $variation_ids);
         })->whereHas('sale_order')
         ->count();
+        $data['order_items'] = Order_item_model::whereBetween('created_at', [$start_date, $end_date])
+            ->when(request('data') == 1, function($q) use ($variation_ids){
+                return $q->whereIn('variation_id', $variation_ids);
+            })
+            ->selectRaw('AVG(CASE WHEN orders.currency = 4 THEN order_items.price END) as average_eur')
+            ->selectRaw('SUM(CASE WHEN orders.currency = 4 THEN order_items.price END) as total_eur')
+            ->selectRaw('SUM(CASE WHEN orders.currency = 5 THEN order_items.price END) as total_gbp')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->first();
 
-        $data['average'] = Order_item_model::whereBetween('created_at', [$start_date, $end_date])
-        ->whereHas('order', function ($q) {
-            $q->where('currency',4);
-        })->when(request('data') == 1, function($q) use ($variation_ids){
-            return $q->whereIn('variation_id', $variation_ids);
-        })
-        ->avg('price');
-        $data['total_eur'] = Order_item_model::whereBetween('created_at', [$start_date, $end_date])
-        ->whereHas('order', function ($q) {
-            $q->where('currency',4);
-        })->when(request('data') == 1, function($q) use ($variation_ids){
-            return $q->whereIn('variation_id', $variation_ids);
-        })
-        ->sum('price');
-        $data['total_gbp'] = Order_item_model::whereBetween('created_at', [$start_date, $end_date])
-        ->whereHas('order', function ($q) {
-            $q->where('currency',5);
-        })->when(request('data') == 1, function($q) use ($variation_ids){
-            return $q->whereIn('variation_id', $variation_ids);
-        })
-        ->sum('price');
+        $data['average'] = $data['order_items']->average_eur;
+        $data['total_eur'] = $data['order_items']->total_eur;
+        $data['total_gbp'] = $data['order_items']->total_gbp;
 
 
         $aftersale = Order_item_model::whereHas('order', function ($q) {
