@@ -767,7 +767,7 @@
                             type="button"><span aria-hidden="true">&times;</span></button>
                         <h5 class="modal-title mg-b-5">Update Order</h5>
                         <hr>
-                        <form action="{{ url('order/correction') }}" method="POST">
+                        <form action="{{ url('order/correction') }}" method="POST" onsubmit="if ($('#correction_imei').val() == ''){ if (confirm('Remove IMEI from Order')){return true;}else{event.stopPropagation(); event.preventDefault();};};">
                             @csrf
                             <div class="form-group">
                                 <label for="">Order Number</label>
@@ -779,7 +779,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="">IMEI / Serial Number</label>
-                                <input class="form-control" placeholder="input IMEI / Serial Number" name="correction[imei]" type="text" required>
+                                <input class="form-control" placeholder="input IMEI / Serial Number" id="correction_imei" name="correction[imei]" type="text">
                             </div>
                             <div class="form-group">
                                 <label for="">Reason</label>
