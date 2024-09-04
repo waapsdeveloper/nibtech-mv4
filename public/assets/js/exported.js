@@ -629,7 +629,7 @@
       grid: {
         borderColor: '#f2f6f7'
       },
-      colors: ["Red", "Green"],
+      colors: [myVarVal, "Red", "Green"],
       plotOptions: {
         line: {
           colors: {
