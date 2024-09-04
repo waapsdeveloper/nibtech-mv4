@@ -401,55 +401,75 @@ class Index extends Component
         $current_month = date('m');
         $current_year = date('Y');
 
-        if ($today > 25) {
-            $start_day = 25;
-        } elseif ($today > 15) {
-            $start_day = 15;
-        } elseif ($today > 5) {
-            $start_day = 5;
+        // Determine the date range based on the current day
+        if ($today >= 6 && $today <= 15) {
+            $start_day = 6;
+            $end_day = 15;
+        } elseif ($today >= 16 && $today <= 25) {
+            $start_day = 16;
+            $end_day = 25;
         } else {
-            // When today is 5th or less, start from 25th of the previous month
-            $start_day = 25;
-            $current_month = date('m', strtotime('-1 month'));
-            $current_year = date('Y', strtotime('-1 month'));
+            // Handle the case for 26th to 5th of the next month
+            $start_day = 26;
+            $end_day = 5;
+
+            // If today is between 1 and 5, set the start to the previous month
+            if ($today <= 5) {
+                $current_month = date('m', strtotime('-1 month'));
+                $current_year = date('Y', strtotime('-1 month'));
+            }
         }
 
-        for ($i = $start_day; $i <= $today || ($start_day == 25 && $i <= 31); $i++) {
+        $i = $start_day;
+        while (true) {
             // Handle day, month, and year transitions
-            if ($i <= $today || $start_day == 25) {
-                $l = $today - $i;
+            $date_str = "$current_year-$current_month-$i";
+            $start = date('Y-m-d 00:00:00', strtotime($date_str));
+            $end = date('Y-m-d 23:59:59', strtotime($date_str));
 
-                // Calculate the actual date, adjusting for month and year if necessary
-                $date = date('d-m-Y', strtotime("$current_year-$current_month-$i"));
-                $start = date('Y-m-d 00:00:00', strtotime("$current_year-$current_month-$i"));
-                $end = date('Y-m-d 23:59:59', strtotime("$current_year-$current_month-$i"));
+            $orders = Order_model::where('created_at', '>=', $start)
+                ->where('created_at', '<=', $end)
+                ->where('order_type_id', 3)
+                ->whereIn('status', [3, 6])
+                ->count();
 
-                $orders = Order_model::where('created_at', '>=', $start)
-                    ->where('created_at', '<=', $end)
+            $euro = Order_item_model::whereHas('order', function ($q) use ($start, $end) {
+                $q->where('processed_at', '>=', $start)
+                    ->where('processed_at', '<=', $end)
                     ->where('order_type_id', 3)
                     ->whereIn('status', [3, 6])
-                    ->count();
+                    ->where('currency', 4);
+            })->whereIn('status', [3, 6])->sum('price');
 
-                $euro = Order_item_model::whereHas('order', function ($q) use ($start, $end) {
-                    $q->where('processed_at', '>=', $start)
-                        ->where('processed_at', '<=', $end)
-                        ->where('order_type_id', 3)
-                        ->whereIn('status', [3, 6])
-                        ->where('currency', 4);
-                })->whereIn('status', [3, 6])->sum('price');
+            $pound = Order_item_model::whereHas('order', function ($q) use ($start, $end) {
+                $q->where('processed_at', '>=', $start)
+                    ->where('processed_at', '<=', $end)
+                    ->where('order_type_id', 3)
+                    ->whereIn('status', [3, 6])
+                    ->where('currency', 5);
+            })->whereIn('status', [3, 6])->sum('price');
 
-                $pound = Order_item_model::whereHas('order', function ($q) use ($start, $end) {
-                    $q->where('processed_at', '>=', $start)
-                        ->where('processed_at', '<=', $end)
-                        ->where('order_type_id', 3)
-                        ->whereIn('status', [3, 6])
-                        ->where('currency', 5);
-                })->whereIn('status', [3, 6])->sum('price');
+            $order[] = $orders;
+            $eur[] = $euro;
+            $gbp[] = $pound;
+            $dates[] = date('d-m-Y', strtotime($date_str));
 
-                $order[] = $orders;
-                $eur[] = $euro;
-                $gbp[] = $pound;
-                $dates[] = $date;
+            // Move to the next day
+            if ($i == $end_day) {
+                break;
+            }
+
+            $i++;
+            // Handle end of month transition
+            if ($i > date('t', strtotime("$current_year-$current_month-01"))) {
+                $i = 1; // Reset day to 1
+                $current_month = date('m', strtotime('+1 month', strtotime("$current_year-$current_month-01")));
+                $current_year = date('Y', strtotime('+1 month', strtotime("$current_year-$current_month-01")));
+            }
+
+            // Handle start of month transition from 26th to 5th
+            if ($start_day == 26 && $i == 6) {
+                break;
             }
         }
 
@@ -466,5 +486,6 @@ class Index extends Component
             window.location.href = document.referrer;
         </script>';
     }
+
 
 }
