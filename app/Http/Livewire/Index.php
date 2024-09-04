@@ -562,9 +562,11 @@ class Index extends Component
             }
         }
 
-        // Loop through the current period's date range
         $i = $start_day;
-        while (true) {
+        $day_counter = 1;
+        $looping = true;
+
+        while ($looping) {
             $date_str = "$current_year-$current_month-$i";
             $start = date('Y-m-d 00:00:00', strtotime($date_str));
             $end = date('Y-m-d 23:59:59', strtotime($date_str));
@@ -576,24 +578,28 @@ class Index extends Component
                 ->count();
 
             $order[] = $orders;
-            $dates[] = date('d-m-Y', strtotime($date_str));
+            $dates[] = 'Day ' . $day_counter;
+
+            $day_counter++;
+
+            // Handle end of loop condition
+            if ($start_day <= $end_day) {
+                if ($i == $end_day) {
+                    $looping = false;
+                }
+            } else {
+                // Handle crossing month boundary from 26th to 5th
+                if ($i == $end_day && $i < $start_day) {
+                    $looping = false;
+                }
+            }
 
             // Move to the next day
-            if ($i == $end_day) {
-                break;
-            }
-
             $i++;
-            // Handle end of month transition
             if ($i > date('t', strtotime("$current_year-$current_month-01"))) {
-                $i = 1; // Reset day to 1
+                $i = 1;
                 $current_month = date('m', strtotime('+1 month', strtotime("$current_year-$current_month-01")));
                 $current_year = date('Y', strtotime('+1 month', strtotime("$current_year-$current_month-01")));
-            }
-
-            // Handle start of month transition from 26th to 5th
-            if ($start_day == 26 && $i == 6) {
-                break;
             }
         }
 
@@ -614,9 +620,11 @@ class Index extends Component
             $previous_start_day += date('t', strtotime("$previous_year-$previous_month-01"));
         }
 
-        // Loop through the previous period's date range
         $previous_i = $previous_start_day;
-        while (true) {
+        $previous_day_counter = 1;
+        $previous_looping = true;
+
+        while ($previous_looping) {
             $previous_date_str = "$previous_year-$previous_month-$previous_i";
             $previous_start = date('Y-m-d 00:00:00', strtotime($previous_date_str));
             $previous_end = date('Y-m-d 23:59:59', strtotime($previous_date_str));
@@ -628,24 +636,28 @@ class Index extends Component
                 ->count();
 
             $previous_order[] = $previous_orders;
-            $previous_dates[] = date('d-m-Y', strtotime($previous_date_str));
+            $previous_dates[] = 'Day ' . $previous_day_counter;
+
+            $previous_day_counter++;
+
+            // Handle end of loop condition
+            if ($previous_start_day <= $previous_end_day) {
+                if ($previous_i == $previous_end_day) {
+                    $previous_looping = false;
+                }
+            } else {
+                // Handle crossing month boundary from 26th to 5th
+                if ($previous_i == $previous_end_day && $previous_i < $previous_start_day) {
+                    $previous_looping = false;
+                }
+            }
 
             // Move to the next day
-            if ($previous_i == $previous_end_day) {
-                break;
-            }
-
             $previous_i++;
-            // Handle end of month transition
             if ($previous_i > date('t', strtotime("$previous_year-$previous_month-01"))) {
-                $previous_i = 1; // Reset day to 1
+                $previous_i = 1;
                 $previous_month = date('m', strtotime('+1 month', strtotime("$previous_year-$previous_month-01")));
                 $previous_year = date('Y', strtotime('+1 month', strtotime("$previous_year-$previous_month-01")));
-            }
-
-            // Handle start of month transition from 26th to 5th
-            if ($previous_start_day == 26 && $previous_i == 6) {
-                break;
             }
         }
 
@@ -662,9 +674,10 @@ class Index extends Component
             sessionStorage.setItem("dates3", "' . $dates_data . '");
             sessionStorage.setItem("previous_total3", "' . $previous_order_data . '");
             sessionStorage.setItem("previous_dates3", "' . $previous_dates_data . '");
-            // window.location.href = document.referrer;
+            window.location.href = document.referrer;
         </script>';
     }
+
 
 
 }
