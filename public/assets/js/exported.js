@@ -612,7 +612,7 @@
     chart1.render();
   } //Visitors chart
 
-  function statistics4 (datas,data1,data2,dates) {
+  function statistics4 (datas,data1,dates) {
 
     var options1 = {
       series: [{
