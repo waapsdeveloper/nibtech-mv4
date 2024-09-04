@@ -662,7 +662,7 @@ class Index extends Component
             sessionStorage.setItem("dates3", "' . $dates_data . '");
             sessionStorage.setItem("previous_total3", "' . $previous_order_data . '");
             sessionStorage.setItem("previous_dates3", "' . $previous_dates_data . '");
-            window.location.href = document.referrer;
+            // window.location.href = document.referrer;
         </script>';
     }
 
