@@ -390,11 +390,153 @@ class Index extends Component
     //     echo 'sessionStorage.setItem("dates3", "' . implode(',', $dates) . '");';
     //     echo 'window.location.href = document.referrer; </script>';
     // }
+    // public function refresh_10_days_chart()
+    // {
+    //     $order = [];
+    //     // $eur = [];
+    //     // $gbp = [];
+    //     $dates = [];
+
+    //     $today = date('d');
+    //     $current_month = date('m');
+    //     $current_year = date('Y');
+
+    //     // Determine the date range based on the current day
+    //     if ($today >= 6 && $today <= 15) {
+    //         $start_day = 6;
+    //         $end_day = 15;
+    //     } elseif ($today >= 16 && $today <= 25) {
+    //         $start_day = 16;
+    //         $end_day = 25;
+    //     } else {
+    //         // Handle the case for 26th to 5th of the next month
+    //         $start_day = 26;
+    //         $end_day = 5;
+
+    //         // If today is between 1 and 5, set the start to the previous month
+    //         if ($today <= 5) {
+    //             $current_month = date('m', strtotime('-1 month'));
+    //             $current_year = date('Y', strtotime('-1 month'));
+    //         }
+    //     }
+
+    //     $i = $start_day;
+    //     while (true) {
+    //         // Handle day, month, and year transitions
+    //         $date_str = "$current_year-$current_month-$i";
+    //         $start = date('Y-m-d 00:00:00', strtotime($date_str));
+    //         $end = date('Y-m-d 23:59:59', strtotime($date_str));
+
+    //         $orders = Order_model::where('created_at', '>=', $start)
+    //             ->where('created_at', '<=', $end)
+    //             ->where('order_type_id', 3)
+    //             ->whereIn('status', [2, 3, 6])
+    //             ->count();
+
+    //         // $euro = Order_item_model::whereHas('order', function ($q) use ($start, $end) {
+    //         //     $q->where('processed_at', '>=', $start)
+    //         //         ->where('processed_at', '<=', $end)
+    //         //         ->where('order_type_id', 3)
+    //         //         ->whereIn('status', [3, 6])
+    //         //         ->where('currency', 4);
+    //         // })->whereIn('status', [3, 6])->sum('price');
+
+    //         // $pound = Order_item_model::whereHas('order', function ($q) use ($start, $end) {
+    //         //     $q->where('processed_at', '>=', $start)
+    //         //         ->where('processed_at', '<=', $end)
+    //         //         ->where('order_type_id', 3)
+    //         //         ->whereIn('status', [3, 6])
+    //         //         ->where('currency', 5);
+    //         // })->whereIn('status', [3, 6])->sum('price');
+
+    //         $order[] = $orders;
+    //         // $eur[] = $euro;
+    //         // $gbp[] = $pound;
+    //         $dates[] = date('d-m-Y', strtotime($date_str));
+
+    //         // Move to the next day
+    //         if ($i == $end_day) {
+    //             break;
+    //         }
+
+    //         $i++;
+    //         // Handle end of month transition
+    //         if ($i > date('t', strtotime("$current_year-$current_month-01"))) {
+    //             $i = 1; // Reset day to 1
+    //             $current_month = date('m', strtotime('+1 month', strtotime("$current_year-$current_month-01")));
+    //             $current_year = date('Y', strtotime('+1 month', strtotime("$current_year-$current_month-01")));
+    //         }
+
+    //         // Handle start of month transition from 26th to 5th
+    //         if ($start_day == 26 && $i == 6) {
+    //             break;
+    //         }
+    //     }
+
+    //     $order_data = implode(',', $order);
+    //     // $eur_data = implode(',', $eur);
+    //     // $gbp_data = implode(',', $gbp);
+    //     $dates_data = implode(',', $dates);
+
+    //     echo '<script>
+    //         sessionStorage.setItem("total3", "' . $order_data . '");
+    //         sessionStorage.setItem("dates3", "' . $dates_data . '");
+    //     </script>';
+
+    //     // Load data from the previous 10-day period
+    //     $previous_order = [];
+    //     $previous_dates = [];
+
+    //     $previous_start_day = $start_day - 10;
+    //     $previous_end_day = $end_day - 10;
+
+    //     $previous_i = $previous_start_day;
+    //     while (true) {
+    //         // Handle day, month, and year transitions
+    //         $previous_date_str = "$current_year-$current_month-$previous_i";
+    //         $previous_start = date('Y-m-d 00:00:00', strtotime($previous_date_str));
+    //         $previous_end = date('Y-m-d 23:59:59', strtotime($previous_date_str));
+
+    //         $previous_orders = Order_model::where('created_at', '>=', $previous_start)
+    //             ->where('created_at', '<=', $previous_end)
+    //             ->where('order_type_id', 3)
+    //             ->whereIn('status', [2, 3, 6])
+    //             ->count();
+
+    //         $previous_order[] = $previous_orders;
+    //         $previous_dates[] = date('d-m-Y', strtotime($previous_date_str));
+
+    //         // Move to the next day
+    //         if ($previous_i == $previous_end_day) {
+    //             break;
+    //         }
+
+    //         $previous_i++;
+    //         // Handle end of month transition
+    //         if ($previous_i > date('t', strtotime("$current_year-$current_month-01"))) {
+    //             $previous_i = 1; // Reset day to 1
+    //             $current_month = date('m', strtotime('+1 month', strtotime("$current_year-$current_month-01")));
+    //             $current_year = date('Y', strtotime('+1 month', strtotime("$current_year-$current_month-01")));
+    //         }
+
+    //         // Handle start of month transition from 26th to 5th
+    //         if ($previous_start_day == 26 && $previous_i == 6) {
+    //             break;
+    //         }
+    //     }
+
+    //     $previous_order_data = implode(',', $previous_order);
+    //     $previous_dates_data = implode(',', $previous_dates);
+
+    //     echo '<script>
+    //         sessionStorage.setItem("previous_total3", "' . $previous_order_data . '");
+    //         sessionStorage.setItem("previous_dates3", "' . $previous_dates_data . '");
+    //         window.location.href = document.referrer;
+    //     </script>';
+    // }
     public function refresh_10_days_chart()
     {
         $order = [];
-        $eur = [];
-        $gbp = [];
         $dates = [];
 
         $today = date('d');
@@ -420,9 +562,9 @@ class Index extends Component
             }
         }
 
+        // Loop through the current period's date range
         $i = $start_day;
         while (true) {
-            // Handle day, month, and year transitions
             $date_str = "$current_year-$current_month-$i";
             $start = date('Y-m-d 00:00:00', strtotime($date_str));
             $end = date('Y-m-d 23:59:59', strtotime($date_str));
@@ -433,25 +575,7 @@ class Index extends Component
                 ->whereIn('status', [2, 3, 6])
                 ->count();
 
-            $euro = Order_item_model::whereHas('order', function ($q) use ($start, $end) {
-                $q->where('processed_at', '>=', $start)
-                    ->where('processed_at', '<=', $end)
-                    ->where('order_type_id', 3)
-                    ->whereIn('status', [3, 6])
-                    ->where('currency', 4);
-            })->whereIn('status', [3, 6])->sum('price');
-
-            $pound = Order_item_model::whereHas('order', function ($q) use ($start, $end) {
-                $q->where('processed_at', '>=', $start)
-                    ->where('processed_at', '<=', $end)
-                    ->where('order_type_id', 3)
-                    ->whereIn('status', [3, 6])
-                    ->where('currency', 5);
-            })->whereIn('status', [3, 6])->sum('price');
-
             $order[] = $orders;
-            $eur[] = $euro;
-            $gbp[] = $pound;
             $dates[] = date('d-m-Y', strtotime($date_str));
 
             // Move to the next day
@@ -473,16 +597,71 @@ class Index extends Component
             }
         }
 
+        // Prepare the previous period's data
+        $previous_order = [];
+        $previous_dates = [];
+
+        $previous_start_day = $start_day - 10;
+        $previous_end_day = $end_day - 10;
+
+        $previous_month = $current_month;
+        $previous_year = $current_year;
+
+        // Handle transition for previous month/year when start_day is less than 1
+        if ($previous_start_day < 1) {
+            $previous_month = date('m', strtotime('-1 month', strtotime("$current_year-$current_month-01")));
+            $previous_year = date('Y', strtotime('-1 month', strtotime("$current_year-$current_month-01")));
+            $previous_start_day += date('t', strtotime("$previous_year-$previous_month-01"));
+        }
+
+        // Loop through the previous period's date range
+        $previous_i = $previous_start_day;
+        while (true) {
+            $previous_date_str = "$previous_year-$previous_month-$previous_i";
+            $previous_start = date('Y-m-d 00:00:00', strtotime($previous_date_str));
+            $previous_end = date('Y-m-d 23:59:59', strtotime($previous_date_str));
+
+            $previous_orders = Order_model::where('created_at', '>=', $previous_start)
+                ->where('created_at', '<=', $previous_end)
+                ->where('order_type_id', 3)
+                ->whereIn('status', [2, 3, 6])
+                ->count();
+
+            $previous_order[] = $previous_orders;
+            $previous_dates[] = date('d-m-Y', strtotime($previous_date_str));
+
+            // Move to the next day
+            if ($previous_i == $previous_end_day) {
+                break;
+            }
+
+            $previous_i++;
+            // Handle end of month transition
+            if ($previous_i > date('t', strtotime("$previous_year-$previous_month-01"))) {
+                $previous_i = 1; // Reset day to 1
+                $previous_month = date('m', strtotime('+1 month', strtotime("$previous_year-$previous_month-01")));
+                $previous_year = date('Y', strtotime('+1 month', strtotime("$previous_year-$previous_month-01")));
+            }
+
+            // Handle start of month transition from 26th to 5th
+            if ($previous_start_day == 26 && $previous_i == 6) {
+                break;
+            }
+        }
+
+        // Convert data to comma-separated strings for JavaScript
         $order_data = implode(',', $order);
-        $eur_data = implode(',', $eur);
-        $gbp_data = implode(',', $gbp);
         $dates_data = implode(',', $dates);
 
+        $previous_order_data = implode(',', $previous_order);
+        $previous_dates_data = implode(',', $previous_dates);
+
+        // Output the data to sessionStorage for use in the chart
         echo '<script>
             sessionStorage.setItem("total3", "' . $order_data . '");
-            sessionStorage.setItem("approved3", "' . $eur_data . '");
-            sessionStorage.setItem("failed3", "' . $gbp_data . '");
             sessionStorage.setItem("dates3", "' . $dates_data . '");
+            sessionStorage.setItem("previous_total3", "' . $previous_order_data . '");
+            sessionStorage.setItem("previous_dates3", "' . $previous_dates_data . '");
             window.location.href = document.referrer;
         </script>';
     }

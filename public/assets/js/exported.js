@@ -252,7 +252,7 @@
       }
     if (document.querySelector('#statistics4') !== null) {
         setTimeout(function () {
-        statistics4(sessionStorage.getItem('total3'),sessionStorage.getItem('approved3'),sessionStorage.getItem('failed3'),sessionStorage.getItem('dates3'));
+        statistics4(sessionStorage.getItem('total3'),sessionStorage.getItem('previous_total3'),sessionStorage.getItem('dates3'));
         }, 1000);
     }
     //   if (document.querySelector('#statistics1') !== null) {
@@ -616,14 +616,11 @@
 
     var options1 = {
       series: [{
-        name: 'Orders',
+        name: 'This Period',
         data: datas.split(',')
       }, {
-        name: 'EUR',
+        name: 'Last Period',
         data: data1.split(',')
-      }, {
-        name: 'GBP',
-        data: data2.split(',')
       }],
       chart: {
         type: 'line',
@@ -632,7 +629,7 @@
       grid: {
         borderColor: '#f2f6f7'
       },
-      colors: [myVarVal, "Red", "Green"],
+      colors: ["Red", "Green"],
       plotOptions: {
         line: {
           colors: {
