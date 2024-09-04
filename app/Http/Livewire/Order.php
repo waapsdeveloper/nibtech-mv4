@@ -485,6 +485,39 @@ class Order extends Component
         Order_issue_model::where('order_id',$order_id)->delete();
         return redirect(url('purchase'));
     }
+    public function delete_sale_order($order_id){
+
+        $items = Order_item_model::where('order_id',$order_id)->get();
+        foreach($items as $orderItem){
+            if($orderItem->stock){
+                // Access the variation through orderItem->stock->variation
+                $variation = $orderItem->stock->variation;
+
+                // If a variation record exists and either product_id or sku is not null
+                if ($variation->stock == 1 && $variation->product_id == null && $variation->sku == null) {
+                    // Decrement the stock by 1
+
+                    // Save the variation record
+                    $variation->delete();
+                } else {
+                    $variation->stock += 1;
+                    // No variation record found or product_id and sku are both null, delete the order item
+                }
+                // $stock = Stock_model::find($orderItem->stock_id);
+                // if($stock->status == 1){
+                //     $stock->delete();
+                // }else{
+                //     $stock->order_id = null;
+                //     $stock->status = null;
+                //     $stock->save();
+                // }
+            }
+            $orderItem->delete();
+        }
+        Order_model::where('id',$order_id)->delete();
+        Order_issue_model::where('order_id',$order_id)->delete();
+        return redirect(url('purchase'));
+    }
     public function delete_order_item($item_id){
 
         $orderItem = Order_item_model::find($item_id);

@@ -430,7 +430,7 @@ class Index extends Component
             $orders = Order_model::where('created_at', '>=', $start)
                 ->where('created_at', '<=', $end)
                 ->where('order_type_id', 3)
-                ->whereIn('status', [3, 6])
+                ->whereIn('status', [2, 3, 6])
                 ->count();
 
             $euro = Order_item_model::whereHas('order', function ($q) use ($start, $end) {
