@@ -252,7 +252,7 @@
       }
     if (document.querySelector('#statistics4') !== null) {
         setTimeout(function () {
-        statistics4(sessionStorage.getItem('total3'),sessionStorage.getItem('previous_total3'),sessionStorage.getItem('dates3'));
+        statistics4(sessionStorage.getItem('total3'),sessionStorage.getItem('total32'),sessionStorage.getItem('dates3'));
         }, 1000);
     }
     //   if (document.querySelector('#statistics1') !== null) {
