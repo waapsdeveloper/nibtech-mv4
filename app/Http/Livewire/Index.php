@@ -331,63 +331,140 @@ class Index extends Component
         // sleep(2);
         // return redirect()->back();
     }
+    // public function refresh_10_days_chart()
+    // {
+    //     $order = [];
+    //     $eur = [];
+    //     $gbp = [];
+    //     $dates = [];
+    //     $k = 0;
+    //     $today = date('d');
+    //     if ($today > 25) {
+    //         $i = 25;
+    //     } elseif ($today > 15) {
+    //         $i = 15;
+    //     } elseif ($today > 5) {
+    //         $i = 5;
+    //     } else {
+    //         $i = 25;
+    //     }
+    //     for ($i; $i <= date('d'); $i++) {
+    //         $l = $today - $i;
+    //         $date = date('d-m-Y', strtotime("-" . $l . " days"));
+    //         // Remove the unused variable $j
+    //         $k++;
+    //         $start = date('Y-m-d 00:00:00', strtotime("-" . $l . " days"));
+    //         $end = date('Y-m-d 23:59:59', strtotime("-" . $l . " days"));
+    //         if ($today < 6) {
+    //             $month = date('m', strtotime("-1 months"));
+    //             $start = date('Y-' . $month . '-d 00:00:00', strtotime("-" . $l . " days"));
+    //         }
+    //         $orders = Order_model::where('created_at', '>=', $start)
+    //             ->where('order_type_id', 3)
+    //             ->whereIn('status', [3, 6])
+    //             ->where('created_at', '<=', $end)
+    //             ->count();
+    //         $euro = Order_item_model::whereHas('order', function ($q) use ($start, $end) {
+    //             $q->where('processed_at', '>=', $start)
+    //                 ->where('order_type_id', 3)
+    //                 ->where('processed_at', '<=', $end)
+    //                 ->whereIn('status', [3, 6])
+    //                 ->where('currency', 4);
+    //         })->whereIn('status', [3, 6])->sum('price');
+    //         $pound = Order_item_model::whereHas('order', function ($q) use ($start, $end) {
+    //             $q->where('processed_at', '>=', $start)
+    //                 ->where('order_type_id', 3)
+    //                 ->where('processed_at', '<=', $end)
+    //                 ->whereIn('status', [3, 6])
+    //                 ->where('currency', 5);
+    //         })->whereIn('status', [3, 6])->sum('price');
+    //         $order[$k] = $orders;
+    //         $eur[$k] = $euro;
+    //         $gbp[$k] = $pound;
+    //         $dates[$k] = $date;
+    //     }
+    //     echo '<script> ';
+    //     echo 'sessionStorage.setItem("total3", "' . implode(',', $order) . '");';
+    //     echo 'sessionStorage.setItem("approved3", "' . implode(',', $eur) . '");';
+    //     echo 'sessionStorage.setItem("failed3", "' . implode(',', $gbp) . '");';
+    //     echo 'sessionStorage.setItem("dates3", "' . implode(',', $dates) . '");';
+    //     echo 'window.location.href = document.referrer; </script>';
+    // }
     public function refresh_10_days_chart()
     {
         $order = [];
         $eur = [];
         $gbp = [];
         $dates = [];
-        $k = 0;
+
         $today = date('d');
+        $current_month = date('m');
+        $current_year = date('Y');
+
         if ($today > 25) {
-            $i = -5;
+            $start_day = 25;
         } elseif ($today > 15) {
-            $i = 15;
+            $start_day = 15;
         } elseif ($today > 5) {
-            $i = 5;
+            $start_day = 5;
         } else {
-            $i = -5;
+            // When today is 5th or less, start from 25th of the previous month
+            $start_day = 25;
+            $current_month = date('m', strtotime('-1 month'));
+            $current_year = date('Y', strtotime('-1 month'));
         }
-        for ($i; $i <= date('d'); $i++) {
-            $l = $today - $i;
-            $date = date('d-m-Y', strtotime("-" . $l . " days"));
-            $j = $i + 1;
-            $k++;
-            $start = date('Y-m-d 00:00:00', strtotime("-" . $l . " days"));
-            $end = date('Y-m-d 23:59:59', strtotime("-" . $l . " days"));
-            if ($today < 6) {
-                $month = date('m', strtotime("-1 months"));
-                $start = date('Y-' . $month . '-d 00:00:00', strtotime("-" . $l . " days"));
+
+        for ($i = $start_day; $i <= $today || ($start_day == 25 && $i <= 31); $i++) {
+            // Handle day, month, and year transitions
+            if ($i <= $today || $start_day == 25) {
+                $l = $today - $i;
+
+                // Calculate the actual date, adjusting for month and year if necessary
+                $date = date('d-m-Y', strtotime("$current_year-$current_month-$i"));
+                $start = date('Y-m-d 00:00:00', strtotime("$current_year-$current_month-$i"));
+                $end = date('Y-m-d 23:59:59', strtotime("$current_year-$current_month-$i"));
+
+                $orders = Order_model::where('created_at', '>=', $start)
+                    ->where('created_at', '<=', $end)
+                    ->where('order_type_id', 3)
+                    ->whereIn('status', [3, 6])
+                    ->count();
+
+                $euro = Order_item_model::whereHas('order', function ($q) use ($start, $end) {
+                    $q->where('processed_at', '>=', $start)
+                        ->where('processed_at', '<=', $end)
+                        ->where('order_type_id', 3)
+                        ->whereIn('status', [3, 6])
+                        ->where('currency', 4);
+                })->whereIn('status', [3, 6])->sum('price');
+
+                $pound = Order_item_model::whereHas('order', function ($q) use ($start, $end) {
+                    $q->where('processed_at', '>=', $start)
+                        ->where('processed_at', '<=', $end)
+                        ->where('order_type_id', 3)
+                        ->whereIn('status', [3, 6])
+                        ->where('currency', 5);
+                })->whereIn('status', [3, 6])->sum('price');
+
+                $order[] = $orders;
+                $eur[] = $euro;
+                $gbp[] = $pound;
+                $dates[] = $date;
             }
-            $orders = Order_model::where('created_at', '>=', $start)
-                ->where('order_type_id', 3)
-                ->whereIn('status', [3, 6])
-                ->where('created_at', '<=', $end)
-                ->count();
-            $euro = Order_item_model::whereHas('order', function ($q) use ($start, $end) {
-                $q->where('processed_at', '>=', $start)
-                    ->where('order_type_id', 3)
-                    ->where('processed_at', '<=', $end)
-                    ->whereIn('status', [3, 6])
-                    ->where('currency', 4);
-            })->whereIn('status', [3, 6])->sum('price');
-            $pound = Order_item_model::whereHas('order', function ($q) use ($start, $end) {
-                $q->where('processed_at', '>=', $start)
-                    ->where('order_type_id', 3)
-                    ->where('processed_at', '<=', $end)
-                    ->whereIn('status', [3, 6])
-                    ->where('currency', 5);
-            })->whereIn('status', [3, 6])->sum('price');
-            $order[$k] = $orders;
-            $eur[$k] = $euro;
-            $gbp[$k] = $pound;
-            $dates[$k] = $date;
         }
-        echo '<script> ';
-        echo 'sessionStorage.setItem("total3", "' . implode(',', $order) . '");';
-        echo 'sessionStorage.setItem("approved3", "' . implode(',', $eur) . '");';
-        echo 'sessionStorage.setItem("failed3", "' . implode(',', $gbp) . '");';
-        echo 'sessionStorage.setItem("dates3", "' . implode(',', $dates) . '");';
-        echo 'window.location.href = document.referrer; </script>';
+
+        $order_data = implode(',', $order);
+        $eur_data = implode(',', $eur);
+        $gbp_data = implode(',', $gbp);
+        $dates_data = implode(',', $dates);
+
+        echo '<script>
+            sessionStorage.setItem("total3", "' . $order_data . '");
+            sessionStorage.setItem("approved3", "' . $eur_data . '");
+            sessionStorage.setItem("failed3", "' . $gbp_data . '");
+            sessionStorage.setItem("dates3", "' . $dates_data . '");
+            window.location.href = document.referrer;
+        </script>';
     }
+
 }
