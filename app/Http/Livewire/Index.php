@@ -568,7 +568,7 @@ class Index extends Component
         $order_data = implode(',', $order2);
         // $eur_data = implode(',', $eur);
         // $gbp_data = implode(',', $gbp);
-        $dates_data = implode(',', $dates);
+        $dates_data = implode(',', $dates2);
 
         echo '<script>
             sessionStorage.setItem("total32", "' . $order_data . '");
