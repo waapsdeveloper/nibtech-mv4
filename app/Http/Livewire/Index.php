@@ -565,7 +565,7 @@ class Index extends Component
             }
         }
 
-        $order_data2 = implode(',', $order2);
+        echo $order_data2 = implode(',', $order2);
         // $eur_data = implode(',', $eur);
         // $gbp_data = implode(',', $gbp);
         $dates_data = implode(',', $dates2);
@@ -573,7 +573,7 @@ class Index extends Component
         echo '<script>
             sessionStorage.setItem("total32", "' . $order_data2 . '");
             sessionStorage.setItem("dates32", "' . $dates_data . '");
-            window.location.href = document.referrer;
+            // window.location.href = document.referrer;
         </script>';
     }
 
