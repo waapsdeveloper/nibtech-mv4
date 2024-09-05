@@ -498,6 +498,8 @@ class Index extends Component
         } elseif ($today2 >= 16 && $today2 <= 25) {
             $start_day = 16;
             $end_day = 25;
+                $current_month2 = date('m', strtotime('-1 month'));
+                $current_year2 = date('Y', strtotime('-1 month'));
         } else {
             // Handle the case for 26th to 5th of the next month
             $start_day = 26;
