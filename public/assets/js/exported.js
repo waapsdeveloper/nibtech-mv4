@@ -679,7 +679,7 @@
       xaxis: {
         type: 'days',
         // categories: dates.split(','),
-        categories: ['1','2','3','4','5','6','7','8','9','10','11'],
+        // categories: ['1','2','3','4','5','6','7','8','9','10','11'],
         axisBorder: {
           show: true,
           color: 'rgba(119, 119, 142, 0.05)',
