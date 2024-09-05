@@ -516,8 +516,8 @@ class Index extends Component
         while (true) {
             // Handle day, month, and year transitions
             $date_str = "$current_year2-$current_month2-$i";
-            echo $start = date('Y-m-d 00:00:00', strtotime($date_str));
-            echo $end = date('Y-m-d 23:59:59', strtotime($date_str));
+            $start = date('Y-m-d 00:00:00', strtotime($date_str));
+            $end = date('Y-m-d 23:59:59', strtotime($date_str));
 
             $orders2 = Order_model::where('created_at', '>=', $start)
                 ->where('created_at', '<=', $end)
@@ -567,7 +567,7 @@ class Index extends Component
             }
         }
 
-        echo $order_data2 = implode(',', $order2);
+        $order_data2 = implode(',', $order2);
         // $eur_data = implode(',', $eur);
         // $gbp_data = implode(',', $gbp);
         $dates_data = implode(',', $dates2);
@@ -575,7 +575,7 @@ class Index extends Component
         echo '<script>
             sessionStorage.setItem("total32", "' . $order_data2 . '");
             sessionStorage.setItem("dates32", "' . $dates_data . '");
-            // window.location.href = document.referrer;
+            window.location.href = document.referrer;
         </script>';
     }
 
