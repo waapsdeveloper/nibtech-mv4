@@ -219,6 +219,11 @@ class Wholesale_return extends Component
     }
 
     public function add_wholesale_return_item($order_id){
+        $description = request('description');
+        if(request('grade')){
+            session()->put('grade',request('grade'));
+        }
+        session()->put('description',request('description'));
         $order = Order_model::find($order_id);
         // print_r($wholesale_return);
             if (request('imei')) {
@@ -323,7 +328,7 @@ class Wholesale_return extends Component
                         'stock_id' => $stock->id,
                         'old_variation_id' => $stock->variation_id,
                         'new_variation_id' => $variation->id,
-                        'description' => request('description'),
+                        'description' => $description,
                         'admin_id' => session('user_id'),
                     ]);
 

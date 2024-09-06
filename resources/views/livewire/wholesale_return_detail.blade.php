@@ -86,7 +86,7 @@
                 <form class="form-inline" action="{{ url('add_wholesale_return_item').'/'.$order_id }}" method="POST" id="wholesale_return_item">
                     @csrf
                     <div class="form-floating">
-                        <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" onloadeddata="$(this).focus()" autofocus required>
+                        <input type="text" class="form-control" id="imeiInput" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" onloadeddata="$(this).focus()" autofocus required>
                         <label for="">IMEI | Serial Number:</label>
                     </div>
                     {{-- <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
@@ -95,13 +95,13 @@
                         <option value="">Move to</option>
                         @foreach ($grades as $id => $name)
                             @if($id > 5)
-                            <option value="{{ $id }}">{{ $name }}</option>
+                            <option value="{{ $id }}" @if(session('grade') && $grade->id == session('grade')) {{'selected'}}@endif @if(request('grade') && $grade->id == request('grade')) {{'selected'}}@endif>{{ $name }}</option>
                             @endif
                         @endforeach
                     </select>
 
                     <div class="form-floating">
-                        <input type="text" class="form-control pd-x-20" name="description" placeholder="Reason" style="width: 270px;">
+                        <input type="text" class="form-control pd-x-20" name="description" placeholder="Reason" style="width: 270px;" value="{{session('description')}}">
                         {{-- <input type="text" class="form-control" name="wholesale_return[imei]" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset"> --}}
                         <label for="">Reason</label>
                     </div>
@@ -109,13 +109,18 @@
 
                 </form>
                 <script>
+
                     window.onload = function() {
-                        document.getElementById('imei').focus();
+                        document.getElementById('imeiInput').focus();
+                        document.getElementById('imeiInput').click();
+                        setTimeout(function(){ document.getElementById('imeiInput').focus();$('#imeiInput').focus(); }, 500);
                     };
                     document.addEventListener('DOMContentLoaded', function() {
-                        var input = document.getElementById('imei');
+                        var input = document.getElementById('imeiInput');
                         input.focus();
                         input.select();
+                        document.getElementById('imeiInput').click();
+                        setTimeout(function(){ document.getElementById('imeiInput').focus();$('#imeiInput').focus(); }, 500);
                     });
                 </script>
                 @endif
