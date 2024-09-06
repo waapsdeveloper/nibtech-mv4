@@ -229,13 +229,12 @@ class Wholesale_return extends Component
             if (request('imei')) {
                 if (ctype_digit(request('imei'))) {
                     $i = request('imei');
-                    $s = null;
+                    $stock = Stock_model::where(['imei' => $i])->first();
                 } else {
-                    $i = null;
                     $s = request('imei');
+                    $t = mb_substr(request('imei'),1);
+                    $stock = Stock_model::whereIn('serial_number', [$s, $t])->first();
                 }
-
-                $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
 
                 if (request('imei') == '' || !$stock || $stock->status == null) {
                     session()->put('error', 'IMEI Invalid / Not Found');
