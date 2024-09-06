@@ -95,7 +95,7 @@
                         <option value="">Move to</option>
                         @foreach ($grades as $id => $name)
                             @if($id > 5)
-                            <option value="{{ $id }}" @if(session('grade') && $grade->id == session('grade')) {{'selected'}}@endif @if(request('grade') && $grade->id == request('grade')) {{'selected'}}@endif>{{ $name }}</option>
+                            <option value="{{ $id }}" @if(session('grade') && $id == session('grade')) {{'selected'}}@endif @if(request('grade') && $id == request('grade')) {{'selected'}}@endif>{{ $name }}</option>
                             @endif
                         @endforeach
                     </select>
