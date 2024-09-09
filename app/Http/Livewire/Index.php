@@ -581,10 +581,12 @@ class Index extends Component
 
 
     public function test(){
-        $stocks = Stock_model::whereDoesntHave('stock_operations')->whereDoesntHave('process_stocks')->where('status',1)->limit(20)->get();
+        $stocks = Stock_model::whereDoesntHave('stock_operations')->whereDoesntHave('process_stocks')->where('status',1)->get();
+        $i = 0;
         foreach($stocks as $stock){
             $old_stock = $stock->onlyTrashed()->where('imei',$stock->imei)->where('serial_number',$stock->serial_number)->first();
             if($old_stock != null){
+                $i++;
                 print_r($old_stock);
                 print_r($stock);
                 $old_stock->restore();
@@ -597,6 +599,9 @@ class Index extends Component
                 }
                 $stock->delete();
                 $stock->forceDelete();
+                if($i == 10){
+                    break;
+                }
             }
         }
     }
