@@ -76,14 +76,15 @@ class Stock_room extends Component
                 ->paginate($per_page)
                 ->onEachSide(5)
                 ->appends(request()->except('page'));
-                $data['pending_stocks'] = Stock_movement_model::where(['received_at'=>null])
+
+                $data['stocks'] = Stock_movement_model::where(['received_at'=>null])
                 ->orderBy('id', 'desc') // Secondary order by reference_id
                 // ->select('orders.*')
                 ->paginate($per_page)
                 ->onEachSide(5)
                 ->appends(request()->except('page'));
             }else{
-                $data['pending_stocks'] = Stock_movement_model::where(['admin_id'=>$user_id, 'received_at'=>null])
+                $data['stocks'] = Stock_movement_model::where(['admin_id'=>$user_id, 'received_at'=>null])
                 ->orderBy('id', 'desc') // Secondary order by reference_id
                 // ->select('orders.*')
                 ->paginate($per_page)
