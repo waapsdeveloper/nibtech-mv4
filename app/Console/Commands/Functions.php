@@ -7,7 +7,7 @@ use App\Models\Api_request_model;
 use App\Models\Color_model;
 use App\Models\Order_model;
 use App\Models\Order_item_model;
-
+use App\Models\Stock_model;
 use Illuminate\Console\Command;
 use GuzzleHttp\Client;
 

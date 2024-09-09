@@ -580,4 +580,25 @@ class Index extends Component
     }
 
 
+    public function test(){
+        $stocks = Stock_model::whereDoesntHave('stock_operations')->whereDoesntHave('process_stocks')->where('status',1)->limit(20)->get();
+        foreach($stocks as $stock){
+            $old_stock = $stock->onlyTrashed()->where('imei',$stock->imei)->where('serial_number',$stock->serial_number)->first();
+            if($old_stock != null){
+                print_r($old_stock);
+                print_r($stock);
+                $old_stock->restore();
+                $old_stock->status = 1;
+                $old_stock->order_id = $stock->order_id;
+                $old_stock->save();
+                foreach($stock->order_items as $item){
+                    $item->stock_id = $old_stock->id;
+                    $item->save();
+                }
+                $stock->delete();
+                $stock->forceDelete();
+            }
+        }
+    }
+
 }
