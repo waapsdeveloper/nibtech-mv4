@@ -131,9 +131,8 @@
                         <a href="{{url('stock_room')}}?show=1&admin_id={{$count->admin_id}}&description={{$count->description}}&start_date={{$start_date}}&end_date={{$end_date}}">{{$count->description}}: <strong>{{ $count->available_count . '/' . $count->count }}</strong> </a>
 
                     @endforeach
-                @else
-                <a href="{{url('stock_room')}}?show=1"> Count: {{ $stock_count }} </a>
                 @endif
+                <a href="{{url('stock_room')}}?show=1"> Pending Count: {{ $pending_count }} </a>
             </h6>
             <script>
 

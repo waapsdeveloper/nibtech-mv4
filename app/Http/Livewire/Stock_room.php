@@ -59,9 +59,9 @@ class Stock_room extends Component
             ->whereBetween('exit_at', [$start_date, $end_date])
             ->get();
 
+            $data['pending_count'] = Stock_movement_model::where(['received_at'=>null])->count();
         }else{
-            $data['stock_count'] = Stock_movement_model::where(['admin_id'=>$user_id, 'received_at'=>null])->count();
-
+            $data['pending_count'] = Stock_movement_model::where(['admin_id'=>$user_id, 'received_at'=>null])->count();
         }
 
         if(request('show') == 1){
@@ -76,8 +76,14 @@ class Stock_room extends Component
                 ->paginate($per_page)
                 ->onEachSide(5)
                 ->appends(request()->except('page'));
+                $data['pending_stocks'] = Stock_movement_model::where(['received_at'=>null])
+                ->orderBy('id', 'desc') // Secondary order by reference_id
+                // ->select('orders.*')
+                ->paginate($per_page)
+                ->onEachSide(5)
+                ->appends(request()->except('page'));
             }else{
-                $data['stocks'] = Stock_movement_model::where(['admin_id'=>$user_id, 'received_at'=>null])
+                $data['pending_stocks'] = Stock_movement_model::where(['admin_id'=>$user_id, 'received_at'=>null])
                 ->orderBy('id', 'desc') // Secondary order by reference_id
                 // ->select('orders.*')
                 ->paginate($per_page)
