@@ -245,10 +245,15 @@
                                         $stock = $stock_r->stock;
                                     @endphp
                                     <tr>
-                                        <td title="{{ $stock->id }}">{{ $i + 1 }}</td>
+                                        @if ($stock == null)
+                                            {{$stock_r->stock_id}}
+                                            @continue
+
+                                        @endif
+                                        <td title="{{ $stock_r->stock_id }}">{{ $i + 1 }}</td>
                                         <td><a title="Filter this variation" href="{{url('inventory').'?product='.$stock->variation->product_id.'&storage='.$stock->variation->storage.'&grade[]='.$stock->variation->grade}}">{{ $stock->variation->product->model . " " . (isset($stock->variation->storage) ? $storages[$stock->variation->storage] . " " : null) . " " .
                                         (isset($stock->variation->color) ? $colors[$stock->variation->color] . " " : null) . $grades[$stock->variation->grade] }} </a></td>
-                                        <td><a title="{{$stock->id}} | Search Serial" href="{{url('imei')."?imei=".$stock->imei.$stock->serial_number}}" target="_blank"> {{$stock->imei.$stock->serial_number }} </a></td>
+                                        <td><a title="{{$stock_r->stock_id}} | Search Serial" href="{{url('imei')."?imei=".$stock->imei.$stock->serial_number}}" target="_blank"> {{$stock->imei.$stock->serial_number }} </a></td>
                                         <td>
                                             <a title="Purchase Order Details" href="{{url('purchase/detail').'/'.$stock->order_id}}?status=1" target="_blank"> {{ $stock->order->reference_id }} </a>
                                             @if ($stock->latest_return)
