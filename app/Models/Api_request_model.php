@@ -81,14 +81,14 @@ class Api_request_model extends Model
             if(in_array($datas->Memory, $storages)){
                 $storage = array_search($datas->Memory,$storages);
             }
-            // if(!in_array($datas->Imei, $imeis)){
-            //     $imeis[] = $datas->Imei;
+            if(!in_array($datas->Imei, $imeis)){
+                $imeis[] = $datas->Imei;
             echo "<div class='col-md-4'><pre>";
 
             // print_r($request);
             print_r($datas);
             echo "</pre></div>";
-            // }
+            }
 
             $colorName = strtolower($datas->Color); // Convert color name to lowercase
 
