@@ -1024,23 +1024,40 @@ class Order extends Component
                     }
 
                 }else{
-                    $variation->stock += 1;
-                    $variation->status = 1;
-                    $variation->save();
+                    $stock2 = Stock_model::withTrashed()->where(['imei' => $i, 'serial_number' => $s])->first();
+                    if($stock2 != null){
+                        $stock2->restore();
+                        $stock2->order_id = $order->id;
+                        $stock2->status = 1;
+                        $stock2->save();
+                        $order_item = Order_item_model::firstOrNew(['order_id' => $order->id, 'variation_id' => $variation->id, 'stock_id' => $stock2->id]);
+                        $order_item->reference_id = $grd;
+                        $order_item->quantity = 1;
+                        $order_item->price = $c;
+                        $order_item->status = 3;
+                        $order_item->save();
 
-                    $stock->product_id = $product;
-                    $stock->variation_id = $variation->id;
-                    $stock->added_by = session('user_id');
-                    $stock->order_id = $order->id;
-                    $stock->status = 1;
-                    $stock->save();
+                        $stock = $stock2;
+                    }else{
+                        $variation->stock += 1;
+                        $variation->status = 1;
+                        $variation->save();
 
-                    $order_item = Order_item_model::firstOrNew(['order_id' => $order->id, 'variation_id' => $variation->id, 'stock_id' => $stock->id]);
-                    $order_item->reference_id = $grd;
-                    $order_item->quantity = 1;
-                    $order_item->price = $c;
-                    $order_item->status = 3;
-                    $order_item->save();
+                        $stock->product_id = $product;
+                        $stock->variation_id = $variation->id;
+                        $stock->added_by = session('user_id');
+                        $stock->order_id = $order->id;
+                        $stock->status = 1;
+                        $stock->save();
+
+                        $order_item = Order_item_model::firstOrNew(['order_id' => $order->id, 'variation_id' => $variation->id, 'stock_id' => $stock->id]);
+                        $order_item->reference_id = $grd;
+                        $order_item->quantity = 1;
+                        $order_item->price = $c;
+                        $order_item->status = 3;
+                        $order_item->save();
+
+                    }
 
                 }
 
@@ -1134,28 +1151,44 @@ class Order extends Component
             }
             // $stock->status = 2;
         }else{
+            $stock2 = Stock_model::withTrashed()->where(['imei' => $i, 'serial_number' => $s])->first();
+            if($stock2 != null){
+                $stock2->restore();
+                $stock2->order_id = $order_id;
+                $stock2->status = 1;
+                $stock2->save();
+                $order_item = Order_item_model::firstOrNew(['order_id' => $order_id, 'variation_id' => $variation->id, 'stock_id' => $stock2->id]);
+                $order_item->quantity = 1;
+                $order_item->price = $price;
+                $order_item->status = 3;
+                $order_item->save();
+                $stock = $stock2;
 
-            $variation->stock += 1;
-            $variation->status = 1;
-            $variation->save();
+            }else{
 
 
-            $stock->added_by = session('user_id');
-            $stock->order_id = $order_id;
+                $variation->stock += 1;
+                $variation->status = 1;
+                $variation->save();
 
-            $stock->product_id = $variation->product_id;
-            $stock->variation_id = $variation->id;
-            $stock->status = 1;
-            $stock->save();
 
-            $order_item = new Order_item_model();
-            $order_item->order_id = $order_id;
-            $order_item->variation_id = $variation->id;
-            $order_item->stock_id = $stock->id;
-            $order_item->quantity = 1;
-            $order_item->price = $price;
-            $order_item->status = 3;
-            $order_item->save();
+                $stock->added_by = session('user_id');
+                $stock->order_id = $order_id;
+
+                $stock->product_id = $variation->product_id;
+                $stock->variation_id = $variation->id;
+                $stock->status = 1;
+                $stock->save();
+
+                $order_item = new Order_item_model();
+                $order_item->order_id = $order_id;
+                $order_item->variation_id = $variation->id;
+                $order_item->stock_id = $stock->id;
+                $order_item->quantity = 1;
+                $order_item->price = $price;
+                $order_item->status = 3;
+                $order_item->save();
+            }
 
             $order = Order_model::find($order_id);
             if($order->status == 3 && !in_array($order_id,[8441,1,5,8,9,12,13,14,185,263,4739]) && $return == null){

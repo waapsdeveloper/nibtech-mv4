@@ -203,7 +203,7 @@ class UpdateOrderInDB implements ShouldQueue
             if($orderItem->stock_id == null){
                 if($itemObj->imei != null || $itemObj->serial_number != null){
                     if($itemObj->imei != null){
-                        $stock = Stock_model::firstOrNew(['imei' => $itemObj->imei]);
+                        $stock = Stock_model::withTrashed()->firstOrNew(['imei' => $itemObj->imei]);
                         $stock->imei = $itemObj->imei;
                         if($stock->id != null){
                             $stock->status = 2;
@@ -216,7 +216,7 @@ class UpdateOrderInDB implements ShouldQueue
                         }
                     }
                     if($itemObj->serial_number != null){
-                        $stock = Stock_model::firstOrNew(['serial_number' => $itemObj->serial_number,]);
+                        $stock = Stock_model::withTrashed()->firstOrNew(['serial_number' => $itemObj->serial_number,]);
                         if(strlen($itemObj->serial_number) > 20){
                             continue;
                         }
