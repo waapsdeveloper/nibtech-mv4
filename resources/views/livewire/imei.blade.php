@@ -69,7 +69,7 @@
 
             </script>
             @if(isset($stock))
-            <div class="p-2">
+            <div class="p-2 flex">
                 @if (session('user')->hasPermission('refund_imei') && isset($stock) && $stock->status == 2 && $stock->last_item()->order->order_type_id != 2)
                     <form action="{{ url('imei/refund').'/'.$stock->id}}" method="POST" id="refund" class="form-inline">
                         @csrf
