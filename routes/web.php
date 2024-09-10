@@ -179,6 +179,7 @@ Route::post('move_inventory/delete_move', [MoveInventory::class,'delete_move'])-
 Route::post('move_inventory/delete_multiple_moves', [MoveInventory::class,'delete_multiple_moves'])->name('move_inventory');
 
 Route::get('testing', Testing::class)->name('view_testing_api_data');
+Route::get('testing/repush/{id}', [Testing::class, 'repush'])->name('repush_testing_api_data');
 
 Route::get('order', Order::class)->name('view_order');
 Route::get('check_new/{return?}', [Order::class,'updateBMOrdersNew'])->name('view_order');

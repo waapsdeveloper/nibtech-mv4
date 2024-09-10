@@ -43,7 +43,12 @@ class Testing extends Component
         // return view('livewire.testing', $data); // Return the Blade view instance with data
     }
 
-
+    public function repush($id){
+        $request = Api_request_model::find($id);
+        $request->stock_id = null;
+        $request->status = null;
+        $request->save();
+    }
 
 
 
