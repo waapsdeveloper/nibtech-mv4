@@ -49,6 +49,7 @@ class Testing extends Component
         $request->status = null;
         $request->save();
 
+        return redirect()->back();
     }
 
 
