@@ -159,6 +159,7 @@ Route::get('rma/revert_status/{id}', [RMA::class,'rma_revert_status'])->name('rm
 
 Route::get('imei', IMEI::class)->name('view_imei');
 Route::post('imei/refund/{id}', [IMEI::class,'refund'])->name('refund_imei');
+Route::post('imei/change_po/{id}', [IMEI::class,'change_po'])->name('change_po_old');
 
 Route::get('stock_room', Stock_room::class)->name('view_stock_room');
 Route::get('stock_room/exit_scan', [Stock_room::class,'exit_scan'])->name('exit_stock');
