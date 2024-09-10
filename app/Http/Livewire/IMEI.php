@@ -226,10 +226,6 @@ class IMEI extends Component
             $order_id = request('order_id');
             $order = Order_model::find($order_id);
             $purchase_item = Order_item_model::where('stock_id', $stock->id)->where('order_id', $stock->order_id)->first();
-            $purchase_item->order_id = $order_id;
-            $stock->order_id = $order_id;
-            $stock->save();
-            $purchase_item->save();
 
             Stock_operations_model::create([
                 'stock_id' => $stock->id,
@@ -238,8 +234,10 @@ class IMEI extends Component
                 'description' => request('description')." | PO Changed from ".$stock->order->reference_id." to ".$order->reference_id,
                 'admin_id' => session('user_id'),
             ]);
+            $purchase_item->order_id = $order_id;
+            $stock->order_id = $order_id;
             $stock->save();
-            $stock->purchase_item->save();
+            $purchase_item->save();
 
             session()->put('success', 'PO Changed Successfully');
             return redirect()->back();
