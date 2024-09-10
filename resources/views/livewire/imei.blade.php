@@ -68,18 +68,40 @@
                 });
 
             </script>
-            @if (session('user')->hasPermission('refund_imei') && isset($stock) && $stock->status == 2 && $stock->last_item()->order->order_type_id != 2)
             <div class="p-2">
-                <form action="{{ url('imei/refund').'/'.$stock->id}}" method="POST" id="refund" class="form-inline">
-                    @csrf
-                    <div class="form-floating">
-                        <input type="text" class="form-control" name="description" placeholder="Enter Reason" id="description" required>
-                        <label for="description">Reason</label>
-                    </div>
-                        <button class="btn btn-primary pd-x-20" type="submit">Refund</button>
-                </form>
+                @if (session('user')->hasPermission('refund_imei') && isset($stock) && $stock->status == 2 && $stock->last_item()->order->order_type_id != 2)
+                    <form action="{{ url('imei/refund').'/'.$stock->id}}" method="POST" id="refund" class="form-inline">
+                        @csrf
+                        <div class="form-floating">
+                            <input type="text" class="form-control" name="description" placeholder="Enter Reason" id="description" required>
+                            <label for="description">Reason</label>
+                        </div>
+                            <button class="btn btn-primary pd-x-20" type="submit">Refund</button>
+                    </form>
+                @endif
+                @if(session('user')->hasPermission('change_po_all') || (session('user')->hasPermission('change_po_old') && $stock->created_at->diffInDays() < 7 && $stock->added_by == session('user_id')))
+
+                    <form action="{{ url('imei/change_po').'/'.$stock->id}}" method="POST" id="change_po" class="form-inline">
+                        @csrf
+                        <select type="text" id="order" name="order_id" class="form-select" required>
+                            <option value="">Vendor</option>
+                            <option value="4739">Sunstrike</option>
+                            <option value="1">Mobi</option>
+                            <option value="5">Mudassir</option>
+                            <option value="8">PCS Wireless</option>
+                            <option value="9">PCS Wireless UAE</option>
+                            <option value="12">PCS Wireless UK</option>
+                            <option value="13">Cenwood</option>
+                            <option value="14">US Mobile</option>
+                            <option value="185">Waqas</option>
+                            <option value="263">Wize</option>
+                            <option value="8441">Others</option>
+                        </select>
+                        <button class="btn btn-primary pd-x-20" type="submit">Change Vendor</button>
+                    </form>
+                @endif
+
             </div>
-            @endif
         </div>
         <br>
         <div class="row">

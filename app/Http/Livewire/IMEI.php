@@ -8,6 +8,7 @@ use App\Models\Color_model;
 use App\Models\Stock_model;
 use App\Models\Order_item_model;
 use App\Models\Grade_model;
+use App\Models\Order_model;
 use App\Models\Process_stock_model;
 use App\Models\Products_model;
 use App\Models\Stock_movement_model;
@@ -210,9 +211,41 @@ class IMEI extends Component
         return view('livewire.imei', $data); // Return the Blade view instance with data
     }
 
-    public function change_grade($stock_id){
+    public function change_po($stock_id){
         $stock = Stock_model::find($stock_id);
+        if(!$stock){
+            session()->put('error', 'Stock not found');
+            return redirect()->back();
+        }
+        if(request('order_id') == null){
+            session()->put('error', 'Please select a PO');
+            return redirect()->back();
+        }
+        if(session('user')->hasPermission('change_po_all') || (session('user')->hasPermission('change_po_old') && $stock->created_at->diffInDays() < 7 && $stock->added_by == session('user_id') && in_array($stock->order_id,[4739, 1, 5, 8, 9, 12, 13, 14, 185, 263, 8441]))){
 
+            $order_id = request('order_id');
+            $order = Order_model::find($order_id);
+            $stock->order_id = $order_id;
+            $stock->purchase_item->order_id = $order_id;
+            $stock->save();
+            $stock->purchase_item->save();
+
+            Stock_operations_model::create([
+                'stock_id' => $stock->id,
+                'old_variation_id' => $stock->variation_id,
+                'new_variation_id' => $stock->variation_id,
+                'description' => request('description')." | PO Changed from ".$stock->order->reference_id." to ".$order->reference_id,
+                'admin_id' => session('user_id'),
+            ]);
+            $stock->save();
+            $stock->purchase_item->save();
+
+            session()->put('success', 'PO Changed Successfully');
+            return redirect()->back();
+        }else{
+            session()->put('error', 'You are not authorized to perform this action');
+            return redirect()->back();
+        }
 
     }
 
