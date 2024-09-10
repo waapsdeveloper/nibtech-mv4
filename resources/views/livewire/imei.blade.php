@@ -453,8 +453,8 @@
 
                                 $data = $result->request;
                                 $datas = json_decode(json_decode(preg_split('/(?<=\}),(?=\{)/', $data)[0]));
-                                echo "Test DateTime: ".$result->created_at."<br>";
-                                echo "<a href='".url('testing/repush/'.$result->id)."'>Repush Test</a><br>";
+                                echo "Test DateTime: ".$result->created_at;
+                                echo "<a href='".url('testing/repush/'.$result->id)."'> Repush Test</a><br>";
                                 print_r($datas);
                             @endphp
                             @php
