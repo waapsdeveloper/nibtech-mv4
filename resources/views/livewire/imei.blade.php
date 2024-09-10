@@ -68,6 +68,7 @@
                 });
 
             </script>
+            @if(isset($stock))
             <div class="p-2">
                 @if (session('user')->hasPermission('refund_imei') && isset($stock) && $stock->status == 2 && $stock->last_item()->order->order_type_id != 2)
                     <form action="{{ url('imei/refund').'/'.$stock->id}}" method="POST" id="refund" class="form-inline">
@@ -79,7 +80,7 @@
                             <button class="btn btn-primary pd-x-20" type="submit">Refund</button>
                     </form>
                 @endif
-                @if(isset($stock) && session('user')->hasPermission('change_po_all') || (session('user')->hasPermission('change_po_old') && $stock->created_at->diffInDays() < 7 && $stock->added_by == session('user_id')))
+                @if(session('user')->hasPermission('change_po_all') || (session('user')->hasPermission('change_po_old') && $stock->created_at->diffInDays() < 7 && $stock->added_by == session('user_id')))
 
                     <form action="{{ url('imei/change_po').'/'.$stock->id}}" method="POST" id="change_po" class="form-inline">
                         @csrf
@@ -102,6 +103,7 @@
                 @endif
 
             </div>
+            @endif
         </div>
         <br>
         <div class="row">
