@@ -83,7 +83,7 @@
                 @endif
                 @if(session('user')->hasPermission('change_po_all') || (session('user')->hasPermission('change_po_old') && $stock->created_at->diffInDays() < 7 && $stock->added_by == session('user_id') && in_array($stock->order_id,[4739, 1, 5, 8, 9, 12, 13, 14, 185, 263, 8441])))
 
-                    <form action="{{ url('imei/change_po').'/'.$stock->id}}" method="POST" id="change_po" class="form-inline">
+                    <form action="{{ url('imei/change_po').'/'.$stock->id}}" method="POST" id="change_po" class="form-inline" onsubmit="confirm('Are you sure you Want to change the Purchase Vendor for this Stock')">
                         @csrf
                         <select type="text" id="order" name="order_id" class="form-select w-50" required>
                             <option value="">Vendor</option>
