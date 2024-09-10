@@ -48,6 +48,7 @@ class Testing extends Component
         $request->stock_id = null;
         $request->status = null;
         $request->save();
+
     }
 
 
