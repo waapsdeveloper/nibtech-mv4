@@ -69,7 +69,7 @@
 
             </script>
             @if(isset($stock))
-            <div class="p-2 d-flex">
+            <div class="p-2 d-flex justify-content-between">
                 @if (session('user')->hasPermission('refund_imei') && isset($stock) && $stock->status == 2 && $stock->last_item()->order->order_type_id != 2)
                     <form action="{{ url('imei/refund').'/'.$stock->id}}" method="POST" id="refund" class="form-inline">
                         @csrf
@@ -79,13 +79,12 @@
                         </div>
                             <button class="btn btn-primary pd-x-20" type="submit">Refund</button>
                     </form>
-                    &nbsp;&nbsp;
                 @endif
                 @if(session('user')->hasPermission('change_po_all') || (session('user')->hasPermission('change_po_old') && $stock->created_at->diffInDays() < 7 && $stock->added_by == session('user_id') && in_array($stock->order_id,[4739, 1, 5, 8, 9, 12, 13, 14, 185, 263, 8441])))
 
                     <form action="{{ url('imei/change_po').'/'.$stock->id}}" method="POST" id="change_po" class="form-inline">
                         @csrf
-                        <select type="text" id="order" name="order_id" class="form-select w-50" required>
+                        <select type="text" id="order" name="order_id" class="form-select" required>
                             <option value="">Vendor</option>
                             <option value="4739">Sunstrike</option>
                             <option value="1">Mobi</option>
