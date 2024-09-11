@@ -92,14 +92,14 @@ class Repair extends Component
             $repair->status = 2;
         }
 
+        $repair->save();
+
         if(request('approve') == 1){
             return redirect()->back();
         }else{
             return "Updated";
         }
-        $repair->save();
-
-        return redirect()->back();
+        // return redirect()->back();
     }
     public function repair_approve($repair_id){
         $repair = Process_model::find($repair_id);
