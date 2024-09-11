@@ -87,7 +87,16 @@ class Repair extends Component
             $repair->exchange_rate = request('rate');
         }
         $repair->description = request('tracking_number');
-        $repair->status = 2;
+
+        if(request('approve') == 1){
+            $repair->status = 2;
+        }
+
+        if(request('approve') == 1){
+            return redirect()->back();
+        }else{
+            return "Updated";
+        }
         $repair->save();
 
         return redirect()->back();

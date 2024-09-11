@@ -28,7 +28,7 @@
                     </span> --}}
                 <span class="main-content-title mg-b-0 mg-b-lg-1">External Repair Order Detail</span>
                 @if ($process->status == 1)
-                <form class="form-inline" method="POST" action="{{url('repair/ship').'/'.$process->id}}">
+                <form class="form-inline" id="approveform" method="POST" action="{{url('repair/ship').'/'.$process->id}}">
                     @csrf
                     <div class="form-floating">
                         <input type="text" list="currencies" id="currency" name="currency" class="form-control" value="{{$process->currency_id->code}}">
@@ -44,12 +44,32 @@
                         <label for="rate">Exchange Rate</label>
                     </div>
                     <div class="form-floating">
-                        <input type="text" class="form-control" id="tracking_number" name="tracking_number" placeholder="Enter Tracking Number" required>
+                        <input type="text" class="form-control" id="tracking_number" name="tracking_number" placeholder="Enter Tracking Number" value="{{$process->description}}" onchange="submitForm()" required>
                         <label for="tracking_number">Tracking Number</label>
                     </div>
-                    <button type="submit" class="btn btn-success">Ship</button>
+                    <button type="submit" class="btn btn-success" name="approve" value="1">Ship</button>
                     <a class="btn btn-danger" href="{{url('delete_repair') . "/" . $process->id }}">Delete</a>
                 </form>
+
+                <script>
+                    function submitForm() {
+                        var form = $("#approveform");
+                        var actionUrl = form.attr('action');
+
+                        $.ajax({
+                            type: "POST",
+                            url: actionUrl,
+                            data: form.serialize(), // serializes the form's elements.
+                            success: function(data) {
+                                alert("Success: " + data); // show response from the PHP script.
+                            },
+                            error: function(jqXHR, textStatus, errorThrown) {
+                                alert("Error: " + textStatus + " - " + errorThrown);
+                            }
+                        });
+                    }
+
+                </script>
                 @else
                 <br>
                 Tracking Number: <a href="https://www.dhl.com/gb-en/home/tracking/tracking-express.html?submit=1&tracking-id={{$process->description}}" target="_blank"> {{$process->description}}</a>
