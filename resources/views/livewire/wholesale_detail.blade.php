@@ -76,7 +76,7 @@
                 </div>
                 <div class="text-center">
                         <h4>BulkSale Order Detail</h4>
-                        <h5>Reference: {{ $order->reference_id }} | Purchaser: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->count() }} | Total Price: {{ $order->currency_id->sign.number_format($order->order_items->sum('price'),2) }}</h5>
+                        <h5>Reference: {{ $order->reference_id }} | Purchaser: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->count() }} @if (session('user')->hasPermission('view_price')) | Total Price: {{ $order->currency_id->sign.number_format($order->order_items->sum('price'),2) }} @endif</h5>
 
                 </div>
                 <div class="">
@@ -381,7 +381,7 @@
                                         <th><small><b>Variation</b></small></th>
                                         <th><small><b>IMEI | Serial Number</b></small></th>
                                         <th><small><b>Vendor</b></small></th>
-                                        @if (session('user')->hasPermission('view_cost'))
+                                        @if (session('user')->hasPermission('view_price'))
                                         <th><small><b>Price</b></small></th>
                                         @endif
                                         <th><small><b>Creation Date</b></small></th>
@@ -406,7 +406,7 @@
                                             <td>{{ $products[$variation->product_id]}} {{$storages[$variation->storage] ?? null}} {{$colors[$variation->color] ?? null}} {{$grades[$variation->grade] }}</td>
                                             <td>{{ $stock->imei.$stock->serial_number }}</td>
                                             <td>{{ $customer->first_name }}</td>
-                                            @if (session('user')->hasPermission('view_cost'))
+                                            @if (session('user')->hasPermission('view_price'))
                                             <td>€{{ number_format($item->price,2) }}</td>
                                             @endif
                                             <td style="width:220px">{{ $item->created_at }}</td>
@@ -513,11 +513,14 @@
                         <br>
                     </div>
                     <div class="d-flex justify-content-between">
+                        @if (session('user')->hasPermission('view_price'))
+
                         <div>
                             <label for="unit-price" class="">Change Unit Price: </label>
                             <input type="number" name="unit_price" id="unit_price" step="0.01" class="w-50 border-0" placeholder="Input Unit price" form="update_prices_{{ $key."_".$key2 }}">
                         </div>
                         <div>Average: {{$total/$i }}</div>
+                        @endif
                         <div>Total: {{$i }}</div>
                     </div>
                     </div>

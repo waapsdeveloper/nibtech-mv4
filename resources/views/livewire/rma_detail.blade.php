@@ -55,7 +55,7 @@
                     <a class="btn btn-danger" href="{{url('delete_rma') . "/" . $order->id }}">Delete</a>
                 </form>
                 @else
-                Tracking Number: <a href="https://www.dhl.com/gb-en/home/tracking/tracking-express.html?submit=1&tracking-id={{$order->tracking_number}}" target="_blank"> {{$order->tracking_number}}</a>
+                Tracking Number: <a href="https://www.dhl.com/gb-en/home/tracking/tracking-ex♦ess.html?submit=1&tracking-id={{$order->tracking_number}}" target="_blank"> {{$order->tracking_number}}</a>
                 <br>
                 Reference: {{ $order->reference }}
                 <br>
@@ -75,7 +75,7 @@
         <!-- /breadcrumb -->
         <div class="text-center" style="border-bottom: 1px solid rgb(216, 212, 212);">
                 {{-- <center><h4>RMA Order Detail</h4></center> --}}
-                <h5>Reference: {{ $order->reference_id }} | Purchaser: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->count() }} | Total Price: {{ $order->currency_id->sign.number_format($order->order_items->sum('price'),2) }}</h5>
+                <h5>Reference: {{ $order->reference_id }} | Vendor: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->count() }} @if (session('user')->hasPermission('view_cost')) | Total Price: {{ $order->currency_id->sign.number_format($order->order_items->sum('price'),2) }} @endif</h5>
 
         </div>
         <br>
@@ -287,7 +287,10 @@
                                             <td>{{ $colors[$variation->color] ?? null }} - {{ $grades[$variation->grade] ?? null }}</td>
                                             <td>{{ $item->imei.$item->serial_number }}</td>
                                             <td @if (session('user')->hasPermission('view_cost') && $item->purchase_item != null) title="Cost Price: €{{ $item->purchase_item->price }}" @endif>
-                                                {{ $item->order->customer->first_name }} €{{ $sale_order->price }}
+                                                {{ $item->order->customer->first_name }}
+                                                @if (session('user')->hasPermission('view_cost'))
+                                                €{{ $sale_order->price }}
+                                                @endif
                                                 @if ($item->purchase_item == null)
                                                     Missing Purchase Entry
                                                 @endif
@@ -308,10 +311,12 @@
                         <br>
                     </div>
                     <div class="d-flex justify-content-between">
+                        @if (session('user')->hasPermission('view_cost'))
                         <div>
                             <label for="unit-price" class="">Change Unit Price: </label>
                             <input type="number" name="unit_price" id="unit_price" class="w-50 border-0" placeholder="Input Unit price" form="update_prices_{{ $key."_".array_key_first($varss) }}">
                         </div>
+                        @endif
                         <div>Total: {{$i }}</div>
                     </div>
                     </div>
