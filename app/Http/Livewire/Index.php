@@ -92,144 +92,151 @@ class Index extends Component
             })->pluck('id')->toArray();
 
         }
-        $top_products = Order_item_model::when(request('data') == 1, function($q) use ($variation_ids){
-            return $q->whereIn('variation_id', $variation_ids);
-        })
-        ->whereHas('order', function ($q) use ($start_date, $end_date) {
-            $q->where(['order_type_id'=>3, 'currency'=>4])
-            ->whereBetween('created_at', [$start_date, $end_date]);
-        })
-        ->select('variation_id', DB::raw('SUM(quantity) as total_quantity_sold'), DB::raw('AVG(price) as average_price'))
-        ->groupBy('variation_id')
-        ->orderByDesc('total_quantity_sold')
-        ->take($per_page)
-        ->get();
 
-        $data['top_products'] = $top_products;
-
-
-        $data['total_orders'] = Order_model::whereBetween('created_at', [$start_date, $end_date])->where('order_type_id',3)
-        ->whereHas('order_items', function ($q) use ($variation_ids) {
-            $q->when(request('data') == 1, function($q) use ($variation_ids){
-                return $q->whereIn('variation_id', $variation_ids);
-            });
-        })
-        ->count();
-
-        $data['pending_orders'] = Order_model::whereBetween('created_at', [$start_date, $end_date])->where('order_type_id',3)->where('status','<',3)
-        ->whereHas('order_items', function ($q) use ($variation_ids) {
-            $q->when(request('data') == 1, function($q) use ($variation_ids){
-                return $q->whereIn('variation_id', $variation_ids);
-            });
-        })
-        ->count();
-        $data['invoiced_orders'] = Order_model::where('processed_at', '>=', $start_date)->where('processed_at', '<=', $end_date)->where('order_type_id',3)
-        ->whereHas('order_items', function ($q) use ($variation_ids) {
-            $q->when(request('data') == 1, function($q) use ($variation_ids){
-                return $q->whereIn('variation_id', $variation_ids);
-            });
-        })
-        ->count();
-        $data['invoiced_items'] = Order_item_model::whereHas('order', function ($q) use ($start_date, $end_date) {
-            $q->where('processed_at', '>=', $start_date)->where('processed_at', '<=', $end_date)->where('order_type_id',3);
-        })->where('stock_id','!=',null)
-        ->when(request('data') == 1, function($q) use ($variation_ids){
+        if(session('user')->hasPermission('dashboard_top_selling_products')){
+            $top_products = Order_item_model::when(request('data') == 1, function($q) use ($variation_ids){
                 return $q->whereIn('variation_id', $variation_ids);
             })
-        ->count();
+            ->whereHas('order', function ($q) use ($start_date, $end_date) {
+                $q->where(['order_type_id'=>3, 'currency'=>4])
+                ->whereBetween('created_at', [$start_date, $end_date]);
+            })
+            ->select('variation_id', DB::raw('SUM(quantity) as total_quantity_sold'), DB::raw('AVG(price) as average_price'))
+            ->groupBy('variation_id')
+            ->orderByDesc('total_quantity_sold')
+            ->take($per_page)
+            ->get();
+
+            $data['top_products'] = $top_products;
+        }
+
+        if(session('user')->hasPermission('dashboard_view_total_orders')){
+            $data['total_orders'] = Order_model::whereBetween('created_at', [$start_date, $end_date])->where('order_type_id',3)
+            ->whereHas('order_items', function ($q) use ($variation_ids) {
+                $q->when(request('data') == 1, function($q) use ($variation_ids){
+                    return $q->whereIn('variation_id', $variation_ids);
+                });
+            })
+            ->count();
+
+            $data['pending_orders'] = Order_model::whereBetween('created_at', [$start_date, $end_date])->where('order_type_id',3)->where('status','<',3)
+            ->whereHas('order_items', function ($q) use ($variation_ids) {
+                $q->when(request('data') == 1, function($q) use ($variation_ids){
+                    return $q->whereIn('variation_id', $variation_ids);
+                });
+            })
+            ->count();
+            $data['invoiced_orders'] = Order_model::where('processed_at', '>=', $start_date)->where('processed_at', '<=', $end_date)->where('order_type_id',3)
+            ->whereHas('order_items', function ($q) use ($variation_ids) {
+                $q->when(request('data') == 1, function($q) use ($variation_ids){
+                    return $q->whereIn('variation_id', $variation_ids);
+                });
+            })
+            ->count();
+            $data['invoiced_items'] = Order_item_model::whereHas('order', function ($q) use ($start_date, $end_date) {
+                $q->where('processed_at', '>=', $start_date)->where('processed_at', '<=', $end_date)->where('order_type_id',3);
+            })->where('stock_id','!=',null)
+            ->when(request('data') == 1, function($q) use ($variation_ids){
+                    return $q->whereIn('variation_id', $variation_ids);
+                })
+            ->count();
 
 
-        $data['total_conversations'] = Order_item_model::whereBetween('created_at', [$start_date, $end_date])->where('care_id','!=',null)
-        ->when(request('data') == 1, function($q) use ($variation_ids){
-            return $q->whereIn('variation_id', $variation_ids);
-        })->whereHas('sale_order')
-        ->count();
-        $data['order_items'] = Order_item_model::whereBetween('order_items.created_at', [$start_date, $end_date])
+            $data['total_conversations'] = Order_item_model::whereBetween('created_at', [$start_date, $end_date])->where('care_id','!=',null)
             ->when(request('data') == 1, function($q) use ($variation_ids){
                 return $q->whereIn('variation_id', $variation_ids);
-            })
-            ->selectRaw('AVG(CASE WHEN orders.currency = 4 THEN order_items.price END) as average_eur')
-            ->selectRaw('SUM(CASE WHEN orders.currency = 4 THEN order_items.price END) as total_eur')
-            ->selectRaw('SUM(CASE WHEN orders.currency = 5 THEN order_items.price END) as total_gbp')
-            ->join('orders', 'order_items.order_id', '=', 'orders.id')
-            ->Where('orders.deleted_at',null)
-            ->Where('order_items.deleted_at',null)
-            ->first();
+            })->whereHas('sale_order')
+            ->count();
+            $data['order_items'] = Order_item_model::whereBetween('order_items.created_at', [$start_date, $end_date])
+                ->when(request('data') == 1, function($q) use ($variation_ids){
+                    return $q->whereIn('variation_id', $variation_ids);
+                })
+                ->selectRaw('AVG(CASE WHEN orders.currency = 4 THEN order_items.price END) as average_eur')
+                ->selectRaw('SUM(CASE WHEN orders.currency = 4 THEN order_items.price END) as total_eur')
+                ->selectRaw('SUM(CASE WHEN orders.currency = 5 THEN order_items.price END) as total_gbp')
+                ->join('orders', 'order_items.order_id', '=', 'orders.id')
+                ->Where('orders.deleted_at',null)
+                ->Where('order_items.deleted_at',null)
+                ->first();
 
-        $data['average'] = $data['order_items']->average_eur;
-        $data['total_eur'] = $data['order_items']->total_eur;
-        $data['total_gbp'] = $data['order_items']->total_gbp;
-
+            $data['average'] = $data['order_items']->average_eur;
+            $data['total_eur'] = $data['order_items']->total_eur;
+            $data['total_gbp'] = $data['order_items']->total_gbp;
+        }
+        if(session('user')->hasPermission('dashboard_view_testing')){
+            $testing_count = Admin_model::withCount(['stock_operations' => function($q) use ($start_date,$end_date) {
+                // $q->select(DB::raw('count(distinct stock_id)'))->where('description','LIKE','%DrPhone')->whereBetween('created_at', [$start_date, $end_date]);
+                $q->select(DB::raw('count(distinct stock_id)'))->where('process_id',1)->whereBetween('created_at', [$start_date, $end_date]);
+            }])->get();
+            $data['testing_count'] = $testing_count;
+        }
 
         $aftersale = Order_item_model::whereHas('order', function ($q) {
             $q->where('order_type_id',4)->where('status','<',3);
         })->pluck('stock_id')->toArray();
-        $data['returns_in_progress'] = count($aftersale);
-        $rmas = Order_model::whereIn('order_type_id',[2,5])->pluck('id')->toArray();
-        $rma = Stock_model::whereDoesntHave('order_items', function ($q) use ($rmas) {
-                $q->whereIn('order_id', $rmas);
-            })->whereHas('variation', function ($q) {
-                $q->where('grade', 10);
-            })->Where('status',2)->count();
-        $data['rma'] = $rma;
 
-        $data['graded_inventory'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', 'orders.status as status_id', DB::raw('COUNT(*) as quantity'))
-        ->whereNotIn('stock.id', $aftersale)
-        ->where('stock.status', 1)
-        ->join('variation', 'stock.variation_id', '=', 'variation.id')
-        ->join('grade', 'variation.grade', '=', 'grade.id')
-        ->join('orders', 'stock.order_id', '=', 'orders.id')
-        ->groupBy('variation.grade', 'grade.name', 'orders.status')
-        ->orderBy('grade_id')
-        ->get();
-        $data['aftersale_inventory'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', 'orders.status as status_id', 'stock.status as stock_status', DB::raw('COUNT(*) as quantity'))
-        ->where('stock.status', 2)
-        ->join('variation', 'stock.variation_id', '=', 'variation.id')
-        ->join('grade', 'variation.grade', '=', 'grade.id')
-        ->whereIn('grade.id',[8,12,17])
-        ->join('orders', 'stock.order_id', '=', 'orders.id')
-        ->groupBy('variation.grade', 'grade.name', 'orders.status', 'stock.status')
-        ->orderBy('grade_id')
-        ->get();
+        if (session('user')->hasPermission('dashboard_view_aftersale_inventory')){
+            $data['returns_in_progress'] = count($aftersale);
+            $rmas = Order_model::whereIn('order_type_id',[2,5])->pluck('id')->toArray();
+            $rma = Stock_model::whereDoesntHave('order_items', function ($q) use ($rmas) {
+                    $q->whereIn('order_id', $rmas);
+                })->whereHas('variation', function ($q) {
+                    $q->where('grade', 10);
+                })->Where('status',2)->count();
+            $data['rma'] = $rma;
+            $data['aftersale_inventory'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', 'orders.status as status_id', 'stock.status as stock_status', DB::raw('COUNT(*) as quantity'))
+            ->where('stock.status', 2)
+            ->join('variation', 'stock.variation_id', '=', 'variation.id')
+            ->join('grade', 'variation.grade', '=', 'grade.id')
+            ->whereIn('grade.id',[8,12,17])
+            ->join('orders', 'stock.order_id', '=', 'orders.id')
+            ->groupBy('variation.grade', 'grade.name', 'orders.status', 'stock.status')
+            ->orderBy('grade_id')
+            ->get();
 
-        $data['listed_inventory'] = Variation_model::where('listed_stock','>',0)->sum('listed_stock');
-        $replacements = Order_item_model::where(['order_id'=>8974])->where('reference_id','!=',null)->pluck('reference_id')->toArray();
-        // dd($replacements);
-        $data['awaiting_replacement'] = Stock_model::where('status', 1)
-        ->whereHas('order_items.order', function ($q) use ($replacements) {
-            $q->where(['status'=>3, 'order_type_id'=>3])
-            ->whereNotIn('reference_id', $replacements);
-        })
-        ->count();
+            $replacements = Order_item_model::where(['order_id'=>8974])->where('reference_id','!=',null)->pluck('reference_id')->toArray();
+            // dd($replacements);
+            $data['awaiting_replacement'] = Stock_model::where('status', 1)
+            ->whereHas('order_items.order', function ($q) use ($replacements) {
+                $q->where(['status'=>3, 'order_type_id'=>3])
+                ->whereNotIn('reference_id', $replacements);
+            })
+            ->count();
 
-
-
-
-        $testing_count = Admin_model::withCount(['stock_operations' => function($q) use ($start_date,$end_date) {
-            // $q->select(DB::raw('count(distinct stock_id)'))->where('description','LIKE','%DrPhone')->whereBetween('created_at', [$start_date, $end_date]);
-            $q->select(DB::raw('count(distinct stock_id)'))->where('process_id',1)->whereBetween('created_at', [$start_date, $end_date]);
-        }])->get();
-        $data['testing_count'] = $testing_count;
-
-        $order = [];
-        $dates = [];
-        for ($i = 1; $i <= date('d'); $i++) {
-            $start = date('Y-m-' . $i . ' 00:00:00');
-            $end = date('Y-m-' . $i . ' 23:59:59');
-            $orders = Order_model::where('created_at', '>', $start)->where('order_type_id',3)
-                ->where('created_at', '<=', $end)->count();
-            $order[$i] = $orders;
-            $dates[$i] = $i;
         }
-        echo '<script> sessionStorage.setItem("approved", "' . implode(',', $order) . '");</script>';
-        echo '<script> sessionStorage.setItem("dates", "' . implode(',', $dates) . '");</script>';
-        if (session('user')->hasPermission('10_day_sales_chart')){
-
+        if (session('user')->hasPermission('dashboard_view_inventory')){
+            $data['graded_inventory'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', 'orders.status as status_id', DB::raw('COUNT(*) as quantity'))
+            ->whereNotIn('stock.id', $aftersale)
+            ->where('stock.status', 1)
+            ->join('variation', 'stock.variation_id', '=', 'variation.id')
+            ->join('grade', 'variation.grade', '=', 'grade.id')
+            ->join('orders', 'stock.order_id', '=', 'orders.id')
+            ->groupBy('variation.grade', 'grade.name', 'orders.status')
+            ->orderBy('grade_id')
+            ->get();
+        }
+        if (session('user')->hasPermission('dashboard_view_listing_total')){
+            $data['listed_inventory'] = Variation_model::where('listed_stock','>',0)->sum('listed_stock');
+        }
+        if (session('user')->hasPermission('dashboard_view_pending_orders')){
+            $data['pending_orders_count'] = Order_model::where('status',2)->groupBy('order_type_id')->select('order_type_id', DB::raw('COUNT(id) as count'), DB::raw('SUM(price) as price'))->orderBy('order_type_id','asc')->get();
         }
 
 
-
-        $data['pending_orders_count'] = Order_model::where('status',2)->groupBy('order_type_id')->select('order_type_id', DB::raw('COUNT(id) as count'), DB::raw('SUM(price) as price'))->orderBy('order_type_id','asc')->get();
+        if (session('user')->hasPermission('monthly_sales_chart')){
+            $order = [];
+            $dates = [];
+            for ($i = 1; $i <= date('d'); $i++) {
+                $start = date('Y-m-' . $i . ' 00:00:00');
+                $end = date('Y-m-' . $i . ' 23:59:59');
+                $orders = Order_model::where('created_at', '>', $start)->where('order_type_id',3)
+                    ->where('created_at', '<=', $end)->count();
+                $order[$i] = $orders;
+                $dates[$i] = $i;
+            }
+            echo '<script> sessionStorage.setItem("approved", "' . implode(',', $order) . '");</script>';
+            echo '<script> sessionStorage.setItem("dates", "' . implode(',', $dates) . '");</script>';
+        }
 
 
 
