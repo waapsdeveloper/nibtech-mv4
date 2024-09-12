@@ -189,7 +189,7 @@ class Order_item_model extends Model
                 $variation->save();
 
             if($orderItem->stock_id == null){
-                if($orderItem->stock_id == 0){
+                if($orderItem->stock_id === 0){
 
                 }else{
                     if($itemObj->imei != null || $itemObj->serial_number != null){
