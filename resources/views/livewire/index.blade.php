@@ -212,9 +212,9 @@
                             </form>
                             @if (isset($add_ip) && $add_ip == 1)
                                 <div class="card">
-                                    <div class="card-body pb-0">
+                                    <div class="card-body">
                                         <div class="d-flex justify-content-between">
-                                            <h4>The IP you are logged in with is not known by the system. Will this be used by the team?</h4>
+                                            <h5>The IP you are logged in with is not known by the system. Will this be used by the team?</h5>
                                             <a href="{{ url('index/add_ip') }}" class="btn btn-primary">Yes</a>
                                         </div>
                                     </div>
