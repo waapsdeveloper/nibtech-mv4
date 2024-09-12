@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Support\Facades\Route;
 use App\Models\Admin_model;
 use App\Models\Grade_model;
+use Illuminate\Foundation\Inspiring;
 
 class AuthorizeMiddleware
 {
@@ -43,7 +44,7 @@ class AuthorizeMiddleware
         session()->put('user',$user);
         // Check if the user has the required permission for the current page
         if (!$user->hasPermission($currentRoute)) {
-            abort(403, 'Unauthorized');
+            abort(403, Inspiring::quote());
         }
 
         // Remove the 'page' session variable
