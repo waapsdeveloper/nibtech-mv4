@@ -36,7 +36,7 @@
                             @if (session('user')->hasPermission('view_cost') || session('user')->hasPermission('view_price'))
                         <li class="dropdown nav-item">
 
-                            <a class="new nav-link theme-layout nav-link-bg" href="{{url('index/toggle_amount_view')}}">
+                            <a class="new nav-link h-auto" href="{{url('index/toggle_amount_view')}}">
                                 <span @if (session('amount_view') == 1)
                                     class="d-none"
                                 @endif>
