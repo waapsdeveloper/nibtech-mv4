@@ -9,7 +9,7 @@ use App\Models\Grade_model;
 use App\Models\Ip_address_model;
 use Illuminate\Foundation\Inspiring;
 
-class AuthorizeMiddleware
+class CheckIPMiddleware
 {
     public function handle($request, Closure $next, ...$permissions)
     {
@@ -25,11 +25,7 @@ class AuthorizeMiddleware
             session()->put('all_grades',$all_grades);
         }
         // If the current route is the login route or sign-in route, bypass the middleware
-        if ($currentRoute == 'login' || $currentRoute == 'signin' || $currentRoute == 'index' || $currentRoute == 'profile' || $currentRoute == 'error') {
-            // Redirect to the sign-in page if user ID is null
-            if ($userId == null && $currentRoute == 'index') {
-                return redirect('signin');
-            }
+        if ($currentRoute == 'login' || $currentRoute == 'signin' || $currentRoute == 'error') {
             return $next($request);
         }
 
@@ -38,18 +34,13 @@ class AuthorizeMiddleware
             return redirect('signin');
         }
 
-        // Retrieve the page from the session
-        // $page = session('page');
-        // dd($page)
-        // Retrieve the user object by ID
-        session()->put('user',$user);
-        // Check if the user has the required permission for the current page
-        if (!$user->hasPermission($currentRoute)) {
-            abort(403, 'Quote of the day: '.Inspiring::just_quote());
+        if(!$user->hasPermission('add_ip')){
+            $ip = $request->ip();
+            $ip_address = Ip_address_model::where('ip',$ip)->where('status',1)->first();
+            if($ip_address == null){
+                abort(407, 'Quote of the day: '.Inspiring::just_quote());
+            }
         }
-        // Remove the 'page' session variable
-        session()->forget('page');
-
         // If the user has the required permission, proceed to the next middleware
         return $next($request);
     }

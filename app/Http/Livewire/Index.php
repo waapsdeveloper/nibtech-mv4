@@ -14,6 +14,7 @@ use App\Models\Products_model;
 use App\Models\Color_model;
 use App\Models\Storage_model;
 use App\Models\Grade_model;
+use App\Models\Ip_address_model;
 use App\Models\Variation_model;
 use App\Models\Stock_model;
 use DateTime;
@@ -44,6 +45,11 @@ class Index extends Component
         $data['storages'] = Storage_model::pluck('name','id');
         $data['grades'] = Grade_model::pluck('name','id');
 
+        if(session('user')->hasPermission('add_ip')){
+            if(Ip_address_model::where('ip',request()->ip())->where('status',1)->count() == 0){
+                $data['add_ip'] = 1;
+            }
+        }
         // New Added Variations
         $data['variations'] = Variation_model::withoutGlobalScope('Status_not_3_scope')
         ->where('product_id',null)
@@ -243,6 +249,15 @@ class Index extends Component
         $data['start_date'] = date('Y-m-d', strtotime($start_date));
         $data['end_date'] = date("Y-m-d", strtotime($end_date));
         return view('livewire.index')->with($data);
+    }
+    public function add_ip(){
+        $ip = request()->ip();
+        $ip_address = new Ip_address_model();
+        $ip_address->admin_id = session('user_id');
+        $ip_address->ip = $ip;
+        $ip_address->status = 1;
+        $ip_address->save();
+        return redirect()->back();
     }
     public function refresh_sales_chart(){
         $order = [];

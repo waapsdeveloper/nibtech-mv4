@@ -210,7 +210,16 @@
                             </div>
                             <form action="" method="GET" id="index">
                             </form>
-
+                            @if (isset($add_ip) && $add_ip == 1)
+                                <div class="card">
+                                    <div class="card-body pb-0">
+                                        <div class="d-flex justify-content-between">
+                                            <h4>The IP you are logged in with is not known by the system. Will this be used by the team?</h4>
+                                            <a href="{{ url('index/add_ip') }}" class="btn btn-primary">Yes</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
                             @if (session('user')->hasPermission('dashboard_top_selling_products'))
 
                                 <div class="card">
