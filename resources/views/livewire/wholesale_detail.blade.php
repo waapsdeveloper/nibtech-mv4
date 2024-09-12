@@ -519,7 +519,7 @@
                             <label for="unit-price" class="">Change Unit Price: </label>
                             <input type="number" name="unit_price" id="unit_price" step="0.01" class="w-50 border-0" placeholder="Input Unit price" form="update_prices_{{ $key."_".$key2 }}">
                         </div>
-                        <div>Average: {{$total/$i }}</div>
+                        <div>Average: {{amount_formatter($total/$i,2) }}</div>
                         @endif
                         <div>Total: {{$i }}</div>
                     </div>
