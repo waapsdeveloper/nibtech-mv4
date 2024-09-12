@@ -214,7 +214,7 @@
                                 <div class="card">
                                     <div class="card-body">
                                         <div class="d-flex justify-content-between">
-                                            <h5>The IP you are logged in with is not known by the system. Will this be used by the team?</h5>
+                                            <h6>The IP you are logged in with is not known by the system. Will this be used by the team?</h6>
                                             <a href="{{ url('index/add_ip') }}" class="btn btn-primary">Yes</a>
                                         </div>
                                     </div>
