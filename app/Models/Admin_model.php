@@ -24,8 +24,8 @@ class Admin_model extends Model
         'last_name',
         'email',
         'password',
-        'google2fa_secret', 
-        'google2fa_enabled', 
+        'google2fa_secret',
+        'google2fa_enabled',
     ];
 
     public function role()
@@ -61,9 +61,9 @@ class Admin_model extends Model
         // }
         // Check if user has the required role but does not have the permission directly
         // foreach ($this->roles as $role) {
-            if ($this->role->permissions->isEmpty() && $this->role->name === 'Super Admin') {
-                return true;
-            }
+        if ($this->role->permissions->isEmpty() && $this->role->name === 'Super Admin') {
+            return true;
+        }
         // }
         $per = Permission_model::firstOrNew(['name'=>$permission]);
         $per->save();

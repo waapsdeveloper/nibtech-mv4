@@ -2202,7 +2202,7 @@ class Order extends Component
                 session()->put('success', $message);
                 session()->put('copy', $message);
             }else{
-                $item->stock_id = null;
+                $item->stock_id = 0;
                 $item->linked_id = null;
                 session()->put('success', 'IMEI removed from Order');
             }
