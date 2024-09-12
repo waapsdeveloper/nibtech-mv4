@@ -344,7 +344,7 @@
                                             {{-- <td>{{ $item->order->customer->first_name }}</td> --}}
                                             <td><a title="Search Serial" href="{{url('imei')."?imei=".$item->imei.$item->serial_number}}" target="_blank"> {{ $item->imei.$item->serial_number }} </a></td>
                                             <td @if (session('user')->hasPermission('view_cost')) title="Cost Price: {{ $currency.$item->purchase_item->price }}" @endif>
-                                                {{ $item->order->customer->first_name }} {{ $currency.$item->purchase_item->price }}
+                                                {{ $item->order->customer->first_name }} {{ $currency.amount_formatter($item->purchase_item->price,2) }}
                                             </td>
 
                                             @if (session('user')->hasPermission('delete_repair_item'))
