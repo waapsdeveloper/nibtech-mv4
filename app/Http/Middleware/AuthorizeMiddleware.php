@@ -44,7 +44,7 @@ class AuthorizeMiddleware
         session()->put('user',$user);
         // Check if the user has the required permission for the current page
         if (!$user->hasPermission($currentRoute)) {
-            abort(403, Inspiring::just_quote());
+            abort(403, 'Quote of the day: '.Inspiring::just_quote());
         }
 
         // Remove the 'page' session variable
