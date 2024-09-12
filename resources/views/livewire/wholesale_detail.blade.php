@@ -496,7 +496,7 @@
                                             <td>{{ $item->imei.$item->serial_number }}</td>
                                             @if (session('user')->hasPermission('view_price'))
                                             <td @if (session('user')->hasPermission('view_cost')) title="Cost Price: €{{ $purchase_item->price }}" @endif>
-                                                {{ $item->order->customer->first_name }} €{{ $price }}
+                                                {{ $item->order->customer->first_name }} €{{ amount_formatter($price,2) }}
                                             </td>
                                             @endif
                                             @if (session('user')->hasPermission('delete_wholesale_item'))

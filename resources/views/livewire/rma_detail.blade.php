@@ -286,10 +286,10 @@
                                             <td>{{ $i }}</td>
                                             <td>{{ $colors[$variation->color] ?? null }} - {{ $grades[$variation->grade] ?? null }}</td>
                                             <td>{{ $item->imei.$item->serial_number }}</td>
-                                            <td @if (session('user')->hasPermission('view_cost') && $item->purchase_item != null) title="Cost Price: €{{ $item->purchase_item->price }}" @endif>
+                                            <td @if (session('user')->hasPermission('view_cost') && $item->purchase_item != null) title="Cost Price: €{{ amount_formatter($item->purchase_item->price,2) }}" @endif>
                                                 {{ $item->order->customer->first_name }}
                                                 @if (session('user')->hasPermission('view_cost'))
-                                                €{{ $sale_order->price }}
+                                                €{{ amount_formatter($sale_order->price,2) }}
                                                 @endif
                                                 @if ($item->purchase_item == null)
                                                     Missing Purchase Entry
