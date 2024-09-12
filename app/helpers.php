@@ -5,7 +5,7 @@ if(!function_exists('amount_formatter')) {
         if(session('amount_view') == '1') {
             return number_format($amount, $decimals);
         }else{
-            return '**.**';
+            return '##.##';
         }
     }
 }
