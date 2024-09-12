@@ -188,36 +188,40 @@ class Order_item_model extends Model
             }
                 $variation->save();
 
-            if($orderItem->stock_id == null && $orderItem->stock_id != 0){
-                if($itemObj->imei != null || $itemObj->serial_number != null){
-                    if($itemObj->imei != null){
-                        $stock = Stock_model::withTrashed()->firstOrNew(['imei' => $itemObj->imei]);
-                        $stock->imei = $itemObj->imei;
-                        if($stock->id != null){
-                            $stock->status = 2;
-                            $last_item = $stock->last_item();
-                            if($last_item != null){
+            if($orderItem->stock_id == null){
+                if($orderItem->stock_id == 0){
+
+                }else{
+                    if($itemObj->imei != null || $itemObj->serial_number != null){
+                        if($itemObj->imei != null){
+                            $stock = Stock_model::withTrashed()->firstOrNew(['imei' => $itemObj->imei]);
+                            $stock->imei = $itemObj->imei;
+                            if($stock->id != null){
+                                $stock->status = 2;
+                                $last_item = $stock->last_item();
+                                if($last_item != null){
+                                    $orderItem->linked_id = $last_item->id;
+                                }
+                            }
+                        }
+                        if($itemObj->serial_number != null){
+                            $stock = Stock_model::withTrashed()->firstOrNew(['serial_number' => $itemObj->serial_number,]);
+                            if(strlen($itemObj->serial_number) > 20){
+                                continue;
+                            }
+                            $stock->serial_number = $itemObj->serial_number;
+                            if($stock->id != null){
+                                $stock->status = 2;
+                                $last_item = $stock->last_item();
                                 $orderItem->linked_id = $last_item->id;
                             }
                         }
-                    }
-                    if($itemObj->serial_number != null){
-                        $stock = Stock_model::withTrashed()->firstOrNew(['serial_number' => $itemObj->serial_number,]);
-                        if(strlen($itemObj->serial_number) > 20){
-                            continue;
-                        }
-                        $stock->serial_number = $itemObj->serial_number;
-                        if($stock->id != null){
-                            $stock->status = 2;
-                            $last_item = $stock->last_item();
-                            $orderItem->linked_id = $last_item->id;
-                        }
-                    }
 
-                    $stock->variation_id = $variation->id;
-                    $stock->save();
-                    $orderItem->stock_id = $stock->id;
+                        $stock->variation_id = $variation->id;
+                        $stock->save();
+                        $orderItem->stock_id = $stock->id;
 
+                    }
                 }
             }
             $orderItem->order_id = Order_model::where(['reference_id' => $orderObj->order_id])->first()->id;
