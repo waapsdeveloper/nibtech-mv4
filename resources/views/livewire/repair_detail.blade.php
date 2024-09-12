@@ -97,7 +97,7 @@
         <!-- /breadcrumb -->
         <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
                 {{-- <center><h4>External Repair Order Detail</h4></center> --}}
-            <h5>Reference: {{ $process->reference_id }} | Repairer: {{ $process->customer->first_name }} | Total Items: {{ $process->process_stocks->count() }} | Total Price: {{ $currency.number_format($process->process_stocks->sum('price'),2) }}</h5>
+            <h5>Reference: {{ $process->reference_id }} | Repairer: {{ $process->customer->first_name }} | Total Items: {{ $process->process_stocks->count() }} | Total Price: {{ $currency.amount_formatter($process->process_stocks->sum('price'),2) }}</h5>
             @if ($process->status == 1)
             <div class="p-1">
                 <form class="form-inline" action="{{ url('delete_repair_item') }}" method="POST" id="repair_item">
@@ -266,7 +266,7 @@
                                             <td>{{ $item->imei.$item->serial_number }}</td>
                                             <td>{{ $item->order->customer->first_name }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
-                                            <td>{{ $currency.number_format($item->purchase_item->price,2) }}</td>
+                                            <td>{{ $currency.amount_formatter($item->purchase_item->price,2) }}</td>
                                             @endif
                                             <td style="width:220px">{{ $item->created_at }}</td>
                                             <td><a href="{{ url('delete_repair_item').'/'.$item->id }}"><i class="fa fa-trash"></i></a></td>

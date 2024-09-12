@@ -4,8 +4,6 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Support\Facades\Route;
-use App\Models\Admin_model;
-use App\Models\Grade_model;
 use App\Models\Ip_address_model;
 use Illuminate\Foundation\Inspiring;
 
@@ -18,11 +16,7 @@ class CheckIPMiddleware
         // Retrieve the user's ID from the session
         $userId = session('user_id');
         if($userId != null){
-
-            $user = Admin_model::find($userId);
-            $all_grades = Grade_model::all();
-            session()->put('user',$user);
-            session()->put('all_grades',$all_grades);
+            $user = session('user');
         }
         // If the current route is the login route or sign-in route, bypass the middleware
         if ($currentRoute == 'login' || $currentRoute == 'signin' || $currentRoute == 'error') {

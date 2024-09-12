@@ -75,7 +75,7 @@
         <!-- /breadcrumb -->
         <div class="text-center" style="border-bottom: 1px solid rgb(216, 212, 212);">
                 {{-- <center><h4>RMA Order Detail</h4></center> --}}
-                <h5>Reference: {{ $order->reference_id }} | Vendor: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->count() }} @if (session('user')->hasPermission('view_cost')) | Total Price: {{ $order->currency_id->sign.number_format($order->order_items->sum('price'),2) }} @endif</h5>
+                <h5>Reference: {{ $order->reference_id }} | Vendor: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->count() }} @if (session('user')->hasPermission('view_cost')) | Total Price: {{ $order->currency_id->sign.amount_formatter($order->order_items->sum('price'),2) }} @endif</h5>
 
         </div>
         <br>
@@ -207,7 +207,7 @@
                                             <td>{{ $stock->imei.$stock->serial_number }}</td>
                                             <td>{{ $customer->first_name }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
-                                            <td>€{{ number_format($item->price,2) }}</td>
+                                            <td>€{{ amount_formatter($item->price,2) }}</td>
                                             @endif
                                             <td style="width:220px">{{ $item->created_at }}</td>
                                             <td><a href="{{ url('delete_rma_item').'/'.$item->id }}"><i class="fa fa-trash"></i></a></td>

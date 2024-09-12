@@ -255,9 +255,9 @@
                         @endphp
                         <tr>
                             <td width="320">{{ $item->variation->product->model . " - " . $storage . $color }} <br> {{  $item->stock->imei . $item->stock->serial_number . " - " . $item->stock->tester }}</td>
-                            <td width="80" align="right">-{{ $order->currency_id->sign }}{{ number_format($item->price,2) }}</td>
+                            <td width="80" align="right">-{{ $order->currency_id->sign }}{{ amount_formatter($item->price,2) }}</td>
                             <td width="40"> 1 </td>
-                            <td width="90" align="right">-{{ $order->currency_id->sign }}{{ number_format($item->price,2) }}</td>
+                            <td width="90" align="right">-{{ $order->currency_id->sign }}{{ amount_formatter($item->price,2) }}</td>
                         </tr>
                     @endforeach
                         <tr>
@@ -275,18 +275,18 @@
                             <table cellpadding="5">
                                     <tr>
                                         <td>Sub Total:</td>
-                                        <td align="right"> <strong>-{{ $order->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td>
+                                        <td align="right"> <strong>-{{ $order->currency_id->sign }}{{amount_formatter( $totalAmount,2) }}</strong></td>
                                     </tr>
                                     <br>
                                     <br>
                                     <hr>
                                     <tr>
                                         <td>Amount Due:</td>
-                                        <td align="right"> <strong>-{{ $order->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td>
+                                        <td align="right"> <strong>-{{ $order->currency_id->sign }}{{amount_formatter( $totalAmount,2) }}</strong></td>
                                     </tr>
                                     <tr>
                                         <td>Back Market:</td>
-                                        <td align="right"> <strong>-{{ $order->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td>
+                                        <td align="right"> <strong>-{{ $order->currency_id->sign }}{{amount_formatter( $totalAmount,2) }}</strong></td>
                                     </tr>
                                     <hr>
                                     <tr>

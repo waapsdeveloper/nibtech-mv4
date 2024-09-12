@@ -73,7 +73,7 @@
                 </div>
             <div class="tx-center">
                 <center><h4>@if ($order->status == 2)<small>(Pending)</small>@endif Purchase Order Detail</h4></center>
-                <h5>Reference: {{ $order->reference_id }} | Vendor: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->count() }} | Total Cost: {{ $order->currency_id->sign.number_format($order->order_items->sum('price'),2) }}</h5>
+                <h5>Reference: {{ $order->reference_id }} | Vendor: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->count() }} | Total Cost: {{ $order->currency_id->sign.amount_formatter($order->order_items->sum('price'),2) }}</h5>
             </div>
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
@@ -210,8 +210,8 @@
                                 <td>{{ $i++ }}</td>
                                 <td>{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</td>
                                 <td>{{ $summery['quantity'] }}</td>
-                                <td title="{{ $summery['average_cost'] }}">{{ number_format($summery['total_cost'],2) }}</td>
-                                <td title="{{ $summery['average_price'] }}">{{ number_format($summery['total_price'],2) }}</td>
+                                <td title="{{ $summery['average_cost'] }}">{{ amount_formatter($summery['total_cost'],2) }}</td>
+                                <td title="{{ $summery['average_price'] }}">{{ amount_formatter($summery['total_price'],2) }}</td>
                             </tr>
                             {{-- @endif --}}
                         @endforeach
@@ -243,7 +243,7 @@
                                 <td>{{ ++$i }}</td>
                                 <td>{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</td>
                                 <td>{{ $summery['quantity'] }}</td>
-                                <td title="{{ $summery['average_cost'] }}">{{ number_format($summery['total_cost'],2) }}</td>
+                                <td title="{{ $summery['average_cost'] }}">{{ amount_formatter($summery['total_cost'],2) }}</td>
                             </tr>
                             {{-- @endif --}}
                         @endforeach
@@ -604,10 +604,10 @@
                                                     <td title="Double click to change" data-stock="{{ $stock->id }}">{{ $stock->imei.$stock->serial_number }}</td>
                                                     <td>{{ $item->order->customer->first_name }}</td>
                                                     @if (session('user')->hasPermission('view_cost'))
-                                                    <td>{{ $currency.number_format($stock->purchase_item->price,2) }}</td>
+                                                    <td>{{ $currency.amount_formatter($stock->purchase_item->price,2) }}</td>
                                                     @endif
                                                     @if (session('user')->hasPermission('view_cost'))
-                                                    <td>{{ $currency.number_format($item->price,2) }}</td>
+                                                    <td>{{ $currency.amount_formatter($item->price,2) }}</td>
                                                     @endif
                                                     <td style="width:220px">{{ $item->created_at }}</td>
                                                 </tr>
@@ -641,10 +641,10 @@
                                                     <td title="Double click to change" data-stock="{{ $stock->id }}">{{ $stock->imei.$stock->serial_number }}</td>
                                                     <td>{{ $item->order->customer->first_name }}</td>
                                                     @if (session('user')->hasPermission('view_cost'))
-                                                    <td>{{ $currency.number_format($stock->purchase_item->price,2) }}</td>
+                                                    <td>{{ $currency.amount_formatter($stock->purchase_item->price,2) }}</td>
                                                     @endif
                                                     @if (session('user')->hasPermission('view_cost'))
-                                                    <td>{{ $currency.number_format($item->price,2) }}</td>
+                                                    <td>{{ $currency.amount_formatter($item->price,2) }}</td>
                                                     @endif
                                                     <td style="width:220px">{{ $item->created_at }}</td>
                                                 </tr>

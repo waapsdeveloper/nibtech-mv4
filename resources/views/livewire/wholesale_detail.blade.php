@@ -76,7 +76,7 @@
                 </div>
                 <div class="text-center">
                         <h4>BulkSale Order Detail</h4>
-                        <h5>Reference: {{ $order->reference_id }} | Purchaser: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->count() }} @if (session('user')->hasPermission('view_price')) | Total Price: {{ $order->currency_id->sign.number_format($order->order_items->sum('price'),2) }} @endif</h5>
+                        <h5>Reference: {{ $order->reference_id }} | Purchaser: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->count() }} @if (session('user')->hasPermission('view_price')) | Total Price: {{ $order->currency_id->sign.amount_formatter($order->order_items->sum('price'),2) }} @endif</h5>
 
                 </div>
                 <div class="">
@@ -407,7 +407,7 @@
                                             <td>{{ $stock->imei.$stock->serial_number }}</td>
                                             <td>{{ $customer->first_name }}</td>
                                             @if (session('user')->hasPermission('view_price'))
-                                            <td>€{{ number_format($item->price,2) }}</td>
+                                            <td>€{{ amount_formatter($item->price,2) }}</td>
                                             @endif
                                             <td style="width:220px">{{ $item->created_at }}</td>
                                             <td><a href="{{ url('delete_wholesale_item').'/'.$item->id }}"><i class="fa fa-trash"></i></a></td>

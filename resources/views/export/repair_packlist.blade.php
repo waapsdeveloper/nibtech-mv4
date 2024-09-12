@@ -186,13 +186,13 @@
                             <td width="320">{{ $item->model . " - " . $storage . $color . $grades[$item->grade] }}</td>
                             <td width="80" align="right"></td>
                             <td width="40">{{ $item->total_quantity }}</td>
-                            <td width="90" align="right">{{ $process->currency_id->sign }}{{ number_format($item->total_price,2) }}</td>
+                            <td width="90" align="right">{{ $process->currency_id->sign }}{{ amount_formatter($item->total_price,2) }}</td>
                         </tr>
                         @foreach ($items as $process_stock)
                             @if($process_stock->variation_id == $item->variation_id)
                             <tr class="font-sm">
                                 <td width="320" style="font-size: 10px" align="right">{{ $process_stock->stock->imei ?? "Stock Not Found"}}{{$process_stock->stock->serial_number ?? null }}</td>
-                                <td width="80" style="font-size: 10px" align="right">{{ $process->currency_id->sign }}{{ number_format($process_stock->price,2) }}</td>
+                                <td width="80" style="font-size: 10px" align="right">{{ $process->currency_id->sign }}{{ amount_formatter($process_stock->price,2) }}</td>
                                 <td width="40"></td>
                                 <td width="90" align="right"></td>
                             </tr>
@@ -215,18 +215,18 @@
                             <table cellpadding="5">
                                     <tr>
                                         <td>Sub Total:</td>
-                                        <td align="right"> <strong>{{ $process->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td>
+                                        <td align="right"> <strong>{{ $process->currency_id->sign }}{{amount_formatter( $totalAmount,2) }}</strong></td>
                                     </tr>
                                     <br>
                                     <br>
                                     <hr>
                                     <tr>
                                         <td>Amount Due:</td>
-                                        <td align="right"> <strong>{{ $process->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td>
+                                        <td align="right"> <strong>{{ $process->currency_id->sign }}{{amount_formatter( $totalAmount,2) }}</strong></td>
                                     </tr>
                                     {{-- <tr>
                                         <td>Back Market:</td>
-                                        <td align="right"> <strong>{{ $process->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td>
+                                        <td align="right"> <strong>{{ $process->currency_id->sign }}{{amount_formatter( $totalAmount,2) }}</strong></td>
                                     </tr>
                                     <hr>
                                     <tr>

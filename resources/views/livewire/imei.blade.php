@@ -212,9 +212,9 @@
                                             <td>{{ $item->quantity }}</td>
                                             <td>
                                             @if ($order->order_type_id == 1 && session('user')->hasPermission('view_cost'))
-                                                {{ $order->currency_id->sign.number_format($item->price,2) }}
+                                                {{ $order->currency_id->sign.amount_formatter($item->price,2) }}
                                             @elseif (session('user')->hasPermission('view_price'))
-                                                {{ $order->currency_id->sign.number_format($item->price,2) }}
+                                                {{ $order->currency_id->sign.amount_formatter($item->price,2) }}
                                             @endif
                                             </td>
                                             @if ($order->status == 3)
@@ -308,7 +308,7 @@
                                                 {{ $process->customer->first_name." ".$process->customer->last_name }}
                                             @endif</td>
                                             <td>
-                                                {{ $process->currency_id->sign.number_format($p_stock->price,2) }}
+                                                {{ $process->currency_id->sign.amount_formatter($p_stock->price,2) }}
                                             </td>
                                             <td style="width:240px" class="text-success text-uppercase" title="{{ $p_stock->stock_id }}" id="copy_imei_{{ $process->id }}">
                                                 @isset($p_stock->stock->imei) {{ $p_stock->stock->imei }}&nbsp; @endisset

@@ -202,7 +202,7 @@
                                                 <td>{{ $order->order_type->name }}</td>
                                                 <td>{{ $order->order_items_count }}</td>
                                                 @if (session('user')->hasPermission('view_price'))
-                                                <td>€{{ number_format($price,2) }}</td>
+                                                <td>€{{ amount_formatter($price,2) }}</td>
                                                 @endif
                                                 <td style="width:220px">{{ $order->created_at }}</td>
                                                 <td>

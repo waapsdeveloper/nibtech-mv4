@@ -175,7 +175,7 @@
                                                     <td>{{ $i + 1 }}</td>
                                                     <td><a href="{{url('return/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
                                                 @if (session('user')->hasPermission('view_cost'))
-                                                <td>Є{{ number_format($order->total_price,2) }}</td>
+                                                <td>Є{{ amount_formatter($order->total_price,2) }}</td>
                                                 @endif
                                                 <td>{{ $order->available_stock."/".$order->total_quantity }}@if ($order->status == 2)
                                                     (Pending)

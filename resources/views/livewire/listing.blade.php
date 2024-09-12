@@ -325,7 +325,7 @@
                                                     <label for="">Min Price ({{$sign}})</label>
                                                 </div>
                                                 @if ($listing->currency_id == 5)
-                                                    Minimum: £{{number_format($m_min_price*$eur_gbp,2)}}
+                                                    Minimum: £{{amount_formatter($m_min_price*$eur_gbp,2)}}
                                                 @endif
                                             </td>
                                             <td class="p-1">
@@ -334,7 +334,7 @@
                                                     <label for="">Price ({{$sign}})</label>
                                                 </div>
                                                 @if ($listing->currency_id == 5)
-                                                    Minimum: £{{number_format($m_price*$eur_gbp,2)}}
+                                                    Minimum: £{{amount_formatter($m_price*$eur_gbp,2)}}
                                                 @endif
                                             </td>
                                                 {{-- <button id="send_{{$variation->id}}" class="btn btn-light d-none" onclick="submitForm(event, {{$variation->id}})">Push</button> --}}

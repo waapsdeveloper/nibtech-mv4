@@ -180,7 +180,7 @@
                                                     <td><a href="{{url('wholesale/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
                                                 <td>{{ $vendors[$order->customer_id] }}</td>
                                                 @if (session('user')->hasPermission('view_price'))
-                                                <td>€{{ number_format($price,2) }}</td>
+                                                <td>€{{ amount_formatter($price,2) }}</td>
                                                 @endif
                                                 <td>{{ $order->order_items_count }}</td>
                                                 <td style="width:220px">{{ $order->created_at }}</td>

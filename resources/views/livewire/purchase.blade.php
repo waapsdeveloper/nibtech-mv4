@@ -189,7 +189,7 @@
                                                     <td><a href="{{url('purchase/detail/'.$order->id)}}?status=1">{{ $order->reference_id }}</a></td>
                                                 <td>{{ $vendors[$order->customer_id] }}</td>
                                                 @if (session('user')->hasPermission('view_cost'))
-                                                <td>Є{{ number_format($order->order_items->sum('price'),2) }}</td>
+                                                <td>Є{{ amount_formatter($order->order_items->sum('price'),2) }}</td>
                                                 @endif
                                                 <td>{{ $order->available_stock."/".$order->order_items->count() }} @if ($order->status < 3)
                                                     (Pending)

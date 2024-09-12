@@ -278,7 +278,7 @@
                                                         <td>{{ $products[$variation->product_id] ?? null }} - {{ $storages[$variation->storage] ?? null }} - {{ $colors[$variation->color] ?? null }} - {{ $grades[$variation->grade] ?? null }} - {{ $variation->sku ?? null }}</td>
                                                         <td>{{ $product->total_quantity_sold }}</td>
                                                         @if (session('user')->hasPermission('view_price'))
-                                                        <td>€{{ number_format($product->average_price,2) }}</td>
+                                                        <td>€{{ amount_formatter($product->average_price,2) }}</td>
                                                         @endif
 
                                                         <td>
@@ -300,7 +300,7 @@
                                                     <td colspan="2"><strong>Total:</strong></td>
                                                     <td title="Total"><strong>{{ $total }}</strong></td>
                                                     @if (session('user')->hasPermission('view_price'))
-                                                    <td title="Weighted Average"><strong>€{{ number_format($weighted_average,2) }}</strong></td>
+                                                    <td title="Weighted Average"><strong>€{{ amount_formatter($weighted_average,2) }}</strong></td>
                                                     @endif
                                                 </tr>
                                             </tfoot>
@@ -354,15 +354,15 @@
                                                     @if (session('user')->hasPermission('dashboard_view_totals'))
                                                     <tr>
                                                         <td title="Average Price">Average:</td>
-                                                        <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ number_format($average,2) }}</a></td>
+                                                        <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ amount_formatter($average,2) }}</a></td>
                                                     </tr>
                                                     <tr>
                                                         <td title="Total EUR Price">Total EUR:</td>
-                                                        <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ number_format($total_eur,2) }}</a></td>
+                                                        <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ amount_formatter($total_eur,2) }}</a></td>
                                                     </tr>
                                                     <tr>
                                                         <td title="Total GBP Price">Total GBP:</td>
-                                                        <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ number_format($total_gbp,2) }}</a></td>
+                                                        <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ amount_formatter($total_gbp,2) }}</a></td>
                                                     </tr>
                                                     @endif
                                                 </table>

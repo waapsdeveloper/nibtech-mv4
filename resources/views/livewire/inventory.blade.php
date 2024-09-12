@@ -204,9 +204,9 @@
                 Vendor wise average:
                 @foreach ($vendor_average_cost as $v_cost)
                     {{ $vendors[$v_cost->customer_id] ?? "Vendor Type Not Defined Correctly" }}:
-                    {{ number_format($v_cost->average_price,2) }} x
+                    {{ amount_formatter($v_cost->average_price,2) }} x
                     {{ $v_cost->total_qty }} =
-                    {{ number_format($v_cost->total_price,2) }} ({{number_format($v_cost->total_qty/$stocks->total()*100,2)}}%) ||
+                    {{ amount_formatter($v_cost->total_price,2) }} ({{amount_formatter($v_cost->total_qty/$stocks->total()*100,2)}}%) ||
 
                 @endforeach
             </div>
@@ -325,7 +325,7 @@
                                 <td>{{ ++$i }}</td>
                                 <td>{{ $products[$summery['product_id']]." ".$storage }}</td>
                                 <td>{{ $summery['quantity'] }}</td>
-                                <td title="{{ $summery['average_cost'] }}">{{ number_format($summery['total_cost'],2) }}</td>
+                                <td title="{{ $summery['average_cost'] }}">{{ amount_formatter($summery['total_cost'],2) }}</td>
                             </tr>
                             {{-- @endif --}}
                         @endforeach
@@ -401,7 +401,7 @@
                             <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$stocks->firstItem()}} {{ __('locale.To') }} {{$stocks->lastItem()}} {{ __('locale.Out Of') }} {{$stocks->total()}} </h5>
 
                             @if (session('user')->hasPermission('view_cost'))
-                            <h5>Average Cost: {{ number_format($average_cost->average_price,2) }} | Total Cost: {{ number_format($average_cost->total_price,2) }}</h5>
+                            <h5>Average Cost: {{ amount_formatter($average_cost->average_price,2) }} | Total Cost: {{ amount_formatter($average_cost->total_price,2) }}</h5>
                             @endif
                             <div class=" mg-b-0">
                                 <form method="get" action="" class="row form-inline">

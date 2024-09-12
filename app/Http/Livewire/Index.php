@@ -250,6 +250,14 @@ class Index extends Component
         $data['end_date'] = date("Y-m-d", strtotime($end_date));
         return view('livewire.index')->with($data);
     }
+    public function toggle_amount_view(){
+        if(session('amount_view') == 1){
+            session()->put('amount_view',0);
+        }else{
+            session()->put('amount_view',1);
+        }
+        return redirect()->back();
+    }
     public function add_ip(){
         $ip = request()->ip();
         $ip_address = new Ip_address_model();

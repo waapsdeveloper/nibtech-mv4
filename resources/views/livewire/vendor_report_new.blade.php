@@ -41,9 +41,9 @@
 
             <div class="text-center row">
                 <div class="col-6"><h6>Total Purchased:</h6></div><div class="col-6"><h6>{{ $vendor->purchase_qty }}</h6></div>
-                <div class="col-6"><h6>Total Purchase Cost:</h6></div><div class="col-6"><h6>€{{ number_format($vendor->purchase_cost,2) }}</h6></div>
+                <div class="col-6"><h6>Total Purchase Cost:</h6></div><div class="col-6"><h6>€{{ amount_formatter($vendor->purchase_cost,2) }}</h6></div>
                 <div class="col-6"><h6>Total RMA:</h6></div><div class="col-6"><h6>{{ $vendor->rma_qty }}</h6></div>
-                <div class="col-6"><h6>Total RMA Cost:</h6></div><div class="col-6"><h6>€{{ number_format($vendor->rma_price,2) }}</h6></div>
+                <div class="col-6"><h6>Total RMA Cost:</h6></div><div class="col-6"><h6>€{{ amount_formatter($vendor->rma_price,2) }}</h6></div>
 
             </div>
 

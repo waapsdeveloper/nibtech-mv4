@@ -52,6 +52,7 @@ use App\Http\Livewire\Wholesale_return;
 // });
 Route::get('/', Index::class)->name('index');
 Route::get('index', Index::class)->name('index');
+Route::get('index/toggle_amount_view', [Index::class,'toggle_amount_view'])->name('index');
 Route::get('index/add_ip', [Index::class,'add_ip'])->name('add_ip');
 Route::get('index/test', [Index::class,'test'])->name('test');
 Route::get('index/refresh_sales_chart', [Index::class,'refresh_sales_chart'])->name('10_day_sales_chart');

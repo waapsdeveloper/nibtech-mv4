@@ -215,30 +215,30 @@
                                     <td>{{ $categories[$sales->category_id] }}</td>
                                     <td><button class="btn btn-link py-0" form="stock_report" type="submit" name="stock_ids" value="{{$sales->stock_ids}}">{{ $sales->orders_qty }}</button></td>
                                     @if (session('user')->hasPermission('view_cost'))
-                                        <td title="{{count(explode(',',$sales->stock_ids))}}">€{{ number_format($aggregated_sales_cost[$sales->category_id],2) }}</td>
-                                        <td>€{{ number_format($sales->items_repair_sum,2) }}</td>
-                                        <td>{{ number_format(0,2) }}</td>
+                                        <td title="{{count(explode(',',$sales->stock_ids))}}">€{{ amount_formatter($aggregated_sales_cost[$sales->category_id],2) }}</td>
+                                        <td>€{{ amount_formatter($sales->items_repair_sum,2) }}</td>
+                                        <td>{{ amount_formatter(0,2) }}</td>
                                     @endif
                                     @if (session('user')->hasPermission('view_price'))
-                                        <td>€{{ number_format($sales->eur_items_sum,2) }}</td>
-                                        <td>£{{ number_format($sales->gbp_items_sum,2) }}</td>
+                                        <td>€{{ amount_formatter($sales->eur_items_sum,2) }}</td>
+                                        <td>£{{ amount_formatter($sales->gbp_items_sum,2) }}</td>
                                     @endif
-                                    <td>€{{ number_format($sales->eur_items_sum - $aggregated_sales_cost[$sales->category_id] - $sales->items_repair_sum,2) }} + £{{ number_format($sales->gbp_items_sum,2) }}</td>
+                                    <td>€{{ amount_formatter($sales->eur_items_sum - $aggregated_sales_cost[$sales->category_id] - $sales->items_repair_sum,2) }} + £{{ amount_formatter($sales->gbp_items_sum,2) }}</td>
                                 </tr>
                             @endforeach
                             <tr>
                                 <td colspan="2"><strong>Profit</strong></td>
                                 <td><strong>{{ $total_sale_orders." (".$total_approved_sale_orders.")" }}</strong></td>
                                 @if (session('user')->hasPermission('view_cost'))
-                                    <td title=""><strong>€{{ number_format($total_sale_cost,2) }}</strong></td>
-                                    <td><strong>€{{ number_format($total_repair_cost,2) }}</strong></td>
-                                    <td><strong>{{ number_format(0,2) }}</strong></td>
+                                    <td title=""><strong>€{{ amount_formatter($total_sale_cost,2) }}</strong></td>
+                                    <td><strong>€{{ amount_formatter($total_repair_cost,2) }}</strong></td>
+                                    <td><strong>{{ amount_formatter(0,2) }}</strong></td>
                                 @endif
                                 @if (session('user')->hasPermission('view_price'))
-                                    <td><strong>€{{ number_format($total_sale_eur_items,2)." (€".number_format($total_approved_sale_eur_items,2).")" }}</strong></td>
-                                    <td><strong>£{{ number_format($total_sale_gbp_items,2)." (£".number_format($total_approved_sale_gbp_items,2).")" }}</strong></td>
+                                    <td><strong>€{{ amount_formatter($total_sale_eur_items,2)." (€".amount_formatter($total_approved_sale_eur_items,2).")" }}</strong></td>
+                                    <td><strong>£{{ amount_formatter($total_sale_gbp_items,2)." (£".amount_formatter($total_approved_sale_gbp_items,2).")" }}</strong></td>
                                 @endif
-                                <td><strong>€{{ number_format($total_eur_profit) }} + £{{ number_format($total_sale_gbp_items,2) }}</strong></td>
+                                <td><strong>€{{ amount_formatter($total_eur_profit) }} + £{{ amount_formatter($total_sale_gbp_items,2) }}</strong></td>
                             </tr>
 
                             <tr>
@@ -272,44 +272,44 @@
                                     <td>{{ $categories[$returns->category_id] }}</td>
                                     <td>{{ $returns->orders_qty }}</td>
                                     @if (session('user')->hasPermission('view_cost'))
-                                        <td title="{{count(explode(',',$returns->stock_ids))}}">€{{ number_format($aggregated_return_cost[$returns->category_id],2) }}</td>
-                                        <td>€{{ number_format($returns->items_repair_sum,2) }}</td>
-                                        <td>{{ number_format(0,2) }}</td>
+                                        <td title="{{count(explode(',',$returns->stock_ids))}}">€{{ amount_formatter($aggregated_return_cost[$returns->category_id],2) }}</td>
+                                        <td>€{{ amount_formatter($returns->items_repair_sum,2) }}</td>
+                                        <td>{{ amount_formatter(0,2) }}</td>
                                     @endif
                                     @if (session('user')->hasPermission('view_price'))
-                                        <td>€{{ number_format($returns->eur_items_sum,2) }}</td>
-                                        <td>£{{ number_format($returns->gbp_items_sum,2) }}</td>
+                                        <td>€{{ amount_formatter($returns->eur_items_sum,2) }}</td>
+                                        <td>£{{ amount_formatter($returns->gbp_items_sum,2) }}</td>
                                     @endif
-                                    <td>€{{ number_format(-$returns->eur_items_sum + $aggregated_return_cost[$returns->category_id] + $returns->items_repair_sum,2) }} + £{{ number_format($returns->gbp_items_sum,2) }}</td>
+                                    <td>€{{ amount_formatter(-$returns->eur_items_sum + $aggregated_return_cost[$returns->category_id] + $returns->items_repair_sum,2) }} + £{{ amount_formatter($returns->gbp_items_sum,2) }}</td>
                                 </tr>
                             @endforeach
                             <tr>
                                 <td colspan="2"><strong>Loss</strong></td>
                                 <td><strong>{{ $total_return_orders }}</strong></td>
                                 @if (session('user')->hasPermission('view_cost'))
-                                    <td title=""><strong>€{{ number_format($total_return_cost,2) }}</strong></td>
-                                    <td><strong>€{{ number_format($total_repair_return_cost,2) }}</strong></td>
-                                    <td><strong>{{ number_format(0,2) }}</strong></td>
+                                    <td title=""><strong>€{{ amount_formatter($total_return_cost,2) }}</strong></td>
+                                    <td><strong>€{{ amount_formatter($total_repair_return_cost,2) }}</strong></td>
+                                    <td><strong>{{ amount_formatter(0,2) }}</strong></td>
                                 @endif
                                 @if (session('user')->hasPermission('view_price'))
-                                    <td><strong>€{{ number_format($total_return_eur_items,2) }}</strong></td>
-                                    <td><strong>£{{ number_format($total_return_gbp_items,2) }}</strong></td>
+                                    <td><strong>€{{ amount_formatter($total_return_eur_items,2) }}</strong></td>
+                                    <td><strong>£{{ amount_formatter($total_return_gbp_items,2) }}</strong></td>
                                 @endif
-                                <td><strong>€{{ number_format($total_eur_loss) }} + £{{ number_format($total_return_gbp_items,2) }}</strong></td>
+                                <td><strong>€{{ amount_formatter($total_eur_loss) }} + £{{ amount_formatter($total_return_gbp_items,2) }}</strong></td>
                             </tr>
                             <tr>
                                 <td colspan="2"><strong>Net</strong></td>
                                 <td><strong>{{ $total_sale_orders-$total_return_orders }}</strong></td>
                                 @if (session('user')->hasPermission('view_cost'))
-                                    <td title=""><strong>€{{ number_format($total_sale_cost-$total_return_cost,2) }}</strong></td>
-                                    <td><strong>€{{ number_format($total_repair_cost-$total_repair_return_cost,2) }}</strong></td>
-                                    <td><strong>{{ number_format(0,2) }}</strong></td>
+                                    <td title=""><strong>€{{ amount_formatter($total_sale_cost-$total_return_cost,2) }}</strong></td>
+                                    <td><strong>€{{ amount_formatter($total_repair_cost-$total_repair_return_cost,2) }}</strong></td>
+                                    <td><strong>{{ amount_formatter(0,2) }}</strong></td>
                                 @endif
                                 @if (session('user')->hasPermission('view_price'))
-                                    <td><strong>€{{ number_format($total_sale_eur_items-$total_return_eur_items,2) }}</strong></td>
-                                    <td><strong>£{{ number_format($total_sale_gbp_items-$total_return_gbp_items,2) }}</strong></td>
+                                    <td><strong>€{{ amount_formatter($total_sale_eur_items-$total_return_eur_items,2) }}</strong></td>
+                                    <td><strong>£{{ amount_formatter($total_sale_gbp_items-$total_return_gbp_items,2) }}</strong></td>
                                 @endif
-                                <td><strong>€{{ number_format($total_eur_profit-$total_eur_loss) }} + £{{ number_format($total_sale_gbp_items-$total_return_gbp_items,2) }}</strong></td>
+                                <td><strong>€{{ amount_formatter($total_eur_profit-$total_eur_loss) }} + £{{ amount_formatter($total_sale_gbp_items-$total_return_gbp_items,2) }}</strong></td>
                             </tr>
                         </tbody>
                     </table>
@@ -364,7 +364,7 @@
                                         @php
                                             $gradeReport = $orderReports->firstWhere('grade', $g_id);
                                         @endphp
-                                        <td title="{{ $grade }}">{{ $gradeReport ? ($gradeReport->quantity." (".number_format($gradeReport->quantity/$total * 100,1) .'%)' ) : '-' }}</td>
+                                        <td title="{{ $grade }}">{{ $gradeReport ? ($gradeReport->quantity." (".amount_formatter($gradeReport->quantity/$total * 100,1) .'%)' ) : '-' }}</td>
                                     @endforeach
                                 </tr>
                             @endforeach

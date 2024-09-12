@@ -175,7 +175,7 @@
                                                     <td><a href="{{url('rma/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
                                                 <td>{{ $vendors[$order->customer_id] }}</td>
                                                 @if (session('user')->hasPermission('view_cost'))
-                                                <td>€{{ number_format($order->order_items->sum('price'),2) }}</td>
+                                                <td>€{{ amount_formatter($order->order_items->sum('price'),2) }}</td>
                                                 @endif
                                                 <td>{{ $order->order_items->count() }}</td>
                                                 <td style="width:220px">{{ $order->created_at }}</td>
