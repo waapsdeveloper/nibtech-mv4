@@ -188,7 +188,7 @@ class Order_item_model extends Model
             }
                 $variation->save();
 
-            if($orderItem->stock_id == null){
+            if($orderItem->stock_id == null && $orderItem->stock_id != 0){
                 if($itemObj->imei != null || $itemObj->serial_number != null){
                     if($itemObj->imei != null){
                         $stock = Stock_model::withTrashed()->firstOrNew(['imei' => $itemObj->imei]);
