@@ -433,7 +433,7 @@
                                             </td>
 
                                             @if ($process->status == 3 && session('user')->hasPermission('view_cost'))
-                                            <td>{{$processed_stock->price}}</td>
+                                            <td>{{ amount_formatter($processed_stock->price,2) }}</td>
                                             @endif
                                             <td>{{$processed_stock->updated_at}}</td>
                                             @if (session('user')->hasPermission('delete_repair_item'))
