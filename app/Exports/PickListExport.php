@@ -43,7 +43,7 @@ class PickListExport
                 'grade.name as grade_name',
                 DB::raw('SUM(order_items.quantity) as total_quantity')
             )
-            ->where('orders.deleted_at',null)
+            ->where(['orders.deleted_at' => null, 'order_items.deleted_at' => null, 'variation.deleted_at' => null, 'products.deleted_at' => null])
             ->where('orders.order_type_id',3)
             ->when(request('start_date') != '', function ($q) use ($start_date) {
                 return $q->where('orders.created_at', '>=', $start_date);
