@@ -34,8 +34,7 @@ class CheckIPMiddleware
             // dd($ip_address);
             if($ip_address == null){
                 // dd($ip);
-                abort(407, 'Quote of the day: '.Inspiring::just_quote());
-                echo "You are not authorized to access this page";
+                abort(403, 'Quote of the day: '.Inspiring::just_quote());
             }
         }
         // If the user has the required permission, proceed to the next middleware

@@ -413,6 +413,9 @@
                                             @if (session('user')->hasPermission('delete_wholesale_item') && $order->status == 2)
                                             <td><a href="{{ url('delete_wholesale_item').'/'.$item->id }}"><i class="fa fa-trash"></i></a></td>
                                             @endif
+                                            @if ($order->status == 3 && $item->linked != null)
+                                                <td><a href="{{ url('imei').'?imei='.$stock->imei.$stock->serial_number }}"><i class="fa fa-link"></i></a></td>
+                                            @endif
                                         </tr>
                                     @endforeach
                                 </tbody>
