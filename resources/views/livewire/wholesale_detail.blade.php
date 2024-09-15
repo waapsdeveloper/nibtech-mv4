@@ -505,7 +505,7 @@
                                             <td><a href="{{ url('delete_wholesale_item').'/'.$sale_item->id }}"><i class="fa fa-trash"></i></a></td>
                                             @endif
                                             @if ($order->status == 3 && $sale_item->linked != null)
-                                                <td><a href="{{ url('imei').'?imei='.$item->imei.$item->serial_number }}"><i class="fa fa-link"></i></a></td>
+                                                <td><a href="{{ url('imei').'?imei='.$item->imei.$item->serial_number }}" target="_blank"><i class="fa fa-link"></i></a></td>
                                             @endif
                                             <input type="hidden" name="item_ids[]" value="{{ $sale_item->id }}">
                                         </tr>
