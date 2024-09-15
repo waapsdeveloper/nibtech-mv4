@@ -9,8 +9,9 @@ use Illuminate\Foundation\Inspiring;
 
 class CheckIPMiddleware
 {
-    public function handle($request, Closure $next, ...$permissions)
+    public function handle($request, Closure $next)
     {
+        dd("here");
         // Get the current route name
         $currentRoute = Route::currentRouteName();
         // Retrieve the user's ID from the session
@@ -31,8 +32,11 @@ class CheckIPMiddleware
         if(!$user->hasPermission('add_ip')){
             $ip = $request->ip();
             $ip_address = Ip_address_model::where('ip',$ip)->where('status',1)->first();
+            dd($ip_address);
             if($ip_address == null){
+                dd($ip);
                 abort(407, 'Quote of the day: '.Inspiring::just_quote());
+                echo "You are not authorized to access this page";
             }
         }
         // If the user has the required permission, proceed to the next middleware

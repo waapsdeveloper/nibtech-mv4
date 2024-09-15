@@ -30,7 +30,6 @@ use App\Http\Livewire\Team;
 use App\Http\Livewire\Testing;
 use App\Http\Controllers\ExchangeRateController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\TwoFactorController;
 
 use App\Http\Controllers\GoogleController;
 use App\Http\Livewire\Stock_room;

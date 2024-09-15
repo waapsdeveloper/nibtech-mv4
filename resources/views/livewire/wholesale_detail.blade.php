@@ -410,7 +410,9 @@
                                             <td>€{{ amount_formatter($item->price,2) }}</td>
                                             @endif
                                             <td style="width:220px">{{ $item->created_at }}</td>
+                                            @if (session('user')->hasPermission('delete_wholesale_item') && $order->status == 2)
                                             <td><a href="{{ url('delete_wholesale_item').'/'.$item->id }}"><i class="fa fa-trash"></i></a></td>
+                                            @endif
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -455,7 +457,7 @@
                                         @if (session('user')->hasPermission('view_price'))
                                         <th><small><b>Vendor Price</b></small></th>
                                         @endif
-                                        @if (session('user')->hasPermission('delete_wholesale_item'))
+                                        @if (session('user')->hasPermission('delete_wholesale_item') && $order->status == 2)
                                         <th></th>
                                         @endif
                                     </tr>
@@ -499,7 +501,7 @@
                                                 {{ $item->order->customer->first_name }} €{{ amount_formatter($price,2) }}
                                             </td>
                                             @endif
-                                            @if (session('user')->hasPermission('delete_wholesale_item'))
+                                            @if (session('user')->hasPermission('delete_wholesale_item') && $order->status == 2)
                                             <td><a href="{{ url('delete_wholesale_item').'/'.$sale_item->id }}"><i class="fa fa-trash"></i></a></td>
                                             @endif
                                             <input type="hidden" name="item_ids[]" value="{{ $sale_item->id }}">
