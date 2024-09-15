@@ -11,7 +11,6 @@ class CheckIPMiddleware
 {
     public function handle($request, Closure $next)
     {
-        dd("here");
         // Get the current route name
         $currentRoute = Route::currentRouteName();
         // Retrieve the user's ID from the session
