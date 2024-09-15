@@ -64,7 +64,7 @@ class Order_item_model extends Model
 
     public function linked()
     {
-        return $this->belongsTo(Order_item_model::class, 'linked_id');
+        return $this->belongsTo(Order_item_model::class, 'linked_id', 'id');
     }
     public function childs()
     {
