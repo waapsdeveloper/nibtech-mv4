@@ -189,6 +189,7 @@ class Order extends Component
             return $q->join('order_items', 'order_items.order_id', '=', 'orders.id')
                 ->join('variation', 'order_items.variation_id', '=', 'variation.id')
                 ->join('products', 'variation.product_id', '=', 'products.id')
+                ->where(['orders.deleted_at' => null, 'order_items.deleted_at' => null, 'variation.deleted_at' => null, 'products.deleted_at' => null])
                 ->orderBy('products.model', 'ASC')
                 ->orderBy('variation.storage', 'ASC')
                 ->orderBy('variation.color', 'ASC')
