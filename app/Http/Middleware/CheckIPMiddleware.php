@@ -31,9 +31,9 @@ class CheckIPMiddleware
         if(!$user->hasPermission('add_ip')){
             $ip = $request->ip();
             $ip_address = Ip_address_model::where('ip',$ip)->where('status',1)->first();
-            dd($ip_address);
+            // dd($ip_address);
             if($ip_address == null){
-                dd($ip);
+                // dd($ip);
                 abort(407, 'Quote of the day: '.Inspiring::just_quote());
                 echo "You are not authorized to access this page";
             }
