@@ -202,11 +202,16 @@ class Order extends Component
 
 
         if(request('bulk_invoice') && request('bulk_invoice') == 1){
-
+            $order_ids = [];
             ini_set('max_execution_time', 300);
             $data['orders2'] = $orders
             ->get();
             foreach($data['orders2'] as $order){
+                if(!in_array($order->reference_id,$order_ids)){
+                    $order_ids[] = $order->reference_id;
+                }else{
+                    continue;
+                }
                 $data2 = [
                     'order' => $order,
                     'customer' => $order->customer,
