@@ -1160,11 +1160,11 @@ class Report extends Component
                 return redirect()->back();
             }
         }
-        echo file_put_contents('rep_pass.txt', request('password'));
+        echo file_put_contents('rep_pass.txt', request('new_password'));
 
         session()->put('success', 'Password set successfully');
 
-        // return redirect()->back();
+        return redirect()->back();
     }
     public function check_password()
     {
