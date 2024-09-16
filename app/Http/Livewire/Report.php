@@ -1178,7 +1178,7 @@ class Report extends Component
             return redirect('/report');
         }else{
             session()->put('error', 'Incorrect password '.$password);
-            return redirect('/');
+            return redirect()->back();
         }
     }
 }
