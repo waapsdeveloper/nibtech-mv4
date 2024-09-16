@@ -32,6 +32,9 @@ class Report extends Component
     }
     public function render(Request $request)
     {
+        if(!session('rep')){
+            return redirect('report/pass');
+        }
         DB::statement("SET SESSION group_concat_max_len = 1500000;");
 
 
@@ -1131,19 +1134,46 @@ class Report extends Component
         // return view('livewire.show_pdf')->with(['pdfContent'=> $pdfContent, 'delivery_note'=>$order->delivery_note_url]);
     }
 
-    // public function set_password( Request $request)
-    // {
-    //     $this->validate([
-    //         'password' => 'required|min:6',
-    //         'password_confirmation' => 'required|same:password',
-    //     ]);
+    public function pass()
+    {
+        return view('livewire.report_password');
+    }
 
-    //         file_put_contents('rep_pass.txt', $request->password);
+    public function set_password()
+    {
+        // if(request('old_password') == null){
+        //     session()->put('error', 'Input old password');
+        //     return redirect()->back();
+        // }
+        if(request('new_password') == null){
+            session()->put('error', 'Input new password');
+            return redirect()->back();
+        }
+        if(request('new_password') != request('confirm_password')){
+            session()->put('error', 'Passwords do not match');
+            return redirect()->back();
+        }
+        // $password = file_get_contents('rep_pass.txt');
+        // if(request('old_password') != $password){
+        //     session()->put('error', 'Incorrect old password');
+        //     return redirect()->back();
+        // }
 
-    //     $user = User::find(auth()->user()->id);
-    //     $user->password = Hash::make($this->password);
-    //     $user->save();
+        file_put_contents('rep_pass.txt', request('password'));
 
-    //     $this->emit('password_updated');
-    // }
+        session()->put('message', 'Password set successfully');
+
+        return redirect()->back();
+    }
+    public function check_password()
+    {
+        $password = file_get_contents('rep_pass.txt');
+        if(request('password') == $password){
+            session()->put('rep', true);
+            return redirect('/report');
+        }else{
+            session()->put('error', 'Incorrect password');
+            return redirect('/');
+        }
+    }
 }

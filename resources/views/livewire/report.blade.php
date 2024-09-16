@@ -17,6 +17,8 @@
 					<div class="breadcrumb-header justify-content-between">
 						<div class="left-content">
 						<span class="main-content-title mg-b-0 mg-b-lg-1">Reports</span>
+                        <a href="javascript:void(0);" class="btn btn-success float-right" data-bs-target="#modaldemo"
+                        data-bs-toggle="modal"><i class="mdi mdi-plus"></i> Change Password </a>
 						</div>
                         <div>
                             <div class="btn-group p-1" role="group">
@@ -405,6 +407,35 @@
 						<!-- </div> -->
 					</div>
 					<!-- row closed -->
+
+    <div class="modal" id="modaldemo">
+        <div class="modal-dialog wd-xl-400" role="document">
+            <div class="modal-content">
+                <div class="modal-body pd-sm-40">
+                    <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
+                        type="button"><span aria-hidden="true">&times;</span></button>
+                    <h5 class="modal-title mg-b-5">Change Report Password</h5>
+                    <hr>
+                    <form action="{{ url('report/set_password') }}" method="POST">
+                        @csrf
+                        {{-- <div class="form-group">
+                            <label for="">Old Password</label>
+                            <input class="form-control" placeholder="input old password" name="old_password" type="password" required>
+                        </div> --}}
+                        <div class="form-group">
+                            <label for="">New Password</label>
+                            <input class="form-control" placeholder="input new password" name="new_password" type="password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="">Confirm Password</label>
+                            <input class="form-control" placeholder="input new password" name="confirm_password" type="password" required>
+                        </div>
+                        <button class="btn btn-primary btn-block">{{ __('locale.Submit') }}</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
     @endsection
 
     @section('scripts')
