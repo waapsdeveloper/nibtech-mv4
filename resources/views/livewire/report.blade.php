@@ -17,7 +17,7 @@
 					<div class="breadcrumb-header justify-content-between">
 						<div class="left-content">
 						<span class="main-content-title mg-b-0 mg-b-lg-1">Reports</span>
-                        <a href="javascript:void(0);" class="btn btn-sm btn-success" data-bs-target="#modaldemo"
+                        <a href="javascript:void(0);" class="btn btn-sm btn-link" data-bs-target="#modaldemo"
                         data-bs-toggle="modal">Change Password </a>
 						</div>
                         <div>
