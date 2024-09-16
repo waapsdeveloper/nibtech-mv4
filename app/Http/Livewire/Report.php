@@ -32,9 +32,9 @@ class Report extends Component
     }
     public function render(Request $request)
     {
-        // if(!session('rep')){
-        //     return redirect('report/pass');
-        // }
+        if(!session('rep')){
+            return redirect('report/pass');
+        }
         DB::statement("SET SESSION group_concat_max_len = 1500000;");
 
 
@@ -1141,10 +1141,10 @@ class Report extends Component
 
     public function set_password()
     {
-        // if(request('old_password') == null){
-        //     session()->put('error', 'Input old password');
-        //     return redirect()->back();
-        // }
+        if(request('old_password') == null){
+            session()->put('error', 'Input old password');
+            return redirect()->back();
+        }
         if(request('new_password') == null){
             session()->put('error', 'Input new password');
             return redirect()->back();
@@ -1153,11 +1153,11 @@ class Report extends Component
             session()->put('error', 'Passwords do not match');
             return redirect()->back();
         }
-        // $password = file_get_contents('rep_pass.txt');
-        // if(request('old_password') != $password){
-        //     session()->put('error', 'Incorrect old password');
-        //     return redirect()->back();
-        // }
+        $password = file_get_contents('rep_pass.txt');
+        if(request('old_password') != $password){
+            session()->put('error', 'Incorrect old password');
+            return redirect()->back();
+        }
 
         file_put_contents('rep_pass.txt', request('password'));
 

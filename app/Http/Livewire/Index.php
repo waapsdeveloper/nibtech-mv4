@@ -28,6 +28,7 @@ class Index extends Component
     }
     public function render(Request $request)
     {
+        session()->forget('rep');
         $data['title_page'] = "Dashboard";
         // dd('Hello2');
         $user_id = session('user_id');
