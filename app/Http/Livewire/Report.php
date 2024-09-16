@@ -32,9 +32,9 @@ class Report extends Component
     }
     public function render(Request $request)
     {
-        if(!session('rep')){
-            return redirect('report/pass');
-        }
+        // if(!session('rep')){
+        //     return redirect('report/pass');
+        // }
         DB::statement("SET SESSION group_concat_max_len = 1500000;");
 
 
