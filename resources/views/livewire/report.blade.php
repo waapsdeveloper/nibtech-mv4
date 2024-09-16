@@ -17,7 +17,7 @@
 					<div class="breadcrumb-header justify-content-between">
 						<div class="left-content">
 						<span class="main-content-title mg-b-0 mg-b-lg-1">Reports</span>
-                        <a href="javascript:void(0);" class="btn btn-success float-right" data-bs-target="#modaldemo"
+                        <a href="javascript:void(0);" class="btn btn-sm btn-success float-right" data-bs-target="#modaldemo"
                         data-bs-toggle="modal"><i class="mdi mdi-plus"></i> Change Password </a>
 						</div>
                         <div>
@@ -440,10 +440,10 @@
                     <hr>
                     <form action="{{ url('report/set_password') }}" method="POST">
                         @csrf
-                        {{-- <div class="form-group">
+                        <div class="form-group">
                             <label for="">Old Password</label>
                             <input class="form-control" placeholder="input old password" name="old_password" type="password" required>
-                        </div> --}}
+                        </div>
                         <div class="form-group">
                             <label for="">New Password</label>
                             <input class="form-control" placeholder="input new password" name="new_password" type="password" required>

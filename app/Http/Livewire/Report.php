@@ -1153,12 +1153,13 @@ class Report extends Component
             session()->put('error', 'Passwords do not match');
             return redirect()->back();
         }
-        $password = file_get_contents('rep_pass.txt');
-        if(request('old_password') != $password){
-            session()->put('error', 'Incorrect old password');
-            return redirect()->back();
+        if(file_exists('rep_pass.txt')){
+            $password = file_get_contents('rep_pass.txt');
+            if(request('old_password') != $password){
+                session()->put('error', 'Incorrect old password');
+                return redirect()->back();
+            }
         }
-
         file_put_contents('rep_pass.txt', request('password'));
 
         session()->put('message', 'Password set successfully');
@@ -1168,6 +1169,10 @@ class Report extends Component
     public function check_password()
     {
         $password = file_get_contents('rep_pass.txt');
+        // echo $password;
+        // echo request('password');
+        // file_put_contents('rep_pass.txt', request('password'));
+        // die;
         if(request('password') == $password){
             session()->put('rep', true);
             return redirect('/report');
