@@ -1172,7 +1172,7 @@ class Report extends Component
             session()->put('rep', true);
             return redirect('/report');
         }else{
-            session()->put('error', 'Incorrect password');
+            session()->put('error', 'Incorrect password '.$password);
             return redirect('/');
         }
     }
