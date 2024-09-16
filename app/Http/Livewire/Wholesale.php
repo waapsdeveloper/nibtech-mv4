@@ -702,6 +702,7 @@ class Wholesale extends Component
                 DB::raw('SUM(order_items.price) as total_price')
             )
             ->where('order_items.order_id',$order_id)
+            ->where('order_items.deleted_at',null)
             ->groupBy('products.model', 'variation.storage')
             ->orderBy('products.model', 'ASC')
             ->get();
@@ -722,6 +723,7 @@ class Wholesale extends Component
                 DB::raw('SUM(order_items.price) as total_price')
             )
             ->where('order_items.order_id',$order_id)
+            ->where('order_items.deleted_at',null)
             ->groupBy('products.model', 'variation.id', 'variation.storage', 'variation.color', 'variation.grade')
             ->orderBy('products.model', 'ASC')
             ->get();

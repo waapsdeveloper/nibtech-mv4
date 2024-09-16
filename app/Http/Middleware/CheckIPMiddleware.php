@@ -28,13 +28,18 @@ class CheckIPMiddleware
             return redirect('signin');
         }
 
+        $ip = $request->ip();
+        $ip_address = Ip_address_model::where('ip',$ip)->where('status',1)->first();
         if(!$user->hasPermission('add_ip')){
-            $ip = $request->ip();
-            $ip_address = Ip_address_model::where('ip',$ip)->where('status',1)->first();
             // dd($ip_address);
             if($ip_address == null){
                 // dd($ip);
                 abort(403, 'Quote of the day: '.Inspiring::just_quote());
+            }
+        }else{
+            if($ip_address != null && $ip_address->updated_at->diffInDays(now()) > 2){
+                $ip_address->status = 1;
+                $ip_address->save();
             }
         }
         // If the user has the required permission, proceed to the next middleware
