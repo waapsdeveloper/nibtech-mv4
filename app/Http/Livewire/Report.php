@@ -1162,9 +1162,9 @@ class Report extends Component
         }
         file_put_contents('rep_pass.txt', request('password'));
 
-        session()->put('message', 'Password set successfully');
+        session()->put('success', 'Password set successfully');
 
-        return redirect()->back();
+        // return redirect()->back();
     }
     public function check_password()
     {
