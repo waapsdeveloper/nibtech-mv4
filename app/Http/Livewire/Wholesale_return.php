@@ -227,9 +227,9 @@ class Wholesale_return extends Component
         $order = Order_model::find($order_id);
         // print_r($wholesale_return);
 
-        if (strpos(request('imei'), ' ') !== false) {
+        // if (strpos(request('imei'), ' ') !== false) {
             $ims = explode(' ', request('imei'));
-        }
+        // }
         foreach($ims as $imei){
             if ($imei) {
                 if (ctype_digit($imei)) {
