@@ -1130,4 +1130,20 @@ class Report extends Component
         // Pass the PDF content to the view
         // return view('livewire.show_pdf')->with(['pdfContent'=> $pdfContent, 'delivery_note'=>$order->delivery_note_url]);
     }
+
+    // public function set_password( Request $request)
+    // {
+    //     $this->validate([
+    //         'password' => 'required|min:6',
+    //         'password_confirmation' => 'required|same:password',
+    //     ]);
+
+    //         file_put_contents('rep_pass.txt', $request->password);
+
+    //     $user = User::find(auth()->user()->id);
+    //     $user->password = Hash::make($this->password);
+    //     $user->save();
+
+    //     $this->emit('password_updated');
+    // }
 }

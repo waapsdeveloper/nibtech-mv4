@@ -226,17 +226,22 @@ class Wholesale_return extends Component
         session()->put('description',request('description'));
         $order = Order_model::find($order_id);
         // print_r($wholesale_return);
-            if (request('imei')) {
-                if (ctype_digit(request('imei'))) {
-                    $i = request('imei');
+
+        if (strpos(request('imei'), ' ') !== false) {
+            $ims = explode(' ', request('imei'));
+        }
+        foreach($ims as $imei){
+            if ($imei) {
+                if (ctype_digit($imei)) {
+                    $i = $imei;
                     $stock = Stock_model::where(['imei' => $i])->first();
                 } else {
-                    $s = request('imei');
-                    $t = mb_substr(request('imei'),1);
+                    $s = $imei;
+                    $t = mb_substr($imei,1);
                     $stock = Stock_model::whereIn('serial_number', [$s, $t])->first();
                 }
 
-                if (request('imei') == '' || !$stock || $stock->status == null) {
+                if ($imei == '' || !$stock || $stock->status == null) {
                     session()->put('error', 'IMEI Invalid / Not Found');
                     // return redirect()->back(); // Redirect here is not recommended
                     return redirect()->back();
@@ -343,6 +348,7 @@ class Wholesale_return extends Component
                 session()->put('error','Stock Not Found');
             }
 
+        }
 
         return redirect()->back();
 
