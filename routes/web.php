@@ -87,7 +87,7 @@ Route::get('purchase/revert_status/{id}', [Order::class,'purchase_revert_status'
 Route::post('purchase/remove_issues', [Order::class,'remove_issues'])->name('remove_purchase_issues');
 
 Route::get('report', Report::class)->name('view_report');
-Route::ger('report/pass', [Report::class,'pass'])->name('view_report');
+Route::get('report/pass', [Report::class,'pass'])->name('view_report');
 Route::post('report/check_password', [Report::class,'check_password'])->name('view_report');
 Route::post('report/set_password', [Report::class,'set_password'])->name('view_report');
 Route::get('report/export', [Report::class,'export_report'])->name('view_report');
