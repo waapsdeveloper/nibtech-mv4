@@ -256,8 +256,8 @@ class IMEI extends Component
         }
         $new_order = [];
         $i = 1;
-        $order_items = $stock->order_items;
-        foreach($order_items->orderBy('id','asc') as $item){
+        $order_items = Order_item_model::where('stock_id', $stock_id)->orderBy('id','asc')->get();
+        foreach($order_items as $item){
             $item->linked_id = null;
             $item->save();
             if($item->order->order_type_id == 1){
