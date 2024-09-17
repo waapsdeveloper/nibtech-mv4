@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Exports\BatchInitialReportExport;
 use App\Exports\BatchReportExport;
 use App\Exports\OrderReportExport;
 use App\Models\Brand_model;
@@ -351,7 +352,8 @@ class Report extends Component
     public function export_batch_report($orderId)
     {
         $order = Order_model::find($orderId);
-        return Excel::download(new BatchReportExport($orderId), $order->reference_id.'_batch_report.xlsx');
+        // return Excel::download(new BatchReportExport($orderId), $order->reference_id.'_batch_report.xlsx');
+        return Excel::download(new BatchInitialReportExport($orderId), $order->reference_id.'_batch_report.xlsx');
     }
     public function stock_report(){
         ini_set('memory_limit', '256M');
