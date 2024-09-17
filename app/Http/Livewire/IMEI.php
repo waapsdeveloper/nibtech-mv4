@@ -356,7 +356,7 @@ class IMEI extends Component
                 $reserve[] = $item->id;
             }
 
-            if ($reserve[0] != null) {
+            if (isset($reserve[0])) {
                 $item2 = Order_item_model::find($reserve[0]);
                 if (in_array($item2->order->order_type_id, [3, 5, 2]) && $linked_id && in_array($last_item->order->order_type_id, [1, 4, 6])) {
                     // $new_order[] = $item2;
