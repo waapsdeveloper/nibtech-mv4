@@ -248,33 +248,156 @@ class IMEI extends Component
 
     }
 
-    public function rearrange($stock_id){
+    // public function rearrange($stock_id){
+    //     $stock = Stock_model::find($stock_id);
+    //     if(!$stock){
+    //         session()->put('error', 'Stock not found');
+    //         return redirect()->back();
+    //     }
+    //     $order = [];
+    //     $new_order = [];
+    //     $i = 1;
+    //     $order_items = Order_item_model::where('stock_id', $stock_id)->orderBy('id','asc')->get();
+    //     foreach($order_items as $item){
+    //         $item->linked_id = null;
+    //         $item->save();
+    //         if($item->order->order_type_id == 1){
+    //             $order[0] = $item->id;
+    //         }else{
+    //             $order[$i] = $item->id;
+    //             $i++;
+    //         }
+    //     }
+    //     $even = [];
+    //     $odd = [];
+    //     foreach($order as $key => $item_id){
+    //         if($key == 0){
+    //             continue;
+    //         }
+    //         if($key % 2 == 0){
+    //             $even[] = $key;
+    //         }else{
+    //             $odd[] = $key;
+    //         }
+    //     }
+
+    //     foreach($order as $key => $item_id){
+    //         if($key == 0){
+    //             continue;
+    //         }
+    //         $item = Order_item_model::find($item_id);
+    //         if(in_array($item->order->order_type_id, [2,3,5])){
+
+    //             $new_order[] = $item_id;
+    //         }else{
+
+    //         }
+
+    //     }
+    //     foreach($new_order as $key => $item_id){
+    //         if($key == 0){
+    //             continue;
+    //         }
+    //         $item = Order_item_model::find($item_id);
+    //         $item->linked_id = $new_order[$key-1];
+    //         $item->save();
+    //     }
+    //     session()->put('success', 'Rearranged Successfully');
+    //     return redirect()->back();
+    // }
+    public function rearrange($stock_id)
+    {
         $stock = Stock_model::find($stock_id);
-        if(!$stock){
+        if (!$stock) {
             session()->put('error', 'Stock not found');
             return redirect()->back();
         }
-        $new_order = [];
-        $i = 1;
-        $order_items = Order_item_model::where('stock_id', $stock_id)->orderBy('id','asc')->get();
-        foreach($order_items as $item){
-            $item->linked_id = null;
+
+        $new_order = []; // To store the ordered items
+        $linked_id = null; // This will hold the last linked item's ID
+        $reserve = []; // This will hold the reserve items
+
+        // Fetch all order items for the specific stock, ordered by 'id' ascending
+        $order_items = Order_item_model::where('stock_id', $stock_id)->orderBy('id', 'asc')->get();
+
+        // First, find the initial Purchase (`order_type_id = 1`)
+        foreach ($order_items as $item) {
+            $item->linked_id = null; // Reset linked_id
             $item->save();
-            if($item->order->order_type_id == 1){
-                $new_order[0] = $item->id;
-            }else{
-                $new_order[$i] = $item->id;
-                $i++;
+
+            // If this is a purchase order (order_type_id = 1), it starts the sequence
+            if ($item->order->order_type_id == 1) {
+                if($linked_id == null){
+                    // $new_order[] = $item->id;
+                    $linked_id = $item->id;
+                }
             }
         }
-        foreach($new_order as $key => $item_id){
-            if($key == 0){
-                continue;
+
+        // Now, process the rest of the order items based on the rules
+        foreach ($order_items as $item) {
+            $last_item = Order_item_model::find($linked_id);
+            if (in_array($item->order->order_type_id, [3, 5, 2]) && $linked_id && in_array($last_item->order->order_type_id, [1, 4, 6])) {
+                // $new_order[] = $item;
+                $item->linked_id = $linked_id;
+                $item->save();
+                $linked_id = $item->id;
+            } elseif (in_array($item->order->order_type_id, [4, 6]) && $linked_id && in_array($last_item->order->order_type_id, [3, 5])) {
+                // $new_order[] = $item;
+                $item->linked_id = $linked_id;
+                $item->save();
+                $linked_id = $item->id;
+            } elseif ($item->order->order_type_id == 1 && $linked_id && $last_item->order->order_type_id == 2) {
+                // $new_order[] = $item;
+                $item->linked_id = $linked_id;
+                $item->save();
+                $linked_id = $item->id;
+            } else {
+                $reserve[] = $item->id;
             }
-            $item = Order_item_model::find($item_id);
-            $item->linked_id = $new_order[$key-1];
-            $item->save();
+
+            if ($reserve[0] != null) {
+                $item2 = Order_item_model::find($reserve[0]);
+                if (in_array($item2->order->order_type_id, [3, 5, 2]) && $linked_id && in_array($last_item->order->order_type_id, [1, 4, 6])) {
+                    // $new_order[] = $item2;
+                    $item2->linked_id = $linked_id;
+                    $item2->save();
+                    $linked_id = $item2->id;
+                } elseif (in_array($item2->order->order_type_id, [4, 6]) && $linked_id && in_array($last_item->order->order_type_id, [3, 5])) {
+                    // $new_order[] = $item2;
+                    $item2->linked_id = $linked_id;
+                    $item2->save();
+                    $linked_id = $item2->id;
+                }
+                array_shift($reserve);
+
+            }
+
+            // // After Sales (order_type_id = 3), only Sales Return (order_type_id = 4) can occur
+            // if ($item->order->order_type_id == 4 && $linked_id && $new_order[count($new_order)-1]->order->order_type_id == 3) {
+            //     $new_order[] = $item;
+            //     $item->linked_id = $linked_id;
+            //     $item->save();
+            //     $linked_id = $item->id;
+            // }
+
+            // // After Wholesale (order_type_id = 5), only Wholesale Return (order_type_id = 6) can occur
+            // if ($item->order->order_type_id == 6 && $linked_id && $new_order[count($new_order)-1]->order->order_type_id == 5) {
+            //     $new_order[] = $item;
+            //     $item->linked_id = $linked_id;
+            //     $item->save();
+            //     $linked_id = $item->id;
+            // }
+
+            // // After Purchase Return (order_type_id = 2), only Purchase (order_type_id = 1) can occur
+            // if ($item->order->order_type_id == 1 && $linked_id && $new_order[count($new_order)-1]->order->order_type_id == 2) {
+            //     $new_order[] = $item;
+            //     $item->linked_id = $linked_id;
+            //     $item->save();
+            //     $linked_id = $item->id;
+            // }
         }
+
         session()->put('success', 'Rearranged Successfully');
         return redirect()->back();
     }
