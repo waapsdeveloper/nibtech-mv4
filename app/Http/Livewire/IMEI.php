@@ -346,6 +346,7 @@ class IMEI extends Component
                 // $new_order[] = $item;
                 $item->linked_id = $linked_id;
                 $item->reference_id = $last_item->order->reference_id;
+                $item->price = $last_item->price;
                 $item->save();
                 $linked_id = $item->id;
             } elseif ($item->order->order_type_id == 1 && $linked_id && $last_item->order->order_type_id == 2) {
@@ -369,6 +370,7 @@ class IMEI extends Component
                     // $new_order[] = $item2;
                     $item2->linked_id = $linked_id;
                     $item2->reference_id = $last_item->order->reference_id;
+                    $item2->price = $last_item->price;
                     $item2->save();
                     $linked_id = $item2->id;
                     array_shift($reserve);
