@@ -24,10 +24,18 @@ class BatchInitialReportExport implements FromCollection, WithHeadings, WithMapp
     public function collection()
     {
         $data = DB::table('stock')
-            ->leftJoin('stock_operations as operation', function ($join) {
-                $join->on('stock.id', '=', 'operation.stock_id')
-                    ->orderBy('operation.id', 'asc')->limit(1);
-            })
+            ->leftJoin(
+                DB::raw("(SELECT * FROM stock_operations WHERE id IN (
+                    SELECT MIN(id) FROM stock_operations GROUP BY stock_id
+                )) as operation"),
+                'stock.id',
+                '=',
+                'operation.stock_id'
+            )
+            // ->leftJoin('stock_operations as operation', function ($join) {
+            //     $join->on('stock.id', '=', 'operation.stock_id')
+            //         ->orderBy('operation.id', 'asc')->limit(1);
+            // })
             ->leftJoin('variation', 'operation.new_variation_id', '=', 'variation.id')
             ->leftJoin('order_items as purchase_item', function ($join) {
                 $join->on('stock.id', '=', 'purchase_item.stock_id')
