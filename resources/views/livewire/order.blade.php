@@ -184,6 +184,9 @@
                 @if (Request::get('missing_refund') == 1)
                     <input type="hidden" name="missing_refund" value="{{ Request::get('missing_refund') }}">
                 @endif
+                @if (Request::get('missing_reimburse') == 1)
+                    <input type="hidden" name="missing_reimburse" value="{{ Request::get('missing_reimburse') }}">
+                @endif
             </div>
 
         </form>
@@ -193,6 +196,7 @@
                 <a href="{{url('order')}}?status=2" class="btn btn-link">Pending Order ({{ $pending_orders_count }})</a>
                 <a href="{{url('order')}}?care=1" class="btn btn-link">Conversation</a>
                 <a href="{{url('order')}}?missing_refund=1" class="btn btn-link">Missing Refund</a>
+                <a href="{{url('order')}}?missing_reimburse=1" class="btn btn-link">Missing Reimburse</a>
             </div>
             <div class="d-flex">
 
@@ -227,6 +231,9 @@
             @endif
             @if (Request::get('missing_refund') == 1)
                 <input type="hidden" name="missing_refund" value="{{ Request::get('missing_refund') }}">
+            @endif
+            @if (Request::get('missing_reimburse') == 1)
+                <input type="hidden" name="missing_reimburse" value="{{ Request::get('missing_reimburse') }}">
             @endif
         </form>
         <br>
@@ -313,6 +320,9 @@
                                     @if (Request::get('missing_refund') == 1)
                                         <input type="hidden" name="missing_refund" value="{{ Request::get('missing_refund') }}">
                                     @endif
+                                    @if (Request::get('missing_reimburse') == 1)
+                                        <input type="hidden" name="missing_reimburse" value="{{ Request::get('missing_reimburse') }}">
+                                    @endif
                                 </form>
                                 <form method="get" action="" class="row form-inline">
                                     <label for="perPage" class="card-title inline">per page:</label>
@@ -340,6 +350,9 @@
                                     @endif
                                     @if (Request::get('missing_refund') == 1)
                                         <input type="hidden" name="missing_refund" value="{{ Request::get('missing_refund') }}">
+                                    @endif
+                                    @if (Request::get('missing_reimburse') == 1)
+                                        <input type="hidden" name="missing_reimburse" value="{{ Request::get('missing_reimburse') }}">
                                     @endif
                                 </form>
                             </div>
