@@ -124,6 +124,9 @@ class Order extends Component
                 $query->where('care_id', '!=', null);
             });
         })
+        ->when(request('missing_refund'), function ($q) {
+            return $q->whereHas('order_items.linked' != null)->where('status', 6);
+        })
         ->when(request('order_id') != '', function ($q) {
             if(str_contains(request('order_id'),'<')){
                 $order_ref = str_replace('<','',request('order_id'));
