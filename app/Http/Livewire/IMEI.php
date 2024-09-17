@@ -248,6 +248,36 @@ class IMEI extends Component
 
     }
 
+    public function rearrange($stock_id){
+        $stock = Stock_model::find($stock_id);
+        if(!$stock){
+            session()->put('error', 'Stock not found');
+            return redirect()->back();
+        }
+        $new_order = [];
+        $i = 1;
+        $order_items = $stock->order_items;
+        foreach($order_items->orderBy('id','asc') as $item){
+            $item->linked_id = null;
+            $item->save();
+            if($item->order->order_type_id == 1){
+                $new_order[0] = $item->id;
+            }else{
+                $new_order[$i] = $item->id;
+                $i++;
+            }
+        }
+        foreach($new_order as $key => $item_id){
+            if($key == 0){
+                continue;
+            }
+            $item = Order_item_model::find($item_id);
+            $item->linked_id = $new_order[$key-1];
+            $item->save();
+        }
+        session()->put('success', 'Rearranged Successfully');
+        return redirect()->back();
+    }
 
 
     public function refund($stock_id){

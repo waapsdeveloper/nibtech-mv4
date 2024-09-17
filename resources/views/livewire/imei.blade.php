@@ -70,6 +70,9 @@
             </script>
             @if(isset($stock))
             <div class="p-2 d-flex justify-content-between">
+                @if (session('user')->hasPermission('rearrange_imei_order'))
+                    <a href="{{ url('imei/rearrange').'/'.$stock->id}}" class="btn btn-secondary">Rearrange</a>
+                @endif
                 @if (session('user')->hasPermission('refund_imei') && isset($stock) && $stock->status == 2 && $stock->last_item()->order->order_type_id != 2)
                     <form action="{{ url('imei/refund').'/'.$stock->id}}" method="POST" id="refund" class="form-inline">
                         @csrf

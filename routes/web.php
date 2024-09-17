@@ -162,6 +162,7 @@ Route::post('rma/approve/{id}', [RMA::class,'rma_approve'])->name('rma_approve')
 Route::get('rma/revert_status/{id}', [RMA::class,'rma_revert_status'])->name('rma_revert_status');
 
 Route::get('imei', IMEI::class)->name('view_imei');
+Route::post('imei/rearrange/{id}', [IMEI::class,'rearrange'])->name('rearrange_imei_order');
 Route::post('imei/refund/{id}', [IMEI::class,'refund'])->name('refund_imei');
 Route::post('imei/change_po/{id}', [IMEI::class,'change_po'])->name('change_po_old');
 
