@@ -181,6 +181,9 @@
                 @if (Request::get('care') == 1)
                     <input type="hidden" name="care" value="{{ Request::get('care') }}">
                 @endif
+                @if (Request::get('missing_refund') == 1)
+                    <input type="hidden" name="missing_refund" value="{{ Request::get('missing_refund') }}">
+                @endif
             </div>
 
         </form>
@@ -189,6 +192,7 @@
                 <a href="{{url('order')}}" class="btn btn-link">All Order</a>
                 <a href="{{url('order')}}?status=2" class="btn btn-link">Pending Order ({{ $pending_orders_count }})</a>
                 <a href="{{url('order')}}?care=1" class="btn btn-link">Conversation</a>
+                <a href="{{url('order')}}?missing_refund=1" class="btn btn-link">Missing Refund</a>
             </div>
             <div class="d-flex">
 
@@ -220,6 +224,9 @@
             <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
             @if (Request::get('care') == 1)
                 <input type="hidden" name="care" value="{{ Request::get('care') }}">
+            @endif
+            @if (Request::get('missing_refund') == 1)
+                <input type="hidden" name="missing_refund" value="{{ Request::get('missing_refund') }}">
             @endif
         </form>
         <br>
@@ -303,6 +310,9 @@
                                     <input type="hidden" name="page" value="{{ Request::get('page') }}">
                                     <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
                                     <input type="hidden" name="care" value="{{ Request::get('care') }}">
+                                    @if (Request::get('missing_refund') == 1)
+                                        <input type="hidden" name="missing_refund" value="{{ Request::get('missing_refund') }}">
+                                    @endif
                                 </form>
                                 <form method="get" action="" class="row form-inline">
                                     <label for="perPage" class="card-title inline">per page:</label>
@@ -327,6 +337,9 @@
                                     <input type="hidden" name="sort" value="{{ Request::get('sort') }}">
                                     @if (Request::get('care') == 1)
                                         <input type="hidden" name="care" value="{{ Request::get('care') }}">
+                                    @endif
+                                    @if (Request::get('missing_refund') == 1)
+                                        <input type="hidden" name="missing_refund" value="{{ Request::get('missing_refund') }}">
                                     @endif
                                 </form>
                             </div>
