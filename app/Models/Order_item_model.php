@@ -66,6 +66,10 @@ class Order_item_model extends Model
     {
         return $this->belongsTo(Order_item_model::class, 'linked_id', 'id');
     }
+    public function linked_child()
+    {
+        return $this->hasOne(Order_item_model::class, 'linked_id', 'id');
+    }
     public function childs()
     {
         return $this->hasMany(Order_item_model::class, 'linked_id');
