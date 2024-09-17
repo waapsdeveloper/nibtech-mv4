@@ -138,7 +138,11 @@ class RMA extends Component
         }
         $order->save();
 
-        return redirect()->back();
+        if(request('approve') == 1){
+            return redirect()->back();
+        }else{
+            return "Updated";
+        }
     }
     public function rma_revert_status($order_id){
         $order = Order_model::find($order_id);
