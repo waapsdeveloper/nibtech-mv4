@@ -125,14 +125,17 @@ class RMA extends Component
     }
     public function rma_approve($order_id){
         $order = Order_model::find($order_id);
-        $currency = Currency_model::where('code',request('currency'))->first();
-        if($currency != null && $currency->id != 4){
-            $order->currency = $currency->id;
-            $order->exchange_rate = request('rate');
-        }
+        // $currency = Currency_model::where('code',request('currency'))->first();
+        // if($currency != null && $currency->id != 4){
+        //     $order->currency = $currency->id;
+        //     $order->exchange_rate = request('rate');
+        // }
         $order->reference = request('reference');
         $order->tracking_number = request('tracking_number');
-        $order->status = 3;
+        if(request('approve') == 1){
+            $order->status = 3;
+            $order->processed_at = now()->format('Y-m-d H:i:s');
+        }
         $order->save();
 
         return redirect()->back();
