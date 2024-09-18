@@ -245,6 +245,12 @@
                                             </td>
                                             @endif
                                             <td style="width:220px">{{ $item->created_at}} <br> {{ $order->processed_at." ".$order->tracking_number }}</td>
+
+                                            @if (session('user')->hasPermission('imei_delete_order_item') && $i == 0)
+                                                <td>
+                                                    <a href="{{url('imei/delete_order_item')}}" class="btn btn-link"><i class="fa fa-trash"></i></a>
+                                                </td>
+                                            @endif
                                         </tr>
                                         @php
                                             $i ++;

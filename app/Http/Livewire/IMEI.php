@@ -305,6 +305,17 @@ class IMEI extends Component
     //     session()->put('success', 'Rearranged Successfully');
     //     return redirect()->back();
     // }
+    public function delete_order_item($item_id){
+        $item = Order_item_model::find($item_id);
+        if(!$item){
+            session()->put('error', 'Order Item not found');
+            return redirect()->back();
+        }
+        $item->delete();
+
+        session()->put('success', 'Order Item Deleted Successfully');
+        return redirect()->back();
+    }
     public function rearrange($stock_id)
     {
         $stock = Stock_model::find($stock_id);
