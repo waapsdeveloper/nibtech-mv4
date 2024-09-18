@@ -161,6 +161,11 @@ class RMA extends Component
         $data['products'] = Products_model::pluck('model','id');
         $data['grades'] = Grade_model::pluck('name','id');
         $data['colors'] = Color_model::pluck('name','id');
+        if(request('per_page') != null){
+            $per_page = request('per_page');
+        }else{
+            $per_page = 10;
+        }
         $variations = Variation_model::with([
             'stocks' => function ($query) use ($order_id) {
                 $query->whereHas('order_item', function ($query) use ($order_id) {
@@ -185,7 +190,7 @@ class RMA extends Component
 
 
         $data['variations'] = $variations;
-        $last_ten = Order_item_model::where('order_id',$order_id)->with(['variation','stock','stock.order.customer'])->orderBy('id','desc')->limit(15)->get();
+        $last_ten = Order_item_model::where('order_id',$order_id)->with(['variation','stock','stock.order.customer'])->orderBy('id','desc')->limit($per_page)->get();
         $data['last_ten'] = $last_ten;
         $data['all_variations'] = Variation_model::where('grade',9)->get();
         $data['order'] = Order_model::find($order_id);
