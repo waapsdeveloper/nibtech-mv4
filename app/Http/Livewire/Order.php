@@ -125,7 +125,11 @@ class Order extends Component
             });
         })
         ->when(request('missing_reimburse'), function ($q) {
-            return $q->whereHas('order_items.linked_child')->where('status', 3);
+            return $q->whereHas('order_items.linked_child', function ($qu) {
+                $qu->whereHas('order', function ($q) {
+                    $q->where('status', '!=', 1);
+                });
+            })->where('status', 3);
         })
         ->when(request('missing_refund'), function ($q) {
             return $q->whereDoesntHave('order_items.linked_child')->where('status', 6);
