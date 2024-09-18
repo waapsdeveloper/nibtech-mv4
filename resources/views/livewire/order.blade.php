@@ -383,6 +383,7 @@
                                     $id = [];
                                     $total_items = 0;
                                     $replacement_items = [];
+                                    $imei_list = [];
                                 @endphp
                                 @foreach ($orders as $index => $order)
                                     @php
@@ -402,6 +403,10 @@
                                         @php
                                             $stock = $item->stock;
                                             $variation = $item->variation;
+
+                                            if($stock != null && (request('missing_refund') || request('missing_reimburse'))){
+                                                $imei_list[] = $stock->imei . $stock->serial_number;
+                                            }
                                         @endphp
                                         <tr @if ($customer->orders->count() > 1) class="bg-light" @endif>
                                             @if ($itemIndex == 0)
@@ -435,51 +440,51 @@
                                             </td>
                                             <td>{{ $item->quantity }}</td>
                                             @if ($order->status == 3)
-                                            <td style="width:240px" class="text-success text-uppercase" id="copy_imei_{{ $order->id }}">
-                                                @isset($stock->imei) {{ $stock->imei }}&nbsp; @endisset
-                                                @isset($stock->serial_number) {{ $stock->serial_number }}&nbsp; @endisset
-                                                @isset($order->processed_by) | {{ $admins[$order->processed_by][0] }} | @endisset
-                                                @isset($stock->tester) ({{ $stock->tester }}) @endisset
+                                                <td style="width:240px" class="text-success text-uppercase" id="copy_imei_{{ $order->id }}">
+                                                    @isset($stock->imei) {{ $stock->imei }}&nbsp; @endisset
+                                                    @isset($stock->serial_number) {{ $stock->serial_number }}&nbsp; @endisset
+                                                    @isset($order->processed_by) | {{ $admins[$order->processed_by][0] }} | @endisset
+                                                    @isset($stock->tester) ({{ $stock->tester }}) @endisset
 
-                                            </td>
-                                            @if ($item->quantity > 1 && $item->stock_id != null)
-                                            @php
-                                                $content2 = "Hi, here are the IMEIs/Serial numbers for this order. \n";
-                                                foreach ($items as $im) {
-                                                    if($im->stock_id == null){ continue;}
-                                                    $content2 .= $im->stock->imei . $im->stock->serial_number . " " . $im->stock->tester . "\n";
-                                                }
-                                                $content2 .= "Regards \n".session('fname');
-                                            @endphp
+                                                </td>
+                                                @if ($item->quantity > 1 && $item->stock_id != null)
+                                                @php
+                                                    $content2 = "Hi, here are the IMEIs/Serial numbers for this order. \n";
+                                                    foreach ($items as $im) {
+                                                        if($im->stock_id == null){ continue;}
+                                                        $content2 .= $im->stock->imei . $im->stock->serial_number . " " . $im->stock->tester . "\n";
+                                                    }
+                                                    $content2 .= "Regards \n".session('fname');
+                                                @endphp
 
-                                            <script>
-                                                document.addEventListener('DOMContentLoaded', function() {
-                                                    var imeiElement = document.getElementById('copy_imei_{{ $order->id }}');
+                                                <script>
+                                                    document.addEventListener('DOMContentLoaded', function() {
+                                                        var imeiElement = document.getElementById('copy_imei_{{ $order->id }}');
 
-                                                    // Add event listener to the IMEI element
-                                                    imeiElement.addEventListener('click', function() {
-                                                        // Create a temporary input element to hold the text
-                                                        var tempInput2 = document.createElement('textarea');
-                                                        tempInput2.value = `{{ $content2 }}`; // Properly escape PHP content
+                                                        // Add event listener to the IMEI element
+                                                        imeiElement.addEventListener('click', function() {
+                                                            // Create a temporary input element to hold the text
+                                                            var tempInput2 = document.createElement('textarea');
+                                                            tempInput2.value = `{{ $content2 }}`; // Properly escape PHP content
 
-                                                        // Append the input element to the body
-                                                        document.body.appendChild(tempInput2);
+                                                            // Append the input element to the body
+                                                            document.body.appendChild(tempInput2);
 
-                                                        // Select the text inside the input element
-                                                        tempInput2.select();
+                                                            // Select the text inside the input element
+                                                            tempInput2.select();
 
-                                                        // Copy the selected text to the clipboard
-                                                        document.execCommand('copy');
+                                                            // Copy the selected text to the clipboard
+                                                            document.execCommand('copy');
 
-                                                        // Remove the temporary input element
-                                                        document.body.removeChild(tempInput2);
+                                                            // Remove the temporary input element
+                                                            document.body.removeChild(tempInput2);
 
-                                                        // Optionally, provide feedback to the user
-                                                        alert('IMEI numbers copied to clipboard:\n' + tempInput2.value);
+                                                            // Optionally, provide feedback to the user
+                                                            alert('IMEI numbers copied to clipboard:\n' + tempInput2.value);
+                                                        });
                                                     });
-                                                });
-                                            </script>
-                                            @endif
+                                                </script>
+                                                @endif
 
 
                                             @endif
@@ -797,6 +802,29 @@
                                         {{ $orders->onEachSide(1)->links() }} {{ __('locale.From') }} {{$orders->firstItem()}} {{ __('locale.To') }} {{$orders->lastItem()}} {{ __('locale.Out Of') }} {{$orders->total()}}
 
                                     </td>
+                                    @if (request('missing_refund') || request('missing_reimburse'))
+
+                                    <td>
+
+                                        {{-- <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
+                                        <div class="dropdown-menu"> --}}
+                                        <a class="dropdown-item" id="open_all_imei" href="#">Open All IMEI Details</a>
+                                        {{-- </div> --}}
+                                        <script type="text/javascript">
+
+
+                                            document.getElementById("open_all_imei").onclick = function(){
+                                                @php
+                                                    foreach ($value as $val) {
+                                                        echo "window.open('".url("imei")."?imei=".$val->imei.$val->serial_number."','_blank');
+                                                        ";
+                                                    }
+
+                                                @endphp
+                                            }
+                                        </script>
+                                    </td>
+                                    @endif
                                     <td colspan="4" align="right">
                                         Total Items in this page: {{ $total_items }}
                                     </td>
