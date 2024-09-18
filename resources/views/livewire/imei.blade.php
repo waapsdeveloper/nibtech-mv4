@@ -200,7 +200,13 @@
                                             @elseif ($order->order_type_id == 3)
                                                 <td><a href="https://www.backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}" target="_blank">{{ $order->reference_id."\n\r".$item->reference_id }}</a></td>
                                             @endif
-                                            <td>{{ $order->order_type->name }}</td>
+                                            @if ($order->order_type_id == 3)
+                                                <td>
+                                                    <a href="{{ url('order').'?order_id='.$order->id }}">{{ $order->order_type->name }}</a>
+                                                </td>
+                                            @else
+                                                <td>{{ $order->order_type->name }}</td>
+                                            @endif
                                             <td>@if ($order->customer)
                                                 {{ $order->customer->first_name." ".$order->customer->last_name }}
                                             @endif</td>
