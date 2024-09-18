@@ -248,7 +248,7 @@
 
                                             @if (session('user')->hasPermission('imei_delete_order_item'))
                                                 <td>
-                                                    <a href="{{url('imei/delete_order_item')}}" class="btn btn-link"><i class="fa fa-trash"></i></a>
+                                                    <a href="{{url('imei/delete_order_item').'/'.$item->id}}" class="btn btn-link"><i class="fa fa-trash"></i></a>
                                                 </td>
                                             @endif
                                         </tr>
