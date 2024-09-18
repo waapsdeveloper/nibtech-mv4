@@ -2443,8 +2443,9 @@ class Order extends Component
 
             if($data == true){
                 foreach($orderObj->orderlines as $orderline){
-                    if($orderline->care_id != null){
-                        var_dump($bm->getCare($orderline->care_id));
+                    $item = Order_item_model::where('reference_id',$orderline->id)->first();
+                    if($item->care_id != null){
+                        var_dump($bm->getCare($item->care_id));
                     }
                 }
                 dd($orderObj);
