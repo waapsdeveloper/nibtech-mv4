@@ -409,6 +409,7 @@ class BackMarketAPIController extends Controller
         $end_point = 'sav/'.$id;
 
         $result = $this->requestGet($end_point);
+        return $result;
         if(isset($result->results)){
             $result_array = $result->results;
 
