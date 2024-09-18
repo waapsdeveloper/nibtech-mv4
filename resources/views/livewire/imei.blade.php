@@ -202,7 +202,7 @@
                                             @endif
                                             @if ($order->order_type_id == 3)
                                                 <td>
-                                                    <a href="{{ url('order').'?order_id='.$order->id }}">{{ $order->order_type->name }}</a>
+                                                    <a href="{{ url('order').'?order_id='.$order->reference_id }}">{{ $order->order_type->name }}</a>
                                                 </td>
                                             @else
                                                 <td>{{ $order->order_type->name }}</td>
