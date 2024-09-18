@@ -2434,12 +2434,23 @@ class Order extends Component
         $country_codes = Country_model::pluck('id','code');
 
         $orderObj = $bm->getOneOrder($order_id);
-        if($data == true){
-            dd($orderObj);
-        }
         if(!isset($orderObj->orderlines)){
+            if($data == true){
+                dd($orderObj);
+            }
 
         }else{
+
+            if($data == true){
+                foreach($orderObj->orderlines as $orderline){
+                    if($orderline->care_id != null){
+                        var_dump($bm->getCare($orderline->care_id));
+                    }
+                }
+                dd($orderObj);
+            }
+
+
             $order_model->updateOrderInDB($orderObj, $invoice, $bm, $currency_codes, $country_codes);
 
             $order_item_model->updateOrderItemsInDB($orderObj, $tester, $bm);
@@ -2648,7 +2659,7 @@ class Order extends Component
 
             $order_model->updateOrderInDB($orderObj, $invoice, $bm, $currency_codes, $country_codes);
 
-            $order_item_model->updateOrderItemsInDB($orderObj, $tester, $bm);
+            $order_item_model->updateOrderItemsInDB($orderObj, $tester, $bm, 1);
         }else{
             session()->put('error','Order not Found');
         }

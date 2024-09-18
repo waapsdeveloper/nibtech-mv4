@@ -100,6 +100,31 @@ class Order_item_model extends Model
         return $item;
     }
 
+    public function get_item_care($bm, $item_reference)
+    {
+
+        $care = $bm->getAllCare(false, ['orderline'=>$item_reference]);
+        // $care = $bm->getAllCare(false, ['page-size'=>50]);
+        // print_r($care);
+        // die;
+        $care_line = collect($care)->pluck('id','orderline')->toArray();
+        $care_keys = array_keys($care_line);
+
+
+        // Assuming $care_line is already defined from the previous code
+        $careLineKeys = array_keys($care_line);
+
+        // Construct the raw SQL expression for the CASE statement
+        // $caseExpression = "CASE ";
+        foreach ($care_line as $id => $care) {
+            // $caseExpression .= "WHEN reference_id = $id THEN $care ";
+            $order = Order_item_model::where('reference_id',$id)->update(['care_id' => $care]);
+            if($order != 0){
+                print_r($order);
+            }
+
+        }
+    }
     public function get_latest_care($bm)
     {
 
@@ -152,7 +177,7 @@ class Order_item_model extends Model
         }
     }
 
-    public function updateOrderItemsInDB($orderObj, $tester = null, $bm)
+    public function updateOrderItemsInDB($orderObj, $tester = null, $bm, $care = null)
     {
         // Your implementation here
 
@@ -250,6 +275,10 @@ class Order_item_model extends Model
             $orderItem->status = $state;
             // ... other fields
             $orderItem->save();
+
+            if($care != null){
+                $this->get_item_care($bm, $itemObj->id);
+            }
             // echo "----------------------------------------";
         }
 

@@ -405,6 +405,46 @@ class BackMarketAPIController extends Controller
             Log::channel('slack')->info("Care API: ".json_encode($result));
         }
     }
+    public function getCare($id) {
+        $end_point = 'sav/'.$id;
+
+        $result = $this->requestGet($end_point);
+        if(isset($result->results)){
+            $result_array = $result->results;
+
+            $result_next = $result;
+            $i = 1;
+            $page = 1;
+            // dd($result);
+            while (($result_next->next) != null) {
+                if($result_next->results){
+                    sleep(5);
+
+                    $i++;
+                    $page++;
+                    $end_point_next_tail = '&page=' . "$page";
+                    $end_point_next = $end_point . $end_point_next_tail;
+                    $result_next = $this->requestGet($end_point_next);
+                    if(!isset($result_next->results)){
+                        print_r($result_next);
+                        break;
+                    }
+                    $result_next_array = $result_next->results;
+
+                    foreach ($result_next_array as $key => $value) {
+                        array_push($result_array, $result_next_array[$key]);
+                    }
+                    if($i == 50){
+                        break;
+                    }
+                }
+            }
+
+            return $result_array;
+        }else{
+            Log::channel('slack')->info("Care API: ".json_encode($result));
+        }
+    }
     public function getAllOrders($page = 1, $param = []) {
         $end_point = 'orders';
 
