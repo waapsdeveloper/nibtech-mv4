@@ -352,8 +352,13 @@ class Report extends Component
     public function export_batch_report($orderId)
     {
         $order = Order_model::find($orderId);
+        if(request('type') == 1){
+            return Excel::download(new BatchReportExport($orderId), $order->reference_id.'_batch_report.xlsx');
+        }else{
+            return Excel::download(new BatchInitialReportExport($orderId), $order->reference_id.'_batch_report.xlsx');
+        }
         // return Excel::download(new BatchReportExport($orderId), $order->reference_id.'_batch_report.xlsx');
-        return Excel::download(new BatchInitialReportExport($orderId), $order->reference_id.'_batch_report.xlsx');
+        // return Excel::download(new BatchInitialReportExport($orderId), $order->reference_id.'_batch_report.xlsx');
     }
     public function stock_report(){
         ini_set('memory_limit', '256M');
