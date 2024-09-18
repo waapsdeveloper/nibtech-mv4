@@ -815,8 +815,8 @@
 
                                             document.getElementById("open_all_imei").onclick = function(){
                                                 @php
-                                                    foreach ($value as $val) {
-                                                        echo "window.open('".url("imei")."?imei=".$val->imei.$val->serial_number."','_blank');
+                                                    foreach ($imei_list as $imei) {
+                                                        echo "window.open('".url("imei")."?imei=".$imei."','_blank');
                                                         ";
                                                     }
 
