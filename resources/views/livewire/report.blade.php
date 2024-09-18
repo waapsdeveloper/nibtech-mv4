@@ -385,12 +385,13 @@
                                 <td>
 
                                     <div class="btn-group p-1" role="group">
-                                        <button type="button" class="btn-sm btn-link dropdown-toggle" id="batch_report" data-bs-toggle="dropdown" aria-expanded="false">
-                                            {{ $total }}
-                                        </button>
-                                        <ul class="dropdown-menu" aria-labelledby="batch_report">
-                                            <li><a href="{{ url('report/export_batch')}}/{{$order->order_id}}?type=1" onclick="if (confirm('Download Batch Grade Report?')){return true;}else{event.stopPropagation(); event.preventDefault();};"> Current Grade Report </a></li>
-                                            <li><a href="{{ url('report/export_batch')}}/{{$order->order_id}}?type=2" onclick="if (confirm('Download Batch Grade Report?')){return true;}else{event.stopPropagation(); event.preventDefault();};"> Initial Report <small>May not contain all devices</small> </a></li>
+                                        {{-- <button type="button" class="btn-sm btn-link dropdown-toggle" id="batch_report" data-bs-toggle="dropdown" aria-expanded="false">
+
+                                        </button> --}}
+                                        <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{ $total }}</a>
+                                        <ul class="dropdown-menu">
+                                            <li class="dropdown-item"><a href="{{ url('report/export_batch')}}/{{$order->order_id}}?type=1" onclick="if (confirm('Download Batch Grade Report?')){return true;}else{event.stopPropagation(); event.preventDefault();};"> Current Grade Report </a></li>
+                                            <li class="dropdown-item"><a href="{{ url('report/export_batch')}}/{{$order->order_id}}?type=2" onclick="if (confirm('Download Batch Grade Report?')){return true;}else{event.stopPropagation(); event.preventDefault();};"> Initial Report <small>May not contain all devices</small> </a></li>
                                         </ul>
                                     </div>
                                 </td>
