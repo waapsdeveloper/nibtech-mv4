@@ -403,6 +403,7 @@
                                     @endphp
                                     @foreach ($order_issues as $grouped_issue)
                                         @php
+                                            $j += 1;
                                             // $array = explode('},{',$grouped_issue->all_rows);
                                             // Split the JSON string into individual JSON objects
                                             $all_rows = preg_split('/(?<=\}),(?=\{)/', $grouped_issue->all_rows);
@@ -416,7 +417,7 @@
                                             <td colspan="3" >{{ $grouped_issue->name }}</td>
                                             <td colspan="{{ $col-5 }}">{{ $grouped_issue->message }}</td>
                                             <td colspan="2">
-                                                <form id="order_issues_{{$j+=1}}" method="POST" action="{{ url('purchase/remove_issues') }}" class="form-inline">
+                                                <form id="order_issues_{{$j}}" method="POST" action="{{ url('purchase/remove_issues') }}" class="form-inline">
                                                     @csrf
                                                 @switch($grouped_issue->message)
                                                     @case("Additional Item")
