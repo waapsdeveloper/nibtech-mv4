@@ -1545,6 +1545,10 @@ class Order extends Component
         $skus = [];
         if(count($sku) > 1 && count($imeis) > 1){
 
+        // print_r(request('imei'));
+        if(session('user_id') == 1){
+            dd("Hasdello");
+        }
             // Loop through the numbers array
             foreach ($sku as $index => $number) {
                 // If the value doesn't exist as a key in the skus array, create it
