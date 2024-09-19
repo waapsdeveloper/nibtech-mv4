@@ -7,6 +7,7 @@ use GuzzleHttp\Client;
 use setasign\Fpdi\Fpdi;
 use setasign\Fpdi\PdfParser\StreamReader;
 use App\Models\Order_model;
+use setasign\Fpdi\PdfParser\PdfParserException;
 
 class LabelsExport
 {
@@ -60,9 +61,12 @@ class LabelsExport
             $response = $client->get($order);
             $pdfContent = $response->getBody()->getContents();
 
+            try {
             // Convert Guzzle stream to StreamReader
-            $streamReader = StreamReader::createByString($pdfContent);
-
+                $streamReader = StreamReader::createByString($pdfContent);
+            } catch (PdfParserException $e) {
+                echo 'An error occurred while parsing the PDF: ' . $e->getMessage();
+            }
             // Set the source file for the PDF
             $pdf->setSourceFile($streamReader);
 
