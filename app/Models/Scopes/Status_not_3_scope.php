@@ -18,8 +18,8 @@ class Status_not_3_scope implements Scope
     public function apply(Builder $builder, Model $model)
     {
         // Check if the "status" column is not explicitly selected
-        if (!collect($builder->getQuery()->columns)->contains('status')) {
-            $builder->where('variation.status', '!=', 3);
-        }
+        // if (!collect($builder->getQuery()->columns)->contains('status')) {
+        //     $builder->where('variation.status', '!=', 3);
+        // }
     }
 }
