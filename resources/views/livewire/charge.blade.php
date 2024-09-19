@@ -160,7 +160,7 @@
                             </div>
                             <div class="form-group col-md-6">
                                 <label for="">Start Date</label>
-                                <input class="form-control" placeholder="input Start Date" name="charge[start_date]" value="" type="datetime-local" required>
+                                <input class="form-control" placeholder="input Start Date" name="charge[start_date]" value="" type="datetime-local">
                             </div>
 
                             <button class="btn btn-primary btn-block">{{ __('locale.Submit') }}</button>
