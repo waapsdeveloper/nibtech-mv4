@@ -97,7 +97,7 @@
                                             <td>{{$charge->name}}</td>
                                             <td>{{$charge->charge_frequency->name}}</td>
                                             <td>{{$charge->order_type->name}}</td>
-                                            <td>{{$charge->payment_method->name}}</td>
+                                            <td>{{$charge->payment_method->name ?? "All"}}</td>
                                             <td>{{$charge->current_value->name}}</td>
                                             <td>
                                                 @if ($charge->status == 1)
