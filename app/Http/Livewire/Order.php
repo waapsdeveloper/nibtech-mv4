@@ -1530,7 +1530,7 @@ class Order extends Component
     {
         $order = Order_model::find($id);
         $bm = new BackMarketAPIController();
-
+        dd('Paarsiya');
         // $orderObj = $bm->getOneOrder($order->reference_id);
         $orderObj = $this->updateBMOrder($order->reference_id, false, null, true, $bm);
         if($orderObj == null){
