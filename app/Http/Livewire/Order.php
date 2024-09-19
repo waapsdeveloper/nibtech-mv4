@@ -132,7 +132,9 @@ class Order extends Component
             })->where('status', 3);
         })
         ->when(request('missing_refund'), function ($q) {
-            return $q->whereDoesntHave('order_items.linked_child')->whereDoesntHave('order_items.stock.purchase_item')->where('status', 6);
+            return $q->whereDoesntHave('order_items.linked_child')->wherehas('order_items.stock', function ($q) {
+                $q->where('status', '!=', null);
+            })->where('status', 6);
         })
         ->when(request('order_id') != '', function ($q) {
             if(str_contains(request('order_id'),'<')){
