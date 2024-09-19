@@ -262,9 +262,8 @@ Route::get('edit-grade/{id}', [Grade::class,'edit_grade'])->name('edit_grade');
 Route::post('update-grade/{id}', [Grade::class,'update_grade'])->name('edit_grade');
 
 Route::get('charge', Charge::class)->name('view_charge');
-Route::post('add_charge', [Charge::class,'add_charge'])->name('add_charge');
-Route::post('edit_charge/{id}', [Charge::class,'edit_charge'])->name('edit_charge');
-Route::post('update-charge/{id}', [Charge::class,'update_charge'])->name('edit_charge');
+Route::get('charge/edit/{id}', [Charge::class,'edit_charge'])->name('edit_charge');
+Route::post('charge/update/{id}', [Charge::class,'update_charge'])->name('edit_charge');
 
 Route::get('get_permissions/{id}', [Team::class,'get_permissions'])->name('view_permissions');
 Route::post('toggle_role_permission/{roleId}/{permissionId}/{isChecked}', [Team::class, 'toggle_role_permission'])->name('change_permission');
