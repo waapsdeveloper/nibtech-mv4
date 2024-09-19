@@ -27,10 +27,10 @@ class Variation_model extends Model
         'grade',
         'state',
     ];
-    protected static function booted()
-    {
-        static::addGlobalScope(new Status_not_3_scope);
-    }
+    // protected static function booted()
+    // {
+    //     static::addGlobalScope(new Status_not_3_scope);
+    // }
 
 
 
