@@ -61,14 +61,14 @@ class LabelsExport
             $response = $client->get($order);
             $pdfContent = $response->getBody()->getContents();
 
-            try {
             // Convert Guzzle stream to StreamReader
-                $streamReader = StreamReader::createByString($pdfContent);
+            $streamReader = StreamReader::createByString($pdfContent);
+            try {
+            // Set the source file for the PDF
+            $pdf->setSourceFile($streamReader);
             } catch (PdfParserException $e) {
                 echo 'An error occurred while parsing the PDF: ' . $e->getMessage();
             }
-            // Set the source file for the PDF
-            $pdf->setSourceFile($streamReader);
 
             // Use the imported template
             $tplIdx = $pdf->importPage(1);
