@@ -219,7 +219,7 @@
         session()->forget('error');
         @endphp
         @endif
-        @if (count($order_issues)>0)
+        @if (count($order_issues)>0 && 1 == 2)
 
         <div class="row">
             <div class="col-xl-12">
@@ -419,16 +419,11 @@
                                             <td colspan="2">
                                                 <form id="order_issues_{{$j}}" method="POST" action="{{ url('purchase/remove_issues') }}" class="form-inline">
                                                     @csrf
+                                                </form>
                                                 @switch($grouped_issue->message)
-                                                    @case("Additional Item")
-                                                        @break
-                                                    @case("IMEI not Provided")
-                                                        @break
-                                                    @case("IMEI/Serial Not Found")
-                                                        @break
                                                     @case("Product Name Not Found")
                                                     <div class="form-floating">
-                                                        <input type="text" list="variations" id="variation" name="variation" class="form-control" value="{{ $grouped_issue->name }}" required>
+                                                        <input type="text" list="variations" id="variation" name="variation" class="form-control" value="{{ $grouped_issue->name }}" form="order_issues_{{$j}}" required>
                                                         <datalist id="variations">
                                                             <option value="">Select</option>
                                                             @foreach ($all_variations as $variation)
@@ -444,13 +439,13 @@
                                                         </datalist>
                                                         <label for="variation">Variation</label>
                                                     </div>
-                                                    <button class="btn btn-primary m-0" name="insert_variation" value="1">Insert Variation</button>
+                                                    <button class="btn btn-primary m-0" name="insert_variation" value="1" form="order_issues_{{$j}}">Insert Variation</button>
 
                                                         @break
 
                                                     @default
 
-                                                    <button class="btn btn-sm btn-danger m-0" name="remove_entries" value="1">Remove Entries</button>
+                                                    <button class="btn btn-sm btn-danger m-0" name="remove_entries" value="1" form="order_issues_{{$j}}">Remove Entries</button>
 
                                                         @break
                                                 @endswitch
@@ -495,42 +490,7 @@
 
                                                     @endif
                                                 @endforeach
-                                                <td>
-                                                    @if ($row->message == "IMEI not Provided" || $row->message == "IMEI/Serial Not Found")
-                                                    <form id="order_issues_{{$row->id}}" method="POST" action="{{ url('purchase/remove_issues') }}" class="form-inline">
-                                                        @csrf
-                                                        <input type="hidden" name="id" value="{{$row->id}}">
-                                                        <div class="form-floating">
-                                                            <input type="text" class="form-control" id="imei" name="imei" placeholder="Enter IMEI" required>
-                                                            <label for="imei">IMEI</label>
-                                                        </div>
-                                                        <div class="form-floating">
-                                                            <input type="text" list="variations" id="variation" name="variation" class="form-control" value="{{ $grouped_issue->name }}" required>
-                                                            <datalist id="variations">
-                                                                <option value="">Select</option>
-                                                                @foreach ($all_variations as $variation)
-                                                                    @php
-                                                                        if($variation->product_id){
-                                                                            $product = $products[$variation->product_id];
-                                                                        }else{
-                                                                            $product = null;
-                                                                        }
-                                                                        if($variation->storage){
-                                                                            $storage = $storages[$variation->storage];
-                                                                        }else{
-                                                                            $storage = null;
-                                                                        }
-                                                                    @endphp
-                                                                    <option value="{{$variation->id}}" @if(isset($_GET['variation']) && $variation->id == $_GET['variation']) {{'selected'}}@endif>{{ $product." ".$storage}}</option>
-                                                                @endforeach
-                                                            </datalist>
-                                                            <label for="variation">Variation</label>
-                                                        </div>
-                                                        <button class="btn btn-primary m-0" name="add_imei" value="1">Insert</button>
-
-                                                    </form>
-                                                    @endif
-                                                </td>
+                                                <td>{{ $row->message }}</td>
                                                 <td>{{ $row->created_at }}</td>
                                             </tr>
 
