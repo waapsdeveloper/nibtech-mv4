@@ -1532,6 +1532,9 @@ class Order extends Component
         $bm = new BackMarketAPIController();
         // $orderObj = $bm->getOneOrder($order->reference_id);
         $orderObj = $this->updateBMOrder($order->reference_id, false, null, true, $bm);
+        if(session('user_id') == 1){
+            dd("Hello");
+        }
         if($orderObj == null){
 
             session()->put('error', "Order Not Found");
@@ -1545,10 +1548,6 @@ class Order extends Component
         $skus = [];
         if(count($sku) > 1 && count($imeis) > 1){
 
-        // print_r(request('imei'));
-        if(session('user_id') == 1){
-            dd("Hasdello");
-        }
             // Loop through the numbers array
             foreach ($sku as $index => $number) {
                 // If the value doesn't exist as a key in the skus array, create it
@@ -1561,9 +1560,6 @@ class Order extends Component
 
         }
         // print_r(request('imei'));
-        if(session('user_id') == 1){
-            dd("Hello");
-        }
         if($orderObj->state == 3){
             foreach($imeis as $i => $imei){
 
