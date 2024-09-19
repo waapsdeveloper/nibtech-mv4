@@ -1239,7 +1239,7 @@ class Order extends Component
 
     }
     public function remove_issues(){
-        // dd(request('ids'));
+        dd(request('ids'));
         $ids = request('ids');
         $id = request('id');
         if(request('ids')){
