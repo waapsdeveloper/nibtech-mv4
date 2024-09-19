@@ -1532,7 +1532,7 @@ class Order extends Component
         $bm = new BackMarketAPIController();
 
         // $orderObj = $bm->getOneOrder($order->reference_id);
-        $orderObj = $this->updateBMOrder($order->reference_id, false, null, true);
+        $orderObj = $this->updateBMOrder($order->reference_id, false, null, true, $bm);
         if($orderObj == null){
 
             session()->put('error', "Order Not Found");
@@ -1771,7 +1771,7 @@ class Order extends Component
             // print_r($d[6]);
         }
 
-        $orderObj = $this->updateBMOrder($order->reference_id, true);
+        $orderObj = $this->updateBMOrder($order->reference_id, true, null, false, $bm);
         // $order = Order_model::find($order->id);
         if(!isset($detail)){
 
@@ -2660,11 +2660,13 @@ class Order extends Component
 
 
     }
-    public function updateBMOrder($order_id = null, $invoice = false, $tester = null, $data = false){
+    public function updateBMOrder($order_id = null, $invoice = false, $tester = null, $data = false, $bm = null){
         if(request('reference_id')){
             $order_id = request('reference_id');
         }
-        $bm = new BackMarketAPIController();
+        if($bm == null){
+            $bm = new BackMarketAPIController();
+        }
 
         $order_model = new Order_model();
         $order_item_model = new Order_item_model();
