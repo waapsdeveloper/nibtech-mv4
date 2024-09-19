@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 class Charge_value_model extends Model
 {
     use HasFactory;
-    protected $table = 'charges';
+    protected $table = 'charge_value';
     protected $primaryKey = 'id';
     protected $fillable = [
         // other fields...
