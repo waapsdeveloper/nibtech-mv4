@@ -1531,7 +1531,7 @@ class Order extends Component
         $order = Order_model::find($id);
         $bm = new BackMarketAPIController();
         // $orderObj = $bm->getOneOrder($order->reference_id);
-        $orderObj = $this->updateBMOrder($order->reference_id, false, null, true, $bm);
+        $orderObj = $this->updateBMOrder($order->reference_id, false, null, true);
         if(session('user_id') == 1){
             dd("Hello");
         }
