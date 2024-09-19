@@ -1543,15 +1543,18 @@ class Order extends Component
 
         // Initialize an empty result array
         $skus = [];
+        if(count($sku) > 1 && count($imeis) > 1){
 
-        // Loop through the numbers array
-        foreach ($sku as $index => $number) {
-            // If the value doesn't exist as a key in the skus array, create it
-            if (!isset($skus[$number])) {
-                $skus[$number] = [];
+            // Loop through the numbers array
+            foreach ($sku as $index => $number) {
+                // If the value doesn't exist as a key in the skus array, create it
+                if (!isset($skus[$number])) {
+                    $skus[$number] = [];
+                }
+                // Add the current number to the skus array along with its index in the original array
+                $skus[$number][$index] = $number;
             }
-            // Add the current number to the skus array along with its index in the original array
-            $skus[$number][$index] = $number;
+
         }
         // print_r(request('imei'));
         if(session('user_id') == 1){
