@@ -33,10 +33,10 @@
         <!-- /breadcrumb -->
         <hr style="border-bottom: 1px solid #000">
         <br>
-        <div class="tx-right">
+        {{-- <div class="tx-right">
 
                 <a href="{{url('add-charge')}}" class="btn btn-success float-right"><i class="mdi mdi-plus"></i> Add Charge</a>
-        </div>
+        </div> --}}
         <br>
         @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -75,6 +75,12 @@
                                     <tr>
                                         <th><small><b>{{ __('locale.S.No') }}</b></small></th>
                                         <th><small><b>Name</b></small></th>
+                                        <th><small><b>Frequency</b></small></th>
+                                        <th><small><b>Order Type</b></small></th>
+                                        <th><small><b>Payment Method</b></small></th>
+                                        <th><small><b>Current Value</b></small></th>
+                                        <th><small><b>Status</b></small></th>
+                                        <th><small><b>Last Modified</b></small></th>
                                         <th></th>
                                     </tr>
                                 </thead>
@@ -89,7 +95,19 @@
                                         <tr>
                                             <td title="{{$charge->id}}">{{$i}}</td>
                                             <td>{{$charge->name}}</td>
-                                            <td><center><a href="edit-charge/{{$charge->id}}" class="text text-success w-100 vh-100">{{ __('locale.Edit') }}</a></center></td>
+                                            <td>{{$charge->charge_frequency->name}}</td>
+                                            <td>{{$charge->order_type->name}}</td>
+                                            <td>{{$charge->payment_method->name}}</td>
+                                            <td>{{$charge->current_value->name}}</td>
+                                            <td>
+                                                @if ($charge->status == 1)
+                                                    <span class="badge badge-success">Active</span>
+                                                @else
+                                                    <span class="badge badge-danger">Inactive</span>
+                                                @endif
+                                            </td>
+                                            <td>{{$charge->latest_value->created_at}}</td>
+                                            <td><center><a href="{{url('charge/edit').'/'.$charge->id}}" class="text text-success w-100 vh-100">{{ __('locale.Edit') }}</a></center></td>
                                         </tr>
                                     @endforeach
                                 </tbody>

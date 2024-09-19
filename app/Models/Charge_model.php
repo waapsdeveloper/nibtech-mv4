@@ -29,4 +29,16 @@ class Charge_model extends Model
     public function payment_method(){
         return $this->hasOne(Payment_method_model::class, 'id', 'payment_method_id');
     }
+    public function charge_values()
+    {
+        return $this->hasMany(Charge_value_model::class, 'charge_id', 'id');
+    }
+    public function current_value()
+    {
+        return $this->hasOne(Charge_value_model::class, 'charge_id', 'id')->where('ended_at', null)->orWhere('ended_at', '>=', date('Y-m-d H:i:s'));
+    }
+    public function latest_value()
+    {
+        return $this->hasOne(Charge_value_model::class, 'charge_id', 'id')->orderBy('id', 'desc');
+    }
 }
