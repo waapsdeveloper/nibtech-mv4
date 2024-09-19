@@ -68,6 +68,7 @@ class LabelsExport
             $pdf->setSourceFile($streamReader);
             } catch (PdfParserException $e) {
                 echo 'An error occurred while parsing the PDF: ' . $e->getMessage();
+                continue;
             }
 
             // Use the imported template
