@@ -1753,7 +1753,7 @@ class Order extends Component
             // print_r($d[6]);
         }
 
-        // $orderObj = $this->updateBMOrder($order->reference_id, true);
+        $orderObj = $this->updateBMOrder($order->reference_id, true);
         // $order = Order_model::find($order->id);
         if(!isset($detail)){
 
