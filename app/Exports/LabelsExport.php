@@ -67,7 +67,7 @@ class LabelsExport
             // Set the source file for the PDF
             $pdf->setSourceFile($streamReader);
             } catch (PdfParserException $e) {
-                echo 'An error occurred while parsing the PDF: ' . $e->getMessage();
+                // echo 'An error occurred while parsing the PDF: ' . $e->getMessage();
                 continue;
             }
 
