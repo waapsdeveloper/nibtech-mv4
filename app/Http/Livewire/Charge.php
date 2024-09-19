@@ -70,6 +70,9 @@ class Charge extends Component
     {
 
         $data['title_page'] = "Edit Charge";
+        $data['charge_frequencies'] = Charge_frequency_model::pluck('name','id');
+        $data['order_types'] = Multi_type_model::where('table_name','orders')->pluck('name','id');
+        $data['payment_methods'] = Payment_method_model::pluck('name','id');
 
         $data['charge'] = Charge_model::where('id',$id)->first();
 
