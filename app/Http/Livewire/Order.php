@@ -2665,7 +2665,7 @@ class Order extends Component
 
 
     }
-    public function updateBMOrder($order_id = null, $invoice = false, $tester = null, $data = false, $bm = null){
+    public function updateBMOrder($order_id = null, $invoice = false, $tester = null, $data = false, $bm = null, $care = false){
         if(request('reference_id')){
             $order_id = request('reference_id');
         }
@@ -2687,7 +2687,7 @@ class Order extends Component
 
             $order_model->updateOrderInDB($orderObj, $invoice, $bm, $currency_codes, $country_codes);
 
-            $order_item_model->updateOrderItemsInDB($orderObj, $tester, $bm);
+            $order_item_model->updateOrderItemsInDB($orderObj, $tester, $bm, $care);
         }else{
             session()->put('error','Order not Found');
         }

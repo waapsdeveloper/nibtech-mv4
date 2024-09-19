@@ -177,7 +177,7 @@ class Order_item_model extends Model
         }
     }
 
-    public function updateOrderItemsInDB($orderObj, $tester = null, $bm, $care = null)
+    public function updateOrderItemsInDB($orderObj, $tester = null, $bm, $care = false)
     {
         // Your implementation here
 
@@ -276,7 +276,7 @@ class Order_item_model extends Model
             // ... other fields
             $orderItem->save();
 
-            if($care != null){
+            if($care == true){
                 $this->get_item_care($bm, $itemObj->id);
             }
             // echo "----------------------------------------";
