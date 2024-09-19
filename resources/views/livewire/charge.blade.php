@@ -98,7 +98,13 @@
                                             <td>{{$charge->charge_frequency->name}}</td>
                                             <td>{{$charge->order_type->name}}</td>
                                             <td>{{$charge->payment_method->name ?? "All"}}</td>
-                                            <td>{{number_format($charge->current_value->value,2)}}</td>
+                                            <td>
+                                                @if ($charge->amount_type == 1)
+                                                    €{{amount_formatter($charge->current_value->value,2)}}
+                                                @else
+                                                    {{amount_formatter($charge->current_value->value,2)}}%
+                                                @endif
+                                            </td>
                                             <td>
                                                 @if ($charge->status == 1)
                                                     <span class="badge badge-success">Active</span>
