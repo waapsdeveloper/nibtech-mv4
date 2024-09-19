@@ -1556,9 +1556,9 @@ class Order extends Component
         }
         // print_r(request('imei'));
         if($orderObj->state == 3){
-            foreach(request('imei') as $i => $imei){
+            foreach($imeis as $i => $imei){
 
-                $variant = Variation_model::where('sku',$sku[$i])->first();
+                $variant = Variation_model::withoutGlobalScope('Status_not_3_scope')->where('sku',$sku[$i])->first();
                 if($variant->storage != null){
                     $storage2 = $variant->storage_id->name . " - ";
                 }else{
@@ -1735,7 +1735,7 @@ class Order extends Component
                 foreach ($skus as $each) {
                     $inde = 0;
                     foreach ($each as $idt => $s) {
-                        $variation = Variation_model::where('sku',$s)->first();
+                        $variation = Variation_model::withoutGlobalScope('Status_not_3_scope')->where('sku',$s)->first();
                         $item = Order_item_model::where(['order_id'=>$id, 'variation_id'=>$variation->id])->first();
                         if ($inde != 0) {
 
