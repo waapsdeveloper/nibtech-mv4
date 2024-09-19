@@ -1530,7 +1530,6 @@ class Order extends Component
     {
         $order = Order_model::find($id);
         $bm = new BackMarketAPIController();
-        dd('Paarsiya');
         // $orderObj = $bm->getOneOrder($order->reference_id);
         $orderObj = $this->updateBMOrder($order->reference_id, false, null, true, $bm);
         if($orderObj == null){
@@ -1555,6 +1554,7 @@ class Order extends Component
             $skus[$number][$index] = $number;
         }
         // print_r(request('imei'));
+        dd('Paarsiya');
         if($orderObj->state == 3){
             foreach($imeis as $i => $imei){
 
