@@ -66,23 +66,28 @@ class Stock_room extends Component
 
         if(request('show') == 1){
             if($user->hasPermission('view_all_stock_movements')){
-                $data['stocks'] = Stock_movement_model::where(['admin_id'=>request('admin_id')])
-                ->when(request('description') != null, function ($q) {
-                    return $q->where('description', request('description'));
-                })
-                ->whereBetween('exit_at', [$start_date, $end_date])
-                ->orderBy('id', 'desc') // Secondary order by reference_id
-                // ->select('orders.*')
-                ->paginate($per_page)
-                ->onEachSide(5)
-                ->appends(request()->except('page'));
+                if(request('admin_id')){
 
-                $data['stocks'] = Stock_movement_model::where(['received_at'=>null])
-                ->orderBy('id', 'desc') // Secondary order by reference_id
-                // ->select('orders.*')
-                ->paginate($per_page)
-                ->onEachSide(5)
-                ->appends(request()->except('page'));
+                    $data['stocks'] = Stock_movement_model::where(['admin_id'=>request('admin_id')])
+                    ->when(request('description') != null, function ($q) {
+                        return $q->where('description', request('description'));
+                    })
+                    ->whereBetween('exit_at', [$start_date, $end_date])
+                    ->orderBy('id', 'desc') // Secondary order by reference_id
+                    // ->select('orders.*')
+                    ->paginate($per_page)
+                    ->onEachSide(5)
+                    ->appends(request()->except('page'));
+                }else{
+
+                    $data['stocks'] = Stock_movement_model::where(['received_at'=>null])
+                    ->orderBy('id', 'desc') // Secondary order by reference_id
+                    // ->select('orders.*')
+                    ->paginate($per_page)
+                    ->onEachSide(5)
+                    ->appends(request()->except('page'));
+                }
+
             }else{
                 $data['stocks'] = Stock_movement_model::where(['admin_id'=>$user_id, 'received_at'=>null])
                 ->orderBy('id', 'desc') // Secondary order by reference_id
