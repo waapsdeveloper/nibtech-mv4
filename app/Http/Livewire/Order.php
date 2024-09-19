@@ -1714,39 +1714,57 @@ class Order extends Component
                 return redirect()->back();
             }
 
+            if(count($sku) == 1 && count($stock) == 1){
+                $order_item = Order_item_model::where('order_id',$order->id)->whereHas('variation', function($q) use ($sku){
+                    $q->where('sku',$sku[0]);
+                })->first();
+                $order_item->stock_id = $stock[0]->id;
+                $order_item->linked_id = $stock[0]->last_item()->id;
 
-            foreach ($skus as $each) {
-                $inde = 0;
-                foreach ($each as $idt => $s) {
-                    $variation = Variation_model::where('sku',$s)->first();
-                    $item = Order_item_model::where(['order_id'=>$id, 'variation_id'=>$variation->id])->first();
-                    if ($inde != 0) {
+                $order_item->save();
 
-                        $new_item = new Order_item_model();
-                        $new_item->order_id = $id;
-                        $new_item->variation_id = $item->variation_id;
-                        $new_item->quantity = $item->quantity;
-                        $new_item->status = $item->status;
-                        $new_item->price = $item->price;
-                    }else{
-                        $new_item = $item;
-                        $new_item->price = $item->price/count($each);
-                    }
-                    if($stock[$idt]){
-                        $new_item->stock_id = $stock[$idt]->id;
-                        $new_item->linked_id = $stock[$idt]->last_item()->id;
+                $stock_movement = Stock_movement_model::where(['stock_id'=>$stock[0]->id, 'received_at'=>null])->first();
+                if($stock_movement != null){
+                    Stock_movement_model::where(['stock_id'=>$stock[0]->id, 'received_at'=>null])->update([
+                        'received_at' => Carbon::now(),
+                    ]);
+                }
 
+            }else{
 
-                        $stock_movement = Stock_movement_model::where(['stock_id'=>$stock[$idt]->id, 'received_at'=>null])->first();
-                        if($stock_movement != null){
-                            Stock_movement_model::where(['stock_id'=>$stock[$idt]->id, 'received_at'=>null])->update([
-                                'received_at' => Carbon::now(),
-                            ]);
+                foreach ($skus as $each) {
+                    $inde = 0;
+                    foreach ($each as $idt => $s) {
+                        $variation = Variation_model::where('sku',$s)->first();
+                        $item = Order_item_model::where(['order_id'=>$id, 'variation_id'=>$variation->id])->first();
+                        if ($inde != 0) {
+
+                            $new_item = new Order_item_model();
+                            $new_item->order_id = $id;
+                            $new_item->variation_id = $item->variation_id;
+                            $new_item->quantity = $item->quantity;
+                            $new_item->status = $item->status;
+                            $new_item->price = $item->price;
+                        }else{
+                            $new_item = $item;
+                            $new_item->price = $item->price/count($each);
                         }
-                    // $new_item->linked_id = Order_item_model::where(['order_id'=>$stock[$idt]->order_id,'stock_id'=>$stock[$idt]->id])->first()->id;
+                        if($stock[$idt]){
+                            $new_item->stock_id = $stock[$idt]->id;
+                            $new_item->linked_id = $stock[$idt]->last_item()->id;
+
+
+                            $stock_movement = Stock_movement_model::where(['stock_id'=>$stock[$idt]->id, 'received_at'=>null])->first();
+                            if($stock_movement != null){
+                                Stock_movement_model::where(['stock_id'=>$stock[$idt]->id, 'received_at'=>null])->update([
+                                    'received_at' => Carbon::now(),
+                                ]);
+                            }
+                        // $new_item->linked_id = Order_item_model::where(['order_id'=>$stock[$idt]->order_id,'stock_id'=>$stock[$idt]->id])->first()->id;
+                        }
+                        $new_item->save();
+                        $inde ++;
                     }
-                    $new_item->save();
-                    $inde ++;
                 }
             }
 
