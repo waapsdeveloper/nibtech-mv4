@@ -121,7 +121,7 @@
                     @endif
                 </form>
                 <br>
-                <form class="form-inline justify-content-between" action="{{url('order_charge')}}" method="POST">
+                <form class="form-inline justify-content-between align-items-center" action="{{url('order_charge')}}" method="POST">
                     @csrf
                     <input type="hidden" name="order_charge[charge_id]" value="{{$charge->id}}">
                     <h5>Change Charge Standard: </h5>
