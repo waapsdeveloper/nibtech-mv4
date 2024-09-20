@@ -35,7 +35,10 @@
                             <div class="col-md-9">
                                 <select class="form-select" placeholder="Input Charge Frequency" name="charge[charge_frequency]" required>
                                     @foreach ($charge_frequencies as $id=>$name)
-                                        <option value="{{ $id }}">{{ $name }}</option>
+                                        <option value="{{ $id }}" @if ($charge->charge_frequency_id == $id)
+                                            selected
+
+                                        @endif>{{ $name }}</option>
 
                                     @endforeach
                                 </select>
@@ -48,7 +51,10 @@
                             <select class="form-select" placeholder="Input Order Type" name="charge[order_type]">
                                 <option value="">None</option>
                                 @foreach ($order_types as $id=>$name)
-                                    <option value="{{ $id }}">{{ $name }}</option>
+                                    <option value="{{ $id }}" @if ($charge->order_type_id == $id)
+                                        selected
+
+                                    @endif>{{ $name }}</option>
 
                                 @endforeach
                             </select>
@@ -61,7 +67,10 @@
                                 <select class="form-select" placeholder="Input Payment Method" name="charge[payment_method]">
                                     <option value="">None / Any</option>
                                     @foreach ($payment_methods as $id=>$name)
-                                        <option value="{{ $id }}">{{ $name }}</option>
+                                        <option value="{{ $id }}" @if ($charge->payment_method_id == $id)
+                                            selected
+
+                                        @endif>{{ $name }}</option>
 
                                     @endforeach
                                 </select>
@@ -73,8 +82,14 @@
                             </div>
                             <div class="col-md-9">
                                 <select class="form-select" placeholder="Input Amount Type" name="charge[amount_type]">
-                                    <option value="1">Unit</option>
-                                    <option value="2">Percent</option>
+                                    <option value="1" @if ($charge->amount_type == 1)
+                                        selected
+
+                                    @endif>Unit</option>
+                                    <option value="2" @if ($charge->amount_type == 2)
+                                        selected
+
+                                    @endif>Percent</option>
                                 </select>
                             </div>
                         </div>
