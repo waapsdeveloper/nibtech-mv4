@@ -123,18 +123,16 @@
                 <form class="form-inline" action="{{url('order_charge')}}" method="POST">
                     @csrf
                     <input type="hidden" name="order_charge[charge_id]" value="{{$charge->id}}">
-                    <div class="d-flex justify-content-between">
-                        <h5>Change Order Charge: </h5>
-                        <div class="input-group">
-                            <label class="form-label">Start Date: </label>
-                            <input type="datetime-local" class="form-control" name="order_charge[start_date]" required>
-                        </div>
-                        <div class="input-group">
-                            <label class="form-label">Value: </label>
-                            <input type="number" step="0.01" class="form-control" name="order_charge[amount]" required>
-                        </div>
-                        <button class="btn btn-primary" >Add</button>
+                    <h5>Change Order Charge: </h5>
+                    <div class="input-group">
+                        <label class="form-label">Start Date: </label>
+                        <input type="datetime-local" class="form-control" name="order_charge[start_date]" required>
                     </div>
+                    <div class="input-group">
+                        <label class="form-label">Value: </label>
+                        <input type="number" step="0.01" class="form-control" name="order_charge[amount]" required>
+                    </div>
+                    <button class="btn btn-primary" >Add</button>
 
                 </form>
                 <div class="row">
