@@ -10,7 +10,7 @@
         <!-- breadcrumb -->
         <div class="breadcrumb-header justify-content-between">
             <div class="left-content">
-                <span class="main-content-title mg-b-0 mg-b-lg-1">Charge Detail</span>
+                <span class="main-content-title mg-b-lg-1">Charge Detail</span>
             </div>
             <div class="justify-content-center mt-2">
                 <ol class="breadcrumb">
@@ -28,11 +28,11 @@
                     @csrf
                     <div class="row">
 
-                        <div class="col-md row row-xs align-items-center mg-b-20">
+                        <div class="col-md row row-xs align-items-center">
                             <div class="col-md-3">
-                                <label class="form-label mg-b-0">Charge Frequency</label>
+                                <label class="form-label">Charge Frequency</label>
                             </div>
-                            <div class="col-md-9 mg-t-5 mg-md-t-0">
+                            <div class="col-md-9">
                                 <select class="form-select" placeholder="Input Charge Frequency" name="charge[charge_frequency]" required>
                                     @foreach ($charge_frequencies as $id=>$name)
                                         <option value="{{ $id }}">{{ $name }}</option>
@@ -41,9 +41,9 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md row row-xs align-items-center mg-b-20">
+                        <div class="col-md row row-xs align-items-center">
                             <div class="col-md-3">
-                                <label class="form-label mg-b-0">Order Type</label>
+                                <label class="form-label">Order Type</label>
                             </div>
                             <select class="form-select" placeholder="Input Order Type" name="charge[order_type]">
                                 <option value="">None</option>
@@ -53,11 +53,11 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md row row-xs align-items-center mg-b-20">
+                        <div class="col-md row row-xs align-items-center">
                             <div class="col-md-3">
-                                <label class="form-label mg-b-0">Payment Method</label>
+                                <label class="form-label">Payment Method</label>
                             </div>
-                            <div class="col-md-9 mg-t-5 mg-md-t-0">
+                            <div class="col-md-9">
                                 <select class="form-select" placeholder="Input Payment Method" name="charge[payment_method]">
                                     <option value="">None / Any</option>
                                     @foreach ($payment_methods as $id=>$name)
@@ -67,11 +67,11 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md row row-xs align-items-center mg-b-20">
+                        <div class="col-md row row-xs align-items-center">
                             <div class="col-md-3">
-                                <label class="form-label mg-b-0">Amount Type</label>
+                                <label class="form-label">Amount Type</label>
                             </div>
-                            <div class="col-md-9 mg-t-5 mg-md-t-0">
+                            <div class="col-md-9">
                                 <select class="form-select" placeholder="Input Amount Type" name="charge[amount_type]">
                                     <option value="1">Unit</option>
                                     <option value="2">Percent</option>
