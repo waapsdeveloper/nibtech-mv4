@@ -125,12 +125,12 @@
                     @csrf
                     <input type="hidden" name="order_charge[charge_id]" value="{{$charge->id}}">
                     <h5>Change Charge Standard: </h5>
-                    <div class="input-group align-items-center">
-                        <label class="form-label">Start Date: </label>
+                    <div class="input-group">
+                        <label class="form-label align-items-center">Start Date: </label>
                         <input type="datetime-local" class="form-control" name="order_charge[start_date]" required>
                     </div>
-                    <div class="input-group align-items-center">
-                        <label class="form-label">Value: </label>
+                    <div class="input-group">
+                        <label class="form-label align-items-center">Value: </label>
                         <input type="number" step="0.01" class="form-control" name="order_charge[amount]" required>
                     </div>
                     <button class="btn btn-primary" >Add</button>
