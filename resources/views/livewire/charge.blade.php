@@ -132,7 +132,7 @@
                             type="button"><span aria-hidden="true">&times;</span></button>
                         <h5 class="modal-title mg-b-5">Create Charge</h5>
                         <hr>
-                        <form action="{{ url('add_charge') }}" method="POST" enctype="multipart/form-data" class="row">
+                        <form action="{{ url('charge/add') }}" method="POST" enctype="multipart/form-data" class="row">
                             @csrf
                             <div class="form-group col-md-6">
                                 <label for="">Charge Frequency</label>

@@ -262,6 +262,7 @@ Route::get('edit-grade/{id}', [Grade::class,'edit_grade'])->name('edit_grade');
 Route::post('update-grade/{id}', [Grade::class,'update_grade'])->name('edit_grade');
 
 Route::get('charge', Charge::class)->name('view_charge');
+Route::post('charge/add', [Charge::class,'add_charge'])->name('add_charge');
 Route::get('charge/edit/{id}', [Charge::class,'edit_charge'])->name('edit_charge');
 Route::post('charge/update/{id}', [Charge::class,'update_charge'])->name('edit_charge');
 
