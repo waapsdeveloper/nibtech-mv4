@@ -234,7 +234,11 @@ class Order_item_model extends Model
                             }
                         }
                         if($itemObj->serial_number != null){
-                            $stock = Stock_model::withTrashed()->firstOrNew(['serial_number' => $itemObj->serial_number,]);
+                            if(ctype_digit($itemObj->serial_number) && strlen($itemObj->serial_number) == 15){
+                                $stock = Stock_model::withTrashed()->firstOrNew(['imei' => $itemObj->imei]);
+                            }else{
+                                $stock = Stock_model::withTrashed()->firstOrNew(['serial_number' => $itemObj->serial_number,]);
+                            }
                             if(strlen($itemObj->serial_number) > 20){
                                 continue;
                             }
