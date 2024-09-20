@@ -82,7 +82,7 @@
                     </div>
 
                     <button class="btn btn-primary pd-x-30 mg-r-5 mg-t-5" >Update</button>
-                    @if ($charge->charge_values->orders->count() == 0)
+                    @if ($charge->charge_values->order_charges->count() == 0)
                         <a href="{{url('charge/delete')}}/{{$charge->id}}">Delete</a>
                     @endif
                 </form>
