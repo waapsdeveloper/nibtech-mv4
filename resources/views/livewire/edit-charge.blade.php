@@ -115,11 +115,56 @@
                         </div>
                     </div>
 
-                    <button class="btn btn-primary pd-x-30 mg-r-5 mg-t-5" >Update</button>
+                    <button class="btn btn-primary" >Update</button>
                     @if ($charge->order_charges->count() == 0)
                         <a href="{{url('charge/delete')}}/{{$charge->id}}">Delete</a>
                     @endif
                 </form>
+                <form action="{{url('order_charge')}}" method="POST">
+                    @csrf
+                    <input type="hidden" name="order_charge[charge_id]" value="{{$charge->id}}">
+                    <div class="flex">
+                        <h5>Change Order Charge:</h5>
+                        <div class="input-group">
+                            <label class="form-label">Start Date</label>
+                            <input type="datetime-local" class="form-control" name="order_charge[start_date]" required>
+                        </div>
+                        <div class="input-group">
+                            <label class="form-label">Value</label>
+                            <input type="number" step="0.01" class="form-control" name="order_charge[amount]" required>
+                        </div>
+                        <button class="btn btn-primary" >Add</button>
+                    </div>
+
+                </form>
+                <div class="row">
+                    <div class="col-md-12">
+                        <br>
+                        <h5>Order Charges</h5>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Order Type</th>
+                                    <th>Amount</th>
+                                    <th>Payment Method</th>
+                                    <th>Amount Type</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($charge->order_charges as $order_charge)
+                                    <tr>
+                                        <td>{{$order_charge->order_type->name}}</td>
+                                        <td>{{$order_charge->amount}}</td>
+                                        <td>{{$order_charge->payment_method->name}}</td>
+                                        <td>{{$order_charge->amount_type == 1 ? 'Unit' : 'Percent'}}</td>
+                                        <td><a href="{{url('order_charge/delete')}}/{{$order_charge->id}}">Delete</a></td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
         <!-- /row -->
