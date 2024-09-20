@@ -120,10 +120,10 @@
                         <a href="{{url('charge/delete')}}/{{$charge->id}}">Delete</a>
                     @endif
                 </form>
-                <form action="{{url('order_charge')}}" method="POST">
+                <form class="form-inline" action="{{url('order_charge')}}" method="POST">
                     @csrf
                     <input type="hidden" name="order_charge[charge_id]" value="{{$charge->id}}">
-                    <div class="flex">
+                    {{-- <div class="flex"> --}}
                         <h5>Change Order Charge:</h5>
                         <div class="input-group">
                             <label class="form-label">Start Date</label>
@@ -134,7 +134,7 @@
                             <input type="number" step="0.01" class="form-control" name="order_charge[amount]" required>
                         </div>
                         <button class="btn btn-primary" >Add</button>
-                    </div>
+                    {{-- </div> --}}
 
                 </form>
                 <div class="row">
