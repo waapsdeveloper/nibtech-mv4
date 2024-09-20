@@ -124,7 +124,7 @@
                 <form class="form-inline justify-content-between" action="{{url('order_charge')}}" method="POST">
                     @csrf
                     <input type="hidden" name="order_charge[charge_id]" value="{{$charge->id}}">
-                    <h5>Change Order Charge: </h5>
+                    <h5>Change Charge Standard: </h5>
                     <div class="input-group">
                         <label class="form-label">Start Date: </label>
                         <input type="datetime-local" class="form-control" name="order_charge[start_date]" required>
