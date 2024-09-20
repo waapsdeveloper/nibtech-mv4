@@ -28,7 +28,7 @@
                     @csrf
                     <div class="row">
 
-                        <div class="col-md row">
+                        <div class="col-md row row-xs">
                             <div class="col-md-3">
                                 <label class="form-label">Charge Frequency</label>
                             </div>
@@ -41,7 +41,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md row">
+                        <div class="col-md row row-xs">
                             <div class="col-md-3">
                                 <label class="form-label">Order Type</label>
                             </div>
@@ -53,7 +53,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md row">
+                        <div class="col-md row row-xs">
                             <div class="col-md-3">
                                 <label class="form-label">Payment Method</label>
                             </div>
@@ -67,7 +67,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md row">
+                        <div class="col-md row row-xs">
                             <div class="col-md-3">
                                 <label class="form-label">Amount Type</label>
                             </div>
