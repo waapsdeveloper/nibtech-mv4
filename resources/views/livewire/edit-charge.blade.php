@@ -95,6 +95,24 @@
                         </div>
 
                     </div>
+                    <div class="row">
+                        <div class="col-md row align-items-center">
+                            <div class="col-md-3">
+                                <label class="form-label">Name</label>
+                            </div>
+                            <div class="col-md-9">
+                                <input class="form-control" placeholder="Input Charge Name" name="charge[name]" value="{{$charge->name}}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-8 row align-items-center">
+                            <div class="col-md-3">
+                                <label class="form-label">Description</label>
+                            </div>
+                            <div class="col-md-9">
+                                <textarea class="form-control" rows="1" placeholder="Input Charge Description" name="charge[description]">{{$charge->description}}</textarea>
+                            </div>
+                        </div>
+                    </div>
 
                     <button class="btn btn-primary pd-x-30 mg-r-5 mg-t-5" >Update</button>
                     @if ($charge->order_charges->count() == 0)
