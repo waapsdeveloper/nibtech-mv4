@@ -86,6 +86,17 @@
                         @endforeach
                     </select>
                 </div>
+                <div class="col-md col-sm-2">
+                    {{-- <div class="card-header">
+                        <h4 class="card-title mb-1">Storage</h4>
+                    </div> --}}
+                    <select name="color" class="form-control form-select">
+                        <option value="">Color</option>
+                        @foreach ($colors as $id=>$name)
+                            <option value="{{ $id }}" @if(isset($_GET['color']) && $id == $_GET['color']) {{'selected'}}@endif>{{ $name }}</option>
+                        @endforeach
+                    </select>
+                </div>
                 <div class="col-md-3 col-sm-2">
                     {{-- <div class="card-header">
                         <h4 class="card-title mb-1">Grade</h4>

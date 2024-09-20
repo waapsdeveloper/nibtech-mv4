@@ -88,6 +88,9 @@ class Inventory extends Component
             ->when(request('storage') != '', function ($q) {
                 return $q->where('storage', request('storage'));
             })
+            ->when(request('color') != '', function ($q) {
+                return $q->where('color', request('color'));
+            })
             ->when(request('category') != '', function ($q) {
                 return $q->whereHas('product', function ($q) {
                     $q->where('category', request('category'));
@@ -187,6 +190,11 @@ class Inventory extends Component
                     $q->where('storage', request('storage'));
                 });
             })
+            ->when(request('color') != '', function ($q) {
+                return $q->whereHas('stock.variation', function ($q) {
+                    $q->where('color', request('color'));
+                });
+            })
             ->when(request('category') != '', function ($q) {
                 return $q->whereHas('stock.variation.product', function ($q) {
                     $q->where('category', request('category'));
@@ -278,6 +286,11 @@ class Inventory extends Component
                     $q->where('storage', request('storage'));
                 });
             })
+            ->when(request('color') != '', function ($q) {
+                return $q->whereHas('variation', function ($q) {
+                    $q->where('color', request('color'));
+                });
+            })
             ->when(request('category') != '', function ($q) {
                 return $q->whereHas('variation.product', function ($q) {
                     $q->where('category', request('category'));
@@ -335,6 +348,11 @@ class Inventory extends Component
         ->when(request('storage') != '', function ($q) {
             return $q->whereHas('variation', function ($q) {
                 $q->where('storage', request('storage'));
+            });
+        })
+        ->when(request('color') != '', function ($q) {
+            return $q->whereHas('variation', function ($q) {
+                $q->where('color', request('color'));
             });
         })
         ->when(request('category') != '', function ($q) {
@@ -433,6 +451,11 @@ class Inventory extends Component
                 $q->where('storage', request('storage'));
             });
         })
+        ->when(request('color') != '', function ($q) {
+            return $q->whereHas('variation', function ($q) {
+                $q->where('color', request('color'));
+            });
+        })
         ->when(request('category') != '', function ($q) {
             return $q->whereHas('variation.product', function ($q) {
                 $q->where('category', request('category'));
@@ -483,6 +506,11 @@ class Inventory extends Component
             ->when(request('storage') != '', function ($q) {
                 return $q->whereHas('stock.variation', function ($q) {
                     $q->where('storage', request('storage'));
+                });
+            })
+            ->when(request('color') != '', function ($q) {
+                return $q->whereHas('stock.variation', function ($q) {
+                    $q->where('color', request('color'));
                 });
             })
             ->when(request('category') != '', function ($q) {
