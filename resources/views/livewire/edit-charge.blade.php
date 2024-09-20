@@ -123,7 +123,7 @@
                 <form class="form-inline" action="{{url('order_charge')}}" method="POST">
                     @csrf
                     <input type="hidden" name="order_charge[charge_id]" value="{{$charge->id}}">
-                    <div class="flex justify-content-between">
+                    <div class="d-flex justify-content-between">
                         <h5>Change Order Charge: </h5>
                         <div class="input-group">
                             <label class="form-label">Start Date: </label>
