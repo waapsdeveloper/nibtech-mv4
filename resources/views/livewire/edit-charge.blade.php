@@ -24,7 +24,7 @@
         <!-- row -->
         <div class="card">
             <div class="card-body">
-                <form action="{{url('update-charge')}}/{{$charge->id}}" method="POST">
+                <form action="{{url('charge/update')}}/{{$charge->id}}" method="POST">
                     @csrf
                     <div class="row">
 
