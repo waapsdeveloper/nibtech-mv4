@@ -82,8 +82,16 @@ class Charge extends Component
     }
     public function update_charge($id)
     {
+        $data = request('charge');
 
-        Charge_model::where('id',$id)->update(['name'=>request('name')]);
+        Charge_model::where('id',$id)->update([
+            'charge_frequency_id'=>$data['charge_frequency'],
+            'order_type_id'=>$data['order_type'],
+            'payment_method_id'=>$data['payment_method'],
+            'name'=>$data['name'],
+            'amount_type'=>$data['amount_type'],
+            'description'=>$data['description']
+        ]);
         session()->put('success',"Charge has been updated successfully");
         return redirect('charge');
     }
