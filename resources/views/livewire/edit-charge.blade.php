@@ -120,6 +120,7 @@
                         <a href="{{url('charge/delete')}}/{{$charge->id}}">Delete</a>
                     @endif
                 </form>
+                <br>
                 <form class="form-inline" action="{{url('order_charge')}}" method="POST">
                     @csrf
                     <input type="hidden" name="order_charge[charge_id]" value="{{$charge->id}}">
