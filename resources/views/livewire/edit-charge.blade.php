@@ -139,25 +139,25 @@
                 <div class="row">
                     <div class="col-md-12">
                         <br>
-                        <h5>Order Charges</h5>
+                        <h5>Previous Rates</h5>
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
-                                    <th>Order Type</th>
                                     <th>Amount</th>
-                                    <th>Payment Method</th>
-                                    <th>Amount Type</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($charge->order_charges as $order_charge)
                                     <tr>
-                                        <td>{{$order_charge->order_type->name}}</td>
                                         <td>{{$order_charge->amount}}</td>
-                                        <td>{{$order_charge->payment_method->name}}</td>
-                                        <td>{{$order_charge->amount_type == 1 ? 'Unit' : 'Percent'}}</td>
-                                        <td><a href="{{url('order_charge/delete')}}/{{$order_charge->id}}">Delete</a></td>
+                                        <td>{{ $order_charge->started_at }}</td>
+                                        <td>{{ $order_charge->ended_at }}</td>
+                                        <td>
+                                            <a href="{{url('order_charge/delete')}}/{{$order_charge->id}}">Delete</a>
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
