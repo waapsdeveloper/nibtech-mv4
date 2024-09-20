@@ -30,7 +30,7 @@
                 @if ($order->status == 2)
                 <form class="form-inline" method="POST" action="{{url('rma/approve').'/'.$order->id}}" id="approveform">
                     @csrf
-                    {{-- <div class="form-floating">
+                    <div class="form-floating">
                         <input type="text" list="currencies" id="currency" name="currency" class="form-control" value="{{$order->currency_id->code}}">
                         <datalist id="currencies">
                             @foreach ($exchange_rates as $target_currency => $rate)
@@ -42,7 +42,7 @@
                     <div class="form-floating">
                         <input type="text" class="form-control" id="rate" name="rate" placeholder="Enter Exchange Rate" value="{{$order->exchange_rate}}" >
                         <label for="rate">Exchange Rate</label>
-                    </div> --}}
+                    </div>
                     <div class="form-floating">
                         <input type="text" class="form-control" id="reference" name="reference" placeholder="Enter Vendor Reference" value="{{$order->reference}}" onchange="submitForm()" required>
                         <label for="reference">Vendor Reference</label>
