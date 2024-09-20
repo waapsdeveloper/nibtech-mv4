@@ -150,13 +150,13 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($charge->order_charges as $order_charge)
+                                @foreach ($charge->charge_values as $charge_value)
                                     <tr>
-                                        <td>{{$order_charge->amount}}</td>
-                                        <td>{{ $order_charge->started_at }}</td>
-                                        <td>{{ $order_charge->ended_at }}</td>
+                                        <td>{{ $charge_value->amount }}</td>
+                                        <td>{{ $charge_value->started_at }}</td>
+                                        <td>{{ $charge_value->ended_at }}</td>
                                         <td>
-                                            <a href="{{url('order_charge/delete')}}/{{$order_charge->id}}">Delete</a>
+                                            <a href="{{url('charge_value/delete')}}/{{$charge_value->id}}">Delete</a>
                                         </td>
                                     </tr>
                                 @endforeach
