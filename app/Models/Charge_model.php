@@ -41,4 +41,8 @@ class Charge_model extends Model
     {
         return $this->hasOne(Charge_value_model::class, 'charge_id', 'id')->orderBy('id', 'desc');
     }
+    public function order_charges()
+    {
+        return $this->hasManyThrough(Order_charge_model::class, Charge_value_model::class, 'charge_id', 'charge_value_id', 'id', 'id');
+    }
 }
