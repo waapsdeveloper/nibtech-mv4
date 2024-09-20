@@ -121,15 +121,15 @@
                     @endif
                 </form>
                 <br>
-                <form class="form-inline justify-content-between align-items-center" action="{{url('order_charge')}}" method="POST">
+                <form class="form-inline justify-content-between" action="{{url('order_charge')}}" method="POST">
                     @csrf
                     <input type="hidden" name="order_charge[charge_id]" value="{{$charge->id}}">
                     <h5>Change Charge Standard: </h5>
-                    <div class="input-group">
+                    <div class="input-group align-items-center">
                         <label class="form-label">Start Date: </label>
                         <input type="datetime-local" class="form-control" name="order_charge[start_date]" required>
                     </div>
-                    <div class="input-group">
+                    <div class="input-group align-items-center">
                         <label class="form-label">Value: </label>
                         <input type="number" step="0.01" class="form-control" name="order_charge[amount]" required>
                     </div>
