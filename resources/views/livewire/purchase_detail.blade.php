@@ -372,7 +372,7 @@
                                                     @if ($key == 'variation')
                                                         @php
                                                             $variation = $all_variations->where('id',$value)->first();
-                                                            if($variation->storage){
+                                                            if($variation != null && $variation->storage){
                                                                 $storage = $storages[$variation->storage];
                                                             }else{
                                                                 $storage = null;
