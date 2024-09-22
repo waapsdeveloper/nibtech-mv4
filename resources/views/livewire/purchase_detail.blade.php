@@ -378,7 +378,7 @@
                                                                 $storage = null;
                                                             }
                                                         @endphp
-                                                        <td title="{{ $key }}">{{$variation->product->model." ".$storage}}</td>
+                                                        <td title="{{ $key }}">{{$variation->product->model ?? $value}} {{$storage}}</td>
                                                     @else
                                                         <td title="{{ $key }}">{{ $value }}</td>
 
