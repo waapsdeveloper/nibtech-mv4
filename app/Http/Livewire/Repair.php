@@ -332,6 +332,10 @@ class Repair extends Component
         }
     }
     public function check_repair_item($process_id, $imei = null, $back = null){
+
+        if(request('check_testing_days') > 0){
+            session()->put('check_testing_days',request('check_testing_days'));
+        }
         $issue = [];
         if(request('imei')){
             $imei = request('imei');
@@ -476,7 +480,7 @@ class Repair extends Component
         // Delete the temporary file
         // Storage::delete($filePath);
 
-        if(request('check_testing_days') > 0){
+        if(session('check_testing_days') > 0){
             session()->put('check_testing_days',request('check_testing_days'));
             $api_requests = Api_request_model::where('stock_id',$stock->id)->where('created_at','>=',now()->subDays(request('check_testing_days')))->get();
             foreach($api_requests as $api_request){
