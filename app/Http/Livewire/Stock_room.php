@@ -149,7 +149,10 @@ class Stock_room extends Component
                 return redirect()->back(); // Redirect here is not recommended
 
             }
-
+            if($stock->status == 2){
+                session()->put('error', 'IMEI Already Sold');
+                return redirect()->back(); // Redirect here is not recommended
+            }
             if(request('description') == null){
                 session()->put('error', 'Description Required');
                 return redirect()->back(); // Redirect here is not recommended
