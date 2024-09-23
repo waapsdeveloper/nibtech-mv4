@@ -123,6 +123,27 @@ class RMA extends Component
 
         return redirect()->back();
     }
+    public function return_rma_item($item_id){
+        // dd($item_id);
+        $orderItem = Order_item_model::find($item_id);
+
+        // Access the variation through orderItem->stock->variation
+        $variation = $orderItem->stock->variation;
+
+        $variation->stock += 1;
+        $variation->save();
+
+        // No variation record found or product_id and sku are both null, delete the order item
+
+        // $orderItem->stock->delete();
+        Stock_model::find($orderItem->stock_id)->update(['status'=>1]);
+        $orderItem->delete();
+        // $orderItem->forceDelete();
+
+        session()->put('success', 'Stock deleted successfully');
+
+        return redirect()->back();
+    }
     public function rma_approve($order_id){
         $order = Order_model::find($order_id);
         $currency = Currency_model::where('code',request('currency'))->first();

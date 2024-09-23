@@ -27,7 +27,7 @@ class Api_request_model extends Model
         $imeis = [];
         $admins = Admin_model::pluck('first_name','id')->toArray();
         $lowercaseAdmins = array_map('strtolower', $admins);
-        $products = Products_model::pluck('model','id')->toArray();
+        // $products = Products_model::pluck('model','id')->toArray();
         $storages = Storage_model::pluck('name','id')->toArray();
         $colors = Color_model::pluck('name','id')->toArray();
             // Convert each color name to lowercase
@@ -36,7 +36,7 @@ class Api_request_model extends Model
             // Convert each grade name to lowercase
         $lowercaseGrades = array_map('strtolower', $grades);
 
-        $requests = Api_request_model::where('status',null)->orderBy('id','asc')->get();
+        $requests = Api_request_model::where('status','!=',1)->orderBy('id','asc')->get();
         // $requests = Api_request_model::orderBy('id','asc')->get();
         foreach($requests as $request){
             $data = $request->request;
@@ -74,9 +74,9 @@ class Api_request_model extends Model
             // echo "</pre>";
             // continue;
             // }
-            if(in_array($datas->ModelName, $products)){
-                $product = array_search($datas->ModelName,$products);
-            }
+            // if(in_array($datas->ModelName, $products)){
+            //     $product = array_search($datas->ModelName,$products);
+            // }
 
             if(in_array($datas->Memory, $storages)){
                 $storage = array_search($datas->Memory,$storages);
@@ -165,33 +165,42 @@ class Api_request_model extends Model
                     'grade' => $stock->variation->grade
                 ];
 
-                // if($stock->variation->storage == null || $stock->variation->storage == 0 || $stock->variation->storage == $storage){
                     $new_variation['storage'] = $storage;
-                // }
+                if($stock->variation->storage != null || $stock->variation->storage != 0 || $stock->variation->storage != $storage){
+                    $message = "Storage changed from: ".$stock->variation->storage->name." to: ".$storages[$storage];
+                }
                 if($stock->variation->color == null || $stock->variation->color == $color){
                     $new_variation['color'] = $color;
                 }
 
-                if(($stock->variation->grade == 9 || $stock->variation->grade == $grade) && $grade != ''){
+                if(($stock->variation->grade == 9 || $stock->variation->grade == 7 || $stock->variation->grade == $grade) && $grade != ''){
                     $new_variation['grade'] = $grade;
                 }
                 if($stock->status == 1){
                     $new_variation['grade'] = $grade;
+                }
+                if($stock->imei == $datas->Imei2 && $stock->imei != null){
+                    if(isset($message)){
+                        $message .= " | IMEI changed from: ".$datas->Imei2;
+                    }else{
+                        $message = "IMEI changed from: ".$datas->Imei2;
+                    }
+                    $stock->imei = $datas->Imei;
                 }
                 $variation = Variation_model::firstOrNew($new_variation);
-                if($stock->status == 1){
+                if($stock->status == 1 || $stock->last_item()->order->customer_id == 3955){
 
-                    if($stock->imei == $datas->Imei2 && $stock->imei != null){
+                    if(isset($message)){
 
                         $stock_operation = Stock_operations_model::create([
                             'stock_id' => $stock->id,
+                            'api_request_id' => $request->id,
                             'old_variation_id' => $stock->variation_id,
-                            'new_variation_id' => $stock->variation->id,
-                            'description' => $datas->Fail." | ".$datas->Comments." | IMEI changed from: ".$datas->Imei2." | DrPhone",
+                            'new_variation_id' => $stock->variation_id,
+                            'description' => $message." | DrPhone",
                             'admin_id' => $admin,
                             'created_at' => Carbon::parse($datas->Time)->format('Y-m-d H:i:s'),
                         ]);
-                        $stock->imei = $datas->Imei;
                     }
                     if(strlen($datas->Fail) > 200){
                         $fail = substr($datas->Fail, 0, 200);
@@ -201,6 +210,7 @@ class Api_request_model extends Model
 
                     $stock_operation = Stock_operations_model::create([
                         'stock_id' => $stock->id,
+                        'api_request_id' => $request->id,
                         'process_id' => 1,
                         'old_variation_id' => $stock->variation_id,
                         'new_variation_id' => $variation->id,
@@ -219,7 +229,7 @@ class Api_request_model extends Model
                 }elseif($stock->status == 2){
 
                     $request->stock_id = $stock->id;
-                    $request->status = 1;
+                    $request->status = 2;
                     $request->save();
                 }
             }

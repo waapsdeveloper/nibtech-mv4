@@ -159,6 +159,7 @@ class Stock_room extends Component
 
             }else{
                 session()->put('description', request('description'));
+
             }
             // Carbon::now()->format('d-m-Y h A')
             $stock_movement = Stock_movement_model::create([

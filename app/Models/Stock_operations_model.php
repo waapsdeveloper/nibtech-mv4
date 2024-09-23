@@ -18,6 +18,7 @@ class Stock_operations_model extends Model
         'stock_id',
         'order_id',
         'process_id',
+        'api_request_id',
         'old_variation_id',
         'new_variation_id',
         'description',
