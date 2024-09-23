@@ -114,16 +114,16 @@
         @endif
         <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
 
-            <div class="p-2">
 
                 @if ($order->status == 1)
+            <div class="p-2">
                 <span class="form-check form-switch ms-4" title="Bypass Wholesale check" onclick="$('#bypass_check').check()">
                     <input type="checkbox" value="1" id="bypass_check" name="bypass_check" class="form-check-input" form="rma_item" @if (session('bypass_check') == 1) checked @endif>
                     <label class="form-check-label" for="bypass_check">Bypass check</label>
                 </span>
+            </div>
 
                 @endif
-            </div>
             <div class="p-1">
                 @if ($order->status == 1)
                     <form class="form-inline" action="{{ url('check_rma_item').'/'.$order_id }}" method="POST" id="rma_item">
@@ -179,7 +179,7 @@
                         </div>
                         {{-- <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
                         <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required> --}}
-                        <button class="btn-sm btn-secondary pd-x-20" type="submit">Remove</button>
+                        <button class="btn btn-secondary pd-x-20" type="submit">Remove</button>
 
                     </form>
                     <script>
