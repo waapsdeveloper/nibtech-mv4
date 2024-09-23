@@ -23,6 +23,7 @@ use App\Exports\RepairsheetExport;
 use Maatwebsite\Excel\Facades\Excel;
     use TCPDF;
     use App\Mail\InvoiceMail;
+use App\Models\Api_request_model;
 use App\Models\Color_model;
 use App\Models\ExchangeRate;
 use App\Models\Grade_model;
@@ -474,6 +475,17 @@ class Repair extends Component
         // </script>";
         // Delete the temporary file
         // Storage::delete($filePath);
+
+        if(request('check_testing_days') > 0){
+            session()->put('check_testing_days',request('check_testing_days'));
+            $api_requests = Api_request_model::where('stock_id',$stock->id)->where('created_at','>=',now()->subDays(request('check_testing_days')))->get();
+            foreach($api_requests as $api_request){
+                if(Stock_operations_model::where('api_request_id',$api_request->id)->count() == 0){
+                    $api_request->status = null;
+                    $api_request->save();
+                }
+            }
+        }
 
         if($back != 1){
             return redirect(url('repair/detail').'/'.$process_id);

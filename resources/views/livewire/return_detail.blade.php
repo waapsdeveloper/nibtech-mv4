@@ -87,6 +87,8 @@
                     @csrf
                     <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
                     <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
+                    <label for="">Tested __ Days Ago</label>
+                    <input type="number" class="form-control form-control-sm" name="check_testing_days" placeholder="Days" value="{{session('check_testing_days')}}">
                     <button class="btn-sm btn-primary pd-x-20" type="submit">Receive</button>
 
                 </form>
