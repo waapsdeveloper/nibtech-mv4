@@ -154,9 +154,9 @@
                                     <tr>
                                         <td>
                                             @if ($charge->amount_type == 1)
-                                                €{{amount_formatter($current_value->value,2)}}
+                                                €{{amount_formatter($charge_value->value,2)}}
                                             @else
-                                                {{amount_formatter($current_value->value,2)}}%
+                                                {{amount_formatter($charge_value->value,2)}}%
                                             @endif
                                         </td>
                                         <td>{{ $charge_value->started_at }}</td>
