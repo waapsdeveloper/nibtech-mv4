@@ -153,6 +153,7 @@ Route::get('rma', RMA::class)->name('view_rma');
 Route::post('add_rma', [RMA::class,'add_rma'])->name('add_rma');
 Route::post('check_rma_item/{id}', [RMA::class,'check_rma_item'])->name('add_rma_item');
 Route::post('add_rma_item/{id}', [RMA::class,'add_rma_item'])->name('add_rma_item');
+Route::post('return_rma_item/{id}', [RMA::class,'return_rma_item'])->name('return_rma_item');
 Route::get('delete_rma/{id}', [RMA::class,'delete_order'])->name('delete_rma');
 Route::get('delete_rma_item/{id}', [RMA::class,'delete_order_item'])->name('delete_rma_item');
 Route::get('rma/detail/{id}', [RMA::class,'rma_detail'])->name('rma_detail');
