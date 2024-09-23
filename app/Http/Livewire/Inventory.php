@@ -159,7 +159,7 @@ class Inventory extends Component
             })->values();
 
             // Sort the results by quantity in descending order
-            $available_stocks_2 = $groupedResult->sortByDesc('product_id')->sortByDesc('storage')->toArray();
+            $available_stocks_2 = $groupedResult->sortBy(['product_id','storage'])->toArray();
 
             foreach($available_stocks_2 as $key => $available_stock){
                 $average_cost = Order_item_model::whereIn('stock_id', $available_stock['stock_ids'])->avg('price');

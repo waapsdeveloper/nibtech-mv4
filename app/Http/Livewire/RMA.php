@@ -16,6 +16,7 @@ use App\Models\Currency_model;
 use App\Models\Color_model;
 use App\Models\ExchangeRate;
 use App\Models\Grade_model;
+use App\Models\Stock_operations_model;
 use App\Models\Storage_model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -124,6 +125,11 @@ class RMA extends Component
         return redirect()->back();
     }
     public function return_rma_item($order_id){
+        $description = request('description');
+        if(request('grade')){
+            session()->put('grade',request('grade'));
+        }
+        session()->put('description',request('description'));
         // dd($item_id);
         $order = Order_model::find($order_id);
 
@@ -142,10 +148,48 @@ class RMA extends Component
                 }
 
                 if ($imei == '' || !$stock || $stock->status == null) {
-                    session()->put('error', 'IMEI Invalid / Not Found');
+                    session()->put('error', 'IMEI Invalid / Not Found | IMEI: '.$imei);
+                    continue;
                     // return redirect()->back(); // Redirect here is not recommended
                 }
 
+                $last_item = $stock->last_item();
+                if($last_item->order->order_type_id == 2){
+                    if($stock->status == 1){
+                        $stock->status = 2;
+                        $stock->save();
+                    }
+                }else{
+                    session()->put('error', 'Stock not in RMA | IMEI: '.$imei);
+                    continue;
+                    // return redirect()->back(); // Redirect here is not recommended
+                }
+                if($last_item->order->customer_id != $order->customer_id){
+                    session()->put('error', 'IMEI Sold to different customer | IMEI: '.$imei);
+                    continue;
+                    // return redirect()->back();
+                }
+
+                $s_variation = $stock->variation;
+                $variation = Variation_model::firstOrNew(['product_id' => $s_variation->product_id, 'storage' => $s_variation->storage, 'color' => $s_variation->color, 'grade' => request('grade')]);
+
+                $variation->stock += 1;
+                $variation->status = 1;
+                $variation->save();
+
+
+
+                $stock_operation = Stock_operations_model::create([
+                    'stock_id' => $stock->id,
+                    'old_variation_id' => $stock->variation_id,
+                    'new_variation_id' => $variation->id,
+                    'description' => $description,
+                    'admin_id' => session('user_id'),
+                ]);
+
+                $stock->variation_id = $variation->id;
+                $stock->status = 1;
+                $stock->save();
             }
         }
         // Access the variation through orderItem->stock->variation
