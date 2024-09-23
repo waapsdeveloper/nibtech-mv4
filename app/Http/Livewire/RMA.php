@@ -145,6 +145,9 @@ class RMA extends Component
                     session()->put('error', 'IMEI Invalid / Not Found');
                     // return redirect()->back(); // Redirect here is not recommended
                 }
+
+            }
+        }
         // Access the variation through orderItem->stock->variation
         // $variation = $orderItem->stock->variation;
 
@@ -154,8 +157,8 @@ class RMA extends Component
         // No variation record found or product_id and sku are both null, delete the order item
 
         // $orderItem->stock->delete();
-        Stock_model::find($orderItem->stock_id)->update(['status'=>1]);
-        $orderItem->delete();
+        // Stock_model::find($orderItem->stock_id)->update(['status'=>1]);
+        // $orderItem->delete();
         // $orderItem->forceDelete();
 
         session()->put('success', 'Stock deleted successfully');
