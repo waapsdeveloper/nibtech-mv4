@@ -21,6 +21,10 @@
         <form action="{{ url('stock_room/exit')}}" method="POST" id="search" class="form-inline">
             @csrf
             <div class="form-floating">
+                <input type="text" class="form-control" name="description" id="description" placeholder="Enter Sheet Reference" value="@isset(session('description')){{session('description')}}@endisset">
+                <label for="">Sheet Reference</label>
+            </div>
+            <div class="form-floating">
                 <input type="text" class="form-control" name="imei" id="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" id="imeiInput" onload="this.focus()" autofocus>
                 <label for="">IMEI</label>
             </div>
@@ -72,7 +76,7 @@ session()->forget('error');
                 <h4 class="card-title mg-b-0">Total Scanned: {{$scanned_total}}</h4>
             </div>
         </div>
-        <div class="card-body"><div class="table-responsive" style="max-height: 250px">
+        <div class="card-body"><div class="table-responsive">
                 <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                     <thead>
                         <tr>
