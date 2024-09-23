@@ -27,8 +27,8 @@
                         <label class="form-check-label" for="bypass_check">Bypass Wholesale check</label>
                     </span> --}}
                 <span class="main-content-title mg-b-0 mg-b-lg-1">RMA Order Detail</span><br>
-                @if ($order->status == 2)
-                <form class="form-inline" method="POST" action="{{url('rma/approve').'/'.$order->id}}" id="approveform">
+                @if ($order->status == 1)
+                <form class="form-inline" method="POST" action="{{url('rma/submit').'/'.$order->id}}" id="approveform">
                     @csrf
                     <div class="form-floating">
                         <input type="text" list="currencies" id="currency" name="currency" class="form-control" value="{{$order->currency_id->code}}">
@@ -74,6 +74,10 @@
 
                 </script>
                 @else
+                @if ($order->status == 2)
+                    <a href="{{url('rma/approve').'/'.$order->id}}"><button class="btn btn-success">Mark Approved</button></a>
+                    <br>
+                @endif
                 Tracking Number: <a href="https://www.dhl.com/gb-en/home/tracking/tracking-ex♦ess.html?submit=1&tracking-id={{$order->tracking_number}}" target="_blank"> {{$order->tracking_number}}</a>
                 <br>
                 Reference: {{ $order->reference }}
@@ -241,7 +245,10 @@
                                             <td>€{{ amount_formatter($item->price,2) }}</td>
                                             @endif
                                             <td style="width:220px">{{ $item->created_at }}</td>
+                                            @if (session('user')->hasPermission('delete_rma_item') && $order->status == 1)
                                             <td><a href="{{ url('delete_rma_item').'/'.$item->id }}"><i class="fa fa-trash"></i></a></td>
+
+                                            @endif
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -287,7 +294,7 @@
                                         {{-- @if (session('user')->hasPermission('view_cost')) --}}
                                         <th><small><b>Vendor Price</b></small></th>
                                         {{-- @endif --}}
-                                        @if (session('user')->hasPermission('delete_rma_item'))
+                                        @if (session('user')->hasPermission('delete_rma_item') && $order->status == 1)
                                         <th></th>
                                         @endif
                                     </tr>
@@ -327,7 +334,7 @@
                                                 @endif
                                             </td>
 
-                                            @if (session('user')->hasPermission('delete_rma_item'))
+                                            @if (session('user')->hasPermission('delete_rma_item') && $order->status == 1)
                                             <td><a href="{{ url('delete_rma_item').'/'.$sale_order->id }}"><i class="fa fa-trash"></i></a></td>
                                             @endif
                                             <input type="hidden" name="item_ids[]" value="{{ $sale_order->id }}">

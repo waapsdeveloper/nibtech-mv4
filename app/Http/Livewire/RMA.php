@@ -4,6 +4,7 @@ namespace App\Http\Livewire;
 
 use App\Exports\PacksheetExport;
 use App\Mail\BulksaleInvoiceMail;
+use App\Models\Api_request_model;
 use Livewire\Component;
 use App\Models\Variation_model;
 use App\Models\Products_model;
@@ -187,9 +188,18 @@ class RMA extends Component
                     'admin_id' => session('user_id'),
                 ]);
 
+                $last_item->delete();
                 $stock->variation_id = $variation->id;
                 $stock->status = 1;
                 $stock->save();
+                if(request('check_testing_days') > 0){
+
+                    $api_requests = Api_request_model::where('stock_id',$stock->id)->where('created_at','>=',now()->subDays(request('check_testing_days')))->get();
+                    foreach($api_requests as $api_request){
+                        $api_request->status = null;
+                        $api_request->save();
+                    }
+                }
             }
         }
         // Access the variation through orderItem->stock->variation
@@ -209,7 +219,7 @@ class RMA extends Component
 
         return redirect()->back();
     }
-    public function rma_approve($order_id){
+    public function rma_submit($order_id){
         $order = Order_model::find($order_id);
         $currency = Currency_model::where('code',request('currency'))->first();
         if($currency != null && $currency->id != 4){
@@ -219,7 +229,7 @@ class RMA extends Component
         $order->reference = request('reference');
         $order->tracking_number = request('tracking_number');
         if(request('approve') == 1){
-            $order->status = 3;
+            $order->status = 2;
             $order->processed_at = now()->format('Y-m-d H:i:s');
         }
         $order->save();
@@ -229,6 +239,13 @@ class RMA extends Component
         }else{
             return "Updated";
         }
+    }
+    public function rma_approve($order_id){
+        $order = Order_model::find($order_id);
+        $order->status = 3;
+        $order->save();
+
+            return redirect()->back();
     }
     public function rma_revert_status($order_id){
         $order = Order_model::find($order_id);

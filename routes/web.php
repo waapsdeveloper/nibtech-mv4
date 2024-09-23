@@ -159,6 +159,7 @@ Route::get('rma/detail/{id}', [RMA::class,'rma_detail'])->name('rma_detail');
 Route::post('rma/update_prices', [RMA::class,'update_prices'])->name('update_rma_item');
 Route::get('export_rma_invoice/{id}/{invoice?}', [RMA::class,'export_rma_invoice'])->name('rma_detail');
 Route::post('rma/approve/{id}', [RMA::class,'rma_approve'])->name('rma_approve');
+Route::post('rma/submit/{id}', [RMA::class,'rma_submit'])->name('rma_submit');
 Route::get('rma/revert_status/{id}', [RMA::class,'rma_revert_status'])->name('rma_revert_status');
 
 Route::get('imei', IMEI::class)->name('view_imei');

@@ -78,8 +78,9 @@
 
         <div class="d-flex justify-content-between">
             <div>
-                <a href="{{url('rma')}}?status=2" class="btn btn-link @if (request('status') == 2) bg-white @endif ">Pending</a>
-                <a href="{{url('rma')}}?status=3" class="btn btn-link @if (request('status') == 3) bg-white @endif ">Shipped</a>
+                <a href="{{url('rma')}}?status=1" class="btn btn-link @if (request('status') == 1) bg-white @endif ">Pending</a>
+                <a href="{{url('rma')}}?status=2" class="btn btn-link @if (request('status') == 2) bg-white @endif ">Submitted</a>
+                <a href="{{url('rma')}}?status=3" class="btn btn-link @if (request('status') == 3) bg-white @endif ">Approved</a>
                 <a href="{{url('rma')}}" class="btn btn-link @if (!request('status')) bg-white @endif ">All</a>
             </div>
             <div class="">
