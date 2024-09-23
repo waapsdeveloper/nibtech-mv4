@@ -152,7 +152,13 @@
                             <tbody>
                                 @foreach ($charge->charge_values as $charge_value)
                                     <tr>
-                                        <td>{{ $charge_value->value }}</td>
+                                        <td>
+                                            @if ($charge->amount_type == 1)
+                                                €{{amount_formatter($current_value->value,2)}}
+                                            @else
+                                                {{amount_formatter($current_value->value,2)}}%
+                                            @endif
+                                        </td>
                                         <td>{{ $charge_value->started_at }}</td>
                                         <td>{{ $charge_value->ended_at }}</td>
                                         <td>
