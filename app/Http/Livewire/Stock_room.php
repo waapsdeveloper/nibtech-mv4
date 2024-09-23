@@ -180,7 +180,7 @@ class Stock_room extends Component
                 // Initialize the counter if it doesn't exist
                 session()->put('counter', 1);
             }
-            session()->put('success', 'Stock Exit: '.$model.' - '.$storage.' - '.$color.' - '.$grade.' | Purchase Status: '.$stock->order->order_status->name);
+            session()->put('success', 'Stock Exit: '.$model.' - '.$storage.' - '.$color.' - '.$grade);
             return redirect()->back(); // Redirect here is not recommended
 
         }
