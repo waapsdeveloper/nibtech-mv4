@@ -21,7 +21,7 @@
         <form action="{{ url('stock_room/exit')}}" method="POST" id="search" class="form-inline">
             @csrf
             <div class="form-floating">
-                <input type="text" class="form-control" name="description" id="description" placeholder="Enter Sheet Reference" value="@isset(session('description')){{session('description')}}@endisset">
+                <input type="text" class="form-control" name="description" id="description" placeholder="Enter Sheet Reference" value="@if(session('description') != null){{session('description')}}@endif">
                 <label for="">Sheet Reference</label>
             </div>
             <div class="form-floating">
