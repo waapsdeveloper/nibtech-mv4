@@ -123,15 +123,33 @@ class RMA extends Component
 
         return redirect()->back();
     }
-    public function return_rma_item($item_id){
+    public function return_rma_item($order_id){
         // dd($item_id);
-        $orderItem = Order_item_model::find($item_id);
+        $order = Order_model::find($order_id);
 
+        $ims = explode(' ', request('imei'));
+
+
+        foreach($ims as $imei){
+            if ($imei) {
+                if (ctype_digit($imei)) {
+                    $i = $imei;
+                    $stock = Stock_model::where(['imei' => $i])->first();
+                } else {
+                    $s = $imei;
+                    $t = mb_substr($imei,1);
+                    $stock = Stock_model::whereIn('serial_number', [$s, $t])->first();
+                }
+
+                if ($imei == '' || !$stock || $stock->status == null) {
+                    session()->put('error', 'IMEI Invalid / Not Found');
+                    // return redirect()->back(); // Redirect here is not recommended
+                }
         // Access the variation through orderItem->stock->variation
-        $variation = $orderItem->stock->variation;
+        // $variation = $orderItem->stock->variation;
 
-        $variation->stock += 1;
-        $variation->save();
+        // $variation->stock += 1;
+        // $variation->save();
 
         // No variation record found or product_id and sku are both null, delete the order item
 

@@ -125,6 +125,8 @@ class Inventory extends Component
 
                 // Collect all stock IDs
                 $stockIds = $stocks->pluck('id');
+                $variation->orderBy('product_id','ASC');
+                $variation->orderBy('storage','ASC');
 
                 return [
                     'product_id' => $variation->product_id,
