@@ -196,8 +196,10 @@ class RMA extends Component
 
                     $api_requests = Api_request_model::where('stock_id',$stock->id)->where('created_at','>=',now()->subDays(request('check_testing_days')))->get();
                     foreach($api_requests as $api_request){
-                        $api_request->status = null;
-                        $api_request->save();
+                        if(Stock_operations_model::where('api_request_id',$api_request->id)->count() == 0){
+                            $api_request->status = null;
+                            $api_request->save();
+                        }
                     }
                 }
             }
@@ -227,7 +229,6 @@ class RMA extends Component
             $order->exchange_rate = request('rate');
         }
         $order->reference = request('reference');
-        $order->tracking_number = request('tracking_number');
         if(request('approve') == 1){
             $order->status = 2;
             $order->processed_at = now()->format('Y-m-d H:i:s');
@@ -242,6 +243,7 @@ class RMA extends Component
     }
     public function rma_approve($order_id){
         $order = Order_model::find($order_id);
+        $order->tracking_number = request('tracking_number');
         $order->status = 3;
         $order->save();
 

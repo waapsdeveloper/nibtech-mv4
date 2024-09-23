@@ -47,10 +47,6 @@
                         <input type="text" class="form-control" id="reference" name="reference" placeholder="Enter Vendor Reference" value="{{$order->reference}}" onchange="submitForm()" required>
                         <label for="reference">Vendor Reference</label>
                     </div>
-                    <div class="form-floating">
-                        <input type="text" class="form-control" id="tracking_number" name="tracking_number" placeholder="Enter Tracking Number" value="{{$order->tracking_number}}" required>
-                        <label for="tracking_number">Tracking Number</label>
-                    </div>
                     <button type="submit" class="btn btn-success" name="approve" value="1">Approve</button>
                     <a class="btn btn-danger" href="{{url('delete_rma') . "/" . $order->id }}">Delete</a>
                 </form>
@@ -75,11 +71,20 @@
                 </script>
                 @else
                 @if ($order->status == 2)
-                    <a href="{{url('rma/approve').'/'.$order->id}}"><button class="btn btn-success">Mark Approved</button></a>
+                <form class="form-inline" method="POST" action="{{url('rma/approve').'/'.$order->id}}" id="approveform">
+                    @csrf
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="tracking_number" name="tracking_number" placeholder="Enter Tracking Number" value="{{$order->tracking_number}}" required>
+                        <label for="tracking_number">Tracking Number</label>
+                    </div>
+                    <button type="submit" class="btn btn-success" name="approve" value="1">Approve</button>
+                    <a class="btn btn-danger" href="{{url('delete_rma') . "/" . $order->id }}">Delete</a>
+                </form>
                     <br>
-                @endif
+                @else
                 Tracking Number: <a href="https://www.dhl.com/gb-en/home/tracking/tracking-ex♦ess.html?submit=1&tracking-id={{$order->tracking_number}}" target="_blank"> {{$order->tracking_number}}</a>
                 <br>
+                @endif
                 Reference: {{ $order->reference }}
                 <br>
                 @if (session('user')->hasPermission('rma_revert_status'))
@@ -102,14 +107,16 @@
 
         </div>
         <br>
-        @if ($order->status < 3)
+        @if ($order->status == 1)
             <h4>Add RMA Item</h4>
+        @elseif ($order->status == 2)
+            <h4>Remove RMA Item</h4>
         @endif
         <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
 
             <div class="p-2">
 
-        @if ($order->status < 3)
+                @if ($order->status == 1)
                 <span class="form-check form-switch ms-4" title="Bypass Wholesale check" onclick="$('#bypass_check').check()">
                     <input type="checkbox" value="1" id="bypass_check" name="bypass_check" class="form-check-input" form="rma_item" @if (session('bypass_check') == 1) checked @endif>
                     <label class="form-check-label" for="bypass_check">Bypass check</label>
@@ -118,29 +125,73 @@
                 @endif
             </div>
             <div class="p-1">
-                @if ($order->status < 3)
-                <form class="form-inline" action="{{ url('check_rma_item').'/'.$order_id }}" method="POST" id="rma_item">
-                @csrf
+                @if ($order->status == 1)
+                    <form class="form-inline" action="{{ url('check_rma_item').'/'.$order_id }}" method="POST" id="rma_item">
+                        @csrf
 
                         <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
                         <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
                         <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
 
-                </form>
-            <script>
-                window.onload = function() {
-                    document.getElementById('imei').focus();
-                    document.getElementById('imei').click();
-                    setTimeout(function(){ document.getElementById('imei').focus();$('#imei').focus(); }, 500);
-                };
-                document.addEventListener('DOMContentLoaded', function() {
-                    var input = document.getElementById('imei');
-                    input.focus();
-                    input.select();
-                    document.getElementById('imei').click();
-                    setTimeout(function(){ document.getElementById('imei').focus();$('#imei').focus(); }, 500);
-                });
-            </script>
+                    </form>
+                    <script>
+                        window.onload = function() {
+                            document.getElementById('imei').focus();
+                            document.getElementById('imei').click();
+                            setTimeout(function(){ document.getElementById('imei').focus();$('#imei').focus(); }, 500);
+                        };
+                        document.addEventListener('DOMContentLoaded', function() {
+                            var input = document.getElementById('imei');
+                            input.focus();
+                            input.select();
+                            document.getElementById('imei').click();
+                            setTimeout(function(){ document.getElementById('imei').focus();$('#imei').focus(); }, 500);
+                        });
+                    </script>
+                @elseif ($order->status == 2)
+                    <form class="form-inline" action="{{ url('return_rma_item').'/'.$order_id }}" method="POST" id="rma_item">
+                        @csrf
+
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="imeiInput" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" onloadeddata="$(this).focus()" autofocus required>
+                            <label for="">IMEI | Serial Number:</label>
+                        </div>
+                        {{-- <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
+                        <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI"> --}}
+                        <select name="grade" class="form-control form-select" required>
+                            <option value="">Move to</option>
+                            @foreach ($grades as $id => $name)
+                                @if($id > 5)
+                                <option value="{{ $id }}" @if(session('grade') && $id == session('grade')) {{'selected'}}@endif @if(request('grade') && $id == request('grade')) {{'selected'}}@endif>{{ $name }}</option>
+                                @endif
+                            @endforeach
+                        </select>
+
+                        <div class="form-floating">
+                            <input type="text" class="form-control pd-x-20" name="description" placeholder="Reason" style="width: 270px;" value="{{session('description')}}">
+                            {{-- <input type="text" class="form-control" name="wholesale_return[imei]" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset"> --}}
+                            <label for="">Reason</label>
+                        </div>
+                        {{-- <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
+                        <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required> --}}
+                        <button class="btn-sm btn-secondary pd-x-20" type="submit">Remove</button>
+
+                    </form>
+                    <script>
+
+                        window.onload = function() {
+                            document.getElementById('imeiInput').focus();
+                            document.getElementById('imeiInput').click();
+                            setTimeout(function(){ document.getElementById('imeiInput').focus();$('#imeiInput').focus(); }, 500);
+                        };
+                        document.addEventListener('DOMContentLoaded', function() {
+                            var input = document.getElementById('imeiInput');
+                            input.focus();
+                            input.select();
+                            document.getElementById('imeiInput').click();
+                            setTimeout(function(){ document.getElementById('imeiInput').focus();$('#imeiInput').focus(); }, 500);
+                        });
+                    </script>
                 @endif
             </div>
             <div class="p-2">
