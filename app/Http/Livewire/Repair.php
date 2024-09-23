@@ -253,6 +253,9 @@ class Repair extends Component
 
     public function receive_repair_item($process_id, $imei = null, $back = null){
 
+        if(request('check_testing_days') > 0){
+            session()->put('check_testing_days',request('check_testing_days'));
+        }
         if(request('imei')){
             $imei = request('imei');
         }
@@ -325,6 +328,16 @@ class Repair extends Component
         $stock->save();
 
 
+        if(session('check_testing_days') > 0){
+            session()->put('check_testing_days',request('check_testing_days'));
+            $api_requests = Api_request_model::where('stock_id',$stock->id)->where('created_at','>=',now()->subDays(request('check_testing_days')))->get();
+            foreach($api_requests as $api_request){
+                if(Stock_operations_model::where('api_request_id',$api_request->id)->count() == 0){
+                    $api_request->status = null;
+                    $api_request->save();
+                }
+            }
+        }
         if($back != 1){
             return redirect(url('repair/detail').'/'.$process_id);
         }else{
@@ -333,9 +346,6 @@ class Repair extends Component
     }
     public function check_repair_item($process_id, $imei = null, $back = null){
 
-        if(request('check_testing_days') > 0){
-            session()->put('check_testing_days',request('check_testing_days'));
-        }
         $issue = [];
         if(request('imei')){
             $imei = request('imei');
@@ -480,16 +490,6 @@ class Repair extends Component
         // Delete the temporary file
         // Storage::delete($filePath);
 
-        if(session('check_testing_days') > 0){
-            session()->put('check_testing_days',request('check_testing_days'));
-            $api_requests = Api_request_model::where('stock_id',$stock->id)->where('created_at','>=',now()->subDays(request('check_testing_days')))->get();
-            foreach($api_requests as $api_request){
-                if(Stock_operations_model::where('api_request_id',$api_request->id)->count() == 0){
-                    $api_request->status = null;
-                    $api_request->save();
-                }
-            }
-        }
 
         if($back != 1){
             return redirect(url('repair/detail').'/'.$process_id);
