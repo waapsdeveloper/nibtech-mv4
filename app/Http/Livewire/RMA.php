@@ -193,7 +193,7 @@ class RMA extends Component
                 $stock->status = 1;
                 $stock->save();
                 if(request('check_testing_days') > 0){
-
+                    session()->put('check_testing_days',request('check_testing_days'));
                     $api_requests = Api_request_model::where('stock_id',$stock->id)->where('created_at','>=',now()->subDays(request('check_testing_days')))->get();
                     foreach($api_requests as $api_request){
                         if(Stock_operations_model::where('api_request_id',$api_request->id)->count() == 0){

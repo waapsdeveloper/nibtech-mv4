@@ -172,6 +172,11 @@
                             {{-- <input type="text" class="form-control" name="wholesale_return[imei]" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset"> --}}
                             <label for="">Reason</label>
                         </div>
+                        <div class="form-floating">
+                            <input type="text" class="form-control pd-x-20" name="check_testing_days" placeholder="Reason" style="width: 270px;" value="{{session('check_testing_days')}}">
+                            {{-- <input type="text" class="form-control" name="wholesale_return[imei]" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset"> --}}
+                            <label for="">Tested __ Days Ago</label>
+                        </div>
                         {{-- <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
                         <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required> --}}
                         <button class="btn-sm btn-secondary pd-x-20" type="submit">Remove</button>
