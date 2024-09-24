@@ -135,12 +135,7 @@ class Order_item_model extends Model
         // print_r($care);
         // die;
         $care_line = collect($care)->pluck('id','orderline')->toArray();
-        $care_keys = array_keys($care_line);
-
-
-        // Assuming $care_line is already defined from the previous code
-        $careLineKeys = array_keys($care_line);
-
+        echo 1;
         // Construct the raw SQL expression for the CASE statement
         // $caseExpression = "CASE ";
         foreach ($care_line as $id => $care) {
@@ -151,6 +146,7 @@ class Order_item_model extends Model
             }
 
         }
+        echo 2;
     }
     public function get_all_cares($bm)
     {
