@@ -41,7 +41,7 @@ class FunctionsDaily extends Command
 
     private function check_stock_status(){
 
-        $stocks = Stock_model::where('status',2)->where('order_id','!=',null)->where('sale_order_id',null)->orderByDesc('id')->get();
+        $stocks = Stock_model::where('status',2)->where('order_id','!=',null)->where('sale_order_id',null)->orderByDesc('id')->limit(1000)->get();
         foreach($stocks as $stock){
 
             $last_item = $stock->last_item();
