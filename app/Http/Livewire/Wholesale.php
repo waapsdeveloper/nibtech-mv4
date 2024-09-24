@@ -184,7 +184,7 @@ class Wholesale extends Component
 
         // Group by product_id and storage
         $variations = $variations->groupBy(['product_id', 'storage']);
-        $order_items = Order_item_model::with(['stock','stock.order'])->where('order_id',$order_id)->get();
+        $order_items = Order_item_model::with(['stock','stock.purchase_item','stock.order'])->where('order_id',$order_id)->get();
         $data['order_items'] = $order_items;
         $order_issues = Order_issue_model::where('order_id',$order_id)->select(
             DB::raw('JSON_UNQUOTE(JSON_EXTRACT(data, "$.name")) AS name'),
