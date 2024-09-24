@@ -95,7 +95,7 @@ class Order extends Component
             return $q->where('orders.order_type_id',3);
         })
         ->when(request('items') == 1, function ($q) {
-            return $q->whereHasCount('order_items', '>', 1);
+            return $q->withCount('order_items')->where('order_items_count', '>', 1);
         })
 
         ->when(request('start_date') != '', function ($q) use ($start_date) {
