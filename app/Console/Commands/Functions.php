@@ -37,11 +37,15 @@ class Functions extends Command
     {
 
         ini_set('max_execution_time', 1200);
-
+        echo 1;
         $this->refund_currency();
+        echo 2;
         $this->check_linked_orders();
+        echo 3;
         $this->duplicate_orders();
+        echo 4;
         $this->push_testing_api();
+        echo 5;
     }
     private function refund_currency(){
 
