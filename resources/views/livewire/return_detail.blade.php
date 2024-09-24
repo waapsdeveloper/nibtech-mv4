@@ -494,6 +494,9 @@
                                         $i = 0;
                                     @endphp
                                     @foreach ($last_ten as $item)
+                                        @php
+                                            $stock = $item->stock;
+                                        @endphp
                                         <tr>
                                             @if ($item->stock == null)
                                                 {{$item->stock_id}}
@@ -501,10 +504,10 @@
                                             @endif
                                             <td>{{ $i + 1 }}</td>
                                             <td>{{ $products[$item->variation->product_id] ?? "Variation Model Not added"}} {{$storages[$item->variation->storage] ?? null}} {{$colors[$item->variation->color] ?? null}} {{$grades[$item->variation->grade] ?? "Variation Grade Not added Reference: ".$item->variation->reference_id }}</td>
-                                            <td>{{ $item->stock->imei.$item->stock->serial_number }}</td>
-                                            <td>{{ $item->stock->order->customer->first_name }}</td>
+                                            <td>{{ $stock->imei.$stock->serial_number }}</td>
+                                            <td>{{ $stock->order->customer->first_name }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
-                                            <td>{{ $item->currency_id->sign ?? $currency }}{{ amount_formatter($item->price,2) }}</td>
+                                            <td>{{ $currencies[$item->currency] ?? $currency }}{{ amount_formatter($item->price,2) }}</td>
                                             @endif
                                             <td style="width:220px">{{ $item->created_at }}</td>
                                             @if (session('user')->hasPermission('delete_return_item'))

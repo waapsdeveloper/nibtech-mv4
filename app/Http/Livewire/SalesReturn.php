@@ -11,6 +11,7 @@ namespace App\Http\Livewire;
     use App\Models\Customer_model;
     use App\Models\Storage_model;
 use App\Models\Color_model;
+use App\Models\Currency_model;
 use App\Models\Grade_model;
 use App\Models\Order_issue_model;
 use App\Models\Stock_operations_model;
@@ -156,6 +157,7 @@ class SalesReturn extends Component
         $data['products'] = Products_model::pluck('model','id');
         $data['grades'] = Grade_model::pluck('name','id');
         $data['colors'] = Color_model::pluck('name','id');
+        $data['currencies'] = Currency_model::pluck('sign','id');
 
         $data['imei'] = request('imei');
 
