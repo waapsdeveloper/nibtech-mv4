@@ -805,8 +805,8 @@ class Inventory extends Component
         $data['currencies'] = Currency_model::pluck('sign','id');
         $data['categories'] = Category_model::get();
         $data['brands'] = Brand_model::get();
-        $data['stocks'] = Stock_model::
-        when(request('vendor') != '', function ($q) {
+        $data['stocks'] = Stock_model::with(['variation','order','latest_operation','latest_return','admin'])
+        ->when(request('vendor') != '', function ($q) {
             return $q->whereHas('order', function ($q) {
                 $q->where('customer_id', request('vendor'));
             });
