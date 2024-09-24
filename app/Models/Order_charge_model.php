@@ -11,11 +11,11 @@ class Order_charge_model extends Model
     use HasFactory;
     protected $table = 'order_charges';
     protected $primaryKey = 'id';
-    public $timestamps = FALSE;
     protected $fillable = [
         // other fields...
         'order_id',
         'charge_value_id',
+        'amount',
     ];
 
     public function order()
