@@ -68,6 +68,8 @@ class Functions extends Command
 
         $items = Order_item_model::where(['linked_id'=>null])->whereNotNUll('stock_id')->whereHas('order', function ($q) {
             $q->whereIn('order_type_id',[3,5]);
+        })->whereHas('stock', function ($q) {
+            $q->whereNotNull('status');
         })->get();
         echo $items->count();
         foreach($items as $item){
