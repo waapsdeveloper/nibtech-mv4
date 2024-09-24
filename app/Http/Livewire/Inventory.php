@@ -797,6 +797,7 @@ class Inventory extends Component
         }
         $data['return_order'] = Order_model::where(['order_type_id'=>4,'status'=>1])->first();
         $data['vendors'] = Customer_model::where('is_vendor',1)->pluck('first_name','id');
+        $data['products'] = Products_model::pluck('model','id');
         $data['colors'] = Color_model::pluck('name','id');
         $data['storages'] = Storage_model::pluck('name','id');
         $data['grades'] = Grade_model::pluck('name','id');
