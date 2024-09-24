@@ -1703,7 +1703,7 @@ class Order extends Component
                         $order_item = Order_item_model::where('order_id',$order->id)->whereHas('variation', function($q) use ($each_sku){
                             $q->whereIn('sku',$each_sku);
                         })->first();
-                        $detail = $bm->orderlineIMEI($order_item->reference_id,trim($imeis[0]),$serial_number);
+                        $detail = $bm->orderlineIMEI($order_item->reference_id,trim($imeis[$indexes]),$serial_number);
                     }else{
 
                     }
