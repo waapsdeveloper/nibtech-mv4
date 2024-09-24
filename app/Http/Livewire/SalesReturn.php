@@ -237,8 +237,8 @@ class SalesReturn extends Component
                 })->when(request('status') != '', function ($q) {
                     return $q->where('status', request('status'));
                 });
-            }
-        ], 'variations.stocks.latest_operation')
+            },
+        ], 'variations', 'variations.stocks.latest_operation')
         ->whereHas('variations.stocks.order_items', function ($query) use ($order_id) {
             $query->where('order_id', $order_id)->where('status','!=',2);
         })
