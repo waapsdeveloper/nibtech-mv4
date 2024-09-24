@@ -632,12 +632,15 @@
                                         // print_r($variation);
                                     @endphp
 
-                                    @foreach ($stocks as $item)
+                                    {{-- @foreach ($stocks as $item) --}}
+                                    @foreach ($order_items->where('variation_id',$variation->id) as $sale_item)
+
                                         {{-- @dd($item->sale_item) --}}
                                         {{-- @if($item->sale_item($order_id)->order_id == $order_id) --}}
                                         @php
                                             $i ++;
-                                            $sale_item = $item->sale_item($order_id);
+                                            // $sale_item = $item->sale_item($order_id);
+                                            $item = $sale_item->stock;
                                             $purchase_item = $item->purchase_item;
                                             $price = $sale_item->price;
                                             if($order->exchange_rate != null){
