@@ -67,7 +67,7 @@ class RefreshNew extends Command
         }
         echo 2;
         $orders = Order_model::whereIn('status', [0, 1, 2])
-            ->orWhereNull('delivery_note_url')
+            ->WhereNull('delivery_note_url')
             ->orWhereNull('label_url')
             ->where('order_type_id', 3)
             ->where('created_at', '>=', Carbon::now()->subDays(2))
