@@ -164,7 +164,7 @@ class SalesReturn extends Component
         $data['all_variations'] = Variation_model::where('grade',9)->get();
         $data['order'] = Order_model::find($order_id);
         $data['order_id'] = $order_id;
-        $data['currency'] = $data['order']->currency_id->sign;
+        $data['currency'] = $data['currencies'][$data['order']->currency];
 
         if (request('imei')) {
             if (ctype_digit(request('imei'))) {
