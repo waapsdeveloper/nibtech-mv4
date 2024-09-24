@@ -168,17 +168,14 @@ class Wholesale extends Component
                 $query->where('order_id', $order_id);
             });
         })
-        // ->with([
-        //     'stocks' => function ($query) use ($order_id) {
-        //         $query->whereHas('order_item', function ($query) use ($order_id) {
-        //             $query->where('order_id', $order_id);
-        //         });
-        //     },
-        //     'stocks.order_items as sale_items' => function ($query) use ($order_id) {
-        //         $query->where('order_id', $order_id);
-        //     },
-        //     'stocks.order.customer'
-        // ])
+        ->with([
+            'stocks' => function ($query) use ($order_id) {
+                $query->whereHas('order_item', function ($query) use ($order_id) {
+                    $query->where('order_id', $order_id);
+                });
+            },
+            'stocks.order.customer'
+        ])
         ->
         orderBy('product_id', 'desc')
         ->get();
@@ -186,9 +183,6 @@ class Wholesale extends Component
 
         // Group by product_id and storage
         $variations = $variations->groupBy(['product_id', 'storage']);
-
-        $order_items = Order_item_model::where('order_id',$order_id)->with(['stock','stock.order.customer'])->get();
-        $data['order_items'] = $order_items;
 
         $order_issues = Order_issue_model::where('order_id',$order_id)->select(
             DB::raw('JSON_UNQUOTE(JSON_EXTRACT(data, "$.name")) AS name'),

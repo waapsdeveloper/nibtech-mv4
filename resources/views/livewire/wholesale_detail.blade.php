@@ -627,20 +627,17 @@
                                     {{-- @dd($variation) --}}
                                     @php
                                             # code...
-                                        // $stocks = $variation->stocks;
-                                        // $sale_items = $variation->sale_items;
+                                        $stocks = $variation->stocks;
                                         // $items = $stocks->order_item;
                                         // print_r($variation);
                                     @endphp
 
-                                    {{-- @foreach ($stocks as $item) --}}
-                                    @foreach ($order_items->where('variation_id', $variation->id) as $sale_item)
+                                    @foreach ($stocks as $item)
                                         {{-- @dd($item->sale_item) --}}
                                         {{-- @if($item->sale_item($order_id)->order_id == $order_id) --}}
                                         @php
                                             $i ++;
-                                            $item = $sale_item->stock;
-                                            // $sale_item = $item->sale_item($order_id);
+                                            $sale_item = $item->sale_item($order_id);
                                             $purchase_item = $item->purchase_item;
                                             $price = $sale_item->price;
                                             if($order->exchange_rate != null){
@@ -681,7 +678,7 @@
                             <label for="unit-price" class="">Change Unit Price: </label>
                             <input type="number" name="unit_price" id="unit_price" step="0.01" class="w-50 border-0" placeholder="Input Unit price" form="update_prices_{{ $key."_".$key2 }}">
                         </div>
-                        {{-- <div>Average: {{amount_formatter($total/$i,2) }}</div> --}}
+                        <div>Average: {{amount_formatter($total/$i,2) }}</div>
                         @endif
                         <div>Total: {{$i }}</div>
                     </div>
