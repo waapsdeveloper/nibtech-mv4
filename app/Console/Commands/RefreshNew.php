@@ -50,6 +50,7 @@ class RefreshNew extends Command
         $country_codes = Country_model::pluck('id','code');
 
         $resArray1 = $bm->getNewOrders();
+        echo 1;
         $orders = [];
         if ($resArray1 !== null) {
             foreach ($resArray1 as $orderObj) {
@@ -64,6 +65,7 @@ class RefreshNew extends Command
                 $this->updateBMOrder($or, $bm, $currency_codes, $country_codes, $order_model, $order_item_model);
             }
         }
+        echo 2;
         $orders = Order_model::whereIn('status', [0, 1, 2])
             ->orWhereNull('delivery_note_url')
             ->orWhereNull('label_url')
@@ -73,7 +75,7 @@ class RefreshNew extends Command
         foreach($orders as $order){
             $this->updateBMOrder($order, $bm, $currency_codes, $country_codes, $order_model, $order_item_model);
         }
-
+        echo 3;
     }
     private function updateBMOrder($order_id, $bm, $currency_codes, $country_codes, $order_model, $order_item_model){
 
