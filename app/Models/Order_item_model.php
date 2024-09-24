@@ -128,7 +128,8 @@ class Order_item_model extends Model
     public function get_latest_care($bm)
     {
 
-        $last_id = Order_item_model::where('care_id','!=',null)->where('created_at','>=',Carbon::now()->subDays(4))->whereHas('sale_order')->orderBy('reference_id','asc')->first()->care_id;
+        // $last_id = Order_item_model::where('care_id','!=',null)->where('created_at','>=',Carbon::now()->subDays(3))->whereHas('sale_order')->orderBy('reference_id','asc')->first()->care_id;
+        $last_id = Order_item_model::select('care_id')->where('care_id','!=',null)->orderByDesc('care_id')->first()->care_id;
         echo $last_id;
         $care = $bm->getAllCare(false, ['last_id'=>$last_id,'page-size'=>50]);
         // $care = $bm->getAllCare(false, ['page-size'=>50]);
