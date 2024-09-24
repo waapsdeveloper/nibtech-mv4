@@ -801,6 +801,7 @@ class Inventory extends Component
         $data['colors'] = Color_model::pluck('name','id');
         $data['storages'] = Storage_model::pluck('name','id');
         $data['grades'] = Grade_model::pluck('name','id');
+        $data['currencies'] = Currency_model::pluck('sign','id');
         $data['categories'] = Category_model::get();
         $data['brands'] = Brand_model::get();
         $data['stocks'] = Stock_model::
