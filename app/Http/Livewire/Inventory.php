@@ -9,6 +9,7 @@ use App\Models\Storage_model;
 use App\Models\Grade_model;
 use App\Models\Category_model;
 use App\Models\Brand_model;
+use App\Models\Currency_model;
 use App\Models\Customer_model;
 use App\Models\Order_item_model;
 use App\Models\Order_model;
@@ -842,91 +843,6 @@ class Inventory extends Component
         ->appends(request()->except('page'));
 
 
-        $data['average_cost'] = Stock_model::where('stock.deleted_at',null)->where('order_items.deleted_at',null)
-
-        ->when(request('vendor') != '', function ($q) {
-            return $q->whereHas('order', function ($q) {
-                $q->where('customer_id', request('vendor'));
-            });
-        })
-        ->when(request('status') != '', function ($q) {
-            return $q->where('stock.status', request('status'));
-        })
-        ->when(request('storage') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('storage', request('storage'));
-            });
-        })
-        ->when(request('category') != '', function ($q) {
-            return $q->whereHas('variation.product', function ($q) {
-                $q->where('category', request('category'));
-            });
-        })
-        ->when(request('brand') != '', function ($q) {
-            return $q->whereHas('variation.product', function ($q) {
-                $q->where('brand', request('brand'));
-            });
-        })
-        ->when(request('product') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('product_id', request('product'));
-            });
-        })
-        ->whereHas('variation', function ($q) {
-            $q->where('grade', 12);
-        })
-
-        ->join('order_items', 'stock.id', '=', 'order_items.stock_id')
-        ->selectRaw('AVG(order_items.price) as average_price')
-        ->selectRaw('SUM(order_items.price) as total_price')
-        // ->pluck('average_price')
-        ->first();
-
-        $data['vendor_average_cost'] = Stock_model::where('stock.deleted_at',null)
-        ->where('order_items.deleted_at',null)->where('orders.deleted_at',null)
-
-        ->when(request('vendor') != '', function ($q) {
-            return $q->whereHas('order', function ($q) {
-                $q->where('customer_id', request('vendor'));
-            });
-        })
-        ->when(request('status') != '', function ($q) {
-            return $q->where('stock.status', request('status'));
-        })
-        ->when(request('storage') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('storage', request('storage'));
-            });
-        })
-        ->when(request('category') != '', function ($q) {
-            return $q->whereHas('variation.product', function ($q) {
-                $q->where('category', request('category'));
-            });
-        })
-        ->when(request('brand') != '', function ($q) {
-            return $q->whereHas('variation.product', function ($q) {
-                $q->where('brand', request('brand'));
-            });
-        })
-        ->when(request('product') != '', function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->where('product_id', request('product'));
-            });
-        })
-        ->whereHas('variation', function ($q) {
-            $q->where('grade', 12);
-        })
-        ->join('order_items', 'stock.id', '=', 'order_items.stock_id')
-        ->join('orders', 'stock.order_id', '=', 'orders.id')
-        ->select('orders.customer_id')
-        ->selectRaw('AVG(order_items.price) as average_price')
-        ->selectRaw('SUM(order_items.price) as total_price')
-        ->selectRaw('COUNT(order_items.id) as total_qty')
-        ->groupBy('orders.customer_id')
-        // ->pluck('average_price')
-        ->get();
-
-        // dd($data['vendor_average_cost']);
 
         return view('livewire.belfast_inventory')->with($data);
     }
