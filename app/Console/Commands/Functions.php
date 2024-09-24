@@ -66,7 +66,7 @@ class Functions extends Command
     }
     private function check_linked_orders(){
 
-        $items = Order_item_model::where(['linked_id'=>null])->whereHas('order', function ($q) {
+        $items = Order_item_model::where(['linked_id'=>null])->whereNotNUll('stock_id')->whereHas('order', function ($q) {
             $q->whereIn('order_type_id',[3,5]);
         })->get();
         foreach($items as $item){
