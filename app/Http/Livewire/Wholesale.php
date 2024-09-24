@@ -174,7 +174,7 @@ class Wholesale extends Component
                     $query->where('order_id', $order_id);
                 });
             },
-            'stocks.order.customer'
+            'stocks.order.customer','stocks.order_items'
         ])
         ->
         orderBy('product_id', 'desc')
