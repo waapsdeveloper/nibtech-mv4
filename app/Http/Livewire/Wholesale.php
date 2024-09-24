@@ -168,14 +168,14 @@ class Wholesale extends Component
                 $query->where('order_id', $order_id);
             });
         })
-        ->with([
-            'stocks' => function ($query) use ($order_id) {
-                $query->whereHas('order_item', function ($query) use ($order_id) {
-                    $query->where('order_id', $order_id);
-                });
-            },
-            'stocks.order.customer'
-        ])
+        // ->with([
+        //     'stocks' => function ($query) use ($order_id) {
+        //         $query->whereHas('order_item', function ($query) use ($order_id) {
+        //             $query->where('order_id', $order_id);
+        //         });
+        //     },
+        //     'stocks.order.customer'
+        // ])
         ->
         orderBy('product_id', 'desc')
         ->get();
@@ -183,7 +183,7 @@ class Wholesale extends Component
 
         // Group by product_id and storage
         $variations = $variations->groupBy(['product_id', 'storage']);
-
+        dd($variations);
         $order_issues = Order_issue_model::where('order_id',$order_id)->select(
             DB::raw('JSON_UNQUOTE(JSON_EXTRACT(data, "$.name")) AS name'),
             'message',
