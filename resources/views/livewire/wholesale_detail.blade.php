@@ -627,7 +627,7 @@
                                     {{-- @dd($variation) --}}
                                     @php
                                             # code...
-                                        $stocks = $variation->stocks;
+                                        // $stocks = $variation->stocks;
                                         // $items = $stocks->order_item;
                                         // print_r($variation);
                                     @endphp
