@@ -628,16 +628,19 @@
                                     @php
                                             # code...
                                         $stocks = $variation->stocks;
+                                        $sale_items = $variation->sale_items;
                                         // $items = $stocks->order_item;
                                         // print_r($variation);
                                     @endphp
 
-                                    @foreach ($stocks as $item)
+                                    {{-- @foreach ($stocks as $item) --}}
+                                    @foreach ($sale_items as $sale_item)
                                         {{-- @dd($item->sale_item) --}}
                                         {{-- @if($item->sale_item($order_id)->order_id == $order_id) --}}
                                         @php
                                             $i ++;
-                                            $sale_item = $item->sale_item($order_id);
+                                            $item = $sale_item->stock;
+                                            // $sale_item = $item->sale_item($order_id);
                                             $purchase_item = $item->purchase_item;
                                             $price = $sale_item->price;
                                             if($order->exchange_rate != null){
