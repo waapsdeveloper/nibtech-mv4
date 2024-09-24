@@ -627,14 +627,14 @@
                                     {{-- @dd($variation) --}}
                                     @php
                                             # code...
-                                        $stocks = $variation->stocks;
-                                        $sale_items = $variation->sale_items;
+                                        // $stocks = $variation->stocks;
+                                        // $sale_items = $variation->sale_items;
                                         // $items = $stocks->order_item;
                                         // print_r($variation);
                                     @endphp
 
                                     {{-- @foreach ($stocks as $item) --}}
-                                    @foreach ($sale_items as $sale_item)
+                                    @foreach ($order_items->where('variation_id', $variation->id) as $sale_item)
                                         {{-- @dd($item->sale_item) --}}
                                         {{-- @if($item->sale_item($order_id)->order_id == $order_id) --}}
                                         @php
