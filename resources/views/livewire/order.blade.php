@@ -404,7 +404,11 @@
                                             $stock = $item->stock;
                                             $variation = $item->variation;
 
-                                            if($stock != null && (request('missing_refund') || request('missing_reimburse'))){
+                                            if($stock != null && (request('missing_refund') || request('missing_reimburse') || request('items'))){
+                                                if (in_array($stock->imei . $stock->serial_number, $imei_list)) {
+                                                    echo "Duplicate IMEI: " . $stock->imei . $stock->serial_number;
+                                                    # code...
+                                                }
                                                 $imei_list[] = $stock->imei . $stock->serial_number;
                                             }
                                         @endphp
