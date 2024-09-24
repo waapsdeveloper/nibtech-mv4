@@ -63,6 +63,7 @@ class Customer_model extends Model
         $customer->email = $customerObj->email;
         if($is_vendor == true){
             $customer->is_vendor = 1;
+            $customer->type = 1;
         }
         $customer->reference = "BackMarket";
         // ... other fields
