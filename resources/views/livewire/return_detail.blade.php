@@ -452,7 +452,6 @@
 
 
         <br>
-        @if (isset($graded_stocks))
 
 
         <div class="d-flex justify-content-between">
@@ -529,6 +528,8 @@
             </div>
         </div>
         @if (request('show') == 1)
+
+        @if (isset($graded_stocks))
 
             <div class="row">
 
