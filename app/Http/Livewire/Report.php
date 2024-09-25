@@ -349,6 +349,122 @@ class Report extends Component
         $data['end_date'] = date("Y-m-d", strtotime($end_date));
         return view('livewire.report')->with($data);
     }
+    public function ecommerce_report()
+    {
+        $start_date = Carbon::now()->startOfMonth();
+        // $start_date = date('Y-m-d 00:00:00',);
+        $end_date = date('Y-m-d 23:59:59');
+        if (request('start_date') != NULL && request('end_date') != NULL) {
+            $start_date = request('start_date') . " 23:00:00";
+            $end_date = request('end_date') . " 22:59:59";
+        }
+
+        $aggregates = DB::table('category')
+            ->join('products', 'category.id', '=', 'products.category')
+            ->join('variation', 'products.id', '=', 'variation.product_id')
+            ->join('order_items', 'variation.id', '=', 'order_items.variation_id')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->leftJoin('stock', 'order_items.stock_id', '=', 'stock.id')
+            ->leftJoin('process_stock', 'stock.id', '=', 'process_stock.stock_id')
+            ->leftJoin('process', 'process_stock.process_id', '=', 'process.id')
+            ->select(
+                'category.id as category_id',
+                DB::raw('COUNT(orders.id) as orders_qty'),
+                DB::raw('SUM(CASE WHEN orders.currency = 4 OR orders.order_type_id = 5 THEN order_items.price ELSE 0 END) as eur_items_sum'),
+                DB::raw('SUM(CASE WHEN orders.currency = 5 AND orders.order_type_id = 3 THEN order_items.price ELSE 0 END) as gbp_items_sum'),
+                DB::raw('GROUP_CONCAT(stock.id) as stock_ids'),
+                DB::raw('SUM(CASE WHEN process.process_type_id = 9 THEN process_stock.price ELSE 0 END) as items_repair_sum')
+            )
+            ->where(function ($query) use ($start_date, $end_date) {
+                $query->where(function ($subQuery) use ($start_date, $end_date) {
+                    // Where order_type_id is 3, filter by processed_at
+                    $subQuery->where('orders.order_type_id', 3)
+                             ->whereBetween('orders.processed_at', [$start_date, $end_date]);
+                })
+                ->orWhere(function ($subQuery) use ($start_date, $end_date) {
+                    // For other order_type_ids, filter by created_at
+                    $subQuery->where('orders.order_type_id', '!=', 3)
+                             ->whereBetween('orders.created_at', [$start_date, $end_date]);
+                });
+            })
+            // ->whereBetween('orders.processed_at', [$start_date, $end_date])
+            // ->whereIn('variation.id', $variation_ids)
+            ->where('orders.order_type_id', 3)
+            ->Where('orders.deleted_at',null)
+            ->Where('order_items.deleted_at',null)
+            ->Where('stock.deleted_at',null)
+            ->Where('process_stock.deleted_at',null)
+            ->whereIn('orders.status', [3,6])
+            ->whereIn('order_items.status', [3,6])
+            ->groupBy('category.id')
+            ->get();
+        // $costs = Category_model::select(
+        //     'category.'
+        // )
+
+        $aggregated_cost = [];
+        foreach ($aggregates as $agg) {
+
+            if (empty($agg->stock_ids)) {
+                $aggregated_cost[$agg->category_id] = 0;
+                continue;
+            }
+            $aggregated_cost[$agg->category_id] = Order_item_model::whereIn('stock_id',explode(',',$agg->stock_ids))->whereHas('order', function ($q) {
+                $q->where('order_type_id',1);
+            })->sum('price');
+        }
+
+        $data['aggregated_sales'] = $aggregates;
+        $data['aggregated_sales_cost'] = $aggregated_cost;
+
+        $aggregate_returns = DB::table('category')
+            ->join('products', 'category.id', '=', 'products.category')
+            ->join('variation', 'products.id', '=', 'variation.product_id')
+            ->join('order_items', 'variation.id', '=', 'order_items.variation_id')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->leftJoin('stock', 'order_items.stock_id', '=', 'stock.id')
+            ->leftJoin('process_stock', 'stock.id', '=', 'process_stock.stock_id')
+            ->leftJoin('process', 'process_stock.process_id', '=', 'process.id')
+            ->select(
+                'category.id as category_id',
+                DB::raw('COUNT(orders.id) as orders_qty'),
+                DB::raw('SUM(CASE WHEN orders.status = 3 THEN 1 ELSE 0 END) as approved_orders_qty'),
+                DB::raw('SUM(CASE WHEN order_items.currency is null OR order_items.currency = 4 THEN order_items.price ELSE 0 END) as eur_items_sum'),
+                DB::raw('SUM(CASE WHEN order_items.currency = 5 THEN order_items.price ELSE 0 END) as gbp_items_sum'),
+                DB::raw('GROUP_CONCAT(stock.id) as stock_ids'),
+                DB::raw('SUM(CASE WHEN process.process_type_id = 9 THEN process_stock.price ELSE 0 END) as items_repair_sum')
+            )
+            ->whereBetween('order_items.created_at', [$start_date, $end_date])
+            // ->whereIn('variation.id', $variation_ids)
+            ->whereIn('orders.order_type_id', [4])
+            ->Where('orders.deleted_at',null)
+            ->Where('order_items.deleted_at',null)
+            ->Where('stock.deleted_at',null)
+            ->Where('process_stock.deleted_at',null)
+            // ->whereIn('orders.status', [3,6])
+            ->groupBy('category.id')
+            ->get();
+        // $costs = Category_model::select(
+        //     'category.'
+        // )
+        $aggregated_return_cost = [];
+        foreach ($aggregate_returns as $agg) {
+
+            if (empty($agg->stock_ids)) {
+                $aggregated_return_cost[$agg->category_id] = 0;
+                continue;
+            }
+            $aggregated_return_cost[$agg->category_id] = Order_item_model::whereIn('stock_id',explode(',',$agg->stock_ids))->whereHas('order', function ($q) {
+                $q->where('order_type_id',1);
+            })->sum('price');
+        }
+
+        $data['aggregated_returns'] = $aggregate_returns;
+        $data['aggregated_return_cost'] = $aggregated_return_cost;
+
+        return view('livewire.report_new')->with($data);
+
+    }
     public function export_batch_report($orderId)
     {
         $order = Order_model::find($orderId);

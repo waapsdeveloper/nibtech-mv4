@@ -159,7 +159,7 @@
                         <button class="btn btn-link" type="submit" name="bv" value="1">Profit & Loss by Vendors</button>
                     </form>
                 </div>
-                <div class="">
+                <div class="mb-0">
 
                     <form action="" method="GET" id="index" class="mb-0">
                         <div class="row">
