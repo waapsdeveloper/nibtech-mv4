@@ -93,6 +93,7 @@ class FunctionsDaily extends Command
             }
             $order->charges = $total_charge;
             $order->save();
+            echo $order->id."\n";
         }
     }
 }
