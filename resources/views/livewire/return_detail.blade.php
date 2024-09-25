@@ -590,7 +590,7 @@
                                                 @php
                                                 $row = $stock->latest_operation;
                                                 $i ++;
-                                                if(str_contains($row->description, "Replacement")){
+                                                if($row != null && str_contains($row->description, "Replacement")){
                                                     if($stock->status != 2){
 
                                                         $stock->availability();
