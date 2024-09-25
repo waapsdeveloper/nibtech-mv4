@@ -621,8 +621,8 @@
                                                 </tr>
                                                 {{-- @endif --}}
                                             @endforeach
-                                            @dd("Here")
                                             @endforeach
+                                            @dd("Here")
                                         </tbody>
                                     </table>
                                 <br>
