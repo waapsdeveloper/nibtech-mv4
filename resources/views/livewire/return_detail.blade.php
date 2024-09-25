@@ -543,7 +543,6 @@
                             continue;
                         }
                     @endphp
-        @dd("Here")
                         <div class="card">
                             <div class="card-header pb-0">
                                 {{ $graded_stock->name}}
@@ -601,6 +600,7 @@
                                                     }
                                                 }
                                             @endphp
+        @dd("Here")
                                                 <tr>
                                                     <td>{{ $i }}</td>
                                                     <td>{{ $variation->product->model." ".$storage." ".$color." ".$variation->grade_id->name ?? "Not Given" }}</td>
