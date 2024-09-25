@@ -604,7 +604,6 @@
                                                     }
                                                 }
                                             @endphp
-        @dd("Here")
                                                 <tr>
                                                     <td>{{ $i }}</td>
                                                     <td>{{ $variation->product->model." ".$storage." ".$color." ".$variation->grade_id->name ?? "Not Given" }}</td>
@@ -622,6 +621,7 @@
                                                 </tr>
                                                 {{-- @endif --}}
                                             @endforeach
+                                            @dd("Here")
                                             @endforeach
                                         </tbody>
                                     </table>
