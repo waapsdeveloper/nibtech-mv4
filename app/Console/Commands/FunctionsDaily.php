@@ -57,7 +57,7 @@ class FunctionsDaily extends Command
 
     }
     private function add_order_charge(){
-        $orders = Order_model::whereIn('status',[3,5,6])->where('order_type_id',3)->whereNull('charges')->limit(500)->get();
+        $orders = Order_model::whereIn('status',[3,5,6])->where('order_type_id',3)->whereNull('charges')->limit(5000)->get();
         $charges = Charge_model::where(['charge_frequency_id'=>2,'order_type_id'=>3,'status'=>1])->get();
         foreach($orders as $order){
             if($charges->where('payment_method_id',$order->payment_method_id)->count() == 0){
