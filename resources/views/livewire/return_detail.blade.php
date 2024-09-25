@@ -469,7 +469,7 @@
                     <div class="card-header pb-0">
                         <div class="d-flex justify-content-between">
                             <h4 class="card-title mg-b-0">Latest Added Items</h4>
-                            <a href="{{url('return/detail')."/".$order->id}}?show=1" class="btn btn-primary">Show All</a>
+                            <a href="{{url('return/detail')."/".$order->id}}?show=1" class="btn btn-sm btn-primary">Show All</a>
                         </div>
                     </div>
                     <div class="card-body"><div class="table-responsive" style="max-height: 250px">
