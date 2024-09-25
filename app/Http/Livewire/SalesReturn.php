@@ -230,28 +230,32 @@ class SalesReturn extends Component
             }
 
         }
-        $graded_stocks = Grade_model::with([
-            'variations.stocks' => function ($query) use ($order_id) {
-                $query->whereHas('order_items', function ($query) use ($order_id) {
-                    $query->where('order_id', $order_id)->where('status','!=',2);
-                })->when(request('status') != '', function ($q) {
-                    return $q->where('status', request('status'));
-                });
-            },
-        ], 'variations', 'variations.stocks.latest_operation')
-        ->whereHas('variations.stocks.order_items', function ($query) use ($order_id) {
-            $query->where('order_id', $order_id)->where('status','!=',2);
-        })
-        ->when(request('status') != '', function ($q) {
-            return $q->whereHas('variations.stocks', function ($q) {
-                $q->where('status', request('status'));
+        if(request('show') == 1){
 
-            });
-        })
-        ->orderBy('id', 'asc')
-        ->get();
-        // dd($graded_stock);
-        $data['graded_stocks'] = $graded_stocks;
+            $graded_stocks = Grade_model::with([
+                'variations.stocks' => function ($query) use ($order_id) {
+                    $query->whereHas('order_items', function ($query) use ($order_id) {
+                        $query->where('order_id', $order_id)->where('status','!=',2);
+                    })->when(request('status') != '', function ($q) {
+                        return $q->where('status', request('status'));
+                    });
+                },
+            ], 'variations', 'variations.stocks.latest_operation')
+            ->whereHas('variations.stocks.order_items', function ($query) use ($order_id) {
+                $query->where('order_id', $order_id)->where('status','!=',2);
+            })
+            ->when(request('status') != '', function ($q) {
+                return $q->whereHas('variations.stocks', function ($q) {
+                    $q->where('status', request('status'));
+
+                });
+            })
+            ->orderBy('id', 'asc')
+            ->get();
+            // dd($graded_stock);
+            $data['graded_stocks'] = $graded_stocks;
+
+        }
 
         $last_ten = Order_item_model::where('order_id',$order_id)->orderBy('id','desc')->limit(10)->get();
         $data['last_ten'] = $last_ten;
