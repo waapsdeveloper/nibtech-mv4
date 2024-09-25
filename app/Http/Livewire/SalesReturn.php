@@ -166,7 +166,7 @@ class SalesReturn extends Component
         $data['order_id'] = $order_id;
         $data['currency'] = $data['currencies'][$data['order']->currency];
 
-        if (request('imei')) {
+        if (request('imei') != null) {
             if (ctype_digit(request('imei'))) {
                 $i = request('imei');
                 $s = null;
@@ -230,7 +230,7 @@ class SalesReturn extends Component
             }
 
         }
-        if(request('show') == 1){
+        if (request('show') == 1){
 
             $graded_stocks = Grade_model::with([
                 'variations.stocks' => function ($query) use ($order_id) {
