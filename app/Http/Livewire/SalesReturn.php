@@ -256,7 +256,6 @@ class SalesReturn extends Component
             $data['graded_stocks'] = $graded_stocks;
 
         }
-        dd('here');
         $last_ten = Order_item_model::where('order_id',$order_id)->orderBy('id','desc')->limit(10)->get();
         $data['last_ten'] = $last_ten;
 
@@ -267,6 +266,7 @@ class SalesReturn extends Component
             $received_items = Order_item_model::where('order_id', $order_id)->where('status',2)->orderByDesc('updated_at')->get();
             $data['received_items'] = $received_items;
         }
+        dd('here');
         // echo "<pre>";
         // // print_r($items->stocks);
         // print_r($items);
