@@ -463,7 +463,7 @@
             <div class="">
             </div>
         </div>
-        @if ($last_ten)
+        @if (isset($last_ten))
 
         <div class="row">
             <div class="col-xl-12">
