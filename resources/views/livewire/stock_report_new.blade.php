@@ -38,6 +38,7 @@
                             @php
                                 $count = 0;
                                 $price = [];
+                                $imei_list = [];
 
                             @endphp
                             @foreach ($stocks as $s => $stock)
@@ -51,6 +52,11 @@
                                         $total_cost += $purchase_item->price;
                                     }else{
                                         $total_cost = $purchase_item->price;
+                                    }
+                                    if (in_array($stock->imei.$stock->serial_number, $imei_list)) {
+                                        echo "Duplicate IMEI: ".$stock->imei.$stock->serial_number."<br>";
+                                    }else{
+                                        $imei_list[] = $stock->imei.$stock->serial_number;
                                     }
                                 @endphp
                                 <tr>
