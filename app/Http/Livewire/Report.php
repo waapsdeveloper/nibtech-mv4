@@ -351,6 +351,8 @@ class Report extends Component
     }
     public function ecommerce_report()
     {
+        $data['categories'] = Category_model::pluck('name','id');
+
         $start_date = Carbon::now()->startOfMonth();
         // $start_date = date('Y-m-d 00:00:00',);
         $end_date = date('Y-m-d 23:59:59');
