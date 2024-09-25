@@ -534,7 +534,7 @@
         </div>
 
         @endif
-        @if (request('show') == '1')
+        @if (request('status') != null || request('show') == '1')
 
         @if (isset($graded_stocks))
 

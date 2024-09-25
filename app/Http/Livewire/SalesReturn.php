@@ -230,7 +230,7 @@ class SalesReturn extends Component
             }
 
         }
-        if (request('show') == 1){
+        if (request('status') != null || request('show') == 1){
 
             $graded_stocks = Grade_model::with([
                 'variations.stocks' => function ($query) use ($order_id) {
