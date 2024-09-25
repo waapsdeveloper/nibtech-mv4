@@ -472,7 +472,7 @@
                         <div class="d-flex justify-content-between">
                             <h4 class="card-title mg-b-0">Latest Added Items</h4>
                             <form method="GET" action="{{url('return/detail')."/".$order->id}}">
-                                <input type="hidden" name="imei" value="{{request('imei')}}">
+                                {{-- <input type="hidden" name="imei" value="{{request('imei')}}"> --}}
                                 <button class="btn btn-sm btn-secondary pd-x-20" type="submit" name="show" value="1">Show All</button>
                             </form>
                         </div>
