@@ -463,6 +463,8 @@
             <div class="">
             </div>
         </div>
+        @if ($last_ten)
+
         <div class="row">
             <div class="col-xl-12">
                 <div class="card">
@@ -530,6 +532,8 @@
                 </div>
             </div>
         </div>
+
+        @endif
         @if (request('show') == '1')
 
         @if (isset($graded_stocks))
