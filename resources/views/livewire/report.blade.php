@@ -139,7 +139,7 @@
 
         </div>
         <div class="card">
-            <div class="card-header mb-0 d-flex justify-content-between">
+            <div class="card-header mb-0 pb-0 d-flex justify-content-between">
                 <div class="mb-0">
                     <h4 class="card-title mb-0">Sales & Returns</h4>
                     <form class="form-inline" method="POST" target="print_popup" action="{{url('report')}}/pnl" onsubmit="window.open('about:blank','print_popup','width=1600,height=800');">
@@ -159,6 +159,7 @@
                         <button class="btn btn-link" type="submit" name="bv" value="1">Profit & Loss by Vendors</button>
                     </form>
                 </div>
+                <a href="" onclick="window.open('{{ url('report/ecommerce_report') }}','print_popup','width=1600,height=800');" class="btn btn-icon btn-primary me-1"><i class="fe fe-shopping-cart"></i>E-Commerce Report</a>
                 <div class="mb-0">
 
                     <form action="" method="GET" id="index" class="mb-0">
@@ -182,7 +183,7 @@
                     </form>
                 </div>
             </div>
-            <div class="card-body mt-0">
+            <div class="card-body mt-0 pt-0">
                 <form method="POST" id="stock_report" target="print_popup" action="{{ url('report/stock_report')}}" onsubmit="window.open('about:blank','print_popup','width=1600,height=800');">
                     @csrf
                     <input type="hidden" name="start_date" value="{{$start_date}}">
