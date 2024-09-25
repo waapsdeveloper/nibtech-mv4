@@ -530,7 +530,7 @@
                 </div>
             </div>
         </div>
-        @if (request('show') == 1)
+        @if (request('show') == '1')
 
         @if (isset($graded_stocks))
 
