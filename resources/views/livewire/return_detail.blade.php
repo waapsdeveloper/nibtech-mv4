@@ -622,7 +622,6 @@
                                                 {{-- @endif --}}
                                             @endforeach
                                             @endforeach
-                                            @dd("Here")
                                         </tbody>
                                     </table>
                                 <br>
@@ -631,6 +630,7 @@
                             </div>
                         </div>
                     @endforeach
+                                            @dd("Here")
                 </div>
                 @if ($order->status != 1)
 
