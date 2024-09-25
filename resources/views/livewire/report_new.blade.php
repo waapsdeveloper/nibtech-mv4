@@ -14,8 +14,9 @@
     <div class="card">
         <div class="card-header mb-0 d-flex justify-content-between">
             <div class="mb-0">
-                <h4 class="card-title mb-0">E-Commerce Sales & Returns</h4>
+                <h4 class="card-title mb-0">B2C Sales & Returns</h4>
             </div>
+            <a class="btn btn-link" href="{{url('report/export')}}?report=B2C&start_date={{$start_date}}&end_date={{$end_date}}"><i class="fe fe-download"></i></a>
             <div class="mb-0">
 
                 <form action="" method="GET" id="index" class="mb-0">

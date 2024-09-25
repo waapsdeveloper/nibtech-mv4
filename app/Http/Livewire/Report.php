@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Exports\B2COrderReportExport;
 use App\Exports\BatchInitialReportExport;
 use App\Exports\BatchReportExport;
 use App\Exports\OrderReportExport;
@@ -1238,8 +1239,9 @@ class Report extends Component
 
             $html = view('export.bulksale_packlist', $data)->render();
         }elseif(request('packlist') == 2){
-
             return Excel::download(new OrderReportExport, 'Report.xlsx');
+        }elseif(request('report') == 'B2C'){
+            return Excel::download(new B2COrderReportExport, 'B2C_Report_'.request('start_date').'-'.request('end_date').'.xlsx');
         }else{
             $html = view('export.bulksale_invoice', $data)->render();
         }
