@@ -398,8 +398,8 @@ class Report extends Component
             ->Where('order_items.deleted_at',null)
             ->Where('stock.deleted_at',null)
             ->Where('process_stock.deleted_at',null)
-            ->whereIn('orders.status', [3,5,6])
-            ->whereIn('order_items.status', [3,5,6])
+            ->whereIn('orders.status', [3,6])
+            ->whereIn('order_items.status', [3,6])
             ->groupBy('category.id')
             ->get();
         // $costs = Category_model::select(
