@@ -135,7 +135,7 @@
                         </div>
                         <div class="col-md col-sm-2">
                             <div class="form-floating">
-                                <input type="text" class="form-control focused" id="imeiInput" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" onload="this.focus()" autofocus>
+                                <input type="text" class="form-control focused" id="imeiInput" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" onload="this.focus()" autofocus required>
                                 <label for="imeiInput">IMEI</label>
                             </div>
                         </div>
