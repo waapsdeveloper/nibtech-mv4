@@ -534,7 +534,6 @@
 
         @if (isset($graded_stocks))
 
-        @dd("Here")
             <div class="row">
 
                 <div @if ($order->status != 1) class="col-md-8" @endif>
@@ -544,6 +543,7 @@
                             continue;
                         }
                     @endphp
+        @dd("Here")
                         <div class="card">
                             <div class="card-header pb-0">
                                 {{ $graded_stock->name}}
