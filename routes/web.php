@@ -93,7 +93,7 @@ Route::post('report/set_password', [Report::class,'set_password'])->name('view_r
 Route::get('report/export', [Report::class,'export_report'])->name('view_report');
 Route::get('report/export_batch/{orderId}', [Report::class,'export_batch_report'])->name('view_report');
 Route::post('report/stock_report', [Report::class,'stock_report'])->name('stock_report');
-Route::post('report/ecommerce_report', [Report::class,'ecommerce_report'])->name('ecommerce_report');
+Route::get('report/ecommerce_report', [Report::class,'ecommerce_report'])->name('ecommerce_report');
 Route::post('report/pnl', [Report::class,'pnl'])->name('pnl');
 Route::get('report/vendor_report/{vendor_id}', [Report::class,'vendor_report'])->name('vendor_report');
 

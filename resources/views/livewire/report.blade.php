@@ -159,7 +159,7 @@
                         <button class="btn btn-link" type="submit" name="bv" value="1">Profit & Loss by Vendors</button>
                     </form>
                 </div>
-                <a href="" onclick="window.open('{{ url('report/ecommerce_report') }}','print_popup','width=1600,height=800');" class="btn btn-link"><i class="fe fe-shopping-cart"></i>E-Commerce Report</a>
+                <a href="" onclick="window.open('{{ url('report/ecommerce_report') }}','print_popup','width=1600,height=800');" class="btn btn-link"><i class="fe fe-shopping-cart"></i> E-Commerce Report</a>
                 <div class="mb-0">
 
                     <form action="" method="GET" id="index" class="mb-0">
