@@ -530,11 +530,11 @@
                 </div>
             </div>
         </div>
-        @dd("Here")
         @if (request('show') == '1')
 
         @if (isset($graded_stocks))
 
+        @dd("Here")
             <div class="row">
 
                 <div @if ($order->status != 1) class="col-md-8" @endif>
