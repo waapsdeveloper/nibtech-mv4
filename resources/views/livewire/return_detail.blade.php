@@ -530,6 +530,7 @@
                 </div>
             </div>
         </div>
+        @dd("Here")
         @if (request('show') == '1')
 
         @if (isset($graded_stocks))
