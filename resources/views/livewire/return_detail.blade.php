@@ -310,31 +310,31 @@
                                     @endphp
                                     @foreach ($orders as $index => $item)
                                         @php
-                                            $order = $item->order;
+                                            $imei_order = $item->order;
                                             $j = 0;
                                         @endphp
 
                                             <tr>
                                                 <td title="{{ $item->id }}">{{ $i + 1 }}</td>
-                                                @if ($order->order_type_id == 1)
+                                                @if ($imei_order->order_type_id == 1)
 
-                                                    <td><a href="{{url('purchase/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
-                                                @elseif ($order->order_type_id == 2)
-                                                    <td><a href="{{url('rma/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
-                                                @elseif ($order->order_type_id == 4)
-                                                    <td><a href="{{url('return/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
-                                                @elseif ($order->order_type_id == 6)
-                                                    <td><a href="{{url('wholesale_return/detail/'.$order->id)}}">{{ $order->reference_id."\n\r".$item->reference_id }}</a></td>
-                                                @elseif ($order->order_type_id == 5)
-                                                    <td><a href="{{url('wholesale/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
-                                                @elseif ($order->order_type_id == 3)
-                                                    <td>{{ $order->reference_id }}</td>
+                                                    <td><a href="{{url('purchase/detail/'.$imei_order->id)}}">{{ $imei_order->reference_id }}</a></td>
+                                                @elseif ($imei_order->order_type_id == 2)
+                                                    <td><a href="{{url('rma/detail/'.$imei_order->id)}}">{{ $imei_order->reference_id }}</a></td>
+                                                @elseif ($imei_order->order_type_id == 4)
+                                                    <td><a href="{{url('return/detail/'.$imei_order->id)}}">{{ $imei_order->reference_id }}</a></td>
+                                                @elseif ($imei_order->order_type_id == 6)
+                                                    <td><a href="{{url('wholesale_return/detail/'.$imei_order->id)}}">{{ $imei_order->reference_id."\n\r".$item->reference_id }}</a></td>
+                                                @elseif ($imei_order->order_type_id == 5)
+                                                    <td><a href="{{url('wholesale/detail/'.$imei_order->id)}}">{{ $imei_order->reference_id }}</a></td>
+                                                @elseif ($imei_order->order_type_id == 3)
+                                                    <td>{{ $imei_order->reference_id }}</td>
                                                 @endif
                                                 <td>
-                                                    @if ($order->customer != null)
-                                                    <a title="Vendor Profile" href="{{url('edit-customer').'/'.$order->customer_id}}" target="_blank">{{ $order->customer->first_name." ".$order->customer->last_name }}</a></td>
+                                                    @if ($imei_order->customer != null)
+                                                    <a title="Vendor Profile" href="{{url('edit-customer').'/'.$imei_order->customer_id}}" target="_blank">{{ $imei_order->customer->first_name." ".$imei_order->customer->last_name }}</a></td>
                                                     @endif
-                                                <td>{{ $order->order_type->name }}</td>
+                                                <td>{{ $imei_order->order_type->name }}</td>
                                                 <td>
                                                     @if ($item->variation ?? false)
                                                         <strong>{{ $item->variation->sku }}</strong>{{ " - " . $item->variation->product->model . " - " . (isset($item->variation->storage_id)?$item->variation->storage_id->name . " - " : null) . (isset($item->variation->color_id)?$item->variation->color_id->name. " - ":null)}} <strong><u>{{ $item->variation->grade_id->name ?? "Not Given" }}</u></strong>
@@ -344,26 +344,26 @@
                                                     @endif
                                                 </td>
                                                 <td>{{ $item->quantity }}</td>
-                                                @if ($order->status <= 3)
-                                                <td style="width:240px" class="text-success text-uppercase" title="{{ $item->stock_id }}" id="copy_imei_{{ $order->id }}">
+                                                @if ($imei_order->status <= 3)
+                                                <td style="width:240px" class="text-success text-uppercase" title="{{ $item->stock_id }}" id="copy_imei_{{ $imei_order->id }}">
                                                     @isset($item->stock->imei) {{ $item->stock->imei }}&nbsp; @endisset
                                                     @isset($item->stock->serial_number) {{ $item->stock->serial_number }}&nbsp; @endisset
-                                                    @isset($order_item->admin) | {{ $order_item->admin->first_name[0] }} | @endisset
+                                                    @isset($imei_order_item->admin) | {{ $imei_order_item->admin->first_name[0] }} | @endisset
                                                     @isset($item->stock->tester) ({{ $item->stock->tester }}) @endisset
                                                 </td>
 
                                                 @endif
-                                                @if ($order->status > 3)
+                                                @if ($imei_order->status > 3)
                                                 <td style="width:240px" title="{{ $item->stock_id }}">
-                                                        <strong class="text-danger">{{ $order->order_status->name }}</strong>
+                                                        <strong class="text-danger">{{ $imei_order->order_status->name }}</strong>
                                                     @isset($item->stock->imei) {{ $item->stock->imei }}&nbsp; @endisset
                                                     @isset($item->stock->serial_number) {{ $item->stock->serial_number }}&nbsp; @endisset
 
-                                                    @isset($order->processed_by) | {{ $order->admin->first_name[0] }} | @endisset
+                                                    @isset($imei_order->processed_by) | {{ $imei_order->admin->first_name[0] }} | @endisset
                                                     @isset($item->stock->tester) ({{ $item->stock->tester }}) @endisset
                                                 </td>
                                                 @endif
-                                                <td style="width:220px">{{ $order->created_at}} <br> {{ $order->processed_at." ".$order->tracking_number }}</td>
+                                                <td style="width:220px">{{ $imei_order->created_at}} <br> {{ $imei_order->processed_at." ".$imei_order->tracking_number }}</td>
                                             </tr>
                                         @php
                                             $i ++;
