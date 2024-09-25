@@ -22,7 +22,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('functions:ten')->everyTenMinutes()->between('8:00', '24:00');
         $schedule->command('functions:thirty')->hourly()->between('8:00', '24:00');
         $schedule->command('backup:email')->hourly()->between('8:00', '24:00');
-        $schedule->command('functions:daily')->daily()->between('8:00', '24:00');
+        $schedule->command('functions:daily')->everyFourHours()->between('8:00', '24:00');
         $schedule->command('fetch:exchange-rates')->hourly()->between('8:00', '24:00');
 
     }
