@@ -66,9 +66,7 @@ class FunctionsDaily extends Command
             $total_charge = 0;
             if($order->status == 5){
                 $charge = $charges->where('name',"CCBM")->first();
-                $order_charge = new Order_charge_model();
-                $order_charge->order_id = $order->id;
-                $order_charge->charge_value_id = $charge->current_value->id;
+                $order_charge = Order_charge_model::firstOrNew(['order_id'=>$order->id,'charge_value_id'=>$charge->current_value->id]);
                 if($charge->amount_type == 1){
                     $order_charge->amount = $charge->current_value->value;
                     $total_charge += $charge->current_value->value;
@@ -81,9 +79,7 @@ class FunctionsDaily extends Command
             }else{
 
                 foreach($charges->whereNull('payment_method_id') as $charge){
-                    $order_charge = new Order_charge_model();
-                    $order_charge->order_id = $order->id;
-                    $order_charge->charge_value_id = $charge->current_value->id;
+                    $order_charge = Order_charge_model::firstOrNew(['order_id'=>$order->id,'charge_value_id'=>$charge->current_value->id]);
                     if($charge->amount_type == 1){
                         $order_charge->amount = $charge->current_value->value;
                         $total_charge += $charge->current_value->value;
