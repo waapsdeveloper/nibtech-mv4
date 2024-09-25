@@ -256,7 +256,7 @@ class SalesReturn extends Component
             $data['graded_stocks'] = $graded_stocks;
 
         }
-
+        dd('here');
         $last_ten = Order_item_model::where('order_id',$order_id)->orderBy('id','desc')->limit(10)->get();
         $data['last_ten'] = $last_ten;
 
