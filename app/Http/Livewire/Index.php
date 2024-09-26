@@ -193,6 +193,9 @@ class Index extends Component
             $data['rma'] = $rma;
             $data['aftersale_inventory'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', 'orders.status as status_id', 'stock.status as stock_status', DB::raw('COUNT(*) as quantity'))
             ->where('stock.status', 2)
+            ->whereDoesntHave('sale_order', function ($query) {
+                $query->where('customer_id', 3955);
+            })
             ->join('variation', 'stock.variation_id', '=', 'variation.id')
             ->join('grade', 'variation.grade', '=', 'grade.id')
             ->whereIn('grade.id',[8,12,17])
