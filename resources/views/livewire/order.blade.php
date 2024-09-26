@@ -450,10 +450,15 @@
                                             </td>
                                             @if (session('user')->hasPermission('view_profit') && $itemIndex == 0)
                                                 <td rowspan="{{ $items_count }}">
-                                                    @if (in_array($order->status, [3,6]))
-                                                        {{ $order->price.' - '.$order->charges }}
-                                                    @elseif ($order->status == 5)
-                                                        {{ $order->charges }}
+                                                    @if ($order->charges != null)
+
+                                                        @if (in_array($order->status, [3,6]))
+                                                            {{ $order->price.' - '.$order->charges }}
+                                                        @elseif ($order->status == 5)
+                                                            -{{ $order->charges }}
+                                                        @endif
+                                                    @else
+                                                        <strong class="text-info">Awaiting Charge</strong>
                                                     @endif
                                                 </td>
                                             @endif
