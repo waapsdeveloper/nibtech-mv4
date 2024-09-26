@@ -110,6 +110,10 @@ class Stock_model extends Model
     {
         return $this->hasOne(Order_model::class, 'id', 'order_id');
     }
+    public function sale_order()
+    {
+        return $this->hasOne(Order_model::class, 'id', 'sale_order_id');
+    }
     public function active_order()
     {
         return $this->hasOne(Order_model::class, 'id', 'order_id')->where('status',3);
