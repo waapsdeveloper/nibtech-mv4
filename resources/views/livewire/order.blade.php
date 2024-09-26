@@ -369,6 +369,9 @@
                                     <th><small><b>Order ID</b></small></th>
                                     <th><small><b>Product</b></small></th>
                                     <th><small><b>Qty</b></small></th>
+                                    @if (session('user')->hasPermission('view_profit'))
+                                        <th><small><b>Charge</b></small></th>
+                                    @endif
                                     <th><small><b>IMEI</b></small></th>
                                     <th><small><b>Creation Date | TN</b></small></th>
                                 </tr>
@@ -445,6 +448,15 @@
                                                     {{ $order->payment_method->name }}
                                                 @endif
                                             </td>
+                                            @if (session('user')->hasPermission('view_profit') && $itemIndex == 0)
+                                                <td>
+                                                    @if (in_array($order->status, [3,6]))
+                                                        {{ $order->price.' - '.$order->charges }}
+                                                    @elseif ($order->status == 5)
+                                                        {{ $order->charges }}
+                                                    @endif
+                                                </td>
+                                            @endif
                                             @if ($order->status == 3)
                                                 <td style="width:240px" class="text-success text-uppercase" id="copy_imei_{{ $order->id }}">
                                                     @isset($stock->imei) {{ $stock->imei }}&nbsp; @endisset
