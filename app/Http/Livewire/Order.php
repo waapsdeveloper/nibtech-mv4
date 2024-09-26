@@ -140,7 +140,7 @@ class Order extends Component
             })->where('status', 6);
         })
         ->when(request('missing') == 'charge', function ($q) {
-            return $q->whereNot('status', 2)->whereNull('charges');
+            return $q->whereNot('status', 2)->whereNull('charges')->where('processed_at', '>=', now()->subHours(12));
         })
         ->when(request('order_id') != '', function ($q) {
             if(str_contains(request('order_id'),'<')){
