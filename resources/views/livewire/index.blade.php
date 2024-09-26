@@ -372,7 +372,7 @@
                                                     </tr>
                                                     <tr>
                                                         <td>Invoiced:</td>
-                                                        <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="{{ $invoiced_items }} Total Items | Go to orders page">{{ $invoiced_orders }}</a></td>
+                                                        <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="{{ $invoiced_items }} Total Items | {{ $missing_imei }} Dispatched without Device | Go to orders page">{{ $invoiced_orders }}</a></td>
                                                     </tr>
                                                     @if (session('user')->hasPermission('dashboard_view_totals'))
                                                     <tr>
