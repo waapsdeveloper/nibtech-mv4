@@ -164,6 +164,7 @@ class Report extends Component
             ->select(
                 'category.id as category_id',
                 DB::raw('COUNT(orders.id) as orders_qty'),
+                DB::raw('SUM(orders.charges) as charges'),
                 DB::raw('SUM(CASE WHEN orders.currency = 4 OR orders.order_type_id = 5 THEN order_items.price ELSE 0 END) as eur_items_sum'),
                 DB::raw('SUM(CASE WHEN orders.currency = 5 AND orders.order_type_id = 3 THEN order_items.price ELSE 0 END) as gbp_items_sum'),
                 DB::raw('GROUP_CONCAT(stock.id) as stock_ids'),
