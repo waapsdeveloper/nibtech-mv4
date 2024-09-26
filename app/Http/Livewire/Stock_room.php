@@ -73,7 +73,7 @@ class Stock_room extends Component
                         return $q->where('description', request('description'));
                     })
                     ->whereBetween('exit_at', [$start_date, $end_date])
-                    ->orderBy('id', 'desc') // Secondary order by reference_id
+                    ->orderBy('exit_at', 'desc') // Secondary order by reference_id
                     // ->select('orders.*')
                     ->paginate($per_page)
                     ->onEachSide(5)
@@ -81,7 +81,7 @@ class Stock_room extends Component
                 }else{
 
                     $data['stocks'] = Stock_movement_model::where(['received_at'=>null])
-                    ->orderBy('id', 'desc') // Secondary order by reference_id
+                    ->orderBy('exit_at', 'desc') // Secondary order by reference_id
                     // ->select('orders.*')
                     ->paginate($per_page)
                     ->onEachSide(5)
