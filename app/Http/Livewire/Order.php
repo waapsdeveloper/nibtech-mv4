@@ -193,7 +193,7 @@ class Order extends Component
         })
         ->when(request('with_stock') == 2, function ($q) {
             return $q->whereHas('order_items', function ($q) {
-                $q->where('stock_id', null);
+                $q->where('stock_id', 0);
             });
         })
         // ->orderBy($sort, $by) // Order by variation name

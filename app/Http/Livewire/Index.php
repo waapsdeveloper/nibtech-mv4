@@ -149,7 +149,7 @@ class Index extends Component
             ->count();
             $data['missing_imei'] = Order_item_model::whereHas('order', function ($q) use ($start_date, $end_date) {
                 $q->where('processed_at', '>=', $start_date)->where('processed_at', '<=', $end_date)->where('order_type_id',3);
-            })->where('stock_id',null)->count();
+            })->where('stock_id',0)->count();
 
             $data['total_conversations'] = Order_item_model::whereBetween('created_at', [$start_date, $end_date])->where('care_id','!=',null)
             ->when(request('data') == 1, function($q) use ($variation_ids){
