@@ -54,7 +54,7 @@ class Order extends Component
         $user_id = session('user_id');
         $data['user_id'] = $user_id;
         $data['pending_orders_count'] = Order_model::where('order_type_id',3)->where('status',2)->count();
-        $data['missing_charge_count'] = Order_model::where('order_type_id',3)->whereNot('status',2)->where('processed_at','<=',now()->subHours(12))->count();
+        $data['missing_charge_count'] = Order_model::where('order_type_id',3)->whereNot('status',2)->whereNull('charges')->where('processed_at','<=',now()->subHours(12))->count();
         $data['missing_processed_at_count'] = Order_model::where('order_type_id',3)->whereIn('status',[3,6])->where('processed_at',null)->count();
         $data['order_statuses'] = Order_status_model::pluck('name','id');
         if(request('per_page') != null){
