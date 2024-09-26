@@ -453,9 +453,9 @@
                                                     @if ($order->charges != null)
 
                                                         @if (in_array($order->status, [3,6]))
-                                                            {{ amount_formatter($order->price,2).' - '.amount_formatter($order->charges,2) }}
+                                                            {{ $currencies[$ord->currency].amount_formatter($order->price,2).' - '.$currencies[$ord->currency].amount_formatter($order->charges,2) }}
                                                         @elseif ($order->status == 5)
-                                                            -{{ amount_formatter($order->charges,2) }}
+                                                            - {{ $currencies[$ord->currency].amount_formatter($order->charges,2) }}
                                                         @endif
                                                     @else
                                                         <strong class="text-info">Awaiting Charge</strong>
@@ -801,9 +801,9 @@
                                                                 @if ($ord->charges != null)
 
                                                                     @if (in_array($ord->status, [3,6]))
-                                                                        {{ amount_formatter($ord->price,2).' - '.amount_formatter($ord->charges,2) }}
+                                                                        {{ $currencies[$ord->currency].amount_formatter($ord->price,2).' - '.$currencies[$ord->currency].amount_formatter($ord->charges,2) }}
                                                                     @elseif ($ord->status == 5)
-                                                                        -{{ amount_formatter($ord->charges,2) }}
+                                                                        -{{ $currencies[$ord->currency].amount_formatter($ord->charges,2) }}
                                                                     @endif
                                                                 @else
                                                                     <strong class="text-info">Awaiting Charge</strong>

@@ -49,6 +49,8 @@ class Order extends Component
         $data['storages'] = Storage_model::pluck('name','id');
         $data['colors'] = Color_model::pluck('name','id');
         $data['grades'] = Grade_model::pluck('name','id');
+
+        $data['currencies'] = Currency_model::pluck('id','sign');
         $data['last_hour'] = Carbon::now()->subHour(2);
         $data['admins'] = Admin_model::pluck('first_name','id');
         $user_id = session('user_id');
