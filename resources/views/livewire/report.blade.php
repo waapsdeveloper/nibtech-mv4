@@ -234,7 +234,7 @@
                                 $total_sale_cost += $aggregated_sales_cost[$sales->category_id];
                                 $total_repair_cost += $sales->items_repair_sum;
                                 $total_fee += $sales->charges;
-                                $total_eur_profit += $sales->eur_items_sum - $aggregated_sales_cost[$sales->category_id] - $sales->items_repair_sum;
+                                $total_eur_profit += $sales->eur_items_sum - $aggregated_sales_cost[$sales->category_id] - $sales->charges - $sales->items_repair_sum;
                             @endphp
                             <tr>
                                 <td>{{ $s+1 }}</td>
@@ -249,7 +249,7 @@
                                     <td>€{{ amount_formatter($sales->eur_items_sum,2) }}</td>
                                     <td>£{{ amount_formatter($sales->gbp_items_sum,2) }}</td>
                                 @endif
-                                <td>€{{ amount_formatter($sales->eur_items_sum - $aggregated_sales_cost[$sales->category_id] - $sales->items_repair_sum,2) }} + £{{ amount_formatter($sales->gbp_items_sum,2) }}</td>
+                                <td>€{{ amount_formatter($sales->eur_items_sum - $aggregated_sales_cost[$sales->category_id] - $sales->charges - $sales->items_repair_sum,2) }} + £{{ amount_formatter($sales->gbp_items_sum,2) }}</td>
                             </tr>
                         @endforeach
                         <tr>
