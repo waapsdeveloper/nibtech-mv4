@@ -40,6 +40,7 @@ class OrderReportExport implements FromCollection, WithHeadings
             'stock.tester as tester',
             'admin.first_name as invoice',
             'orders.processed_at as date',
+            'orders.charges as fee',
             'order_items.price as price',
             'purchase_item.price as cost',
             'currency.code as currency'
@@ -79,6 +80,7 @@ class OrderReportExport implements FromCollection, WithHeadings
             'Date',
             'Price',
             'Cost',
+            'Fee',
             'Currency'
         ];
     }

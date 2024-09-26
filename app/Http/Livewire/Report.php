@@ -376,6 +376,7 @@ class Report extends Component
             ->select(
                 'category.id as category_id',
                 DB::raw('COUNT(orders.id) as orders_qty'),
+                DB::raw('SUM(orders.charges) as charges'),
                 DB::raw('SUM(CASE WHEN orders.currency = 4 OR orders.order_type_id = 5 THEN order_items.price ELSE 0 END) as eur_items_sum'),
                 DB::raw('SUM(CASE WHEN orders.currency = 5 AND orders.order_type_id = 3 THEN order_items.price ELSE 0 END) as gbp_items_sum'),
                 DB::raw('GROUP_CONCAT(stock.id) as stock_ids'),
@@ -721,6 +722,7 @@ class Report extends Component
                 'variation.product_id as product_id',
                 'variation.storage as storage',
                 DB::raw('COUNT(orders.id) as orders_qty'),
+                DB::raw('SUM(orders.charges) as charges'),
                 DB::raw('SUM(CASE WHEN orders.status = 3 THEN 1 ELSE 0 END) as approved_orders_qty'),
                 DB::raw('SUM(CASE WHEN orders.currency = 4 OR orders.order_type_id = 5 THEN order_items.price ELSE 0 END) as eur_items_sum'),
                 DB::raw('SUM(CASE WHEN orders.currency = 5 AND orders.order_type_id = 3 THEN order_items.price ELSE 0 END) as gbp_items_sum'),
@@ -866,6 +868,7 @@ class Report extends Component
             ->select(
                 'orders.customer_id as customer_id',
                 DB::raw('COUNT(orders.id) as orders_qty'),
+                DB::raw('SUM(orders.charges) as charges'),
                 DB::raw('SUM(order_items.price) as eur_items_sum'),
                 DB::raw('GROUP_CONCAT(stock.id) as stock_ids'),
                 DB::raw('SUM(CASE WHEN process.process_type_id = 9 THEN process_stock.price ELSE 0 END) as items_repair_sum')
@@ -1019,6 +1022,7 @@ class Report extends Component
             ->select(
                 'purchase_order.customer_id as customer_id',
                 DB::raw('COUNT(orders.id) as orders_qty'),
+                DB::raw('SUM(orders.charges) as charges'),
                 DB::raw('SUM(CASE WHEN orders.currency = 4 OR orders.order_type_id = 5 THEN order_items.price ELSE 0 END) as eur_items_sum'),
                 DB::raw('SUM(CASE WHEN orders.currency = 5 AND orders.order_type_id = 3 THEN order_items.price ELSE 0 END) as gbp_items_sum'),
                 DB::raw('GROUP_CONCAT(stock.id) as stock_ids'),
