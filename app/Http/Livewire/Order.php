@@ -127,17 +127,20 @@ class Order extends Component
                 $query->where('care_id', '!=', null);
             });
         })
-        ->when(request('missing_reimburse'), function ($q) {
+        ->when(request('missing') == 'reimburse', function ($q) {
             return $q->whereHas('order_items.linked_child', function ($qu) {
                 $qu->whereHas('order', function ($q) {
                     $q->where('status', '!=', 1);
                 });
             })->where('status', 3);
         })
-        ->when(request('missing_refund'), function ($q) {
+        ->when(request('missing') == 'refund', function ($q) {
             return $q->whereDoesntHave('order_items.linked_child')->wherehas('order_items.stock', function ($q) {
                 $q->where('status', '!=', null);
             })->where('status', 6);
+        })
+        ->when(request('missing') == 'charge', function ($q) {
+            return $q->whereNot('status', 2)->whereNull('charges');
         })
         ->when(request('order_id') != '', function ($q) {
             if(str_contains(request('order_id'),'<')){
