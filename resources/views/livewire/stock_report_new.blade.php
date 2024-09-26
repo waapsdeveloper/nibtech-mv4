@@ -67,7 +67,7 @@
                                     @if (session('user')->hasPermission('view_cost'))
                                     <td>€{{ amount_formatter($purchase_item->price,2) }}</td>
                                     <td title="Count: {{$stock->stock_repairs->count()}}">€{{ amount_formatter($stock->stock_repairs->sum('price'),2) }}</td>
-                                    <td>{{ amount_formatter(0,2) }}</td>
+                                    <td>{{ amount_formatter($stock->charges,2) }}</td>
                                    @endif
                                     @foreach ($order_items as $ind => $item)
                                         @php
