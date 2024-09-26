@@ -166,7 +166,7 @@ class Report extends Component
                 DB::raw('COUNT(orders.id) as orders_qty'),
                 DB::raw('SUM(orders.charges) as charges'),
                 DB::raw('SUM(CASE WHEN orders.currency = 4 OR orders.order_type_id = 5 THEN order_items.price ELSE 0 END) as eur_items_sum'),
-                DB::raw('SUM(CASE WHEN orders.currency = 5 AND orders.order_type_id = 3 THEN order_items.price ELSE 0 END) as gbp_items_sum'),
+                DB::raw('SUM(CASE WHEN orders.currency = 5 AND orders.order_type_id = 3 THEN orders.price ELSE 0 END) as gbp_items_sum'),
                 DB::raw('GROUP_CONCAT(stock.id) as stock_ids'),
                 DB::raw('SUM(CASE WHEN process.process_type_id = 9 THEN process_stock.price ELSE 0 END) as items_repair_sum')
             )
@@ -179,7 +179,7 @@ class Report extends Component
                 ->orWhere(function ($subQuery) use ($start_date, $end_date) {
                     // For other order_type_ids, filter by created_at
                     $subQuery->where('orders.order_type_id', '!=', 3)
-                             ->whereBetween('orders.created_at', [$start_date, $end_date]);
+                             ->whereBetween('order_items.created_at', [$start_date, $end_date]);
                 });
             })
             // ->whereBetween('orders.processed_at', [$start_date, $end_date])
