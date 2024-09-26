@@ -74,6 +74,7 @@
                         $total_approved_sale_gbp_items = 0;
                         $total_sale_cost = 0;
                         $total_repair_cost = 0;
+                        $total_charges = 0;
                         $total_eur_profit = 0;
                     @endphp
                     <tr>
@@ -89,7 +90,8 @@
                             // $total_approved_sale_gbp_items += $sales->gbp_approved_items_sum;
                             $total_sale_cost += $aggregated_sales_cost[$sales->category_id];
                             $total_repair_cost += $sales->items_repair_sum;
-                            $total_eur_profit += $sales->eur_items_sum - $aggregated_sales_cost[$sales->category_id] - $sales->items_repair_sum;
+                            $total_charges += $sales->charges;
+                            $total_eur_profit += $sales->eur_items_sum - $aggregated_sales_cost[$sales->category_id] - $sales->charges - $sales->items_repair_sum;
                         @endphp
                         <tr>
                             <td>{{ $s+1 }}</td>
@@ -98,13 +100,13 @@
                             @if (session('user')->hasPermission('view_cost'))
                                 <td title="{{count(explode(',',$sales->stock_ids))}}">€{{ amount_formatter($aggregated_sales_cost[$sales->category_id],2) }}</td>
                                 <td>€{{ amount_formatter($sales->items_repair_sum,2) }}</td>
-                                <td>{{ amount_formatter(0,2) }}</td>
+                                <td>{{ amount_formatter($sales->charges,2) }}</td>
                             @endif
                             @if (session('user')->hasPermission('view_price'))
                                 <td>€{{ amount_formatter($sales->eur_items_sum,2) }}</td>
                                 <td>£{{ amount_formatter($sales->gbp_items_sum,2) }}</td>
                             @endif
-                            <td>€{{ amount_formatter($sales->eur_items_sum - $aggregated_sales_cost[$sales->category_id] - $sales->items_repair_sum,2) }} + £{{ amount_formatter($sales->gbp_items_sum,2) }}</td>
+                            <td>€{{ amount_formatter($sales->eur_items_sum - $aggregated_sales_cost[$sales->category_id] - $sales->charges - $sales->items_repair_sum,2) }} + £{{ amount_formatter($sales->gbp_items_sum,2) }}</td>
                         </tr>
                     @endforeach
                     <tr>
@@ -113,7 +115,7 @@
                         @if (session('user')->hasPermission('view_cost'))
                             <td title=""><strong>€{{ amount_formatter($total_sale_cost,2) }}</strong></td>
                             <td><strong>€{{ amount_formatter($total_repair_cost,2) }}</strong></td>
-                            <td><strong>{{ amount_formatter(0,2) }}</strong></td>
+                            <td><strong>{{ amount_formatter($total_charges,2) }}</strong></td>
                         @endif
                         @if (session('user')->hasPermission('view_price'))
                             <td><strong>€{{ amount_formatter($total_sale_eur_items,2)." (€".amount_formatter($total_approved_sale_eur_items,2).")" }}</strong></td>
@@ -184,7 +186,7 @@
                         @if (session('user')->hasPermission('view_cost'))
                             <td title=""><strong>€{{ amount_formatter($total_sale_cost-$total_return_cost,2) }}</strong></td>
                             <td><strong>€{{ amount_formatter($total_repair_cost-$total_repair_return_cost,2) }}</strong></td>
-                            <td><strong>{{ amount_formatter(0,2) }}</strong></td>
+                            <td><strong>{{ amount_formatter($total_charges,2) }}</strong></td>
                         @endif
                         @if (session('user')->hasPermission('view_price'))
                             <td><strong>€{{ amount_formatter($total_sale_eur_items-$total_return_eur_items,2) }}</strong></td>
