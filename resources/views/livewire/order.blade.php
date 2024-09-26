@@ -199,7 +199,7 @@
 
                 @endif
                 @if ($missing_processed_at_count > 0)
-                    <a href="{{url('order')}}?missing=processed_at" class="btn btn-link">Missing Invoiced At ({{ $missing_prcessed_at_count }})</a>
+                    <a href="{{url('order')}}?missing=processed_at" class="btn btn-link">Missing Invoiced At ({{ $missing_processed_at_count }})</a>
 
                 @endif
             </div>
