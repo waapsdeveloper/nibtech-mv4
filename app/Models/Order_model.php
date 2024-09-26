@@ -86,6 +86,10 @@ class Order_model extends Model
     {
         return $this->hasOne(Admin_model::class, 'id', 'processed_by');
     }
+    public function payment_method()
+    {
+        return $this->hasOne(Payment_method_model::class, 'id', 'payment_method_id');
+    }
 
 
     public function updateOrderInDB($orderObj, $invoice = false, $bm, $currency_codes, $country_codes)
