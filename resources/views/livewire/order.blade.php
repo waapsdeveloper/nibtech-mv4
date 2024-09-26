@@ -453,9 +453,9 @@
                                                     @if ($order->charges != null)
 
                                                         @if (in_array($order->status, [3,6]))
-                                                            {{ $currencies[$ord->currency].amount_formatter($order->price,2).' - '.$currencies[$ord->currency].amount_formatter($order->charges,2) }}
+                                                            {{ $currencies[$order->currency].amount_formatter($order->price,2).' - '.$currencies[$order->currency].amount_formatter($order->charges,2) }}
                                                         @elseif ($order->status == 5)
-                                                            - {{ $currencies[$ord->currency].amount_formatter($order->charges,2) }}
+                                                            - {{ $currencies[$order->currency].amount_formatter($order->charges,2) }}
                                                         @endif
                                                     @else
                                                         <strong class="text-info">Awaiting Charge</strong>
