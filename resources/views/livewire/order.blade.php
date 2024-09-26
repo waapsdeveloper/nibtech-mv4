@@ -799,7 +799,7 @@
                                                         @if (session('user')->hasPermission('view_profit'))
                                                             <td>
                                                                 @if ($ord->charges != null)
-
+                                                                    @dd($currencies)
                                                                     @if (in_array($ord->status, [3,6]))
                                                                         {{ $currencies[$ord->currency].amount_formatter($ord->price,2).' - '.$currencies[$ord->currency].amount_formatter($ord->charges,2) }}
                                                                     @elseif ($ord->status == 5)
