@@ -431,7 +431,13 @@
                                                     <a class="" href="https://backmarket.fr/bo_merchant/customer-request/{{ $item->care_id }}" target="_blank"><strong class="text-danger">Conversation</strong></a>
                                                 @endif
                                             </td>
-                                            <td>{{ $item->quantity }}</td>
+                                            <td>
+                                                {{ $item->quantity }}
+                                                @if (request('missing') == 'charge')
+
+                                                    {{ $order->payment_method->name }}
+                                                @endif
+                                            </td>
                                             @if ($order->status == 3)
                                                 <td style="width:240px" class="text-success text-uppercase" id="copy_imei_{{ $order->id }}">
                                                     @isset($stock->imei) {{ $stock->imei }}&nbsp; @endisset
