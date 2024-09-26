@@ -796,6 +796,21 @@
                                                             @endif
                                                         </td>
                                                         <td>{{ $itm->quantity }}</td>
+                                                        @if (session('user')->hasPermission('view_profit'))
+                                                            <td>
+                                                                @if ($ord->charges != null)
+
+                                                                    @if (in_array($ord->status, [3,6]))
+                                                                        {{ $ord->price.' - '.$ord->charges }}
+                                                                    @elseif ($ord->status == 5)
+                                                                        -{{ $ord->charges }}
+                                                                    @endif
+                                                                @else
+                                                                    <strong class="text-info">Awaiting Charge</strong>
+                                                                @endif
+                                                            </td>
+
+                                                        @endif
                                                         <td>
                                                             {{ $ord->order_status->name }}
                                                             @isset($itm->stock->imei) {{ $itm->stock->imei }}&nbsp; @endisset
