@@ -252,11 +252,19 @@ class Order extends Component
             // return redirect()->back();
 
         }
+
         $data['orders'] = $orders
         ->paginate($per_page)
         ->onEachSide(5)
         ->appends(request()->except('page'));
 
+
+        if(request('missing') == 'processed_at'){
+            $reference_ids = $data['orders']->pluck('reference_id');
+            foreach($reference_ids as $ref){
+                $this->recheck($ref);
+            }
+        }
         if(count($data['orders']) == 0 && request('order_id')){
             $ors = explode(' ',request('order_id'));
             foreach($ors as $or){
