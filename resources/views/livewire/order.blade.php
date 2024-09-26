@@ -194,7 +194,14 @@
                 <a href="{{url('order')}}?care=1" class="btn btn-link">Conversation</a>
                 <a href="{{url('order')}}?missing=refund" class="btn btn-link">Missing Refund</a>
                 <a href="{{url('order')}}?missing=reimburse" class="btn btn-link">Missing Reimburse</a>
-                <a href="{{url('order')}}?missing=charge" class="btn btn-link">Missing Charge</a>
+                @if ($missing_charge_count > 0)
+                    <a href="{{url('order')}}?missing=charge" class="btn btn-link">Missing Charge ({{ $missing_charge_count }})</a>
+
+                @endif
+                @if ($missing_prcessed_at_count > 0)
+                    <a href="{{url('order')}}?missing=processed_at" class="btn btn-link">Missing Invoiced At ({{ $missing_prcessed_at_count }})</a>
+
+                @endif
             </div>
             <div class="d-flex">
 
