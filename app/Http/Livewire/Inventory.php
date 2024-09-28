@@ -752,15 +752,23 @@ class Inventory extends Component
     }
 
     public function add_verification_imei($process_id) {
-
-        if (ctype_digit(request('imei'))) {
-            $i = request('imei');
-            $s = null;
+        $imei = request('imei');
+        if (ctype_digit($imei)) {
+            $i = $imei;
+            $stock = Stock_model::where(['imei' => $i])->first();
         } else {
-            $i = null;
-            $s = request('imei');
+            $s = $imei;
+            $t = mb_substr($imei,1);
+            $stock = Stock_model::whereIn('serial_number', [$s, $t])->first();
         }
-        $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
+        // if (ctype_digit(request('imei'))) {
+        //     $i = request('imei');
+        //     $s = null;
+        // } else {
+        //     $i = null;
+        //     $s = request('imei');
+        // }
+        // $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
         if($stock == null){
             session()->put('error', 'IMIE Invalid / Not Found');
             return redirect()->back();
