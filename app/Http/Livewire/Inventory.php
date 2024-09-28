@@ -814,14 +814,17 @@ class Inventory extends Component
                 ]);
                 $new_variation->status = 1;
                 $new_variation->save();
-                $stock_operation = Stock_operations_model::create([
-                    'stock_id' => $stock->id,
-                    'old_variation_id' => $stock->variation_id,
-                    'new_variation_id' => $new_variation->id,
-                    'description' => 'Variation changed during inventory verification',
-                    'admin_id' => session('user_id'),
-                ]);
-                session()->put('copy', 1);
+
+                if($stock->variation_id != $new_variation->id){
+                    $stock_operation = Stock_operations_model::create([
+                        'stock_id' => $stock->id,
+                        'old_variation_id' => $stock->variation_id,
+                        'new_variation_id' => $new_variation->id,
+                        'description' => 'Variation changed during inventory verification',
+                        'admin_id' => session('user_id'),
+                    ]);
+                    session()->put('copy', 1);
+                }
             }else{
                 session()->put('copy', 0);
                 session()->put('product_id', $stock->variation->product_id);
