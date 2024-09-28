@@ -20,7 +20,6 @@
                     <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
 
                 </div>
-                <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
 
                 <select name="color" class="form-control form-select" style="width: 150px;">
                     <option value="">Color</option>
@@ -40,6 +39,7 @@
                     <input class="form-check-input" type="checkbox" id="com" name="copy" value="1" @if (session('copy') == 1) {{'checked'}} @endif>&nbsp;&nbsp;\
                     <label class="form-check-label" for="com">Copy</label>
                 </div>
+                <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
         </form>
     </div>
     <script>

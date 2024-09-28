@@ -822,6 +822,8 @@ class Inventory extends Component
                     $new_variation->status = 1;
                     $new_variation->stock += 1;
                     $new_variation->save();
+                    $stock->variation_id = $new_variation->id;
+                    $stock->save();
                     $stock_operation = Stock_operations_model::create([
                         'stock_id' => $stock->id,
                         'old_variation_id' => $stock->variation_id,
