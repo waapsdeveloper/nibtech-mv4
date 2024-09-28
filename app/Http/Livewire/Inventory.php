@@ -774,6 +774,57 @@ class Inventory extends Component
             return redirect()->back();
 
         }
+
+        if(request('copy') == 1){
+            $variation = $stock->variation;
+            if(request('product_id')){
+                $product_id = request('product_id');
+            }else{
+                $product_id = $variation->product_id;
+            }
+            if(request('storage')){
+                $storage_id = request('storage');
+            }else{
+                $storage_id = $variation->storage;
+            }
+            if(request('copy') == 1){
+                $color_id = request('color');
+                $grade_id = request('grade');
+            }else{
+                $color_id = $variation->color;
+                $grade_id = $variation->grade;
+            }
+            $new_variation = Variation_model::firstOrNew([
+                'product_id' => $product_id,
+                'storage' => $storage_id,
+                'color' => $color_id,
+                'grade' => $grade_id,
+            ]);
+            // dd($new_variation);
+            if($stock->variation_id != $new_variation->id){
+                $new_variation->status = 1;
+                $new_variation->stock += 1;
+                $new_variation->save();
+                $stock->variation_id = $new_variation->id;
+                $stock->save();
+                $stock_operation = Stock_operations_model::create([
+                    'stock_id' => $stock->id,
+                    'old_variation_id' => $stock->variation_id,
+                    'new_variation_id' => $new_variation->id,
+                    'description' => 'Variation changed during inventory verification',
+                    'admin_id' => session('user_id'),
+                ]);
+                session()->put('success', 'Stock Verified successfullasy: '.$model.' - '.$storage.' - '.$color.' - '.$grade);
+            }
+                session()->put('copy', 1);
+        }else{
+            session()->put('copy', 0);
+            // session()->put('product_id', $stock->variation->product_id);
+            // session()->put('storage', $stock->variation->storage);
+            session()->put('color', $stock->variation->color);
+            session()->put('grade', $stock->variation->grade);
+        }
+
         $process_stock = Process_stock_model::firstOrNew(['process_id'=>$process_id, 'stock_id'=>$stock->id]);
         $process_stock->admin_id = session('user_id');
         $process_stock->status = 1;
@@ -791,56 +842,6 @@ class Inventory extends Component
             $storage = $stock->variation->storage_id->name ?? '?';
             $color = $stock->variation->color_id->name ?? '?';
             $grade = $stock->variation->grade_id->name ?? '?';
-
-            if(request('copy') == 1){
-                $variation = $stock->variation;
-                if(request('product_id')){
-                    $product_id = request('product_id');
-                }else{
-                    $product_id = $variation->product_id;
-                }
-                if(request('storage')){
-                    $storage_id = request('storage');
-                }else{
-                    $storage_id = $variation->storage;
-                }
-                if(request('copy') == 1){
-                    $color_id = request('color');
-                    $grade_id = request('grade');
-                }else{
-                    $color_id = $variation->color;
-                    $grade_id = $variation->grade;
-                }
-                $new_variation = Variation_model::firstOrNew([
-                    'product_id' => $product_id,
-                    'storage' => $storage_id,
-                    'color' => $color_id,
-                    'grade' => $grade_id,
-                ]);
-                // dd($new_variation);
-                if($stock->variation_id != $new_variation->id){
-                    $new_variation->status = 1;
-                    $new_variation->stock += 1;
-                    $new_variation->save();
-                    $stock->variation_id = $new_variation->id;
-                    $stock->save();
-                    $stock_operation = Stock_operations_model::create([
-                        'stock_id' => $stock->id,
-                        'old_variation_id' => $stock->variation_id,
-                        'new_variation_id' => $new_variation->id,
-                        'description' => 'Variation changed during inventory verification',
-                        'admin_id' => session('user_id'),
-                    ]);
-                    session()->put('success', 'Stock Verified successfullasy: '.$model.' - '.$storage.' - '.$color.' - '.$grade);
-                }
-                    session()->put('copy', 1);
-            }else{
-                session()->put('copy', 0);
-                // session()->put('product_id', $stock->variation->product_id);
-                // session()->put('storage', $stock->variation->storage);
-                session()->put('color', $stock->variation->color);
-                session()->put('grade', $stock->variation->grade);
-            }
 
             session()->put('success', 'Stock Verified successfully: '.$model.' - '.$storage.' - '.$color.' - '.$grade);
         }else{
