@@ -49,7 +49,7 @@
 
 
                 <div class="input-group form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="com" name="copy" value="copy">
+                    <input class="form-check-input" type="checkbox" id="com" name="copy" value="copy">&nbsp;&nbsp;
                     <label class="form-check-label" for="com">Copy</label>
                 </div>
         </form>
