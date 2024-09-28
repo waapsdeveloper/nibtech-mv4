@@ -10,15 +10,52 @@
 
     @section('content')
 
-    <div>
+
+    <div class="d-flex justify-content-between">
+
         <form class="form-inline" action="{{ url('inventory/add_verification_imei').'/'.$active_inventory_verification->id }}" method="POST" id="wholesale_item">
             @csrf
-            <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
-            <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
-            <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
+            <div>
+                <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
+                <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
+                <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
 
+
+            </div>
+
+            <div>
+                <select name="return[product]" class="form-control form-select" style="width: 150px;">
+                    <option value="">Model</option>
+                    @foreach ($products as $id => $model)
+                        <option value="{{ $id }}"@if($id == session('product_id')) {{'selected'}}@endif>{{ $model }}</option>
+                    @endforeach
+                </select>
+                <select name="return[storage]" class="form-control form-select">
+                    <option value="">Storage</option>
+                    @foreach ($storages as $id => $name)
+                        <option value="{{ $id }}"@if($id == session('storage')) {{'selected'}}@endif>{{ $name }}</option>
+                    @endforeach
+                </select>
+                <select name="return[color]" class="form-control form-select" style="width: 150px;">
+                    <option value="">Color</option>
+                    @foreach ($colors as $id => $name)
+                        <option value="{{ $id }}"@if($id == session('color')) {{'selected'}}@endif>{{ $name }}</option>
+                    @endforeach
+                </select>
+                <select name="return[grade]" class="form-control form-select">
+                    <option value="">Grade</option>
+                    @foreach ($grades as $id => $name)
+                        <option value="{{ $id }}" @if ($id == session('grade')) {{'selected'}}@endif>{{ $name }}</option>
+                    @endforeach
+                </select>
+
+
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="radio" id="com" name="description" value="Change of mind">
+                    <label class="form-check-label" for="com">Change of mind</label>
+                </div>
+            </div>
         </form>
-
     </div>
     <script>
 
