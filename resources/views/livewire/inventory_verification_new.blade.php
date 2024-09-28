@@ -15,7 +15,6 @@
 
         <form class="form-inline" action="{{ url('inventory/add_verification_imei').'/'.$active_inventory_verification->id }}" method="POST" id="wholesale_item">
             @csrf
-            <div>
                 <div class="input-group">
                     <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
                     <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
@@ -53,7 +52,6 @@
                     <input class="form-check-input" type="radio" id="com" name="description" value="Change of mind">
                     <label class="form-check-label" for="com">Change of mind</label>
                 </div>
-            </div>
         </form>
     </div>
     <script>
