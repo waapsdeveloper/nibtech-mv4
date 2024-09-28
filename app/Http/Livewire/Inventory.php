@@ -804,14 +804,11 @@ class Inventory extends Component
                 }else{
                     $storage_id = $variation->storage;
                 }
-                if(request('color')){
+                if(request('copy') == 1){
                     $color_id = request('color');
-                }else{
-                    $color_id = $variation->color;
-                }
-                if(request('grade')){
                     $grade_id = request('grade');
                 }else{
+                    $color_id = $variation->color;
                     $grade_id = $variation->grade;
                 }
                 $new_variation = Variation_model::firstOrNew([
