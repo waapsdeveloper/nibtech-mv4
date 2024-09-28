@@ -775,6 +775,31 @@ class Inventory extends Component
 
         }
 
+
+        $process_stock = Process_stock_model::firstOrNew(['process_id'=>$process_id, 'stock_id'=>$stock->id]);
+        $process_stock->admin_id = session('user_id');
+        $process_stock->status = 1;
+        if($process_stock->id == null){
+            $process_stock->save();
+            // Check if the session variable 'counter' is set
+            if (session()->has('counter')) {
+                // Increment the counter
+                session()->increment('counter');
+            } else {
+                // Initialize the counter if it doesn't exist
+                session()->put('counter', 1);
+            }
+            $model = $stock->variation->product->model ?? '?';
+            $storage = $stock->variation->storage_id->name ?? '?';
+            $color = $stock->variation->color_id->name ?? '?';
+            $grade = $stock->variation->grade_id->name ?? '?';
+
+
+            session()->put('success', 'Stock Verified successfully: '.$model.' - '.$storage.' - '.$color.' - '.$grade);
+        }else{
+            session()->put('error', 'Stock already verified');
+        }
+
         if(request('copy') == 1){
             $variation = $stock->variation;
             if(request('product_id')){
@@ -814,6 +839,7 @@ class Inventory extends Component
                     'description' => 'Variation changed during inventory verification',
                     'admin_id' => session('user_id'),
                 ]);
+                session()->put('success', 'Stock Verified successfully: '.$model.' - '.$storage.' - '.$color.' - '.$grade.' - Variation changed');
             }
                 session()->put('copy', 1);
         }else{
@@ -822,30 +848,6 @@ class Inventory extends Component
             session()->put('storage', $stock->variation->storage);
             session()->put('color', $stock->variation->color);
             session()->put('grade', $stock->variation->grade);
-        }
-
-        $process_stock = Process_stock_model::firstOrNew(['process_id'=>$process_id, 'stock_id'=>$stock->id]);
-        $process_stock->admin_id = session('user_id');
-        $process_stock->status = 1;
-        if($process_stock->id == null){
-            $process_stock->save();
-            // Check if the session variable 'counter' is set
-            if (session()->has('counter')) {
-                // Increment the counter
-                session()->increment('counter');
-            } else {
-                // Initialize the counter if it doesn't exist
-                session()->put('counter', 1);
-            }
-            $model = $stock->variation->product->model ?? '?';
-            $storage = $stock->variation->storage_id->name ?? '?';
-            $color = $stock->variation->color_id->name ?? '?';
-            $grade = $stock->variation->grade_id->name ?? '?';
-
-
-            session()->put('success', 'Stock Verified successfully: '.$model.' - '.$storage.' - '.$color.' - '.$grade);
-        }else{
-            session()->put('error', 'Stock already verified');
         }
         return redirect()->back();
     }

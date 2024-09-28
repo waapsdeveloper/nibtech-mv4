@@ -22,18 +22,6 @@
                 </div>
                 <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
 
-                <select name="return[product]" class="form-control form-select" style="width: 150px;">
-                    <option value="">Model</option>
-                    @foreach ($products as $id => $model)
-                        <option value="{{ $id }}"@if($id == session('product_id')) {{'selected'}}@endif>{{ $model }}</option>
-                    @endforeach
-                </select>
-                <select name="return[storage]" class="form-control form-select">
-                    <option value="">Storage</option>
-                    @foreach ($storages as $id => $name)
-                        <option value="{{ $id }}"@if($id == session('storage')) {{'selected'}}@endif>{{ $name }}</option>
-                    @endforeach
-                </select>
                 <select name="return[color]" class="form-control form-select" style="width: 150px;">
                     <option value="">Color</option>
                     @foreach ($colors as $id => $name)
