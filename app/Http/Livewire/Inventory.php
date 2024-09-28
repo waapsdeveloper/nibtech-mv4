@@ -820,13 +820,15 @@ class Inventory extends Component
                 session()->put('success', 'Stock Variation changed successfully');
             }
                 session()->put('copy', 1);
+                session()->put('color', request('color'));
+                session()->put('grade', request('grade'));
         }else{
             session()->put('copy', 0);
             // session()->put('product_id', $stock->variation->product_id);
             // session()->put('storage', $stock->variation->storage);
+            session()->put('color', $stock->variation->color);
+            session()->put('grade', $stock->variation->grade);
         }
-            session()->put('color', request('color'));
-            session()->put('grade', request('grade'));
 
         $process_stock = Process_stock_model::firstOrNew(['process_id'=>$process_id, 'stock_id'=>$stock->id]);
         $process_stock->admin_id = session('user_id');
