@@ -46,10 +46,10 @@
                 </select>
 
 
-                {{-- <div class="form-check form-switch"> --}}
+                <div class="form-check input-group">
                     <input class="form-check-input" type="radio" id="com" name="description" value="Change of mind">
                     <label class="form-check-label" for="com">Change of mind</label>
-                {{-- </div> --}}
+                </div>
             </div>
         </form>
     </div>
