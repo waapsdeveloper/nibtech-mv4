@@ -660,6 +660,11 @@ class Inventory extends Component
         return view('livewire.inventory')->with($data);
     }
     public function verification(){
+
+        $data['colors'] = Color_model::pluck('name','id');
+        $data['storages'] = Storage_model::pluck('name','id');
+        $data['products'] = Products_model::pluck('model','id');
+        $data['grades'] = Grade_model::pluck('name','id');
         $active_inventory_verification = Process_model::where(['process_type_id'=>20,'status'=>1])->first();
 
         $data['active_inventory_verification'] = $active_inventory_verification;
