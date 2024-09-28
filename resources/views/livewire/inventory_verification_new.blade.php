@@ -13,7 +13,7 @@
 
     <div class="">
 
-        <form class="form-inline" action="{{ url('inventory/add_verification_imei').'/'.$active_inventory_verification->id }}" method="POST" id="wholesale_item">
+        <form class="form-inline" action="{{ url('inventory/add_verification_imei').'/'.$active_inventory_verification->id }}" method="POST" id="">
             @csrf
                 <div class="input-group">
                     <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
