@@ -820,10 +820,11 @@ class Inventory extends Component
                     'color' => $color_id,
                     'grade' => $grade_id,
                 ]);
-                $new_variation->status = 1;
-                $new_variation->save();
 
                 if($stock->variation_id != $new_variation->id){
+                    $new_variation->status = 1;
+                    $new_variation->stock += 1;
+                    $new_variation->save();
                     $stock_operation = Stock_operations_model::create([
                         'stock_id' => $stock->id,
                         'old_variation_id' => $stock->variation_id,
