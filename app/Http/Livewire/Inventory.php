@@ -792,25 +792,25 @@ class Inventory extends Component
                     $product_id = $variation->product_id;
                 }
                 if(request('storage')){
-                    $storage = request('storage');
+                    $storage_id = request('storage');
                 }else{
-                    $storage = $variation->storage;
+                    $storage_id = $variation->storage;
                 }
                 if(request('color')){
-                    $color = request('color');
+                    $color_id = request('color');
                 }else{
-                    $color = $variation->color;
+                    $color_id = $variation->color;
                 }
                 if(request('grade')){
-                    $grade = request('grade');
+                    $grade_id = request('grade');
                 }else{
-                    $grade = $variation->grade;
+                    $grade_id = $variation->grade;
                 }
                 $new_variation = Variation_model::firstOrNew([
                     'product_id' => $product_id,
-                    'storage' => $storage,
-                    'color' => $color,
-                    'grade' => $grade,
+                    'storage' => $storage_id,
+                    'color' => $color_id,
+                    'grade' => $grade_id,
                 ]);
                 $new_variation->status = 1;
                 $new_variation->save();
