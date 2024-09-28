@@ -22,13 +22,13 @@
                 </div>
                 <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
 
-                <select name="return[color]" class="form-control form-select" style="width: 150px;">
+                <select name="color" class="form-control form-select" style="width: 150px;">
                     <option value="">Color</option>
                     @foreach ($colors as $id => $name)
                         <option value="{{ $id }}"@if($id == session('color')) {{'selected'}}@endif>{{ $name }}</option>
                     @endforeach
                 </select>
-                <select name="return[grade]" class="form-control form-select">
+                <select name="grade" class="form-control form-select">
                     <option value="">Grade</option>
                     @foreach ($grades as $id => $name)
                         <option value="{{ $id }}" @if ($id == session('grade')) {{'selected'}}@endif>{{ $name }}</option>
