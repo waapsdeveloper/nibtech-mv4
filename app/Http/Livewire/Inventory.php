@@ -817,7 +817,7 @@ class Inventory extends Component
                     'description' => 'Variation changed during inventory verification',
                     'admin_id' => session('user_id'),
                 ]);
-                session()->put('success', 'Stock Variation changed successfully');
+                session()->put('success', 'Stock Variation changed successfully from '.$stock->variation_id.' to '.$new_variation->id);
             }
                 session()->put('copy', 1);
                 session()->put('color', request('color'));
