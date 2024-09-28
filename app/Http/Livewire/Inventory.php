@@ -777,21 +777,24 @@ class Inventory extends Component
 
         if(request('copy') == 1){
             $variation = $stock->variation;
-            if(request('product_id')){
+            if(request('product_id') != null){
                 $product_id = request('product_id');
             }else{
                 $product_id = $variation->product_id;
             }
-            if(request('storage')){
+            if(request('storage') != null){
                 $storage_id = request('storage');
             }else{
                 $storage_id = $variation->storage;
             }
-            if(request('copy') == 1){
+            if(request('color') != null){
                 $color_id = request('color');
-                $grade_id = request('grade');
             }else{
                 $color_id = $variation->color;
+            }
+            if(request('grade') != null){
+                $grade_id = request('grade');
+            }else{
                 $grade_id = $variation->grade;
             }
             $new_variation = Variation_model::firstOrNew([
@@ -821,9 +824,9 @@ class Inventory extends Component
             session()->put('copy', 0);
             // session()->put('product_id', $stock->variation->product_id);
             // session()->put('storage', $stock->variation->storage);
-            session()->put('color', $stock->variation->color);
-            session()->put('grade', $stock->variation->grade);
         }
+            session()->put('color', request('color'));
+            session()->put('grade', request('grade'));
 
         $process_stock = Process_stock_model::firstOrNew(['process_id'=>$process_id, 'stock_id'=>$stock->id]);
         $process_stock->admin_id = session('user_id');
