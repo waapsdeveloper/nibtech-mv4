@@ -832,6 +832,7 @@ class Inventory extends Component
                         'description' => 'Variation changed during inventory verification',
                         'admin_id' => session('user_id'),
                     ]);
+                    session()->put('success', 'Stock Verified successfullasy: '.$model.' - '.$storage.' - '.$color.' - '.$grade);
                 }
                     session()->put('copy', 1);
             }else{
