@@ -11,7 +11,7 @@
     @section('content')
 
 
-    <div class="d-flex justify-content-between">
+    <div class="">
 
         <form class="form-inline" action="{{ url('inventory/add_verification_imei').'/'.$active_inventory_verification->id }}" method="POST" id="wholesale_item">
             @csrf
@@ -20,10 +20,6 @@
                 <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
                 <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
 
-
-            </div>
-
-            <div>
                 <select name="return[product]" class="form-control form-select" style="width: 150px;">
                     <option value="">Model</option>
                     @foreach ($products as $id => $model)
