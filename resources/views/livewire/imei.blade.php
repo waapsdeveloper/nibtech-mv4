@@ -465,7 +465,6 @@
                                     <tr>
                                         <th><small><b>No</b></small></th>
                                         <th><small><b>Product</b></small></th>
-                                        <th><small><b>IMEI / Serial Number</b></small></th>
                                         <th><small><b>Exit At</b></small></th>
                                         <th><small><b>Exit By</b></small></th>
                                         <th><small><b>Description</b></small></th>

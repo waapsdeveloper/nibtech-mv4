@@ -48,9 +48,9 @@ class IMEI extends Component
             $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
 
             $data['products'] = Products_model::orderBy('model','asc')->get();
-            $data['colors'] = Color_model::all();
-            $data['storages'] = Storage_model::all();
-            $data['grades'] = Grade_model::all();
+            $data['colors'] = Color_model::pluck('name','id');
+            $data['storages'] = Storage_model::pluck('name','id');
+            $data['grades'] = Grade_model::pluck('name','id');
             if (request('imei') == '' || !$stock || $stock->status == null) {
                 session()->put('error', 'IMEI Invalid / Not Found');
                 // return redirect()->back(); // Redirect here is not recommended
