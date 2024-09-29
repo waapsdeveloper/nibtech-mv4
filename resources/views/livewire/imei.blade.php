@@ -475,7 +475,7 @@
                                 </thead>
                                 <tbody>
                                     @php
-                                        $i = $stock_room->firstItem() - 1;
+                                        $i = 0;
                                     @endphp
                                     @foreach ($stock_room as $stock_r)
                                         @php
