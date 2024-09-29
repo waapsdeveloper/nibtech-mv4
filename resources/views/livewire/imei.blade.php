@@ -357,12 +357,6 @@
         @endif
 
         @if (isset($stocks))
-        <div class="row">
-            <div class="col-md-12" style="border-bottom: 1px solid rgb(216, 212, 212);">
-                <center><h4>Moved Inventory</h4></center>
-            </div>
-        </div>
-        <br>
 
         <div class="row">
             <div class="col-xl-12">
@@ -432,6 +426,80 @@
                                                 </td>
                                                 @endif
                                             </tr>
+                                        @php
+                                            $i ++;
+                                        @endphp
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        <br>
+                    </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @endif
+        @if (isset($stock_room))
+
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-header pb-0">
+                        <div class="d-flex justify-content-between">
+                            <h4 class="card-title mg-b-0">
+                                Stock Room Movement
+                            </h4>
+
+                            <div class=" mg-b-0">
+                                Total count: {{ count($stock_room) }}
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="card-body"><div class="table-responsive">
+
+                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th><small><b>No</b></small></th>
+                                        <th><small><b>Product</b></small></th>
+                                        <th><small><b>IMEI / Serial Number</b></small></th>
+                                        <th><small><b>Exit At</b></small></th>
+                                        <th><small><b>Exit By</b></small></th>
+                                        <th><small><b>Description</b></small></th>
+                                        <th><small><b>Received At</b></small></th>
+                                        <th><small><b>Received By</b></small></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @php
+                                        $i = $stock_room->firstItem() - 1;
+                                    @endphp
+                                    @foreach ($stock_room as $stock_r)
+                                        @php
+                                            $stoc = $stock_r->stock;
+                                        @endphp
+                                        <tr>
+                                            @if ($stoc == null)
+                                                {{$stock_r->stock_id}}
+                                                @continue
+
+                                            @endif
+                                            <td title="{{ $stock_r->stock_id }}">{{ $i + 1 }}</td>
+                                            <td>{{ $stoc->variation->product->model . " " . (isset($stoc->variation->storage) ? $storages[$stoc->variation->storage] . " " : null) . " " .
+                                            (isset($stoc->variation->color) ? $colors[$stoc->variation->color] . " " : null) . $grades[$stoc->variation->grade] }}</td>
+                                            <td>{{ $stock_r->exit_at }}</td>
+                                            <td>{{ $stock_r->admin->first_name ?? null }}</td>
+                                            <td>
+                                                {{ $stock_r->description }}
+                                            </td>
+                                            <td>{{ $stock_r->received_at }}</td>
+                                            <td>{{ $stock_r->receiver->first_name ?? null }}</td>
+
+                                        </tr>
+
                                         @php
                                             $i ++;
                                         @endphp

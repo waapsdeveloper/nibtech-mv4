@@ -156,6 +156,10 @@ class IMEI extends Component
             })->orderBy('id','desc')->get();
             $data['process_stocks'] = $process_stocks;
 
+
+            $data['stock_room'] = Stock_movement_model::where(['stock_id'=>$stock_id])
+            ->orderBy('exit_at', 'desc')->get();
+
             if($last_item){
 
                 if(in_array($last_item->order->order_type_id,[1,4,6])){
