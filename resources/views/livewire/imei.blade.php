@@ -441,7 +441,7 @@
         </div>
 
         @endif
-        @if (isset($stock_room))
+        @if (isset($stock_room) && $stock_room->count() > 0)
 
         <div class="row">
             <div class="col-xl-12">
