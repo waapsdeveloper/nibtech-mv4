@@ -120,6 +120,8 @@ class Inventory extends Component
             ])
             ->get(['product_id', 'storage']);
 
+            dd($available_stocks);
+
             // Process the retrieved data to get stock IDs
             $result = $available_stocks->map(function ($variation) {
                 $stocks = $variation->stocks;
