@@ -74,7 +74,9 @@ class Inventory extends Component
                 $query->where('status', 1);
             })
             ->when(request('aftersale') != 1, function ($q) use ($aftersale) {
-                return $q->whereNotIn('stock.id',$aftersale);
+                return $q->whereHas('stocks', function ($q) use ($aftersale) {
+                    $q->whereNotIn('id',$aftersale);
+                });
             })
             ->when(request('variation') != '', function ($q) {
                 return $q->where('id', request('variation'));
