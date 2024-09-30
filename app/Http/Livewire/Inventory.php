@@ -108,11 +108,11 @@ class Inventory extends Component
             ->when(request('grade') != [], function ($q) {
                 return $q->whereIn('grade', request('grade'));
             })
-            ->withCount([
-                'stocks as quantity' => function ($query) {
-                    $query->where('status', 1);
-                }
-            ])
+            // ->withCount([
+            //     'stocks as quantity' => function ($query) {
+            //         $query->where('status', 1);
+            //     }
+            // ])
             ->with([
                 'stocks' => function ($query) {
                     $query->where('status', 1);
@@ -126,12 +126,15 @@ class Inventory extends Component
 
                 // Collect all stock IDs
                 $stockIds = $stocks->pluck('id');
+                $poIds = $stocks->pluck('order_id');
 
                 return [
                     'product_id' => $variation->product_id,
                     'storage' => $variation->storage,
-                    'quantity' => $variation->quantity, // Use quantity from withCount
-                    'stock_ids' => $stockIds->toArray() // Convert collection to array
+                    'quantity' => $stocks->count(), // Use count of stocks
+                    // 'quantity' => $variation->quantity, // Use quantity from withCount
+                    'stock_ids' => $stockIds->toArray(), // Convert collection to array
+                    'po_ids' => $poIds->toArray() // Convert collection to array
                 ];
             });
 
@@ -145,6 +148,10 @@ class Inventory extends Component
                 $stockIds = $items->flatMap(function ($item) {
                     return $item['stock_ids'];
                 })->unique()->values()->toArray(); // Convert to array
+                // Merge all po IDs for the group
+                $poIds = $items->flatMap(function ($item) {
+                    return $item['po_ids'];
+                })->unique()->values()->toArray(); // Convert to array
 
                 // Sum the quantity
                 $quantity = $items->sum('quantity'); // Sum the quantities
@@ -153,7 +160,8 @@ class Inventory extends Component
                     'product_id' => $product_id,
                     'storage' => $storage,
                     'quantity' => $quantity,
-                    'stock_ids' => $stockIds // Already an array
+                    'stock_ids' => $stockIds, // Already an array
+                    'po_ids' => $poIds // Already an array
                 ];
             })->values();
 
@@ -161,8 +169,8 @@ class Inventory extends Component
             $available_stocks_2 = $groupedResult->sortBy(['product_id','storage'])->toArray();
 
             foreach($available_stocks_2 as $key => $available_stock){
-                $average_cost = Order_item_model::whereIn('stock_id', $available_stock['stock_ids'])->avg('price');
-                $total_cost = Order_item_model::whereIn('stock_id', $available_stock['stock_ids'])->sum('price');
+                $average_cost = Order_item_model::whereIn('stock_id', $available_stock['stock_ids'])->whereIn('order_id', $available_stock['po_ids'])->avg('price');
+                $total_cost = Order_item_model::whereIn('stock_id', $available_stock['stock_ids'])->whereIn('order_id', $available_stock['po_ids'])->sum('price');
                 $available_stocks_2[$key]['average_cost'] = $average_cost;
                 $available_stocks_2[$key]['total_cost'] = $total_cost;
             }
