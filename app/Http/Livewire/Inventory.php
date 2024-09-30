@@ -248,20 +248,24 @@ class Inventory extends Component
                 'stock_ids' => $stockIds,
                 'po_ids' => $poIds
             ];
-            })->values()->sortBy(['product_id', 'storage'])->values();
+            });
+            // Sort the results by quantity in descending order
+            $groupedResult = $groupedResult->sortBy(['product_id', 'storage'])->values();
 
-            // Calculate average and total costs for each grouped item in one loop
-            foreach ($groupedResult as $key => $available_stock) {
-            $orderItems = Order_item_model::whereIn('stock_id', $available_stock['stock_ids'])
-                ->whereIn('order_id', $available_stock['po_ids'])
-                ->get(['price']);
+            // Calculate average and total costs for each grouped item in one loop using transform
+            $groupedResult = $groupedResult->transform(function ($available_stock) {
+                $orderItems = Order_item_model::whereIn('stock_id', $available_stock['stock_ids'])
+                    ->whereIn('order_id', $available_stock['po_ids'])
+                    ->get(['price']);
 
-            $total_cost = $orderItems->sum('price');
-            $average_cost = $orderItems->isNotEmpty() ? $total_cost / $orderItems->count() : 0;
+                $total_cost = $orderItems->sum('price');
+                $average_cost = $orderItems->isNotEmpty() ? $total_cost / $orderItems->count() : 0;
 
-            $groupedResult[$key]['average_cost'] = $average_cost;
-            $groupedResult[$key]['total_cost'] = $total_cost;
-            }
+                $available_stock['average_cost'] = $average_cost;
+                $available_stock['total_cost'] = $total_cost;
+
+                return $available_stock;
+            });
 
             // Prepare final result
             $data['available_stock_summery'] = $groupedResult->toArray();
