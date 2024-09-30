@@ -125,6 +125,10 @@
             <input type="hidden" name="status" value="{{ Request::get('status') }}">
             <input type="hidden" name="page" value="{{ Request::get('page') }}">
             <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
+            @if (request('summery') == 1)
+                <input type="hidden" name="summery" value="1">
+
+            @endif
         </form>
         <br>
         <script>
