@@ -161,8 +161,12 @@ class Inventory extends Component
             $available_stocks_2 = $groupedResult->sortBy(['product_id','storage'])->toArray();
 
             foreach($available_stocks_2 as $key => $available_stock){
-                $average_cost = Order_item_model::whereIn('stock_id', $available_stock['stock_ids'])->avg('price');
-                $total_cost = Order_item_model::whereIn('stock_id', $available_stock['stock_ids'])->sum('price');
+                $average_cost = Order_item_model::whereIn('stock_id', $available_stock['stock_ids'])->whereHas('order', function ($q) {
+                    $q->where('order_type_id', 1);
+                })->avg('price');
+                $total_cost = Order_item_model::whereIn('stock_id', $available_stock['stock_ids'])->whereHas('order', function ($q) {
+                    $q->where('order_type_id', 1);
+                })->sum('price');
                 $available_stocks_2[$key]['average_cost'] = $average_cost;
                 $available_stocks_2[$key]['total_cost'] = $total_cost;
             }
