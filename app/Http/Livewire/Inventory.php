@@ -264,8 +264,6 @@ $groupedResult = $groupedResult->transform(function ($available_stock) {
             ->whereIn('order_id', $available_stock['po_ids'])
             ->get(['price']);
 
-        // Debugging: Check retrieved order items
-        info('Order Items:', $orderItems->toArray());
 
         $total_cost = $orderItems->sum('price');
         $average_cost = $orderItems->isNotEmpty() ? $total_cost / $orderItems->count() : 0;
