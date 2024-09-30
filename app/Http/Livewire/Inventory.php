@@ -278,8 +278,6 @@ $groupedResult = $groupedResult->transform(function ($available_stock) {
     $available_stock['average_cost'] = $average_cost;
     $available_stock['total_cost'] = $total_cost;
 
-    // Debugging: Check the final available stock values
-    info('Final Available Stock:', $available_stock);
 
     return $available_stock;
 });
