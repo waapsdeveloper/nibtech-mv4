@@ -250,25 +250,46 @@ class Inventory extends Component
             ];
             });
             // Sort the results by quantity in descending order
-            $groupedResult = $groupedResult->sortBy(['product_id', 'storage'])->values();
+$groupedResult = $groupedResult->sortBy(['product_id', 'storage'])->values();
 
-            // Calculate average and total costs for each grouped item in one loop using transform
-            $groupedResult = $groupedResult->transform(function ($available_stock) {
-                $orderItems = Order_item_model::whereIn('stock_id', $available_stock['stock_ids'])
-                    ->whereIn('order_id', $available_stock['po_ids'])
-                    ->get(['price']);
+// Calculate average and total costs for each grouped item in one loop using transform
+$groupedResult = $groupedResult->transform(function ($available_stock) {
+    // Debugging: Check the values before calculations
+    info('Processing Available Stock:', $available_stock);
 
-                $total_cost = $orderItems->sum('price');
-                $average_cost = $orderItems->isNotEmpty() ? $total_cost / $orderItems->count() : 0;
+    // Check if stock_ids and po_ids are not empty before querying
+    if (!empty($available_stock['stock_ids']) && !empty($available_stock['po_ids'])) {
+        // Fetch relevant order items
+        $orderItems = Order_item_model::whereIn('stock_id', $available_stock['stock_ids'])
+            ->whereIn('order_id', $available_stock['po_ids'])
+            ->get(['price']);
 
-                $available_stock['average_cost'] = $average_cost;
-                $available_stock['total_cost'] = $total_cost;
+        // Debugging: Check retrieved order items
+        info('Order Items:', $orderItems->toArray());
 
-                return $available_stock;
-            });
+        $total_cost = $orderItems->sum('price');
+        $average_cost = $orderItems->isNotEmpty() ? $total_cost / $orderItems->count() : 0;
+    } else {
+        $total_cost = 0;
+        $average_cost = 0;
+    }
 
-            // Prepare final result
-            $data['available_stock_summery'] = $groupedResult->toArray();
+    // Add calculated values to available stock
+    $available_stock['average_cost'] = $average_cost;
+    $available_stock['total_cost'] = $total_cost;
+
+    // Debugging: Check the final available stock values
+    info('Final Available Stock:', $available_stock);
+
+    return $available_stock;
+});
+
+// Prepare final result
+$data['available_stock_summery'] = $groupedResult->toArray();
+
+// Debugging: Output the entire result
+info('Available Stock Summary:', $data['available_stock_summery']);
+
 
 
         }else{
