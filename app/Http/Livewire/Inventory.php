@@ -130,7 +130,7 @@ class Inventory extends Component
                 return [
                     'product_id' => $variation->product_id,
                     'storage' => $variation->storage,
-                    'quantity' => $variation->quantity, // Use quantity from withCount
+                    'quantity' => $stockIds->count(), // Use quantity from withCount
                     'stock_ids' => $stockIds->toArray() // Convert collection to array
                 ];
             });
