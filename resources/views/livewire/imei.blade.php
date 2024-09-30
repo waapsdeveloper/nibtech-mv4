@@ -364,7 +364,7 @@
                     <div class="card-header pb-0">
                         <div class="d-flex justify-content-between">
                             <h4 class="card-title mg-b-0">
-                                Repair History
+                                Inventory Verification History
                             </h4>
 
                             <div class=" mg-b-0">
