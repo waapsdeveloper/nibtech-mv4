@@ -70,12 +70,10 @@ class Inventory extends Component
 
 
             // Retrieve variations with related stocks
-            $available_stocks = Variation_model::whereHas('stocks', function ($query) {
-                $query->where('status', 1);
-            })
-            ->when(request('aftersale') != 1, function ($q) use ($aftersale) {
-                return $q->whereHas('stocks', function ($q) use ($aftersale) {
-                    $q->whereNotIn('id',$aftersale);
+            $available_stocks = Variation_model::whereHas('stocks', function ($query) use ($aftersale) {
+                $query->where('status', 1)
+                ->when(request('aftersale') != 1, function ($q) use ($aftersale) {
+                    return $q->whereNotIn('stock.id',$aftersale);
                 });
             })
             ->when(request('variation') != '', function ($q) {
