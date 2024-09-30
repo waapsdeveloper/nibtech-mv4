@@ -127,7 +127,6 @@ class Inventory extends Component
                 // Collect all stock IDs
                 $stockIds = $stocks->pluck('id');
                 $poIds = $stocks->pluck('order_id');
-                dd($poIds);
                 return [
                     'product_id' => $variation->product_id,
                     'storage' => $variation->storage,
@@ -138,6 +137,7 @@ class Inventory extends Component
                 ];
             });
 
+                dd($result);
             // Group the results by product_id and storage
             $groupedResult = $result->groupBy(function ($item) {
                 return $item['product_id'] . '.' . $item['storage'];
