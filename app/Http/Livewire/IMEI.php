@@ -149,12 +149,18 @@ class IMEI extends Component
                 //     dd($last_item);
                 // }
 
-                $stock_id = $stock->id;
+            $stock_id = $stock->id;
 
             $process_stocks = Process_stock_model::where('stock_id', $stock_id)->whereHas('process', function ($query) {
                 $query->where('process_type_id', 9);
             })->orderBy('id','desc')->get();
             $data['process_stocks'] = $process_stocks;
+
+
+            $inventory_verifications = Process_stock_model::where('stock_id', $stock_id)->whereHas('process', function ($query) {
+                $query->where('process_type_id', 20);
+            })->orderBy('id','desc')->get();
+            $data['inventory_verifications'] = $inventory_verifications;
 
 
             $data['stock_room'] = Stock_movement_model::where(['stock_id'=>$stock_id])
