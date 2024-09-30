@@ -2152,7 +2152,7 @@ class Order extends Component
     }
     public function correction(){
         $item = Order_item_model::find(request('correction')['item_id']);
-        if($item->order->processed_at > Carbon::now()->subHour(2) || session('user')->hasPermission('correction')){
+        if(session('user')->hasPermission('correction')){
             if($item->quantity > 1 && $item->order->order_items->count() == 1){
                 for($i=1; $i<=$item->quantity; $i++){
 
