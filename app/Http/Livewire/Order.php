@@ -781,7 +781,9 @@ class Order extends Component
             // Group the results by product_id and storage
             $groupedResult = $result->groupBy(function ($item) {
                 return $item['product_id'] . '.' . $item['storage'];
-            })->sortBy(['product_id','storage'])->map(function ($items, $key) use ($data) {
+            })
+            // ->sortBy(['product_id','storage'])
+            ->map(function ($items, $key) use ($data) {
                 list($product_id, $storage) = explode('.', $key);
 
 
