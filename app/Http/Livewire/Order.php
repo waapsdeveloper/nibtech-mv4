@@ -794,7 +794,7 @@ class Order extends Component
             })->values();
 
             // Sort the results by quantity in descending order
-            $sold_stocks_2 = $groupedResult->sortBy('product_id','storage')->toArray();
+            $sold_stocks_2 = $groupedResult->sortBy(['product_id','storage'])->toArray();
 
 
             // dd($sold_stocks_2);
