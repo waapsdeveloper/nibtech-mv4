@@ -798,7 +798,7 @@ class Order extends Component
 
 
             // dd($sold_stocks_2);
-            $data['stock_summery'] = $sold_stocks_2;
+            $data['stock_summery'] = $groupedResult;
 
         }else{
             if (!request('status') || request('status') == 1){
