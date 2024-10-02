@@ -797,7 +797,7 @@ class Order extends Component
 
 
             // dd($sold_stocks_2);
-            $data['stock_summery'] = array_multisort($sold_stocks_2, 'product', SORT_ASC);
+            $data['stock_summery'] = array_multisort($sold_stocks_2, SORT_ASC, 'product');
 
         }else{
             if (!request('status') || request('status') == 1){
