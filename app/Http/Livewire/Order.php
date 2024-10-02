@@ -781,20 +781,20 @@ class Order extends Component
             // Group the results by product_id and storage
             $groupedResult = $result->groupBy(function ($item) {
                 return $item['product_id'] . '.' . $item['storage'];
-            })->map(function ($items, $key) {
+            })->map(function ($items, $key) use ($data) {
                 list($product_id, $storage) = explode('.', $key);
 
 
                 return [
-                    'product_id' => $product_id,
-                    'storage' => $storage,
+                    'product_id' => $data['products'][$product_id],
+                    'storage' => $data['storages'][$storage],
                     'sold_qty' => $items->sum('sold_qty'),
                     'available_qty' => $items->sum('available_qty'),
                 ];
             })->values();
 
             // Sort the results by quantity in descending order
-            $sold_stocks_2 = $groupedResult->toArray();
+            $sold_stocks_2 = $groupedResult->orderBy('product_id','storage')->toArray();
 
 
             // dd($sold_stocks_2);
