@@ -766,7 +766,7 @@ class Order extends Component
                 },
             ])
             ->get(['product_id', 'storage']);
-
+            dd($sold_stocks);
             // Process the retrieved data to get stock IDs
             $result = $sold_stocks->map(function ($variation) {
 
