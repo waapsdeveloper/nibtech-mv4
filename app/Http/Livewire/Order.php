@@ -776,7 +776,7 @@ class Order extends Component
                     'available_qty' => $variation->all_available_stocks_count,
                 ];
             });
-            dd($result);
+            // dd($result);
 
             // Group the results by product_id and storage
             $groupedResult = $result->groupBy(function ($item) {
