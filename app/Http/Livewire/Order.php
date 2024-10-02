@@ -766,7 +766,6 @@ class Order extends Component
                 },
             ])
             ->get(['product_id', 'storage']);
-            dd($sold_stocks);
             // Process the retrieved data to get stock IDs
             $result = $sold_stocks->map(function ($variation) {
 
@@ -777,6 +776,7 @@ class Order extends Component
                     'available_qty' => $variation->available_stocks->count(),
                 ];
             });
+            dd($result);
 
             // Group the results by product_id and storage
             $groupedResult = $result->groupBy(function ($item) {
