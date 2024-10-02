@@ -773,7 +773,7 @@ class Order extends Component
                     'product_id' => $variation->product_id,
                     'storage' => $variation->storage,
                     'sold_qty' => $variation->sold_stocks_count,
-                    'available_qty' => $variation->available_stocks_count,
+                    'available_qty' => $variation->all_available_stocks_count,
                 ];
             });
             dd($result);
