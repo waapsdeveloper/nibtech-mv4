@@ -179,6 +179,7 @@
                 <a href="{{url('purchase/detail')."/".$order->id}}" class="btn btn-link @if (!request('status')) bg-white @endif " >All</a>
                 @if (session('user')->hasPermission('view_purchase_summery'))
                 <a href="{{url('purchase/detail')."/".$order->id}}?summery=1" class="btn btn-link @if (request('summery') == 1) bg-white @endif ">Summery</a>
+                <a href="{{url('purchase/detail')."/".$order->id}}?summery=2" class="btn btn-link @if (request('summery') == 2) bg-white @endif ">Purchase Summery</a>
 
                 @endif
             </div>
@@ -244,6 +245,39 @@
                                 <td>{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</td>
                                 <td>{{ $summery['quantity'] }}</td>
                                 <td title="{{ $summery['average_cost'] }}">{{ amount_formatter($summery['total_cost'],2) }}</td>
+                            </tr>
+                            {{-- @endif --}}
+                        @endforeach
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+        @elseif (session('user')->hasPermission('view_purchase_summery') && request('summery') && request('summery') == 2)
+        <div class="card">
+            <div class="card-header pb-0">
+                Inventory Summery
+            </div>
+            <div class="card-body"><div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                    <thead>
+                        <tr>
+                            <th><small><b>No</b></small></th>
+                            <th><small><b>Model</b></small></th>
+                            <th><small><b>Quantity Sold</b></small></th>
+                            <th><small><b>Quantity Available</b></small></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                            $i = 0;
+                        @endphp
+                        @foreach ($stock_summery as $summery)
+                            <tr>
+                                <td>{{ $i++ }}</td>
+                                <td>{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</td>
+                                <td>{{ $summery['sold_qty'] }}</td>
+                                <td>{{ $summery['available_qty'] }}</td>
                             </tr>
                             {{-- @endif --}}
                         @endforeach

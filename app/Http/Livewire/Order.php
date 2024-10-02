@@ -750,6 +750,56 @@ class Order extends Component
 
             // dd($available_stocks_2);
             $data['available_stock_summery'] = $available_stocks_2;
+        }elseif(request('summery') == 2){
+
+
+            // Retrieve variations with related stocks
+            $sold_stocks = Variation_model::whereHas('stocks', function ($query) use ($order_id) {
+                $query->where('order_id', $order_id);
+            })
+            ->with([
+                'stocks as sold_stocks' => function ($query) use ($order_id) {
+                    $query->where('order_id', $order_id)->where('status', 2);
+                },
+                'stocks as available_stocks' => function ($query) use ($order_id) {
+                    $query->where('order_id', $order_id)->where('status', 1);
+                },
+            ])
+            ->get(['product_id', 'storage']);
+
+            // Process the retrieved data to get stock IDs
+            $result = $sold_stocks->map(function ($variation) {
+
+                return [
+                    'product_id' => $variation->product_id,
+                    'storage' => $variation->storage,
+                    'sold_qty' => $variation->sold_stocks->count(),
+                    'available_qty' => $variation->available_stocks->count(),
+                ];
+            });
+
+            // Group the results by product_id and storage
+            $groupedResult = $result->groupBy(function ($item) {
+                return $item['product_id'] . '.' . $item['storage'];
+            })->map(function ($items, $key) {
+                list($product_id, $storage) = explode('.', $key);
+
+
+                return [
+                    'product_id' => $product_id,
+                    'storage' => $storage,
+                    'sold_qty' => $items->sum('sold_qty'),
+                    'available_qty' => $items->sum('available_qty'),
+                ];
+            })->values();
+
+            // Sort the results by quantity in descending order
+            $sold_stocks_2 = $groupedResult->toArray();
+
+
+            // dd($sold_stocks_2);
+            $data['stock_summery'] = $sold_stocks_2;
+
         }else{
             if (!request('status') || request('status') == 1){
                 $data['variations'] = Variation_model::with(['stocks' => function ($query) use ($order_id) {
