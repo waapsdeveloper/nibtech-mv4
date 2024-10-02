@@ -786,15 +786,14 @@ class Order extends Component
 
 
                 return [
-                    'product_id' => $data['products'][$product_id],
-                    'storage' => $data['storages'][$storage],
+                    'product' => $data['products'][$product_id] . ' ' . $data['storages'][$storage],
                     'sold_qty' => $items->sum('sold_qty'),
                     'available_qty' => $items->sum('available_qty'),
                 ];
             })->values();
 
             // Sort the results by quantity in descending order
-            $sold_stocks_2 = $groupedResult->sortBy(['product_id','storage'])->toArray();
+            $sold_stocks_2 = $groupedResult->sortBy('product')->toArray();
 
 
             // dd($sold_stocks_2);

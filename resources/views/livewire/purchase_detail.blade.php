@@ -276,7 +276,7 @@
                             <tr>
                                 <td>{{ $i++ }}</td>
                                 {{-- <td>{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</td> --}}
-                                <td>{{ $summery['product_id']." ".$summery['storage'] }}</td>
+                                <td>{{ $summery['product'] }}</td>
                                 <td>{{ $summery['sold_qty'] }}</td>
                                 <td>{{ $summery['available_qty'] }}</td>
                             </tr>
