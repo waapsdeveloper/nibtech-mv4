@@ -757,7 +757,7 @@ class Order extends Component
             $sold_stocks = Variation_model::whereHas('stocks', function ($query) use ($order_id) {
                 $query->where('order_id', $order_id);
             })
-            ->with([
+            ->withCount([
                 'sold_stocks' => function ($query) use ($order_id) {
                     $query->where('order_id', $order_id);
                 },
@@ -772,8 +772,8 @@ class Order extends Component
                 return [
                     'product_id' => $variation->product_id,
                     'storage' => $variation->storage,
-                    'sold_qty' => $variation->sold_stocks->count(),
-                    'available_qty' => $variation->available_stocks->count(),
+                    'sold_qty' => $variation->sold_stocks_count,
+                    'available_qty' => $variation->available_stocks_count,
                 ];
             });
             dd($result);
