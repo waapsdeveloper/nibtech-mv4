@@ -795,9 +795,9 @@ class Order extends Component
             // Sort the results by quantity in descending order
             $sold_stocks_2 = $groupedResult->toArray();
 
-
+            array_multisort($sold_stocks_2);
             // dd($sold_stocks_2);
-            $data['stock_summery'] = array_multisort($sold_stocks_2);
+            $data['stock_summery'] = $sold_stocks_2;
 
         }else{
             if (!request('status') || request('status') == 1){
