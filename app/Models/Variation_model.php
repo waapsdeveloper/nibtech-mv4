@@ -77,6 +77,14 @@ class Variation_model extends Model
     {
         return $this->hasMany(Stock_model::class, 'variation_id', 'id');
     }
+    public function sold_stocks()
+    {
+        return $this->hasMany(Stock_model::class, 'variation_id', 'id')->where('status',2);
+    }
+    public function all_available_stocks()
+    {
+        return $this->hasMany(Stock_model::class, 'variation_id', 'id')->where('status',1);
+    }
     public function available_stocks()
     {
         return $this->hasMany(Stock_model::class, 'variation_id', 'id')->where('status',1)->whereHas('active_order');

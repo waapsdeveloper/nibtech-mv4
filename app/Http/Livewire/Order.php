@@ -758,11 +758,11 @@ class Order extends Component
                 $query->where('order_id', $order_id);
             })
             ->with([
-                'stocks as sold_stocks' => function ($query) use ($order_id) {
-                    $query->where('order_id', $order_id)->where('status', 2);
+                'sold_stocks' => function ($query) use ($order_id) {
+                    $query->where('order_id', $order_id);
                 },
-                'stocks as available_stocks' => function ($query) use ($order_id) {
-                    $query->where('order_id', $order_id)->where('status', 1);
+                'all_available_stocks' => function ($query) use ($order_id) {
+                    $query->where('order_id', $order_id);
                 },
             ])
             ->get(['product_id', 'storage']);
