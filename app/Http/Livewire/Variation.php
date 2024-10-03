@@ -74,13 +74,21 @@ class Variation extends Component
 
     public function update_product($id){
         $update = request('update');
-        if($update['product_id'] != null){
-            Variation_model::find($id)->update_product($update['product_id']);
-        }elseif($update['storage'] != null){
-            Variation_model::find($id)->update_storage($update['storage']);
-        }else{
-            Variation_model::where('id', $id)->update($update);
+        $variation = Variation_model::find($id);
+        if($update['product_id'] != null && $update['product_id'] != $variation->product_id){
+            $variation->update_product($update['product_id']);
         }
+        if($update['storage'] != null && $update['storage'] != $variation->storage){
+            $variation->update_storage($update['storage']);
+        }
+        if($update['color'] != null && $update['color'] != $variation->color){
+            $variation->color = $update['color'];
+        }
+        if($update['grade'] != null && $update['grade'] != $variation->grade){
+            $variation->grade = $update['grade'];
+        }
+        $variation->save();
+
 
         return redirect()->back();
     }
