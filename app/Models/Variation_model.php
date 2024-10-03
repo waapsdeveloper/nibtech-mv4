@@ -126,7 +126,7 @@ class Variation_model extends Model
             $pss->save();
         }
         $variation->product_storage_sort_id = $pss->id;
-        $variation->storage_id = $storage_id;
+        $variation->storage = $storage_id;
         $variation->save();
     }
 }
