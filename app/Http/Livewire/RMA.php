@@ -396,7 +396,7 @@ class RMA extends Component
 
         $order = Order_model::firstOrNew(['reference_id' => $rma->reference_id, 'order_type_id' => 2 ]);
         $order->customer_id = $customer->id;
-        $order->status = 2;
+        $order->status = 1;
         $order->currency = 4;
         $order->order_type_id = 2;
         $order->processed_by = session('user_id');
