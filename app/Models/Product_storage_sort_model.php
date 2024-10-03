@@ -2,18 +2,13 @@
 
 namespace App\Models;
 
-use App\Http\Livewire\Listing;
-use App\Http\Livewire\Variation;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Scopes\Status_not_3_scope;
 
 
 class Product_storage_sort_model extends Model
 {
     use HasFactory;
-    use SoftDeletes;
     protected $table = 'product_storage_sort';
     protected $primaryKey = 'id';
     public $timestamps = FALSE;
