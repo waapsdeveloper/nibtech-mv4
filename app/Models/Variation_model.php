@@ -107,7 +107,7 @@ class Variation_model extends Model
         ]);
         return $var->quantity;
     }
-    public function change_product($product_id)
+    public function update_product($product_id)
     {
         $variation = $this;
         $pss = Product_storage_sort_model::firstOrNew(['product_id'=>$product_id,'storage'=>$variation->storage]);
@@ -118,7 +118,7 @@ class Variation_model extends Model
         $variation->product_id = $product_id;
         $variation->save();
     }
-    public function change_storage($storage_id)
+    public function update_storage($storage_id)
     {
         $variation = $this;
         $pss = Product_storage_sort_model::firstOrNew(['product_id'=>$variation->product_id,'storage'=>$storage_id]);
