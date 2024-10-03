@@ -16,7 +16,7 @@ class Stock_operations_model extends Model
     protected $fillable = [
         // other fields...
         'stock_id',
-        'order_id',
+        'order_item_id',
         'process_id',
         'api_request_id',
         'old_variation_id',
@@ -35,13 +35,17 @@ class Stock_operations_model extends Model
     {
         return $this->hasOne(Stock_model::class, 'id', 'stock_id');
     }
-    public function order()
+    public function order_item()
     {
-        return $this->hasOne(Order_model::class, 'id', 'order_id');
+        return $this->hasOne(Order_model::class, 'id', 'order_item_id');
     }
     public function process()
     {
         return $this->hasOne(Process_model::class, 'id', 'process_id');
+    }
+    public function api_request()
+    {
+        return $this->hasOne(Api_request_model::class, 'id', 'api_request_id');
     }
     public function old_variation()
     {
@@ -54,5 +58,23 @@ class Stock_operations_model extends Model
     public function admin()
     {
         return $this->hasOne(Admin_model::class, 'id', 'admin_id');
+    }
+    public function new_operation($stock_id, $order_item_id = NULL, $process_id = NULL, $api_request_id = NULL, $old_variation_id = NULL, $new_variation_id = NULL, $description = NULL)
+    {
+        $find = $this->where('stock_id', $stock_id)->orderByDesc('id')->first();
+
+        if ($find && $find->order_item_id == $order_item_id && $find->process_id == $process_id && $find->api_request_id == $api_request_id && $find->old_variation_id == $old_variation_id && $find->new_variation_id == $new_variation_id && $find->description == $description) {
+            return;
+        }
+
+        $this->stock_id = $stock_id;
+        $this->order_item_id = $order_item_id;
+        $this->process_id = $process_id;
+        $this->api_request_id = $api_request_id;
+        $this->old_variation_id = $old_variation_id;
+        $this->new_variation_id = $new_variation_id;
+        $this->description = $description;
+        $this->admin_id = session('user_id');
+        $this->save();
     }
 }

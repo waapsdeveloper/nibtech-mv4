@@ -537,7 +537,9 @@
         @if (request('status') != null || request('show') == '1')
 
         @if (isset($graded_stocks))
-
+            @php
+                $item_ids = [];
+            @endphp
             <div class="row">
 
                 <div @if ($order->status != 1) class="col-md-8" @endif>
@@ -595,6 +597,7 @@
 
                                             @foreach ($variation->stocks->sortByDesc('stocks.updated_at') as $stock)
                                                 @php
+                                                $order_item = $stock->sale_item($order_id);
                                                 $row = $stock->latest_operation;
                                                 $i ++;
                                                 if($row != null && str_contains($row->description, "Replacement")){
@@ -603,6 +606,11 @@
                                                         $stock->availability();
                                                     }
                                                 }
+                                                if(!in_array($stock->id, $item_ids)){
+                                                    $item_ids[] = $stock->id;
+                                                }else {
+                                                    $order_item->delete();
+                                                }
                                             @endphp
                                                 <tr>
                                                     <td>{{ $i }}</td>
@@ -610,13 +618,13 @@
                                                     <td data-stock="{{ $stock->id }}">{{ $stock->imei.$stock->serial_number }}</td>
                                                     <td>{{ $stock->order->customer->first_name." ".$stock->order->reference_id }}</td>
                                                     @if (session('user')->hasPermission('view_cost'))
-                                                    <td>{{ $item->currency_id->sign ?? $currency }}{{ $stock->sale_item($order_id)->price }}</td>
+                                                    <td>{{ $item->currency_id->sign ?? $currency }}{{ $order_item->price }}</td>
                                                     @endif
                                                     <td>{{ $row->description ?? null }}</td>
                                                     <td>{{ $row->admin->first_name ?? null }}</td>
                                                     <td>{{ $row->updated_at ?? null }}</td>
                                                     @if (session('user')->hasPermission('delete_return_item'))
-                                                    <td><a href="{{ url('delete_return_item').'/'.$stock->sale_item($order_id)->id }}"><i class="fa fa-trash"></i></a></td>
+                                                    <td><a href="{{ url('delete_return_item').'/'.$order_item->id }}"><i class="fa fa-trash"></i></a></td>
                                                     @endif
                                                 </tr>
                                                 {{-- @endif --}}

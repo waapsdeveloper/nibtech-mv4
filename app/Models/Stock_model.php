@@ -144,8 +144,29 @@ class Stock_model extends Model
     public function sale_item($order_id)
     {
         // Define a custom method to retrieve only one order item
-        return $this->hasOne(Order_item_model::class, 'stock_id', 'id')->where('order_id', $order_id)->orderBy('id','desc')->first();
+        return $this->hasOne(Order_item_model::class, 'stock_id', 'id')->where('order_id', $order_id)->orderByDesc('id')->first();
     }
+    public function mark_sold($order_item_id, $tester = null)
+    {
+        $stock = $this;
+        $order_item = Order_item_model::find($order_item_id);
+        $order_id = $order_item->order_id;
+
+        $stock->status = 2;
+        $stock->sale_order_id = $order_id;
+
+        if($tester != null){
+            $stock->tester = $tester;
+        }
+
+        if($stock->variation_id != $order_item->variation_id){
+            $operations = new Stock_operations_model();
+            $operations->new_operation($stock->id, $order_item_id, null, null, $stock->variation_id, $order_item->variation_id, 'Grade changed for Sell');
+            $stock->variation_id = $order_item->variation_id;
+        }
+        $stock->save();
+    }
+
     public function availability(){
         $stock = $this;
         $last_item = $stock->last_item();
