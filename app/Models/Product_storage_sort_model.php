@@ -16,7 +16,7 @@ class Product_storage_sort_model extends Model
     use SoftDeletes;
     protected $table = 'product_storage_sort';
     protected $primaryKey = 'id';
-    // public $timestamps = FALSE;
+    public $timestamps = FALSE;
     protected $fillable = [
         // other fields...
         'product_id',
