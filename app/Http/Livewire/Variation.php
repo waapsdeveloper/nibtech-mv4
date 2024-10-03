@@ -45,36 +45,43 @@ class Variation extends Component
         $data['storages'] = Storage_model::all();
         $data['grades'] = Grade_model::all();
         $data['variations'] = Variation_model::
-        when(request('reference_id') != '', function ($q) {
-            return $q->where('reference_id', request('reference_id'));
-        })
-        ->when(request('product') != '', function ($q) {
-            return $q->where('product_id', request('product'));
-        })
-        ->when(request('sku') != '', function ($q) {
-            return $q->where('sku', 'LIKE', '%'.request('sku').'%');
-        })
-        ->when(request('color') != '', function ($q) {
-            return $q->where('color', request('color'));
-        })
-        ->when(request('storage') != '', function ($q) {
-            return $q->where('storage', request('storage'));
-        })
-        ->when(request('grade') != '', function ($q) {
-            return $q->where('grade', request('grade'));
-        })
-        ->withCount('available_stocks')
-        ->orderBy('name','desc')
-        ->paginate($per_page)
-        ->onEachSide(5)
-        ->appends(request()->except('page'));
+            when(request('reference_id') != '', function ($q) {
+                return $q->where('reference_id', request('reference_id'));
+            })
+            ->when(request('product') != '', function ($q) {
+                return $q->where('product_id', request('product'));
+            })
+            ->when(request('sku') != '', function ($q) {
+                return $q->where('sku', 'LIKE', '%'.request('sku').'%');
+            })
+            ->when(request('color') != '', function ($q) {
+                return $q->where('color', request('color'));
+            })
+            ->when(request('storage') != '', function ($q) {
+                return $q->where('storage', request('storage'));
+            })
+            ->when(request('grade') != '', function ($q) {
+                return $q->where('grade', request('grade'));
+            })
+            ->withCount('available_stocks')
+            ->orderBy('name','desc')
+            ->paginate($per_page)
+            ->onEachSide(5)
+            ->appends(request()->except('page'));
 
         return view('livewire.variation')->with($data);
     }
 
     public function update_product($id){
+        $update = request('update');
+        if($update['product_id'] != null){
+            Variation_model::find($id)->update_product($update['product_id']);
+        }elseif($update['storage'] != null){
+            Variation_model::find($id)->update_storage($update['storage']);
+        }else{
+            Variation_model::where('id', $id)->update($update);
+        }
 
-        Variation_model::where('id', $id)->update(request('update'));
         return redirect()->back();
     }
     public function merge($id){

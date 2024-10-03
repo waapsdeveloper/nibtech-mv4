@@ -107,4 +107,26 @@ class Variation_model extends Model
         ]);
         return $var->quantity;
     }
+    public function change_product($product_id)
+    {
+        $variation = $this;
+        $pss = Product_storage_sort_model::firstOrNew(['product_id'=>$product_id,'storage'=>$variation->storage]);
+        if($pss->id == null){
+            $pss->save();
+        }
+        $variation->product_storage_sort_id = $pss->id;
+        $variation->product_id = $product_id;
+        $variation->save();
+    }
+    public function change_storage($storage_id)
+    {
+        $variation = $this;
+        $pss = Product_storage_sort_model::firstOrNew(['product_id'=>$variation->product_id,'storage'=>$storage_id]);
+        if($pss->id == null){
+            $pss->save();
+        }
+        $variation->product_storage_sort_id = $pss->id;
+        $variation->storage_id = $storage_id;
+        $variation->save();
+    }
 }

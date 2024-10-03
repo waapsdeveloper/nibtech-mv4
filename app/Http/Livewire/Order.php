@@ -1850,31 +1850,6 @@ class Order extends Component
 
         $orderObj = $this->updateBMOrder($order->reference_id, true, null, false, $bm);
         // $order = Order_model::find($order->id);
-        if(!isset($detail)){
-
-            $invoice_url = url('export_invoice').'/'.$id;
-            // JavaScript to open two tabs and print
-            echo '<script>
-            // var newTab1 = window.open("'.$order->delivery_note_url.'", "_blank");
-            var newTab2 = window.open("'.$invoice_url.'", "_blank");
-
-            // newTab2.onload = function() {
-            //     newTab2.print();
-            // };
-            // newTab1.onload = function() {
-            //     newTab1.print();
-            // };
-            window.location.href = document.referrer;
-            </script>';
-            if(request('sort') == 4){
-                echo "<script> window.close(); </script>";
-            }else{
-                echo "<script> window.location.href = document.referrer; </script>";
-            }
-        }
-        // if(!$detail->orderlines){
-        //     dd($detail);
-        // }
         if(isset($detail->orderlines) && $detail->orderlines[0]->imei == null && $detail->orderlines[0]->serial_number  == null){
             $content = "Hi, here are the IMEIs/Serial numbers for this order. \n";
             foreach ($imeis as $im) {
@@ -1883,40 +1858,31 @@ class Order extends Component
             $content .= "Regards \n".session('fname');
 
             // JavaScript code to automatically copy content to clipboard
-            echo "<script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    const el = document.createElement('textarea');
-                    el.value = '$content';
+            echo '<script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    const el = document.createElement("textarea");
+                    el.value = "'.$content.'";
                     document.body.appendChild(el);
                     el.select();
-                    document.execCommand('copy');
+                    document.execCommand("copy");
                     document.body.removeChild(el);
                 });
-            </script>";
 
-
-            // JavaScript to open two tabs and print
-            echo '<script>
-            window.open("https://backmarket.fr/bo_merchant/orders/all?orderId='.$order->reference_id.'", "_blank");
-            window.location.href = document.referrer;
+                window.open("https://backmarket.fr/bo_merchant/orders/all?orderId='.$order->reference_id.'", "_blank");
             </script>';
         }else{
 
             $invoice_url = url('export_invoice').'/'.$id;
             // JavaScript to open two tabs and print
             echo '<script>
-            // var newTab1 = window.open("'.$order->delivery_note_url.'", "_blank");
             var newTab2 = window.open("'.$invoice_url.'", "_blank");
 
-            // newTab2.onload = function() {
-            //     newTab2.print();
-            // };
-            // newTab1.onload = function() {
-            //     newTab1.print();
-            // };
-
-            window.location.href = document.referrer;
             </script>';
+        }
+        if(request('sort') == 4 && !isset($detail)){
+            echo "<script> window.close(); </script>";
+        }else{
+            echo "<script> window.location.href = document.referrer; </script>";
         }
 
 
