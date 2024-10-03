@@ -15,6 +15,7 @@ use App\Models\Color_model;
 use App\Models\Storage_model;
 use App\Models\Grade_model;
 use App\Models\Ip_address_model;
+use App\Models\Product_storage_sort_model;
 use App\Models\Variation_model;
 use App\Models\Stock_model;
 use DateTime;
@@ -367,65 +368,6 @@ class Index extends Component
         // sleep(2);
         // return redirect()->back();
     }
-    // public function refresh_10_days_chart()
-    // {
-    //     $order = [];
-    //     $eur = [];
-    //     $gbp = [];
-    //     $dates = [];
-    //     $k = 0;
-    //     $today = date('d');
-    //     if ($today > 25) {
-    //         $i = 25;
-    //     } elseif ($today > 15) {
-    //         $i = 15;
-    //     } elseif ($today > 5) {
-    //         $i = 5;
-    //     } else {
-    //         $i = 25;
-    //     }
-    //     for ($i; $i <= date('d'); $i++) {
-    //         $l = $today - $i;
-    //         $date = date('d-m-Y', strtotime("-" . $l . " days"));
-    //         // Remove the unused variable $j
-    //         $k++;
-    //         $start = date('Y-m-d 00:00:00', strtotime("-" . $l . " days"));
-    //         $end = date('Y-m-d 23:59:59', strtotime("-" . $l . " days"));
-    //         if ($today < 6) {
-    //             $month = date('m', strtotime("-1 months"));
-    //             $start = date('Y-' . $month . '-d 00:00:00', strtotime("-" . $l . " days"));
-    //         }
-    //         $orders = Order_model::where('created_at', '>=', $start)
-    //             ->where('order_type_id', 3)
-    //             ->whereIn('status', [3, 6])
-    //             ->where('created_at', '<=', $end)
-    //             ->count();
-    //         $euro = Order_item_model::whereHas('order', function ($q) use ($start, $end) {
-    //             $q->where('processed_at', '>=', $start)
-    //                 ->where('order_type_id', 3)
-    //                 ->where('processed_at', '<=', $end)
-    //                 ->whereIn('status', [3, 6])
-    //                 ->where('currency', 4);
-    //         })->whereIn('status', [3, 6])->sum('price');
-    //         $pound = Order_item_model::whereHas('order', function ($q) use ($start, $end) {
-    //             $q->where('processed_at', '>=', $start)
-    //                 ->where('order_type_id', 3)
-    //                 ->where('processed_at', '<=', $end)
-    //                 ->whereIn('status', [3, 6])
-    //                 ->where('currency', 5);
-    //         })->whereIn('status', [3, 6])->sum('price');
-    //         $order[$k] = $orders;
-    //         $eur[$k] = $euro;
-    //         $gbp[$k] = $pound;
-    //         $dates[$k] = $date;
-    //     }
-    //     echo '<script> ';
-    //     echo 'sessionStorage.setItem("total3", "' . implode(',', $order) . '");';
-    //     echo 'sessionStorage.setItem("approved3", "' . implode(',', $eur) . '");';
-    //     echo 'sessionStorage.setItem("failed3", "' . implode(',', $gbp) . '");';
-    //     echo 'sessionStorage.setItem("dates3", "' . implode(',', $dates) . '");';
-    //     echo 'window.location.href = document.referrer; </script>';
-    // }
     public function refresh_10_days_chart()
     {
         $order = [];
@@ -617,24 +559,14 @@ class Index extends Component
 
 
     public function test(){
-        $stocks = Stock_model::whereDoesntHave('stock_operations')->whereDoesntHave('process_stocks')->where('order_id',73262)->where('status',1)->get();
-        foreach($stocks as $stock){
-            $old_stock = $stock->onlyTrashed()->where('imei',$stock->imei)->where('serial_number',$stock->serial_number)->first();
-            if($old_stock != null){
-                print_r($old_stock);
-                print_r($stock);
-                $old_stock->restore();
-                $old_stock->status = 1;
-                $old_stock->order_id = $stock->order_id;
-                $old_stock->save();
-                foreach($stock->order_items as $item){
-                    $item->stock_id = $old_stock->id;
-                    $item->save();
-                }
-                $stock->delete();
-                $stock->forceDelete();
+        Variation_model::where('product_storage_sort_id',null)->each(function($variation){
+            $pss = Product_storage_sort_model::firstOrNew(['product_id'=>$variation->product_id,'storage_id'=>$variation->storage]);
+            if($pss->id == null){
+                $pss->save();
             }
-        }
+            $variation->product_storage_sort_id = $pss->id;
+            $variation->save();
+        });
     }
 
 }
