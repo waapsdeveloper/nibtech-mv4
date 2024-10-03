@@ -684,12 +684,6 @@
                                             @php
                                                 $stock = $item->stock;
                                                 $variation = $stock->variation;
-                                                if(!in_array($stock->id, $item_ids)){
-                                                    $item_ids[] = $stock->id;
-                                                }else {
-                                                    dd("Jesad");
-                                                    $order_item->delete();
-                                                }
                                                 $i ++;
 
                                                 isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
