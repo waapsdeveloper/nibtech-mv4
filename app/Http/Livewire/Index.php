@@ -567,6 +567,10 @@ class Index extends Component
             $variation->product_storage_sort_id = $pss->id;
             $variation->save();
         });
+        $order_c = new Order();
+        Order_model::where('scanned',null)->each(function($order) use ($order_c){
+            $order_c->getLabel($order->reference_id, false, true);
+        });
     }
 
 }

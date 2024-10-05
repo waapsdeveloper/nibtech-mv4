@@ -2615,12 +2615,18 @@ class Order extends Component
         $orderObj = $this->updateBMOrder($order->reference_id, false, null, true);
         return redirect($orderObj->tracking_url);
     }
-    public function getLabel($order_id, $data = false)
+    public function getLabel($order_id, $data = false, $update = false)
     {
-
         $bm = new BackMarketAPIController();
         $this->updateBMOrder($order_id);
         $datas = $bm->getOrderLabel($order_id);
+        if($update == true){
+            if($datas->results[0]->hubScanned == true){
+                $order = Order_model::where('reference_id',$order_id)->first();
+                $order->scanned = 1;
+                $order->save();
+            }
+        }
         if($data == true){
             dd($datas);
         }else{
