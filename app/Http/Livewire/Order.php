@@ -2621,6 +2621,7 @@ class Order extends Component
         $this->updateBMOrder($order_id);
         $datas = $bm->getOrderLabel($order_id);
         if($update == true){
+            dd($datas->results);
             if($datas->results[0]->hubScanned == true){
                 $order = Order_model::where('reference_id',$order_id)->first();
                 $order->scanned = 1;
