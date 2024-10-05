@@ -146,6 +146,9 @@ class Order extends Component
         ->when(request('missing') == 'charge', function ($q) {
             return $q->whereNot('status', 2)->whereNull('charges')->where('processed_at', '<=', now()->subHours(12));
         })
+        ->when(request('missing') == 'scan', function ($q) {
+            return $q->whereIn('status', [3,6])->whereNull('scanned')->where('processed_at', '<=', now()->subHours(48));
+        })
         ->when(request('missing') == 'processed_at', function ($q) {
             return $q->whereIn('status', [3,6])->whereNull('processed_at');
         })

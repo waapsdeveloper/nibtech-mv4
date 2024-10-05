@@ -590,7 +590,6 @@ class Index extends Component
 
             Order_model::whereIn('reference_id',$orders)->update(['scanned' => 1]);
 
-            session()->forget('orders');
         }
 
 
