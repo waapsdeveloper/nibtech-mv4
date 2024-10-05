@@ -580,8 +580,8 @@ class Index extends Component
         $orders = [];
         if ($resArray !== null) {
             foreach ($resArray as $data) {
-                if (!empty($data) && $data->hubScanned == true && !in_array($data->order_id, $orders)) {
-                    $orders[] = $data->order_id;
+                if (!empty($data) && $data->hubScanned == true && !in_array($data->order, $orders)) {
+                    $orders[] = $data->order;
                 }
             }
             if($orders != []){
