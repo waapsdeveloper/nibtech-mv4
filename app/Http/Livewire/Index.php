@@ -573,24 +573,22 @@ class Index extends Component
         // Order_model::where('scanned',null)->where('order_type_id',3)->where('tracking_number', '!=', null)->each(function($order) use ($order_c){
         //     $order_c->getLabel($order->reference_id, false, true);
         // });
-        if(!session('orders')){
 
-            $bm = new BackMarketAPIController();
-            $resArray = $bm->getlabelData();
+        $bm = new BackMarketAPIController();
+        $resArray = $bm->getlabelData();
 
-            session()->put('orders', []);
-            if ($resArray !== null) {
-                foreach ($resArray as $data) {
-                    if (!empty($data) && $data->hubScanned == true && !in_array($data->order, session('orders'))) {
-                        session('orders')[] = $data->order;
-                    }
+        $orders = [];
+        if ($resArray !== null) {
+            foreach ($resArray as $data) {
+                if (!empty($data) && $data->hubScanned == true && !in_array($data->order, $orders)) {
+                    $orders[] = $data->order;
                 }
             }
         }
 
-        if(session('orders') != []){
+        if($orders != []){
 
-            Order_model::whereIn('reference_id',session('orders'))->update(['scanned' => 1]);
+            Order_model::whereIn('reference_id',$orders)->update(['scanned' => 1]);
 
             session()->forget('orders');
         }
