@@ -198,6 +198,7 @@
                     <a href="{{url('order')}}?missing=charge" class="btn btn-link">Missing Charge ({{ $missing_charge_count }})</a>
 
                 @endif
+                    <a href="{{url('order')}}?missing=scan" class="btn btn-link">Missing Scan</a>
                 @if ($missing_processed_at_count > 0)
                     <a href="{{url('order')}}?missing=processed_at" class="btn btn-link">Missing Invoiced At ({{ $missing_processed_at_count }})</a>
 
