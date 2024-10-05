@@ -2615,14 +2615,17 @@ class Order extends Component
         $orderObj = $this->updateBMOrder($order->reference_id, false, null, true);
         return redirect($orderObj->tracking_url);
     }
-    public function getLabel($order_id)
+    public function getLabel($order_id, $data = false)
     {
 
         $bm = new BackMarketAPIController();
         $this->updateBMOrder($order_id);
-        $bm->getOrderLabel($order_id);
-        return redirect()->back();
-
+        $datas = $bm->getOrderLabel($order_id);
+        if($data == true){
+            dd($datas);
+        }else{
+            return redirect()->back();
+        }
     }
     public function getapiorders($page = null)
     {
