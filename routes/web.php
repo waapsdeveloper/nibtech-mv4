@@ -211,7 +211,7 @@ Route::get('export_invoice/{id}', [Order::class,'export_invoice'])->name('dispat
 Route::get('order/export_invoice_new/{id}', [Order::class,'export_invoice_new'])->name('dispatch_order');
 Route::get('order/proxy_server', [Order::class,'proxy_server'])->name('dispatch_order');
 Route::get('order/export_refund_invoice/{id}', [Order::class,'export_refund_invoice'])->name('dispatch_order');
-Route::get('order/label/{id}/{data?}', [Order::class,'getLabel'])->name('dispatch_order');
+Route::get('order/label/{id}/{data?}/{update?}', [Order::class,'getLabel'])->name('dispatch_order');
 
 Route::get('sales/allowed', [Order::class,'sales_allowed'])->name('dispatch_admin');
 Route::post('order/dispatch_allowed/{id}', [Order::class,'dispatch_allowed'])->name('dispatch_admin');
