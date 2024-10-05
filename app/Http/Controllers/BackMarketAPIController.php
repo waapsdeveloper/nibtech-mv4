@@ -501,10 +501,15 @@ class BackMarketAPIController extends Controller
                 $end_point_next1_tail = '&page=' . "$page1";
                 $end_point_next1 = $end_point . $end_point_next1_tail;
                 $result1_next = $this->apiGet($end_point_next1);
-                $result_next1_array = $result1_next->results;
+                if($result1_next == null){
+                    echo $end_point_next1;
+                }else{
 
-                foreach ($result_next1_array as $key => $value) {
-                    array_push($res1_array, $result_next1_array[$key]);
+                    $result_next1_array = $result1_next->results;
+
+                    foreach ($result_next1_array as $key => $value) {
+                        array_push($res1_array, $result_next1_array[$key]);
+                    }
                 }
             }
         }
