@@ -559,6 +559,7 @@ class Index extends Component
 
 
     public function test(){
+        ini_set('max_execution_time', 1200);
         Variation_model::where('product_storage_sort_id',null)->each(function($variation){
             $pss = Product_storage_sort_model::firstOrNew(['product_id'=>$variation->product_id,'storage'=>$variation->storage]);
             if($pss->id == null){
