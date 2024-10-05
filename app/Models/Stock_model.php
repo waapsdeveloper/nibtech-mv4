@@ -146,7 +146,7 @@ class Stock_model extends Model
         // Define a custom method to retrieve only one order item
         return $this->hasOne(Order_item_model::class, 'stock_id', 'id')->where('order_id', $order_id)->orderByDesc('id')->first();
     }
-    public function mark_sold($order_item_id, $tester = null)
+    public function mark_sold($order_item_id, $tester = null, $message = null)
     {
         $stock = $this;
         $order_item = Order_item_model::find($order_item_id);
@@ -158,11 +158,31 @@ class Stock_model extends Model
         if($tester != null){
             $stock->tester = $tester;
         }
-
+        if($message == null){
+            $message = 'Grade changed for Sell';
+        }
         if($stock->variation_id != $order_item->variation_id){
             $operations = new Stock_operations_model();
-            $operations->new_operation($stock->id, $order_item_id, null, null, $stock->variation_id, $order_item->variation_id, 'Grade changed for Sell');
+            $operations->new_operation($stock->id, $order_item_id, null, null, $stock->variation_id, $order_item->variation_id, $message);
             $stock->variation_id = $order_item->variation_id;
+        }
+        $stock->save();
+    }
+    public function mark_available($item_id = null, $new_variation_id = null, $message = null)
+    {
+        $stock = $this;
+        $stock->status = 1;
+        $stock->sale_order_id = null;
+        if($message == null){
+            $message = 'Grade changed for Available';
+        }
+        if($new_variation_id != null){
+
+            if($stock->variation_id != $new_variation_id){
+                $operations = new Stock_operations_model();
+                $operations->new_operation($stock->id, $item_id, null, null, $stock->variation_id, $new_variation_id, $message);
+                $stock->variation_id = $new_variation_id;
+            }
         }
         $stock->save();
     }

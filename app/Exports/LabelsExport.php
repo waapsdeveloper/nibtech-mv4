@@ -34,7 +34,7 @@ class LabelsExport
             return $q->orderBy('orders.reference_id', 'ASC'); // Secondary order by reference_id
         })
         ->select('orders.id','orders.label_url','orders.reference_id')
-        ->pluck('label_url')->toArray();
+        ->pluck('label_url')->unique()->toArray();
         // dd($data);
         // Output PDF to the browser
         $pdf = $this->generateMergedPdf($data);

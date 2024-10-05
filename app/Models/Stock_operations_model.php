@@ -63,7 +63,7 @@ class Stock_operations_model extends Model
     {
         $find = $this->where('stock_id', $stock_id)->orderByDesc('id')->first();
 
-        if ($find && $find->order_item_id == $order_item_id && $find->process_id == $process_id && $find->api_request_id == $api_request_id && $find->old_variation_id == $old_variation_id && $find->new_variation_id == $new_variation_id && $find->description == $description) {
+        if ($find && $find->order_item_id == $order_item_id && $find->process_id == $process_id && $find->api_request_id == $api_request_id && $find->new_variation_id == $new_variation_id && $find->description == $description) {
             return;
         }
 

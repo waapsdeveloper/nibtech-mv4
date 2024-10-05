@@ -1635,7 +1635,7 @@ class Order extends Component
         if($orderObj->state == 3){
             foreach($imeis as $i => $imei){
 
-                $variant = Variation_model::withoutGlobalScope('Status_not_3_scope')->where('sku',$sku[$i])->first();
+                $variant = Variation_model::where('sku',$sku[$i])->first();
                 if($variant->storage != null){
                     $storage2 = $variant->storage_id->name . " - ";
                 }else{
@@ -1800,19 +1800,16 @@ class Order extends Component
 
                 $order_item->save();
 
-                $stock_movement = Stock_movement_model::where(['stock_id'=>$stock[0]->id, 'received_at'=>null])->first();
-                if($stock_movement != null){
-                    Stock_movement_model::where(['stock_id'=>$stock[0]->id, 'received_at'=>null])->update([
+                $stock_movement->update([
                         'received_at' => Carbon::now(),
                     ]);
-                }
 
             }else{
 
                 foreach ($skus as $each) {
                     $inde = 0;
                     foreach ($each as $idt => $s) {
-                        $variation = Variation_model::withoutGlobalScope('Status_not_3_scope')->where('sku',$s)->first();
+                        $variation = Variation_model::where('sku',$s)->first();
                         $item = Order_item_model::where(['order_id'=>$id, 'variation_id'=>$variation->id])->first();
                         if ($inde != 0) {
 
@@ -2235,13 +2232,19 @@ class Order extends Component
                     session()->put('error', "Product Grade not matched");
                     return redirect()->back();
                 }
-                $stock->variation_id = $item->variation_id;
-                $stock->tester = request('correction')['tester'];
-                $stock->added_by = session('user_id');
-                if($stock->status == 1){
-                    $stock->status = 2;
+                if($item->stock != null){
+                    $previous =  " | Previous IMEI: " . $item->stock->imei . $item->stock->serial_number;
+                }else{
+                    $previous = null;
                 }
-                $stock->save();
+                $stock->mark_sold($item->id, request('correction')['tester'], request('correction')['reason'].$previous);
+                // $stock->variation_id = $item->variation_id;
+                // $stock->tester = request('correction')['tester'];
+                // $stock->added_by = session('user_id');
+                // if($stock->status == 1){
+                //     $stock->status = 2;
+                // }
+                // $stock->save();
             }
             if($item->stock_id != null){
                 if($item->stock->purchase_item){
@@ -2255,20 +2258,21 @@ class Order extends Component
                     }else{
                         $last_variation_id = Order_item_model::where(['order_id'=>$item->stock->order_id,'stock_id'=>$item->stock_id])->first()->variation_id;
                     }
-                    $stock_operation = Stock_operations_model::create([
-                        'stock_id' => $item->stock->id,
-                        'order_item_id' => $item->id,
-                        'old_variation_id' => $item->stock->variation_id,
-                        'new_variation_id' => $last_variation_id,
-                        'description' => request('correction')['reason']." ".$item->order->reference_id." ".$imei.$serial_number,
-                        'admin_id' => session('user_id'),
-                    ]);
-                    $stock_operation->save();
-                    $item->stock->variation_id = $last_variation_id;
-                    if($item->stock->status == 2){
-                        $item->stock->status = 1;
-                    }
-                    $item->stock->save();
+                    $item->stock->mark_available($item->id, $last_variation_id, request('correction')['reason']." ".$item->order->reference_id." ".$imei.$serial_number);
+                    // $stock_operation = Stock_operations_model::create([
+                    //     'stock_id' => $item->stock->id,
+                    //     'order_item_id' => $item->id,
+                    //     'old_variation_id' => $item->stock->variation_id,
+                    //     'new_variation_id' => $last_variation_id,
+                    //     'description' => request('correction')['reason']." ".$item->order->reference_id." ".$imei.$serial_number,
+                    //     'admin_id' => session('user_id'),
+                    // ]);
+                    // $stock_operation->save();
+                    // $item->stock->variation_id = $last_variation_id;
+                    // if($item->stock->status == 2){
+                    //     $item->stock->status = 1;
+                    // }
+                    // $item->stock->save();
                 }
 
             }
