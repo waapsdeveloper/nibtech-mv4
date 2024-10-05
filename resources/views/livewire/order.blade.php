@@ -294,6 +294,9 @@
                                 <label>
                                     <input type="checkbox" id="checkAll" onclick="checkAll()"> Check All
                                 </label>
+                                @if(request('missing') == 'scan')
+                                    <input type="hidden" name="missing" value="scan" form="pdf">
+                                @endif
                                 <input class="btn btn-sm btn-secondary" type="submit" value="Print Labels" form="pdf">
                             </h4>
                             <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$orders->firstItem()}} {{ __('locale.To') }} {{$orders->lastItem()}} {{ __('locale.Out Of') }} {{$orders->total()}} </h5>
