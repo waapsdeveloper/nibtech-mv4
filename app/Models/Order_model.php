@@ -22,6 +22,7 @@ class Order_model extends Model
         'currency',
         'processed_by',
         'order_type_id',
+        'scanned',
     ];
 
     public function charge_values()
