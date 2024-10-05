@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use App\Http\Livewire\Order;
 use Illuminate\Support\Facades\DB;
 use GuzzleHttp\Client;
 use setasign\Fpdi\Fpdi;
@@ -34,7 +35,7 @@ class LabelsExport
             return $q->orderBy('orders.reference_id', 'ASC'); // Secondary order by reference_id
         })
         ->select('orders.id','orders.label_url','orders.reference_id')
-        ->pluck('label_url')->unique()->toArray();
+        ->pluck('label_url','reference_id')->unique()->toArray();
         // dd($data);
         // Output PDF to the browser
         $pdf = $this->generateMergedPdf($data);
@@ -44,6 +45,10 @@ class LabelsExport
 
     private function generateMergedPdf($data)
     {
+
+        if(request('missing') == 'scan'){
+            $oc = new Order();
+        }
         // Create instance of Fpdi
         $pdf = new Fpdi();
 
@@ -54,7 +59,11 @@ class LabelsExport
         // $pdf->AddPage('P', array(102, 210));
 
         // Iterate through each order data and fetch PDFs
-        foreach ($data as $order) {
+        foreach ($data as $ref => $order) {
+
+            if(request('missing') == 'scan'){
+                $oc->getLabel($ref, false, true);
+            }
             // Add a new page with fixed size for the next label
             $pdf->AddPage('P', array(102, 210));
             // Fetch PDF content using Guzzle
