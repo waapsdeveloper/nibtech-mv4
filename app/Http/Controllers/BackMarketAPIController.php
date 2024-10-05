@@ -483,7 +483,7 @@ class BackMarketAPIController extends Controller
     }
 
     public function getlabelData() {
-        $end_point = 'shipping/v1/deliveries';
+        $end_point = 'shipping/v1/deliveries?start_date=2024-09-01T00:00:00';
         $result = $this->apiGet($end_point);
 
         // $res0_array = $result0->results;
