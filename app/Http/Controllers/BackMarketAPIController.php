@@ -482,6 +482,42 @@ class BackMarketAPIController extends Controller
         // return redirect($result->results[0]->labelUrl);
     }
 
+    public function getlabelData() {
+        $end_point = 'shipping/v1/deliveries';
+        $result = $this->apiGet($end_point);
+
+        // $res0_array = $result0->results;
+        $res1_array = $result->results;
+
+        // $result0_next = $result0;
+        $result1_next = $result;
+
+
+        $page1 = 1;
+
+        while (($result1_next->next) != null) {
+            if($result1_next->results){
+                $page1++;
+                $end_point_next1_tail = '&page=' . "$page1";
+                $end_point_next1 = $end_point . $end_point_next1_tail;
+                $result1_next = $this->apiGet($end_point_next1);
+                $result_next1_array = $result1_next->results;
+
+                foreach ($result_next1_array as $key => $value) {
+                    array_push($res1_array, $result_next1_array[$key]);
+                }
+            }
+        }
+
+        // return [
+        //     // 'new_orders' => $res0_array,
+        //     'shipped_orders' => $res1_array,
+        // ];
+
+        return $res1_array;
+        // return redirect($result->results[0]->labelUrl);
+    }
+
     public function getNewOrders($param = []) {
         // $end_point_0 = 'orders?state=0';
         $end_point_1 = 'orders?state=1';
