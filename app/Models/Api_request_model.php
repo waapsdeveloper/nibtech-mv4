@@ -52,31 +52,6 @@ class Api_request_model extends Model
                     $stock = Stock_model::find($api_request->stock_id);
                 }
             }
-            // $stock = Stock_model::where('imei',$datas->Imei2)->first();
-            // if(!$stock){
-            //     continue;
-            // }else{
-
-            //     $stock_operation = Stock_operations_model::create([
-            //         'stock_id' => $stock->id,
-            //         'old_variation_id' => $stock->variation_id,
-            //         'new_variation_id' => $stock->variation->id,
-            //         'description' => $datas->Comments." | IMEI changed from: ".$datas->Imei2." | Testing API Push",
-            //         'admin_id' => NULL,
-            //     ]);
-            //     $stock->imei = $datas->Imei;
-            //     $stock->save();
-
-            // echo "<pre>";
-
-            // print_r($stock);
-            // print_r($datas);
-            // echo "</pre>";
-            // continue;
-            // }
-            // if(in_array($datas->ModelName, $products)){
-            //     $product = array_search($datas->ModelName,$products);
-            // }
 
             if(in_array($datas->Memory, $storages)){
                 $storage = array_search($datas->Memory,$storages);
@@ -216,6 +191,7 @@ class Api_request_model extends Model
                         'new_variation_id' => $variation->id,
                         'description' => $fail." | ".$datas->Comments." | DrPhone",
                         'admin_id' => $admin,
+                        'created_at' => Carbon::parse($datas->Time)->format('Y-m-d H:i:s'),
                     ]);
 
                     $variation->status = 1;
