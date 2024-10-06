@@ -453,7 +453,7 @@
                                                         <button class="btn btn-primary m-0" name="add_imei" value="1">Insert</button>
 
                                                     </form>
-                                                    @elseif ($row->message == "Item already added in this order" || str_contain($row->message, "Item already available"))
+                                                    @elseif ($row->message == "Item already added in this order" || str_contains($row->message, "Item already available"))
                                                     <form id="order_issues_{{$row->id}}" method="POST" action="{{ url('purchase/remove_issues') }}" class="form-inline">
                                                         @csrf
                                                         <input type="hidden" name="id" value="{{$row->id}}">
