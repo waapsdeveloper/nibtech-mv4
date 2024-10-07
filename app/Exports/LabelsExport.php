@@ -63,6 +63,7 @@ class LabelsExport
 
             if(request('missing') == 'scan'){
                 $oc->getLabel($ref, false, true);
+                continue;
             }
             // Add a new page with fixed size for the next label
             $pdf->AddPage('P', array(102, 210));
@@ -84,6 +85,9 @@ class LabelsExport
             $tplIdx = $pdf->importPage(1);
             $pdf->useTemplate($tplIdx);
 
+        }
+        if(request('missing') == 'scan'){
+            return redirect()->back();
         }
 
         return $pdf;
