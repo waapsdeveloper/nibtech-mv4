@@ -26,13 +26,13 @@ class Support_message_model extends Model
     {
         return $this->belongsTo(Support_model::class, 'support_id', 'id');
     }
-    public function indicator()
+    public function initiator_name()
     {
-        if($this->indicator == 1){
+        if($this->initiator == 1){
             return "BackMarket";
-        }elseif($this->indicator == 2){
+        }elseif($this->initiator == 2){
             return "Merchant";
-        }elseif($this->indicator == 3){
+        }elseif($this->initiator == 3){
             return "Customer";
         }
     }

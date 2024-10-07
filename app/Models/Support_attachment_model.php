@@ -25,4 +25,8 @@ class Support_attachment_model extends Model
         return $this->belongsTo(Support_message_model::class, 'support_message_id', 'id');
     }
 
+    public function new_attachment()
+    {
+        $find = $this;
+    }
 }
