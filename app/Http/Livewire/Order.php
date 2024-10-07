@@ -1711,7 +1711,7 @@ class Order extends Component
                 }else{
                     $storage = null;
                 }
-                if($stock[$i]->variation->color != null){
+                if(!in_array($stock[$i]->variation->color, [null, 0])){
                     $color = $stock[$i]->variation->color_id->name . " - ";
                 }else{
                     $color = null;
