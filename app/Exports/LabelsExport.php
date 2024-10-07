@@ -87,7 +87,7 @@ class LabelsExport
 
         }
         if(request('missing') == 'scan'){
-            return redirect()->back();
+            return "asdsad";
         }
 
         return $pdf;
