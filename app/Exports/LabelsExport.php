@@ -86,9 +86,9 @@ class LabelsExport
             $pdf->useTemplate($tplIdx);
 
         }
-        if(request('missing') == 'scan'){
-            return "asdsad";
-        }
+        // if(request('missing') == 'scan'){
+        //     return "asdsad";
+        // }
 
         return $pdf;
     }
