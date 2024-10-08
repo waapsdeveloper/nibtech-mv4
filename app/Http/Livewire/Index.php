@@ -570,7 +570,7 @@ class Index extends Component
             $variation->save();
         });
         $order_c = new Order();
-        Order_model::where('scanned',null)->where('order_type_id',3)->where('tracking_number', '!=', null)->each(function($order) use ($order_c){
+        Order_model::where('scanned',null)->where('order_type_id',3)->where('tracking_number', '!=', null)->orderByDesc('id')->each(function($order) use ($order_c){
             $order_c->getLabel($order->reference_id, false, true);
         });
 
