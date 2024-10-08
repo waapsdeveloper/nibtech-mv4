@@ -1355,9 +1355,9 @@ class Order extends Component
             if($this->add_purchase_item($issue->order_id, $imei, $variation, $data->cost, 1) == 1){
                 if($issue->data['imei']){
 
-                    $stock = Stock_model::where('imei',$imei)->orWhere('serial_number',$imei])->where('status','!=',null)->first();
+                    $stock = Stock_model::where('imei',$imei)->orWhere('serial_number', $imei)->where('status','!=',null)->first();
                     $stock_operation = new Stock_operations_model();
-                    $stock_operation->new_operation($new_stock->id, $new_item->id, null, null, $old_stock->variation_id, $new_stock->variation_id, "IMEI Changed from ".$old_stock->imei.$old_stock->serial_number);
+                    $stock_operation->new_operation($stock->id, null, null, null, $stock->variation_id, $stock->variation_id, "IMEI Changed from ".$stock->imei.$stock->serial_number);
                 }
                 $issue->delete();
             }
