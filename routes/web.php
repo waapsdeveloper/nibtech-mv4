@@ -125,6 +125,7 @@ Route::get('repair/internal', [Repair::class,'internal_repair'])->name('internal
 Route::post('add_internal_repair_item', [Repair::class,'add_internal_repair_item'])->name('internal_repair');
 
 Route::get('wholesale', Wholesale::class)->name('view_wholesale');
+Route::get('wholesale/pos', [Wholesale::class,'pos'])->name('pos');
 Route::post('add_wholesale', [Wholesale::class,'add_wholesale'])->name('add_wholesale');
 Route::post('check_wholesale_item/{id}', [Wholesale::class,'check_wholesale_item'])->name('add_wholesale_item');
 Route::post('add_wholesale_item/{id}', [Wholesale::class,'add_wholesale_item'])->name('add_wholesale_item');

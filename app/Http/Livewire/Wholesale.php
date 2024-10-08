@@ -230,6 +230,15 @@ class Wholesale extends Component
         return redirect()->back();
     }
 
+    public function pos(){
+        $data['products'] = Products_model::pluck('model','id');
+        $data['storages'] = Storage_model::pluck('name','id');
+        $data['grades'] = Grade_model::pluck('name','id');
+        $data['colors'] = Color_model::pluck('name','id');
+
+        return view('livewire.pos')->with($data);
+    }
+
     public function add_wholesale(){
         // dd(request('wholesale'));
         $wholesale = (object) request('wholesale');
