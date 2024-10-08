@@ -72,7 +72,7 @@
                         <div class="d-flex bg-light tx-center flex-wrap overflow-auto w-100" style="white-space: nowrap;">
                             @foreach ($categories as $id => $name)
                                 @php
-                                    $name = str_replace(' ','&nbsp';,$name)
+                                    $name = str_replace(' ','&nbsp;',$name);
                                 @endphp
                                 <div class="border wd-auto">
                                     <a href="#" class="btn btn-link"> {{ $name }} </a>
