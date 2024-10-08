@@ -4,6 +4,8 @@ namespace App\Http\Livewire;
 
 use App\Exports\PacksheetExport;
 use App\Mail\BulksaleInvoiceMail;
+use App\Models\Brand_model;
+use App\Models\Category_model;
 use Livewire\Component;
 use App\Models\Variation_model;
 use App\Models\Products_model;
@@ -231,6 +233,8 @@ class Wholesale extends Component
     }
 
     public function pos(){
+        $data['categories'] = Category_model::pluck('name','id');
+        $data['brands'] = Brand_model::pluck('name','id');
         $data['products'] = Products_model::pluck('model','id');
         $data['storages'] = Storage_model::pluck('name','id');
         $data['grades'] = Grade_model::pluck('name','id');
@@ -239,6 +243,21 @@ class Wholesale extends Component
         return view('livewire.pos')->with($data);
     }
 
+    public function get_products(){
+
+
+        $products = Products_model::when(request('category') != '', function ($q) {
+            return $q->where('products.category', request('category'));
+        })
+        ->when(request('brand') != '', function ($q) {
+            return $q->where('products.brand', request('brand'));
+        })
+        ->get();
+
+        // dd($products);
+
+        return response()->json($products);
+    }
     public function add_wholesale(){
         // dd(request('wholesale'));
         $wholesale = (object) request('wholesale');

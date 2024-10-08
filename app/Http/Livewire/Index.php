@@ -569,28 +569,28 @@ class Index extends Component
             $variation->product_storage_sort_id = $pss->id;
             $variation->save();
         });
-        // $order_c = new Order();
-        // Order_model::where('scanned',null)->where('order_type_id',3)->where('tracking_number', '!=', null)->each(function($order) use ($order_c){
-        //     $order_c->getLabel($order->reference_id, false, true);
-        // });
+        $order_c = new Order();
+        Order_model::where('scanned',null)->where('order_type_id',3)->where('tracking_number', '!=', null)->each(function($order) use ($order_c){
+            $order_c->getLabel($order->reference_id, false, true);
+        });
 
-        $bm = new BackMarketAPIController();
-        $resArray = $bm->getlabelData();
+        // $bm = new BackMarketAPIController();
+        // $resArray = $bm->getlabelData();
 
-        $orders = [];
-        if ($resArray !== null) {
-            foreach ($resArray as $data) {
-                if (!empty($data) && $data->hubScanned == true && !in_array($data->order, $orders)) {
-                    $orders[] = $data->order;
-                }
-            }
-        }
+        // $orders = [];
+        // if ($resArray !== null) {
+        //     foreach ($resArray as $data) {
+        //         if (!empty($data) && $data->hubScanned == true && !in_array($data->order, $orders)) {
+        //             $orders[] = $data->order;
+        //         }
+        //     }
+        // }
 
-        if($orders != []){
+        // if($orders != []){
 
-            Order_model::whereIn('reference_id',$orders)->update(['scanned' => 1]);
+        //     Order_model::whereIn('reference_id',$orders)->update(['scanned' => 1]);
 
-        }
+        // }
 
 
     }

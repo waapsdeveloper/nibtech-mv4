@@ -13,7 +13,7 @@
                 </a>
             </div>
             <div class="app-sidebar__toggle" data-bs-toggle="sidebar">
-                <a class="open-toggle" href="javascript:void(0);"><i class="header-icon fe fe-align-left" ></i></a>
+                <a class="open-toggle" id="sb_toggle" href="javascript:void(0);"><i class="header-icon fe fe-align-left" ></i></a>
                 <a class="close-toggle" href="javascript:void(0);"><i class="header-icon fe fe-x"></i></a>
             </div>
             <div class="logo-horizontal">
