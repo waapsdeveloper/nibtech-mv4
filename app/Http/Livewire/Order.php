@@ -1353,6 +1353,12 @@ class Order extends Component
             // echo $variation." ".$data->imei." ".$data->cost;
 
             if($this->add_purchase_item($issue->order_id, $imei, $variation, $data->cost, 1) == 1){
+                if($issue->data['imei']){
+
+                    $stock = Stock_model::where('imei',$imei)->orWhere('serial_number',$imei])->where('status','!=',null)->first();
+                    $stock_operation = new Stock_operations_model();
+                    $stock_operation->new_operation($new_stock->id, $new_item->id, null, null, $old_stock->variation_id, $new_stock->variation_id, "IMEI Changed from ".$old_stock->imei.$old_stock->serial_number);
+                }
                 $issue->delete();
             }
 
@@ -1384,14 +1390,15 @@ class Order extends Component
 
             $new_stock->order_id = $old_stock->order_id;
 
-
-            $stock_operation = Stock_operations_model::create([
-                'stock_id' => $new_stock->id,
-                'old_variation_id' => $old_stock->variation_id,
-                'new_variation_id' => $new_stock->variation_id,
-                'description' => "IMEI Changed from ".$old_stock->imei.$old_stock->serial_number,
-                'admin_id' => session('user_id'),
-            ]);
+            $stock_operation = new Stock_operations_model();
+            $stock_operation->new_operation($new_stock->id, $new_item->id, null, null, $old_stock->variation_id, $new_stock->variation_id, "IMEI Changed from ".$old_stock->imei.$old_stock->serial_number);
+            // $stock_operation = Stock_operations_model::create([
+            //     'stock_id' => $new_stock->id,
+            //     'old_variation_id' => $old_stock->variation_id,
+            //     'new_variation_id' => $new_stock->variation_id,
+            //     'description' => "IMEI Changed from ".$old_stock->imei.$old_stock->serial_number,
+            //     'admin_id' => session('user_id'),
+            // ]);
 
             $old_stock->purchase_item->delete();
             $old_stock->delete();
@@ -1701,7 +1708,7 @@ class Order extends Component
                     session()->put('error', "IMEI Flagged | Contact Admin");
                     return redirect()->back();
                 }
-                $stock_movement = Stock_movement_model::where(['stock_id'=>$stock[$i]->id, 'received_at'=>null])->first();
+                $stock_movement = Stock_movement_model::where(['stock_id'=>$stock[$i]->id, 'admin_id' => session('user_id'), 'received_at'=>null])->first();
                 if($stock_movement == null){
                     session()->put('error', "Missing Exit Entry");
                     return redirect()->back();
