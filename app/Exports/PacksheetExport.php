@@ -9,6 +9,13 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class PacksheetExport implements FromCollection, WithHeadings
 {
+    protected $invoice = null;
+
+    // Constructor to accept invoice flag
+    public function __construct($invoice = null)
+    {
+        $this->invoice = $invoice;
+    }
 
     public function collection()
     {
@@ -36,7 +43,11 @@ class PacksheetExport implements FromCollection, WithHeadings
             'stock.imei as imei',
             'stock.serial_number as serial_number',
             'stock_operations.description as issue',
-            'order_items.price as price'
+            // 'order_items.price as price'
+            // Conditional price based on invoice flag
+            $this->invoice == 1
+                ? DB::raw('order_items.price * orders.exchange_rate as price') // Use exchange rate if invoice = 1
+                : 'order_items.price as price'
         )
         ->where('orders.id', request('id'))
         ->where('orders.deleted_at',null)
@@ -57,7 +68,8 @@ class PacksheetExport implements FromCollection, WithHeadings
             'IMEI',
             'Serial Number',
             'Issue',
-            'Price'
+            // 'Price'
+            $this->invoice == 1 ? 'Price (Multiplied by Exchange Rate)' : 'Price'
         ];
     }
 }

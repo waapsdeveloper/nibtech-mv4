@@ -69,7 +69,7 @@
                 </div>
                 <div class="card">
                     <div class="card-header">
-                        <div class="d-flex bg-light tx-center overflow-scroll">
+                        <div class="d-flex bg-light tx-center flex-wrap overflow-auto" style="white-space: nowrap;">
                             @foreach ($categories as $id => $name)
                                 <div class="border wd-auto">
                                     <a href="#" class="btn btn-link"> {{ $name }} </a>

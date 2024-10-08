@@ -208,8 +208,17 @@
                 <a href="{{url('export_rma_invoice')}}/{{ $order->id }}" target="_blank"><button class="btn-sm btn-secondary">Invoice</button></a>
 
                 @if ($order->exchange_rate != null)
-                <a href="{{url('export_rma_invoice')}}/{{ $order->id }}/1" target="_blank"><button class="btn-sm btn-secondary">{{$order->currency_id->sign}} Invoice</button></a>
 
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn-sm btn-secondary dropdown-toggle" id="pack_sheet" data-bs-toggle="dropdown" aria-expanded="false">
+                    Exchanged {{$order->currency_id->sign}}
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="pack_sheet">
+                        <li><a class="dropdown-item" href="{{url('export_rma_invoice')}}/{{ $order->id }}/1?packlist=2&id={{ $order->id }}">.xlsx</a></li>
+                        {{-- <a href="{{url('export_rma_invoice')}}/{{ $order->id }}/1" target="_blank"><button class="btn-sm btn-secondary">{{$order->currency_id->sign}} Invoice</button></a> --}}
+                        <li><a class="dropdown-item" href="{{url('export_rma_invoice')}}/{{ $order->id }}/1" target="_blank">Invoice</a></li>
+                    </ul>
+                </div>
                 @endif
                 <div class="btn-group" role="group">
                     <button type="button" class="btn-sm btn-secondary dropdown-toggle" id="pack_sheet" data-bs-toggle="dropdown" aria-expanded="false">
