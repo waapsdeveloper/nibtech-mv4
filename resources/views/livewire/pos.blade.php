@@ -47,7 +47,7 @@
                                 $name = str_replace(' ',"&nbsp;",$name);
                             @endphp
                             <div class="border wd-auto">
-                                <a href="javascript:void();" class="btn btn-link" onchange="selectCategory({{ $id }})"> {!! $name !!} </a>
+                                <a href="javascript:void(0);" class="btn btn-link" onchange="selectCategory({{ $id }})"> {!! $name !!} </a>
                             </div>
                         @endforeach
                     </div>
@@ -74,86 +74,55 @@
                         </div>
                     </div>
                     <script>
-                        @if (request('category'))
-                            let selectedCategoryId = {{ request('category') }};
-                        @else
-                            let selectedCategoryId = null;
-                        @endif
-                        @if (request('brand'))
-                            let selectedBrandId = {{ request('brand') }};
-                        @else
-                            let selectedBrandId = null;
-                        @endif
+                        // Set selected category and brand from the request, if available
+                        let selectedCategoryId = {{ request('category') ?? 'null' }};
+                        let selectedBrandId = {{ request('brand') ?? 'null' }};
+                        let selectedProductId = {{ request('product') ?? 'null' }};
 
+                        // Fetch the products when the page loads
                         get_products(selectedCategoryId, selectedBrandId);
 
-                        // const colorData = {!! json_encode($colors) !!};
-                        // const storageData = {!! json_encode($storages) !!};
-                        // const gradeData = {!! json_encode($grades) !!};
-
+                        // Function to update the selected category and fetch products
                         function selectCategory(categoryId) {
                             selectedCategoryId = categoryId;
                             get_products(selectedCategoryId, selectedBrandId);
                         }
+
+                        // Function to update the selected brand and fetch products
                         function selectBrand(brandId) {
                             selectedBrandId = brandId;
                             get_products(selectedCategoryId, selectedBrandId);
                         }
 
-                        // function selectBrand(brandId) {
-                        //     // Use the selectedCategoryId variable here to fetch stocks based on both category and brand
-                        //     if (selectedCategoryId !== null) {
-                        //         fetch("{{ url('wholesale') }}/get_products?category=" + selectedCategoryId + "&brand=" + brandId)
-                        //             .then(response => response.json())
-                        //             .then(products => {
-                        //                 const productMenu = document.getElementById('product-menu');
-                        //                 productMenu.innerHTML = ''; // Clear existing variation menu items
-
-                        //                 products.forEach(product => {
-                        //                     const productLink = document.createElement('a');
-                        //                     productLink.href = `{{ url('wholesale') }}/detail?category=${selectedCategoryId}&brand=${brandId}&product=`;
-                        //                     productLink.class = 'tx-center btn btn-light d-flex align-items-center justify-content-center br-5 ht-100 tx-15';
-                        //                     // productLink.value = `${product.id}`;
-                        //                     productLink.innerHTML = `${product.model}`;
-                        //                     @if(request('product'))
-                        //                         // Check if the request parameter matches the product's ID
-                        //                         if (product.id == {{ request('product') }}) {
-                        //                             productLink.active = true; // Set the 'selected' attribute
-                        //                         }
-                        //                     @endif
-                        //                     productMenu.appendChild(productLink);
-                        //                 });
-                        //             })
-                        //             .catch(error => console.error('Error fetching products:', error));
-                        //     } else {
-                        //         console.error('Please select a category first.');
-                        //     }
-                        // }
-                        function get_products(selectedCategoryId, selectedBrandId){
-                            fetch("{{ url('wholesale') }}/get_products?category=" + selectedCategoryId + "&brand=" + selectedBrandId)
+                        // Function to fetch and render products based on the selected category and brand
+                        function get_products(selectedCategoryId, selectedBrandId) {
+                            fetch(`{{ url('wholesale') }}/get_products?category=${selectedCategoryId}&brand=${selectedBrandId}`)
                                 .then(response => response.json())
                                 .then(products => {
                                     const productMenu = document.getElementById('product-menu');
-                                    productMenu.innerHTML = ''; // Clear existing variation menu items
+                                    productMenu.innerHTML = ''; // Clear existing products
 
+                                    // Iterate through the products and create menu items
                                     products.forEach(product => {
                                         const productLink = document.createElement('a');
-                                        productLink.href = `{{ url('wholesale') }}/detail?category=${selectedCategoryId}&brand=${selectedBrandId}&product=`;
-                                        productLink.class = 'tx-center btn btn-light d-flex align-items-center justify-content-center br-5 ht-100 tx-15';
-                                        // productLink.value = `${product.id}`;
+                                        productLink.href = `{{ url('wholesale') }}/detail?category=${selectedCategoryId}&brand=${selectedBrandId}&product=${product.id}`;
+                                        productLink.className = 'tx-center btn btn-light d-flex align-items-center justify-content-center br-5 ht-100 tx-15';
                                         productLink.innerHTML = `${product.model}`;
-                                        @if(request('product'))
-                                            // Check if the request parameter matches the product's ID
-                                            if (product.id == {{ request('product') }}) {
-                                                productLink.active = true; // Set the 'selected' attribute
-                                            }
-                                        @endif
+
+                                        // Check if the product matches the selected product from the request
+                                        if (product.id == selectedProductId) {
+                                            productLink.classList.add('active'); // Add 'active' class to highlight the selected product
+                                        }
+
                                         productMenu.appendChild(productLink);
                                     });
+
+                                    alert(products); // Log products for debugging
                                 })
                                 .catch(error => console.error('Error fetching products:', error));
                         }
                     </script>
+
                     <div class="card-body">
                         <div class="row g-3">
                             {{-- @foreach ($products as $id => $model) --}}

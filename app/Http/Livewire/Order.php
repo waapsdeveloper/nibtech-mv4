@@ -1888,9 +1888,9 @@ class Order extends Component
         }
         if(request('sort') == 4 && !isset($detail)){
             echo "<script> window.close(); </script>";
-        }else{
-            echo "<script> window.location.href = document.referrer; </script>";
         }
+            echo "<script> window.location.href = document.referrer; </script>";
+
 
 
     }

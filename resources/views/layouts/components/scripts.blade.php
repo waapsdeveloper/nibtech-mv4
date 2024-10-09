@@ -16,7 +16,7 @@
 
 		<!-- P-SCROLL JS -->
 		<script src="{{asset('assets/plugins/perfect-scrollbar/perfect-scrollbar.min.js')}}"></script>
-		<script src="{{asset('assets/plugins/perfect-scrollbar/p-scroll.js')}}"></script>
+		{{-- <script src="{{asset('assets/plugins/perfect-scrollbar/p-scroll.js')}}"></script> --}}
 
 		<!-- SIDEBAR JS -->
 		<script src="{{asset('assets/plugins/side-menu/sidemenu.js')}}"></script>
@@ -46,7 +46,7 @@
 		<script src="{{asset('assets/js/exported.js')}}"></script>
 
         <!-- DataTables JS -->
-		<script src="{{asset('assets/DataTables/datatables.min.js')}}"></script>
+		{{-- <script src="{{asset('assets/DataTables/datatables.min.js')}}"></script> --}}
 
         <script>
 

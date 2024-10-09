@@ -253,10 +253,10 @@ class Wholesale extends Component
         //     });
         // }])->orderBy('order_items_count', 'desc')->limit(20)->get();
 
-        $products = Products_model::when(request('category') != '', function ($q) {
+        $products = Products_model::when(request('category') > 0, function ($q) {
             return $q->where('products.category', request('category'));
         })
-        ->when(request('brand') != '', function ($q) {
+        ->when(request('brand') > 0, function ($q) {
             return $q->where('products.brand', request('brand'));
         })
         ->get();

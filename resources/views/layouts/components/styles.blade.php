@@ -28,5 +28,5 @@
 
 
 		<!-- DataTable CSS -->
-		<link href="{{asset('assets/DataTables/datatables.min.css')}}" rel="stylesheet">
+		{{-- <link href="{{asset('assets/DataTables/datatables.min.css')}}" rel="stylesheet"> --}}
 

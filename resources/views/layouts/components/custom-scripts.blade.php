@@ -20,7 +20,7 @@
 		<script src="{{asset('assets/js/generate-otp.js')}}"></script>
 
 		<!--Internal  Perfect-scrollbar js -->
-		<script src="{{asset('assets/plugins/perfect-scrollbar/perfect-scrollbar.min.js')}}"></script>
+		{{-- <script src="{{asset('assets/plugins/perfect-scrollbar/perfect-scrollbar.min.js')}}"></script> --}}
 
 		<!-- THEME-COLOR JS -->
 		<script src="{{asset('assets/js/themecolor.js')}}"></script>
