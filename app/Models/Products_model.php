@@ -23,4 +23,8 @@ class Products_model extends Model
         return $this->hasMany(Variation_model::class, 'product_id', 'id');
     }
 
+    public function order_items()
+    {
+        return $this->hasManyThrough(Order_item_model::class, Variation_model::class, 'id', 'variation_id', 'id', 'product_id');
+    }
 }

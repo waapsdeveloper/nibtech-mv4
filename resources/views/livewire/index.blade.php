@@ -337,8 +337,8 @@
 							<div class="card custom-card overflow-hidden">
 								<div class="card-header border-bottom-0">
 									<div class="d-flex justify-content-between">
-										<h3 class="card-title mb-2 ">Sales for 10 Days</h3>
-                                        <a href="{{url('index/refresh_10_days_chart')}}">Refresh</a>
+										<h3 class="card-title mb-2 ">Sales for 7 Days</h3>
+                                        <a href="{{url('index/refresh_7_days_chart')}}">Refresh</a>
 									</div>
 								</div>
 								<div class="card-body">

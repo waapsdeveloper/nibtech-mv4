@@ -55,7 +55,7 @@ Route::get('index/toggle_amount_view', [Index::class,'toggle_amount_view'])->nam
 Route::get('index/add_ip', [Index::class,'add_ip'])->name('add_ip');
 Route::get('index/test', [Index::class,'test'])->name('test');
 Route::get('index/refresh_sales_chart', [Index::class,'refresh_sales_chart'])->name('10_day_sales_chart');
-Route::get('index/refresh_10_days_chart', [Index::class,'refresh_10_days_chart'])->name('10_day_sales_chart');
+Route::get('index/refresh_7_days_chart', [Index::class,'refresh_7_days_chart'])->name('10_day_sales_chart');
 // Route::post('change', Change::class);
 Route::get('error404', Error404::class)->name('error');
 Route::get('error500', Error500::class)->name('error');
@@ -126,6 +126,7 @@ Route::post('add_internal_repair_item', [Repair::class,'add_internal_repair_item
 
 Route::get('wholesale', Wholesale::class)->name('view_wholesale');
 Route::get('wholesale/pos', [Wholesale::class,'pos'])->name('pos');
+Route::get('wholesale/get_products', [Wholesale::class,'get_products'])->name('pos');
 Route::post('add_wholesale', [Wholesale::class,'add_wholesale'])->name('add_wholesale');
 Route::post('check_wholesale_item/{id}', [Wholesale::class,'check_wholesale_item'])->name('add_wholesale_item');
 Route::post('add_wholesale_item/{id}', [Wholesale::class,'add_wholesale_item'])->name('add_wholesale_item');

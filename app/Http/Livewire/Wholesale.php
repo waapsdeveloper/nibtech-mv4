@@ -233,18 +233,25 @@ class Wholesale extends Component
     }
 
     public function pos(){
-        $data['categories'] = Category_model::pluck('name','id');
-        $data['brands'] = Brand_model::pluck('name','id');
-        $data['products'] = Products_model::pluck('model','id');
+        $data['categories'] = Category_model::orderBy('name')->pluck('name','id');
+        $data['brands'] = Brand_model::orderBy('name')->pluck('name','id');
+        $data['products'] = Products_model::orderBy('model')->pluck('model','id');
         $data['storages'] = Storage_model::pluck('name','id');
+        $data['colors'] = Color_model::orderBy('name')->pluck('name','id');
         $data['grades'] = Grade_model::pluck('name','id');
-        $data['colors'] = Color_model::pluck('name','id');
+
 
         return view('livewire.pos')->with($data);
     }
 
     public function get_products(){
 
+
+        // $products = Products_model::withCount(['order_items' => function ($q) {
+        //     $q->whereHas('order', function ($q) {
+        //         $q->whereIn('order_type_id', [3,5])->where('created_at', '>=', now()->subDays(7));
+        //     });
+        // }])->orderBy('order_items_count', 'desc')->limit(20)->get();
 
         $products = Products_model::when(request('category') != '', function ($q) {
             return $q->where('products.category', request('category'));
