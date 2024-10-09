@@ -660,7 +660,8 @@ class Index extends Component
             $variation->save();
         });
         $order_c = new Order();
-        Order_model::where('scanned',null)->where('order_type_id',3)->where('tracking_number', '!=', null)->orderByDesc('id')->each(function($order) use ($order_c){
+        Order_model::where('scanned',null)->where('order_type_id',3)->where('tracking_number', '!=', null)->whereBetween('created_at', ['2024-05-01 00:00:00', now()->subDays(2)->format('Y-m-d H:i:s')])
+        ->orderByDesc('id')->each(function($order) use ($order_c){
             $order_c->getLabel($order->reference_id, false, true);
         });
 
