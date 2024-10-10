@@ -49,7 +49,7 @@
         @endif
         <div class="row">
             <div class="col-md-8">
-                <div class="card m-0">
+                <div class="card mb-1">
                     <div class="card-header">
                         <div class="d-flex overflow-auto">
                             <div class="">
@@ -96,14 +96,14 @@
                             <input type="text" class="form-control" placeholder="Search" oninput="searchProducts(this.value)" aria-label="Search" aria-describedby="basic-addon1">
                         </div>
                     </div>
-                    <div class="card-body pt-0" style="height: calc(100vh - 300px); overflow-y: auto;">
+                    <div class="card-body pt-0" style="height: calc(100vh - 285px); overflow-y: auto;">
                         <div class="row g-3" id="product-menu"></div>
                     </div>
 
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card m-0">
+                <div class="card mb-1">
                     <div class="card-header d-flex justify-content-between">
 {{--
                         <span class="main-content-title mg-b-0 mg-b-lg-1"> --}}
@@ -125,7 +125,7 @@
                     <div class="card-body">
                         <br>
                         <h5>Cart</h5>
-                        <div style="height: calc(100vh - 350px); overflow-y: auto;">
+                        <div style="height: calc(100vh - 300px); overflow-y: auto;">
                             <table class="table m-0">
                                 <thead style="position: sticky; top: 0; background: white; z-index: 1;">
                                     <tr>
@@ -181,16 +181,7 @@
                                 </tbody>
                                 <tfoot style="position: sticky; bottom: 0; background: white; z-index: 1;">
                                     <tr>
-                                        <td class="text-end">Subtotal:</td>
-                                        <td colspan="2" class="text-end">0.00</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="text-end">Discount:</td>
-                                        <td colspan="2" class="text-end">0.00</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="text-end">Total:</td>
-                                        <td colspan="2" class="text-end">0.00</td>
+                                        <td colspan="3" class="text-end"><button class="btn btn-lg btn-secondary w-100"> Total 0.00 - Discount 0.00 <br> PAY 0.00</button></td>
                                     </tr>
                                 </tfoot>
                             </table>
