@@ -2,7 +2,7 @@
 
     @section('content')
         <!-- breadcrumb -->
-            <div class="breadcrumb-header justify-content-between">
+            {{-- <div class="breadcrumb-header justify-content-between">
                 <div class="left-content">
                 <span class="main-content-title mg-b-0 mg-b-lg-1 d-flex">
                     POS MODE: &nbsp;
@@ -23,9 +23,10 @@
                         <li class="breadcrumb-item active" aria-current="page">POS</li>
                     </ol>
                 </div>
-            </div>
+            </div> --}}
         <!-- /breadcrumb -->
-        <hr style="border-bottom: 1px solid #000">
+        {{-- <hr style="border-bottom: 1px solid #000"> --}}
+        <br>
         @if (session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <span class="alert-inner--icon"><i class="fe fe-thumbs-up"></i></span>
@@ -48,42 +49,42 @@
         @endif
         <div class="row">
             <div class="col-md-8">
-                <div class="card p-3">
-                    <div class="d-flex overflow-auto">
-                        <div class="">
-                            <input type="radio" class="btn-check" name="category" id="option" autocomplete="off" onclick="selectCategory(0)" checked>
-                            <label class="btn btn-outline-dark m-0" for="option">Categories:</label>
-                        </div>
-                        @foreach ($categories as $id => $name)
-                            @php
-                                $name = str_replace(' ',"&nbsp;",$name);
-                            @endphp
-                            <div class="">
-                                {{-- <input type="radio" name="category" class="btn btn-light"> --}}
-                                <input type="radio" class="btn-check" name="category" id="option{{$id}}" autocomplete="off" onclick="selectCategory({{ $id }})">
-                                <label class="btn btn-outline-dark m-0" for="option{{$id}}">{!! $name !!}</label>
-                            </div>
-                        @endforeach
-                    </div>
-                    <div class="d-flex overflow-scroll">
-                        <div class="">
-                            <input type="radio" class="btn-check" name="brand" id="1option" autocomplete="off" onclick="selectBrand(0)" checked>
-                            <label class="btn btn-outline-dark m-0" for="1option">Brands:</label>
-                        </div>
-                        @foreach ($brands as $id => $name)
-                            @php
-                                $name = str_replace(' ',"&nbsp;",$name);
-                            @endphp
-                            <div class="">
-                                <input type="radio" class="btn-check" name="brand" id="1option{{$id}}" autocomplete="off" onclick="selectBrand({{ $id }})">
-                                <label class="btn btn-outline-dark m-0" for="1option{{$id}}">{!! $name !!}</label>
-                            </div>
-                        @endforeach
-                    </div>
-
-                </div>
-                <div class="card">
+                <div class="card m-0">
                     <div class="card-header">
+                        <div class="d-flex overflow-auto">
+                            <div class="">
+                                <input type="radio" class="btn-check" name="category" id="option" autocomplete="off" onclick="selectCategory(0)" checked>
+                                <label class="btn btn-outline-dark m-0 py-1" for="option">Categories:</label>
+                            </div>
+                            @foreach ($categories as $id => $name)
+                                @php
+                                    $name = str_replace(' ',"&nbsp;",$name);
+                                @endphp
+                                <div class="">
+                                    {{-- <input type="radio" name="category" class="btn btn-light"> --}}
+                                    <input type="radio" class="btn-check" name="category" id="option{{$id}}" autocomplete="off" onclick="selectCategory({{ $id }})">
+                                    <label class="btn btn-outline-dark m-0 py-1" for="option{{$id}}">{!! $name !!}</label>
+                                </div>
+                            @endforeach
+                        </div>
+                        <div class="d-flex overflow-scroll">
+                            <div class="">
+                                <input type="radio" class="btn-check" name="brand" id="1option" autocomplete="off" onclick="selectBrand(0)" checked>
+                                <label class="btn btn-outline-dark m-0 py-1" for="1option">Brands:</label>
+                            </div>
+                            @foreach ($brands as $id => $name)
+                                @php
+                                    $name = str_replace(' ',"&nbsp;",$name);
+                                @endphp
+                                <div class="">
+                                    <input type="radio" class="btn-check" name="brand" id="1option{{$id}}" autocomplete="off" onclick="selectBrand({{ $id }})">
+                                    <label class="btn btn-outline-dark m-0 py-1" for="1option{{$id}}">{!! $name !!}</label>
+                                </div>
+                            @endforeach
+                        </div>
+
+                {{-- </div>
+                <div class="card"> --}}
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <span class="input-group-text" id="basic-addon1">
@@ -95,41 +96,90 @@
                             <input type="text" class="form-control" placeholder="Search" oninput="searchProducts(this.value)" aria-label="Search" aria-describedby="basic-addon1">
                         </div>
                     </div>
-
-                    <div class="card-body">
+                    <div class="card-body pt-0" style="height: calc(100vh - 300px); overflow-y: auto;">
                         <div class="row g-3" id="product-menu"></div>
                     </div>
 
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">
+                <div class="card m-0">
+                    <div class="card-header d-flex justify-content-between">
+{{--
+                        <span class="main-content-title mg-b-0 mg-b-lg-1"> --}}
+                        {{-- <h4>
+                            POS MODE: &nbsp;
+                        </h4> --}}
+
+                        <div class="d-flex">
+                            <input type="radio" class="btn-check" name="mode" id="3option">
+                            <label class="btn btn-outline-dark m-0" for="3option">Purchase</label>
+                            <input type="radio" class="btn-check" name="mode" id="2option" checked>
+                            <label class="btn btn-outline-dark m-0" for="2option">Sale</label>
+                        </div>
                         <div class="form-floating">
                             <input type="text" class="form-control" id="customer_name" placeholder="Customer Name">
                             <label for="customer_name">Customer Name</label>
                         </div>
                     </div>
                     <div class="card-body">
-                        <table class="table table-sm fx-10 text-xs">
-                            <thead>
-                                <tr>
-                                    <th>Product</th>
-                                    <th>Qty</th>
-                                    <th>Price</th>
-                                </tr>
-                            </thead>
-                            <tbody id="cart_items">
-                                <tr class="fx-8">
-                                    <td>Apple AirPods Pro 1st gen (2019) Wireless Charging case Black Very Good</td>
-                                    <td>1</td>
-                                    <td> 0.00</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="3" class="text-center">No items in cart</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <br>
+                        <h5>Cart</h5>
+                        <div style="height: calc(100vh - 350px); overflow-y: auto;">
+                            <table class="table table-sm fx-10 text-xs m-0">
+                                <thead style="position: sticky; top: 0; background: white; z-index: 1;">
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Qty</th>
+                                        <th>Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cart_items" style="height: calc(100vh - 450px); overflow-y: auto;">
+                                    <tr class="">
+                                        <td>Apple AirPods Pro 1st gen (2019) Wireless Charging case Black Very Good</td>
+                                        <td class="text-center">1</td>
+                                        <td class="text-end"> 0.00</td>
+                                    </tr>
+                                    <tr class="">
+                                        <td>Apple AirPods Pro 1st gen (2019) Wireless Charging case Black Very Good</td>
+                                        <td class="text-center">1</td>
+                                        <td class="text-end"> 0.00</td>
+                                    </tr>
+                                    <tr class="">
+                                        <td>Apple AirPods Pro 1st gen (2019) Wireless Charging case Black Very Good</td>
+                                        <td class="text-center">1</td>
+                                        <td class="text-end"> 0.00</td>
+                                    </tr>
+                                    <tr class="">
+                                        <td>Apple AirPods Pro 1st gen (2019) Wireless Charging case Black Very Good</td>
+                                        <td class="text-center">1</td>
+                                        <td class="text-end"> 0.00</td>
+                                    </tr>
+                                    <tr class="">
+                                        <td>Apple AirPods Pro 1st gen (2019) Wireless Charging case Black Very Good</td>
+                                        <td class="text-center">1</td>
+                                        <td class="text-end"> 0.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3" class="text-center">No items in cart</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot style="position: sticky; bottom: 0; background: white; z-index: 1;">
+                                    <tr>
+                                        <td class="text-end">Subtotal:</td>
+                                        <td colspan="2" class="text-end">0.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-end">Discount:</td>
+                                        <td colspan="2" class="text-end">0.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-end">Total:</td>
+                                        <td colspan="2" class="text-end">0.00</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
