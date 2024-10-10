@@ -65,7 +65,7 @@
                             </div>
                         @endforeach
                     </div>
-                    <div class="d-flex bg-light tx-center overflow-scroll border">
+                    <div class="d-flex overflow-scroll">
                         <div class="">
                             <input type="radio" class="btn-check" name="brand" id="1option" autocomplete="off" onclick="selectBrand(0)" checked>
                             <label class="btn btn-outline-dark m-0" for="1option">Brands:</label>
