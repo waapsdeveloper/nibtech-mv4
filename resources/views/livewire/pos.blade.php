@@ -54,7 +54,7 @@
                         <div class="d-flex overflow-auto">
                             <div class="">
                                 <input type="radio" class="btn-check" name="category" id="option" autocomplete="off" onclick="selectCategory(0)" checked>
-                                <label class="btn btn-outline-dark m-0 py-1" for="option">Categories:</label>
+                                <label class="btn btn-outline-dark m-0 py-1 rounded-0" for="option">Categories:</label>
                             </div>
                             @foreach ($categories as $id => $name)
                                 @php
@@ -63,14 +63,14 @@
                                 <div class="">
                                     {{-- <input type="radio" name="category" class="btn btn-light"> --}}
                                     <input type="radio" class="btn-check" name="category" id="option{{$id}}" autocomplete="off" onclick="selectCategory({{ $id }})">
-                                    <label class="btn btn-outline-dark m-0 py-1" for="option{{$id}}">{!! $name !!}</label>
+                                    <label class="btn btn-outline-dark m-0 py-1 rounded-0" for="option{{$id}}">{!! $name !!}</label>
                                 </div>
                             @endforeach
                         </div>
                         <div class="d-flex overflow-scroll">
                             <div class="">
                                 <input type="radio" class="btn-check" name="brand" id="1option" autocomplete="off" onclick="selectBrand(0)" checked>
-                                <label class="btn btn-outline-dark m-0 py-1" for="1option">Brands:</label>
+                                <label class="btn btn-outline-dark m-0 py-1 rounded-0" for="1option">Brands:</label>
                             </div>
                             @foreach ($brands as $id => $name)
                                 @php
@@ -78,7 +78,7 @@
                                 @endphp
                                 <div class="">
                                     <input type="radio" class="btn-check" name="brand" id="1option{{$id}}" autocomplete="off" onclick="selectBrand({{ $id }})">
-                                    <label class="btn btn-outline-dark m-0 py-1" for="1option{{$id}}">{!! $name !!}</label>
+                                    <label class="btn btn-outline-dark m-0 py-1 rounded-0" for="1option{{$id}}">{!! $name !!}</label>
                                 </div>
                             @endforeach
                         </div>
@@ -126,7 +126,7 @@
                         <br>
                         <h5>Cart</h5>
                         <div style="height: calc(100vh - 350px); overflow-y: auto;">
-                            <table class="table table-sm fx-10 text-xs m-0">
+                            <table class="table m-0">
                                 <thead style="position: sticky; top: 0; background: white; z-index: 1;">
                                     <tr>
                                         <th>Product</th>
@@ -135,6 +135,21 @@
                                     </tr>
                                 </thead>
                                 <tbody id="cart_items" style="height: calc(100vh - 450px); overflow-y: auto;">
+                                    <tr class="">
+                                        <td>Apple AirPods Pro</td>
+                                        <td class="text-center">1</td>
+                                        <td class="text-end"> 0.00</td>
+                                    </tr>
+                                    <tr class="">
+                                        <td>Apple AirPods Pro 1st gen (2019) Wireless Charging case Black Very Good</td>
+                                        <td class="text-center">1</td>
+                                        <td class="text-end"> 0.00</td>
+                                    </tr>
+                                    <tr class="">
+                                        <td>Apple AirPods Pro 1st gen (2019) Wireless Charging case Black Very Good</td>
+                                        <td class="text-center">1</td>
+                                        <td class="text-end"> 0.00</td>
+                                    </tr>
                                     <tr class="">
                                         <td>Apple AirPods Pro 1st gen (2019) Wireless Charging case Black Very Good</td>
                                         <td class="text-center">1</td>
@@ -283,7 +298,7 @@
                                     // Iterate through the products and create menu items
                                     products.forEach(product => {
                                         const productDiv = document.createElement('div');
-                                        productDiv.className = 'col-md-3'; // Add a class for styling (optional)
+                                        productDiv.className = 'col-md-3 col-sm-6'; // Add a class for styling (optional)
 
                                         const productLink = document.createElement('a');
                                         productLink.href = 'javascript:void(0);';
