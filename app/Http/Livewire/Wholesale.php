@@ -262,7 +262,7 @@ class Wholesale extends Component
         ->when(request('search') != 'null', function ($q) {
             return $q->where('products.model', 'LIKE', '%' . request('search') . '%');
         })
-        ->get();
+        ->limit(100)->get();
         // dd($products);
 
         return response()->json($products);

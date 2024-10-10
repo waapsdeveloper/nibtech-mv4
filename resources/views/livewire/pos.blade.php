@@ -118,15 +118,15 @@
                         <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
                             type="button"><span aria-hidden="true">&times;</span></button>
                         <h5 class="modal-title mg-b-5" id="product_name">Variation Details</h5>
-                        <div id="storage_options" class="my-2">
+                        <div id="storage_options" class="my-3">
                             <input type="radio" class="btn-check" name="storage" id="storage_option0" value="" checked autocomplete="off">
                             <label class="btn btn-sm btn-outline-dark m-0" for="storage_option0">Storage:</label>
                         </div>
-                        <div id="color_options" class="my-2">
+                        <div id="color_options" class="my-3">
                             <input type="radio" class="btn-check" name="color" id="color_option0" value="" checked autocomplete="off">
                             <label class="btn btn-sm btn-outline-dark m-0" for="color_option0">Color:</label>
                         </div>
-                        <div id="grade_option" class="my-2">
+                        <div id="grade_option" class="my-3">
                             <input type="radio" class="btn-check" name="grade" id="grade_option0" value="" checked autocomplete="off">
                             <label class="btn btn-sm btn-outline-dark m-0" for="grade_option0">Grade:</label>
                             @foreach ($grades as $id => $name)
@@ -134,20 +134,20 @@
                                 <label class="btn btn-sm btn-outline-dark m-0" for="grade_option{{$id}}">{{ $name }}</label>
                             @endforeach
                         </div>
-                        <div class="d-flex" class="my-2">
+                        <div class="d-flex" class="my-3">
 
                             {{-- <div class="form-floating me-2">
                                 <input type="number" class="form-control" name="quantity" id="quantity" value="1" min="1">
                                 <label for="quantity">Quantity:</label>
                             </div> --}}
-                            <div class="handle-counter ms-2">
-                                <button class="counter-minus btn btn-white lh-2 shadow-none" onclick="$('#quantity').val($('#quantity').val()-1)"><i class="fe fe-minus"></i></button>
-                                <input type="text" pattern="[0-9]" class="form-control" name="quantity" id="quantity" value="1" min="1">
-                                <button class="counter-plus btn btn-white lh-2 shadow-none" onclick="$('#quantity').val(parseInt($('#quantity').val())+1)"><i class="fe fe-plus"></i></button>
-                            </div>
-                            <div class="form-floating mx-3">
+                            <div class="form-floating">
                                 <input type="number" class="form-control" name="price" id="price" value="0.00" step="0.01" min="0.01">
                                 <label for="price">Price:</label>
+                            </div>
+                            <div class="handle-counter mx-3">
+                                <button class="counter-minus btn btn-white lh-2 shadow-none" onclick="$('#quantity').val($('#quantity').val()-1)"><i class="fe fe-minus"></i></button>
+                                <input type="text" pattern="[0-9]" class="form-control w-50" name="quantity" id="quantity" value="1" min="1">
+                                <button class="counter-plus btn btn-white lh-2 shadow-none" onclick="$('#quantity').val(parseInt($('#quantity').val())+1)"><i class="fe fe-plus"></i></button>
                             </div>
                             <div id="add_to_cart">
                                 <button class="btn btn-dark">
