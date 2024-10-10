@@ -125,8 +125,6 @@ Route::get('repair/internal', [Repair::class,'internal_repair'])->name('internal
 Route::post('add_internal_repair_item', [Repair::class,'add_internal_repair_item'])->name('internal_repair');
 
 Route::get('wholesale', Wholesale::class)->name('view_wholesale');
-Route::get('wholesale/pos', [Wholesale::class,'pos'])->name('pos');
-Route::get('wholesale/get_products', [Wholesale::class,'get_products'])->name('pos');
 Route::post('add_wholesale', [Wholesale::class,'add_wholesale'])->name('add_wholesale');
 Route::post('check_wholesale_item/{id}', [Wholesale::class,'check_wholesale_item'])->name('add_wholesale_item');
 Route::post('add_wholesale_item/{id}', [Wholesale::class,'add_wholesale_item'])->name('add_wholesale_item');
@@ -140,6 +138,10 @@ Route::post('wholesale/add_wholesale_sheet/{id}', [Wholesale::class,'add_wholesa
 Route::post('wholesale/approve/{id}', [Wholesale::class,'wholesale_approve'])->name('wholesale_approve');
 Route::get('wholesale/revert_status/{id}', [Wholesale::class,'wholesale_revert_status'])->name('wholesale_revert_status');
 Route::post('wholesale/remove_issues', [Wholesale::class,'remove_issues'])->name('remove_wholesale_issues');
+
+Route::get('wholesale/pos', [Wholesale::class,'pos'])->name('pos');
+Route::get('wholesale/get_products', [Wholesale::class,'get_products'])->name('pos');
+Route::get('wholesale/get_product_variations/{id}', [Wholesale::class,'get_product_variations'])->name('pos');
 
 Route::get('wholesale_return', Wholesale_return::class)->name('view_wholesale_return');
 Route::get('add_wholesale_return', [Wholesale_return::class,'add_wholesale_return'])->name('add_wholesale_return');

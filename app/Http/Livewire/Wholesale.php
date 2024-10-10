@@ -235,10 +235,10 @@ class Wholesale extends Component
     public function pos(){
         $data['categories'] = Category_model::orderBy('name')->pluck('name','id');
         $data['brands'] = Brand_model::orderBy('name')->pluck('name','id');
-        $data['products'] = Products_model::orderBy('model')->pluck('model','id');
-        $data['storages'] = Storage_model::pluck('name','id');
-        $data['colors'] = Color_model::orderBy('name')->pluck('name','id');
-        $data['grades'] = Grade_model::pluck('name','id');
+        // $data['products'] = Products_model::orderBy('model')->pluck('model','id');
+        // $data['storages'] = Storage_model::pluck('name','id');
+        // $data['colors'] = Color_model::orderBy('name')->pluck('name','id');
+        // $data['grades'] = Grade_model::pluck('name','id');
 
 
         return view('livewire.pos')->with($data);
@@ -253,17 +253,28 @@ class Wholesale extends Component
         //     });
         // }])->orderBy('order_items_count', 'desc')->limit(20)->get();
 
-        $products = Products_model::when(request('category') > 0, function ($q) {
+        $products = Products_model::when(ctype_digit(request('category')) && request('category') > 0, function ($q) {
             return $q->where('products.category', request('category'));
         })
-        ->when(request('brand') > 0, function ($q) {
+        ->when(ctype_digit(request('brand')) && request('brand') > 0, function ($q) {
             return $q->where('products.brand', request('brand'));
         })
+        ->when(request('search') != 'null', function ($q) {
+            return $q->where('products.model', 'LIKE', '%' . request('search') . '%');
+        })
         ->get();
-
         // dd($products);
 
         return response()->json($products);
+    }
+
+    public function get_product_variations($product_id){
+        $variations = Variation_model::where('product_id',$product_id)->get();
+
+        $colors = Color_model::whereIn('id',$variations->pluck('color'))->pluck('name','id');
+        $storages = Storage_model::whereIn('id',$variations->pluck('storage'))->pluck('name','id');
+        $grades = Grade_model::pluck('name','id');
+        return response()->json(['variations'=>$variations,'colors'=>$colors,'storages'=>$storages,'grades'=>$grades]);
     }
     public function add_wholesale(){
         // dd(request('wholesale'));

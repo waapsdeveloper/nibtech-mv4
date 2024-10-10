@@ -4,7 +4,17 @@
         <!-- breadcrumb -->
             <div class="breadcrumb-header justify-content-between">
                 <div class="left-content">
-                <span class="main-content-title mg-b-0 mg-b-lg-1">POS</span>
+                <span class="main-content-title mg-b-0 mg-b-lg-1 d-flex">
+                    POS MODE: &nbsp;
+                        <div class="">
+                            <input type="radio" class="btn-check" name="mode" id="3option">
+                            <label class="btn btn-outline-dark m-0" for="3option">Purchase</label>
+                        </div>
+                        <div class="">
+                            <input type="radio" class="btn-check" name="mode" id="2option" checked>
+                            <label class="btn btn-outline-dark m-0" for="2option">Sale</label>
+                        </div>
+                </span>
                 </div>
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
@@ -17,15 +27,14 @@
         <!-- /breadcrumb -->
         <hr style="border-bottom: 1px solid #000">
         @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <span class="alert-inner--icon"><i class="fe fe-thumbs-up"></i></span>
-            <span class="alert-inner--text"><strong>{{session('success')}}</strong></span>
-            <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
-        </div>
-        <br>
-        @php
-        session()->forget('success');
-        @endphp
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <span class="alert-inner--icon"><i class="fe fe-thumbs-up"></i></span>
+                <span class="alert-inner--text"><strong>{{session('success')}}</strong></span>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
+            </div>
+            @php
+            session()->forget('success');
+            @endphp
         @endif
         @if (session('error'))
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -33,28 +42,41 @@
                 <span class="alert-inner--text"><strong>{{session('error')}}</strong></span>
                 <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
             </div>
-        <br>
-        @php
-        session()->forget('error');
-        @endphp
+            @php
+            session()->forget('error');
+            @endphp
         @endif
         <div class="row">
             <div class="col-md-9">
                 <div class="card p-3">
-                    <div class="d-flex bg-light tx-center overflow-auto border">
+                    <div class="d-flex bg-light tx-center overflow-auto">
+                        <div class="">
+                            <input type="radio" class="btn-check" name="category" id="option" autocomplete="off" onclick="selectCategory(0)" checked>
+                            <label class="btn btn-outline-dark m-0" for="option">Categories:</label>
+                        </div>
                         @foreach ($categories as $id => $name)
                             @php
                                 $name = str_replace(' ',"&nbsp;",$name);
                             @endphp
-                            <div class="border wd-auto">
-                                <a href="javascript:void(0);" class="btn btn-link" onchange="selectCategory({{ $id }})"> {!! $name !!} </a>
+                            <div class="">
+                                {{-- <input type="radio" name="category" class="btn btn-light"> --}}
+                                <input type="radio" class="btn-check" name="category" id="option{{$id}}" autocomplete="off" onclick="selectCategory({{ $id }})">
+                                <label class="btn btn-outline-dark m-0" for="option{{$id}}">{!! $name !!}</label>
                             </div>
                         @endforeach
                     </div>
                     <div class="d-flex bg-light tx-center overflow-scroll border">
+                        <div class="">
+                            <input type="radio" class="btn-check" name="brand" id="1option" autocomplete="off" onclick="selectBrand(0)" checked>
+                            <label class="btn btn-outline-dark m-0" for="1option">Brands:</label>
+                        </div>
                         @foreach ($brands as $id => $name)
-                            <div class="border wd-auto">
-                                <a href="#" class="btn btn-link" onchange="selectBrand({{ $id }})"> {{ $name }} </a>
+                            @php
+                                $name = str_replace(' ',"&nbsp;",$name);
+                            @endphp
+                            <div class="">
+                                <input type="radio" class="btn-check" name="brand" id="1option{{$id}}" autocomplete="off" onclick="selectBrand({{ $id }})">
+                                <label class="btn btn-outline-dark m-0" for="1option{{$id}}">{!! $name !!}</label>
                             </div>
                         @endforeach
                     </div>
@@ -70,170 +92,61 @@
                                     </svg>
                                 </span>
                             </div>
-                            <input type="text" class="form-control" placeholder="Search" aria-label="Search" aria-describedby="basic-addon1">
+                            <input type="text" class="form-control" placeholder="Search" oninput="searchProducts(this.value)" aria-label="Search" aria-describedby="basic-addon1">
                         </div>
                     </div>
-                    <script>
-                        // Set selected category and brand from the request, if available
-                        let selectedCategoryId = {{ request('category') ?? 'null' }};
-                        let selectedBrandId = {{ request('brand') ?? 'null' }};
-                        let selectedProductId = {{ request('product') ?? 'null' }};
-
-                        // Fetch the products when the page loads
-                        get_products(selectedCategoryId, selectedBrandId);
-
-                        // Function to update the selected category and fetch products
-                        function selectCategory(categoryId) {
-                            selectedCategoryId = categoryId;
-                            get_products(selectedCategoryId, selectedBrandId);
-                        }
-
-                        // Function to update the selected brand and fetch products
-                        function selectBrand(brandId) {
-                            selectedBrandId = brandId;
-                            get_products(selectedCategoryId, selectedBrandId);
-                        }
-
-                        // Function to fetch and render products based on the selected category and brand
-                        function get_products(selectedCategoryId, selectedBrandId) {
-                            fetch(`{{ url('wholesale') }}/get_products?category=${selectedCategoryId}&brand=${selectedBrandId}`)
-                                .then(response => response.json())
-                                .then(products => {
-                                    const productMenu = document.getElementById('product-menu');
-                                    productMenu.innerHTML = ''; // Clear existing products
-
-                                    // Iterate through the products and create menu items
-                                    products.forEach(product => {
-                                        const productLink = document.createElement('a');
-                                        productLink.href = `{{ url('wholesale') }}/detail?category=${selectedCategoryId}&brand=${selectedBrandId}&product=${product.id}`;
-                                        productLink.className = 'tx-center btn btn-light d-flex align-items-center justify-content-center br-5 ht-100 tx-15';
-                                        productLink.innerHTML = `${product.model}`;
-
-                                        // Check if the product matches the selected product from the request
-                                        if (product.id == selectedProductId) {
-                                            productLink.classList.add('active'); // Add 'active' class to highlight the selected product
-                                        }
-
-                                        productMenu.appendChild(productLink);
-                                    });
-
-                                    alert(products); // Log products for debugging
-                                })
-                                .catch(error => console.error('Error fetching products:', error));
-                        }
-                    </script>
 
                     <div class="card-body">
-                        <div class="row g-3">
-                            {{-- @foreach ($products as $id => $model) --}}
-
-                                <div class="col-md-3" id="product-menu">
-                                        {{-- <a href="" class="tx-center btn btn-light d-flex align-items-center justify-content-center br-5 ht-100 tx-15">{{ $model }}</a> --}}
-                                    {{-- </div> --}}
-                                </div>
-                            {{-- @endforeach --}}
-                            <div class="col-md-3 p-2">
-                                <div class="d-flex align-items-center justify-content-center br-5  ht-100 bg-gray-200">
-                                    .ht-100
-                                </div>
-                            </div>
-                            <div class="col-md-3 p-2">
-                                <div class="d-flex align-items-center justify-content-center br-5  ht-100 bg-gray-200">
-                                    .ht-100
-                                </div>
-                            </div>
-                            <div class="col-md-3 p-2">
-                                <div class="d-flex align-items-center justify-content-center br-5  ht-100 bg-gray-200">
-                                    .ht-100
-                                </div>
-                            </div>
-                            <div class="col-md-3 p-2">
-                                <div class="d-flex align-items-center justify-content-center br-5  ht-100 bg-gray-200">
-                                    .ht-100
-                                </div>
-                            </div>
-                            <div class="col-md-3 p-2">
-                                <div class="d-flex align-items-center justify-content-center br-5  ht-100 bg-gray-200">
-                                    .ht-100
-                                </div>
-                            </div>
-                            <div class="col-md-3 p-2">
-                                <div class="d-flex align-items-center justify-content-center br-5  ht-100 bg-gray-200">
-                                    .ht-100
-                                </div>
-                            </div>
-                            <div class="col-md-3 p-2">
-                                <div class="d-flex align-items-center justify-content-center br-5  ht-100 bg-gray-200">
-                                    .ht-100
-                                </div>
-                            </div>
-                            <div class="col-md-3 p-2">
-                                <div class="d-flex align-items-center justify-content-center br-5  ht-100 bg-gray-200">
-                                    .ht-100
-                                </div>
-                            </div>
-                            <div class="col-md-3 p-2">
-                                <div class="d-flex align-items-center justify-content-center br-5  ht-100 bg-gray-200">
-                                    .ht-100
-                                </div>
-                            </div>
-                            <div class="col-md-3 p-2">
-                                <div class="d-flex align-items-center justify-content-center br-5  ht-100 bg-gray-200">
-                                    .ht-100
-                                </div>
-                            </div>
-                            <div class="col-md-3 p-2">
-                                <div class="d-flex align-items-center justify-content-center br-5  ht-100 bg-gray-200">
-                                    .ht-100
-                                </div>
-                            </div>
-                            <div class="col-md-3 p-2">
-                                <div class="d-flex align-items-center justify-content-center br-5  ht-100 bg-gray-200">
-                                    .ht-100
-                                </div>
-                            </div>
-                        </div>
+                        <div class="row g-3" id="product-menu"></div>
                     </div>
 
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="card">
-                    <div class="card-header">
-                        Mode:
-                        <div class="main-toggle main-toggle-secondary on">
-                            <span></span>
-                        </div>
-                        <div data-toggle="buttons-radio">
-                            <button class="btn btn-secondary">Purchase</button>
-                            <button class="btn btn-secondary">Sale</button>
-                        </div>
-                        <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                            <label class="btn btn-light active">
-                              <input type="radio" name="options" id="option1" onclick="$().button('toggle')"> Sale
-                            </label>
-                            <label class="btn btn-light">
-                              <input type="radio" name="options" id="option2" onclick="$().button('toggle')"> Purchase
-                            </label>
-                        </div>
-                        <div class="btn-group btn-group-toggle" data-bs-toggle="buttons">
-                            <label class="btn btn-light active">
-                                <input type="radio" name="options" id="option1" autocomplete="off" checked> Sale
-                            </label>
-                            <label class="btn btn-light">
-                                <input type="radio" name="options" id="option2" autocomplete="off"> Purchase
-                            </label>
-                        </div>
-                    </div>
                     <div class="card-body">
 
                     </div>
                 </div>
             </div>
         </div>
-        @php
-            session()->forget('success');
-        @endphp
+
+        <div class="modal" id="product_detail_modal">
+            <div class="modal-dialog wd-xl-400" role="document">
+                <div class="modal-content">
+                    <div class="modal-body pd-sm-40">
+                        <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
+                            type="button"><span aria-hidden="true">&times;</span></button>
+                        <h5 class="modal-title mg-b-5">Variation Details</h5>
+                        <hr>
+                        <form action="{{ url('order/correction') }}" method="POST" onsubmit="if ($('#correction_imei').val() == ''){ if (confirm('Remove IMEI from Order')){return true;}else{event.stopPropagation(); event.preventDefault();};};">
+                            @csrf
+                            <div class="form-group">
+                                <label for="">Order Number</label>
+                                <input class="form-control" name="correction[id]" type="text" id="order_reference" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label for="">Tester</label>
+                                <input class="form-control" placeholder="input Tester Initial" name="correction[tester]" type="text">
+                            </div>
+                            <div class="form-group">
+                                <label for="">IMEI / Serial Number</label>
+                                <input class="form-control" placeholder="input IMEI / Serial Number" id="correction_imei" name="correction[imei]" type="text">
+                            </div>
+                            <div class="form-group">
+                                <label for="">Reason</label>
+                                <textarea class="form-control" name="correction[reason]">Wrong Dispatch</textarea>
+                            </div>
+                            <input type="hidden" id="item_id" name="correction[item_id]" value="">
+
+                            <button class="btn btn-primary btn-block">{{ __('locale.Submit') }}</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
     @endsection
 
     @section('scripts')
@@ -241,6 +154,79 @@
             $(document).ready(function () {
                 $('#sb_toggle').click();
             })
-        </script>
+                        // Set selected category and brand from the request, if available
+                        let selectedCategoryId = {{ request('category') ?? 'null' }};
+                        let selectedBrandId = {{ request('brand') ?? 'null' }};
+                        let searchedText = {{ request('search') ?? 'null' }};
+                        let selectedProductId = {{ request('product') ?? 'null' }};
+
+                        // Fetch the products when the page loads
+                        get_products(selectedCategoryId, selectedBrandId, searchedText);
+
+                        // Function to update the selected category and fetch products
+                        function selectCategory(categoryId) {
+
+                            selectedCategoryId = categoryId;
+                            get_products(selectedCategoryId, selectedBrandId, searchedText);
+                        }
+
+                        // Function to update the selected brand and fetch products
+                        function selectBrand(brandId) {
+                            selectedBrandId = brandId;
+                            get_products(selectedCategoryId, selectedBrandId, searchedText);
+                        }
+
+                        function searchProducts(search) {
+                            searchedText = search;
+                            get_products(selectedCategoryId, selectedBrandId, searchedText);
+                        }
+
+                        // Function to fetch and render products based on the selected category and brand
+                        function get_products(selectedCategoryId, selectedBrandId, searchedText) {
+                            fetch(`{{ url('wholesale') }}/get_products?category=${selectedCategoryId}&brand=${selectedBrandId}&search=${searchedText}`)
+                                .then(response => response.json())
+                                .then(products =>
+                                {
+                                    const productMenu = document.getElementById('product-menu');
+                                    productMenu.innerHTML = ''; // Clear existing products
+
+                                    // Iterate through the products and create menu items
+                                    products.forEach(product => {
+                                        const productDiv = document.createElement('div');
+                                        productDiv.className = 'col-md-3'; // Add a class for styling (optional)
+
+                                        const productLink = document.createElement('a');
+                                        productLink.href = 'javascript:void(0);';
+                                        productLink.dataset.bsTarget = '#product_detail_modal';
+                                        productLink.dataset.bsToggle = 'modal';
+
+                                        productLink.onclick = () => loadProductDetails(product.id);
+
+                                        productLink.className = 'tx-center btn btn-light d-flex align-items-center justify-content-center br-5 ht-100 tx-15';
+                                        productLink.innerHTML = `${product.model}`;
+
+                                        // Check if the product matches the selected product from the request
+                                        if (product.id == selectedProductId) {
+                                            productLink.classList.add('active'); // Add 'active' class to highlight the selected product
+                                        }
+                                        productDiv.appendChild(productLink);
+
+                                        productMenu.appendChild(productDiv);
+                                    });
+
+                                })
+                                .catch(error => console.error('Error fetching products:', error));
+                        }
+
+                        function loadProductDetails(productId) {
+                            fetch(`{{ url('wholesale') }}/get_product_variations/${productId}`)
+                                .then(response => response.json())
+                                .then(product => {
+                                    // Render the product details
+                                })
+                                .catch(error => console.error('Error fetching product details:', error));
+                        }
+
+                    </script>
 
     @endsection
