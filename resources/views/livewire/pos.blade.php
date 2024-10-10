@@ -125,7 +125,7 @@
                     <div class="card-body">
                         <br>
                         <h5>Cart</h5>
-                        <div style="height: calc(100vh - 300px); overflow-y: auto;">
+                        <div style="height: calc(100vh - 305px); overflow-y: auto;">
                             <table class="table m-0">
                                 <thead style="position: sticky; top: 0; background: white; z-index: 1;">
                                     <tr>
