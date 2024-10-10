@@ -250,7 +250,6 @@
                                         <th><small><b>Cost</b></small></th>
                                         @endif
                                         <th><small><b>Creation Date</b></small></th>
-                                        <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -271,7 +270,6 @@
                                             <td>{{ $currency.amount_formatter($item->purchase_item->price,2) }}</td>
                                             @endif
                                             <td style="width:220px">{{ $item->created_at }}</td>
-                                            <td><a href="{{ url('delete_repair_item').'/'.$item->id }}"><i class="fa fa-trash"></i></a></td>
                                         </tr>
                                         @php
                                             $i ++;
