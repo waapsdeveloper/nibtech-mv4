@@ -119,28 +119,14 @@
                             type="button"><span aria-hidden="true">&times;</span></button>
                         <h5 class="modal-title mg-b-5" id="product_name">Variation Details</h5>
                         <hr>
-                        <form action="{{ url('order/correction') }}" method="POST" onsubmit="if ($('#correction_imei').val() == ''){ if (confirm('Remove IMEI from Order')){return true;}else{event.stopPropagation(); event.preventDefault();};};">
-                            @csrf
-                            <div class="form-group">
-                                <label for="">Order Number</label>
-                                <input class="form-control" name="correction[id]" type="text" id="order_reference" disabled>
-                            </div>
-                            <div class="form-group">
-                                <label for="">Tester</label>
-                                <input class="form-control" placeholder="input Tester Initial" name="correction[tester]" type="text">
-                            </div>
-                            <div class="form-group">
-                                <label for="">IMEI / Serial Number</label>
-                                <input class="form-control" placeholder="input IMEI / Serial Number" id="correction_imei" name="correction[imei]" type="text">
-                            </div>
-                            <div class="form-group">
-                                <label for="">Reason</label>
-                                <textarea class="form-control" name="correction[reason]">Wrong Dispatch</textarea>
-                            </div>
-                            <input type="hidden" id="item_id" name="correction[item_id]" value="">
-
-                            <button class="btn btn-primary btn-block">{{ __('locale.Submit') }}</button>
-                        </form>
+                        <h5>Storages</h5>
+                        <div id="storage_options"></div>
+                        <hr>
+                        <h5>Colors</h5>
+                        <div id="color_options"></div>
+                        <hr>
+                        <h5>Grades</h5>
+                        <div id="grade_option"></div>
                     </div>
                 </div>
             </div>
@@ -224,6 +210,32 @@
                                 .then(response => response.json())
                                 .then(product => {
                                     // Render the product details
+                                    const storageOptions = document.getElementById('storage_options');
+                                    storageOptions.innerHTML = ''; // Clear existing options
+                                    console.log(product);
+                                    product['storages'].forEach(storage => {
+                                        const storageRadio = document.createElement('input');
+                                        storageRadio.type = 'radio';
+                                        storageRadio.name = 'storage';
+                                        storageRadio.id = 'storage_option';
+                                        storageRadio.value = storage.id;
+                                        storageRadio.className = 'btn-check';
+
+                                        const storageLabel = document.createElement('label');
+                                        storageLabel.htmlFor = 'storage_option';
+                                        storageLabel.className = 'btn btn-outline-dark m-0';
+                                        storageLabel.innerHTML = storage.name;
+
+
+                                        storageOptions.appendChild(storageRadio);
+                                        storageOptions.appendChild(storageLabel);
+
+                                    })
+
+
+
+                                // <input type="radio" class="btn-check" name="category" id="option{{$id}}" autocomplete="off" onclick="selectCategory({{ $id }})">
+                                // <label class="btn btn-outline-dark m-0" for="option{{$id}}">{!! $name !!}</label>
 
                                 })
                                 .catch(error => console.error('Error fetching product details:', error));
