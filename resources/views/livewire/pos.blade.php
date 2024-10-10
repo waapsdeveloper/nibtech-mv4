@@ -49,7 +49,7 @@
         <div class="row">
             <div class="col-md-9">
                 <div class="card p-3">
-                    <div class="d-flex bg-light tx-center overflow-auto">
+                    <div class="d-flex overflow-auto">
                         <div class="">
                             <input type="radio" class="btn-check" name="category" id="option" autocomplete="off" onclick="selectCategory(0)" checked>
                             <label class="btn btn-outline-dark m-0" for="option">Categories:</label>
@@ -111,13 +111,13 @@
             </div>
         </div>
 
-        <div class="modal" id="product_detail_modal">
+        <div class="modal fade" id="product_detail_modal">
             <div class="modal-dialog wd-xl-400" role="document">
                 <div class="modal-content">
                     <div class="modal-body pd-sm-40">
                         <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
                             type="button"><span aria-hidden="true">&times;</span></button>
-                        <h5 class="modal-title mg-b-5">Variation Details</h5>
+                        <h5 class="modal-title mg-b-5" id="product_name">Variation Details</h5>
                         <hr>
                         <form action="{{ url('order/correction') }}" method="POST" onsubmit="if ($('#correction_imei').val() == ''){ if (confirm('Remove IMEI from Order')){return true;}else{event.stopPropagation(); event.preventDefault();};};">
                             @csrf
@@ -199,6 +199,7 @@
                                         productLink.href = 'javascript:void(0);';
                                         productLink.dataset.bsTarget = '#product_detail_modal';
                                         productLink.dataset.bsToggle = 'modal';
+                                        productLink.dataset.title = product.model;
 
                                         productLink.onclick = () => loadProductDetails(product.id);
 
@@ -223,9 +224,17 @@
                                 .then(response => response.json())
                                 .then(product => {
                                     // Render the product details
+
                                 })
                                 .catch(error => console.error('Error fetching product details:', error));
                         }
+                        $('#product_detail_modal').on('show.bs.modal', function (event) {
+                            var button = $(event.relatedTarget) // Button that triggered the modal
+                            var title = button.data('title') // Extract info from data-* attributesv
+                            var modal = $(this)
+                            modal.find('.modal-body #product_name').html(title)
+                            // modal.find('.modal-body #item_id').val(item)
+                            })
 
                     </script>
 
