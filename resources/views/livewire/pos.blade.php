@@ -112,21 +112,26 @@
         </div>
 
         <div class="modal fade" id="product_detail_modal">
-            <div class="modal-dialog wd-xl-400" role="document">
+            <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-body pd-sm-40">
                         <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
                             type="button"><span aria-hidden="true">&times;</span></button>
                         <h5 class="modal-title mg-b-5" id="product_name">Variation Details</h5>
                         <hr>
-                        <h5>Storages</h5>
+                        <h6>Storage</h6>
                         <div id="storage_options"></div>
                         <hr>
-                        <h5>Colors</h5>
+                        <h6>Color</h6>
                         <div id="color_options"></div>
                         <hr>
-                        <h5>Grades</h5>
-                        <div id="grade_option"></div>
+                        <h6>Grade</h6>
+                        <div id="grade_option">
+                            @foreach ($grades as $id => $name)
+                                <input type="radio" class="btn-check" name="grade" id="grade_option{{$id}}" value="{{$id}}" autocomplete="off">
+                                <label class="btn btn-outline-dark m-0" for="grade_option{{$id}}">{{ $name }}</label>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
             </div>
@@ -212,25 +217,44 @@
                                     // Render the product details
                                     const storageOptions = document.getElementById('storage_options');
                                     storageOptions.innerHTML = ''; // Clear existing options
-                                    console.log(product);
-                                    product['storages'].forEach(storage => {
+
+                                    for (const [key, value] of Object.entries(product.storages)) {
                                         const storageRadio = document.createElement('input');
                                         storageRadio.type = 'radio';
                                         storageRadio.name = 'storage';
-                                        storageRadio.id = 'storage_option';
-                                        storageRadio.value = storage.id;
+                                        storageRadio.id = `storage_option_${key}`;
+                                        storageRadio.value = key;
                                         storageRadio.className = 'btn-check';
 
                                         const storageLabel = document.createElement('label');
-                                        storageLabel.htmlFor = 'storage_option';
+                                        storageLabel.htmlFor = `storage_option_${key}`;
                                         storageLabel.className = 'btn btn-outline-dark m-0';
-                                        storageLabel.innerHTML = storage.name;
+                                        storageLabel.innerHTML = value;
 
 
                                         storageOptions.appendChild(storageRadio);
                                         storageOptions.appendChild(storageLabel);
+                                    }
 
-                                    })
+                                    const colorOptions = document.getElementById('color_options');
+                                    colorOptions.innerHTML = ''; // Clear existing options
+                                    for (const [key, value] of Object.entries(product.colors)) {
+                                        const colorRadio = document.createElement('input');
+                                        colorRadio.type = 'radio';
+                                        colorRadio.name = 'color';
+                                        colorRadio.id = `color_option_${key}`;
+                                        colorRadio.value = key;
+                                        colorRadio.className = 'btn-check';
+
+                                        const colorLabel = document.createElement('label');
+                                        colorLabel.htmlFor = `color_option_${key}`;
+                                        colorLabel.className = 'btn btn-outline-dark m-0';
+                                        colorLabel.innerHTML = value;
+
+
+                                        colorOptions.appendChild(colorRadio);
+                                        colorOptions.appendChild(colorLabel);
+                                    }
 
 
 

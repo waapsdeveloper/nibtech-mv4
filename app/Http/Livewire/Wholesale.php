@@ -238,7 +238,7 @@ class Wholesale extends Component
         // $data['products'] = Products_model::orderBy('model')->pluck('model','id');
         // $data['storages'] = Storage_model::pluck('name','id');
         // $data['colors'] = Color_model::orderBy('name')->pluck('name','id');
-        // $data['grades'] = Grade_model::pluck('name','id');
+        $data['grades'] = Grade_model::pluck('name','id');
 
 
         return view('livewire.pos')->with($data);
