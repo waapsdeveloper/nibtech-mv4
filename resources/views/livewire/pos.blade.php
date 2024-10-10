@@ -47,7 +47,7 @@
             @endphp
         @endif
         <div class="row">
-            <div class="col-md-9">
+            <div class="col-md-8">
                 <div class="card p-3">
                     <div class="d-flex overflow-auto">
                         <div class="">
@@ -102,7 +102,7 @@
 
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <div class="card">
                     <div class="card-header">
                         <div class="form-floating">
@@ -111,7 +111,7 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <table class="table table-sm">
+                        <table class="table table-sm fx-10 text-xs">
                             <thead>
                                 <tr>
                                     <th>Product</th>
@@ -120,6 +120,11 @@
                                 </tr>
                             </thead>
                             <tbody id="cart_items">
+                                <tr class="fx-8">
+                                    <td>Apple AirPods Pro 1st gen (2019) Wireless Charging case Black Very Good</td>
+                                    <td>1</td>
+                                    <td> 0.00</td>
+                                </tr>
                                 <tr>
                                     <td colspan="3" class="text-center">No items in cart</td>
                                 </tr>
