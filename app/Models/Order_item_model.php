@@ -232,9 +232,9 @@ class Order_item_model extends Model
                         }
                         if($itemObj->serial_number != null){
                             if(ctype_digit($itemObj->serial_number) && strlen($itemObj->serial_number) == 15){
-                                $stock = Stock_model::withTrashed()->firstOrNew(['imei' => $itemObj->imei]);
+                                $stock = Stock_model::withTrashed()->firstOrNew(['imei' => $itemObj->serial_number]);
                             }else{
-                                $stock = Stock_model::withTrashed()->firstOrNew(['serial_number' => $itemObj->serial_number,]);
+                                $stock = Stock_model::withTrashed()->firstOrNew(['serial_number' => $itemObj->serial_number]);
                             }
                             if(strlen($itemObj->serial_number) > 20){
                                 continue;

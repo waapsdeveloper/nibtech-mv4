@@ -104,8 +104,27 @@
             </div>
             <div class="col-md-3">
                 <div class="card">
+                    <div class="card-header">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="customer_name" placeholder="Customer Name">
+                            <label for="customer_name">Customer Name</label>
+                        </div>
+                    </div>
                     <div class="card-body">
-
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Qty</th>
+                                    <th>Price</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cart_items">
+                                <tr>
+                                    <td colspan="3" class="text-center">No items in cart</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

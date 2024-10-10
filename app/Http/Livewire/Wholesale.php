@@ -232,49 +232,6 @@ class Wholesale extends Component
         return redirect()->back();
     }
 
-    public function pos(){
-        $data['categories'] = Category_model::orderBy('name')->pluck('name','id');
-        $data['brands'] = Brand_model::orderBy('name')->pluck('name','id');
-        // $data['products'] = Products_model::orderBy('model')->pluck('model','id');
-        // $data['storages'] = Storage_model::pluck('name','id');
-        // $data['colors'] = Color_model::orderBy('name')->pluck('name','id');
-        $data['grades'] = Grade_model::pluck('name','id');
-
-
-        return view('livewire.pos')->with($data);
-    }
-
-    public function get_products(){
-
-
-        // $products = Products_model::withCount(['order_items' => function ($q) {
-        //     $q->whereHas('order', function ($q) {
-        //         $q->whereIn('order_type_id', [3,5])->where('created_at', '>=', now()->subDays(7));
-        //     });
-        // }])->orderBy('order_items_count', 'desc')->limit(20)->get();
-
-        $products = Products_model::when(ctype_digit(request('category')) && request('category') > 0, function ($q) {
-            return $q->where('products.category', request('category'));
-        })
-        ->when(ctype_digit(request('brand')) && request('brand') > 0, function ($q) {
-            return $q->where('products.brand', request('brand'));
-        })
-        ->when(request('search') != 'null', function ($q) {
-            return $q->where('products.model', 'LIKE', '%' . request('search') . '%');
-        })
-        ->limit(100)->get();
-        // dd($products);
-
-        return response()->json($products);
-    }
-
-    public function get_product_variations($product_id){
-        $variations = Variation_model::where('product_id',$product_id)->get();
-
-        $colors = Color_model::whereIn('id',$variations->pluck('color'))->pluck('name','id');
-        $storages = Storage_model::whereIn('id',$variations->pluck('storage'))->pluck('name','id');
-        return response()->json(['variations'=>$variations,'colors'=>$colors,'storages'=>$storages]);
-    }
     public function add_wholesale(){
         // dd(request('wholesale'));
         $wholesale = (object) request('wholesale');
@@ -873,5 +830,53 @@ class Wholesale extends Component
 
 
         Mail::to($order->customer->email)->send(new BulksaleInvoiceMail($data));
+    }
+
+    public function pos(){
+        $data['categories'] = Category_model::orderBy('name')->pluck('name','id');
+        $data['brands'] = Brand_model::orderBy('name')->pluck('name','id');
+        // $data['products'] = Products_model::orderBy('model')->pluck('model','id');
+        // $data['storages'] = Storage_model::pluck('name','id');
+        // $data['colors'] = Color_model::orderBy('name')->pluck('name','id');
+        $data['grades'] = Grade_model::pluck('name','id');
+
+
+        return view('livewire.pos')->with($data);
+    }
+
+    public function get_products(){
+
+
+        // $products = Products_model::withCount(['order_items' => function ($q) {
+        //     $q->whereHas('order', function ($q) {
+        //         $q->whereIn('order_type_id', [3,5])->where('created_at', '>=', now()->subDays(7));
+        //     });
+        // }])->orderBy('order_items_count', 'desc')->limit(20)->get();
+
+        $products = Products_model::when(ctype_digit(request('category')) && request('category') > 0, function ($q) {
+            return $q->where('products.category', request('category'));
+        })
+        ->when(ctype_digit(request('brand')) && request('brand') > 0, function ($q) {
+            return $q->where('products.brand', request('brand'));
+        })
+        ->when(request('search') != 'null', function ($q) {
+            return $q->where('products.model', 'LIKE', '%' . request('search') . '%');
+        })
+        ->limit(100)
+        ->get();
+        // ->paginate(100)
+        // ->onEachSide(5)
+        // ->appends(request()->except('page'));
+        // dd($products);
+
+        return response()->json($products);
+    }
+
+    public function get_product_variations($product_id){
+        $variations = Variation_model::where('product_id',$product_id)->get();
+
+        $colors = Color_model::whereIn('id',$variations->pluck('color'))->pluck('name','id');
+        $storages = Storage_model::whereIn('id',$variations->pluck('storage'))->pluck('name','id');
+        return response()->json(['variations'=>$variations,'colors'=>$colors,'storages'=>$storages]);
     }
 }
