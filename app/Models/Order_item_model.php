@@ -239,7 +239,6 @@ class Order_item_model extends Model
                             if(strlen($itemObj->serial_number) > 20){
                                 continue;
                             }
-                            $stock->serial_number = $itemObj->serial_number;
                             if($stock->id != null){
                                 $stock->status = 2;
                                 $last_item = $stock->last_item();
