@@ -129,7 +129,7 @@
                         <div id="grade_option">
                             @foreach ($grades as $id => $name)
                                 <input type="radio" class="btn-check" name="grade" id="grade_option{{$id}}" value="{{$id}}" autocomplete="off">
-                                <label class="btn btn-outline-dark m-0" for="grade_option{{$id}}">{{ $name }}</label>
+                                <label class="btn btn-sm btn-outline-dark m-0" for="grade_option{{$id}}">{{ $name }}</label>
                             @endforeach
                         </div>
                     </div>
@@ -214,6 +214,7 @@
                             fetch(`{{ url('wholesale') }}/get_product_variations/${productId}`)
                                 .then(response => response.json())
                                 .then(product => {
+                                    console.log(product);
                                     // Render the product details
                                     const storageOptions = document.getElementById('storage_options');
                                     storageOptions.innerHTML = ''; // Clear existing options
@@ -228,7 +229,7 @@
 
                                         const storageLabel = document.createElement('label');
                                         storageLabel.htmlFor = `storage_option_${key}`;
-                                        storageLabel.className = 'btn btn-outline-dark m-0';
+                                        storageLabel.className = 'btn btn-sm btn-outline-dark m-0';
                                         storageLabel.innerHTML = value;
 
 
@@ -248,7 +249,7 @@
 
                                         const colorLabel = document.createElement('label');
                                         colorLabel.htmlFor = `color_option_${key}`;
-                                        colorLabel.className = 'btn btn-outline-dark m-0';
+                                        colorLabel.className = 'btn btn-sm btn-outline-dark m-0';
                                         colorLabel.innerHTML = value;
 
 
