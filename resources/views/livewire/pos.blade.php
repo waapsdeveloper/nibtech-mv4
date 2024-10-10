@@ -175,6 +175,21 @@
                                         <td class="text-center">1</td>
                                         <td class="text-end"> 0.00</td>
                                     </tr>
+                                    <tr class="">
+                                        <td>Apple AirPods Pro 1st gen (2019) Wireless Charging case Black Very Good</td>
+                                        <td class="text-center">1</td>
+                                        <td class="text-end"> 0.00</td>
+                                    </tr>
+                                    <tr class="">
+                                        <td>Apple AirPods Pro 1st gen (2019) Wireless Charging case Black Very Good</td>
+                                        <td class="text-center">1</td>
+                                        <td class="text-end"> 0.00</td>
+                                    </tr>
+                                    <tr class="">
+                                        <td>Apple AirPods Pro 1st gen (2019) Wireless Charging case Black Very Good</td>
+                                        <td class="text-center">1</td>
+                                        <td class="text-end"> 0.00</td>
+                                    </tr>
                                     <tr>
                                         <td colspan="3" class="text-center">No items in cart</td>
                                     </tr>
