@@ -134,7 +134,7 @@
                                         <th>Price</th>
                                     </tr>
                                 </thead>
-                                <tbody id="cart_items" style="height: calc(100vh - 450px); overflow-y: auto;">
+                                <tbody id="cart_items" style="height: calc(100vh - 400px); overflow-y: auto;">
                                     <tr class="">
                                         <td>Apple AirPods Pro</td>
                                         <td class="text-center">1</td>
