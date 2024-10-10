@@ -119,18 +119,39 @@
                             type="button"><span aria-hidden="true">&times;</span></button>
                         <h5 class="modal-title mg-b-5" id="product_name">Variation Details</h5>
                         <hr>
-                        <h6>Storage</h6>
-                        <div id="storage_options"></div>
-                        <hr>
-                        <h6>Color</h6>
-                        <div id="color_options"></div>
-                        <hr>
-                        <h6>Grade</h6>
-                        <div id="grade_option">
+                        <div id="storage_options" class="my-2">
+                            <input type="radio" class="btn-check" name="storage" id="storage_option0" value="" checked autocomplete="off">
+                            <label class="btn btn-sm btn-outline-dark m-0" for="storage_option0">Storage:</label>
+                        </div>
+                        <div id="color_options" class="my-2">
+                            <input type="radio" class="btn-check" name="color" id="color_option0" value="" checked autocomplete="off">
+                            <label class="btn btn-sm btn-outline-dark m-0" for="color_option0">Color:</label>
+                        </div>
+                        <div id="grade_option" class="my-2">
+                            <input type="radio" class="btn-check" name="grade" id="grade_option0" value="" checked autocomplete="off">
+                            <label class="btn btn-sm btn-outline-dark m-0" for="grade_option0">Grade:</label>
                             @foreach ($grades as $id => $name)
                                 <input type="radio" class="btn-check" name="grade" id="grade_option{{$id}}" value="{{$id}}" autocomplete="off">
                                 <label class="btn btn-sm btn-outline-dark m-0" for="grade_option{{$id}}">{{ $name }}</label>
                             @endforeach
+                        </div>
+                        <div class="d-flex" class="my-2">
+
+                            <div class="form-floating me-2">
+                                <input type="number" class="form-control" name="quantity" id="quantity" value="1" min="1">
+                                <label for="quantity">Quantity:</label>
+                            </div>
+                            <div class="form-floating mx-2">
+                                <input type="number" class="form-control" name="price" id="price" value="0.00" step="0.01" min="0.01">
+                                <label for="price">Price:</label>
+                            </div>
+                            <div id="add_to_cart">
+                                <button class="btn btn-dark">
+                                    Add&nbsp;to&nbsp;<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cart-plus" viewBox="0 0 16 16">
+                                        <path d="M8 7.5a.5.5 0 0 1 .5.5v1.5h1.5a.5.5 0 0 1 0 1H8.5V12a.5.5 0 0 1-1 0v-1.5H6a.5.5 0 0 1 0-1h1.5V8a.5.5 0 0 1 .5-.5zM0 1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L1.01 3.607 0.61 2H.5a.5.5 0 0 1-.5-.5zM3.14 4l1.25 6.5h8.22l1.25-6.5H3.14zM5 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm9 0a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -218,6 +239,22 @@
                                     // Render the product details
                                     const storageOptions = document.getElementById('storage_options');
                                     storageOptions.innerHTML = ''; // Clear existing options
+                                    const storageRadio = document.createElement('input');
+                                    storageRadio.type = 'radio';
+                                    storageRadio.name = 'storage';
+                                    storageRadio.id = `storage_option`;
+                                    storageRadio.value = '';
+                                    storageRadio.checked = true;
+                                    storageRadio.className = 'btn-check';
+
+                                    const storageLabel = document.createElement('label');
+                                    storageLabel.htmlFor = `storage_option`;
+                                    storageLabel.className = 'btn btn-sm btn-outline-dark m-0';
+                                    storageLabel.innerHTML = 'Storage:';
+
+
+                                    storageOptions.appendChild(storageRadio);
+                                    storageOptions.appendChild(storageLabel);
 
                                     for (const [key, value] of Object.entries(product.storages)) {
                                         const storageRadio = document.createElement('input');
@@ -239,6 +276,23 @@
 
                                     const colorOptions = document.getElementById('color_options');
                                     colorOptions.innerHTML = ''; // Clear existing options
+                                    const colorRadio = document.createElement('input');
+                                    colorRadio.type = 'radio';
+                                    colorRadio.name = 'color';
+                                    colorRadio.id = `color_option`;
+                                    colorRadio.value = '';
+                                    colorRadio.checked = true;
+                                    colorRadio.className = 'btn-check';
+
+                                    const colorLabel = document.createElement('label');
+                                    colorLabel.htmlFor = `color_option`;
+                                    colorLabel.className = 'btn btn-sm btn-outline-dark m-0';
+                                    colorLabel.innerHTML = 'color:';
+
+
+                                    colorOptions.appendChild(colorRadio);
+                                    colorOptions.appendChild(colorLabel);
+
                                     for (const [key, value] of Object.entries(product.colors)) {
                                         const colorRadio = document.createElement('input');
                                         colorRadio.type = 'radio';
