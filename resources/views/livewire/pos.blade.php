@@ -104,13 +104,20 @@
             </div>
             <div class="col-md-4">
                 <div class="card mb-1">
-                    <div class="card-header d-flex justify-content-between">
+                    <div class="card-header">
+                        <div class=" d-flex justify-content-between">
 
-                        <div class="d-flex">
-                            <input type="radio" class="btn-check" name="mode" id="3option">
-                            <label class="btn btn-outline-dark m-0" for="3option">Purchase</label>
-                            <input type="radio" class="btn-check" name="mode" id="2option" checked>
-                            <label class="btn btn-outline-dark m-0" for="2option">Sale</label>
+                            <select class="form-select" id="currency" aria-label="Default select example">
+                                @foreach ($currencies as $currency)
+                                    <option value="{{ $currency->id }}" data-sign="{{ $currency->sign }}" @if ($currency->is_default) selected @endif>{{ $currency->name }}</option>
+                                @endforeach
+                            </select>
+                            <div class="d-flex">
+                                <input type="radio" class="btn-check" name="mode" id="3option">
+                                <label class="btn btn-outline-dark m-0" for="3option">Purchase</label>
+                                <input type="radio" class="btn-check" name="mode" id="2option" checked>
+                                <label class="btn btn-outline-dark m-0" for="2option">Sale</label>
+                            </div>
                         </div>
                         <div class="form-floating">
                             <input type="text" class="form-control" id="customer_name" placeholder="Customer Name">
@@ -129,62 +136,7 @@
                                         <th>Price</th>
                                     </tr>
                                 </thead>
-                                <tbody id="cart-body" style="height: calc(100vh - 400px); overflow-y: auto;">
-                                    <tr class="">
-                                        <td>Apple AirPods Pro</td>
-                                        <td class="text-center">1</td>
-                                        <td class="text-end"> 0.00</td>
-                                    </tr>
-                                    <tr class="">
-                                        <td>Apple AirPods Pro 1st gen (2019) Wireless Charging case Black Very Good</td>
-                                        <td class="text-center">1</td>
-                                        <td class="text-end"> 0.00</td>
-                                    </tr>
-                                    <tr class="">
-                                        <td>Apple AirPods Pro 1st gen (2019) Wireless Charging case Black Very Good</td>
-                                        <td class="text-center">1</td>
-                                        <td class="text-end"> 0.00</td>
-                                    </tr>
-                                    <tr class="">
-                                        <td>Apple AirPods Pro 1st gen (2019) Wireless Charging case Black Very Good</td>
-                                        <td class="text-center">1</td>
-                                        <td class="text-end"> 0.00</td>
-                                    </tr>
-                                    <tr class="">
-                                        <td>Apple AirPods Pro 1st gen (2019) Wireless Charging case Black Very Good</td>
-                                        <td class="text-center">1</td>
-                                        <td class="text-end"> 0.00</td>
-                                    </tr>
-                                    <tr class="">
-                                        <td>Apple AirPods Pro 1st gen (2019) Wireless Charging case Black Very Good</td>
-                                        <td class="text-center">1</td>
-                                        <td class="text-end"> 0.00</td>
-                                    </tr>
-                                    <tr class="">
-                                        <td>Apple AirPods Pro 1st gen (2019) Wireless Charging case Black Very Good</td>
-                                        <td class="text-center">1</td>
-                                        <td class="text-end"> 0.00</td>
-                                    </tr>
-                                    <tr class="">
-                                        <td>Apple AirPods Pro 1st gen (2019) Wireless Charging case Black Very Good</td>
-                                        <td class="text-center">1</td>
-                                        <td class="text-end"> 0.00</td>
-                                    </tr>
-                                    <tr class="">
-                                        <td>Apple AirPods Pro 1st gen (2019) Wireless Charging case Black Very Good</td>
-                                        <td class="text-center">1</td>
-                                        <td class="text-end"> 0.00</td>
-                                    </tr>
-                                    <tr class="">
-                                        <td>Apple AirPods Pro 1st gen (2019) Wireless Charging case Black Very Good</td>
-                                        <td class="text-center">1</td>
-                                        <td class="text-end"> 0.00</td>
-                                    </tr>
-                                    <tr class="">
-                                        <td>Apple AirPods Pro 1st gen (2019) Wireless Charging case Black Very Good</td>
-                                        <td class="text-center">1</td>
-                                        <td class="text-end"> 0.00</td>
-                                    </tr>
+                                <tbody id="cart-body" style="max-height: calc(100vh - 400px); overflow-y: auto;">
                                     <tr>
                                         <td colspan="3" class="text-center">No items in cart</td>
                                     </tr>
@@ -211,18 +163,18 @@
                         <input type="hidden" id="product_id" name="product_id">
 
                         <div id="storage_options" class="my-3">
-                            <input type="radio" class="btn-check" name="storage" id="storage_option0" value="" checked autocomplete="off">
+                            <input type="radio" class="btn-check" name="storage" id="storage_option0" value="" data-name="" checked autocomplete="off">
                             <label class="btn btn-sm btn-outline-dark m-0" for="storage_option0">Storage:</label>
                         </div>
                         <div id="color_options" class="my-3">
-                            <input type="radio" class="btn-check" name="color" id="color_option0" value="" checked autocomplete="off">
+                            <input type="radio" class="btn-check" name="color" id="color_option0" value="" data-name="" checked autocomplete="off">
                             <label class="btn btn-sm btn-outline-dark m-0" for="color_option0">Color:</label>
                         </div>
                         <div id="grade_option" class="my-3">
-                            <input type="radio" class="btn-check" name="grade" id="grade_option0" value="" checked autocomplete="off">
+                            <input type="radio" class="btn-check" name="grade" id="grade_option0" value="" data-name="" checked autocomplete="off">
                             <label class="btn btn-sm btn-outline-dark m-0" for="grade_option0">Grade:</label>
                             @foreach ($grades as $id => $name)
-                                <input type="radio" class="btn-check" name="grade" id="grade_option{{$id}}" value="{{$id}}" autocomplete="off">
+                                <input type="radio" class="btn-check" name="grade" id="grade_option{{$id}}" value="{{$id}}" data-name="{{ $name }}" autocomplete="off">
                                 <label class="btn btn-sm btn-outline-dark m-0" for="grade_option{{$id}}">{{ $name }}</label>
                             @endforeach
                         </div>
@@ -275,54 +227,6 @@
                 </div>
             </div>
         </div>
-{{--
-        <div class="modal fade" id="product_detail_modal">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-body pd-sm-40">
-                        <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
-                            type="button"><span aria-hidden="true">&times;</span></button>
-                        <h5 class="modal-title mg-b-5" id="product_name">Variation Details</h5>
-                        <input type="hidden" id="product_id" name="product_id">
-                        <div id="storage_options" class="my-3">
-                            <input type="radio" class="btn-check" name="storage" id="storage_option0" value="" checked autocomplete="off">
-                            <label class="btn btn-sm btn-outline-dark m-0" for="storage_option0">Storage:</label>
-                        </div>
-                        <div id="color_options" class="my-3">
-                            <input type="radio" class="btn-check" name="color" id="color_option0" value="" checked autocomplete="off">
-                            <label class="btn btn-sm btn-outline-dark m-0" for="color_option0">Color:</label>
-                        </div>
-                        <div id="grade_option" class="my-3">
-                            <input type="radio" class="btn-check" name="grade" id="grade_option0" value="" checked autocomplete="off">
-                            <label class="btn btn-sm btn-outline-dark m-0" for="grade_option0">Grade:</label>
-                            @foreach ($grades as $id => $name)
-                                <input type="radio" class="btn-check" name="grade" id="grade_option{{$id}}" value="{{$id}}" autocomplete="off">
-                                <label class="btn btn-sm btn-outline-dark m-0" for="grade_option{{$id}}">{{ $name }}</label>
-                            @endforeach
-                        </div>
-                        <div class="d-flex" class="my-3">
-
-                            <div class="form-floating">
-                                <input type="number" class="form-control" name="price" id="price" value="0.00" step="0.01" min="0.01">
-                                <label for="price">Price:</label>
-                            </div>
-                            <div class="handle-counter mx-3">
-                                <button class="counter-minus btn btn-white lh-2 shadow-none" onclick="$('#quantity').val($('#quantity').val()-1)"><i class="fe fe-minus"></i></button>
-                                <input type="text" pattern="[0-9]" class="form-control w-50" name="quantity" id="quantity" value="1" min="1">
-                                <button class="counter-plus btn btn-white lh-2 shadow-none" onclick="$('#quantity').val(parseInt($('#quantity').val())+1)"><i class="fe fe-plus"></i></button>
-                            </div>
-                            <div>
-                                <button class="btn btn-dark" id="add_to_cart">
-                                    Add&nbsp;to&nbsp;<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cart-plus" viewBox="0 0 16 16">
-                                        <path d="M8 7.5a.5.5 0 0 1 .5.5v1.5h1.5a.5.5 0 0 1 0 1H8.5V12a.5.5 0 0 1-1 0v-1.5H6a.5.5 0 0 1 0-1h1.5V8a.5.5 0 0 1 .5-.5zM0 1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L1.01 3.607 0.61 2H.5a.5.5 0 0 1-.5-.5zM3.14 4l1.25 6.5h8.22l1.25-6.5H3.14zM5 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm9 0a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div> --}}
 
 
     @endsection
@@ -412,6 +316,7 @@
                                     storageRadio.name = 'storage';
                                     storageRadio.id = `storage_option`;
                                     storageRadio.value = '';
+                                    storageRadio.dataset.name = '';
                                     storageRadio.checked = true;
                                     storageRadio.className = 'btn-check';
 
@@ -430,6 +335,7 @@
                                         storageRadio.name = 'storage';
                                         storageRadio.id = `storage_option_${key}`;
                                         storageRadio.value = key;
+                                        storageRadio.dataset.name = value;
                                         storageRadio.className = 'btn-check';
 
                                         const storageLabel = document.createElement('label');
@@ -449,6 +355,7 @@
                                     colorRadio.name = 'color';
                                     colorRadio.id = `color_option`;
                                     colorRadio.value = '';
+                                    colorRadio.dataset.name = '';
                                     colorRadio.checked = true;
                                     colorRadio.className = 'btn-check';
 
@@ -467,6 +374,7 @@
                                         colorRadio.name = 'color';
                                         colorRadio.id = `color_option_${key}`;
                                         colorRadio.value = key;
+                                        colorRadio.dataset.name = value;
                                         colorRadio.className = 'btn-check';
 
                                         const colorLabel = document.createElement('label');
@@ -513,12 +421,16 @@ function increaseQuantity() {
 
 // Add to Cart function
 function addToCart() {
+    const productName = document.getElementById('product_name').innerText;
     const productId = document.getElementById('product_id').value;
     const price = parseFloat(document.getElementById('price').value);
     const quantity = parseInt(document.getElementById('quantity').value);
     const storage = document.querySelector('input[name="storage"]:checked').value;
+    const storageName = document.querySelector('input[name="storage"]:checked').dataset.name;
     const color = document.querySelector('input[name="color"]:checked').value;
+    const colorName = document.querySelector('input[name="color"]:checked').dataset.name;
     const grade = document.querySelector('input[name="grade"]:checked').value;
+    const gradeName = document.querySelector('input[name="grade"]:checked').dataset.name;
 
     fetch(`{{ url('pos') }}/add`, {
         method: 'POST',
@@ -527,12 +439,16 @@ function addToCart() {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         },
         body: JSON.stringify({
+            product_name: productName,
             product_id: productId,
             price: price,
             quantity: quantity,
             storage: storage,
+            storage_name: storageName,
             color: color,
-            grade: grade
+            color_name: colorName,
+            grade: grade,
+            grade_name: gradeName
         })
     })
     .then(response => response.json())
@@ -546,38 +462,6 @@ function addToCart() {
     });
 }
 
-//                         // Add to cart with storage, color, and grade options
-// document.getElementById('add_to_cart').addEventListener('click', function () {
-//     const productId = productId;
-//     const price = parseFloat(document.getElementById('price').value);
-//     const quantity = parseInt(document.getElementById('quantity').value);
-//     const storage = document.getElementById('storage').value; // Selected storage
-//     const color = document.getElementById('color').value;     // Selected color
-//     const grade = document.getElementById('grade').value;     // Selected grade
-
-//     fetch(`{{ url('pos') }}/add`, {
-//         method: 'POST',
-//         headers: {
-//             'Content-Type': 'application/json',
-//             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-//         },
-//         body: JSON.stringify({
-//             product_id: productId,
-//             price: price,
-//             quantity: quantity,
-//             storage: storage,
-//             color: color,
-//             grade: grade
-//         })
-//     })
-//     .then(response => response.json())
-//     .then(data => {
-//         if (data.success) {
-//             alert(data.message);
-//             updateCartDisplay(data.cart);
-//         }
-//     });
-// });
 
 function updateCartDisplay(cart) {
     const cartBody = document.getElementById('cart-body');
@@ -589,19 +473,20 @@ function updateCartDisplay(cart) {
         const item = cart[cartKey];
         total += item.price * item.quantity;
 
-        const cartItem = document.createElement('div');
-        cartItem.className = 'cart-item d-flex justify-content-between align-items-center mb-2';
+        const cartItem = document.createElement('tr');
+        cartItem.className = 'cart-item';
         cartItem.innerHTML = `
-            <span>Product ${item.product_id} (${item.storage}, ${item.color}, ${item.grade}) - $${item.price} x ${item.quantity}</span>
-            <div>
+            <td>${item.product_name} (${item.storage_name}, ${item.color_name}, ${item.grade_name})</td>
+            <td>${item.quantity} x ${item.price}</td>
+            <td>
                 <button class="btn btn-sm btn-outline-secondary" onclick="removeFromCart('${cartKey}')">Remove</button>
-            </div>
+            </td>
         `;
 
         cartBody.appendChild(cartItem);
     });
 
-    document.getElementById('cart-total').innerText = total.toFixed(2);
+    document.getElementById('cart-total').innerText = "PAY "+total.toFixed(2);
 }
 
 // Remove from cart

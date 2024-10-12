@@ -143,6 +143,7 @@ Route::get('pos', [Wholesale::class,'pos'])->name('pos');
 Route::get('pos/get_products', [Wholesale::class,'get_products'])->name('pos');
 Route::get('pos/get_product_variations/{id}', [Wholesale::class,'get_product_variations'])->name('pos');
 Route::post('pos/add', [Wholesale::class,'add'])->name('pos');
+Route::post('pos/remove', [Wholesale::class,'remove'])->name('pos');
 
 Route::get('wholesale_return', Wholesale_return::class)->name('view_wholesale_return');
 Route::get('add_wholesale_return', [Wholesale_return::class,'add_wholesale_return'])->name('add_wholesale_return');

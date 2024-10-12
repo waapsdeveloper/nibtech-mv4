@@ -836,6 +836,7 @@ class Wholesale extends Component
     public function pos(){
         $data['categories'] = Category_model::orderBy('name')->pluck('name','id');
         $data['brands'] = Brand_model::orderBy('name')->pluck('name','id');
+        $data['currencies'] = Currency_model::all();
         // $data['products'] = Products_model::orderBy('model')->pluck('model','id');
         // $data['storages'] = Storage_model::pluck('name','id');
         // $data['colors'] = Color_model::orderBy('name')->pluck('name','id');
@@ -886,12 +887,16 @@ class Wholesale extends Component
     // Add product to cart with additional details like storage, color, and grade
     public function add(Request $request)
     {
+        $productName = $request->input('product_name');
         $productId = $request->input('product_id');
         $price = $request->input('price');
         $quantity = $request->input('quantity');
         $storage = $request->input('storage'); // Added storage option
+        $storageName = $request->input('storage_name'); // Added storage option
         $color = $request->input('color');     // Added color option
+        $colorName = $request->input('color_name');     // Added color option
         $grade = $request->input('grade');     // Added grade option
+        $gradeName = $request->input('grade_name');     // Added grade option
 
         // Fetch the cart from the session (or create a new one if it doesn't exist)
         $cart = session()->get('cart', []);
@@ -905,12 +910,16 @@ class Wholesale extends Component
         } else {
             // Add new product to the cart
             $cart[$cartKey] = [
+                'product_name' => $productName,
                 'product_id' => $productId,
                 'price' => $price,
                 'quantity' => $quantity,
                 'storage' => $storage,
+                'storage_name' => $storageName,
                 'color' => $color,
+                'color_name' => $colorName,
                 'grade' => $grade,
+                'grade_name' => $gradeName
             ];
         }
 
