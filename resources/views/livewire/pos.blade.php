@@ -124,9 +124,9 @@
                             <label for="customer_name">Customer Name</label>
                         </div>
                     </div>
-                    <div class="card-body position-relative">
+                    <div class="card-body">
                         <h5>Cart</h5>
-                        <div style="height: calc(100vh - 305px); overflow-y: auto;">
+                        <div style="height: calc(100vh - 370px); overflow-y: auto;">
                             <table class="table m-0">
                                 <thead style="position: sticky; top: 0; background: white; z-index: 1;">
                                     <tr>
@@ -135,25 +135,25 @@
                                         <th>Price</th>
                                     </tr>
                                 </thead>
-                                <tbody id="cart-body" style="max-height: calc(100vh - 400px); overflow-y: auto;">
+                                <tbody id="cart-body" style="max-height: calc(100vh - 400px); overflow-y: auto; font-size:8px;">
                                     <tr>
                                         <td colspan="3" class="text-center">No items in cart</td>
                                     </tr>
                                 </tbody>
-                                <tfoot style="position: sticky; bottom: 0; background: white; z-index: 1;">
-                                    <tr>
-                                        <td colspan="3" class="text-end"><button class="btn btn-lg btn-secondary w-100" id="cart-total"> Total 0.00 - Discount 0.00 <br> PAY 0.00</button></td>
-                                    </tr>
-                                </tfoot>
                             </table>
-                            <button class="btn btn-lg btn-secondary position-absolute bottom-0">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cart-plus" viewBox="0 0 16 16">
-                                    <path d="M8 7.5a.5.5 0 0 1 .5.5v1.5h1.5a.5.5 0 0 1 0 1H8.5V12a.5.5 0 0 1-1 0v-1.5H6a.5.5 0 0 1 0-1h1.5V8a.5.5 0 0 1 .5-.5zM0 1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L1.01 3.607 0.61 2H.5a.5.5 0 0 1-.5-.5zM3.14 4l1.25 6.5h8.22l1.25-6.5H3.14zM5 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm9 0a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/>
-                                </svg>
-                                Checkout
-                            </button>
                         </div>
-
+                        <div class="row">
+                            <div class="col-md-6">
+                                Total: <span id="total">0.00</span><br>
+                                Discount: <span id="discount">0.00</span><br>
+                                <br>
+                                <strong>Subtotal: <span id="subtotal">0.00</span></strong>
+                            </div>
+                            <div class="col-md-6">
+                                <button class="btn btn-lg btn-light w-100">Hold</button>
+                                <button class="btn btn-lg btn-secondary w-100">Checkout</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
