@@ -54,7 +54,7 @@
                         <div class="d-flex overflow-auto">
                             <div class="">
                                 <input type="radio" class="btn-check" name="category" id="option" autocomplete="off" onclick="selectCategory(0)" checked>
-                                <label class="btn btn-outline-dark m-0 py-1 rounded-0" for="option">Categories:</label>
+                                <label class="btn btn-outline-primary m-0 py-1 rounded-0" for="option">Categories:</label>
                             </div>
                             @foreach ($categories as $id => $name)
                                 @php
@@ -63,14 +63,14 @@
                                 <div class="">
                                     {{-- <input type="radio" name="category" class="btn btn-light"> --}}
                                     <input type="radio" class="btn-check" name="category" id="option{{$id}}" autocomplete="off" onclick="selectCategory({{ $id }})">
-                                    <label class="btn btn-outline-dark m-0 py-1 rounded-0" for="option{{$id}}">{!! $name !!}</label>
+                                    <label class="btn btn-outline-primary m-0 py-1 rounded-0" for="option{{$id}}">{!! $name !!}</label>
                                 </div>
                             @endforeach
                         </div>
                         <div class="d-flex overflow-scroll">
                             <div class="">
                                 <input type="radio" class="btn-check" name="brand" id="1option" autocomplete="off" onclick="selectBrand(0)" checked>
-                                <label class="btn btn-outline-dark m-0 py-1 rounded-0" for="1option">Brands:</label>
+                                <label class="btn btn-outline-primary m-0 py-1 rounded-0" for="1option">Brands:</label>
                             </div>
                             @foreach ($brands as $id => $name)
                                 @php
@@ -78,7 +78,7 @@
                                 @endphp
                                 <div class="">
                                     <input type="radio" class="btn-check" name="brand" id="1option{{$id}}" autocomplete="off" onclick="selectBrand({{ $id }})">
-                                    <label class="btn btn-outline-dark m-0 py-1 rounded-0" for="1option{{$id}}">{!! $name !!}</label>
+                                    <label class="btn btn-outline-primary m-0 py-1 rounded-0" for="1option{{$id}}">{!! $name !!}</label>
                                 </div>
                             @endforeach
                         </div>
