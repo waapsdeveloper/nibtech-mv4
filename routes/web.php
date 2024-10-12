@@ -139,9 +139,10 @@ Route::post('wholesale/approve/{id}', [Wholesale::class,'wholesale_approve'])->n
 Route::get('wholesale/revert_status/{id}', [Wholesale::class,'wholesale_revert_status'])->name('wholesale_revert_status');
 Route::post('wholesale/remove_issues', [Wholesale::class,'remove_issues'])->name('remove_wholesale_issues');
 
-Route::get('wholesale/pos', [Wholesale::class,'pos'])->name('pos');
-Route::get('wholesale/get_products', [Wholesale::class,'get_products'])->name('pos');
-Route::get('wholesale/get_product_variations/{id}', [Wholesale::class,'get_product_variations'])->name('pos');
+Route::get('pos', [Wholesale::class,'pos'])->name('pos');
+Route::get('pos/get_products', [Wholesale::class,'get_products'])->name('pos');
+Route::get('pos/get_product_variations/{id}', [Wholesale::class,'get_product_variations'])->name('pos');
+Route::post('pos/add', [Wholesale::class,'add'])->name('pos');
 
 Route::get('wholesale_return', Wholesale_return::class)->name('view_wholesale_return');
 Route::get('add_wholesale_return', [Wholesale_return::class,'add_wholesale_return'])->name('add_wholesale_return');

@@ -19,7 +19,7 @@
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{{ url('/') }}">{{ __('locale.Dashboards') }}</a></li>
-                        <li class="breadcrumb-item"><a href="{{ url('wholesale') }}">BulkSale</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url('pos') }}">BulkSale</a></li>
                         <li class="breadcrumb-item active" aria-current="page">POS</li>
                     </ol>
                 </div>
@@ -105,11 +105,6 @@
             <div class="col-md-4">
                 <div class="card mb-1">
                     <div class="card-header d-flex justify-content-between">
-{{--
-                        <span class="main-content-title mg-b-0 mg-b-lg-1"> --}}
-                        {{-- <h4>
-                            POS MODE: &nbsp;
-                        </h4> --}}
 
                         <div class="d-flex">
                             <input type="radio" class="btn-check" name="mode" id="3option">
@@ -134,7 +129,7 @@
                                         <th>Price</th>
                                     </tr>
                                 </thead>
-                                <tbody id="cart_items" style="height: calc(100vh - 400px); overflow-y: auto;">
+                                <tbody id="cart-body" style="height: calc(100vh - 400px); overflow-y: auto;">
                                     <tr class="">
                                         <td>Apple AirPods Pro</td>
                                         <td class="text-center">1</td>
@@ -196,7 +191,7 @@
                                 </tbody>
                                 <tfoot style="position: sticky; bottom: 0; background: white; z-index: 1;">
                                     <tr>
-                                        <td colspan="3" class="text-end"><button class="btn btn-lg btn-secondary w-100"> Total 0.00 - Discount 0.00 <br> PAY 0.00</button></td>
+                                        <td colspan="3" class="text-end"><button class="btn btn-lg btn-secondary w-100" id="cart-total"> Total 0.00 - Discount 0.00 <br> PAY 0.00</button></td>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -205,7 +200,82 @@
                 </div>
             </div>
         </div>
+        <div class="modal fade" id="product_detail_modal">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-body pd-sm-40">
+                        <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal" type="button">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <h5 class="modal-title mg-b-5" id="product_name">Variation Details</h5>
+                        <input type="hidden" id="product_id" name="product_id">
 
+                        <div id="storage_options" class="my-3">
+                            <input type="radio" class="btn-check" name="storage" id="storage_option0" value="" checked autocomplete="off">
+                            <label class="btn btn-sm btn-outline-dark m-0" for="storage_option0">Storage:</label>
+                        </div>
+                        <div id="color_options" class="my-3">
+                            <input type="radio" class="btn-check" name="color" id="color_option0" value="" checked autocomplete="off">
+                            <label class="btn btn-sm btn-outline-dark m-0" for="color_option0">Color:</label>
+                        </div>
+                        <div id="grade_option" class="my-3">
+                            <input type="radio" class="btn-check" name="grade" id="grade_option0" value="" checked autocomplete="off">
+                            <label class="btn btn-sm btn-outline-dark m-0" for="grade_option0">Grade:</label>
+                            @foreach ($grades as $id => $name)
+                                <input type="radio" class="btn-check" name="grade" id="grade_option{{$id}}" value="{{$id}}" autocomplete="off">
+                                <label class="btn btn-sm btn-outline-dark m-0" for="grade_option{{$id}}">{{ $name }}</label>
+                            @endforeach
+                        </div>
+                        <!-- Storage Options -->
+                        {{-- <div id="storage_options" class="my-3">
+                            <label class="btn btn-sm btn-outline-dark m-0">Storage:</label>
+                            <div class="d-flex flex-wrap">
+                            </div>
+                        </div>
+
+                        <div id="color_options" class="my-3">
+                            <label class="btn btn-sm btn-outline-dark m-0">Color:</label>
+                            <div class="d-flex flex-wrap">
+                            </div>
+                        </div>
+
+                        <div id="grade_option" class="my-3">
+                            <label class="btn btn-sm btn-outline-dark m-0">Grade:</label>
+                            <div class="d-flex flex-wrap">
+                                @foreach ($grades as $id => $name)
+                                    <input type="radio" class="btn-check" name="grade" id="grade_option{{$id}}" value="{{$id}}" autocomplete="off">
+                                    <label class="btn btn-sm btn-outline-dark m-0" for="grade_option{{$id}}">{{ $name }}</label>
+                                @endforeach
+                            </div>
+                        </div> --}}
+
+                        <!-- Price and Quantity Section -->
+                        <div class="d-flex my-3">
+                            <div class="form-floating me-2">
+                                <input type="number" class="form-control" name="price" id="price" value="0.00" step="0.01" min="0.01">
+                                <label for="price">Price:</label>
+                            </div>
+                            <div class="handle-counter mx-3">
+                                <button class="counter-minus btn btn-white lh-2 shadow-none" type="button" onclick="decreaseQuantity()">
+                                    <i class="fe fe-minus"></i>
+                                </button>
+                                <input type="number" class="form-control w-50" name="quantity" id="quantity" value="1" min="1" />
+                                <button class="counter-plus btn btn-white lh-2 shadow-none" type="button" onclick="increaseQuantity()">
+                                    <i class="fe fe-plus"></i>
+                                </button>
+                            </div>
+                            <div>
+                                <button class="btn btn-dark" id="add_to_cart" onclick="addToCart()">Add&nbsp;to&nbsp;<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cart-plus" viewBox="0 0 16 16">
+                                        <path d="M8 7.5a.5.5 0 0 1 .5.5v1.5h1.5a.5.5 0 0 1 0 1H8.5V12a.5.5 0 0 1-1 0v-1.5H6a.5.5 0 0 1 0-1h1.5V8a.5.5 0 0 1 .5-.5zM0 1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L1.01 3.607 0.61 2H.5a.5.5 0 0 1-.5-.5zM3.14 4l1.25 6.5h8.22l1.25-6.5H3.14zM5 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm9 0a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+{{--
         <div class="modal fade" id="product_detail_modal">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -213,6 +283,7 @@
                         <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
                             type="button"><span aria-hidden="true">&times;</span></button>
                         <h5 class="modal-title mg-b-5" id="product_name">Variation Details</h5>
+                        <input type="hidden" id="product_id" name="product_id">
                         <div id="storage_options" class="my-3">
                             <input type="radio" class="btn-check" name="storage" id="storage_option0" value="" checked autocomplete="off">
                             <label class="btn btn-sm btn-outline-dark m-0" for="storage_option0">Storage:</label>
@@ -231,10 +302,6 @@
                         </div>
                         <div class="d-flex" class="my-3">
 
-                            {{-- <div class="form-floating me-2">
-                                <input type="number" class="form-control" name="quantity" id="quantity" value="1" min="1">
-                                <label for="quantity">Quantity:</label>
-                            </div> --}}
                             <div class="form-floating">
                                 <input type="number" class="form-control" name="price" id="price" value="0.00" step="0.01" min="0.01">
                                 <label for="price">Price:</label>
@@ -244,8 +311,8 @@
                                 <input type="text" pattern="[0-9]" class="form-control w-50" name="quantity" id="quantity" value="1" min="1">
                                 <button class="counter-plus btn btn-white lh-2 shadow-none" onclick="$('#quantity').val(parseInt($('#quantity').val())+1)"><i class="fe fe-plus"></i></button>
                             </div>
-                            <div id="add_to_cart">
-                                <button class="btn btn-dark">
+                            <div>
+                                <button class="btn btn-dark" id="add_to_cart">
                                     Add&nbsp;to&nbsp;<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cart-plus" viewBox="0 0 16 16">
                                         <path d="M8 7.5a.5.5 0 0 1 .5.5v1.5h1.5a.5.5 0 0 1 0 1H8.5V12a.5.5 0 0 1-1 0v-1.5H6a.5.5 0 0 1 0-1h1.5V8a.5.5 0 0 1 .5-.5zM0 1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L1.01 3.607 0.61 2H.5a.5.5 0 0 1-.5-.5zM3.14 4l1.25 6.5h8.22l1.25-6.5H3.14zM5 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm9 0a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/>
                                     </svg>
@@ -255,7 +322,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
 
     @endsection
@@ -264,6 +331,8 @@
         <script>
             $(document).ready(function () {
                 $('#sb_toggle').click();
+
+                updateCartDisplay({!! json_encode($cart) !!});
             })
                         // Set selected category and brand from the request, if available
                         let selectedCategoryId = {{ request('category') ?? 'null' }};
@@ -294,7 +363,7 @@
 
                         // Function to fetch and render products based on the selected category and brand
                         function get_products(selectedCategoryId, selectedBrandId, searchedText) {
-                            fetch(`{{ url('wholesale') }}/get_products?category=${selectedCategoryId}&brand=${selectedBrandId}&search=${searchedText}`)
+                            fetch(`{{ url('pos') }}/get_products?category=${selectedCategoryId}&brand=${selectedBrandId}&search=${searchedText}`)
                                 .then(response => response.json())
                                 .then(products =>
                                 {
@@ -331,10 +400,10 @@
                         }
 
                         function loadProductDetails(productId) {
-                            fetch(`{{ url('wholesale') }}/get_product_variations/${productId}`)
+                            fetch(`{{ url('pos') }}/get_product_variations/${productId}`)
                                 .then(response => response.json())
                                 .then(product => {
-                                    console.log(product);
+                                    // console.log(product);
                                     // Render the product details
                                     const storageOptions = document.getElementById('storage_options');
                                     storageOptions.innerHTML = ''; // Clear existing options
@@ -425,6 +494,136 @@
                             modal.find('.modal-body #product_name').html(title)
                             // modal.find('.modal-body #item_id').val(item)
                             })
+
+                            // Decrease quantity function
+function decreaseQuantity() {
+    const quantityInput = document.getElementById('quantity');
+    let currentVal = parseInt(quantityInput.value);
+    if (currentVal > 1) {
+        quantityInput.value = currentVal - 1;
+    }
+}
+
+// Increase quantity function
+function increaseQuantity() {
+    const quantityInput = document.getElementById('quantity');
+    let currentVal = parseInt(quantityInput.value);
+    quantityInput.value = currentVal + 1;
+}
+
+// Add to Cart function
+function addToCart() {
+    const productId = document.getElementById('product_id').value;
+    const price = parseFloat(document.getElementById('price').value);
+    const quantity = parseInt(document.getElementById('quantity').value);
+    const storage = document.querySelector('input[name="storage"]:checked').value;
+    const color = document.querySelector('input[name="color"]:checked').value;
+    const grade = document.querySelector('input[name="grade"]:checked').value;
+
+    fetch(`{{ url('pos') }}/add`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            product_id: productId,
+            price: price,
+            quantity: quantity,
+            storage: storage,
+            color: color,
+            grade: grade
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // alert(data.message);
+            updateCartDisplay(data.cart);
+            $('#product_detail_modal').modal('hide');
+            // Update the cart display if necessary
+        }
+    });
+}
+
+//                         // Add to cart with storage, color, and grade options
+// document.getElementById('add_to_cart').addEventListener('click', function () {
+//     const productId = productId;
+//     const price = parseFloat(document.getElementById('price').value);
+//     const quantity = parseInt(document.getElementById('quantity').value);
+//     const storage = document.getElementById('storage').value; // Selected storage
+//     const color = document.getElementById('color').value;     // Selected color
+//     const grade = document.getElementById('grade').value;     // Selected grade
+
+//     fetch(`{{ url('pos') }}/add`, {
+//         method: 'POST',
+//         headers: {
+//             'Content-Type': 'application/json',
+//             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+//         },
+//         body: JSON.stringify({
+//             product_id: productId,
+//             price: price,
+//             quantity: quantity,
+//             storage: storage,
+//             color: color,
+//             grade: grade
+//         })
+//     })
+//     .then(response => response.json())
+//     .then(data => {
+//         if (data.success) {
+//             alert(data.message);
+//             updateCartDisplay(data.cart);
+//         }
+//     });
+// });
+
+function updateCartDisplay(cart) {
+    const cartBody = document.getElementById('cart-body');
+    cartBody.innerHTML = '';
+
+    let total = 0;
+
+    Object.keys(cart).forEach(cartKey => {
+        const item = cart[cartKey];
+        total += item.price * item.quantity;
+
+        const cartItem = document.createElement('div');
+        cartItem.className = 'cart-item d-flex justify-content-between align-items-center mb-2';
+        cartItem.innerHTML = `
+            <span>Product ${item.product_id} (${item.storage}, ${item.color}, ${item.grade}) - $${item.price} x ${item.quantity}</span>
+            <div>
+                <button class="btn btn-sm btn-outline-secondary" onclick="removeFromCart('${cartKey}')">Remove</button>
+            </div>
+        `;
+
+        cartBody.appendChild(cartItem);
+    });
+
+    document.getElementById('cart-total').innerText = total.toFixed(2);
+}
+
+// Remove from cart
+function removeFromCart(cartKey) {
+    fetch(`{{ url('pos') }}/remove`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({ cart_key: cartKey })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            updateCartDisplay(data.cart);
+        }
+    });
+}
+
+
 
                     </script>
 

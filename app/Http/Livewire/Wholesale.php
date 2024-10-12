@@ -21,6 +21,7 @@ use App\Models\Grade_model;
 use App\Models\Order_issue_model;
 use App\Models\Stock_operations_model;
 use App\Models\Storage_model;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
@@ -840,6 +841,8 @@ class Wholesale extends Component
         // $data['colors'] = Color_model::orderBy('name')->pluck('name','id');
         $data['grades'] = Grade_model::pluck('name','id');
 
+        $data['cart'] = session()->get('cart', []);
+
 
         return view('livewire.pos')->with($data);
     }
@@ -878,5 +881,100 @@ class Wholesale extends Component
         $colors = Color_model::whereIn('id',$variations->pluck('color'))->pluck('name','id');
         $storages = Storage_model::whereIn('id',$variations->pluck('storage'))->pluck('name','id');
         return response()->json(['variations'=>$variations,'colors'=>$colors,'storages'=>$storages]);
+    }
+
+    // Add product to cart with additional details like storage, color, and grade
+    public function add(Request $request)
+    {
+        $productId = $request->input('product_id');
+        $price = $request->input('price');
+        $quantity = $request->input('quantity');
+        $storage = $request->input('storage'); // Added storage option
+        $color = $request->input('color');     // Added color option
+        $grade = $request->input('grade');     // Added grade option
+
+        // Fetch the cart from the session (or create a new one if it doesn't exist)
+        $cart = session()->get('cart', []);
+
+        // Define a unique identifier for this product combination
+        $cartKey = $productId . '-' . $storage . '-' . $color . '-' . $grade;
+
+        // If product with the same storage, color, and grade is already in the cart, update its quantity
+        if (isset($cart[$cartKey])) {
+            $cart[$cartKey]['quantity'] += $quantity;
+        } else {
+            // Add new product to the cart
+            $cart[$cartKey] = [
+                'product_id' => $productId,
+                'price' => $price,
+                'quantity' => $quantity,
+                'storage' => $storage,
+                'color' => $color,
+                'grade' => $grade,
+            ];
+        }
+
+        // Store the updated cart in the session
+        session()->put('cart', $cart);
+
+        return response()->json(['success' => true, 'message' => 'Product added to cart!', 'cart' => $cart]);
+    }
+
+    // Update product quantity
+    public function update(Request $request)
+    {
+        $cartKey = $request->input('cart_key');
+        $quantity = $request->input('quantity');
+
+        $cart = session()->get('cart', []);
+
+        if (isset($cart[$cartKey])) {
+            $cart[$cartKey]['quantity'] = $quantity;
+        }
+
+        session()->put('cart', $cart);
+
+        return response()->json(['success' => true, 'message' => 'Cart updated!', 'cart' => $cart]);
+    }
+
+    // Remove product from cart
+    public function remove(Request $request)
+    {
+        $cartKey = $request->input('cart_key');
+
+        $cart = session()->get('cart', []);
+
+        if (isset($cart[$cartKey])) {
+            unset($cart[$cartKey]);
+        }
+
+        session()->put('cart', $cart);
+
+        return response()->json(['success' => true, 'message' => 'Product removed from cart!', 'cart' => $cart]);
+    }
+
+    // View the cart
+    public function view()
+    {
+        $cart = session()->get('cart', []);
+
+        return response()->json(['cart' => $cart]);
+    }
+
+    // Checkout the cart
+    public function checkout()
+    {
+        $cart = session()->get('cart', []);
+
+        if (empty($cart)) {
+            return response()->json(['success' => false, 'message' => 'Cart is empty!']);
+        }
+
+        // Process checkout logic here (e.g., create an order)
+
+        // Clear the cart after checkout
+        session()->forget('cart');
+
+        return response()->json(['success' => true, 'message' => 'Checkout successful!']);
     }
 }
