@@ -125,7 +125,6 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <br>
                         <h5>Cart</h5>
                         <div style="height: calc(100vh - 305px); overflow-y: auto;">
                             <table class="table m-0">
@@ -148,6 +147,7 @@
                                 </tfoot>
                             </table>
                         </div>
+
                     </div>
                 </div>
             </div>
