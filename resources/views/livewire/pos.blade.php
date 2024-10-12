@@ -105,11 +105,11 @@
             <div class="col-md-4">
                 <div class="card mb-1">
                     <div class="card-header">
-                        <div class=" d-flex justify-content-between">
+                        <div class="d-flex justify-content-between">
 
                             <select class="form-select" id="currency" aria-label="Default select example">
                                 @foreach ($currencies as $currency)
-                                    <option value="{{ $currency->id }}" data-sign="{{ $currency->sign }}" @if ($currency->is_default) selected @endif>{{ $currency->name }}</option>
+                                    <option value="{{ $currency->id }}" data-sign="{{ $currency->sign }}" @if ($currency->is_default) selected @endif>{{ $currency->code }}</option>
                                 @endforeach
                             </select>
                             <div class="d-flex">
@@ -124,7 +124,7 @@
                             <label for="customer_name">Customer Name</label>
                         </div>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body position-relative">
                         <h5>Cart</h5>
                         <div style="height: calc(100vh - 305px); overflow-y: auto;">
                             <table class="table m-0">
@@ -146,6 +146,12 @@
                                     </tr>
                                 </tfoot>
                             </table>
+                            <button class="btn btn-lg btn-secondary position-absolute bottom-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cart-plus" viewBox="0 0 16 16">
+                                    <path d="M8 7.5a.5.5 0 0 1 .5.5v1.5h1.5a.5.5 0 0 1 0 1H8.5V12a.5.5 0 0 1-1 0v-1.5H6a.5.5 0 0 1 0-1h1.5V8a.5.5 0 0 1 .5-.5zM0 1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L1.01 3.607 0.61 2H.5a.5.5 0 0 1-.5-.5zM3.14 4l1.25 6.5h8.22l1.25-6.5H3.14zM5 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm9 0a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/>
+                                </svg>
+                                Checkout
+                            </button>
                         </div>
 
                     </div>
