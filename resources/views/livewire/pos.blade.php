@@ -107,9 +107,9 @@
                     <div class="card-header">
                         <div class="d-flex justify-content-between">
 
-                            <select class="form-select" id="currency" aria-label="Default select example">
+                            <select class="form-select w-auto" id="currency" aria-label="Default select example">
                                 @foreach ($currencies as $currency)
-                                    <option value="{{ $currency->id }}" data-sign="{{ $currency->sign }}" @if ($currency->is_default) selected @endif>{{ $currency->code }}</option>
+                                    <option value="{{ $currency->id }}" data-sign="{{ $currency->sign }}" @if ($currency->id == 4) selected @endif>{{ $currency->code }}</option>
                                 @endforeach
                             </select>
                             <div class="d-flex">
@@ -126,7 +126,7 @@
                     </div>
                     <div class="card-body">
                         <h5>Cart</h5>
-                        <div style="height: calc(100vh - 370px); overflow-y: auto;">
+                        <div class="border" style="height: calc(100vh - 410px); overflow-y: auto;">
                             <table class="table m-0">
                                 <thead style="position: sticky; top: 0; background: white; z-index: 1;">
                                     <tr>
@@ -135,13 +135,14 @@
                                         <th>Price</th>
                                     </tr>
                                 </thead>
-                                <tbody id="cart-body" style="max-height: calc(100vh - 400px); overflow-y: auto; font-size:8px;">
+                                <tbody id="cart-body" style="max-height: calc(100vh - 600px); overflow-y: auto; font-size:8px;">
                                     <tr>
                                         <td colspan="3" class="text-center">No items in cart</td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
+                        <br>
                         <div class="row">
                             <div class="col-md-6">
                                 Total: <span id="total">0.00</span><br>
@@ -474,13 +475,15 @@ function updateCartDisplay(cart) {
     cartBody.innerHTML = '';
 
     let total = 0;
-
+    let i = 0;
     Object.keys(cart).forEach(cartKey => {
         const item = cart[cartKey];
         total += item.price * item.quantity;
 
         const cartItem = document.createElement('tr');
         cartItem.className = 'cart-item';
+        cartItem.dataset.bsToggle = 'collapse';
+        cartItem.dataset.bsTarget = '#collapse'+i;
         cartItem.innerHTML = `
             <td>${item.product_name} (${item.storage_name}, ${item.color_name}, ${item.grade_name})</td>
             <td>${item.quantity} x ${item.price}</td>
@@ -488,11 +491,39 @@ function updateCartDisplay(cart) {
                 <button class="btn btn-sm btn-outline-secondary" onclick="removeFromCart('${cartKey}')">Remove</button>
             </td>
         `;
+        const collapse = document.createElement('tr');
+        collapse.className = 'collapse';
+        collapse.id = 'collapse'+i;
+        collapse.innerHTML = `
+            <td colspan="3">
+                <div class="d-flex justify-content-between">
+                    <div class="handle-counter mx-3">
+                        <button class="counter-minus btn btn-white lh-2 shadow-none" type="button" onclick="decreaseQuantity()">
+                            <i class="fe fe-minus"></i>
+                        </button>
+                        <input type="number" class="form-control w-50" name="quantity" id="quantity" value="1" min="1" />
+                        <button class="counter-plus btn btn-white lh-2 shadow-none" type="button" onclick="increaseQuantity()">
+                            <i class="fe fe-plus"></i>
+                        </button>
+                    </div>
+                    <div class="form-floating me-2">
+                        <input type="number" class="form-control" name="price" id="price" value="0.00" step="0.01" min="0.01">
+                        <label for="price">Price:</label>
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="removeFromCart('${cartKey}')">Remove</button>
+                    </div>
+                </div>
+            </td>
+        `;
 
         cartBody.appendChild(cartItem);
+        cartBody.appendChild(collapse);
+
+        i++;
     });
 
-    document.getElementById('cart-total').innerText = "PAY "+total.toFixed(2);
+    document.getElementById('total').innerText = "PAY "+total.toFixed(2);
 }
 
 // Remove from cart
