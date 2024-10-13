@@ -20,7 +20,7 @@ class IMEILabelExport
 
         $orders = Order_item_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
 
-        $stock_operations = Stock_operations_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
+        $movement = Stock_operations_model::where('stock_id', $stock_id)->orderBy('id','desc')->first();
         // Fallback to N/A if IMEI is not available
         $imei = $stock->imei ?? 'N/A';
 
@@ -29,9 +29,6 @@ class IMEILabelExport
 
         // Set document information
         $pdf->SetCreator(PDF_CREATOR);
-        $pdf->SetAuthor('Your Company');
-        $pdf->SetTitle('Product Label');
-        $pdf->SetSubject('Product Label with History');
 
         // Remove default header/footer
         $pdf->setPrintHeader(false);
@@ -70,16 +67,14 @@ class IMEILabelExport
         $pdf->SetFont('helvetica', '', 8);
         $pdf->Write(0, 'Stock Movement History:', '', 0, 'L', true, 0, false, false, 0);
 
-        foreach ($stock_operations as $movement) {
-            $new_variation = $movement->new_variation;
-            $new_model = $new_variation->product->model;
-            $new_storage = $new_variation->storage_id->name ?? '';
-            $new_color = $new_variation->color_id->name ?? '';
-            $new_grade = $new_variation->grade_id->name ?? '';
-            $movementDetails = $movement->created_at . ' - ' . ($movement->admin->first_name ?? 'Unknown') . ' - ' .
-                ' To: ' . ($new_model . ' ' . $new_storage . ' ' . $new_color . ' ' . $new_grade) . ' - ' . $movement->description;
-            $pdf->Write(0, $movementDetails, '', 0, 'L', true, 0, false, false, 0);
-        }
+        $new_variation = $movement->new_variation;
+        $new_model = $new_variation->product->model;
+        $new_storage = $new_variation->storage_id->name ?? '';
+        $new_color = $new_variation->color_id->name ?? '';
+        $new_grade = $new_variation->grade_id->name ?? '';
+        $movementDetails = $movement->created_at . ' - ' . ($movement->admin->first_name ?? 'Unknown') . ' - ' .
+            ' To: ' . ($new_model . ' ' . $new_storage . ' ' . $new_color . ' ' . $new_grade) . ' - ' . $movement->description;
+        $pdf->Write(0, $movementDetails, '', 0, 'L', true, 0, false, false, 0);
 
         // Output the PDF as a response
         return $pdf->Output('product_label.pdf', 'I');
