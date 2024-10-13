@@ -64,7 +64,7 @@ class IMEILabelExport
 
         // Write Stock Movement history if needed
         $pdf->Ln(5); // Add some spacing
-        $pdf->SetFont('helvetica', '', 8);
+        $pdf->SetFont('times', '', 8);
         $pdf->Write(0, 'Stock Movement History:', '', 0, 'L', true, 0, false, false, 0);
 
         $new_variation = $movement->old_variation;
@@ -75,6 +75,16 @@ class IMEILabelExport
         $movementDetails = $movement->created_at . ' - ' . ($movement->admin->first_name ?? 'Unknown') . ' - ' .
             ' From: ' . ($new_model . ' ' . $new_storage . ' ' . $new_color . ' ' . $new_grade) . ' - ' . $movement->description;
         $pdf->Write(0, $movementDetails, '', 0, 'L', true, 0, false, false, 0);
+
+
+        foreach($orders as $items){
+            $pdf->Ln(5); // Add some spacing
+            $pdf->SetFont('helvetica', '', 8);
+            $pdf->Write(0, 'Order Details:', '', 0, 'L', true, 0, false, false, 0);
+            $pdf->Write(0, 'Order ID: '.$items->order->reference_id, '', 0, 'L', true, 0, false, false, 0);
+            $pdf->Write(0, 'Quantity: '.$items->quantity, '', 0, 'L', true, 0, false, false, 0);
+            $pdf->Write(0, 'Grade: '.$items->grade->name, '', 0, 'L', true, 0, false, false, 0);
+        }
 
         // Output the PDF as a response
         return $pdf->Output('product_label.pdf', 'I');
