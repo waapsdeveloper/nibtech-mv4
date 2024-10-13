@@ -17,7 +17,7 @@ class IMEILabelExport
         $stock_id = request('stock_id');
         $stock = Stock_model::find($stock_id);
         // Fetch the product variation, order, and stock movements
-        $variation = Variation_model::with(['product', 'storage', 'color', 'grade'])
+        $variation = Variation_model::with(['product', 'storage_id', 'color_id', 'grade_id'])
                 ->find($stock->variation_id);
 
         $orders = Order_item_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
