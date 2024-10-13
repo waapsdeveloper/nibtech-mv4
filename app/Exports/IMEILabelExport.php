@@ -82,7 +82,7 @@ class IMEILabelExport
             $pdf->SetFont('helvetica', '', 8);
             $pdf->SetLineStyle(['width' => 0.1, 'color' => [0, 0, 0]]);
 
-            $data = 'Order ID: '.$items->order->reference_id.' Type: '.$items->order->order_type->name . ' Status: ' . $items->order->status_id->name;
+            $data = 'Order ID: '.$items->order->reference_id.' Type: '.$items->order->order_type->name . ' Status: ' . $items->order->order_status->name;
 
             $pdf->Write(0, 'Order Details:', '', 0, 'L', true, 0, false, false, 0);
             $pdf->Write(0, $data, '', 0, 'L', true, 0, false, false, 0);
