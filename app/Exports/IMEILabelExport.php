@@ -6,9 +6,7 @@ use App\Models\Order_item_model;
 use App\Models\Stock_model;
 use App\Models\Stock_operations_model;
 use App\Models\Variation_model;
-use Illuminate\Support\Facades\DB;
 use TCPDF;
-use Picqer\Barcode\BarcodeGeneratorPNG;
 
 class IMEILabelExport
 {
@@ -39,7 +37,6 @@ class IMEILabelExport
         $pdf->setPrintHeader(false);
         $pdf->setPrintFooter(false);
 
-        $pdf->SetLineStyle(['width' => 0.1, 'color' => [0, 0, 0]]);
         // Set margins
         $pdf->SetMargins(2, 5, 2);
 
@@ -47,7 +44,8 @@ class IMEILabelExport
         $pdf->AddPage();
 
         // Set font for the content
-        $pdf->SetFont('helvetica', '', 9);
+        $pdf->SetFont('times', '', 9);
+        $pdf->SetLineStyle(['width' => 0.1, 'color' => [0, 0, 0]]);
         $model = $variation->product->model;
         $storage = $variation->storage_id->name ?? '';
         $color = $variation->color_id->name ?? '';
