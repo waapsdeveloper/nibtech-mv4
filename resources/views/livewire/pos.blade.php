@@ -1,5 +1,20 @@
 @extends('layouts.app')
 
+@section('title', 'POS')
+    @section('styles')
+    <style>
+    /* Chrome, Safari, Edge, Opera */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+    }
+
+    /* Firefox */
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+    </style>
+    @endsection
     @section('content')
         <!-- breadcrumb -->
             {{-- <div class="breadcrumb-header justify-content-between">
@@ -195,7 +210,7 @@
                                 <button class="counter-minus btn btn-white lh-2 shadow-none" type="button" onclick="decreaseQuantity()">
                                     <i class="fe fe-minus"></i>
                                 </button>
-                                <input type="number" class="form-control [&::-webkit-inner-spin-button]:appearance-none" name="quantity" id="quantity" value="1" min="1" />
+                                <input type="number" class="form-control" name="quantity" id="quantity" value="1" min="1" />
                                 <button class="counter-plus btn btn-white lh-2 shadow-none" type="button" onclick="increaseQuantity()">
                                     <i class="fe fe-plus"></i>
                                 </button>
@@ -487,7 +502,7 @@ function updateCartDisplay(cart) {
                         <button class="counter-minus btn btn-white lh-2 shadow-none" type="button" onclick="decreaseQuantity('quantity${cartKey}')">
                             <i class="fe fe-minus"></i>
                         </button>
-                        <input type="number" class="form-control [&::-webkit-inner-spin-button]:appearance-none" name="quantity${cartKey}" id="quantity${cartKey}" value="${item.quantity}" min="1" />
+                        <input type="number" class="form-control w-50" name="quantity${cartKey}" id="quantity${cartKey}" value="${item.quantity}" min="1" />
                         <button class="counter-plus btn btn-white lh-2 shadow-none" type="button" onclick="increaseQuantity('quantity${cartKey}')">
                             <i class="fe fe-plus"></i>
                         </button>
