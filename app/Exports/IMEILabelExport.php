@@ -6,7 +6,9 @@ use App\Models\Order_item_model;
 use App\Models\Stock_model;
 use App\Models\Stock_operations_model;
 use App\Models\Variation_model;
+use Illuminate\Support\Facades\DB;
 use TCPDF;
+use Picqer\Barcode\BarcodeGeneratorPNG;
 
 class IMEILabelExport
 {
@@ -14,22 +16,14 @@ class IMEILabelExport
     {
         $stock_id = request('stock_id');
         $stock = Stock_model::find($stock_id);
-
-        if (!$stock) {
-            return response()->json(['error' => 'Stock not found'], 404);
-        }
-
         // Fetch the product variation, order, and stock movements
         $variation = Variation_model::with(['product', 'storage_id', 'color_id', 'grade_id'])
-                    ->find($stock->variation_id);
+                ->find($stock->variation_id);
 
-        $orders = Order_item_model::where('stock_id', $stock_id)
-                    ->orderBy('id', 'desc')->get();
+        $orders = Order_item_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
 
-        $stock_operations = Stock_operations_model::where('stock_id', $stock_id)
-                            ->orderBy('id', 'desc')->get();
-
-        // Use a fallback if the IMEI is not available
+        $stock_operations = Stock_operations_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
+        // Fallback to N/A if IMEI is not available
         $imei = $stock->imei ?? 'N/A';
 
         // Create a new PDF document using TCPDF
@@ -45,6 +39,7 @@ class IMEILabelExport
         $pdf->setPrintHeader(false);
         $pdf->setPrintFooter(false);
 
+        $pdf->SetLineStyle(['width' => 0.1, 'color' => [0, 0, 0]]);
         // Set margins
         $pdf->SetMargins(2, 5, 2);
 
@@ -53,53 +48,44 @@ class IMEILabelExport
 
         // Set font for the content
         $pdf->SetFont('helvetica', '', 9);
-
-        // Prepare product information
-        $model = $variation->product->model ?? 'N/A';
-        $storage = $variation->storage->name ?? 'N/A';
-        $color = $variation->color->name ?? 'N/A';
-        $grade = $variation->grade->name ?? 'N/A';
-
+        $model = $variation->product->model;
+        $storage = $variation->storage_id->name ?? '';
+        $color = $variation->color_id->name ?? '';
+        $grade = $variation->grade_id->name ?? '';
         // Write product information
         $html = '
-            <h5 style="margin:0px; padding:0px;">
-                <strong>' . $model . ' ' . $storage . ' ' . $color . ' ' . $grade . '</strong><br>
-                <strong>IMEI:</strong> ' . $imei . '
-            </h5>';
+            <h5 style="margin:0px; padding:0px;"><strong>' . $model . ' ' . $storage . ' ' . $color . ' ' . $grade . '<br>
+            IMEI:</strong> ' . $imei. '</h5>';
 
         $pdf->writeHTML($html, true, false, true, false, '');
 
-        // Add Barcode for IMEI if available
+        // Add Barcode for IMEI
         if ($imei !== 'N/A') {
+            // The IMEI barcode, set the parameters for the barcode (width, height, style, etc.)
             $pdf->write1DBarcode($imei, 'C128', '', '', '', 10, 0.4, ['position' => 'C', 'align' => 'C'], 'N');
         } else {
-            $pdf->Write(0, 'IMEI not available', '', 0, 'L', true, 0, false, false, 0);
+            $pdf->Write(0, 'IMEI not available');
         }
 
-        // Add stock movement history
+        // Write Stock Movement history if needed
         $pdf->Ln(5); // Add some spacing
         $pdf->SetFont('helvetica', '', 8);
         $pdf->Write(0, 'Stock Movement History:', '', 0, 'L', true, 0, false, false, 0);
 
-        // Write Stock Movements history
         foreach ($stock_operations as $movement) {
             $new_variation = $movement->new_variation;
-
-            // Use fallback if new variation is not available
-            $new_model = $new_variation->product->model ?? 'N/A';
-            $new_storage = $new_variation->storage->name ?? 'N/A';
-            $new_color = $new_variation->color->name ?? 'N/A';
-            $new_grade = $new_variation->grade->name ?? 'N/A';
-            $admin = $movement->admin->first_name ?? 'Unknown';
-
-            $movementDetails = $movement->created_at . ' - ' . $admin . ' - ' .
-                ' To: ' . $new_model . ' ' . $new_storage . ' ' . $new_color . ' ' . $new_grade .
-                ' - ' . $movement->description;
-
+            $new_model = $new_variation->product->model;
+            $new_storage = $new_variation->storage_id->name ?? '';
+            $new_color = $new_variation->color_id->name ?? '';
+            $new_grade = $new_variation->grade_id->name ?? '';
+            $movementDetails = $movement->created_at . ' - ' . ($movement->admin->first_name ?? 'Unknown') . ' - ' .
+                ' To: ' . ($new_model . ' ' . $new_storage . ' ' . $new_color . ' ' . $new_grade) . ' - ' . $movement->description;
             $pdf->Write(0, $movementDetails, '', 0, 'L', true, 0, false, false, 0);
         }
 
         // Output the PDF as a response
         return $pdf->Output('product_label.pdf', 'I');
+
     }
+
 }
