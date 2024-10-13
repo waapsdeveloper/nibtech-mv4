@@ -53,7 +53,7 @@ class IMEILabelExport
         $grade = $variation->grade_id->name ?? '';
         // Write product information
         $html = '
-            <h5>' . $model . ' ' . $storage . ' ' . $color . ' ' . $grade . '</h5>
+            <h5 style="margin:0px;">' . $model . ' ' . $storage . ' ' . $color . ' ' . $grade . '</h5>
             <h5 style="margin-top:0px;"><strong>IMEI:</strong> ' . $imei. '</h5>';
 
         $pdf->writeHTML($html, true, false, true, false, '');
