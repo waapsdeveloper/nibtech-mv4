@@ -455,12 +455,12 @@ function updateCartDisplay(cart) {
     cartBody.innerHTML = '';
 
     let total = 0;
-    let discuont = 0;
+    let discount = 0;
     let i = 0;
     Object.keys(cart).forEach(cartKey => {
         const item = cart[cartKey];
         total += item.price * item.quantity;
-        discuont += item.discount;
+        discount += item.discount;
 
         const cartItem = document.createElement('tr');
         cartItem.className = 'cart-item';
