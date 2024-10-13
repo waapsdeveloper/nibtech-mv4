@@ -64,7 +64,7 @@ class IMEILabelExport
 
         // Write Stock Movement history if needed
         $pdf->Ln(5); // Add some spacing
-        $pdf->SetFont('times', '', 8);
+        $pdf->SetFont('times', '', 9);
         $pdf->Write(0, 'Stock Movement History:', '', 0, 'L', true, 0, false, false, 0);
 
         $new_variation = $movement->old_variation;
