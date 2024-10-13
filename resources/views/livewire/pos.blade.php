@@ -394,6 +394,9 @@ function decreaseQuantity(id = 'quantity') {
     if (currentVal > 1) {
         quantityInput.value = currentVal - 1;
     }
+    if (id != 'quantity') {
+        updateCart(id.substring(8));
+    }
 }
 
 // Increase quantity function
@@ -401,6 +404,9 @@ function increaseQuantity(id = 'quantity') {
     const quantityInput = document.getElementById(id);
     let currentVal = parseInt(quantityInput.value);
     quantityInput.value = currentVal + 1;
+    if (id != 'quantity') {
+        updateCart(id.substring(8));
+    }
 }
 
 // Add to Cart function
@@ -500,9 +506,6 @@ function updateCartDisplay(cart) {
         cartBody.appendChild(collapse);
 
         // Add event listeners for quantity, price, and discount inputs to trigger the updateCart function
-        document.getElementById(`quantity${cartKey}`).addEventListener('change', function() {
-            updateCart(cartKey);
-        });
         document.getElementById(`discount${cartKey}`).addEventListener('change', function() {
             updateCart(cartKey);
         });
