@@ -73,7 +73,7 @@ class IMEILabelExport
         $new_color = $new_variation->color_id->name ?? '';
         $new_grade = $new_variation->grade_id->name ?? '';
         $movementDetails = $movement->created_at . ' - ' . ($movement->admin->first_name ?? 'Unknown') . ' - ' .
-            ' To: ' . ($new_model . ' ' . $new_storage . ' ' . $new_color . ' ' . $new_grade) . ' /n/r ' . $movement->description;
+            ' To: ' . ($new_model . ' ' . $new_storage . ' ' . $new_color . ' ' . $new_grade) . ' - ' . $movement->description;
         $pdf->Write(0, $movementDetails, '', 0, 'L', true, 0, false, false, 0);
 
         // Output the PDF as a response
