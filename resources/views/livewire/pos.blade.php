@@ -485,7 +485,7 @@ function updateCartDisplay(cart) {
         if (item.discount){
             discount += parseFloat(item.discount);
         }
-        items += item.quantity;
+        items += parseInt(item.quantity);
 
 
         const cartItem = document.createElement('tr');
