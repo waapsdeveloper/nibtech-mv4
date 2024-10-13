@@ -146,7 +146,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 Total: <span id="cart-total"></span><br>
-                                Discount: <span id="discount">0.00</span><br>
+                                Discount: <span id="cart-discount">0.00</span><br>
                                 <br>
                                 <strong>Subtotal: <span id="subtotal">0.00</span></strong>
                             </div>
@@ -185,29 +185,6 @@
                                 <label class="btn btn-sm btn-outline-dark m-0" for="grade_option{{$id}}">{{ $name }}</label>
                             @endforeach
                         </div>
-                        <!-- Storage Options -->
-                        {{-- <div id="storage_options" class="my-3">
-                            <label class="btn btn-sm btn-outline-dark m-0">Storage:</label>
-                            <div class="d-flex flex-wrap">
-                            </div>
-                        </div>
-
-                        <div id="color_options" class="my-3">
-                            <label class="btn btn-sm btn-outline-dark m-0">Color:</label>
-                            <div class="d-flex flex-wrap">
-                            </div>
-                        </div>
-
-                        <div id="grade_option" class="my-3">
-                            <label class="btn btn-sm btn-outline-dark m-0">Grade:</label>
-                            <div class="d-flex flex-wrap">
-                                @foreach ($grades as $id => $name)
-                                    <input type="radio" class="btn-check" name="grade" id="grade_option{{$id}}" value="{{$id}}" autocomplete="off">
-                                    <label class="btn btn-sm btn-outline-dark m-0" for="grade_option{{$id}}">{{ $name }}</label>
-                                @endforeach
-                            </div>
-                        </div> --}}
-
                         <!-- Price and Quantity Section -->
                         <div class="d-flex my-3">
                             <div class="form-floating me-2">
@@ -424,6 +401,9 @@ function increaseQuantity(id = 'quantity') {
     const quantityInput = document.getElementById(id);
     let currentVal = parseInt(quantityInput.value);
     quantityInput.value = currentVal + 1;
+    if (id != 'quantity') {
+        updateCart();
+    }
 }
 
 // Add to Cart function
@@ -475,10 +455,12 @@ function updateCartDisplay(cart) {
     cartBody.innerHTML = '';
 
     let total = 0;
+    let discuont = 0;
     let i = 0;
     Object.keys(cart).forEach(cartKey => {
         const item = cart[cartKey];
         total += item.price * item.quantity;
+        discuont += item.discount;
 
         const cartItem = document.createElement('tr');
         cartItem.className = 'cart-item';
@@ -495,18 +477,18 @@ function updateCartDisplay(cart) {
         collapse.innerHTML = `
             <td colspan="3">
                 <div class="d-flex justify-content-between">
-                    <div class="handle-counter mx-3">
+                    <div class="handle-counter">
                         <button class="counter-minus btn btn-white lh-2 shadow-none" type="button" onclick="decreaseQuantity('quantity${cartKey}')">
                             <i class="fe fe-minus"></i>
                         </button>
-                        <input type="number" class="form-control w-50" name="quantity${cartKey}" id="quantity${cartKey}" value="${item.quantity}" min="1" />
+                        <input type="number" class="form-control w-auto" name="quantity${cartKey}" id="quantity${cartKey}" value="${item.quantity}" min="1" />
                         <button class="counter-plus btn btn-white lh-2 shadow-none" type="button" onclick="increaseQuantity('quantity${cartKey}')">
                             <i class="fe fe-plus"></i>
                         </button>
                     </div>
-                    <div class="form-floating me-2">
-                        <input type="number" class="form-control" name="price${cartKey}" id="price${cartKey}" value="${item.price}" step="0.01" min="0.01">
-                        <label for="price">Price:</label>
+                    <div class="form-floating w-auto">
+                        <input type="number" class="form-control" name="discount${cartKey}" id="discount${cartKey}" value="${item.discount}">
+                        <label for="discount">Discount:</label>
                     </div>
                     <div>
                         <button class="btn btn-outline-danger" onclick="removeFromCart('${cartKey}')">
@@ -520,11 +502,44 @@ function updateCartDisplay(cart) {
         cartBody.appendChild(cartItem);
         cartBody.appendChild(collapse);
 
+        // Add event listeners for quantity, price, and discount inputs to trigger the updateCart function
+        document.getElementById(`quantity${cartKey}`).addEventListener('change', function() {
+            updateCart(cartKey);
+        });
+        document.getElementById(`discount${cartKey}`).addEventListener('change', function() {
+            updateCart(cartKey);
+        });
         i++;
     });
 
-    document.getElementById('cart-total').innerText = "PAY "+total.toFixed(2);
+    document.getElementById('cart-total').innerText = total.toFixed(2);
+    document.getElementById('cart-discount').innerText = discuont.toFixed(2);
 }
+function updateCart(cartKey) {
+    const quantity = document.getElementById('quantity' + cartKey).value;
+    const discount = document.getElementById('discount' + cartKey).value;
+
+    $.ajax({
+        url: `{{ url('pos') }}/update`, // your update route
+        type: 'POST',
+        data: {
+            cart_key: cartKey,
+            quantity: quantity,
+            discount: discount,
+            _token: '{{ csrf_token() }}' // Ensure CSRF token is included
+        },
+        success: function(response) {
+            if (response.success) {
+                // Update cart display with new cart data
+                updateCartDisplay(response.cart);
+            }
+        },
+        error: function(error) {
+            console.error('Error updating cart:', error);
+        }
+    });
+}
+
 
 // Remove from cart
 function removeFromCart(cartKey) {

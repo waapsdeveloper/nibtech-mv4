@@ -928,23 +928,43 @@ class Wholesale extends Component
 
         return response()->json(['success' => true, 'message' => 'Product added to cart!', 'cart' => $cart]);
     }
-
-    // Update product quantity
+    // Update product quantity and price with discount
     public function update(Request $request)
     {
+        $request->validate([
+            'cart_key' => 'required|string',
+            'quantity' => 'required|integer|min:1',
+            'discount' => 'nullable|numeric|min:0',
+        ]);
+
         $cartKey = $request->input('cart_key');
         $quantity = $request->input('quantity');
+        $discount = $request->input('discount', 0); // Default discount is 0
 
         $cart = session()->get('cart', []);
 
         if (isset($cart[$cartKey])) {
+
+            // Update the cart item
             $cart[$cartKey]['quantity'] = $quantity;
+            $cart[$cartKey]['discount'] = $discount;
+
+            session()->put('cart', $cart);
+
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cart updated!',
+                'cart' => $cart
+            ]);
         }
 
-        session()->put('cart', $cart);
-
-        return response()->json(['success' => true, 'message' => 'Cart updated!', 'cart' => $cart]);
+        return response()->json([
+            'success' => false,
+            'message' => 'Cart item not found.'
+        ], 404);
     }
+
 
     // Remove product from cart
     public function remove(Request $request)
