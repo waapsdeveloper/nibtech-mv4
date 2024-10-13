@@ -492,7 +492,7 @@ function updateCartDisplay(cart) {
                             <i class="fe fe-plus"></i>
                         </button>
                     </div>
-                    <div class="form-floating w-auto">
+                    <div class="form-floating">
                         <input type="number" class="form-control" name="discount${cartKey}" id="discount${cartKey}" value="${item.discount ?? 0}">
                         <label for="discount">Discount:</label>
                     </div>
