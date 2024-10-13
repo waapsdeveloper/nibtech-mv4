@@ -54,7 +54,7 @@ class IMEILabelExport
         // Write product information
         $html = '
             <h5>' . $model . ' ' . $storage . ' ' . $color . ' ' . $grade . '</h5>
-            <br><strong>IMEI:</strong> ' . $imei;
+            <h6><strong>IMEI:</strong> ' . $imei. '</h6>';
 
         $pdf->writeHTML($html, true, false, true, false, '');
 
