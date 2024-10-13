@@ -110,7 +110,7 @@
                     </select>
                 </div>
                 <div class="col-md col-sm-6">
-                    <select name="grade" class="form-control form-select" data-bs-placeholder="Select Status" multiple>
+                    <select name="grade[]" class="form-control form-select" data-bs-placeholder="Select Status" multiple>
                         <option value="">Grade</option>
                         @foreach ($grades as $id => $grade)
                             <option value="{{$id}}" @if(isset($_GET['grade']) && $id == $_GET['grade']) {{'selected'}}@endif>{{$grade}}</option>
