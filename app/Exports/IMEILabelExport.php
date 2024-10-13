@@ -61,7 +61,7 @@ class IMEILabelExport
         // Add Barcode for IMEI
         if ($imei !== 'N/A') {
             // The IMEI barcode, set the parameters for the barcode (width, height, style, etc.)
-            $pdf->write1DBarcode($imei, 'C128', '', '', '', 18, 0.2, ['position' => 'C', 'align' => 'C'], 'N');
+            $pdf->write1DBarcode($imei, 'C128', '', '', '', 10, 0.4, ['position' => 'C', 'align' => 'C'], 'N');
         } else {
             $pdf->Write(0, 'IMEI not available');
         }
