@@ -63,7 +63,7 @@ class IMEILabelExport
         }
 
         // Write Stock Movement history if needed
-        $pdf->Ln(5); // Add some spacing
+        $pdf->Ln(2); // Add some spacing
         $pdf->SetFont('times', '', 9);
         $pdf->Write(0, 'Stock Movement History:', '', 0, 'L', true, 0, false, false, 0);
 
@@ -77,7 +77,7 @@ class IMEILabelExport
         $pdf->Write(0, $movementDetails, '', 0, 'L', true, 0, false, false, 0);
 
 
-        $pdf->Ln(5); // Add some spacing
+        $pdf->Ln(2); // Add some spacing
         $pdf->Write(0, 'Orders History:', '', 0, 'L', true, 0, false, false, 0);
         foreach($orders as $item){
             $customer = $item->order->customer->first_name ?? 'Unknown';
