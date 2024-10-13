@@ -508,7 +508,7 @@ function updateCartDisplay(cart) {
                         </button>
                     </div>
                     <div class="form-floating">
-                        <input type="number" class="form-control" name="discount${cartKey}" id="discount${cartKey}" value="${item.discount ?? 0}">
+                        <input type="number" class="form-control" name="discount${cartKey}" id="discount${cartKey}" value="${item.discount ?? 0}" max="${item.price}">
                         <label for="discount">Discount:</label>
                     </div>
                     <div>
