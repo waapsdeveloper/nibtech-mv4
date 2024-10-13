@@ -401,9 +401,6 @@ function increaseQuantity(id = 'quantity') {
     const quantityInput = document.getElementById(id);
     let currentVal = parseInt(quantityInput.value);
     quantityInput.value = currentVal + 1;
-    if (id != 'quantity') {
-        updateCart();
-    }
 }
 
 // Add to Cart function
