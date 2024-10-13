@@ -145,7 +145,7 @@
                         <br>
                         <div class="row">
                             <div class="col-md-6">
-                                Total: <span id="total">0.00</span><br>
+                                Total: <span id="cart-total"></span><br>
                                 Discount: <span id="discount">0.00</span><br>
                                 <br>
                                 <strong>Subtotal: <span id="subtotal">0.00</span></strong>
@@ -411,8 +411,8 @@
                             })
 
                             // Decrease quantity function
-function decreaseQuantity() {
-    const quantityInput = document.getElementById('quantity');
+function decreaseQuantity(id = 'quantity') {
+    const quantityInput = document.getElementById(id);
     let currentVal = parseInt(quantityInput.value);
     if (currentVal > 1) {
         quantityInput.value = currentVal - 1;
@@ -420,8 +420,8 @@ function decreaseQuantity() {
 }
 
 // Increase quantity function
-function increaseQuantity() {
-    const quantityInput = document.getElementById('quantity');
+function increaseQuantity(id = 'quantity') {
+    const quantityInput = document.getElementById(id);
     let currentVal = parseInt(quantityInput.value);
     quantityInput.value = currentVal + 1;
 }
@@ -486,32 +486,32 @@ function updateCartDisplay(cart) {
         cartItem.dataset.bsTarget = '#collapse'+i;
         cartItem.innerHTML = `
             <td>${item.product_name} (${item.storage_name}, ${item.color_name}, ${item.grade_name})</td>
-            <td>${item.quantity} x ${item.price}</td>
-            <td>
-                <button class="btn btn-sm btn-outline-secondary" onclick="removeFromCart('${cartKey}')">Remove</button>
-            </td>
+            <td>${item.quantity}</td>
+            <td>${item.price}</td>
         `;
         const collapse = document.createElement('tr');
-        collapse.className = 'collapse';
+        collapse.className = 'collapse bg-light';
         collapse.id = 'collapse'+i;
         collapse.innerHTML = `
             <td colspan="3">
                 <div class="d-flex justify-content-between">
                     <div class="handle-counter mx-3">
-                        <button class="counter-minus btn btn-white lh-2 shadow-none" type="button" onclick="decreaseQuantity()">
+                        <button class="counter-minus btn btn-white lh-2 shadow-none" type="button" onclick="decreaseQuantity('quantity${cartKey}')">
                             <i class="fe fe-minus"></i>
                         </button>
-                        <input type="number" class="form-control w-50" name="quantity" id="quantity" value="1" min="1" />
-                        <button class="counter-plus btn btn-white lh-2 shadow-none" type="button" onclick="increaseQuantity()">
+                        <input type="number" class="form-control w-50" name="quantity${cartKey}" id="quantity${cartKey}" value="${item.quantity}" min="1" />
+                        <button class="counter-plus btn btn-white lh-2 shadow-none" type="button" onclick="increaseQuantity('quantity${cartKey}')">
                             <i class="fe fe-plus"></i>
                         </button>
                     </div>
                     <div class="form-floating me-2">
-                        <input type="number" class="form-control" name="price" id="price" value="0.00" step="0.01" min="0.01">
+                        <input type="number" class="form-control" name="price${cartKey}" id="price${cartKey}" value="${item.price}" step="0.01" min="0.01">
                         <label for="price">Price:</label>
                     </div>
                     <div>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="removeFromCart('${cartKey}')">Remove</button>
+                        <button class="btn btn-outline-danger" onclick="removeFromCart('${cartKey}')">
+                            <i class="fa fa-trash"></i>
+                        </button>
                     </div>
                 </div>
             </td>
@@ -523,7 +523,7 @@ function updateCartDisplay(cart) {
         i++;
     });
 
-    document.getElementById('total').innerText = "PAY "+total.toFixed(2);
+    document.getElementById('cart-total').innerText = "PAY "+total.toFixed(2);
 }
 
 // Remove from cart
