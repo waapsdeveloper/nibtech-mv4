@@ -176,6 +176,7 @@ Route::get('imei/rearrange/{id}', [IMEI::class,'rearrange'])->name('rearrange_im
 Route::get('imei/delete_order_item/{id}', [IMEI::class,'delete_order_item'])->name('imei_delete_order_item');
 Route::post('imei/refund/{id}', [IMEI::class,'refund'])->name('refund_imei');
 Route::post('imei/change_po/{id}', [IMEI::class,'change_po'])->name('change_po_old');
+Route::get('imei/print_label', [IMEI::class,'print_label'])->name('view_imei');
 
 Route::get('stock_room', Stock_room::class)->name('view_stock_room');
 Route::get('stock_room/exit_scan', [Stock_room::class,'exit_scan'])->name('exit_stock');

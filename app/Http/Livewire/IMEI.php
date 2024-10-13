@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Http\Livewire;
+
+use App\Exports\IMEILabelExport;
 use Livewire\Component;
 use App\Models\Admin_model;
 use App\Models\Api_request_model;
@@ -63,25 +65,6 @@ class IMEI extends Component
                 ]);
             }
 
-            // $sale_status = Order_item_model::where(['stock_id'=>$stock->id,'linked_id'=>$stock->purchase_item->id])->first();
-            // if($stock->status == 1){
-            //     if($sale_status != null){
-            //         $stock->status = 2;
-            //         $stock->save();
-            //         session()->put('success', 'IMEI Sold');
-            //     }else{
-            //         session()->put('success', 'IMEI Available');
-            //     }
-            // }
-            // if($stock->status == 2){
-            //     if($sale_status == null){
-            //         $stock->status = 1;
-            //         $stock->save();
-            //         session()->put('success', 'IMEI Available');
-            //     }else{
-            //         session()->put('success', 'IMEI Sold');
-            //     }
-            // }
             $last_item = $stock->last_item();
 
             $items2 = Order_item_model::where(['stock_id'=>$stock->id,'linked_id'=>null])->whereHas('order', function ($query) {
@@ -219,6 +202,11 @@ class IMEI extends Component
 
 
         return view('livewire.imei', $data); // Return the Blade view instance with data
+    }
+
+    public function print_label(){
+        $pdfExport = new IMEILabelExport();
+        $pdfExport->generatePdf();
     }
 
     public function change_po($stock_id){
