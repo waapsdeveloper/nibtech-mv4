@@ -40,6 +40,7 @@ class FunctionsDaily extends Command
         // $this->remove_extra_variations();
         $this->check_stock_status();
         $this->add_order_charge();
+        $this->misc();
     }
 
     private function check_stock_status(){
