@@ -947,7 +947,9 @@ class Wholesale extends Component
 
             // Update the cart item
             $cart[$cartKey]['quantity'] = $quantity;
-            $cart[$cartKey]['discount'] = $discount;
+            if ($discount <= $cart[$cartKey]['price']) {
+                $cart[$cartKey]['discount'] = $discount;
+            }
 
             session()->put('cart', $cart);
 
