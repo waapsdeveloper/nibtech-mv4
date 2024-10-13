@@ -524,6 +524,9 @@ function updateCartDisplay(cart) {
         cartBody.appendChild(collapse);
 
         // Add event listeners for quantity, price, and discount inputs to trigger the updateCart function
+        document.getElementById(`quantity${cartKey}`).addEventListener('change', function() {
+            updateCart(cartKey);
+        });
         document.getElementById(`discount${cartKey}`).addEventListener('change', function() {
             updateCart(cartKey);
         });
