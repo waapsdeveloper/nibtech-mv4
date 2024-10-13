@@ -576,7 +576,6 @@ function removeFromCart(cartKey) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert(data.message);
             updateCartDisplay(data.cart);
         }
     });

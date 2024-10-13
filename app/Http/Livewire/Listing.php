@@ -68,8 +68,12 @@ class Listing extends Component
             ->when(request('storage') != '', function ($q) {
                 return $q->where('storage', request('storage'));
             })
-            ->when(request('grade') != '', function ($q) {
-                return $q->where('grade', request('grade'));
+            // ->when(request('grade') != '', function ($q) {
+            //     return $q->where('grade', request('grade'));
+            // })
+
+            ->when(request('grade') != [], function ($q) {
+                return $q->whereIn('grade', request('grade'));
             })
             ->when(request('listed_stock') != '', function ($q) {
                 if(request('listed_stock') == 1){
