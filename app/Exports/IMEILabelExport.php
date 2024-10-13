@@ -81,7 +81,7 @@ class IMEILabelExport
         $pdf->Write(0, 'Orders History:', '', 0, 'L', true, 0, false, false, 0);
         foreach($orders as $item){
             $customer = $item->order->customer->first_name ?? 'Unknown';
-            $data = 'Order ID: '.$item->order->reference_id.' Type: '.$item->order->order_type->name . ' Customer: ' . $customer . ' Status: ' . $item->order->order_status->name;
+            $data = 'Order: '.$item->order->reference_id.' T: '.$item->order->order_type->name . ' C: ' . $customer . ' S: ' . $item->order->order_status->name;
 
             $pdf->Write(0, $data, '', 0, 'L', true, 0, false, false, 0);
         }
