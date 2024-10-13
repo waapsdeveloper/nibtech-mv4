@@ -80,8 +80,8 @@ class IMEILabelExport
         $pdf->Ln(5); // Add some spacing
         $pdf->Write(0, 'Orders History:', '', 0, 'L', true, 0, false, false, 0);
         foreach($orders as $item){
-
-            $data = 'Order ID: '.$item->order->reference_id.' Type: '.$item->order->order_type->name . ' Customer: ' . $item->order->customer_id->first_name . ' Status: ' . $item->order->order_status->name;
+            $customer = $item->order->customer->first_name ?? 'Unknown';
+            $data = 'Order ID: '.$item->order->reference_id.' Type: '.$item->order->order_type->name . ' Customer: ' . $customer . ' Status: ' . $item->order->order_status->name;
 
             $pdf->Write(0, $data, '', 0, 'L', true, 0, false, false, 0);
         }
