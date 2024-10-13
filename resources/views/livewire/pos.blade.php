@@ -463,7 +463,10 @@ function updateCartDisplay(cart) {
     Object.keys(cart).forEach(cartKey => {
         const item = cart[cartKey];
         total += item.price * item.quantity;
-        discount += parseFloat(item.discount);
+        if (item.discount){
+            discount += parseFloat(item.discount);
+        }
+
 
         const cartItem = document.createElement('tr');
         cartItem.className = 'cart-item';
