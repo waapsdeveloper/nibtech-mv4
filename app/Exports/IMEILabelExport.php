@@ -40,7 +40,7 @@ class IMEILabelExport
         $pdf->setPrintFooter(false);
 
         // Set margins
-        $pdf->SetMargins(2, 2, 2);
+        $pdf->SetMargins(2, 5, 2);
 
         // Add a page
         $pdf->AddPage();
