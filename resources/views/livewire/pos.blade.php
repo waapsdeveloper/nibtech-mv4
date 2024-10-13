@@ -477,7 +477,7 @@ function updateCartDisplay(cart) {
         collapse.innerHTML = `
             <td colspan="3">
                 <div class="d-flex justify-content-between">
-                    <div class="handle-counter">
+                    <div class="handle-counter wd-150">
                         <button class="counter-minus btn btn-white lh-2 shadow-none" type="button" onclick="decreaseQuantity('quantity${cartKey}')">
                             <i class="fe fe-minus"></i>
                         </button>
@@ -513,7 +513,7 @@ function updateCartDisplay(cart) {
     });
 
     document.getElementById('cart-total').innerText = total.toFixed(2);
-    document.getElementById('cart-discount').innerText = discuont.toFixed(2);
+    document.getElementById('cart-discount').innerText = discount.toFixed(2);
 }
 function updateCart(cartKey) {
     const quantity = document.getElementById('quantity' + cartKey).value;
