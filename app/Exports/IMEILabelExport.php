@@ -80,7 +80,7 @@ class IMEILabelExport
         $pdf->Ln(5); // Add some spacing
         $pdf->Write(0, 'Orders History:', '', 0, 'L', true, 0, false, false, 0);
         foreach($orders as $items){
-            $pdf->Ln(5); // Add some spacing
+            $pdf->Ln(1); // Add some spacing
             $pdf->SetFont('times', '', 8);
             $pdf->SetLineStyle(['width' => 0.1, 'color' => [0, 0, 0]]);
 
