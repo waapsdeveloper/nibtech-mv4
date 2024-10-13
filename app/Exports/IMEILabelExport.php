@@ -71,6 +71,7 @@ class IMEILabelExport
         $pdf->SetFont('helvetica', '', 8);
         $pdf->Write(0, 'Stock Movement History:', '', 0, 'L', true, 0, false, false, 0);
 
+        $pdf->SetLineStyle(['width' => 0.1, 'color' => [0, 0, 0]]);
         foreach ($stock_operations as $movement) {
             $new_variation = $movement->new_variation;
             $new_model = $new_variation->product->model;
