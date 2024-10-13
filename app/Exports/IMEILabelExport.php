@@ -40,17 +40,20 @@ class IMEILabelExport
         $pdf->setPrintFooter(false);
 
         // Set margins
-        $pdf->SetMargins(5, 5, 5);
+        $pdf->SetMargins(2, 2, 2);
 
         // Add a page
         $pdf->AddPage();
 
         // Set font for the content
         $pdf->SetFont('helvetica', '', 9);
-
+        $model = $variation->product->model;
+        $storage = $variation->storage_id->name ?? '';
+        $color = $variation->color_id->name ?? '';
+        $grade = $variation->grade_id->name ?? '';
         // Write product information
         $html = '
-            <h4>Product Label</h4>
+            <h4>' . $model . ' ' . $storage . ' ' . $color . ' ' . $grade . '</h4>
             <p><strong>Product:</strong> ' . $variation->product->model . ' - ' . $variation->sku . '</p>
             <p><strong>Grade:</strong> ' . ($variation->grade->name ?? 'Missing Grade') . '</p>
             <p><strong>IMEI:</strong> ' . $imei . '</p>';
