@@ -162,8 +162,11 @@
                             <div class="col-md-6">
                                 Total: <span id="cart-total"></span><br>
                                 Discount: <span id="cart-discount">0.00</span><br>
-                                <br>
-                                <strong>Subtotal: <span id="subtotal">0.00</span></strong>
+                                <div class="mt-2">
+
+                                    <strong>Items: <span id="cart-items">0</span></strong><br>
+                                    <strong>Subtotal: <span id="subtotal">0.00</span></strong>
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <button class="btn btn-lg btn-light w-100">Hold</button>
@@ -474,6 +477,7 @@ function updateCartDisplay(cart) {
 
     let total = 0;
     let discount = 0;
+    let items = 0;
     let i = 0;
     Object.keys(cart).forEach(cartKey => {
         const item = cart[cartKey];
@@ -481,6 +485,7 @@ function updateCartDisplay(cart) {
         if (item.discount){
             discount += parseFloat(item.discount);
         }
+        items += item.quantity;
 
 
         const cartItem = document.createElement('tr');
@@ -535,6 +540,7 @@ function updateCartDisplay(cart) {
 
     document.getElementById('cart-total').innerText = total.toFixed(2);
     document.getElementById('cart-discount').innerText = discount.toFixed(2);
+    document.getElementById('cart-items').innerText = items;
     document.getElementById('subtotal').innerText = (total - discount).toFixed(2);
 }
 function updateCart(cartKey) {
