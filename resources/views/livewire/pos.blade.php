@@ -126,7 +126,7 @@
                     </div>
                     <div class="card-body">
                         <h5>Cart</h5>
-                        <div class="border" style="height: calc(100vh - 410px); overflow-y: auto;">
+                        <div class="border" style="height: calc(100vh - 430px); overflow-y: auto;">
                             <table class="table m-0">
                                 <thead style="position: sticky; top: 0; background: white; z-index: 1;">
                                     <tr>
@@ -493,7 +493,7 @@ function updateCartDisplay(cart) {
                         </button>
                     </div>
                     <div class="form-floating w-auto">
-                        <input type="number" class="form-control" name="discount${cartKey}" id="discount${cartKey}" value="${item.discount}">
+                        <input type="number" class="form-control" name="discount${cartKey}" id="discount${cartKey}" value="${item.discount ?? 0}">
                         <label for="discount">Discount:</label>
                     </div>
                     <div>
@@ -517,6 +517,7 @@ function updateCartDisplay(cart) {
 
     document.getElementById('cart-total').innerText = total.toFixed(2);
     document.getElementById('cart-discount').innerText = discount.toFixed(2);
+    document.getElementById('subtotal').innerText = (total - discount).toFixed(2);
 }
 function updateCart(cartKey) {
     const quantity = document.getElementById('quantity' + cartKey).value;
