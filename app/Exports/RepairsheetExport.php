@@ -28,6 +28,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
             ->leftJoin('admin', 'p_stock.admin_id', '=', 'admin.id')
             ->leftJoin('stock', 'p_stock.stock_id', '=', 'stock.id')
             ->leftJoin('orders', 'stock.order_id', '=', 'orders.id')
+            ->leftJoin('customer', 'orders.customer_id', '=', 'customer.id')
             ->leftJoin('variation', 'stock.variation_id', '=', 'variation.id')
             ->leftJoin('products', 'variation.product_id', '=', 'products.id')
             ->leftJoin('color', 'variation.color', '=', 'color.id')
@@ -55,6 +56,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
                 'color.name as color',
                 'grade.name as grade_name',
                 'orders.reference_id as po',
+                'customer.company as customer',
                 'process_stock.process_id as process_id',
                 'stock.imei as imei',
                 'stock.serial_number as serial_number',
@@ -79,6 +81,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
             'Color',
             'Grade',
             'PO',
+            'Customer',
             'Process ID', // Corrected to generic 'Process ID' instead of trying to get from $repair_batches
             'IMEI',
             'Serial Number',
