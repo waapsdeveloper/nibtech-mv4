@@ -15,7 +15,6 @@ class RepairsheetExport implements FromCollection, WithHeadings
     {
         // Storing reference_id as key and id as value for repair_batches
         $this->repair_batches = Process_model::where('process_type_id', 9)
-            ->whereNot('id', request('id'))
             ->pluck('reference_id', 'id')
             ->toArray();
     }
