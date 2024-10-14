@@ -31,6 +31,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
                 //  ->where('stock_operations.new_variation_id', '=', DB::raw('variation.id'))
                  ->whereRaw('stock_operations.id = (SELECT id FROM stock_operations WHERE stock_operations.stock_id = stock.id ORDER BY id DESC LIMIT 1)');
         })
+        ->leftJoin('admin as admin2', 'stock_operations.admin_id', '=', 'admin2.id')
 
         ->select(
             'products.model',
@@ -40,6 +41,8 @@ class RepairsheetExport implements FromCollection, WithHeadings
             'stock.imei as imei',
             'stock.serial_number as serial_number',
             'stock_operations.description as issue',
+            'stock_operations.description as issue',
+            'admin2.first_name as admin_name',
             'order_items.price as price'
         )
         ->where('process.id', request('id'))
@@ -61,6 +64,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
             'IMEI',
             'Serial Number',
             'Issue',
+            'Admin',
             'Price'
         ];
     }
