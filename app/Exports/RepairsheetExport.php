@@ -57,6 +57,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
                 'color.name as color',
                 'grade.name as grade_name',
                 'orders.reference_id as po',
+                'ps2.process_id as proces', // Use ps2 process_id to avoid conflict
                 'process2.reference_id as process_id', // Use process2 reference_id to avoid conflict
                 'stock.imei as imei',
                 'stock.serial_number as serial_number',
@@ -81,6 +82,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
             'Color',
             'Grade',
             'PO',
+            'Process',
             'Process ID', // Generic 'Process ID' for better clarity
             'IMEI',
             'Serial Number',
