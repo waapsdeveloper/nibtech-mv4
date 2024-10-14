@@ -23,8 +23,8 @@ class RepairsheetExport implements FromCollection, WithHeadings
     public function collection()
     {
         $repair_batches = $this->repair_batches;
-        $data = DB::table('process as proc')
-            ->leftJoin('process_stock as p_stock', 'proc.id', '=', 'p_stock.process_id')
+        $data = DB::table('process')
+            ->leftJoin('process_stock as p_stock', 'process.id', '=', 'p_stock.process_id')
             ->leftJoin('admin', 'p_stock.admin_id', '=', 'admin.id')
             ->leftJoin('stock', 'p_stock.stock_id', '=', 'stock.id')
             ->leftJoin('orders', 'stock.order_id', '=', 'orders.id')
