@@ -23,8 +23,8 @@ class RepairsheetExport implements FromCollection, WithHeadings
     public function collection()
     {
         $repair_batches = $this->repair_batches;
-        $data = DB::table('process')
-            ->leftJoin('process_stock as p_stock', 'process.id', '=', 'p_stock.process_id')
+        $data = DB::table('process as proc')
+            ->leftJoin('process_stock as p_stock', 'proc.id', '=', 'p_stock.process_id')
             ->leftJoin('admin', 'p_stock.admin_id', '=', 'admin.id')
             ->leftJoin('stock', 'p_stock.stock_id', '=', 'stock.id')
             ->leftJoin('orders', 'stock.order_id', '=', 'orders.id')
@@ -37,7 +37,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
                     ->whereIn('process_stock.process_id', array_keys($repair_batches))
                     ->whereRaw('process_stock.id = (SELECT id FROM process_stock WHERE process_stock.stock_id = stock.id ORDER BY id DESC LIMIT 1)');
             })
-            ->leftJoin('process as pro', 'process_stock.process_id', '=', 'pro.id')
+            ->leftJoin('process', 'process_stock.process_id', '=', 'process.id')
             ->leftJoin('storage', 'variation.storage', '=', 'storage.id')
             ->leftJoin('grade', 'variation.grade', '=', 'grade.id')
             ->leftJoin('order_items', function ($join) {
@@ -56,7 +56,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
                 'color.name as color',
                 'grade.name as grade_name',
                 'orders.reference_id as po',
-                'pro.reference_id as process_id',
+                'process.reference_id as process_id',
                 'stock.imei as imei',
                 'stock.serial_number as serial_number',
                 'stock_operations.description as issue', // Corrected duplicated issue field
