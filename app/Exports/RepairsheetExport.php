@@ -13,7 +13,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
 
     public function __construct()
     {
-        // Storing reference_id as key and id as value for repair_batches
+        // Storing reference_id as key and id as value for repair_batches (excluding current process id)
         $this->repair_batches = Process_model::where('process_type_id', 9)
             ->whereNot('id', request('id'))
             ->pluck('reference_id', 'id')
@@ -23,21 +23,22 @@ class RepairsheetExport implements FromCollection, WithHeadings
     public function collection()
     {
         $repair_batches = $this->repair_batches;
-        $data = DB::table('process')
-            ->leftJoin('process_stock as p_stock', 'process.id', '=', 'p_stock.process_id')
+
+        $data = DB::table('process as p') // Alias to avoid confusion with other joins
+            ->leftJoin('process_stock as p_stock', 'p.id', '=', 'p_stock.process_id')
             ->leftJoin('admin', 'p_stock.admin_id', '=', 'admin.id')
             ->leftJoin('stock', 'p_stock.stock_id', '=', 'stock.id')
             ->leftJoin('orders', 'stock.order_id', '=', 'orders.id')
             ->leftJoin('variation', 'stock.variation_id', '=', 'variation.id')
             ->leftJoin('products', 'variation.product_id', '=', 'products.id')
             ->leftJoin('color', 'variation.color', '=', 'color.id')
-            ->leftJoin('process_stock', function ($join) use ($repair_batches) {
-                $join->on('stock.id', '=', 'process_stock.stock_id')
-                    ->whereNull('process_stock.deleted_at')
-                    ->whereIn('process_stock.process_id', array_keys($repair_batches))
-                    ->whereRaw('process_stock.id = (SELECT id FROM process_stock WHERE process_stock.stock_id = stock.id ORDER BY id DESC LIMIT 1)');
+            ->leftJoin('process_stock as ps2', function ($join) use ($repair_batches) {
+                $join->on('stock.id', '=', 'ps2.stock_id')
+                    ->whereNull('ps2.deleted_at')
+                    ->whereIn('ps2.process_id', array_keys($repair_batches))
+                    ->whereRaw('ps2.id = (SELECT id FROM process_stock WHERE process_stock.stock_id = stock.id ORDER BY id DESC LIMIT 1)');
             })
-            ->leftJoin('process', 'process_stock.process_id', '=', 'process.id')
+            ->leftJoin('process as process2', 'ps2.process_id', '=', 'process2.id')
             ->leftJoin('storage', 'variation.storage', '=', 'storage.id')
             ->leftJoin('grade', 'variation.grade', '=', 'grade.id')
             ->leftJoin('order_items', function ($join) {
@@ -56,16 +57,16 @@ class RepairsheetExport implements FromCollection, WithHeadings
                 'color.name as color',
                 'grade.name as grade_name',
                 'orders.reference_id as po',
-                'process.reference_id as process_id',
+                'process2.reference_id as process_id', // Use process2 reference_id to avoid conflict
                 'stock.imei as imei',
                 'stock.serial_number as serial_number',
                 'stock_operations.description as issue', // Corrected duplicated issue field
                 'admin2.first_name as admin_name',
                 'order_items.price as price'
             )
-            ->where('process.id', request('id'))
-            ->whereNull('process.deleted_at')
-            ->whereNull('process_stock.deleted_at')
+            ->where('p.id', request('id')) // Alias 'p' used to refer to the main process
+            ->whereNull('p.deleted_at')
+            ->whereNull('p_stock.deleted_at')
             ->orderBy('products.model', 'ASC')
             ->get();
 
@@ -80,7 +81,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
             'Color',
             'Grade',
             'PO',
-            'Process ID', // Corrected to generic 'Process ID' instead of trying to get from $repair_batches
+            'Process ID', // Generic 'Process ID' for better clarity
             'IMEI',
             'Serial Number',
             'Issue',
@@ -89,3 +90,4 @@ class RepairsheetExport implements FromCollection, WithHeadings
         ];
     }
 }
+
