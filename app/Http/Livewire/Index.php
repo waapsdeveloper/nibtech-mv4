@@ -377,7 +377,7 @@ class Index extends Component
         $k = 0;
 
         // Loop for the last 3 weeks
-        for ($i = 12; $i >= 0; $i--) {
+        for ($i = 8; $i >= 0; $i--) {
             $k++;
 
             // Week 1: Wednesday to Tuesday
