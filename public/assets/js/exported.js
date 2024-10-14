@@ -255,6 +255,11 @@
         statistics4(sessionStorage.getItem('total3'),sessionStorage.getItem('total32'),sessionStorage.getItem('dates3'));
         }, 1000);
     }
+    if (document.querySelector('#statistics5') !== null) {
+        setTimeout(function () {
+        statistics5(sessionStorage.getItem('total4'),sessionStorage.getItem('total42'),sessionStorage.getItem('dates4'));
+        }, 1000);
+    }
     //   if (document.querySelector('#statistics1') !== null) {
     //     setTimeout(function () {
     //       statistics1(sessionStorage.getItem('total'),sessionStorage.getItem('approved'),sessionStorage.getItem('failed'),sessionStorage.getItem('dates'));
@@ -701,6 +706,98 @@
     };
     document.getElementById('statistics4').innerHTML = '';
     var chart1 = new ApexCharts(document.querySelector("#statistics4"), options1);
+    chart1.render();
+  } //Visitors chart
+
+  function statistics5 (datas,data1,dates) {
+
+    var options1 = {
+      series: [{
+        name: 'This Period',
+        data: datas.split(',')
+      }, {
+        name: 'Last Period',
+        data: data1.split(',')
+      }],
+      chart: {
+        type: 'line',
+        height: 280
+      },
+      grid: {
+        borderColor: '#f2f6f7'
+      },
+      colors: ["Red", "Green"],
+      plotOptions: {
+        line: {
+          colors: {
+            ranges: [{
+              from: -100,
+              to: -46,
+              color: 'Red'
+            }, {
+              from: -45,
+              to: 0,
+              color: 'Green'
+            }]
+          },
+          columnWidth: '100%'
+        }
+      },
+      dataLabels: {
+        enabled: false
+      },
+      stroke: {
+        curve: 'smooth',
+        show: true,
+        width: 4,
+        // colors: ['transparent']
+      },
+      legend: {
+        show: true,
+        position: 'top'
+      },
+      yaxis: {
+        title: {
+          text: 'Orders',
+          style: {
+            color: '#adb5be',
+            fontSize: '14px',
+            fontFamily: 'poppins, sans-serif',
+            fontWeight: 600,
+            cssClass: 'apexcharts-yaxis-label'
+          }
+        },
+        labels: {
+          formatter: function formatter(y) {
+            return y.toFixed(0) + "";
+          }
+        }
+      },
+      xaxis: {
+        type: 'days',
+        // categories: dates.split(','),
+        // categories: ['1','2','3','4','5','6','7','8','9','10','11'],
+        axisBorder: {
+          show: true,
+          color: 'rgba(119, 119, 142, 0.05)',
+          offsetX: 0,
+          offsetY: 0
+        },
+        axisTicks: {
+          show: true,
+          borderType: 'solid',
+          color: 'rgba(119, 119, 142, 0.05)',
+          width: 6,
+          offsetX: 0,
+          offsetY: 0
+        },
+        labels: {
+          rotate: -90
+        }
+      }
+    };
+    document.getElementById('statistics5').innerHTML = '';
+    var chart1 = new ApexCharts(document.querySelector("#statistics5"), options1);
     chart1.render();
   } //Visitors chart
 

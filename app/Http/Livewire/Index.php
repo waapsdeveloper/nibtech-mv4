@@ -760,8 +760,8 @@ class Index extends Component
 
         // Store the data in sessionStorage
         echo '<script>
-            sessionStorage.setItem("total3", "' . $order_data . '");
-            sessionStorage.setItem("dates3", "' . $dates_data . '");
+            sessionStorage.setItem("total4", "' . $order_data . '");
+            sessionStorage.setItem("dates4", "' . $dates_data . '");
         </script>';
 
         // Second set of data for comparison (previous 7 days, Wednesday to Tuesday)
@@ -806,8 +806,8 @@ class Index extends Component
 
         // Store the data for previous week in sessionStorage
         echo '<script>
-            sessionStorage.setItem("total32", "' . $order_data2 . '");
-            sessionStorage.setItem("dates32", "' . $dates_data2 . '");
+            sessionStorage.setItem("total42", "' . $order_data2 . '");
+            sessionStorage.setItem("dates42", "' . $dates_data2 . '");
             window.location.href = document.referrer;
         </script>';
     }

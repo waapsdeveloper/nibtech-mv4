@@ -56,6 +56,7 @@ Route::get('index/add_ip', [Index::class,'add_ip'])->name('add_ip');
 Route::get('index/test', [Index::class,'test'])->name('test');
 Route::get('index/refresh_sales_chart', [Index::class,'refresh_sales_chart'])->name('10_day_sales_chart');
 Route::get('index/refresh_7_days_chart', [Index::class,'refresh_7_days_chart'])->name('10_day_sales_chart');
+Route::get('index/refresh_7_days_progressive_chart', [Index::class,'refresh_7_days_progressive_chart'])->name('7_day_progressive_sales_chart');
 // Route::post('change', Change::class);
 Route::get('error404', Error404::class)->name('error');
 Route::get('error500', Error500::class)->name('error');
