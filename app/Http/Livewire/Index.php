@@ -611,10 +611,101 @@ class Index extends Component
     //         window.location.href = document.referrer;
     //     </script>';
     // }
+    // public function refresh_7_days_chart()
+    // {
+    //     $order = [];
+    //     $dates = [];
+
+    //     // Get today's day of the week (1 = Monday, ..., 7 = Sunday)
+    //     $today = date('w');
+
+    //     // Calculate the start and end of the week (Wednesday to Tuesday)
+    //     if ($today == 0) { // Sunday is considered as the 0th day in PHP
+    //         $today = 7;
+    //     }
+
+    //     $days_since_wednesday = $today - 3; // 3 is for Wednesday
+    //     if ($days_since_wednesday < 0) {
+    //         $days_since_wednesday += 7;
+    //     }
+
+    //     $start = date('Y-m-d', strtotime('-' . $days_since_wednesday . ' days'));
+    //     $end = date('Y-m-d', strtotime($start . ' +6 days'));
+
+    //     $i = $start;
+    //     while (true) {
+    //         // Handle day, month, and year transitions
+    //         $date_str = $i;
+    //         $start_time = date('Y-m-d 00:00:00', strtotime($date_str));
+    //         $end_time = date('Y-m-d 23:59:59', strtotime($date_str));
+
+    //         $orders = Order_model::where('created_at', '>=', $start_time)
+    //             ->where('created_at', '<=', $end_time)
+    //             ->where('order_type_id', 3)
+    //             ->count();
+
+    //         $order[] = $orders;
+    //         $dates[] = date('d-m-Y', strtotime($date_str));
+
+    //         // Move to the next day
+    //         if ($i == $end) {
+    //             break;
+    //         }
+
+    //         $i = date('Y-m-d', strtotime($i . ' +1 day'));
+    //     }
+
+    //     $order_data = implode(',', $order);
+    //     $dates_data = implode(',', $dates);
+
+    //     echo '<script>
+    //         sessionStorage.setItem("total3", "' . $order_data . '");
+    //         sessionStorage.setItem("dates3", "' . $dates_data . '");
+    //     </script>';
+
+    //     // Second set of data for comparison (last 7 days, Wednesday to Tuesday)
+    //     $order2 = [];
+    //     $dates2 = [];
+
+    //     // Get the previous week's Wednesday as the start day
+    //     $start2 = date('Y-m-d', strtotime($start . ' -7 days'));
+    //     $end2 = date('Y-m-d', strtotime($start2 . ' +6 days'));
+
+    //     $i = $start2;
+    //     while (true) {
+    //         $date_str = $i;
+    //         $start_time = date('Y-m-d 00:00:00', strtotime($date_str));
+    //         $end_time = date('Y-m-d 23:59:59', strtotime($date_str));
+
+    //         $orders2 = Order_model::where('created_at', '>=', $start_time)
+    //             ->where('created_at', '<=', $end_time)
+    //             ->where('order_type_id', 3)
+    //             ->count();
+
+    //         $order2[] = $orders2;
+    //         $dates2[] = date('d-m-Y', strtotime($date_str));
+
+    //         if ($i == $end2) {
+    //             break;
+    //         }
+
+    //         $i = date('Y-m-d', strtotime($i . ' +1 day'));
+    //     }
+
+    //     $order_data2 = implode(',', $order2);
+    //     $dates_data2 = implode(',', $dates2);
+
+    //     echo '<script>
+    //         sessionStorage.setItem("total32", "' . $order_data2 . '");
+    //         sessionStorage.setItem("dates32", "' . $dates_data2 . '");
+    //         window.location.href = document.referrer;
+    //     </script>';
+    // }
     public function refresh_7_days_chart()
     {
         $order = [];
         $dates = [];
+        $cumulative_orders = 0; // Track progressive sum
 
         // Get today's day of the week (1 = Monday, ..., 7 = Sunday)
         $today = date('w');
@@ -639,12 +730,18 @@ class Index extends Component
             $start_time = date('Y-m-d 00:00:00', strtotime($date_str));
             $end_time = date('Y-m-d 23:59:59', strtotime($date_str));
 
-            $orders = Order_model::where('created_at', '>=', $start_time)
+            $daily_orders = Order_model::where('created_at', '>=', $start_time)
                 ->where('created_at', '<=', $end_time)
                 ->where('order_type_id', 3)
                 ->count();
 
-            $order[] = $orders;
+            // Add daily orders to cumulative count
+            $cumulative_orders += $daily_orders;
+
+            // Store the progressive order count
+            $order[] = $cumulative_orders;
+
+            // Store the date
             $dates[] = date('d-m-Y', strtotime($date_str));
 
             // Move to the next day
@@ -655,17 +752,20 @@ class Index extends Component
             $i = date('Y-m-d', strtotime($i . ' +1 day'));
         }
 
+        // Prepare data for sessionStorage
         $order_data = implode(',', $order);
         $dates_data = implode(',', $dates);
 
+        // Store the data in sessionStorage
         echo '<script>
             sessionStorage.setItem("total3", "' . $order_data . '");
             sessionStorage.setItem("dates3", "' . $dates_data . '");
         </script>';
 
-        // Second set of data for comparison (last 7 days, Wednesday to Tuesday)
+        // Second set of data for comparison (previous 7 days, Wednesday to Tuesday)
         $order2 = [];
         $dates2 = [];
+        $cumulative_orders2 = 0; // Track progressive sum for previous week
 
         // Get the previous week's Wednesday as the start day
         $start2 = date('Y-m-d', strtotime($start . ' -7 days'));
@@ -677,12 +777,18 @@ class Index extends Component
             $start_time = date('Y-m-d 00:00:00', strtotime($date_str));
             $end_time = date('Y-m-d 23:59:59', strtotime($date_str));
 
-            $orders2 = Order_model::where('created_at', '>=', $start_time)
+            $daily_orders2 = Order_model::where('created_at', '>=', $start_time)
                 ->where('created_at', '<=', $end_time)
                 ->where('order_type_id', 3)
                 ->count();
 
-            $order2[] = $orders2;
+            // Add daily orders to cumulative count for previous week
+            $cumulative_orders2 += $daily_orders2;
+
+            // Store the progressive order count for previous week
+            $order2[] = $cumulative_orders2;
+
+            // Store the date
             $dates2[] = date('d-m-Y', strtotime($date_str));
 
             if ($i == $end2) {
@@ -692,9 +798,11 @@ class Index extends Component
             $i = date('Y-m-d', strtotime($i . ' +1 day'));
         }
 
+        // Prepare data for sessionStorage
         $order_data2 = implode(',', $order2);
         $dates_data2 = implode(',', $dates2);
 
+        // Store the data for previous week in sessionStorage
         echo '<script>
             sessionStorage.setItem("total32", "' . $order_data2 . '");
             sessionStorage.setItem("dates32", "' . $dates_data2 . '");
