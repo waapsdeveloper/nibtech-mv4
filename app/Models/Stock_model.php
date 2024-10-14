@@ -91,6 +91,10 @@ class Stock_model extends Model
         // Define a custom method to retrieve only one order item
         return $this->hasOne(Process_stock_model::class, 'stock_id', 'id')->where('process_id', $process_id)->orderBy('id','desc')->first();
     }
+    public function multi_process_stocks($process_ids)
+    {
+        return $this->hasMany(Process_stock_model::class, 'stock_id', 'id')->whereIn('process_id', $process_ids);
+    }
     public function stock_operations()
     {
         return $this->hasMany(Stock_operations_model::class, 'stock_id', 'id');

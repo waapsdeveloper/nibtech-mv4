@@ -224,6 +224,7 @@ class Repair extends Component
         $data['process'] = Order_model::find($process_id);
         $data['currency'] = $data['process']->currency_id->sign;
 
+        $data['previous_repairs'] = Process_model::where('id','!=',$process_id)->where('process_type_id',9)->orderBy('id','desc')->pluck('id');
         // $data['imei'] = request('imei');
 
         // $data['grades'] = Grade_model::all();

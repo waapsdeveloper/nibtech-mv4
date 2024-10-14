@@ -339,7 +339,18 @@
                                             $i ++;
                                             $total += $item->purchase_item->price
                                         @endphp
-                                        <tr>
+                                        @if ($process->tracking_number != null)
+                                            @if ($item->multi_process_stocks($previous_repairs)->count() > 0)
+                                                @php
+                                                    $danger = "bg-danger";
+                                                @endphp
+                                            @else
+                                                @php
+                                                    $danger = "";
+                                                @endphp
+                                            @endif
+                                        @endif
+                                        <tr class="{{ $danger }}">
                                             <td>{{ $i }}</td>
                                             {{-- <td>{{ $item->order->customer->first_name }}</td> --}}
                                             <td><a title="Search Serial" href="{{url('imei')."?imei=".$item->imei.$item->serial_number}}" target="_blank"> {{ $item->imei.$item->serial_number }} </a></td>
