@@ -275,100 +275,154 @@ class Index extends Component
         $ip_address->save();
         return redirect()->back();
     }
-    public function refresh_sales_chart(){
+    // public function refresh_sales_chart(){
+    //     $order = [];
+    //     $dates = [];
+    //     $k = 0;
+    //     $today = date('d');
+    //     for ($i = 2; $i >= 0; $i--) {
+    //         $j = $i+1;
+    //         $k++;
+    //         $start = date('Y-m-25 23:00:00', strtotime("-".$j." months"));
+    //         $end = date('Y-m-5 22:59:59', strtotime("-".$i." months"));
+    //         $orders = Order_model::where('processed_at', '>=', $start)->where('order_type_id',3)
+    //             ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->count();
+    //         $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
+    //             $q->where('processed_at', '>=', $start)->where('order_type_id',3)
+    //             ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',4);
+    //         })->whereIn('status',[3,6])->sum('price');
+    //         $pound = Order_item_model::whereHas('order', function($q) use ($start,$end) {
+    //             $q->where('processed_at', '>=', $start)->where('order_type_id',3)
+    //             ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',5);
+    //         })->whereIn('status',[3,6])->sum('price');
+    //         $order[$k] = $orders;
+    //         $eur[$k] = $euro;
+    //         $gbp[$k] = $pound;
+    //         $dates[$k] = date('25 M', strtotime("-".$j." months")) . " - " . date('05 M', strtotime("-".$i." months"));
+    //         if($i == 0 && $today < 6){
+    //             continue;
+    //         }
+    //         $k++;
+    //         $start = date('Y-m-5 23:00:00', strtotime("-".$i." months"));
+    //         $end = date('Y-m-15 22:59:59', strtotime("-".$i." months"));
+    //         $orders = Order_model::where('processed_at', '>=', $start)->where('order_type_id',3)
+    //             ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->count();
+    //         $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
+    //             $q->where('processed_at', '>=', $start)->where('order_type_id',3)
+    //             ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',4);
+    //         })->whereIn('status',[3,6])->sum('price');
+    //         $pound = Order_item_model::whereHas('order', function($q) use ($start,$end) {
+    //             $q->where('processed_at', '>=', $start)->where('order_type_id',3)
+    //             ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',5);
+    //         })->whereIn('status',[3,6])->sum('price');
+    //         $order[$k] = $orders;
+    //         $eur[$k] = $euro;
+    //         $gbp[$k] = $pound;
+    //         $dates[$k] = date('05 M', strtotime("-".$i." months")) . " - " . date('15 M', strtotime("-".$i." months"));
+    //         if($i == 0 && $today < 16){
+    //             continue;
+    //         }
+    //         $k++;
+    //         $start = date('Y-m-15 23:00:00', strtotime("-".$i." months"));
+    //         $end = date('Y-m-25 22:59:59', strtotime("-".$i." months"));
+    //         $orders = Order_model::where('processed_at', '>=', $start)->where('order_type_id',3)
+    //             ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->count();
+    //         $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
+    //             $q->where('processed_at', '>=', $start)->where('order_type_id',3)
+    //             ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',4);
+    //         })->whereIn('status',[3,6])->sum('price');
+    //         $pound = Order_item_model::whereHas('order', function($q) use ($start,$end) {
+    //             $q->where('processed_at', '>=', $start)->where('order_type_id',3)
+    //             ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',5);
+    //         })->whereIn('status',[3,6])->sum('price');
+    //         $order[$k] = $orders;
+    //         $eur[$k] = $euro;
+    //         $gbp[$k] = $pound;
+    //         $dates[$k] = date('15 M', strtotime("-".$i." months")) . " - " . date('25 M', strtotime("-".$i." months"));
+
+    //         if($i == 0 && $today > 25){
+    //             $k++;
+    //             $start = date('Y-m-25 23:00:00', strtotime("-".$i." months"));
+    //             $end = date('Y-m-5 22:59:59', strtotime("+1 months"));
+    //             $orders = Order_model::where('processed_at', '>=', $start)->where('order_type_id',3)
+    //                 ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->count();
+    //             $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
+    //                 $q->where('processed_at', '>=', $start)->where('order_type_id',3)
+    //                 ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',4);
+    //             })->whereIn('status',[3,6])->sum('price');
+    //             $pound = Order_item_model::whereHas('order', function($q) use ($start,$end) {
+    //                 $q->where('processed_at', '>=', $start)->where('order_type_id',3)
+    //                 ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',5);
+    //             })->whereIn('status',[3,6])->sum('price');
+    //             $order[$k] = $orders;
+    //             $eur[$k] = $euro;
+    //             $gbp[$k] = $pound;
+    //             $dates[$k] = date('25 M', strtotime("-".$i." months")) . " - " . date('05 M', strtotime("+1 months"));
+    //         }
+    //     }
+    //     echo '<script> ';
+    //     echo 'sessionStorage.setItem("total2", "' . implode(',', $order) . '");';
+    //     echo 'sessionStorage.setItem("approved2", "' . implode(',', $eur) . '");';
+    //     echo 'sessionStorage.setItem("failed2", "' . implode(',', $gbp) . '");';
+    //     echo 'sessionStorage.setItem("dates2", "' . implode(',', $dates) . '");';
+    //     echo 'window.location.href = document.referrer; </script>';
+    //     // sleep(2);
+    //     // return redirect()->back();
+    // }
+    public function refresh_sales_chart() {
         $order = [];
+        $eur = [];
+        $gbp = [];
         $dates = [];
         $k = 0;
-        $today = date('d');
-        for ($i = 2; $i >= 0; $i--) {
-            $j = $i+1;
-            $k++;
-            $start = date('Y-m-25 23:00:00', strtotime("-".$j." months"));
-            $end = date('Y-m-5 22:59:59', strtotime("-".$i." months"));
-            $orders = Order_model::where('processed_at', '>=', $start)->where('order_type_id',3)
-                ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->count();
-            $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
-                $q->where('processed_at', '>=', $start)->where('order_type_id',3)
-                ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',4);
-            })->whereIn('status',[3,6])->sum('price');
-            $pound = Order_item_model::whereHas('order', function($q) use ($start,$end) {
-                $q->where('processed_at', '>=', $start)->where('order_type_id',3)
-                ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',5);
-            })->whereIn('status',[3,6])->sum('price');
-            $order[$k] = $orders;
-            $eur[$k] = $euro;
-            $gbp[$k] = $pound;
-            $dates[$k] = date('25 M', strtotime("-".$j." months")) . " - " . date('05 M', strtotime("-".$i." months"));
-            if($i == 0 && $today < 6){
-                continue;
-            }
-            $k++;
-            $start = date('Y-m-5 23:00:00', strtotime("-".$i." months"));
-            $end = date('Y-m-15 22:59:59', strtotime("-".$i." months"));
-            $orders = Order_model::where('processed_at', '>=', $start)->where('order_type_id',3)
-                ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->count();
-            $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
-                $q->where('processed_at', '>=', $start)->where('order_type_id',3)
-                ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',4);
-            })->whereIn('status',[3,6])->sum('price');
-            $pound = Order_item_model::whereHas('order', function($q) use ($start,$end) {
-                $q->where('processed_at', '>=', $start)->where('order_type_id',3)
-                ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',5);
-            })->whereIn('status',[3,6])->sum('price');
-            $order[$k] = $orders;
-            $eur[$k] = $euro;
-            $gbp[$k] = $pound;
-            $dates[$k] = date('05 M', strtotime("-".$i." months")) . " - " . date('15 M', strtotime("-".$i." months"));
-            if($i == 0 && $today < 16){
-                continue;
-            }
-            $k++;
-            $start = date('Y-m-15 23:00:00', strtotime("-".$i." months"));
-            $end = date('Y-m-25 22:59:59', strtotime("-".$i." months"));
-            $orders = Order_model::where('processed_at', '>=', $start)->where('order_type_id',3)
-                ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->count();
-            $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
-                $q->where('processed_at', '>=', $start)->where('order_type_id',3)
-                ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',4);
-            })->whereIn('status',[3,6])->sum('price');
-            $pound = Order_item_model::whereHas('order', function($q) use ($start,$end) {
-                $q->where('processed_at', '>=', $start)->where('order_type_id',3)
-                ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',5);
-            })->whereIn('status',[3,6])->sum('price');
-            $order[$k] = $orders;
-            $eur[$k] = $euro;
-            $gbp[$k] = $pound;
-            $dates[$k] = date('15 M', strtotime("-".$i." months")) . " - " . date('25 M', strtotime("-".$i." months"));
 
-            if($i == 0 && $today > 25){
-                $k++;
-                $start = date('Y-m-25 23:00:00', strtotime("-".$i." months"));
-                $end = date('Y-m-5 22:59:59', strtotime("+1 months"));
-                $orders = Order_model::where('processed_at', '>=', $start)->where('order_type_id',3)
-                    ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->count();
-                $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
-                    $q->where('processed_at', '>=', $start)->where('order_type_id',3)
-                    ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',4);
-                })->whereIn('status',[3,6])->sum('price');
-                $pound = Order_item_model::whereHas('order', function($q) use ($start,$end) {
-                    $q->where('processed_at', '>=', $start)->where('order_type_id',3)
-                    ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',5);
-                })->whereIn('status',[3,6])->sum('price');
-                $order[$k] = $orders;
-                $eur[$k] = $euro;
-                $gbp[$k] = $pound;
-                $dates[$k] = date('25 M', strtotime("-".$i." months")) . " - " . date('05 M', strtotime("+1 months"));
-            }
+        // Loop for the last 3 weeks
+        for ($i = 2; $i >= 0; $i--) {
+            $k++;
+
+            // Week 1: Wednesday to Tuesday
+            $start = date('Y-m-d 00:00:00', strtotime('last Wednesday - ' . ($i * 7) . ' days'));
+            $end = date('Y-m-d 23:59:59', strtotime('next Tuesday - ' . ($i * 7) . ' days'));
+
+            // Fetch orders and prices in Euros and Pounds
+            $orders = Order_model::where('processed_at', '>=', $start)
+                ->where('processed_at', '<=', $end)
+                ->where('order_type_id', 3)
+                ->whereIn('status', [3, 6])
+                ->count();
+
+            $euro = Order_item_model::whereHas('order', function ($q) use ($start, $end) {
+                $q->where('processed_at', '>=', $start)
+                  ->where('processed_at', '<=', $end)
+                  ->where('order_type_id', 3)
+                  ->whereIn('status', [3, 6])
+                  ->where('currency', 4);
+            })->sum('price');
+
+            $pound = Order_item_model::whereHas('order', function ($q) use ($start, $end) {
+                $q->where('processed_at', '>=', $start)
+                  ->where('processed_at', '<=', $end)
+                  ->where('order_type_id', 3)
+                  ->whereIn('status', [3, 6])
+                  ->where('currency', 5);
+            })->sum('price');
+
+            // Store the data
+            $order[$k] = $orders;
+            $eur[$k] = $euro;
+            $gbp[$k] = $pound;
+            $dates[$k] = date('d M', strtotime($start)) . " - " . date('d M', strtotime($end));
         }
+
+        // Output the data as a script
         echo '<script> ';
         echo 'sessionStorage.setItem("total2", "' . implode(',', $order) . '");';
         echo 'sessionStorage.setItem("approved2", "' . implode(',', $eur) . '");';
         echo 'sessionStorage.setItem("failed2", "' . implode(',', $gbp) . '");';
         echo 'sessionStorage.setItem("dates2", "' . implode(',', $dates) . '");';
         echo 'window.location.href = document.referrer; </script>';
-        // sleep(2);
-        // return redirect()->back();
     }
+
     // public function refresh_10_days_chart()
     // {
     //     $order = [];
