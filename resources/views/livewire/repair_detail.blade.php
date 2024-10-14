@@ -349,6 +349,10 @@
                                                     $danger = "";
                                                 @endphp
                                             @endif
+                                        @else
+                                            @php
+                                                $danger = "";
+                                            @endphp
                                         @endif
                                         <tr class="{{ $danger }}">
                                             <td>{{ $i }}</td>
