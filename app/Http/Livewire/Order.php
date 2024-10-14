@@ -1733,7 +1733,7 @@ class Order extends Component
                     session()->put('error', "Product Storage not matched");
                     return redirect()->back();
                 }
-                if(!in_array($stock[$i]->variation->grade, [$variant->grade, 7, 9])){
+                if($stock[$i]->variation->grade != $variant->grade){
                     session()->put('error', "Product Grade not matched");
                     return redirect()->back();
 
