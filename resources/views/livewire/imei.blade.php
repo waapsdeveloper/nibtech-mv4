@@ -70,6 +70,7 @@
             </script>
             @if(isset($stock))
             <div class="p-2 d-flex justify-content-between">
+                <a href="{{ url('imei/print_label').'?stock_id='.$stock->id}}" class="btn btn-secondary"><i class="fa fa-print"></i></a>
                 @if (session('user')->hasPermission('rearrange_imei_order'))
                     <a href="{{ url('imei/rearrange').'/'.$stock->id}}" class="btn btn-secondary">Rearrange</a>
                 @endif
