@@ -340,7 +340,7 @@
                                             $total += $item->purchase_item->price
                                         @endphp
                                         @if ($process->tracking_number != null)
-                                            @if ($item->multi_process_stocks($previous_repairs)->count() > 0)
+                                            @if ($item->multi_process_stocks($previous_repairs)->count() > 0 || $item->order->customer_id != 7110)
                                                 @php
                                                     $danger = "bg-danger";
                                                 @endphp
