@@ -14,6 +14,7 @@ class OrdersheetExport implements FromCollection, WithHeadings
     {
 
         $data = DB::table('orders')
+        ->leftJoin('customer', 'orders.customer_id', '=', 'customer.id')
         ->leftJoin('admin', 'orders.processed_by', '=', 'admin.id')
         ->leftJoin('order_items', 'orders.id', '=', 'order_items.order_id')
         ->leftJoin('stock', 'order_items.stock_id', '=', 'stock.id')
@@ -34,7 +35,12 @@ class OrdersheetExport implements FromCollection, WithHeadings
             'stock.serial_number as serial_number',
             'stock.tester as tester',
             'admin.first_name as invoice',
-            'orders.created_at as date'
+            'orders.created_at as date',
+            'customer.company as company',
+            'customer.first_name as first_name',
+            'customer.last_name as last_name',
+            'orders.tracking_number as tracking_number',
+
         )
         ->where('orders.status', 3)
         ->where('orders.order_type_id', 3)
@@ -97,7 +103,11 @@ class OrdersheetExport implements FromCollection, WithHeadings
             'Serial Number',
             'Tester',
             'Invoice',
-            'Date'
+            'Date',
+            'Company',
+            'First Name',
+            'Last Name',
+            'Tracking Number',
         ];
     }
 }
