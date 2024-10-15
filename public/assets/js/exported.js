@@ -449,18 +449,18 @@
       grid: {
         borderColor: '#f2f6f7'
       },
-      colors: [myVarVal, "Red", "Green"],
+      colors: [myVarVal, "#FF0000", "#008000"],
       plotOptions: {
         line: {
           colors: {
             ranges: [{
               from: -100,
               to: -46,
-              color: 'Red'
+              color: '#FF0000'
             }, {
               from: -45,
               to: 0,
-              color: 'Green'
+              color: '#008000'
             }]
           },
           columnWidth: '100%'
@@ -543,18 +543,18 @@
       grid: {
         borderColor: '#f2f6f7'
       },
-      colors: [myVarVal, "Red", "Green"],
+      colors: [myVarVal, "#FF0000", "#008000"],
       plotOptions: {
         line: {
           colors: {
             ranges: [{
               from: -100,
               to: -46,
-              color: 'Red'
+              color: '#FF0000'
             }, {
               from: -45,
               to: 0,
-              color: 'Green'
+              color: '#008000'
             }]
           },
           columnWidth: '100%'
@@ -567,7 +567,7 @@
         curve: 'smooth',
         show: true,
         width: 4,
-        colors: [myVarVal, "Red", "Green"]
+        colors: [myVarVal, "#FF0000", "#008000"]
       },
       legend: {
         show: true,
@@ -632,23 +632,23 @@
         height: 280
       },
       fill: {
-        colors: ['Red', 'Green', 'Blue']
+        colors: ['#FF0000', '#008000', 'Blue']
       },
       grid: {
         borderColor: '#f2f6f7'
       },
-      colors: ["Red", "Green"],
+      colors: ["#FF0000", "#008000"],
       plotOptions: {
         line: {
           colors: {
             ranges: [{
               from: -100,
               to: -46,
-              color: 'Red'
+              color: '#FF0000'
             }, {
               from: -45,
               to: 0,
-              color: 'Green'
+              color: '#008000'
             }]
           },
           columnWidth: '100%'
@@ -661,7 +661,7 @@
         curve: 'smooth',
         show: true,
         width: 4,
-        colors: ["Red", "Green"]
+        colors: ["#FF0000", "#008000"]
         // colors: ['transparent']
       },
       legend: {
@@ -730,18 +730,18 @@
       grid: {
         borderColor: '#f2f6f7'
       },
-      colors: ["Red", "Green"],
+      colors: ["#FF0000", "#008000"],
       plotOptions: {
         line: {
           colors: {
             ranges: [{
               from: -100,
               to: -46,
-              color: 'Red'
+              color: '#FF0000'
             }, {
               from: -45,
               to: 0,
-              color: 'Green'
+              color: '#008000'
             }]
           },
           columnWidth: '100%'
@@ -754,7 +754,7 @@
         curve: 'smooth',
         show: true,
         width: 4,
-        colors: ["Red", "Green"]
+        colors: ["#FF0000", "#008000"]
         // colors: ['transparent']
       },
       legend: {
@@ -835,7 +835,7 @@
   //           }, {
   //             from: -45,
   //             to: 0,
-  //             color: 'green'
+  //             color: '#008000'
   //           }]
   //         },
   //         columnWidth: '100%'
