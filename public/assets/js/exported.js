@@ -449,14 +449,14 @@
       grid: {
         borderColor: '#f2f6f7'
       },
-      colors: [myVarVal, "#FF0000", "#008000"],
+      colors: [myVarVal, "#C5102F", "#008000"],
       plotOptions: {
         line: {
           colors: {
             ranges: [{
               from: -100,
               to: -46,
-              color: '#FF0000'
+              color: '#C5102F'
             }, {
               from: -45,
               to: 0,
@@ -543,14 +543,14 @@
       grid: {
         borderColor: '#f2f6f7'
       },
-      colors: [myVarVal, "#FF0000", "#008000"],
+      colors: [myVarVal, "#C5102F", "#008000"],
       plotOptions: {
         line: {
           colors: {
             ranges: [{
               from: -100,
               to: -46,
-              color: '#FF0000'
+              color: '#C5102F'
             }, {
               from: -45,
               to: 0,
@@ -567,7 +567,7 @@
         curve: 'smooth',
         show: true,
         width: 4,
-        colors: [myVarVal, "#FF0000", "#008000"]
+        colors: [myVarVal, "#C5102F", "#008000"]
       },
       legend: {
         show: true,
@@ -632,19 +632,19 @@
         height: 280
       },
       fill: {
-        colors: ['#FF0000', '#008000', 'Blue']
+        colors: ['#C5102F', '#008000', 'Blue']
       },
       grid: {
         borderColor: '#f2f6f7'
       },
-      colors: ["#FF0000", "#008000"],
+      colors: ["#C5102F", "#008000"],
       plotOptions: {
         line: {
           colors: {
             ranges: [{
               from: -100,
               to: -46,
-              color: '#FF0000'
+              color: '#C5102F'
             }, {
               from: -45,
               to: 0,
@@ -661,7 +661,7 @@
         curve: 'smooth',
         show: true,
         width: 4,
-        colors: ["#FF0000", "#008000"]
+        colors: ["#C5102F", "#008000"]
         // colors: ['transparent']
       },
       legend: {
@@ -730,14 +730,14 @@
       grid: {
         borderColor: '#f2f6f7'
       },
-      colors: ["#FF0000", "#008000"],
+      colors: ["#C5102F", "#008000"],
       plotOptions: {
         line: {
           colors: {
             ranges: [{
               from: -100,
               to: -46,
-              color: '#FF0000'
+              color: '#C5102F'
             }, {
               from: -45,
               to: 0,
@@ -754,7 +754,7 @@
         curve: 'smooth',
         show: true,
         width: 4,
-        colors: ["#FF0000", "#008000"]
+        colors: ["#C5102F", "#008000"]
         // colors: ['transparent']
       },
       legend: {
