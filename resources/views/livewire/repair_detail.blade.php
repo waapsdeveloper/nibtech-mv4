@@ -255,6 +255,7 @@
                                 <tbody>
                                     @php
                                         $i = 0;
+                                        $imei_list = [];
                                     @endphp
                                     @foreach ($last_ten as $p_stock)
                                         @php
@@ -337,7 +338,11 @@
                                         @if($item->process_stock($process_id)->process_id == $process_id)
                                         @php
                                             $i ++;
-                                            $total += $item->purchase_item->price
+                                            $total += $item->purchase_item->price;
+
+                                            if(!in_array($item->imei.$item->serial_number,$imei_list)){
+                                                array_push($imei_list,$item->imei.$item->serial_number);
+                                            }
                                         @endphp
                                         @if ($process->tracking_number != null)
                                             @if ($item->multi_process_stocks($previous_repairs)->count() > 0 || $item->order->customer_id != 7110)
@@ -471,7 +476,7 @@
             @endif
 
 
-
+            <button class="btn btn-link" id="open_all_imei">Open All IMEIs</button>
         </div>
 
     @endsection
@@ -491,6 +496,17 @@
                 }
             });
         });
+
+
+        document.getElementById("open_all_imei").onclick = function(){
+            @php
+                foreach ($imei_list as $imei) {
+                    echo "window.open('".url("imei")."?imei=".$imei."','_blank');
+                    ";
+                }
+
+            @endphp
+        }
         </script>
 		<!--Internal Sparkline js -->
 		<script src="{{asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js')}}"></script>
