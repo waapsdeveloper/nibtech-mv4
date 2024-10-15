@@ -473,7 +473,6 @@
         curve: 'smooth',
         show: true,
         width: 4,
-        colors: ["#C5102F", "#05255F"],
         // colors: ['transparent']
       },
       legend: {
