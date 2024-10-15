@@ -449,7 +449,7 @@
       grid: {
         borderColor: '#f2f6f7'
       },
-      colors: [myVarVal, "#C5102F", "#008000"],
+      colors: [myVarVal, "#C5102F", "#05255F"],
       plotOptions: {
         line: {
           colors: {
@@ -460,7 +460,7 @@
             }, {
               from: -45,
               to: 0,
-              color: '#008000'
+              color: '#05255F'
             }]
           },
           columnWidth: '100%'
@@ -543,7 +543,7 @@
       grid: {
         borderColor: '#f2f6f7'
       },
-      colors: [myVarVal, "#C5102F", "#008000"],
+      colors: [myVarVal, "#C5102F", "#05255F"],
       plotOptions: {
         line: {
           colors: {
@@ -554,7 +554,7 @@
             }, {
               from: -45,
               to: 0,
-              color: '#008000'
+              color: '#05255F'
             }]
           },
           columnWidth: '100%'
@@ -567,7 +567,7 @@
         curve: 'smooth',
         show: true,
         width: 4,
-        colors: [myVarVal, "#C5102F", "#008000"]
+        colors: [myVarVal, "#C5102F", "#05255F"]
       },
       legend: {
         show: true,
@@ -632,12 +632,12 @@
         height: 280
       },
       fill: {
-        colors: ['#C5102F', '#008000', 'Blue']
+        colors: ['#C5102F', '#05255F', 'Blue']
       },
       grid: {
         borderColor: '#f2f6f7'
       },
-      colors: ["#C5102F", "#008000"],
+      colors: ["#C5102F", "#05255F"],
       plotOptions: {
         line: {
           colors: {
@@ -648,7 +648,7 @@
             }, {
               from: -45,
               to: 0,
-              color: '#008000'
+              color: '#05255F'
             }]
           },
           columnWidth: '100%'
@@ -661,7 +661,7 @@
         curve: 'smooth',
         show: true,
         width: 4,
-        colors: ["#C5102F", "#008000"]
+        colors: ["#C5102F", "#05255F"]
         // colors: ['transparent']
       },
       legend: {
@@ -730,7 +730,7 @@
       grid: {
         borderColor: '#f2f6f7'
       },
-      colors: ["#C5102F", "#008000"],
+      colors: ["#C5102F", "#05255F"],
       plotOptions: {
         line: {
           colors: {
@@ -741,7 +741,7 @@
             }, {
               from: -45,
               to: 0,
-              color: '#008000'
+              color: '#05255F'
             }]
           },
           columnWidth: '100%'
@@ -754,7 +754,7 @@
         curve: 'smooth',
         show: true,
         width: 4,
-        colors: ["#C5102F", "#008000"]
+        colors: ["#C5102F", "#05255F"]
         // colors: ['transparent']
       },
       legend: {
@@ -835,7 +835,7 @@
   //           }, {
   //             from: -45,
   //             to: 0,
-  //             color: '#008000'
+  //             color: '#05255F'
   //           }]
   //         },
   //         columnWidth: '100%'
