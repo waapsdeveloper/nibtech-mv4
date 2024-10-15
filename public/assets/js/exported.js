@@ -567,7 +567,7 @@
         curve: 'smooth',
         show: true,
         width: 4,
-        // colors: ['transparent']
+        colors: ['red']
       },
       legend: {
         show: true,
