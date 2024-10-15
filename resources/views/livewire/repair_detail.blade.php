@@ -227,6 +227,9 @@
         session()->forget('error');
         @endphp
         @endif
+        @php
+            $imei_list = [];
+        @endphp
 
         @if ($process->status == 1)
 
@@ -255,7 +258,6 @@
                                 <tbody>
                                     @php
                                         $i = 0;
-                                        $imei_list = [];
                                     @endphp
                                     @foreach ($last_ten as $p_stock)
                                         @php
