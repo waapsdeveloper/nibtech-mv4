@@ -66,14 +66,10 @@ class OrdersheetExport implements FromCollection, WithHeadings
         ->when(request('imei') != '', function ($q) {
             if(str_contains(request('imei'),' ')){
                 $imei = explode(' ',request('imei'));
-                return $q->whereHas('order_items.stock', function ($q) use ($imei) {
-                    $q->whereIn('imei', $imei);
-                });
+                return $q->whereIn('stock.imei', $imei);
             }else{
 
-                return $q->whereHas('order_items.stock', function ($q) {
-                    $q->where('imei', 'LIKE', '%' . request('imei') . '%');
-                });
+                return $q->where('stock.imei', 'LIKE', '%' . request('imei') . '%');
             }
         })
         // ->when(request('imei') != '', function ($q) {
