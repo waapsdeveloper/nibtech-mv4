@@ -631,6 +631,9 @@
         type: 'line',
         height: 280
       },
+      fill: {
+        colors: ['Red', 'Green', 'Blue']
+      },
       grid: {
         borderColor: '#f2f6f7'
       },
@@ -650,9 +653,6 @@
           },
           columnWidth: '100%'
         }
-      },
-      fill: {
-        colors: ['Red', 'Green', 'Blue']
       },
       dataLabels: {
         enabled: false
