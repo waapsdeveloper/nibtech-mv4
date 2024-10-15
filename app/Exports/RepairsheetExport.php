@@ -67,6 +67,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
             ->where('process.id', request('id'))
             ->whereNull('process.deleted_at')
             ->whereNull('process_stock.deleted_at')
+            ->whereNull('p_stock.deleted_at')
             ->orderBy('products.model', 'ASC')
             ->get();
 
