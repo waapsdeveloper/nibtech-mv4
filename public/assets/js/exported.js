@@ -567,7 +567,7 @@
         curve: 'smooth',
         show: true,
         width: 4,
-        colors: ['red']
+        colors: [myVarVal, "Red", "Green"]
       },
       legend: {
         show: true,
@@ -661,6 +661,7 @@
         curve: 'smooth',
         show: true,
         width: 4,
+        colors: ["Red", "Green"]
         // colors: ['transparent']
       },
       legend: {
@@ -753,7 +754,7 @@
         curve: 'smooth',
         show: true,
         width: 4,
-        colors: ["#FF5733", "#33FF57"]
+        colors: ["Red", "Green"]
         // colors: ['transparent']
       },
       legend: {
