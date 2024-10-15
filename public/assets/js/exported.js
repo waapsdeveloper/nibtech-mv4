@@ -566,7 +566,7 @@
       stroke: {
         curve: 'smooth',
         show: true,
-        width: 4,
+        width: 8,
         colors: ['red']
       },
       legend: {
