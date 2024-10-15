@@ -184,9 +184,17 @@ class Order extends Component
             });
         })
         ->when(request('imei') != '', function ($q) {
-            return $q->whereHas('order_items.stock', function ($q) {
-                $q->where('imei', 'LIKE', '%' . request('imei') . '%');
-            });
+            if(str_contains(request('imei'),' ')){
+                $imei = explode(' ',request('imei'));
+                return $q->whereHas('order_items.stock', function ($q) use ($imei) {
+                    $q->whereIn('imei', $imei);
+                });
+            }else{
+
+                return $q->whereHas('order_items.stock', function ($q) {
+                    $q->where('imei', 'LIKE', '%' . request('imei') . '%');
+                });
+            }
         })
         ->when(request('tracking_number') != '', function ($q) {
             if(strlen(request('tracking_number')) == 21){
