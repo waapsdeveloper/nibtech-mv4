@@ -566,7 +566,7 @@
       stroke: {
         curve: 'smooth',
         show: true,
-        width: 8,
+        width: 4,
         colors: ['red']
       },
       legend: {
@@ -650,6 +650,9 @@
           },
           columnWidth: '100%'
         }
+      },
+      fill: {
+        colors: ['#F44336', '#E91E63', '#9C27B0']
       },
       dataLabels: {
         enabled: false
