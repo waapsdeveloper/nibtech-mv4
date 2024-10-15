@@ -652,7 +652,7 @@
         }
       },
       fill: {
-        colors: ['#F44336', '#E91E63', '#9C27B0']
+        colors: ['Red', 'Green', 'Blue']
       },
       dataLabels: {
         enabled: false
