@@ -449,7 +449,7 @@
       grid: {
         borderColor: '#f2f6f7'
       },
-      colors: [myVarVal, "#C5102F", "#05255F"],
+      colors: ["#008000", "#C5102F", "#05255F"],
       plotOptions: {
         line: {
           colors: {
@@ -543,7 +543,7 @@
       grid: {
         borderColor: '#f2f6f7'
       },
-      colors: [myVarVal, "#C5102F", "#05255F"],
+      colors: ["#008000", "#C5102F", "#05255F"],
       plotOptions: {
         line: {
           colors: {
