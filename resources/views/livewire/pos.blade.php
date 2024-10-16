@@ -513,6 +513,10 @@ function updateCartDisplay(cart) {
                         </button>
                     </div>
                     <div class="form-floating">
+                        <input type="number" class="form-control" name="price${cartKey}" id="price${cartKey}" value="${item.price ?? 0}">
+                        <label for="price">Price:</label>
+                    </div>
+                    <div class="form-floating">
                         <input type="number" class="form-control" name="discount${cartKey}" id="discount${cartKey}" value="${item.discount ?? 0}" max="${item.price}">
                         <label for="discount">Discount:</label>
                     </div>
@@ -532,6 +536,9 @@ function updateCartDisplay(cart) {
         document.getElementById(`quantity${cartKey}`).addEventListener('change', function() {
             updateCart(cartKey);
         });
+        document.getElementById(`price${cartKey}`).addEventListener('change', function() {
+            updateCart(cartKey);
+        });
         document.getElementById(`discount${cartKey}`).addEventListener('change', function() {
             updateCart(cartKey);
         });
@@ -545,6 +552,7 @@ function updateCartDisplay(cart) {
 }
 function updateCart(cartKey) {
     const quantity = document.getElementById('quantity' + cartKey).value;
+    const price = document.getElementById('price' + cartKey).value;
     const discount = document.getElementById('discount' + cartKey).value;
 
     $.ajax({
@@ -553,6 +561,7 @@ function updateCart(cartKey) {
         data: {
             cart_key: cartKey,
             quantity: quantity,
+            price: price,
             discount: discount,
             _token: '{{ csrf_token() }}' // Ensure CSRF token is included
         },

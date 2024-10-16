@@ -939,6 +939,7 @@ class Wholesale extends Component
 
         $cartKey = $request->input('cart_key');
         $quantity = $request->input('quantity');
+        $price = $request->input('price');
         $discount = $request->input('discount', 0); // Default discount is 0
 
         $cart = session()->get('cart', []);
@@ -947,6 +948,7 @@ class Wholesale extends Component
 
             // Update the cart item
             $cart[$cartKey]['quantity'] = $quantity;
+            $cart[$cartKey]['price'] = $price;
             if ($discount <= $cart[$cartKey]['price']) {
                 $cart[$cartKey]['discount'] = $discount;
             }elseif($discount > $cart[$cartKey]['price']){
