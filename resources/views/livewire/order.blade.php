@@ -241,6 +241,7 @@
             @if (Request::get('with_stock'))
                 <input type="hidden" name="with_stock" value="{{ Request::get('with_stock') }}">
             @endif
+
         </form>
         <br>
         <div class="row">
