@@ -82,6 +82,9 @@ class OrdersExport
             ->when(request('missing') == 'scan', function ($q) {
                 return $q->whereIn('orders.status', [3,6])->whereNull('orders.scanned')->where('orders.processed_at', '<=', now()->subHours(48));
             })
+            ->when(request('with_stock') == 2, function ($q) {
+                return $q->where('order_items.stock_id', 0);
+            })
             // ->groupBy('variation.sku', 'variation.name', 'grade.name')
             ->orderBy('orders.reference_id', 'DESC')
             ->distinct()->get();
