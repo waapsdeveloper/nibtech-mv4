@@ -487,7 +487,7 @@
 
                                                     </form>
                                                     @elseif ($row->message == "Additional Item")
-                                                    <form id="order_issues_{{$row->id}}" method="POST" action="{{ url('purchase/remove_issues') }}" class="form-inline">
+                                                    <form id="order_issues_{{$row->id}}" method="POST" action="{{ url('purchase/remove_issues') }}" class="form-inline" onsubmit="if (confirm('Remove IMEI from Order')){return true;}else{event.stopPropagation(); event.preventDefault();};">
                                                         @csrf
                                                         <input type="hidden" name="id" value="{{$row->id}}">
                                                         <div class="form-floating">
@@ -599,7 +599,7 @@
                                                     <td>{{ $currency}}{{$purchase_item->price ?? "Error in Purchase Entry" }}</td>
                                                     @endif
                                                     @if (session('user')->hasPermission('delete_purchase_item'))
-                                                    <td><a href="{{ url('delete_order_item').'/'}}{{$purchase_item->id ?? null }}"><i class="fa fa-trash"></i></a></td>
+                                                    <td><a href="{{ url('delete_order_item').'/'}}{{$purchase_item->id ?? null }}" onclick="if (confirm('Remove IMEI from Order')){return true;}else{event.stopPropagation(); event.preventDefault();};"><i class="fa fa-trash"></i></a></td>
                                                     @endif
                                                 </tr>
                                                 {{-- @endif --}}
