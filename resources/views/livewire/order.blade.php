@@ -239,7 +239,7 @@
                 <input type="hidden" name="missing" value="{{ Request::get('missing') }}">
             @endif
             @if (Request::get('with_stock'))
-                <input type="hidden" name="with_stock'))" value="{{ Request::get('with_stock'))') }}">
+                <input type="hidden" name="with_stock" value="{{ Request::get('with_stock') }}">
             @endif
         </form>
         <br>
