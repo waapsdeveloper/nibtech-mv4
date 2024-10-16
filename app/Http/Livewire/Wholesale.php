@@ -949,6 +949,8 @@ class Wholesale extends Component
             $cart[$cartKey]['quantity'] = $quantity;
             if ($discount <= $cart[$cartKey]['price']) {
                 $cart[$cartKey]['discount'] = $discount;
+            }elseif($discount > $cart[$cartKey]['price']){
+                $cart[$cartKey]['discount'] = $cart[$cartKey]['price'];
             }
 
             session()->put('cart', $cart);
