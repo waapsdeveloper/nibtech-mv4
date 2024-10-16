@@ -84,6 +84,7 @@ class OrdersExport
             })
             ->when(request('with_stock') == 2, function ($q) {
                 return $q->where('order_items.stock_id', 0);
+                dd('Hello');
             })
             // ->groupBy('variation.sku', 'variation.name', 'grade.name')
             ->orderBy('orders.reference_id', 'DESC')
