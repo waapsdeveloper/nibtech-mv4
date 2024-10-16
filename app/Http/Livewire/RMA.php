@@ -90,12 +90,12 @@ class RMA extends Component
                     // Decrement the stock by 1
 
                     // Save the variation record
-                    $variation->delete();
+                    // $variation->delete();
                 } else {
                     $variation->stock += 1;
                     // No variation record found or product_id and sku are both null, delete the order item
                 }
-                Stock_model::find($orderItem->stock_id)->delete();
+                // Stock_model::find($orderItem->stock_id)->delete();
             }
             $orderItem->delete();
         }
