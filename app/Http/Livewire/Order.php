@@ -797,9 +797,9 @@ class Order extends Component
             ->map(function ($items, $key) use ($data) {
                 list($product_id, $storage) = explode('.', $key);
 
-
+                $st = $data['storages'][$storage] ?? null;
                 return [
-                    'product' => $data['products'][$product_id] . ' ' . $data['storages'][$storage],
+                    'product' => $data['products'][$product_id] . ' ' . $st,
                     'sold_qty' => $items->sum('sold_qty'),
                     'available_qty' => $items->sum('available_qty'),
                 ];
