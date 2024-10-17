@@ -206,7 +206,7 @@
                 <div class="card">
                     <div class="card-header pb-0">
                         <div class="d-flex justify-content-between">
-                            <h4 class="card-title mg-b-0">
+                            {{-- <h4 class="card-title mg-b-0">
 
                                 <form id="pdf" method="POST" action="{{url('move_inventory/delete_multiple_moves')}}">
                                     @csrf
@@ -218,7 +218,7 @@
                                     <input class="btn btn-sm btn-secondary" type="submit" value="Delete Selected">
 
                                 </form>
-                            </h4>
+                            </h4> --}}
                             <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$stocks->firstItem()}} {{ __('locale.To') }} {{$stocks->lastItem()}} {{ __('locale.Out Of') }} {{$stocks->total()}} </h5>
 
                             <div class=" mg-b-0">
@@ -239,6 +239,11 @@
                                             <option value="{{$adm->id}}" @if(isset($_GET['adm']) && $adm->id == $_GET['adm']) {{'selected'}}@endif>{{$adm->first_name." ".$adm->last_name}}</option>
                                         @endforeach
                                     </select>
+
+                                    <div class="form-floating">
+                                        <input class="form-control" id="search_input" name="search" type="text" value="@isset($_GET['search']){{$_GET['search']}}@endisset" onchange="this.form.submit()">
+                                        <label for="search_input"> Search Entry </label>
+                                    </div>
                                 </form>
                             </div>
 
@@ -249,7 +254,7 @@
                             <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                                 <thead>
                                     <tr>
-                                        <th><small><b></b></small></th>
+                                        {{-- <th><small><b></b></small></th> --}}
                                         <th><small><b>No</b></small></th>
                                         <th><small><b>Old Variation</b></small></th>
                                         <th><small><b>New Variation</b></small></th>
@@ -269,7 +274,7 @@
                                     @foreach ($stocks as $operation)
 
                                             <tr>
-                                                <td><input type="checkbox" name="ids[]" value="{{ $operation->id }}" form="pdf"></td>
+                                                {{-- <td><input type="checkbox" name="ids[]" value="{{ $operation->id }}" form="pdf"></td> --}}
                                                 <td title="{{ $operation->id }}">{{ $i + 1 }}</td>
                                                 <td>
                                                     @if ($operation->old_variation ?? false)
