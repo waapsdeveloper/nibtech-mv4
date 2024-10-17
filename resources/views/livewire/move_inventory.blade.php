@@ -221,7 +221,7 @@
                             </h4> --}}
 
                             <h5 class="card-title mg-b-0">
-                                @if ($stocks->firstItem() !== null)
+                                @if (request('search') == '')
 
                                     {{ __('locale.From') }} {{$stocks->firstItem()}} {{ __('locale.To') }} {{$stocks->lastItem()}} {{ __('locale.Out Of') }} {{$stocks->total()}}
                                 @endif
@@ -275,7 +275,7 @@
                                 </thead>
                                 <tbody>
                                     @php
-                                        if($stocks->firstItem() != null){
+                                        if(request('search') == ''){
                                             $i = $stocks->firstItem() - 1;
                                         }else{
                                             $i = 0;
@@ -319,7 +319,7 @@
                                 </tbody>
                             </table>
                         <br>
-                        @if ($stocks->firstItem() != null)
+                        @if (request('search') == '')
                         {{ $stocks->onEachSide(1)->links() }} {{ __('locale.From') }} {{$stocks->firstItem()}} {{ __('locale.To') }} {{$stocks->lastItem()}} {{ __('locale.Out Of') }} {{$stocks->total()}}
                         @endif
                     </div>
