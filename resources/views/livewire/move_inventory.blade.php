@@ -279,10 +279,20 @@
                                             $i = $stocks->firstItem() - 1;
                                         }else{
                                             $i = 0;
+                                            $list = [];
                                         }
+
                                     @endphp
                                     @foreach ($stocks as $operation)
-
+                                        @if (request('search') != '')
+                                            @if (!in_array($operation->stock_id, $list))
+                                                @php
+                                                    $list[] = $operation->stock_id;
+                                                @endphp
+                                            @else
+                                                @continue
+                                            @endif
+                                        @endif
                                             <tr>
                                                 {{-- <td><input type="checkbox" name="ids[]" value="{{ $operation->id }}" form="pdf"></td> --}}
                                                 <td title="{{ $operation->id }}">{{ $i + 1 }}</td>
