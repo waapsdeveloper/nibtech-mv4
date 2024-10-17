@@ -39,9 +39,9 @@ class ApiRequestController extends Controller
         if($request->Serial != '' || $request->Imei != '' || $request->Imei2 != ''){
 
             // Create or update the resource
-            $api_request = Api_request_model::create([
+            $api_request = Api_request_model::firstOrNew([
                 'request' => json_encode($request->getContent()),
-            ]);
+            ])->save();
 
             // Return response
             return response()->json([

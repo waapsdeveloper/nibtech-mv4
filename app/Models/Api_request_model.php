@@ -182,17 +182,18 @@ class Api_request_model extends Model
                     }else{
                         $fail = $datas->Fail;
                     }
-
-                    $stock_operation = Stock_operations_model::create([
-                        'stock_id' => $stock->id,
-                        'api_request_id' => $request->id,
-                        'process_id' => 1,
-                        'old_variation_id' => $stock->variation_id,
-                        'new_variation_id' => $variation->id,
-                        'description' => $fail." | ".$datas->Comments." | DrPhone",
-                        'admin_id' => $admin,
-                        'created_at' => Carbon::parse($datas->Time)->format('Y-m-d H:i:s'),
-                    ]);
+                    $stock_operation = new Stock_operations_model();
+                    $stock_operation->new_operation($stock->id, null, 1, $request->id, $stock->variation_id, $variation->id, $fail." | ".$datas->Comments." | DrPhone", Carbon::parse($datas->Time)->format('Y-m-d H:i:s'));
+                    // $stock_operation = Stock_operations_model::create([
+                    //     'stock_id' => $stock->id,
+                    //     'api_request_id' => $request->id,
+                    //     'process_id' => 1,
+                    //     'old_variation_id' => $stock->variation_id,
+                    //     'new_variation_id' => $variation->id,
+                    //     'description' => $fail." | ".$datas->Comments." | DrPhone",
+                    //     'admin_id' => $admin,
+                    //     'created_at' => Carbon::parse($datas->Time)->format('Y-m-d H:i:s'),
+                    // ]);
 
                     $variation->status = 1;
                     $variation->save();
