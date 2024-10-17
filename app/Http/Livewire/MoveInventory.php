@@ -59,24 +59,27 @@ class MoveInventory extends Component
 
 
         $stocks = Stock_operations_model::when(request('search') != '', function ($q) {
-            return $q->where('description', 'LIKE', '%' . request('search') . '%');
-        })
-        ->when((request('search') == '' || request('start_date') != NULL || request('end_date') != NULL), function ($q) use ($start_date,$end_date) {
-            return $q->where('created_at','>=',$start_date)->where('created_at','<=',$end_date);
-        })
+                return $q->where('description', 'LIKE', '%' . request('search') . '%');
+            })
+            ->when((request('search') == '' || request('start_date') != NULL || request('end_date') != NULL), function ($q) use ($start_date,$end_date) {
+                return $q->where('created_at','>=',$start_date)->where('created_at','<=',$end_date);
+            })
 
-        ->when(request('adm') != '', function ($q) {
-            return $q->where('admin_id', request('adm'));
-        })
-            // ->whereHas('stock', function ($query) {
-            //     $query->where('status', 1);
-            // })
-        ->where('description','!=','Grade changed for Sell')
-            ->orderBy('id','desc')
+            ->when(request('adm') != '', function ($q) {
+                return $q->where('admin_id', request('adm'));
+            })
+            ->orderBy('id','desc');
+
+        if(request('search') == ''){
+            $stocks = $stocks->get()->distinct('stock_id');
+        }else{
+            $stocks = $stocks->where('description','!=','Grade changed for Sell')
             ->distinct('stock_id')
             ->paginate($per_page)
             ->onEachSide(5)
             ->appends(request()->except('page'));
+        }
+
 
         $data['stocks'] = $stocks;
         $data['grade'] = Grade_model::find($grade);
