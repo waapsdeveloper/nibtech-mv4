@@ -219,7 +219,13 @@
 
                                 </form>
                             </h4> --}}
-                            <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$stocks->firstItem()}} {{ __('locale.To') }} {{$stocks->lastItem()}} {{ __('locale.Out Of') }} {{$stocks->total()}} </h5>
+
+                            <h5 class="card-title mg-b-0">
+                                @if ($stocks->firstItem())
+
+                                    {{ __('locale.From') }} {{$stocks->firstItem()}} {{ __('locale.To') }} {{$stocks->lastItem()}} {{ __('locale.Out Of') }} {{$stocks->total()}}
+                                @endif
+                            </h5>
 
                             <div class=" mg-b-0">
 

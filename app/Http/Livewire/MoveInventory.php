@@ -71,7 +71,7 @@ class MoveInventory extends Component
             ->orderBy('id','desc');
 
         if(request('search') != ''){
-            $stocks = $stocks->get()->distinct('stock_id');
+            $stocks = $stocks->get();
         }else{
             $stocks = $stocks->where('description','!=','Grade changed for Sell')
             ->distinct('stock_id')
