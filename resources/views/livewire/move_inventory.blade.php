@@ -221,7 +221,7 @@
                             </h4> --}}
 
                             <h5 class="card-title mg-b-0">
-                                @if ($stocks->firstItem() != null)
+                                @if ($stocks->firstItem() !== null)
 
                                     {{ __('locale.From') }} {{$stocks->firstItem()}} {{ __('locale.To') }} {{$stocks->lastItem()}} {{ __('locale.Out Of') }} {{$stocks->total()}}
                                 @endif
