@@ -59,8 +59,7 @@ class MoveInventory extends Component
 
 
         $stocks = Stock_operations_model::when(request('search') != '', function ($q) {
-            return $q->where('description', 'LIKE', '%' . request('search') . '%')
-            ->distinct('stock_id');
+            return $q->where('description', 'LIKE', '%' . request('search') . '%');
         })
         ->when((request('search') == '' || request('start_date') != NULL || request('end_date') != NULL), function ($q) use ($start_date,$end_date) {
             return $q->where('created_at','>=',$start_date)->where('created_at','<=',$end_date);
@@ -74,6 +73,7 @@ class MoveInventory extends Component
             // })
         ->where('description','!=','Grade changed for Sell')
             ->orderBy('id','desc')
+            ->distinct('stock_id')
             ->paginate($per_page)
             ->onEachSide(5)
             ->appends(request()->except('page'));
