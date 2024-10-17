@@ -74,12 +74,12 @@ class Stock_operations_model extends Model
         $this->old_variation_id = $old_variation_id;
         $this->new_variation_id = $new_variation_id;
         $this->description = $description;
-        if($admin_id != NULL){
+        if ($admin_id !== NULL) {
             $this->admin_id = $admin_id;
-        }else{
+        } else {
             $this->admin_id = session('user_id');
         }
-        if ($created_at != NULL) {
+        if ($created_at) {
             $this->created_at = $created_at;
         }
         $this->save();
