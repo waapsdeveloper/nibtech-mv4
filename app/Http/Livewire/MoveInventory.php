@@ -76,7 +76,6 @@ class MoveInventory extends Component
             })->get();
         }else{
             $stocks = $stocks->where('description','!=','Grade changed for Sell')
-            ->distinct('stock_id')
             ->paginate($per_page)
             ->onEachSide(5)
             ->appends(request()->except('page'));
