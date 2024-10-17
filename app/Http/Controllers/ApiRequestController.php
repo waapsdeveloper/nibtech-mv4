@@ -41,8 +41,8 @@ class ApiRequestController extends Controller
             // Create or update the resource
             $api_request = Api_request_model::firstOrNew([
                 'request' => json_encode($request->getContent()),
-            ])->save();
-
+            ]);
+            $api_request->save();
             // Return response
             return response()->json([
                 'status' => 'Success',
