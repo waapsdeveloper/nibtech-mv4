@@ -59,7 +59,7 @@ class Stock_operations_model extends Model
     {
         return $this->hasOne(Admin_model::class, 'id', 'admin_id');
     }
-    public function new_operation($stock_id, $order_item_id = NULL, $process_id = NULL, $api_request_id = NULL, $old_variation_id = NULL, $new_variation_id = NULL, $description = NULL, $created_at = NULL)
+    public function new_operation($stock_id, $order_item_id = NULL, $process_id = NULL, $api_request_id = NULL, $old_variation_id = NULL, $new_variation_id = NULL, $description = NULL, $admin_id = NULL, $created_at = NULL)
     {
         $find = $this->where('stock_id', $stock_id)->orderByDesc('id')->first();
 
@@ -74,7 +74,11 @@ class Stock_operations_model extends Model
         $this->old_variation_id = $old_variation_id;
         $this->new_variation_id = $new_variation_id;
         $this->description = $description;
-        $this->admin_id = session('user_id');
+        if($admin_id){
+            $this->admin_id = $admin_id;
+        }else{
+            $this->admin_id = session('user_id');
+        }
         if ($created_at) {
             $this->created_at = $created_at;
         }
