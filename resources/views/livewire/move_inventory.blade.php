@@ -269,7 +269,7 @@
                                 </thead>
                                 <tbody>
                                     @php
-                                        $i = 0;
+                                        $i = $stocks->firstItem() - 1;
                                     @endphp
                                     @foreach ($stocks as $operation)
 
