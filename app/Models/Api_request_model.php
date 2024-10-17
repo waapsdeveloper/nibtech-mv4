@@ -182,6 +182,7 @@ class Api_request_model extends Model
                     }else{
                         $fail = $datas->Fail;
                     }
+                    dd($admin);
                     $stock_operation = new Stock_operations_model();
                     $stock_operation->new_operation($stock->id, null, 1, $request->id, $stock->variation_id, $variation->id, $admin, $fail." | ".$datas->Comments." | DrPhone", Carbon::parse($datas->Time)->format('Y-m-d H:i:s'));
                     // $stock_operation = Stock_operations_model::create([
