@@ -73,7 +73,7 @@ class MoveInventory extends Component
             // })
         ->where('description','!=','Grade changed for Sell')
             ->orderBy('id','desc')
-            ->distinct('stock_id')
+            ->groupBy('stock_id')
             ->paginate($per_page)
             ->onEachSide(5)
             ->appends(request()->except('page'));
