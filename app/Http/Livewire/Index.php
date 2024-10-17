@@ -385,10 +385,10 @@ class Index extends Component
             $start = date('Y-m-d 00:00:00', strtotime('last Wednesday - ' . ($i * 7) . ' days'));
             $end = date('Y-m-d 23:59:59', strtotime('next Tuesday - ' . ($i * 7) . ' days'));
             // If today is Wednesday
-            if (date('w') >= 3) {
+            if (date('w') == 3) {
                 $start = date('Y-m-d 00:00:00', strtotime('this Wednesday - ' . ($i * 7) . ' days'));
             }
-            if (date('w') < 3) {
+            if (date('w') == 2) {
                 $end = date('Y-m-d 23:59:59', strtotime('this Tuesday - ' . ($i * 7) . ' days'));
             }
 
