@@ -908,7 +908,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="">New Tracking Number</label>
-                                <input class="form-control" placeholder="input New Tracking Number" id="tracking_number" name="tracking[number]" type="text" min="16" max="17" disabled>
+                                <input class="form-control" placeholder="input New Tracking Number" id="tracking_number" name="tracking[number]" type="text" min="16" max="17" required>
                             </div>
                             <div class="form-group">
                                 <label for="">Reason</label>
