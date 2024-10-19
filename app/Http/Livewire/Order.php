@@ -2182,6 +2182,31 @@ class Order extends Component
         $item->delete();
         return redirect()->back();
     }
+    public function tracking(){
+        $order = Order_model::find(request('tracking')['order_id']);
+        if(session('user')->hasPermission('change_order_tracking')){
+
+            $new_tracking = request('tracking')['number'];
+
+            if($order->tracking_number != $new_tracking){
+                if(strlen($new_tracking) == 17 && strpos($new_tracking, 'JJ') == 0){
+                    $new_tracking = ltrim($new_tracking, 'J');
+                }
+                if(strlen($new_tracking) != 16){
+                    session()->put('error', "Tracking number invalid");
+                    return redirect()->back();
+                }
+            }
+            $message = "Tracking number changed from " . $order->tracking_number . " to " . $new_tracking . " | " . request('tracking')['reason'];
+
+            $order->tracking_number = $new_tracking;
+            $order->reference = $message;
+            $order->save();
+
+        }
+        return redirect()->back();
+    }
+
     public function correction(){
         $item = Order_item_model::find(request('correction')['item_id']);
         if(session('user')->hasPermission('correction')){

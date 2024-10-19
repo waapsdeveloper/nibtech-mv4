@@ -207,6 +207,7 @@ Route::get('order/refresh/{id?}', [Order::class,'updateBMOrder'])->name('view_or
 Route::post('order/dispatch/{id}', [Order::class,'dispatch'])->name('dispatch_order');
 Route::get('order/track/{id}', [Order::class,'track_order'])->name('view_order');
 Route::get('order/delete_item/{id}', [Order::class,'delete_item'])->name('delete_order');
+Route::post('order/tracking', [Order::class,'tracking'])->name('change_order_tracking');
 Route::post('order/correction', [Order::class,'correction'])->name('correction');
 
 Route::post('order/replacement/{london?}/{allowed?}', [Order::class,'replacement'])->name('replacement');

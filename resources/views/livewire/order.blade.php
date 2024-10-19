@@ -612,6 +612,7 @@
                                                 <div class="dropdown-menu">
                                                     <a class="dropdown-item" href="{{url('order')}}/refresh/{{ $order->reference_id }}">Refresh</a>
                                                     {{-- @if ($item->order->processed_at > $last_hour || $user_id == 1) --}}
+                                                    <a class="dropdown-item" id="tracking_{{ $order->id }}" href="javascript:void(0);" data-bs-target="#tracking_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-order="{{ $order->id }}"> Change Tracking </a>
                                                     <a class="dropdown-item" id="correction_{{ $item->id }}" href="javascript:void(0);" data-bs-target="#correction_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}"> Correction </a>
                                                     {{-- @endif --}}
                                                     @if (!$item->replacement)
@@ -891,6 +892,36 @@
             </div>
         </div>
 
+        <div class="modal" id="tracking_model">
+            <div class="modal-dialog wd-xl-400" role="document">
+                <div class="modal-content">
+                    <div class="modal-body pd-sm-40">
+                        <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
+                            type="button"><span aria-hidden="true">&times;</span></button>
+                        <h5 class="modal-title mg-b-5">Update Order Tracking</h5>
+                        <hr>
+                        <form action="{{ url('order/tracking') }}" method="POST">
+                            @csrf
+                            <div class="form-group">
+                                <label for="">Order Number</label>
+                                <input class="form-control" name="tracking[id]" type="text" id="order_reference" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label for="">New Tracking Number</label>
+                                <input class="form-control" placeholder="input New Tracking Number" id="tracking_number" name="tracking[number]" type="text" min="16" max="17" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label for="">Reason</label>
+                                <textarea class="form-control" name="tracking[reason]">Address changed from</textarea>
+                            </div>
+                            <input type="hidden" id="order_id" name="tracking[order_id]" value="">
+
+                            <button class="btn btn-primary btn-block">{{ __('locale.Submit') }}</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="modal" id="correction_model">
             <div class="modal-dialog wd-xl-400" role="document">
                 <div class="modal-content">
@@ -982,6 +1013,16 @@
     @section('scripts')
 
     <script>
+        $('#tracking_model').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget) // Button that triggered the modal
+            var reference = button.data('bs-reference') // Extract info from data-* attributesv
+            var order = button.data('bs-order') // Extract info from data-* attributes
+            // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+            // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+            var modal = $(this)
+            modal.find('.modal-body #order_reference').val(reference)
+            modal.find('.modal-body #order_id').val(order)
+            })
         $('#correction_model').on('show.bs.modal', function (event) {
             var button = $(event.relatedTarget) // Button that triggered the modal
             var reference = button.data('bs-reference') // Extract info from data-* attributesv
