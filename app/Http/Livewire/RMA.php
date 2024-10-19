@@ -526,7 +526,7 @@ class RMA extends Component
             $html = view('export.rma_packlist', $data)->render();
         }elseif(request('packlist') == 2){
 
-            return Excel::download(new PacksheetExport($invoice), 'orders.xlsx');
+            return Excel::download(new PacksheetExport($invoice), 'RMA_'.$order->reference_id.'.xlsx');
         }else{
             $html = view('export.rma_invoice', $data)->render();
         }
