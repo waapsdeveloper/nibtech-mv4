@@ -2189,10 +2189,10 @@ class Order extends Component
             $new_tracking = trim(request('tracking')['number']);
 
             if($order->tracking_number != $new_tracking){
-                if(strlen($new_tracking) == 17 && strpos($new_tracking, 'JJ') == 0){
+                if(strlen($new_tracking) == 21 && strpos($new_tracking, 'JJ') == 0){
                     $new_tracking = ltrim($new_tracking, 'J');
                 }
-                if(strlen($new_tracking) != 16){
+                if(strlen($new_tracking) != 20){
                     session()->put('error', "Tracking number invalid".strlen($new_tracking));
                     return redirect()->back();
                 }
