@@ -21,7 +21,6 @@ class PacksheetExport implements FromCollection, WithHeadings
     {
 
         $data = DB::table('orders')
-        ->leftJoin('admin', 'orders.processed_by', '=', 'admin.id')
         ->leftJoin('order_items', 'orders.id', '=', 'order_items.order_id')
         ->leftJoin('stock', 'order_items.stock_id', '=', 'stock.id')
         ->leftJoin('variation', 'order_items.variation_id', '=', 'variation.id')
@@ -34,6 +33,8 @@ class PacksheetExport implements FromCollection, WithHeadings
                  ->where('stock_operations.new_variation_id', '=', DB::raw('variation.id'))
                  ->whereRaw('stock_operations.id = (SELECT id FROM stock_operations WHERE stock_operations.stock_id = stock.id ORDER BY id DESC LIMIT 1)');
         })
+        ->leftJoin('admin', 'stock_operations.admin_id', '=', 'admin.id')
+
 
         ->select(
             'products.model',
@@ -43,6 +44,7 @@ class PacksheetExport implements FromCollection, WithHeadings
             'stock.imei as imei',
             'stock.serial_number as serial_number',
             'stock_operations.description as issue',
+            'admin.first_name as admin',
             // 'order_items.price as price'
             // Conditional price based on invoice flag
             $this->invoice == 1
@@ -68,6 +70,7 @@ class PacksheetExport implements FromCollection, WithHeadings
             'IMEI',
             'Serial Number',
             'Issue',
+            'Admin',
             // 'Price'
             $this->invoice == 1 ? 'Price (Multiplied by Exchange Rate)' : 'Price'
         ];
