@@ -540,7 +540,7 @@
 
                                                 @if ($item->status == 2)
                                                     @if (count($items) < 2 && $item->quantity < 2)
-                                                        <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url('order')}}/dispatch/{{ $order->id }}" onsubmit="if($('#tracking_number_{{ $i }}_{{ $j }}').val() == '{{ $order->tracking_number }}') {return true;}else{event.stopPropagation(); event.preventDefault(); alert('Wrong Tracking');}">
+                                                        <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url('order')}}/dispatch/{{ $order->id }}" onsubmit="if($('#tracking_number_{{ $i }}_{{ $j }}').val() == 'J{{ $order->tracking_number }}') {return true;}else{event.stopPropagation(); event.preventDefault(); alert('Wrong Tracking');}">
                                                             @csrf
                                                             <input type="hidden" name="sort" value="{{request('sort')}}">
                                                             <div class="input-group">
@@ -560,7 +560,7 @@
                                                         </form>
                                                     @elseif (count($items) < 2 && $item->quantity >= 2)
 
-                                                        <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url('order')}}/dispatch/{{ $order->id }}" onsubmit="if($('#tracking_number_{{ $i }}_{{ $j }}').val() == '{{ $order->tracking_number }}') {return true;}else{event.stopPropagation(); event.preventDefault();}">
+                                                        <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url('order')}}/dispatch/{{ $order->id }}" onsubmit="if($('#tracking_number_{{ $i }}_{{ $j }}').val() == 'J{{ $order->tracking_number }}') {return true;}else{event.stopPropagation(); event.preventDefault();}">
                                                             @csrf
                                                             @for ($in = 1; $in <= $item->quantity; $in ++)
 
@@ -578,7 +578,7 @@
                                                             </div>
                                                         </form>
                                                     @elseif (count($items) >= 2)
-                                                        <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url('order')}}/dispatch/{{ $order->id }}" onsubmit="if($('#tracking_number_{{ $i }}_{{ $j }}').val() == {{ $order->tracking_number }}) {return true;}else{event.stopPropagation(); event.preventDefault();}">
+                                                        <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url('order')}}/dispatch/{{ $order->id }}" onsubmit="if($('#tracking_number_{{ $i }}_{{ $j }}').val() == 'J{{ $order->tracking_number }}') {return true;}else{event.stopPropagation(); event.preventDefault();}">
                                                             @csrf
                                                             @foreach ($items as $itm)
 
