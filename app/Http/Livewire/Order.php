@@ -2193,7 +2193,7 @@ class Order extends Component
                     $new_tracking = ltrim($new_tracking, 'J');
                 }
                 if(strlen($new_tracking) != 16){
-                    session()->put('error', "Tracking number invalid");
+                    session()->put('error', "Tracking number invalid".strlen($new_tracking));
                     return redirect()->back();
                 }
             }
