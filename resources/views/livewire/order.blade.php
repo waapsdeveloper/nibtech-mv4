@@ -555,7 +555,7 @@
 
                                                             </div>
                                                             <div class="w-100">
-                                                                <input type="text" name="tracking_number" id="tracking_number" placeholder="Tracking Number" class="form-control form-control-sm" required>
+                                                                <input type="text" name="tracking_number" id="tracking_number" placeholder="Tracking Number" class="form-control form-control-sm w-100" required>
                                                             </div>
                                                         </form>
                                                     @elseif (count($items) < 2 && $item->quantity >= 2)
@@ -571,7 +571,7 @@
                                                             <input type="hidden" name="sku[]" value="{{ $variation->sku }}">
                                                             @endfor
                                                             <div class="w-100">
-                                                                <input type="text" name="tracking_number" id="tracking_number" placeholder="Tracking Number" class="form-control form-control-sm" required>
+                                                                <input type="text" name="tracking_number" id="tracking_number" placeholder="Tracking Number" class="form-control form-control-sm w-100" required>
                                                             </div>
                                                             <div class="w-100">
                                                                 <input type="submit" name="imei_send" value="Submit IMEIs" class="form-control form-control-sm w-100" form="dispatch_{{ $i."_".$j }}">
@@ -592,7 +592,7 @@
                                                                 @endfor
                                                             @endforeach
                                                             <div class="w-100">
-                                                                <input type="text" name="tracking_number" id="tracking_number" placeholder="Tracking Number" class="form-control form-control-sm" required>
+                                                                <input type="text" name="tracking_number" id="tracking_number" placeholder="Tracking Number" class="form-control form-control-sm w-100" required>
                                                             </div>
                                                             <div class="w-100">
                                                                 <input type="submit" name="imei_send" value="Submit IMEIs" class="form-control form-control-sm w-100" form="dispatch_{{ $i."_".$j }}">
