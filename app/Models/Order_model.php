@@ -128,8 +128,10 @@ class Order_model extends Model
                 $order->processed_at = Carbon::parse($orderObj->date_shipping)->format('Y-m-d H:i:s');
             }
 
+            if($order->tracking_number == null){
+                $order->tracking_number = $orderObj->tracking_number;
+            }
 
-            $order->tracking_number = $orderObj->tracking_number;
             $order->created_at = Carbon::parse($orderObj->date_creation)->format('Y-m-d H:i:s');
             $order->updated_at = Carbon::parse($orderObj->date_modification)->format('Y-m-d H:i:s');
             // echo Carbon::parse($orderObj->date_creation)->format('Y-m-d H:i:s'). "       ";

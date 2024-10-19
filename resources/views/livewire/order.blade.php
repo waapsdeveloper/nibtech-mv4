@@ -604,7 +604,7 @@
                                             @endif
                                             <td style="width:220px">{{ $order->created_at}} <br> {{ $order->processed_at}}<br>
                                                 @if ($order->tracking_number != null)
-                                                <a href="{{url('order/track/').'/'.$order->id}}" target="_blank">{{$order->tracking_number}}</a>
+                                                <a href="https://www.dhl.com/us-en/home/tracking/tracking-express.html?submit=1&tracking-id={{$order->tracking_number}}" target="_blank">{{$order->tracking_number}}</a>
 
                                             @endif</td>
                                             <td>
