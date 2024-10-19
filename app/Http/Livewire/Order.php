@@ -2186,7 +2186,7 @@ class Order extends Component
         $order = Order_model::find(request('tracking')['order_id']);
         if(session('user')->hasPermission('change_order_tracking')){
 
-            $new_tracking = request('tracking')['number'];
+            $new_tracking = trim(request('tracking')['number']);
 
             if($order->tracking_number != $new_tracking){
                 if(strlen($new_tracking) == 17 && strpos($new_tracking, 'JJ') == 0){
