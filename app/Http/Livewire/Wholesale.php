@@ -877,12 +877,23 @@ class Wholesale extends Component
     }
 
     public function get_product_variations($product_id){
-        $variations = Variation_model::where('product_id',$product_id)->get();
+        $variations = Variation_model::where('product_id',$product_id)
+        ->when(request('storage') != '', function ($q) {
+            return $q->where('storage', request('storage'));
+        })
+        ->when(request('color') != '', function ($q) {
+            return $q->where('color', request('color'));
+        })
+        ->when(request('grade') != '', function ($q) {
+            return $q->where('grade', request('grade'));
+        })
+        ->get();
 
         $colors = Color_model::whereIn('id',$variations->pluck('color'))->pluck('name','id');
         $storages = Storage_model::whereIn('id',$variations->pluck('storage'))->pluck('name','id');
         return response()->json(['variations'=>$variations,'colors'=>$colors,'storages'=>$storages]);
     }
+
 
     // Add product to cart with additional details like storage, color, and grade
     public function add(Request $request)
