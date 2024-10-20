@@ -683,7 +683,11 @@ class Order extends Component
                     }
                 }
                 // $average_cost = $total_cost/$total_quantity;
-                $average_price = $total_price/$total_quantity;
+                if($total_quantity == 0){
+                    $average_price = "Issue";
+                }else{
+                    $average_price = $total_price/$total_quantity;
+                }
                 $sold_stocks_2[$key]['average_cost'] = $average_cost;
                 $sold_stocks_2[$key]['total_cost'] = $total_cost;
                 $sold_stocks_2[$key]['average_price'] = $average_price;
