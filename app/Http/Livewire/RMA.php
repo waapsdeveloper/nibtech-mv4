@@ -27,9 +27,6 @@ use TCPDF;
 class RMA extends Component
 {
 
-    public $imei;
-    public $price;
-
     public function mount()
     {
 
@@ -44,12 +41,12 @@ class RMA extends Component
         $data['latest_reference'] = Order_model::where('order_type_id',2)->orderBy('reference_id','DESC')->first()->reference_id;
         $data['currencies'] = Currency_model::pluck('sign','id');
         $data['order_statuses'] = Order_status_model::get();
-            if(request('per_page') != null){
-                $per_page = request('per_page');
-            }else{
-                $per_page = 10;
-            }
-            $data['orders'] = Order_model::withCount('order_items')->withSum('order_items','price')
+        if(request('per_page') != null){
+            $per_page = request('per_page');
+        }else{
+            $per_page = 10;
+        }
+        $data['orders'] = Order_model::withCount('order_items')->withSum('order_items','price')
             ->where('orders.order_type_id',2)
             // ->join('order_items', 'orders.id', '=', 'order_items.order_id')
 
@@ -204,18 +201,6 @@ class RMA extends Component
                 }
             }
         }
-        // Access the variation through orderItem->stock->variation
-        // $variation = $orderItem->stock->variation;
-
-        // $variation->stock += 1;
-        // $variation->save();
-
-        // No variation record found or product_id and sku are both null, delete the order item
-
-        // $orderItem->stock->delete();
-        // Stock_model::find($orderItem->stock_id)->update(['status'=>1]);
-        // $orderItem->delete();
-        // $orderItem->forceDelete();
 
         session()->put('success', 'Stock deleted successfully');
 

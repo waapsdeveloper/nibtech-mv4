@@ -129,9 +129,20 @@
                     <form class="form-inline" action="{{ url('check_rma_item').'/'.$order_id }}" method="POST" id="rma_item">
                         @csrf
 
-                        <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
-                        <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
-                        <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
+
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="reference" name="reference" placeholder="Enter RMA reason" value="{{session('rma_reason') ?? null}}" >
+                            <label for="reference">If Require RMA Movement then Input Reason</label>
+                        </div>
+
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="imei" name="imei" placeholder="Enter IMEI | Serial Number" onloadeddata="$(this).focus()" autofocus required>
+                            <label for="imei">IMEI | Serial Number</label>
+                        </div>
+
+                        {{-- <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
+                        <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required> --}}
+                        <button class="btn btn-primary pd-x-20" type="submit">Insert</button>
 
                     </form>
                     <script>
