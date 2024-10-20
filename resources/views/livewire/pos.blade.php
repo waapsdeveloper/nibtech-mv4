@@ -326,7 +326,7 @@
                                     storageRadio.dataset.name = '';
                                     storageRadio.checked = true;
                                     storageRadio.className = 'btn-check';
-                                    storageRadio.onclick = loadProductDetails(${productId});
+                                    storageRadio.onclick = loadProductDetails(productId);
 
                                     const storageLabel = document.createElement('label');
                                     storageLabel.htmlFor = `storage_option`;
