@@ -326,7 +326,7 @@
                                     storageRadio.dataset.name = '';
                                     storageRadio.checked = true;
                                     storageRadio.className = 'btn-check';
-                                    storageRadio.onclick = loadProductDetails(productId);
+                                    storageRadio.onclick = () => loadProductDetails(productId);
 
                                     const storageLabel = document.createElement('label');
                                     storageLabel.htmlFor = `storage_option`;
@@ -345,7 +345,7 @@
                                         storageRadio.value = key;
                                         storageRadio.dataset.name = value;
                                         storageRadio.className = 'btn-check';
-                                        storageRadio.onclick = loadProductDetails(productId);
+                                        storageRadio.onclick = () => loadProductDetails(productId);
 
                                         const storageLabel = document.createElement('label');
                                         storageLabel.htmlFor = `storage_option_${key}`;
@@ -367,7 +367,7 @@
                                     colorRadio.dataset.name = '';
                                     colorRadio.checked = true;
                                     colorRadio.className = 'btn-check';
-                                    colorRadio.onclick = loadProductDetails(productId);
+                                    colorRadio.onclick = () => loadProductDetails(productId);
 
                                     const colorLabel = document.createElement('label');
                                     colorLabel.htmlFor = `color_option`;
@@ -386,7 +386,7 @@
                                         colorRadio.value = key;
                                         colorRadio.dataset.name = value;
                                         colorRadio.className = 'btn-check';
-                                        colorRadio.onclick = loadProductDetails(productId);
+                                        colorRadio.onclick = () => loadProductDetails(productId);
 
                                         const colorLabel = document.createElement('label');
                                         colorLabel.htmlFor = `color_option_${key}`;
