@@ -23,6 +23,7 @@ class PacksheetExport implements FromCollection, WithHeadings
         $data = DB::table('orders')
         ->leftJoin('order_items', 'orders.id', '=', 'order_items.order_id')
         ->leftJoin('stock', 'order_items.stock_id', '=', 'stock.id')
+        ->leftJoin('orders as p_orders', 'stock.order_id', '=', 'p_orders.id')
         ->leftJoin('variation', 'order_items.variation_id', '=', 'variation.id')
         ->leftJoin('products', 'variation.product_id', '=', 'products.id')
         ->leftJoin('color', 'variation.color', '=', 'color.id')
@@ -43,6 +44,7 @@ class PacksheetExport implements FromCollection, WithHeadings
             'grade.name as grade_name',
             'stock.imei as imei',
             'stock.serial_number as serial_number',
+            'p_orders.reference_id as po',
             'stock_operations.description as issue',
             'admin.first_name as admin',
             // 'order_items.price as price'
@@ -69,6 +71,7 @@ class PacksheetExport implements FromCollection, WithHeadings
             'Grade',
             'IMEI',
             'Serial Number',
+            'PO',
             'Issue',
             'Admin',
             // 'Price'
