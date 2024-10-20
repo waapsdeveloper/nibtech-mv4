@@ -400,6 +400,9 @@ class RMA extends Component
         if(!request('bypass_check')){
             session()->forget('bypass_check');
         }
+        if(!request('rma_reason')){
+            session()->forget('rma_reason');
+        }
         if(ctype_digit(request('imei'))){
             $i = request('imei');
             $s = null;
@@ -411,11 +414,33 @@ class RMA extends Component
         $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
         $variation = Variation_model::where(['id' => $stock->variation_id])->first();
 
+        if(request('rma_reason')){
+            if($variation->grade != 10){
+                $variation->stock -= 1;
+                $variation->save();
+
+                $new_variation = Variation_model::firstOrNew(['product_id' => $variation->product_id, 'storage' => $variation->storage, 'color' => $variation->color, 'grade' => 10]);
+
+                $new_variation->status = 1;
+                $new_variation->save();
+
+                $stock->variation_id = $new_variation->id;
+            }else{
+                $new_variation = $variation;
+            }
+
+            $stock_operation = new Stock_operations_model();
+            $stock_operation->new_operation($stock->id, null, null, null, $variation->id, $new_variation->id, request('rma_reason'));
+
+            $variation = $new_variation;
+        }else{
+
+            $variation->stock -= 1;
+            $variation->save();
+        }
         $stock->status = 2;
         $stock->save();
 
-        $variation->stock -= 1;
-        $variation->save();
 
 
         $order_item = new Order_item_model();

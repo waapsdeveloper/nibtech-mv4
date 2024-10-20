@@ -131,8 +131,8 @@
 
 
                         <div class="form-floating">
-                            <input type="text" class="form-control" id="reference" name="reference" placeholder="Enter RMA reason" value="{{session('rma_reason') ?? null}}" >
-                            <label for="reference">If  Movement then Reason</label>
+                            <input type="text" class="form-control" id="rma_reason" name="rma_reason" placeholder="Enter RMA reason" value="{{session('rma_reason') ?? null}}" >
+                            <label for="rma_reason">If Move than Reason</label>
                         </div>
 
                         <div class="form-floating">
