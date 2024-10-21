@@ -823,9 +823,9 @@ class Index extends Component
     public function stock_cost_summery(){
         $grades = [1,2,3,4,5];
         $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q){
-            $q->where('status',1);
+            $q->where('stocks.status',1);
         })->with(['stocks'=>function($q){
-            $q->where('status',1);
+            $q->where('stocks.status',1);
         }])->get();
 
         $result = [];
