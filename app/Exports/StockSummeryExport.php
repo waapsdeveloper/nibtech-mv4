@@ -119,7 +119,7 @@ class StockSummeryExport
                     $pdf->MultiCell(12, 6, $data['stock_count'], 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
                     // Average cost
-                    $pdf->MultiCell(18, 6, number_format($data['average_cost'], 2), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                    $pdf->MultiCell(18, 6, '€'.number_format($data['average_cost'], 2), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
                     $pdf->SetFont('times', '', 12);
                     // Premium Grade
@@ -151,7 +151,7 @@ class StockSummeryExport
     // Custom function for ellipsizing text
     private function bold($text) {
         if ($text != 0) {
-            $text = number_format($text,2);
+            $text = '€'.number_format($text,2);
         } else {
             $text = '-';
         }
