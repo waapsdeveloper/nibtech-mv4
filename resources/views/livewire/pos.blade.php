@@ -347,7 +347,7 @@
                                         if (product.selected_storage == key) {
                                             storageRadio.checked = true;
                                         }
-                                        if (key in product.available_storages) {} else {
+                                        if (!(key in product.available_storages)) {
                                             storageRadio.disabled = true;
                                         }
 
