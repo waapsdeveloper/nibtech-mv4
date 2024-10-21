@@ -24,7 +24,7 @@ class StockSummeryExport
         $grade_names = Grade_model::whereIn('id', $grades)->pluck('name','id');
         $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q){
             $q->where('stock.status',1);
-        })->orderBy('product_id')->orderBy('storage')->limit(50)->get();
+        })->orderBy('product_id')->orderBy('storage')->limit(5)->get();
 
         $result = [];
         foreach($product_storage_sort as $pss){
@@ -196,7 +196,7 @@ class StockSummeryExport
                     $pdf->SetLineStyle(['width' => 0.1, 'color' => [0, 0, 0]]);
                     // $pdf->Cell(110, 10, $order->name, 1);
                     // Add Product Name (ellipsize to fit within 110)
-                    $pdf->MultiCell(8, 0, $i, 1);
+                    $pdf->MultiCell(8, 0, $i, 1, 'L', 1, 0, '', '', true);
                     $variationName = $this->ellipsize($data['model'], 40);
                     // $pdf->Cell(80, 0, $variationName, 1);
                     $pdf->MultiCell(80, 0, $variationName, 1, 'L', 1, 0, '', '', true);
