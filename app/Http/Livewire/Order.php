@@ -783,8 +783,8 @@ class Order extends Component
                 $datas = [];
                 $datas['product_id'] = $pss->id;
                 $datas['model'] = $product->model.' '.$storage;
-                $datas['available_stock_count'] = $pss->stocks->where('status',1)->count();
-                $datas['sold_stock_count'] = $pss->stocks->where('status',2)->count();
+                $datas['available_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',1)->count();
+                $datas['sold_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',2)->count();
 
                 $result[] = $datas;
             }
