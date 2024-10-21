@@ -889,15 +889,21 @@ class Wholesale extends Component
         })
         ->get();
 
-        $storages = Storage_model::whereIn('id',$variations->pluck('storage'))->pluck('name','id');
-        $colors = Color_model::whereIn('id',$variations->pluck('color'))->pluck('name','id');
-        $grades = Grade_model::whereIn('id',$variations->pluck('grade'))->pluck('name','id');
+        $available_storages = $variations->pluck('storage');
+        $available_colors = $variations->pluck('color');
+        $available_grades = $variations->pluck('grade');
+
+        $all_variations = Variation_model::where('product_id',$product_id)->get();
+
+        $storages = Storage_model::whereIn('id',$all_variations->pluck('storage'))->pluck('name','id');
+        $colors = Color_model::whereIn('id',$all_variations->pluck('color'))->pluck('name','id');
+        $grades = Grade_model::whereIn('id',$all_variations->pluck('grade'))->pluck('name','id');
 
         $selected_storage = request('storage') ?? null;
         $selected_color = request('color') ?? null;
         $selected_grade = request('grade') ?? null;
 
-        return response()->json(['variations'=>$variations, 'storages'=>$storages, 'colors'=>$colors, 'grades'=>$grades, 'selected_storage'=>$selected_storage, 'selected_color'=>$selected_color, 'selected_grade'=>$selected_grade]);
+        return response()->json(['variations'=>$variations, 'storages'=>$storages, 'colors'=>$colors, 'grades'=>$grades, 'available_storages'=>$available_storages, 'available_colors'=>$available_colors, 'available_grades'=>$available_grades, 'selected_storage'=>$selected_storage, 'selected_color'=>$selected_color, 'selected_grade'=>$selected_grade]);
     }
 
 

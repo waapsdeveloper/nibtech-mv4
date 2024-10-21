@@ -347,6 +347,9 @@
                                         if (product.selected_storage == key) {
                                             storageRadio.checked = true;
                                         }
+                                        if (key !in product.available_storages) {
+                                            storageRadio.disabled = true;
+                                        }
 
                                         const storageLabel = document.createElement('label');
                                         storageLabel.htmlFor = `storage_option_${key}`;
