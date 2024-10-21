@@ -53,6 +53,7 @@ Route::get('/', Index::class)->name('index');
 Route::get('index', Index::class)->name('index');
 Route::get('index/toggle_amount_view', [Index::class,'toggle_amount_view'])->name('index');
 Route::get('index/add_ip', [Index::class,'add_ip'])->name('add_ip');
+Route::get('index/stock_cost_summery', [Index::class,'stock_cost_summery'])->name('available_stock_cost_summery');
 Route::get('index/test', [Index::class,'test'])->name('test');
 Route::get('index/refresh_sales_chart', [Index::class,'refresh_sales_chart'])->name('10_day_sales_chart');
 Route::get('index/refresh_7_days_chart', [Index::class,'refresh_7_days_chart'])->name('10_day_sales_chart');

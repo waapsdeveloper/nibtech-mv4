@@ -820,6 +820,55 @@ class Index extends Component
         </script>';
     }
 
+    public function stock_cost_summery(){
+        $grades = [1,2,3,4,5];
+        $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q){
+            $q->where('status',1);
+        })->with(['stocks'=>function($q){
+            $q->where('status',1);
+        }])->get();
+
+        $result = [];
+        foreach($product_storage_sort as $pss){
+            $product = $pss->product;
+            $storage = $pss->storage_id;
+            $data = [];
+            $data['model'] = $product->model.' '.$storage->name;
+            $data['stock_count'] = 0;
+            $data['average_cost'] = 0;
+            $data['graded_average_cost'] = [];
+            $data['graded_stock_count'] = [];
+            foreach($pss->stocks as $stock){
+                $variation = $stock->variation;
+                if(in_array($variation->grade, $grades)){
+                    $purchase_item = $stock->purchase_item;
+                    $data['average_cost'] += $purchase_item->price;
+                    $data['stock_count']++;
+                    if(!isset($data['graded_average_cost'][$variation->grade])){
+                        $data['graded_average_cost'][$variation->grade] = 0;
+                    }
+                    if(!isset($data['graded_stock_count'][$variation->grade])){
+                        $data['graded_stock_count'][$variation->grade] = 0;
+                    }
+                    $data['graded_average_cost'][$variation->grade] += $purchase_item->price;
+                    $data['graded_stock_count'][$variation->grade]++;
+                }
+            }
+            $data['average_cost'] = $data['average_cost']/$data['stock_count'];
+            foreach($grades as $grade){
+                if(!isset($data['graded_average_cost'][$grade])){
+                    continue;
+                }
+                if(!isset($data['graded_stock_count'][$grade])){
+                    continue;
+                }
+                $data['graded_average_cost'][$grade] = $data['graded_average_cost'][$grade]/$data['graded_stock_count'][$grade];
+            }
+            $result[$product->category][$product->brand] = $data;
+        }
+
+        return $result;
+    }
 
     public function test(){
         ini_set('max_execution_time', 1200);

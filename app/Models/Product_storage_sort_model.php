@@ -26,25 +26,6 @@ class Product_storage_sort_model extends Model
 
 
 
-
-    public function duplicates(){
-        return $this->hasMany(Variation_model::class, 'product_id', 'product_id')
-                    ->where('storage', $this->storage)
-                    ->where('color', $this->color)
-                    ->where('grade', $this->grade)
-                    ->whereNotNull('sku')
-                    ->where('id', '!=', $this->id);
-    }
-    public function hasDuplicate()
-    {
-        return $this->duplicate()->exists();
-    }
-
-    public function scopeHasDuplicate($query)
-    {
-        $query->whereHas('duplicate');
-    }
-
     public function product(){
         return $this->hasOne(Products_model::class, 'id', 'product_id');
     }
