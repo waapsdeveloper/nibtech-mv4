@@ -896,7 +896,7 @@ class Order extends Component
         // ->orderBy('grade_id')
         // ->get();
 
-        return response()->json($data);
+        return response()->json($data['graded_count']);
     }
 
     public function add_purchase(){

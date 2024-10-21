@@ -828,33 +828,24 @@ fetch(`{{ url('purchase') }}/purchase_model_graded_count/${orderId}/${productId}
         console.log(product);
         // Render the product details
 
-        for (const [key, value] of Object.entries(product.grades)) {
-            const gradeRadio = document.createElement('input');
-            gradeRadio.type = 'radio';
-            gradeRadio.name = 'grade';
-            gradeRadio.id = `grade_option_${key}`;
-            gradeRadio.value = key;
-            gradeRadio.dataset.name = value;
-            gradeRadio.className = 'btn-check';
-            gradeRadio.onclick = () => loadProductDetails(productId, 'grade');
-            if (product.selected_grade == key) {
-                gradeRadio.checked = true;
+        const productMenu = document.getElementById('count_data');
+        productMenu.innerHTML = ''; // Clear existing products
+
+        // Iterate through the products and create menu items
+        products.forEach(product => {
+            const productDiv = document.createElement('tr');
+
+            const productLink = document.createElement('td');
+            productLink.innerHTML = `${product.model}`;
+
+            // Check if the product matches the selected product from the request
+            if (product.id == selectedProductId) {
+                productLink.classList.add('active'); // Add 'active' class to highlight the selected product
             }
-            if (key in product.available_grades) {} else {
-                gradeRadio.disabled = true;
-            }
+            productDiv.appendChild(productLink);
 
-
-            const gradeLabel = document.createElement('label');
-            gradeLabel.htmlFor = `grade_option_${key}`;
-            gradeLabel.className = 'btn btn-sm btn-outline-dark m-0';
-            gradeLabel.innerHTML = value;
-
-
-            gradeOptions.appendChild(gradeRadio);
-            gradeOptions.appendChild(gradeLabel);
-        }
-
+            productMenu.appendChild(productDiv);
+        });
     })
     .catch(error => console.error('Error fetching product details:', error));
 }
