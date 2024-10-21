@@ -196,16 +196,16 @@ class StockSummeryExport
                     $pdf->SetLineStyle(['width' => 0.1, 'color' => [0, 0, 0]]);
                     // $pdf->Cell(110, 10, $order->name, 1);
                     // Add Product Name (ellipsize to fit within 110)
-                    $pdf->MultiCell(8, 10, $i, 1, 'L', 1, 0, '', '', true);
+                    $pdf->MultiCell(8, 0, $i, 1, 'J', 1, 0, '', '', true, 0, false, true, 40);
                     $variationName = $this->ellipsize($data['model'], 40);
                     // $pdf->Cell(80, 0, $variationName, 1);
-                    $pdf->MultiCell(80, 10, $variationName, 1, 'L', 1, 0, '', '', true);
-                    $pdf->MultiCell(12, 10, $data['stock_count'], 1, 'L', 1, 0, '', '', true);
-                    $pdf->MultiCell(18, 10, number_format($data['average_cost'],2), 1, 'L', 1, 0, '', '', true);
-                    $pdf->MultiCell(18, 10, $this->bold($data['graded_average_cost'][1] ?? 0), 1, 'L', 1, 0, '', '', true);
-                    $pdf->MultiCell(18, 10, $this->bold($data['graded_average_cost'][2] ?? 0), 1, 'L', 1, 0, '', '', true);
-                    $pdf->MultiCell(18, 10, $this->bold($data['graded_average_cost'][3] ?? 0), 1, 'L', 1, 0, '', '', true);
-                    $pdf->MultiCell(18, 10, $this->bold($data['graded_average_cost'][5] ?? 0), 1, 'L', 1, 0, '', '', true);
+                    $pdf->MultiCell(80, 0, $variationName, 1, 'J', 1, 0, '', '', true, 0, false, true, 40);
+                    $pdf->MultiCell(12, 0, $data['stock_count'], 1, 'J', 1, 0, '', '', true, 0, false, true, 40);
+                    $pdf->MultiCell(18, 0, number_format($data['average_cost'],2), 1, 'J', 1, 0, '', '', true, 0, false, true, 40);
+                    $pdf->MultiCell(18, 0, $this->bold($data['graded_average_cost'][1] ?? 0), 1, 'J', 1, 0, '', '', true, 0, false, true, 40);
+                    $pdf->MultiCell(18, 0, $this->bold($data['graded_average_cost'][2] ?? 0), 1, 'J', 1, 0, '', '', true, 0, false, true, 40);
+                    $pdf->MultiCell(18, 0, $this->bold($data['graded_average_cost'][3] ?? 0), 1, 'J', 1, 0, '', '', true, 0, false, true, 40);
+                    $pdf->MultiCell(18, 0, $this->bold($data['graded_average_cost'][5] ?? 0), 1, 'J', 1, 0, '', '', true, 0, false, true, 40);
 
                 }
             }
