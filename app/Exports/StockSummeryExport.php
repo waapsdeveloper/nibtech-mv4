@@ -114,12 +114,14 @@ class StockSummeryExport
                     // Model Name (wraps text if too long)
                     $pdf->MultiCell(80, 6, $data['model'], 1, 'L', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
+                    $pdf->SetFont('times', 'B', 12);
                     // Stock count
                     $pdf->MultiCell(12, 6, $data['stock_count'], 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
                     // Average cost
                     $pdf->MultiCell(18, 6, number_format($data['average_cost'], 2), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
+                    $pdf->SetFont('times', '', 12);
                     // Premium Grade
                     $pdf->MultiCell(18, 6, $this->bold($data['graded_average_cost'][1] ?? 0), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
