@@ -822,6 +822,7 @@ class Index extends Component
 
     public function stock_cost_summery(){
         ini_set('max_execution_time', 1200);
+        ini_set('memory_limit', '2048M');
 
         $grades = [1,2,3,4,5];
         $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q){
