@@ -845,7 +845,7 @@ fetch(`{{ url('purchase') }}/purchase_model_graded_count/${orderId}/${productId}
             productDiv.appendChild(productLink2);
 
             productMenu.appendChild(productDiv);
-        });
+        };
     })
     .catch(error => console.error('Error fetching product details:', error));
 }
