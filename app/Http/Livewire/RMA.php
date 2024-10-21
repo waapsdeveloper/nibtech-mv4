@@ -403,6 +403,9 @@ class RMA extends Component
         if(!request('rma_reason')){
             session()->forget('rma_reason');
         }
+        if(request('rma_reason')){
+            dd(request('rma_reason'));
+        }
         if(ctype_digit(request('imei'))){
             $i = request('imei');
             $s = null;
