@@ -303,9 +303,9 @@
 
                         function loadProductDetails(productId, trigger = null) {
 
-                            const storage = document.querySelector('input[name="storage"]:checked').value;
-                            const color = document.querySelector('input[name="color"]:checked').value;
-                            const grade = document.querySelector('input[name="grade"]:checked').value;
+                            const storage = document.querySelector('input[name="storage"]:checked').value || '';
+                            const color = document.querySelector('input[name="color"]:checked').value || '';
+                            const grade = document.querySelector('input[name="grade"]:checked').value || '';
 
                             fetch(`{{ url('pos') }}/get_product_variations/${productId}?storage=${storage}&color=${color}&grade=${grade}&trigger=${trigger}`)
                                 .then(response => response.json())
