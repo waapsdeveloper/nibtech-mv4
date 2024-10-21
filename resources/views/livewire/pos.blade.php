@@ -347,10 +347,10 @@
                                         if (product.selected_storage == key) {
                                             storageRadio.checked = true;
                                         }
-                                        if (key in product.available_storages) {} else {
+                                        result = Object.keys(product.available_storages).map((ky) => product.available_storages[ky]);
+                                        if (key in result) {} else {
                                             storageRadio.disabled = true;
                                         }
-                                        result = Object.keys(product.available_storages).map((ky) => product.available_storages[ky]);
 
                                         console.log(result);
                                         const storageLabel = document.createElement('label');
