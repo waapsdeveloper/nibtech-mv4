@@ -347,10 +347,10 @@
                                         if (product.selected_storage == key) {
                                             storageRadio.checked = true;
                                         }
-                                        if (!(key in product.available_storages)) {
+                                        if (key in product.available_storages) {} else {
                                             storageRadio.disabled = true;
                                         }
-
+                                        console.log(typeof product.available_storages);
                                         const storageLabel = document.createElement('label');
                                         storageLabel.htmlFor = `storage_option_${key}`;
                                         storageLabel.className = 'btn btn-sm btn-outline-dark m-0';
