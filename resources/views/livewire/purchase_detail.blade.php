@@ -276,7 +276,7 @@
                             <tr>
                                 <td>{{ $i++ }}</td>
                                 {{-- <td>{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</td> --}}
-                                <td>{{ $summery['product'] }}</td>
+                                <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#graded_count_modal" onclick="loadProductDetails">{{ $summery['product'] }}</a></td>
                                 <td>{{ $summery['sold_qty'] }}</td>
                                 <td>{{ $summery['available_qty'] }}</td>
                             </tr>
@@ -778,7 +778,40 @@
             </div>
         </div>
 
+
         @endif
+
+
+        <div class="modal" id="graded_count_modal">
+            <div class="modal-dialog wd-xl-400" role="document">
+                <div class="modal-content">
+                    <div class="modal-body pd-sm-40">
+                        <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
+                            type="button"><span aria-hidden="true">&times;</span></button>
+                        <h5 class="modal-title mg-b-5">Graded Total</h5>
+                        <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                            <thead>
+                                <tr>
+                                    {{-- <th><small><b>No</b></small></th> --}}
+                                    <th><small><b>Grade</b></small></th>
+                                    <th><small><b>Count</b></small></th>
+                                </tr>
+                            </thead>
+                            <tbody id="count_data">
+                            </tbody>
+
+                            <tfoot>
+                                <tr>
+                                    {{-- <th><small><b>No</b></small></th> --}}
+                                    <th><b>Total</b></th>
+                                    <th><b>{{ $total }}</b></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     @endsection
 
     @section('scripts')
@@ -787,6 +820,67 @@
                 $('.test').select2();
             });
 
+function loadProductDetails(orderId, productId) {
+
+fetch(`{{ url('purchase') }}/detail/count/${orderId}/${productId}`)
+    .then(response => response.json())
+    .then(product => {
+        // console.log(product);
+        // Render the product details
+
+        const gradeOptions = document.getElementById('grade_options');
+        gradeOptions.innerHTML = ''; // Clear existing options
+        const gradeRadio = document.createElement('input');
+        gradeRadio.type = 'radio';
+        gradeRadio.name = 'grade';
+        gradeRadio.id = `grade_option`;
+        gradeRadio.value = '';
+        gradeRadio.dataset.name = '';
+        gradeRadio.className = 'btn-check';
+        gradeRadio.onclick = () => loadProductDetails(productId);
+        if (product.selected_grade == null) {
+            gradeRadio.checked = true;
+        }
+
+        const gradeLabel = document.createElement('label');
+        gradeLabel.htmlFor = `grade_option`;
+        gradeLabel.className = 'btn btn-sm btn-outline-dark m-0';
+        gradeLabel.innerHTML = 'grade:';
+
+
+        gradeOptions.appendChild(gradeRadio);
+        gradeOptions.appendChild(gradeLabel);
+
+        for (const [key, value] of Object.entries(product.grades)) {
+            const gradeRadio = document.createElement('input');
+            gradeRadio.type = 'radio';
+            gradeRadio.name = 'grade';
+            gradeRadio.id = `grade_option_${key}`;
+            gradeRadio.value = key;
+            gradeRadio.dataset.name = value;
+            gradeRadio.className = 'btn-check';
+            gradeRadio.onclick = () => loadProductDetails(productId, 'grade');
+            if (product.selected_grade == key) {
+                gradeRadio.checked = true;
+            }
+            if (key in product.available_grades) {} else {
+                gradeRadio.disabled = true;
+            }
+
+
+            const gradeLabel = document.createElement('label');
+            gradeLabel.htmlFor = `grade_option_${key}`;
+            gradeLabel.className = 'btn btn-sm btn-outline-dark m-0';
+            gradeLabel.innerHTML = value;
+
+
+            gradeOptions.appendChild(gradeRadio);
+            gradeOptions.appendChild(gradeLabel);
+        }
+
+    })
+    .catch(error => console.error('Error fetching product details:', error));
+}
         </script>
 		<!--Internal Sparkline js -->
 		<script src="{{asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js')}}"></script>

@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Color_model;
 use App\Models\Grade_model;
 use App\Models\Order_issue_model;
+use App\Models\Product_storage_sort_model;
 use App\Models\Stock_operations_model;
 use App\Models\Stock_movement_model;
 use Illuminate\Support\Facades\Mail;
@@ -768,53 +769,29 @@ class Order extends Component
         }elseif(request('summery') == 2){
 
 
-            // Retrieve variations with related stocks
-            $sold_stocks = Variation_model::whereHas('stocks', function ($query) use ($order_id) {
-                $query->where('order_id', $order_id);
-            })
-            ->withCount([
-                'sold_stocks' => function ($query) use ($order_id) {
-                    $query->where('order_id', $order_id);
-                },
-                'all_available_stocks' => function ($query) use ($order_id) {
-                    $query->where('order_id', $order_id);
-                },
-            ])
-            ->get(['product_id', 'storage']);
-            // Process the retrieved data to get stock IDs
-            $result = $sold_stocks->map(function ($variation) {
+            ini_set('memory_limit', '2048M');
 
-                return [
-                    'product_id' => $variation->product_id,
-                    'storage' => $variation->storage,
-                    'sold_qty' => $variation->sold_stocks_count,
-                    'available_qty' => $variation->all_available_stocks_count,
-                ];
-            });
-            // dd($result);
+            $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q) use ($order_id){
+                $q->where('stock.order_id', $order_id);
+            })->orderBy('product_id')->orderBy('storage')->get();
 
-            // Group the results by product_id and storage
-            $groupedResult = $result->groupBy(function ($item) {
-                return $item['product_id'] . '.' . $item['storage'];
-            })
-            // ->sortBy(['product_id','storage'])
-            ->map(function ($items, $key) use ($data) {
-                list($product_id, $storage) = explode('.', $key);
+            $result = [];
+            foreach($product_storage_sort as $pss){
+                $product = $pss->product;
+                $storage = $pss->storage_id->name ?? null;
 
-                $st = $data['storages'][$storage] ?? null;
-                return [
-                    'product' => $data['products'][$product_id] . ' ' . $st,
-                    'sold_qty' => $items->sum('sold_qty'),
-                    'available_qty' => $items->sum('available_qty'),
-                ];
-            })->values();
+                $datas = [];
+                $datas['product_id'] = $pss->id;
+                $datas['model'] = $product->model.' '.$storage;
+                $datas['available_stock_count'] = $pss->stocks->where('status',1)->count();
+                $datas['sold_stock_count'] = $pss->stocks->where('status',2)->count();
 
-            // Sort the results by quantity in descending order
-            $sold_stocks_2 = $groupedResult->toArray();
+                $result[] = $datas;
+            }
 
-            // array_multisort($sold_stocks_2);
-            // dd($sold_stocks_2);
-            $data['stock_summery'] = $sold_stocks_2;
+            $data['stock_summery'] = $result;
+
+            dd($result);
 
         }else{
             if (!request('status') || request('status') == 1){

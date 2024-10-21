@@ -142,13 +142,6 @@ class StockSummeryExport
     }
 
     // Custom function for ellipsizing text
-    private function ellipsize($text, $max_length) {
-        if (mb_strlen($text, 'UTF-8') > $max_length) {
-            $text = mb_substr($text, 0, $max_length - 3, 'UTF-8') . '...';
-        }
-        return $text;
-    }
-    // Custom function for ellipsizing text
     private function bold($text) {
         if ($text != 0) {
             $text = '€ '.number_format($text,2);
