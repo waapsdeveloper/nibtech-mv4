@@ -825,6 +825,10 @@ class Index extends Component
         ini_set('memory_limit', '2048M');
 
         $grades = [1,2,3,4,5];
+
+        $categories = Category_model::pluck('name','id');
+        $brands = Brand_model::pluck('name','id');
+        $grade_names = Grade_model::whereIn('id', $grades)->pluck('name','id');
         $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q){
             $q->where('stock.status',1);
         })->get();
@@ -874,10 +878,41 @@ class Index extends Component
                 }
                 $data['graded_average_cost'][$grade] = $data['graded_average_cost'][$grade]/$data['graded_stock_count'][$grade];
             }
-            $result[$product->category][$product->brand] = $data;
+            $result[$product->category][$product->brand][] = $data;
         }
 
-        print_r($result);
+        foreach($result as $category => $brands){
+            echo $categories[$category].'<br>';
+            foreach($brands as $brand => $datas){
+                echo $brands[$brand].'<br>';
+                echo '<table border="1">';
+                echo '<tr>';
+                echo '<th>Model</th>';
+                echo '<th>Stock Count</th>';
+                echo '<th>Average Cost</th>';
+                foreach($grade_names as $id => $grade){
+                    echo '<th>'.$grade.'</th>';
+                }
+                echo '</tr>';
+
+                foreach($datas as $data){
+                    echo '<tr>';
+                    echo '<td>'.$data['model'].'</td>';
+                    echo '<td>'.$data['stock_count'].'</td>';
+                    echo '<td>'.number_format($data['average_cost'],2).'</td>';
+                    foreach($grade_names as $id => $grade){
+                        if(isset($data['graded_average_cost'][$id])){
+                            echo '<td>'.number_format($data['graded_average_cost'][$id],2).'</td>';
+                        }else{
+                            echo '<td>0</td>';
+                        }
+                    }
+                    echo '</tr>';
+                }
+
+
+            }
+        }
     }
 
     public function test(){
