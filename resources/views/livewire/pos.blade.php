@@ -347,10 +347,11 @@
                                         if (product.selected_storage == key) {
                                             storageRadio.checked = true;
                                         }
-                                        result = Array.keys(product.available_storages).map((ky) => product.available_storages[ky]);
-                                        if (key in result) {} else {
-                                            storageRadio.disabled = true;
-                                        }
+                                        product.available_storages.forEach(storage => {
+                                            if (key == storage) {
+                                                storageRadio.disabled = false;
+                                            }
+                                        });
 
                                         console.log(typeof result);
                                         const storageLabel = document.createElement('label');
@@ -398,9 +399,11 @@
                                         if (product.selected_color == key) {
                                             colorRadio.checked = true;
                                         }
-                                        if (key in product.available_colors) {} else {
-                                            colorRadio.disabled = true;
-                                        }
+                                        product.available_colors.forEach(color => {
+                                            if (key == color) {
+                                                colorRadio.disabled = false;
+                                            }
+                                        });
 
                                         const colorLabel = document.createElement('label');
                                         colorLabel.htmlFor = `color_option_${key}`;
@@ -448,9 +451,11 @@
                                         if (product.selected_grade == key) {
                                             gradeRadio.checked = true;
                                         }
-                                        if (key in product.available_grades) {} else {
-                                            gradeRadio.disabled = true;
-                                        }
+                                        product.available_grades.forEach(grade => {
+                                            if (key == grade) {
+                                                gradeRadio.disabled = false;
+                                            }
+                                        });
 
                                         const gradeLabel = document.createElement('label');
                                         gradeLabel.htmlFor = `grade_option_${key}`;
