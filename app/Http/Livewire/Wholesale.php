@@ -878,13 +878,13 @@ class Wholesale extends Component
 
     public function get_product_variations($product_id){
         $variations = Variation_model::where('product_id',$product_id)
-        ->when(request('storage') != '', function ($q) {
+        ->when((request('storage') != '' && request('trigger') != 'storage'), function ($q) {
             return $q->where('storage', request('storage'));
         })
-        ->when(request('color') != '', function ($q) {
+        ->when((request('color') != '' && request('trigger') != 'color'), function ($q) {
             return $q->where('color', request('color'));
         })
-        ->when(request('grade') != '', function ($q) {
+        ->when((request('grade') != '' && request('trigger') != 'grade'), function ($q) {
             return $q->where('grade', request('grade'));
         })
         ->get();

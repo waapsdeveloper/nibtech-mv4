@@ -198,10 +198,6 @@
                         <div id="grade_option" class="my-3">
                             <input type="radio" class="btn-check" name="grade" id="grade_option0" value="" data-name="" checked autocomplete="off" onclick="loadProductDetails($('#product_id').val())">
                             <label class="btn btn-sm btn-outline-dark m-0" for="grade_option0">Grade:</label>
-                            @foreach ($grades as $id => $name)
-                                <input type="radio" class="btn-check" name="grade" id="grade_option{{$id}}" value="{{$id}}" data-name="{{ $name }}" autocomplete="off" onclick="loadProductDetails($('#product_id').val())">
-                                <label class="btn btn-sm btn-outline-dark m-0" for="grade_option{{$id}}">{{ $name }}</label>
-                            @endforeach
                         </div>
                         <!-- Price and Quantity Section -->
                         <div class="d-flex my-3">
@@ -305,13 +301,13 @@
                                 .catch(error => console.error('Error fetching products:', error));
                         }
 
-                        function loadProductDetails(productId) {
+                        function loadProductDetails(productId, trigger = null) {
 
                             const storage = document.querySelector('input[name="storage"]:checked').value;
                             const color = document.querySelector('input[name="color"]:checked').value;
                             const grade = document.querySelector('input[name="grade"]:checked').value;
 
-                            fetch(`{{ url('pos') }}/get_product_variations/${productId}?storage=${storage}&color=${color}&grade=${grade}`)
+                            fetch(`{{ url('pos') }}/get_product_variations/${productId}?storage=${storage}&color=${color}&grade=${grade}&trigger=${trigger}`)
                                 .then(response => response.json())
                                 .then(product => {
                                     // console.log(product);
@@ -347,7 +343,7 @@
                                         storageRadio.value = key;
                                         storageRadio.dataset.name = value;
                                         storageRadio.className = 'btn-check';
-                                        storageRadio.onclick = () => loadProductDetails(productId);
+                                        storageRadio.onclick = () => loadProductDetails(productId, 'storage');
                                         if (product.selected_storage == key) {
                                             storageRadio.checked = true;
                                         }
@@ -393,7 +389,7 @@
                                         colorRadio.value = key;
                                         colorRadio.dataset.name = value;
                                         colorRadio.className = 'btn-check';
-                                        colorRadio.onclick = () => loadProductDetails(productId);
+                                        colorRadio.onclick = () => loadProductDetails(productId, 'color');
                                         if (product.selected_color == key) {
                                             colorRadio.checked = true;
                                         }
@@ -440,7 +436,7 @@
                                         gradeRadio.value = key;
                                         gradeRadio.dataset.name = value;
                                         gradeRadio.className = 'btn-check';
-                                        gradeRadio.onclick = () => loadProductDetails(productId);
+                                        gradeRadio.onclick = () => loadProductDetails(productId, 'grade');
                                         if (product.selected_grade == key) {
                                             gradeRadio.checked = true;
                                         }
