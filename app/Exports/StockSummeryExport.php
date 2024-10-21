@@ -151,7 +151,7 @@ class StockSummeryExport
     // Custom function for ellipsizing text
     private function bold($text) {
         if ($text != 0) {
-            $text = '€'.number_format($text,2);
+            $text = '€ '.number_format($text,2);
         } else {
             $text = '-';
         }
