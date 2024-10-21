@@ -881,12 +881,11 @@ class Order extends Component
         $pss = Product_storage_sort_model::find($pss_id);
         $stocks = $pss->stocks->where('order_id',$order_id);
         $grades = Grade_model::pluck('name','id');
-
         foreach($grades as $grade_id => $grade){
             $graded_variations = $pss->variations->where('grade',$grade_id);
-            $data['graded_count'][]['quantity'] = $stocks->whereIn('variation_id',$graded_variations->pluck('id'))->count();
-            $data['graded_count'][]['grade'] = $grade;
-            $data['graded_count'][]['grade_id'] = $grade_id;
+            $data['graded_count'][$grade_id]['quantity'] = $stocks->whereIn('variation_id',$graded_variations->pluck('id'))->count();
+            $data['graded_count'][$grade_id]['grade'] = $grade;
+            $data['graded_count'][$grade_id]['grade_id'] = $grade_id;
         }
 
         // $data['graded_count'] = $stocks->select('grade.name as grade', 'variation.grade as grade_id', DB::raw('COUNT(*) as quantity'))
