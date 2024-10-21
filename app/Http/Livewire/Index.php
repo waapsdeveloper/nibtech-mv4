@@ -839,7 +839,7 @@ class Index extends Component
             foreach($pss->stocks as $stock){
                 $variation = $stock->variation;
                 if(in_array($variation->grade, $grades)){
-                    $purchase_item = $stock->purchase_item;
+                    $purchase_item = $stock->order_items->where('order_id',$stock->order_id)->first();
                     $data['average_cost'] += $purchase_item->price;
                     $data['stock_count']++;
                     if(!isset($data['graded_average_cost'][$variation->grade])){
