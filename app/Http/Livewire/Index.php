@@ -843,7 +843,8 @@ class Index extends Component
                 if(in_array($variation->grade, $grades)){
                     $purchase_item = $stock->order_items->where('order_id',$stock->order_id)->first();
                     if($purchase_item == null){
-                        dd($stock);
+                        echo 'Purchase item not found for stock id: '.$stock->id;
+                        continue;
                     }
                     $data['average_cost'] += $purchase_item->price;
                     $data['stock_count']++;
