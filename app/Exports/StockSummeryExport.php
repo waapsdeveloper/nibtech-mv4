@@ -156,8 +156,6 @@ class StockSummeryExport
         $pdf = new TCPDF();
         $pdf->SetMargins(10, 10, 10);
 
-        // Add a new page
-        $pdf->AddPage();
         // $pdf->setPrintHeader(false);
         // $pdf->SetFooterMargin(0);
         // $pdf->setPrintFooter(false);
@@ -169,11 +167,14 @@ class StockSummeryExport
         foreach($result as $category => $cat){
             // Add heading cell at the top center
             foreach($cat as $brand => $datas){
-                $pdf->Cell(0, 5, $categories[$category] . " - " . $brands[$brand], 0, 1, 'C');
+                // Add a new page
+                $pdf->AddPage();
+                $pdf->SetFont('times', 'B', 12);
+                $pdf->Cell(0, 15, $categories[$category] . " - " . $brands[$brand], 0, 1, 'C');
                 $pdf->SetAutoPageBreak(TRUE, 15);
                 // Set font
-                $pdf->SetFont('times', 'B', 12);
 
+                $pdf->SetFont('times', 'B', 10);
                 // Add headings
                 $pdf->Cell(8, 0, 'No');
                 $pdf->Cell(80, 0, 'Model');
@@ -206,9 +207,6 @@ class StockSummeryExport
                     $pdf->Cell(15, 0, number_format($data['graded_average_cost'][5] ?? null,2), 1);
 
                 }
-
-
-                $pdf->AddPage();
             }
         }
         // Output PDF to the browser
