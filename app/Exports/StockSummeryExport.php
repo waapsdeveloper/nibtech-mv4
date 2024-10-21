@@ -178,7 +178,7 @@ class StockSummeryExport
                 // Add headings
                 $pdf->Cell(8, 0, 'No');
                 $pdf->Cell(80, 0, 'Model');
-                $pdf->Cell(18, 0, 'Count');
+                $pdf->Cell(12, 0, 'Count');
                 $pdf->Cell(18, 0, 'Average');
                 $pdf->Cell(18, 0, 'Premium');
                 $pdf->Cell(18, 0, 'Very Good');
@@ -199,7 +199,7 @@ class StockSummeryExport
                     $pdf->Cell(8, 0, $i, 1);
                     $variationName = $this->ellipsize($data['model'], 60);
                     $pdf->Cell(80, 0, $variationName, 1);
-                    $pdf->Cell(18, 0, $data['stock_count'], 1);
+                    $pdf->Cell(12, 0, $data['stock_count'], 1);
                     $pdf->Cell(18, 0, number_format($data['average_cost'],2), 1);
                     $pdf->Cell(18, 0, number_format($data['graded_average_cost'][1] ?? null,2), 1);
                     $pdf->Cell(18, 0, number_format($data['graded_average_cost'][2] ?? null,2), 1);
