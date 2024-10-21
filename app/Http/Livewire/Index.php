@@ -909,6 +909,7 @@ class Index extends Component
                     }
                     echo '</tr>';
                 }
+                echo '</table>';
 
 
             }
