@@ -836,13 +836,13 @@ fetch(`{{ url('purchase') }}/purchase_model_graded_count/${orderId}/${productId}
             const productDiv = document.createElement('tr');
 
             const productLink = document.createElement('td');
-            productLink.innerHTML = `${product.model}`;
+            productLink.innerHTML = `${product.grade}`;
 
-            // Check if the product matches the selected product from the request
-            if (product.id == selectedProductId) {
-                productLink.classList.add('active'); // Add 'active' class to highlight the selected product
-            }
             productDiv.appendChild(productLink);
+            const productLink2 = document.createElement('td');
+            productLink2.innerHTML = `${product.quantity}`;
+
+            productDiv.appendChild(productLink2);
 
             productMenu.appendChild(productDiv);
         });
