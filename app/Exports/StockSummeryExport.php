@@ -107,7 +107,6 @@ class StockSummeryExport
                     $pdf->Ln();
                     // Set line style for all borders
                     $pdf->SetLineStyle(['width' => 0.1, 'color' => [0, 0, 0]]);
-                    // $pdf->Cell(110, 10, $order->name, 1);
                     // Add Product Name (ellipsize to fit within 110)
                     $pdf->MultiCell(8, 0, $i, 1, 'L', false, 0, '', '', true, 0, false, true, 0, 'T', true);
                     $pdf->MultiCell(80, 0, $data['model'], 1, 'L', false, 0, '', '', true, 0, false, true, 0, 'T', true);
@@ -117,7 +116,6 @@ class StockSummeryExport
                     $pdf->MultiCell(18, 0, $this->bold($data['graded_average_cost'][2] ?? 0), 1, 'C', false, 0, '', '', true);
                     $pdf->MultiCell(18, 0, $this->bold($data['graded_average_cost'][3] ?? 0), 1, 'C', false, 0, '', '', true);
                     $pdf->MultiCell(18, 0, $this->bold($data['graded_average_cost'][5] ?? 0), 1, 'C', false, 0, '', '', true);
-
                 }
             }
         }
