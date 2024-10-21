@@ -350,7 +350,7 @@
                                         if (key in product.available_storages) {} else {
                                             storageRadio.disabled = true;
                                         }
-                                        result = Object.keys(product.available_storages).map((ky) => [product.available_storages[ky]]);
+                                        result = Object.keys(product.available_storages).map((ky) => product.available_storages[ky]);
 
                                         console.log(result);
                                         const storageLabel = document.createElement('label');
