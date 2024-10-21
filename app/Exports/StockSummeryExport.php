@@ -201,10 +201,10 @@ class StockSummeryExport
                     $pdf->Cell(80, 0, $variationName, 1);
                     $pdf->Cell(12, 0, $data['stock_count'], 1, 0, 'C');
                     $pdf->Cell(18, 0, number_format($data['average_cost'],2), 1, 0, 'C');
-                    $pdf->Cell(18, 0, $this->bold($data['graded_average_cost'][1]), 1, 0, 'C');
-                    $pdf->Cell(18, 0, $this->bold($data['graded_average_cost'][2]), 1, 0, 'C');
-                    $pdf->Cell(18, 0, $this->bold($data['graded_average_cost'][3]), 1, 0, 'C');
-                    $pdf->Cell(18, 0, $this->bold($data['graded_average_cost'][5]), 1, 0, 'C');
+                    $pdf->Cell(18, 0, $this->bold($data['graded_average_cost'][1] ?? 0), 1, 0, 'C');
+                    $pdf->Cell(18, 0, $this->bold($data['graded_average_cost'][2] ?? 0), 1, 0, 'C');
+                    $pdf->Cell(18, 0, $this->bold($data['graded_average_cost'][3] ?? 0), 1, 0, 'C');
+                    $pdf->Cell(18, 0, $this->bold($data['graded_average_cost'][5] ?? 0), 1, 0, 'C');
 
                 }
             }
@@ -222,7 +222,7 @@ class StockSummeryExport
     }
     // Custom function for ellipsizing text
     private function bold($text) {
-        if ($text) {
+        if ($text != 0) {
             $text = number_format($text,2);
         } else {
             $text = '-';
