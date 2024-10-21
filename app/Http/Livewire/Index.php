@@ -836,7 +836,7 @@ class Index extends Component
             $data['average_cost'] = 0;
             $data['graded_average_cost'] = [];
             $data['graded_stock_count'] = [];
-            foreach($pss->stocks as $stock){
+            foreach($pss->stocks->where('status',1) as $stock){
                 $variation = $stock->variation;
                 if(in_array($variation->grade, $grades)){
                     $purchase_item = $stock->order_items->where('order_id',$stock->order_id)->first();
