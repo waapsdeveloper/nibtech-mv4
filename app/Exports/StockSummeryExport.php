@@ -103,7 +103,7 @@ class StockSummeryExport
                 $pdf->SetFont('times', '', 12);
                 foreach($datas as $data) {
                     $i++;
-                    $pdf->Ln(); // Move to the next line
+                    // $pdf->Ln(); // Move to the next line
 
                     // Set line style for borders
                     $pdf->SetLineStyle(['width' => 0.1, 'color' => [0, 0, 0]]);
