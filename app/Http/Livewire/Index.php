@@ -827,7 +827,7 @@ class Index extends Component
         $grades = [1,2,3,4,5];
         $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q){
             $q->where('stock.status',1);
-        })->limit(10)->get();
+        })->get();
 
         $result = [];
         foreach($product_storage_sort as $pss){
