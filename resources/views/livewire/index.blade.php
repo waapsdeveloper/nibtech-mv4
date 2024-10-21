@@ -19,7 +19,7 @@
 						<span class="main-content-title mg-b-0 mg-b-lg-1">{{ __('locale.Dashboards') }}</span>
 						</div>
                         @if (session('user')->hasPermission('available_stock_cost_summery'))
-                            <a href="{{ url('index/stock_cost_summery') }}" target="_blank" class="btn btn-primary">Stock Cost Summery</a>
+                            <a href="{{ url('index/stock_cost_summery') }}" target="_blank" class="btn-sm btn-primary">Stock Cost Summery</a>
 
                         @endif
 						<div class="justify-content-center mt-2">
