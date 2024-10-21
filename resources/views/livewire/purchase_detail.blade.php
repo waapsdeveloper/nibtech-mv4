@@ -832,7 +832,7 @@ fetch(`{{ url('purchase') }}/purchase_model_graded_count/${orderId}/${productId}
         productMenu.innerHTML = ''; // Clear existing products
 
         // Iterate through the products and create menu items
-        for (const [key, product] of Object.entries(product)) {
+        for (const [key, product] of Object.entries(products)) {
             const productDiv = document.createElement('tr');
 
             const productLink = document.createElement('td');
