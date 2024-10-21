@@ -881,9 +881,9 @@ class Index extends Component
             $result[$product->category][$product->brand][] = $data;
         }
 
-        foreach($result as $category => $brands){
+        foreach($result as $category => $cat){
             echo $categories[$category].'<br>';
-            foreach($brands as $brand => $datas){
+            foreach($cat as $brand => $datas){
                 echo $brands[$brand].'<br>';
                 echo '<table border="1">';
                 echo '<tr>';
