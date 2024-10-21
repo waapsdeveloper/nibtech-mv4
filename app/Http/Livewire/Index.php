@@ -836,13 +836,12 @@ class Index extends Component
             $data['average_cost'] = 0;
             $data['graded_average_cost'] = [];
             $data['graded_stock_count'] = [];
-            dd($pss->stocks->where('status',1));
             foreach($pss->stocks->where('status',1) as $stock){
                 $variation = $stock->variation;
                 if(in_array($variation->grade, $grades)){
                     $purchase_item = $stock->order_items->where('order_id',$stock->order_id)->first();
                     if($purchase_item == null){
-                        continue;
+                        print_r($stock);
                     }
                     $data['average_cost'] += $purchase_item->price;
                     $data['stock_count']++;
