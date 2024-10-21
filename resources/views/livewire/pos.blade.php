@@ -324,9 +324,11 @@
                                     storageRadio.id = `storage_option`;
                                     storageRadio.value = '';
                                     storageRadio.dataset.name = '';
-                                    storageRadio.checked = true;
                                     storageRadio.className = 'btn-check';
                                     storageRadio.onclick = () => loadProductDetails(productId);
+                                    if (product.selected_storage == null) {
+                                        storageRadio.checked = true;
+                                    }
 
                                     const storageLabel = document.createElement('label');
                                     storageLabel.htmlFor = `storage_option`;
@@ -346,6 +348,9 @@
                                         storageRadio.dataset.name = value;
                                         storageRadio.className = 'btn-check';
                                         storageRadio.onclick = () => loadProductDetails(productId);
+                                        if (product.selected_storage == key) {
+                                            storageRadio.checked = true;
+                                        }
 
                                         const storageLabel = document.createElement('label');
                                         storageLabel.htmlFor = `storage_option_${key}`;
@@ -365,9 +370,11 @@
                                     colorRadio.id = `color_option`;
                                     colorRadio.value = '';
                                     colorRadio.dataset.name = '';
-                                    colorRadio.checked = true;
                                     colorRadio.className = 'btn-check';
                                     colorRadio.onclick = () => loadProductDetails(productId);
+                                    if (product.selected_color == null) {
+                                        colorRadio.checked = true;
+                                    }
 
                                     const colorLabel = document.createElement('label');
                                     colorLabel.htmlFor = `color_option`;
@@ -387,6 +394,9 @@
                                         colorRadio.dataset.name = value;
                                         colorRadio.className = 'btn-check';
                                         colorRadio.onclick = () => loadProductDetails(productId);
+                                        if (product.selected_color == key) {
+                                            colorRadio.checked = true;
+                                        }
 
                                         const colorLabel = document.createElement('label');
                                         colorLabel.htmlFor = `color_option_${key}`;
@@ -396,6 +406,53 @@
 
                                         colorOptions.appendChild(colorRadio);
                                         colorOptions.appendChild(colorLabel);
+                                    }
+
+
+                                    const gradeOptions = document.getElementById('grade_options');
+                                    gradeOptions.innerHTML = ''; // Clear existing options
+                                    const gradeRadio = document.createElement('input');
+                                    gradeRadio.type = 'radio';
+                                    gradeRadio.name = 'grade';
+                                    gradeRadio.id = `grade_option`;
+                                    gradeRadio.value = '';
+                                    gradeRadio.dataset.name = '';
+                                    gradeRadio.className = 'btn-check';
+                                    gradeRadio.onclick = () => loadProductDetails(productId);
+                                    if (product.selected_grade == null) {
+                                        gradeRadio.checked = true;
+                                    }
+
+                                    const gradeLabel = document.createElement('label');
+                                    gradeLabel.htmlFor = `grade_option`;
+                                    gradeLabel.className = 'btn btn-sm btn-outline-dark m-0';
+                                    gradeLabel.innerHTML = 'grade:';
+
+
+                                    gradeOptions.appendChild(gradeRadio);
+                                    gradeOptions.appendChild(gradeLabel);
+
+                                    for (const [key, value] of Object.entries(product.grades)) {
+                                        const gradeRadio = document.createElement('input');
+                                        gradeRadio.type = 'radio';
+                                        gradeRadio.name = 'grade';
+                                        gradeRadio.id = `grade_option_${key}`;
+                                        gradeRadio.value = key;
+                                        gradeRadio.dataset.name = value;
+                                        gradeRadio.className = 'btn-check';
+                                        gradeRadio.onclick = () => loadProductDetails(productId);
+                                        if (product.selected_grade == key) {
+                                            gradeRadio.checked = true;
+                                        }
+
+                                        const gradeLabel = document.createElement('label');
+                                        gradeLabel.htmlFor = `grade_option_${key}`;
+                                        gradeLabel.className = 'btn btn-sm btn-outline-dark m-0';
+                                        gradeLabel.innerHTML = value;
+
+
+                                        gradeOptions.appendChild(gradeRadio);
+                                        gradeOptions.appendChild(gradeLabel);
                                     }
 
 

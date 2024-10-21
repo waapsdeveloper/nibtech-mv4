@@ -893,9 +893,11 @@ class Wholesale extends Component
         $colors = Color_model::whereIn('id',$variations->pluck('color'))->pluck('name','id');
         $grades = Grade_model::whereIn('id',$variations->pluck('grade'))->pluck('name','id');
 
+        $selected_storage = request('storage') ?? null;
+        $selected_color = request('color') ?? null;
+        $selected_grade = request('grade') ?? null;
 
-
-        return response()->json(['variations'=>$variations, 'storages'=>$storages, 'colors'=>$colors, 'grades'=>$grades]);
+        return response()->json(['variations'=>$variations, 'storages'=>$storages, 'colors'=>$colors, 'grades'=>$grades, 'selected_storage'=>$selected_storage, 'selected_color'=>$selected_color, 'selected_grade'=>$selected_grade]);
     }
 
 
