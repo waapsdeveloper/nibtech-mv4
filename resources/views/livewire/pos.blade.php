@@ -195,7 +195,7 @@
                             <input type="radio" class="btn-check" name="color" id="color_option0" value="" data-name="" checked autocomplete="off" onclick="loadProductDetails($('#product_id').val())">
                             <label class="btn btn-sm btn-outline-dark m-0" for="color_option0">Color:</label>
                         </div>
-                        <div id="grade_option" class="my-3">
+                        <div id="grade_options" class="my-3">
                             <input type="radio" class="btn-check" name="grade" id="grade_option0" value="" data-name="" checked autocomplete="off" onclick="loadProductDetails($('#product_id').val())">
                             <label class="btn btn-sm btn-outline-dark m-0" for="grade_option0">Grade:</label>
                         </div>
