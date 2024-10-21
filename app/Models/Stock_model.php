@@ -25,6 +25,11 @@ class Stock_model extends Model
     {
         return $this->belongsTo(Variation_model::class, 'variation_id', 'id');
     }
+    public function product_storage_sort()
+    {
+        return $this->belongsToMany(Product_storage_sort_model::class);
+    }
+
     public function admin()
     {
         return $this->hasOne(Admin_model::class, 'id', 'added_by');
