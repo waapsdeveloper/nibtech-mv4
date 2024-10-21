@@ -840,27 +840,27 @@ class Index extends Component
             $data['graded_average_cost'] = [];
             $data['graded_stock_count'] = [];
 
-            print_r($pss->stocks->where('status',1));
-            // foreach($pss->stocks->where('status',1) as $stock){
-            //     $variation = $stock->variation;
-            //     if(in_array($variation->grade, $grades)){
-            //         $purchase_item = $stock->order_items->where('order_id',$stock->order_id)->first();
-            //         if($purchase_item == null){
-            //             echo 'Purchase item not found for stock id: '.$stock->id;
-            //             continue;
-            //         }
-            //         $data['average_cost'] += $purchase_item->price;
-            //         $data['stock_count']++;
-            //         if(!isset($data['graded_average_cost'][$variation->grade])){
-            //             $data['graded_average_cost'][$variation->grade] = 0;
-            //         }
-            //         if(!isset($data['graded_stock_count'][$variation->grade])){
-            //             $data['graded_stock_count'][$variation->grade] = 0;
-            //         }
-            //         $data['graded_average_cost'][$variation->grade] += $purchase_item->price;
-            //         $data['graded_stock_count'][$variation->grade]++;
-            //     }
-            // }
+            // print_r($pss->stocks->where('status',1));
+            foreach($pss->stocks->where('status',1) as $stock){
+                $variation = $stock->variation;
+                if(in_array($variation->grade, $grades)){
+                    $purchase_item = $stock->order_items->where('order_id',$stock->order_id)->first();
+                    if($purchase_item == null){
+                        echo 'Purchase item not found for stock id: '.$stock->id;
+                        continue;
+                    }
+                    $data['average_cost'] += $purchase_item->price;
+                    $data['stock_count']++;
+                    if(!isset($data['graded_average_cost'][$variation->grade])){
+                        $data['graded_average_cost'][$variation->grade] = 0;
+                    }
+                    if(!isset($data['graded_stock_count'][$variation->grade])){
+                        $data['graded_stock_count'][$variation->grade] = 0;
+                    }
+                    $data['graded_average_cost'][$variation->grade] += $purchase_item->price;
+                    $data['graded_stock_count'][$variation->grade]++;
+                }
+            }
             // $data['average_cost'] = $data['average_cost']/$data['stock_count'];
             // foreach($grades as $grade){
             //     if(!isset($data['graded_average_cost'][$grade])){
