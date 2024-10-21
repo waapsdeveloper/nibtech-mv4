@@ -348,7 +348,7 @@
                                             storageRadio.checked = true;
                                         }
                                         result = Object.keys(product.available_storages).map((ky) => product.available_storages[ky]);
-                                        if (key in result) {} else {
+                                        if (result.contains(key)) {} else {
                                             storageRadio.disabled = true;
                                         }
 
