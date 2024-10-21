@@ -446,7 +446,7 @@
                                         if (product.selected_grade == key) {
                                             gradeRadio.checked = true;
                                         }
-                                        if (product.available_grades.includes(key)) {} else {
+                                        if (key in product.available_grades) {} else {
                                             gradeRadio.disabled = true;
                                         }
 
