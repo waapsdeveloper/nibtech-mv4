@@ -347,7 +347,7 @@
                                         if (product.selected_storage == key) {
                                             storageRadio.checked = true;
                                         }
-                                        product.available_storages.forEach(storage => {
+                                        product.available_storages.json().forEach(storage => {
                                             if (key == storage) {
                                                 storageRadio.disabled = false;
                                             }
