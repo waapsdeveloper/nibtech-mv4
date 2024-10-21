@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Exports\StockSummeryExport;
 use App\Http\Controllers\BackMarketAPIController;
 use App\Models\Admin_model;
 use App\Models\Brand_model;
@@ -821,99 +822,102 @@ class Index extends Component
     }
 
     public function stock_cost_summery(){
-        ini_set('max_execution_time', 1200);
-        ini_set('memory_limit', '2048M');
 
-        $grades = [1,2,3,4,5];
+        $pdf = new StockSummeryExport();
+        $pdf->generatePdf();
 
-        $categories = Category_model::pluck('name','id');
-        $brands = Brand_model::pluck('name','id');
-        $grade_names = Grade_model::whereIn('id', $grades)->pluck('name','id');
-        $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q){
-            $q->where('stock.status',1);
-        })->orderBy('product_id')->orderBy('storage')->get();
+        // ini_set('max_execution_time', 1200);
+        // ini_set('memory_limit', '2048M');
 
-        $result = [];
-        foreach($product_storage_sort as $pss){
-            $product = $pss->product;
-            $storage = $pss->storage_id->name ?? null;
-            $data = [];
-            $data['model'] = $product->model.' '.$storage;
-            $data['stock_count'] = 0;
-            $data['average_cost'] = 0;
-            $data['graded_average_cost'] = [];
-            $data['graded_stock_count'] = [];
+        // $grades = [1,2,3,4,5];
 
-            // print_r($pss->stocks->where('status',1));
-            foreach($pss->stocks->where('status',1) as $stock){
-                $variation = $stock->variation;
-                if(in_array($variation->grade, $grades)){
-                    $purchase_item = $stock->order_items->where('order_id',$stock->order_id)->first();
-                    if($purchase_item == null){
-                        echo 'Purchase item not found for stock id: '.$stock->id;
-                        continue;
-                    }
-                    $data['average_cost'] += $purchase_item->price;
-                    $data['stock_count']++;
-                    if(!isset($data['graded_average_cost'][$variation->grade])){
-                        $data['graded_average_cost'][$variation->grade] = 0;
-                    }
-                    if(!isset($data['graded_stock_count'][$variation->grade])){
-                        $data['graded_stock_count'][$variation->grade] = 0;
-                    }
-                    $data['graded_average_cost'][$variation->grade] += $purchase_item->price;
-                    $data['graded_stock_count'][$variation->grade]++;
-                }
-            }
-            if($data['stock_count'] == 0){
-                continue;
-            }
-            $data['average_cost'] = $data['average_cost']/$data['stock_count'];
-            foreach($grades as $grade){
-                if(!isset($data['graded_average_cost'][$grade])){
-                    continue;
-                }
-                if(!isset($data['graded_stock_count'][$grade])){
-                    continue;
-                }
-                $data['graded_average_cost'][$grade] = $data['graded_average_cost'][$grade]/$data['graded_stock_count'][$grade];
-            }
-            $result[$product->category][$product->brand][] = $data;
-        }
+        // $categories = Category_model::pluck('name','id');
+        // $brands = Brand_model::pluck('name','id');
+        // $grade_names = Grade_model::whereIn('id', $grades)->pluck('name','id');
+        // $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q){
+        //     $q->where('stock.status',1);
+        // })->orderBy('product_id')->orderBy('storage')->get();
 
-        foreach($result as $category => $cat){
-            echo $categories[$category].'<br>';
-            foreach($cat as $brand => $datas){
-                echo $brands[$brand].'<br>';
-                echo '<table border="1">';
-                echo '<tr>';
-                echo '<th>Model</th>';
-                echo '<th>Count</th>';
-                echo '<th>Average Cost</th>';
-                foreach($grade_names as $id => $grade){
-                    echo '<th>'.$grade.'</th>';
-                }
-                echo '</tr>';
+        // $result = [];
+        // foreach($product_storage_sort as $pss){
+        //     $product = $pss->product;
+        //     $storage = $pss->storage_id->name ?? null;
+        //     $data = [];
+        //     $data['model'] = $product->model.' '.$storage;
+        //     $data['stock_count'] = 0;
+        //     $data['average_cost'] = 0;
+        //     $data['graded_average_cost'] = [];
+        //     $data['graded_stock_count'] = [];
 
-                foreach($datas as $data){
-                    echo '<tr>';
-                    echo '<td>'.$data['model'].'</td>';
-                    echo '<td style="text-align:center;">'.$data['stock_count'].'</td>';
-                    echo '<td style="text-align:center;">'.number_format($data['average_cost'],2).'</td>';
-                    foreach($grade_names as $id => $grade){
-                        if(isset($data['graded_average_cost'][$id])){
-                            echo '<td style="text-align:center;">'.number_format($data['graded_average_cost'][$id],2).'</td>';
-                        }else{
-                            echo '<td style="text-align:center;">0</td>';
-                        }
-                    }
-                    echo '</tr>';
-                }
-                echo '</table>';
+        //     // print_r($pss->stocks->where('status',1));
+        //     foreach($pss->stocks->where('status',1) as $stock){
+        //         $variation = $stock->variation;
+        //         if(in_array($variation->grade, $grades)){
+        //             $purchase_item = $stock->order_items->where('order_id',$stock->order_id)->first();
+        //             if($purchase_item == null){
+        //                 echo 'Purchase item not found for stock id: '.$stock->id;
+        //                 continue;
+        //             }
+        //             $data['average_cost'] += $purchase_item->price;
+        //             $data['stock_count']++;
+        //             if(!isset($data['graded_average_cost'][$variation->grade])){
+        //                 $data['graded_average_cost'][$variation->grade] = 0;
+        //             }
+        //             if(!isset($data['graded_stock_count'][$variation->grade])){
+        //                 $data['graded_stock_count'][$variation->grade] = 0;
+        //             }
+        //             $data['graded_average_cost'][$variation->grade] += $purchase_item->price;
+        //             $data['graded_stock_count'][$variation->grade]++;
+        //         }
+        //     }
+        //     if($data['stock_count'] == 0){
+        //         continue;
+        //     }
+        //     $data['average_cost'] = $data['average_cost']/$data['stock_count'];
+        //     foreach($grades as $grade){
+        //         if(!isset($data['graded_average_cost'][$grade])){
+        //             continue;
+        //         }
+        //         if(!isset($data['graded_stock_count'][$grade])){
+        //             continue;
+        //         }
+        //         $data['graded_average_cost'][$grade] = $data['graded_average_cost'][$grade]/$data['graded_stock_count'][$grade];
+        //     }
+        //     $result[$product->category][$product->brand][] = $data;
+        // }
+        // foreach($result as $category => $cat){
+        //     echo $categories[$category].'<br>';
+        //     foreach($cat as $brand => $datas){
+        //         echo $brands[$brand].'<br>';
+        //         echo '<table border="1">';
+        //         echo '<tr>';
+        //         echo '<th>Model</th>';
+        //         echo '<th>Count</th>';
+        //         echo '<th>Average Cost</th>';
+        //         foreach($grade_names as $id => $grade){
+        //             echo '<th>'.$grade.'</th>';
+        //         }
+        //         echo '</tr>';
+
+        //         foreach($datas as $data){
+        //             echo '<tr>';
+        //             echo '<td>'.$data['model'].'</td>';
+        //             echo '<td style="text-align:center;">'.$data['stock_count'].'</td>';
+        //             echo '<td style="text-align:center;">'.number_format($data['average_cost'],2).'</td>';
+        //             foreach($grade_names as $id => $grade){
+        //                 if(isset($data['graded_average_cost'][$id])){
+        //                     echo '<td style="text-align:center;">'.number_format($data['graded_average_cost'][$id],2).'</td>';
+        //                 }else{
+        //                     echo '<td style="text-align:center;">0</td>';
+        //                 }
+        //             }
+        //             echo '</tr>';
+        //         }
+        //         echo '</table>';
 
 
-            }
-        }
+        //     }
+        // }
     }
 
     public function test(){
