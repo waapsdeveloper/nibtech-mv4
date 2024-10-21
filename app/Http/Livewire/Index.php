@@ -877,7 +877,7 @@ class Index extends Component
             $result[$product->category][$product->brand] = $data;
         }
 
-        return $result;
+        print_r($result);
     }
 
     public function test(){
