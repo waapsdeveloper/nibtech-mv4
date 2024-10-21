@@ -178,7 +178,7 @@ class StockSummeryExport
                 // Add headings
                 $pdf->Cell(8, 0, 'No');
                 $pdf->Cell(80, 0, 'Model');
-                $pdf->Cell(25, 0, 'Count');
+                $pdf->Cell(15, 0, 'Count');
                 $pdf->Cell(15, 0, 'Average');
                 $pdf->Cell(15, 0, 'Premium');
                 $pdf->Cell(15, 0, 'Very Good');
