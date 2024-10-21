@@ -347,13 +347,10 @@
                                         if (product.selected_storage == key) {
                                             storageRadio.checked = true;
                                         }
-                                        product.available_storages.json().forEach(storage => {
-                                            if (key == storage) {
-                                                storageRadio.disabled = false;
-                                            }
-                                        });
+                                        if (key in product.available_storages) {} else {
+                                            storageRadio.disabled = true;
+                                        }
 
-                                        console.log(typeof result);
                                         const storageLabel = document.createElement('label');
                                         storageLabel.htmlFor = `storage_option_${key}`;
                                         storageLabel.className = 'btn btn-sm btn-outline-dark m-0';
@@ -399,11 +396,9 @@
                                         if (product.selected_color == key) {
                                             colorRadio.checked = true;
                                         }
-                                        product.available_colors.forEach(color => {
-                                            if (key == color) {
-                                                colorRadio.disabled = false;
-                                            }
-                                        });
+                                        if (key in product.available_colors) {} else {
+                                            colorRadio.disabled = true;
+                                        }
 
                                         const colorLabel = document.createElement('label');
                                         colorLabel.htmlFor = `color_option_${key}`;
@@ -451,11 +446,7 @@
                                         if (product.selected_grade == key) {
                                             gradeRadio.checked = true;
                                         }
-                                        product.available_grades.forEach(grade => {
-                                            if (key == grade) {
-                                                gradeRadio.disabled = false;
-                                            }
-                                        });
+
 
                                         const gradeLabel = document.createElement('label');
                                         gradeLabel.htmlFor = `grade_option_${key}`;
@@ -468,7 +459,7 @@
                                     }
 
 
-                                    console.log(product);
+
                                 // <input type="radio" class="btn-check" name="category" id="option{{$id}}" autocomplete="off" onclick="selectCategory({{ $id }})">
                                 // <label class="btn btn-outline-dark m-0" for="option{{$id}}">{!! $name !!}</label>
 
