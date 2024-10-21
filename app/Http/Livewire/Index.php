@@ -840,6 +840,9 @@ class Index extends Component
                 $variation = $stock->variation;
                 if(in_array($variation->grade, $grades)){
                     $purchase_item = $stock->order_items->where('order_id',$stock->order_id)->first();
+                    if($purchase_item == null){
+                        continue;
+                    }
                     $data['average_cost'] += $purchase_item->price;
                     $data['stock_count']++;
                     if(!isset($data['graded_average_cost'][$variation->grade])){
