@@ -197,14 +197,14 @@ class StockSummeryExport
                     // $pdf->Cell(110, 10, $order->name, 1);
                     // Add Product Name (ellipsize to fit within 110)
                     $pdf->Cell(8, 0, $i, 1);
-                    $variationName = $this->ellipsize($data['model'], 60);
+                    $variationName = $this->ellipsize($data['model'], 50);
                     $pdf->Cell(80, 0, $variationName, 1);
-                    $pdf->Cell(12, 0, $data['stock_count'], 1);
-                    $pdf->Cell(18, 0, number_format($data['average_cost'],2), 1);
-                    $pdf->Cell(18, 0, number_format($data['graded_average_cost'][1] ?? null,2), 1);
-                    $pdf->Cell(18, 0, number_format($data['graded_average_cost'][2] ?? null,2), 1);
-                    $pdf->Cell(18, 0, number_format($data['graded_average_cost'][3] ?? null,2), 1);
-                    $pdf->Cell(18, 0, number_format($data['graded_average_cost'][5] ?? null,2), 1);
+                    $pdf->Cell(12, 0, $data['stock_count'], 1, 0, 'C');
+                    $pdf->Cell(18, 0, number_format($data['average_cost'],2), 1, 0, 'C');
+                    $pdf->Cell(18, 0, number_format($data['graded_average_cost'][1] ?? null,2), 1, 0, 'C');
+                    $pdf->Cell(18, 0, number_format($data['graded_average_cost'][2] ?? null,2), 1, 0, 'C');
+                    $pdf->Cell(18, 0, number_format($data['graded_average_cost'][3] ?? null,2), 1, 0, 'C');
+                    $pdf->Cell(18, 0, number_format($data['graded_average_cost'][5] ?? null,2), 1, 0, 'C');
 
                 }
             }
