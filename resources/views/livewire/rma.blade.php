@@ -145,6 +145,7 @@
                                     <tr>
                                         <th><small><b>No</b></small></th>
                                         <th><small><b>Order ID</b></small></th>
+                                        <th><small><b>Reference</b></small></th>
                                         <th><small><b>Vendor</b></small></th>
                                         @if (session('user')->hasPermission('view_cost'))
                                         <th><small><b>Cost</b></small></th>
@@ -172,8 +173,9 @@
 
                                         {{-- @foreach ($items as $itemIndex => $item) --}}
                                             <tr>
-                                                    <td>{{ $i + 1 }}</td>
-                                                    <td><a href="{{url('rma/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                <td>{{ $i + 1 }}</td>
+                                                <td><a href="{{url('rma/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                <td>{{ $order->reference }}</td>
                                                 <td>{{ $vendors[$order->customer_id] }}</td>
                                                 @if (session('user')->hasPermission('view_cost'))
                                                 <td>€{{ amount_formatter($order->order_items->sum('price'),2) }}</td>
