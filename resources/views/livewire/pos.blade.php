@@ -396,6 +396,9 @@
                                         if (product.selected_color == key) {
                                             colorRadio.checked = true;
                                         }
+                                        if (key in product.available_colors) {} else {
+                                            colorRadio.disabled = true;
+                                        }
 
                                         const colorLabel = document.createElement('label');
                                         colorLabel.htmlFor = `color_option_${key}`;
@@ -442,6 +445,9 @@
                                         gradeRadio.onclick = () => loadProductDetails(productId, 'grade');
                                         if (product.selected_grade == key) {
                                             gradeRadio.checked = true;
+                                        }
+                                        if (key in product.available_grades) {} else {
+                                            gradeRadio.disabled = true;
                                         }
 
                                         const gradeLabel = document.createElement('label');
