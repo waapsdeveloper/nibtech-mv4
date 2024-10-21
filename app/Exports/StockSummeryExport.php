@@ -200,14 +200,15 @@ class StockSummeryExport
                     $pdf->Cell(80, 0, $variationName, 1);
                     $pdf->Cell(15, 0, $data['stock_count'], 1);
                     $pdf->Cell(15, 0, number_format($data['average_cost'],2), 1);
-                    $pdf->Cell(15, 0, number_format($data['graded_average_cost'][1] ?? 0,2), 1);
-                    $pdf->Cell(15, 0, number_format($data['graded_average_cost'][2] ?? 0,2), 1);
-                    $pdf->Cell(15, 0, number_format($data['graded_average_cost'][3] ?? 0,2), 1);
-                    $pdf->Cell(15, 0, number_format($data['graded_average_cost'][5] ?? 0,2), 1);
+                    $pdf->Cell(15, 0, number_format($data['graded_average_cost'][1] ?? null,2), 1);
+                    $pdf->Cell(15, 0, number_format($data['graded_average_cost'][2] ?? null,2), 1);
+                    $pdf->Cell(15, 0, number_format($data['graded_average_cost'][3] ?? null,2), 1);
+                    $pdf->Cell(15, 0, number_format($data['graded_average_cost'][5] ?? null,2), 1);
 
                 }
 
 
+                $pdf->AddPage();
             }
         }
         // Output PDF to the browser
