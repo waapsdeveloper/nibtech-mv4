@@ -855,16 +855,16 @@ class Index extends Component
                     $data['graded_stock_count'][$variation->grade]++;
                 }
             }
-            $data['average_cost'] = $data['average_cost']/$data['stock_count'];
-            foreach($grades as $grade){
-                if(!isset($data['graded_average_cost'][$grade])){
-                    continue;
-                }
-                if(!isset($data['graded_stock_count'][$grade])){
-                    continue;
-                }
-                $data['graded_average_cost'][$grade] = $data['graded_average_cost'][$grade]/$data['graded_stock_count'][$grade];
-            }
+            // $data['average_cost'] = $data['average_cost']/$data['stock_count'];
+            // foreach($grades as $grade){
+            //     if(!isset($data['graded_average_cost'][$grade])){
+            //         continue;
+            //     }
+            //     if(!isset($data['graded_stock_count'][$grade])){
+            //         continue;
+            //     }
+            //     $data['graded_average_cost'][$grade] = $data['graded_average_cost'][$grade]/$data['graded_stock_count'][$grade];
+            // }
             $result[$product->category][$product->brand] = $data;
         }
 
