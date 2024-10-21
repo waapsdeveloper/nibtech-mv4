@@ -350,6 +350,7 @@ class RMA extends Component
                 echo "<input type='hidden' name='_token' value='" . csrf_token() . "'>";
                 echo "<input type='hidden' name='order_id' value='" . $order_id . "'>";
                 echo "<input type='hidden' name='imei' value='" . request('imei') . "'>";
+                echo "<input type='hidden' name='rma_reason' value='" . request('rma_reason') . "'>";
                 echo "</form>";
                 echo "<a href='javascript:history.back()'>Cancel</a> ";
                 echo "<button onclick='submitForm()'>Continue</button>";
@@ -402,9 +403,6 @@ class RMA extends Component
         }
         if(!request('rma_reason')){
             session()->forget('rma_reason');
-        }
-        if(request('rma_reason')){
-            dd(request('rma_reason'));
         }
         if(ctype_digit(request('imei'))){
             $i = request('imei');
