@@ -888,7 +888,7 @@ class Index extends Component
                 echo '<table border="1">';
                 echo '<tr>';
                 echo '<th>Model</th>';
-                echo '<th>Stock Count</th>';
+                echo '<th>Count</th>';
                 echo '<th>Average Cost</th>';
                 foreach($grade_names as $id => $grade){
                     echo '<th>'.$grade.'</th>';
@@ -898,13 +898,13 @@ class Index extends Component
                 foreach($datas as $data){
                     echo '<tr>';
                     echo '<td>'.$data['model'].'</td>';
-                    echo '<td>'.$data['stock_count'].'</td>';
-                    echo '<td>'.number_format($data['average_cost'],2).'</td>';
+                    echo '<td style="text-align:center;">'.$data['stock_count'].'</td>';
+                    echo '<td style="text-align:center;">'.number_format($data['average_cost'],2).'</td>';
                     foreach($grade_names as $id => $grade){
                         if(isset($data['graded_average_cost'][$id])){
-                            echo '<td>'.number_format($data['graded_average_cost'][$id],2).'</td>';
+                            echo '<td style="text-align:center;">'.number_format($data['graded_average_cost'][$id],2).'</td>';
                         }else{
-                            echo '<td>0</td>';
+                            echo '<td style="text-align:center;">0</td>';
                         }
                     }
                     echo '</tr>';
