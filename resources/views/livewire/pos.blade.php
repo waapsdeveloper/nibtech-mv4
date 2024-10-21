@@ -347,7 +347,7 @@
                                         if (product.selected_storage == key) {
                                             storageRadio.checked = true;
                                         }
-                                        result = Object.keys(product.available_storages).map((ky) => product.available_storages[ky]);
+                                        result = Array.keys(product.available_storages).map((ky) => product.available_storages[ky]);
                                         if (key in result) {} else {
                                             storageRadio.disabled = true;
                                         }
