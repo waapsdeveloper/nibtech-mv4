@@ -883,9 +883,8 @@ class Order extends Component
         $grades = Grade_model::pluck('name','id');
 
         foreach($grades as $grade_id => $grade){
-            $data['graded_count'][]['quantity'] = $stocks->whereHas('variation', function($q) use ($grade_id){
-                $q->where('grade',$grade_id);
-            })->count();
+            $graded_variations = $pss->variations->where('grade',$grade_id);
+            $data['graded_count'][]['quantity'] = $stocks->whereIn('variation_id',$graded_variations->pluck('id'))->count();
             $data['graded_count'][]['grade'] = $grade;
             $data['graded_count'][]['grade_id'] = $grade_id;
         }
