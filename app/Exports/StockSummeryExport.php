@@ -109,28 +109,14 @@ class StockSummeryExport
                     $pdf->SetLineStyle(['width' => 0.1, 'color' => [0, 0, 0]]);
 
                     // No column (serial number)
-                    $pdf->MultiCell(8, 0, $i, 1, 'L', false, 0, '', '', true, 0, false, true, 6, 'T', true);
-
-                    // Model Name (wraps text if too long)
-                    $pdf->MultiCell(80, 0, $data['model'], 1, 'L', false, 0, '', '', true, 0, false, true, 6, 'T', true);
-
-                    // Stock count
-                    $pdf->MultiCell(12, 0, $data['stock_count'], 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
-
-                    // Average cost
-                    $pdf->MultiCell(18, 0, number_format($data['average_cost'], 2), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
-
-                    // Premium Grade
-                    $pdf->MultiCell(18, 0, $this->bold($data['graded_average_cost'][1] ?? 0), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
-
-                    // Very Good Grade
-                    $pdf->MultiCell(18, 0, $this->bold($data['graded_average_cost'][2] ?? 0), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
-
-                    // Good Grade
-                    $pdf->MultiCell(18, 0, $this->bold($data['graded_average_cost'][3] ?? 0), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
-
-                    // Stallone Grade (Grade 5)
-                    $pdf->MultiCell(18, 0, $this->bold($data['graded_average_cost'][5] ?? 0), 1, 'C', false, 1, '', '', true, 0, false, true, 6, 'T', true);
+                    $pdf->MultiCell(8, 0, $i, 1, 'L', false, 0, '', '', true, 0, false, true, 4, 'T', true);
+                    $pdf->MultiCell(80, 0, $data['model'], 1, 'L', false, 0, '', '', true, 0, false, true, 4, 'T', true);
+                    $pdf->MultiCell(12, 0, $data['stock_count'], 1, 'C', false, 0, '', '', true, 0, false, true, 4, 'T', true);
+                    $pdf->MultiCell(18, 0, number_format($data['average_cost'], 2), 1, 'C', false, 0, '', '', true, 0, false, true, 4, 'T', true);
+                    $pdf->MultiCell(18, 0, $this->bold($data['graded_average_cost'][1] ?? 0), 1, 'C', false, 0, '', '', true, 0, false, true, 4, 'T', true);
+                    $pdf->MultiCell(18, 0, $this->bold($data['graded_average_cost'][2] ?? 0), 1, 'C', false, 0, '', '', true, 0, false, true, 4, 'T', true);
+                    $pdf->MultiCell(18, 0, $this->bold($data['graded_average_cost'][3] ?? 0), 1, 'C', false, 0, '', '', true, 0, false, true, 4, 'T', true);
+                    $pdf->MultiCell(18, 0, $this->bold($data['graded_average_cost'][5] ?? 0), 1, 'C', false, 1, '', '', true, 0, false, true, 4, 'T', true);
                 }
 
             }
