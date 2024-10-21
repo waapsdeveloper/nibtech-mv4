@@ -110,9 +110,7 @@ class StockSummeryExport
                     // $pdf->Cell(110, 10, $order->name, 1);
                     // Add Product Name (ellipsize to fit within 110)
                     $pdf->MultiCell(8, 0, $i, 1, 'L', false, 0, '', '', true, 0, false, true, 0, 'T', true);
-                    $variationName = $this->ellipsize($data['model'], 40);
-                    // $pdf->Cell(80, 0, $variationName, 1);
-                    $pdf->MultiCell(80, 0, $variationName, 1, 'L', false, 0, '', '', true, 0, false, true, 0, 'T', true);
+                    $pdf->MultiCell(80, 0, $data['model'], 1, 'L', false, 0, '', '', true, 0, false, true, 0, 'T', true);
                     $pdf->MultiCell(12, 0, $data['stock_count'], 1, 'C', false, 0, '', '', true, 0, false, true, 0, 'T', true);
                     $pdf->MultiCell(18, 0, number_format($data['average_cost'],2), 1, 'C', false, 0, '', '', true, 0, false, true, 0, 'T', true);
                     $pdf->MultiCell(18, 0, $this->bold($data['graded_average_cost'][1] ?? 0), 1, 'C', false, 0, '', '', true);
