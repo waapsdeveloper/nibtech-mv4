@@ -832,9 +832,9 @@ class Index extends Component
         $result = [];
         foreach($product_storage_sort as $pss){
             $product = $pss->product;
-            $storage = $pss->storage_id;
+            $storage = $pss->storage_id->name ?? null;
             $data = [];
-            $data['model'] = $product->model.' '.$storage->name;
+            $data['model'] = $product->model.' '.$storage;
             $data['stock_count'] = 0;
             $data['average_cost'] = 0;
             $data['graded_average_cost'] = [];
