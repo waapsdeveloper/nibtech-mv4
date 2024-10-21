@@ -98,6 +98,9 @@ class PickListExport
                     $q->where('imei', 'LIKE', '%' . request('imei') . '%');
                 });
             })
+            ->when(request('with_stock') == 2, function ($q) {
+                return $q->where('order_items.stock_id', 0);
+            })
             ->groupBy('variation.sku', 'products.model', 'variation.storage', 'variation.color', 'variation.grade', 'color.name', 'storage.name', 'grade.name')
             ->orderBy('products.model', 'ASC')
             // ->orderBy('storage.name', 'ASC')
