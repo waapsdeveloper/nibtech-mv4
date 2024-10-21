@@ -350,7 +350,9 @@
                                         if (key in product.available_storages) {} else {
                                             storageRadio.disabled = true;
                                         }
-                                        console.log(Object.entries(product.available_storages.values()));
+                                        result = Object.keys(product.available_storages).map((ky) => [ky, product.available_storages[ky]]);
+
+                                        console.log(result);
                                         const storageLabel = document.createElement('label');
                                         storageLabel.htmlFor = `storage_option_${key}`;
                                         storageLabel.className = 'btn btn-sm btn-outline-dark m-0';
