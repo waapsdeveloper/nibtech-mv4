@@ -824,8 +824,8 @@ function loadProductDetails(orderId, productId) {
 
 fetch(`{{ url('purchase') }}/purchase_model_graded_count/${orderId}/${productId}`)
     .then(response => response.json())
-    .then(product => {
-        console.log(product);
+    .then(products => {
+        console.log(products);
         // Render the product details
 
         const productMenu = document.getElementById('count_data');
