@@ -876,6 +876,21 @@ class Order extends Component
         return view('livewire.purchase_detail')->with($data);
 
     }
+
+    public function purchase_model_graded_count($order_id, $pss_id){
+        $pss = Product_storage_sort_model::find($pss_id);
+        $stocks = $pss->stocks->where('order_id',$order_id);
+
+        $data['graded_count'] = $stocks->select('grade.name as grade', 'variation.grade as grade_id', DB::raw('COUNT(*) as quantity'))
+        ->join('variation', 'stock.variation_id', '=', 'variation.id')
+        ->join('grade', 'variation.grade', '=', 'grade.id')
+        ->groupBy('variation.grade', 'grade.name')
+        ->orderBy('grade_id')
+        ->get();
+
+        return response()->json($data);
+    }
+
     public function add_purchase(){
 
         // dd(request('purchase'));

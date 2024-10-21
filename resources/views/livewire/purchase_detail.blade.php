@@ -822,34 +822,11 @@
 
 function loadProductDetails(orderId, productId) {
 
-fetch(`{{ url('purchase') }}/detail/count/${orderId}/${productId}`)
+fetch(`{{ url('purchase') }}/purchase_model_graded_count/${orderId}/${productId}`)
     .then(response => response.json())
     .then(product => {
-        // console.log(product);
+        console.log(product);
         // Render the product details
-
-        const gradeOptions = document.getElementById('grade_options');
-        gradeOptions.innerHTML = ''; // Clear existing options
-        const gradeRadio = document.createElement('input');
-        gradeRadio.type = 'radio';
-        gradeRadio.name = 'grade';
-        gradeRadio.id = `grade_option`;
-        gradeRadio.value = '';
-        gradeRadio.dataset.name = '';
-        gradeRadio.className = 'btn-check';
-        gradeRadio.onclick = () => loadProductDetails(productId);
-        if (product.selected_grade == null) {
-            gradeRadio.checked = true;
-        }
-
-        const gradeLabel = document.createElement('label');
-        gradeLabel.htmlFor = `grade_option`;
-        gradeLabel.className = 'btn btn-sm btn-outline-dark m-0';
-        gradeLabel.innerHTML = 'grade:';
-
-
-        gradeOptions.appendChild(gradeRadio);
-        gradeOptions.appendChild(gradeLabel);
 
         for (const [key, value] of Object.entries(product.grades)) {
             const gradeRadio = document.createElement('input');

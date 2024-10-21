@@ -84,6 +84,7 @@ Route::post('add_purchase_item/{id}', [Order::class,'add_purchase_item'])->name(
 Route::get('delete_order/{id}', [Order::class,'delete_order'])->name('delete_purchase');
 Route::get('delete_order_item/{id}', [Order::class,'delete_order_item'])->name('delete_purchase_item');
 Route::get('purchase/detail/{id}', [Order::class,'purchase_detail'])->name('purchase_detail');
+Route::get('purchase/purchase_model_graded_count/{order_id}/{pss_id}', [Order::class,'purchase_model_graded_count'])->name('purchase_detail');
 Route::post('purchase/approve/{id}', [Order::class,'purchase_approve'])->name('purchase_approve');
 Route::get('purchase/revert_status/{id}', [Order::class,'purchase_revert_status'])->name('purchase_revert_status');
 Route::post('purchase/remove_issues', [Order::class,'remove_issues'])->name('remove_purchase_issues');
