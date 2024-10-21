@@ -889,9 +889,9 @@ class Wholesale extends Component
         })
         ->get();
 
-        $available_storages = $variations->pluck('storage')->unique()->toArray();
-        $available_colors = $variations->pluck('color')->unique()->toArray();
-        $available_grades = $variations->pluck('grade')->unique()->toArray();
+        $available_storages = $variations->pluck('storage')->distinct()->toArray();
+        $available_colors = $variations->pluck('color')->distinct()->toArray();
+        $available_grades = $variations->pluck('grade')->distinct()->toArray();
 
         $all_variations = Variation_model::where('product_id',$product_id)->get();
 
