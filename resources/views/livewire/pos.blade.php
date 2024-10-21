@@ -348,11 +348,11 @@
                                             storageRadio.checked = true;
                                         }
                                         result = Object.keys(product.available_storages).map((ky) => product.available_storages[ky]);
-                                        if (result.contains(key)) {} else {
+                                        if (key in result) {} else {
                                             storageRadio.disabled = true;
                                         }
 
-                                        console.log(result);
+                                        console.log(typeof result);
                                         const storageLabel = document.createElement('label');
                                         storageLabel.htmlFor = `storage_option_${key}`;
                                         storageLabel.className = 'btn btn-sm btn-outline-dark m-0';
