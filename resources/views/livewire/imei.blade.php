@@ -111,18 +111,15 @@
         @if (isset($stock))
             <h5 class="mb-0"> <small>Current Variation:&nbsp;&nbsp;</small> {{ $stock->variation->product->model ?? "Variation Issue"}}{{" - " . (isset($stock->variation->storage_id)?$stock->variation->storage_id->name . " - " : null) . (isset($stock->variation->color_id)?$stock->variation->color_id->name. " - ":null)}} <strong><u>{{ $stock->variation->grade_id->name ?? null }}</u></strong></h5>
         @endif
-        <div class="row">
-            <div class="col-md-12" style="border-bottom: 1px solid rgb(216, 212, 212);">
-                <center><h4>Orders History</h4></center>
-            </div>
+        <div style="border-bottom: 1px solid rgb(216, 212, 212);">
         </div>
+        <br>
         @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <span class="alert-inner--icon"><i class="fe fe-thumbs-up"></i></span>
             <span class="alert-inner--text"><strong>{{session('success')}}</strong></span>
             <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
         </div>
-        <br>
         @php
         session()->forget('success');
         @endphp
@@ -133,7 +130,6 @@
                 <span class="alert-inner--text"><strong>{{session('error')}}</strong></span>
                 <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
             </div>
-        <br>
         @php
         session()->forget('error');
         @endphp
