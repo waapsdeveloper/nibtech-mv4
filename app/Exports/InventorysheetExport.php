@@ -2,7 +2,7 @@
 
 namespace App\Exports;
 
-
+use App\Models\Order_item_model;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -13,6 +13,14 @@ class InventorysheetExport implements FromCollection, WithHeadings
     public function collection()
     {
 
+        if(request('aftersale') != 1){
+
+            $aftersale = Order_item_model::whereHas('order', function ($q) {
+                $q->where('order_type_id',4)->where('status','<',3);
+            })->pluck('stock_id')->toArray();
+        }else{
+            $aftersale = [];
+        }
         $data = DB::table('stock')
         ->leftJoin('variation', 'stock.variation_id', '=', 'variation.id')
         ->leftJoin('products', 'variation.product_id', '=', 'products.id')
@@ -55,6 +63,9 @@ class InventorysheetExport implements FromCollection, WithHeadings
         ->where('order_items.deleted_at',null)
         ->where('stock.deleted_at',null)
 
+        ->when(request('aftersale') != 1, function ($q) use ($aftersale) {
+            return $q->whereNotIn('stock.id',$aftersale);
+        })
         ->when(request('vendor') != '', function ($q) {
             $q->where('orders.customer_id', request('vendor'));
         })
