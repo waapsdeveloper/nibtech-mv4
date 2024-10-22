@@ -146,6 +146,28 @@
                             </h4>
 
                             <div class=" mg-b-0">
+
+                                @if (session('user')->hasPermission('imei_grade_correction'))
+                                    <form action="{{ url('move_inventory/change_grade/true')}}" method="POST" class="form-inline">
+                                        @csrf
+                                        <select name="repair[grade]" class="form-control form-select">
+                                            <option value="">Move to</option>
+                                            @foreach ($grades as $grade)
+                                                @if($grade->id > 7)
+                                                <option value="{{ $grade->id }}">{{ $grade->name }}</option>
+                                                @endif
+                                            @endforeach
+                                        </select>
+
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control pd-x-20" name="repair[description]" placeholder="Reason" style="width: 270px;">
+                                            {{-- <input type="text" class="form-control" name="repair[imei]" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset"> --}}
+                                            <label for="">Reason</label>
+                                        </div>
+                                        <input type="hidden" name="repair[stock_id]" value="{{$stock_id}}">
+                                        <button class="btn btn-secondary pd-x-20" type="submit">Move</button>
+                                    </form>
+                                @endif
                             </div>
 
                         </div>

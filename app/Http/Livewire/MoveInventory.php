@@ -88,7 +88,7 @@ class MoveInventory extends Component
         return view('livewire.move_inventory', $data); // Return the Blade view instance with data
     }
 
-    public function change_grade(){
+    public function change_grade($allow_same = false){
         $description = request('description');
         if(request('grade')){
             session()->put('grade',request('grade'));
@@ -157,7 +157,8 @@ class MoveInventory extends Component
                     'grade' => $grade,
                 ]);
                 $new_variation->status = 1;
-                if($new_variation->id && $stock->variation_id == $new_variation->id && request('price') == null){
+
+                if($new_variation->id && $stock->variation_id == $new_variation->id && request('price') == null && $allow_same == false){
                     session()->put('error', 'Stock already exist in this variation');
                     // return redirect()->back();
                     continue;
