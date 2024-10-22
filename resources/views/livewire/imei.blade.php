@@ -152,10 +152,8 @@
                                         @csrf
                                         <select name="repair[grade]" class="form-control form-select">
                                             <option value="">Move to</option>
-                                            @foreach ($grades as $grade)
-                                                @if($grade->id > 7)
-                                                <option value="{{ $grade->id }}">{{ $grade->name }}</option>
-                                                @endif
+                                            @foreach ($grades as $id => $grade)
+                                                <option value="{{ $id }}">{{ $grade }}</option>
                                             @endforeach
                                         </select>
 
