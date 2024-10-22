@@ -78,7 +78,7 @@
                             <input type="text" class="form-control" name="description" placeholder="Enter Reason" id="description" required>
                             <label for="description">Reason</label>
                         </div>
-                            <button class="btn btn-primary pd-x-20" type="submit">Refund</button>
+                            <button class="btn btn-primary" type="submit">Refund</button>
                     </form>
                     &nbsp;&nbsp;
                 @endif
@@ -101,7 +101,7 @@
                             <option value="8441">Others</option>
                             <option value="74291">10136</option>
                         </select>
-                        <button class="btn btn-primary pd-x-20" type="submit">Change PO</button>
+                        <button class="btn btn-primary" type="submit">Change PO</button>
                     </form>
                 @endif
 
