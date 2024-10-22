@@ -75,6 +75,9 @@ class OrdersExport
                     $q->where('imei', 'LIKE', '%' . request('imei') . '%');
                 });
             })
+            ->when(request('with_stock') == 2, function ($q) {
+                return $q->where('order_items.stock_id', 0);
+            })
             ->orderBy('orders.reference_id', 'DESC')
             ->distinct()->get();
 
