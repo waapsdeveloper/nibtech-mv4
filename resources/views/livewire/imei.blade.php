@@ -150,7 +150,7 @@
                                 @if (session('user')->hasPermission('imei_grade_correction'))
                                     <form action="{{ url('move_inventory/change_grade/true')}}" method="POST" class="form-inline">
                                         @csrf
-                                        <select name="repair[grade]" class="form-select wd-100">
+                                        <select name="repair[grade]" class="form-select wd-150">
                                             <option value="">Move to</option>
                                             @foreach ($grades as $id => $grade)
                                                 <option value="{{ $id }}">{{ $grade }}</option>
