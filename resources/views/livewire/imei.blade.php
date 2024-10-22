@@ -86,7 +86,7 @@
 
                     <form action="{{ url('imei/change_po').'/'.$stock->id}}" method="POST" id="change_po" class="form-inline" onsubmit="if (confirm('Are you sure you want to change the Purchase Vendor for this Stock?')){return true;}else{event.stopPropagation(); event.preventDefault();}">
                         @csrf
-                        <select type="text" id="order" name="order_id" class="form-select wd-100" required>
+                        <select type="text" id="order" name="order_id" class="form-select wd-150" required>
                             <option value="">Vendor</option>
                             <option value="4739">Sunstrike</option>
                             <option value="1">Mobi</option>
