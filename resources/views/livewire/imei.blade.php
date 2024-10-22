@@ -38,7 +38,7 @@
         </div>
         <br>
 
-        <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
+        <div class="d-flex justify-content-between">
 
             <div class="p-2">
                 <form action="{{ url('imei')}}" method="GET" id="search" class="form-inline">
@@ -48,9 +48,6 @@
                     </div>
                         <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
                 </form>
-                    @if (isset($stock))
-                        <h5 class="mb-0"> <small>Current Variation:&nbsp;&nbsp;</small> {{ $stock->variation->product->model ?? "Variation Issue"}}{{" - " . (isset($stock->variation->storage_id)?$stock->variation->storage_id->name . " - " : null) . (isset($stock->variation->color_id)?$stock->variation->color_id->name. " - ":null)}} <strong><u>{{ $stock->variation->grade_id->name ?? null }}</u></strong></h5>
-                    @endif
             </div>
             <script>
 
@@ -111,7 +108,10 @@
             </div>
             @endif
         </div>
-        <br>
+        @if (isset($stock))
+            <h5 class="mb-0"> <small>Current Variation:&nbsp;&nbsp;</small> {{ $stock->variation->product->model ?? "Variation Issue"}}{{" - " . (isset($stock->variation->storage_id)?$stock->variation->storage_id->name . " - " : null) . (isset($stock->variation->color_id)?$stock->variation->color_id->name. " - ":null)}} <strong><u>{{ $stock->variation->grade_id->name ?? null }}</u></strong></h5>
+        @endif
+        <br style="border-bottom: 1px solid rgb(216, 212, 212);">
         <div class="row">
             <div class="col-md-12" style="border-bottom: 1px solid rgb(216, 212, 212);">
                 <center><h4>Orders History</h4></center>
