@@ -253,14 +253,14 @@ class Order_item_model extends Model
                     }
                 }
             }
-            $orderItem->order_id = Order_model::where(['reference_id' => $orderObj->order_id])->first()->id;
-            $orderItem->variation_id = $variation->id;
-            $orderItem->reference_id = $itemObj->id;
-            if($orderItem->price == null){
+            if($orderItem->id == null){
+                $orderItem->order_id = Order_model::where(['reference_id' => $orderObj->order_id])->first()->id;
+                $orderItem->variation_id = $variation->id;
+                $orderItem->reference_id = $itemObj->id;
                 $orderItem->price = $itemObj->price;
+                $orderItem->quantity = $itemObj->quantity;
             }
 
-            $orderItem->quantity = $itemObj->quantity;
             switch ($itemObj->state){
                 case 0: $state = 0; break;
                 case 8: $state = 0; break;
