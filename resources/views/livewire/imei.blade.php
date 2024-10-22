@@ -48,7 +48,6 @@
                     </div>
                         <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
                 </form>
-            </div>
             <script>
 
                 window.onload = function() {
@@ -65,11 +64,12 @@
                 });
 
             </script>
+            </div>
             @if(isset($stock))
             <div class="p-2 d-flex justify-content-between">
                 <a href="{{ url('imei/print_label').'?stock_id='.$stock->id}}" target="_blank" class="btn btn-secondary"><i class="fa fa-print"></i></a>
                 @if (session('user')->hasPermission('rearrange_imei_order'))
-                    <a href="{{ url('imei/rearrange').'/'.$stock->id}}" class="btn btn-secondary">Rearrange</a>
+                    <a href="{{ url('imei/rearrange').'/'.$stock->id}}" class="btn btn-secondary mx-1">Rearrange</a>
                 @endif
                 @if (session('user')->hasPermission('refund_imei') && isset($stock) && $stock->status == 2 && $stock->last_item()->order->order_type_id != 2)
                     <form action="{{ url('imei/refund').'/'.$stock->id}}" method="POST" id="refund" class="form-inline">
