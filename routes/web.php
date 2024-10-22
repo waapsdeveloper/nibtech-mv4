@@ -32,7 +32,7 @@ use App\Http\Controllers\ExchangeRateController;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\GoogleController;
-use App\Http\Controllers\ReportController;
+// use App\Http\Controllers\ReportController;
 use App\Http\Livewire\Stock_room;
 use App\Http\Livewire\Wholesale_return;
 
@@ -90,7 +90,7 @@ Route::post('purchase/approve/{id}', [Order::class,'purchase_approve'])->name('p
 Route::get('purchase/revert_status/{id}', [Order::class,'purchase_revert_status'])->name('purchase_revert_status');
 Route::post('purchase/remove_issues', [Order::class,'remove_issues'])->name('remove_purchase_issues');
 
-Route::get('report_new', ReportController::class)->name('view_report');
+// Route::get('report_new', ReportController::clas1s)->name('view_report');
 
 Route::get('report', Report::class)->name('view_report');
 Route::get('report/pass', [Report::class,'pass'])->name('view_report');
