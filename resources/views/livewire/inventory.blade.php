@@ -235,7 +235,8 @@
                 <a href="{{url('inventory')}}?status=2" class="btn btn-link">Pending</a>
                 <a href="{{url('inventory')}}" class="btn btn-link">All</a>
                 @if (session('user')->hasPermission('view_inventory_summery'))
-                <form method="GET" action="" class="form-inline">
+                <button class="btn btn-link" type="submit" form="summery">Summery</button>
+                <form method="GET" action="" id="summery">
                     <input type="hidden" name="summery" value="1">
                     <input type="hidden" name="category" value="{{ Request::get('category') }}">
                     <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
@@ -249,7 +250,6 @@
                     @endforeach
                     @endif
                     <input type="hidden" name="status" value="{{ Request::get('status') }}">
-                    <button class="btn btn-link" type="submit">Summery</button>
                 </form>
                 @endif
             </div>
