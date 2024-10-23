@@ -1867,6 +1867,7 @@ class Order extends Component
         }
 
         $orderObj = $this->updateBMOrder($order->reference_id, true, null, false, $bm);
+        $invoice_url = url('export_invoice').'/'.$id;
         // $order = Order_model::find($order->id);
         if(isset($detail->orderlines) && $detail->orderlines[0]->imei == null && $detail->orderlines[0]->serial_number  == null){
             $content = "Hi, here are the IMEIs/Serial numbers for this order. \n";
@@ -1888,15 +1889,13 @@ class Order extends Component
 
                 window.open("https://backmarket.fr/bo_merchant/orders/all?orderId='.$order->reference_id.'", "_blank");
             </script>';
-        }else{
-
-            $invoice_url = url('export_invoice').'/'.$id;
-            // JavaScript to open two tabs and print
-            echo '<script>
-            var newTab2 = window.open("'.$invoice_url.'", "_blank");
-
-            </script>';
         }
+
+        // JavaScript to open two tabs and print
+        echo '<script>
+        var newTab2 = window.open("'.$invoice_url.'", "_blank");
+
+        </script>';
         if(request('sort') == 4 && !isset($detail)){
             echo "<script> window.close(); </script>";
         }

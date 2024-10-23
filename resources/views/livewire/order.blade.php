@@ -448,6 +448,8 @@
                                                 @if ($item->care_id != null)
                                                     <a class="" href="https://backmarket.fr/bo_merchant/customer-request/{{ $item->care_id }}" target="_blank"><strong class="text-danger">Conversation</strong></a>
                                                 @endif
+                                                <br>
+                                                {{$order->reference}}
                                             </td>
                                             <td>
                                                 {{ $item->quantity }}
