@@ -210,31 +210,79 @@ class MoveInventory extends Component
 
     }
     public function delete_multiple_moves(){
-        $ids = request('ids');
-        if(request('grade')){
-            session()->put('grade',request('grade'));
+
+        $operations = Stock_operations_model::where('description','LIKE','%Storage changed%')->pluck('stock_id')->unique();
+
+        $stocks = Stock_model::whereIn('id',$operations)->get();
+
+        foreach($stocks as $stock){
+            $new_variation_ids = $stock->stock_operations->pluck('new_variation_id')->unique()->toArray();
+            $old_variation_ids = $stock->stock_operations->pluck('old_variation_id')->unique()->toArray();
+
+            $array = $new_variation_ids + $old_variation_ids;
+            $array = array_unique($array);
+
+            print_r($array);
+            echo "<br>";
+            print_r($new_variation_ids);
+            echo "<br>";
+            print_r($old_variation_ids);
+            echo "<br>";
+            echo "<br>";
+
+
         }
-        session()->put('description',request('description'));
+        // $ids = request('ids');
+        // if(request('grade')){
+        //     session()->put('grade',request('grade'));
+        // }
+        // session()->put('description',request('description'));
 
 
-        if ($ids != null) {
-            foreach($ids as $id){
-                $stock_operation = Stock_operations_model::find($id);
-                $stock = $stock_operation->stock;
-                if($id == $stock->latest_operation->id){
-                    $stock->variation_id = $stock_operation->old_variation_id;
-                    $stock->save();
-                }
-                $stock_operation->delete();
-            }
-        }
+        // if ($ids != null) {
+        //     foreach($ids as $id){
+        //         $stock_operation = Stock_operations_model::find($id);
+        //         $stock = $stock_operation->stock;
+        //         if($id == $stock->latest_operation->id){
+        //             $stock->variation_id = $stock_operation->old_variation_id;
+        //             $stock->save();
+        //         }
+        //         $stock_operation->delete();
+        //     }
+        // }
 
 
-        session()->put('success', 'Stock Sent Back Successfully');
-        return redirect()->back();
+        // session()->put('success', 'Stock Sent Back Successfully');
+        // return redirect()->back();
 
     }
 
+    public function check_storage_change(){
+        $operations = Stock_operations_model::where('description','LIKE','%Storage changed%')->pluck('stock_id')->unique();
 
+        $stocks = Stock_model::whereIn('id',$operations)->get();
+
+        foreach($stocks as $stock){
+            $new_variation_ids = $stock->stock_operations->pluck('new_variation_id')->unique()->toArray();
+            $old_variation_ids = $stock->stock_operations->pluck('old_variation_id')->unique()->toArray();
+
+            $array = $new_variation_ids + $old_variation_ids;
+            $array = array_unique($array);
+
+            print_r($array);
+            echo "<br>";
+            print_r($new_variation_ids);
+            echo "<br>";
+            print_r($old_variation_ids);
+            echo "<br>";
+            echo "<br>";
+
+
+        }
+
+
+
+
+    }
 
 }
