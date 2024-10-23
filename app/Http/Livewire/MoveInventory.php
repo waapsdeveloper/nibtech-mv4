@@ -269,7 +269,7 @@ class MoveInventory extends Component
             $array = array_merge($new_variation_ids,$old_variation_ids);
             // $array = array_unique($array);
 
-            $variations = Variation_model::whereIn('id',$array)->pluck('storage')->toArray();
+            $variations = Variation_model::whereIn('id',$array)->pluck('storage')->unique()->toArray();
 
             if(Variation_model::whereIn('id',$array)->whereNotIn('storage',[1,2,3,4,5,6,7,8,9,10])->count() > 0){
                 dd("Invalid Storage");
