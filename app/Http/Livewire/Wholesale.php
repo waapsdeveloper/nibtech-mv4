@@ -186,7 +186,12 @@ class Wholesale extends Component
         // die;
 
         // Group by product_id and storage
-        $variations = $variations->groupBy(['product_id', 'storage']);
+        if(request('hide') != 'all'){
+
+            $variations = $variations->groupBy(['product_id', 'storage']);
+            $data['variations'] = $variations;
+        }
+
         $order_items = Order_item_model::with(['stock','stock.order'])->where('order_id',$order_id)->get();
         $data['order_items'] = $order_items;
         $order_issues = Order_issue_model::where('order_id',$order_id)->select(
@@ -201,7 +206,6 @@ class Wholesale extends Component
 
         $data['order_issues'] = $order_issues;
 
-        $data['variations'] = $variations;
         $last_ten = Order_item_model::where('order_id',$order_id)->with(['variation','stock','stock.order.customer'])->orderBy('id','desc')->limit(10)->get();
         $data['last_ten'] = $last_ten;
         $data['all_variations'] = Variation_model::where('grade',9)->get();
