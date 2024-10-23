@@ -275,8 +275,8 @@ class MoveInventory extends Component
                 dd("Invalid Storage");
 
             }
-            if(count($variations) > 1){
-                dd("Multiple Storage");
+            if(count($variations) == 1){
+                Stock_operations_model::where('stock_id',$stock->id)->where('description','LIKE','%Storage changed%')->delete();
             }
             print_r($variations);
             echo "<br>";
