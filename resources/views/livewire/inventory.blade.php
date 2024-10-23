@@ -235,7 +235,22 @@
                 <a href="{{url('inventory')}}?status=2" class="btn btn-link">Pending</a>
                 <a href="{{url('inventory')}}" class="btn btn-link">All</a>
                 @if (session('user')->hasPermission('view_inventory_summery'))
-                <a href="{{url('inventory')}}?summery=1" class="btn btn-link">Summery</a>
+                <form method="GET" action="">
+                    <input type="hidden" name="summery" value="1">
+                    <input type="hidden" name="category" value="{{ Request::get('category') }}">
+                    <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
+                    <input type="hidden" name="product" value="{{ Request::get('product') }}">
+                    <input type="hidden" name="storage" value="{{ Request::get('storage') }}">
+                    <input type="hidden" name="vendor" value="{{ Request::get('vendor') }}">
+                    @if (Request::get('grade'))
+                    @foreach (Request::get('grade') as $grd)
+
+                        <input type="hidden" name="grade[]" value="{{ $grd }}">
+                    @endforeach
+                    @endif
+                    <input type="hidden" name="status" value="{{ Request::get('status') }}">
+                    <button class="btn btn-link" type="submit">Summery</button>
+                </form>
                 @endif
             </div>
 
