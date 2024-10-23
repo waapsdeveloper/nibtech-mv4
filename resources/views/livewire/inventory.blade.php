@@ -235,7 +235,7 @@
                 <a href="{{url('inventory')}}?status=2" class="btn btn-link">Pending</a>
                 <a href="{{url('inventory')}}" class="btn btn-link">All</a>
                 @if (session('user')->hasPermission('view_inventory_summery'))
-                <form method="GET" action="">
+                <form method="GET" action="" class="form-inline">
                     <input type="hidden" name="summery" value="1">
                     <input type="hidden" name="category" value="{{ Request::get('category') }}">
                     <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
