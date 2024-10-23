@@ -200,6 +200,7 @@ Route::get('move_inventory', MoveInventory::class)->name('move_inventory');
 Route::post('move_inventory/change_grade/{allow_same?}', [MoveInventory::class,'change_grade'])->name('move_inventory');
 Route::post('move_inventory/delete_move', [MoveInventory::class,'delete_move'])->name('move_inventory');
 Route::post('move_inventory/delete_multiple_moves', [MoveInventory::class,'delete_multiple_moves'])->name('move_inventory');
+Route::get('move_inventory/check_storage_change', [MoveInventory::class,'check_storage_change'])->name('move_inventory');
 
 Route::get('testing', Testing::class)->name('view_testing_api_data');
 Route::get('testing/repush/{id}', [Testing::class, 'repush'])->name('repush_testing_api_data');
