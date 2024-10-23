@@ -11,6 +11,6 @@
             </div>
         </div>
     </div>
-    @livewire('<reports>sales-report')
-    @livewire('batch-grade-report')
+    @livewire('reports.sales-report')
+    @livewire('reports.batch-grade-report')
 @endsection
