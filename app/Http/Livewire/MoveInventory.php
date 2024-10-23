@@ -267,9 +267,9 @@ class MoveInventory extends Component
             $old_variation_ids = $stock->stock_operations->pluck('old_variation_id')->unique()->toArray();
 
             $array = array_merge($new_variation_ids,$old_variation_ids);
-            $array = array_unique($array);
+            // $array = array_unique($array);
 
-            $variations = Variation_model::whereIn('id',$array)->pluck('storage')->unique()->toArray();
+            $variations = Variation_model::whereIn('id',$array)->pluck('storage')->toArray();
 
             print_r($variations);
             echo "<br>";
