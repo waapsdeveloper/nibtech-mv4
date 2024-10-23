@@ -275,6 +275,9 @@ class MoveInventory extends Component
                 dd("Invalid Storage");
 
             }
+            if(count($variations) > 1){
+                dd("Multiple Storage");
+            }
             print_r($variations);
             echo "<br>";
 
