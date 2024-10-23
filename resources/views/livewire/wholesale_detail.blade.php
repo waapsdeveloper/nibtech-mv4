@@ -526,9 +526,9 @@
                         <div class="d-flex justify-content-between">
                             <h4 class="card-title mg-b-0">Latest Added Items</h4>
                             @if (request('hide') == 'all')
-                                <a href="{{ url('wholesale/detail').'/'.$order_id }}" class="btn btn-link">Show All</a>
+                                <a href="{{ url('wholesale/detail').'/'.$order_id }}" class="btn btn-sm btn-link">Show All</a>
                             @else
-                                <a href="{{ url('wholesale/detail').'/'.$order_id.'?hide=all' }}" class="btn btn-link">Hide All</a>
+                                <a href="{{ url('wholesale/detail').'/'.$order_id.'?hide=all' }}" class="btn btn-sm btn-link">Hide All</a>
                             @endif
                         </div>
                     </div>
