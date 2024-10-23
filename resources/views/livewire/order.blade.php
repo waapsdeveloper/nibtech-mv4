@@ -612,8 +612,12 @@
                                                 <div class="dropdown-menu">
                                                     <a class="dropdown-item" href="{{url('order')}}/refresh/{{ $order->reference_id }}">Refresh</a>
                                                     {{-- @if ($item->order->processed_at > $last_hour || $user_id == 1) --}}
+                                                    @if (session('user')->hasPermission('change_order_tracking'))
                                                     <a class="dropdown-item" id="tracking_{{ $order->id }}" href="javascript:void(0);" data-bs-target="#tracking_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-order="{{ $order->id }}"> Change Tracking </a>
+                                                    @endif
+                                                    @if (session('user')->hasPermission('correction'))
                                                     <a class="dropdown-item" id="correction_{{ $item->id }}" href="javascript:void(0);" data-bs-target="#correction_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}"> Correction </a>
+                                                    @endif
                                                     {{-- @endif --}}
                                                     @if (!$item->replacement)
                                                     <a class="dropdown-item" id="replacement_{{ $item->id }}" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}" data-bs-return="@if($item->check_return) 1 @endif"> Replacement </a>
