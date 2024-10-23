@@ -271,6 +271,10 @@ class MoveInventory extends Component
 
             $variations = Variation_model::whereIn('id',$array)->pluck('storage')->toArray();
 
+            if(Variation_model::whereIn('id',$array)->whereNotIn('storage',[1,2,3,4,5,6,7,8,9,10])->count() > 0){
+                dd("Invalid Storage");
+
+            }
             print_r($variations);
             echo "<br>";
 
