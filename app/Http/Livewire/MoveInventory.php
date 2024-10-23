@@ -267,6 +267,7 @@ class MoveInventory extends Component
             $old_variation_ids = $stock->stock_operations->pluck('old_variation_id')->unique()->toArray();
 
             $array = array_merge($new_variation_ids,$old_variation_ids);
+            $array = array_unique($array);
 
             print_r($array);
             echo "<br>";
