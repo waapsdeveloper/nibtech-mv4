@@ -197,8 +197,10 @@ class MoveInventory extends Component
         if ($id != null) {
             $stock_operation = Stock_operations_model::find($id);
             $stock = $stock_operation->stock;
-            $stock->variation_id = $stock_operation->old_variation_id;
-            $stock->save();
+            if($id == $stock->latest_operation->id){
+                $stock->variation_id = $stock_operation->old_variation_id;
+                $stock->save();
+            }
             $stock_operation->delete();
         }
 
@@ -219,8 +221,10 @@ class MoveInventory extends Component
             foreach($ids as $id){
                 $stock_operation = Stock_operations_model::find($id);
                 $stock = $stock_operation->stock;
-                $stock->variation_id = $stock_operation->old_variation_id;
-                $stock->save();
+                if($id == $stock->latest_operation->id){
+                    $stock->variation_id = $stock_operation->old_variation_id;
+                    $stock->save();
+                }
                 $stock_operation->delete();
             }
         }
