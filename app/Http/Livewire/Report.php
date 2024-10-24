@@ -1206,6 +1206,7 @@ class Report extends Component
             $datas['model'] = $product->model.' '.$storage;
             $datas['available_stock_count'] = $pss->stocks->whereIn('order_id',$order_ids)->where('status',1)->count();
             $datas['sold_stock_count'] = $pss->stocks->whereIn('order_id',$order_ids)->where('status',2)->count();
+            $datas['stock_cost'] = $pss->stocks->whereIn('order_id',$order_ids)->sum('purchase_item.price');
 
             $result[] = $datas;
         }

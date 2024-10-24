@@ -76,8 +76,8 @@
                     <tr>
                         <th><small><b>No</b></small></th>
                         <th><small><b>Model</b></small></th>
-                        <th><small><b>Quantity Sold</b></small></th>
-                        <th><small><b>Quantity Available</b></small></th>
+                        <th><small><b>Sold + Available = Total</b></small></th>
+                        <th><small><b>Cost</b></small></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -90,7 +90,7 @@
                             {{-- <td>{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</td> --}}
                             <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#graded_count_modal">{{ $summery['model'] }}</a></td>
                             <td>{{ $summery['sold_stock_count'] ." + ". $summery['available_stock_count'] ." = ". $summery['sold_stock_count'] + $summery['available_stock_count'] }}</td>
-                            <td>{{ $summery['available_stock_count'] }}</td>
+                            <td>{{ $summery['stock_cost'] }}</td>
                         </tr>
                         {{-- @endif --}}
                     @endforeach
