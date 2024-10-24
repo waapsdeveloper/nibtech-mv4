@@ -66,6 +66,40 @@
 
         </div>
     </div>
+    <div class="card">
+        <div class="card-header pb-0">
+            Purchse Report
+        </div>
+        <div class="card-body"><div class="table-responsive">
+            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                <thead>
+                    <tr>
+                        <th><small><b>No</b></small></th>
+                        <th><small><b>Model</b></small></th>
+                        <th><small><b>Quantity Sold</b></small></th>
+                        <th><small><b>Quantity Available</b></small></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @php
+                        $i = 0;
+                    @endphp
+                    @foreach ($purchase_report as $summery)
+                        <tr>
+                            <td>{{ $i++ }}</td>
+                            {{-- <td>{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</td> --}}
+                            <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#graded_count_modal">{{ $summery['model'] }}</a></td>
+                            <td>{{ $summery['sold_stock_count'] ." + ". $summery['available_stock_count'] ." = ". $summery['sold_stock_count'] + $summery['available_stock_count'] }}</td>
+                            <td>{{ $summery['available_stock_count'] }}</td>
+                        </tr>
+                        {{-- @endif --}}
+                    @endforeach
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+
     <div class="row p-3">
 
         <div class="card col-6">
@@ -184,40 +218,6 @@
 
 
             </div>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="card-header pb-0">
-            Inventory Summery
-        </div>
-        <div class="card-body"><div class="table-responsive">
-            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
-                <thead>
-                    <tr>
-                        <th><small><b>No</b></small></th>
-                        <th><small><b>Model</b></small></th>
-                        <th><small><b>Quantity Sold</b></small></th>
-                        <th><small><b>Quantity Available</b></small></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @php
-                        $i = 0;
-                    @endphp
-                    @foreach ($purchase_report as $summery)
-                        <tr>
-                            <td>{{ $i++ }}</td>
-                            {{-- <td>{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</td> --}}
-                            <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#graded_count_modal">{{ $summery['model'] }}</a></td>
-                            <td>{{ $summery['sold_stock_count'] ." + ". $summery['available_stock_count'] ." = ". $summery['sold_stock_count'] + $summery['available_stock_count'] }}</td>
-                            <td>{{ $summery['available_stock_count'] }}</td>
-                        </tr>
-                        {{-- @endif --}}
-                    @endforeach
-                </tbody>
-
-            </table>
         </div>
     </div>
 
