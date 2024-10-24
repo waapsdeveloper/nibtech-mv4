@@ -1155,6 +1155,14 @@ class Report extends Component
                 $query->where('orders.order_type_id', 2)->join('order_items', 'orders.id', '=', 'order_items.order_id')
                     ->select(DB::raw('SUM(order_items.price)'));
             },
+            'orders as purchase_qty' => function ($query) {
+                $query->where('orders.order_type_id', 1)->join('order_items', 'orders.id', '=', 'order_items.order_id')
+                    ->select(DB::raw('SUM(order_items.quantity)'));
+            },
+            'orders as purchase_cost' => function ($query) {
+                $query->where('orders.order_type_id', 1)->join('order_items', 'orders.id', '=', 'order_items.order_id')
+                    ->select(DB::raw('SUM(order_items.price)'));
+            },
 
         ])
         ->find($vendor_id);
@@ -1163,9 +1171,12 @@ class Report extends Component
 
         $order_ids = Order_model::where('customer_id', $vendor_id)->whereBetween('created_at', [$start_date, $end_date])->pluck('id');
 
+
+
+
         $available_stock_count = Stock_model::whereIn('order_id', $order_ids)->where('status',1)->count();
         $sold_stock_count = Stock_model::whereIn('order_id', $order_ids)->where('status',2)->count();
-        $available_stock_cost = Stock_model::whereIn('order_id', $order_ids)->where('status',1)->with('purchase_item')->sum('purchase_item.price');
+        $available_stock_cost = Stock_model::whereIn('order_id', $order_ids)->where('status',1)->withSum('purchase_item.price');
 
         $data['available_stock_count'] = $available_stock_count;
         $data['sold_stock_count'] = $sold_stock_count;

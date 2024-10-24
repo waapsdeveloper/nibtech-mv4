@@ -60,9 +60,17 @@ class Order_model extends Model
             $q->where('status',1);
         });
     }
+    public function stocks()
+    {
+        return $this->hasMany(Stock_model::class, 'order_id', 'id');
+    }
     public function available_stocks()
     {
         return $this->hasMany(Stock_model::class, 'order_id', 'id')->where('status',1);
+    }
+    public function sold_stocks()
+    {
+        return $this->hasMany(Stock_model::class, 'order_id', 'id')->where('status',2);
     }
     public function exchange_items()
     {
