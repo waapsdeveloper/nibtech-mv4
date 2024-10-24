@@ -30,6 +30,7 @@ use App\Models\Order_issue_model;
 use App\Models\Product_storage_sort_model;
 use App\Models\Stock_operations_model;
 use App\Models\Stock_movement_model;
+use App\Models\Vendor_grade_model;
 use Illuminate\Support\Facades\Mail;
 use TCPDF_FONTS;
 
@@ -964,7 +965,8 @@ class Order extends Component
 
         $storages = Storage_model::pluck('name','id')->toArray();
         $colors = Color_model::pluck('name','id')->toArray();
-        $grades = ['mix','a','a-','b+','b','c','asis','asis+','cpo','new'];
+        $grades = Vendor_grade_model::pluck('name','id')->toArray();
+        // $grades = ['mix','a','a-','b+','b','c','asis','asis+','cpo','new'];
 
         $products = Products_model::pluck('model','id')->toArray();
 
@@ -1089,13 +1091,10 @@ class Order extends Component
 
                     $v_gradeName = strtolower($d[$v_grade]); // Convert v_grade name to lowercase
 
-                    if (in_array($v_gradeName, $lowercaseGrades)) {
-                        // If the v_grade exists in the predefined v_grades array,
-                        // retrieve its index
-                        $grd = array_search($v_gradeName, $lowercaseGrades);
-                    } else {
-                        $grd = 0;
-                    }
+                    $v_grd = Vendor_grade_model::firstOrNew(['name' => strtoupper($v_gradeName)]);
+                    $v_grd->save();
+
+                    $grd = $v_grd->id;
                 }
 
                 // echo $product." ".$grade." ".$storage." | ";
