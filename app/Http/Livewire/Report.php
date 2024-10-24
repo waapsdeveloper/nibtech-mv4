@@ -1131,6 +1131,9 @@ class Report extends Component
     }
 
     public function vendor_report($vendor_id){
+
+        ini_set('memory_limit', '256M');
+
         $start_date = request('start_date') ?? Carbon::now()->startOfMonth();
         $end_date = request('end_date') ?? Carbon::now()->endOfMonth();
 
