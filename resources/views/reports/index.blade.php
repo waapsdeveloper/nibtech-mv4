@@ -6,11 +6,13 @@
             <h1>Reports</h1>
             <div class="panel panel-default">
                 <div class="panel-heading">Reports</div>
-                <div class="panel-body">
+                <div class="panel-body" wire:poll.750ms>
+                    {{ now()}}
                 </div>
             </div>
         </div>
     </div>
     @livewire('sales-report')
     @livewire('batch-grade-report')
+    {{-- @livewire('weekly-ecommerce-sales-graph') --}}
 @endsection
