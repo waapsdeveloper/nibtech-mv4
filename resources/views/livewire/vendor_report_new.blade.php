@@ -210,7 +210,7 @@
                             <td>{{ $i++ }}</td>
                             {{-- <td>{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</td> --}}
                             <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#graded_count_modal">{{ $summery['model'] }}</a></td>
-                            <td>{{ $summery['sold_stock_count'] ." + ". $summery['available_stock_count'] . $summery['sold_stock_count'] + $summery['available_stock_count'] }}</td>
+                            <td>{{ $summery['sold_stock_count'] ." + ". $summery['available_stock_count'] ." = ". $summery['sold_stock_count'] + $summery['available_stock_count'] }}</td>
                             <td>{{ $summery['available_stock_count'] }}</td>
                         </tr>
                         {{-- @endif --}}
