@@ -1164,13 +1164,16 @@ class Report extends Component
         $order_ids = Order_model::where('customer_id', $vendor_id)->whereBetween('created_at', [$start_date, $end_date])->pluck('id');
 
 
+        $available_stock_ids = Stock_model::whereIn('order_id', $order_ids)->where('status',1)->pluck('id');
+        $sold_stock_ids = Stock_model::whereIn('order_id', $order_ids)->where('status',2)->pluck('id');
 
+        $available_stock_count = $available_stock_ids->count();
+        $sold_stock_count = $sold_stock_ids->count();
+        $available_stock_cost = Order_item_model::whereIn('stock_id', $available_stock_ids)->whereIn('order_id', $order_ids)->sum('price');
+        $sold_stock_cost = Order_item_model::whereIn('stock_id', $sold_stock_ids)->whereNotIn('order_id', $order_ids)->pluck('price','stock_id');
 
-        $available_stock_count = Stock_model::whereIn('order_id', $order_ids)->where('status',1)->count();
-        $sold_stock_count = Stock_model::whereIn('order_id', $order_ids)->where('status',2)->count();
-        $available_stock_cost = Stock_model::whereIn('order_id', $order_ids)->where('status',1)->withSum('purchase_item','price')->limit(10)->get();
+        dd($sold_stock_cost);
 
-        dd($available_stock_cost);
         $data['available_stock_count'] = $available_stock_count;
         $data['sold_stock_count'] = $sold_stock_count;
         $data['available_stock_cost'] = $available_stock_cost;
