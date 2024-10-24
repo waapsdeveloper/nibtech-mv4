@@ -1155,14 +1155,6 @@ class Report extends Component
                 $query->where('orders.order_type_id', 2)->join('order_items', 'orders.id', '=', 'order_items.order_id')
                     ->select(DB::raw('SUM(order_items.price)'));
             },
-            'orders as purchase_qty' => function ($query) {
-                $query->where('orders.order_type_id', 1)->join('order_items', 'orders.id', '=', 'order_items.order_id')
-                    ->select(DB::raw('SUM(order_items.quantity)'));
-            },
-            'orders as purchase_cost' => function ($query) {
-                $query->where('orders.order_type_id', 1)->join('order_items', 'orders.id', '=', 'order_items.order_id')
-                    ->select(DB::raw('SUM(order_items.price)'));
-            },
 
         ])
         ->find($vendor_id);
