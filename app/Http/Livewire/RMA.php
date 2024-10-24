@@ -80,6 +80,10 @@ class RMA extends Component
         foreach($items as $orderItem){
             if($orderItem->stock){
                 // Access the variation through orderItem->stock->variation
+                $stock = $orderItem->stock;
+                $stock->status = 1;
+                $stock->save();
+
                 $variation = $orderItem->stock->variation;
 
                 // If a variation record exists and either product_id or sku is not null
