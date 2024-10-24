@@ -1168,8 +1168,9 @@ class Report extends Component
 
         $available_stock_count = Stock_model::whereIn('order_id', $order_ids)->where('status',1)->count();
         $sold_stock_count = Stock_model::whereIn('order_id', $order_ids)->where('status',2)->count();
-        $available_stock_cost = Stock_model::whereIn('order_id', $order_ids)->where('status',1)->withSum('purchase_item','price')->get()->sum('purchase_item_price');
+        $available_stock_cost = Stock_model::whereIn('order_id', $order_ids)->where('status',1)->withSum('purchase_item','price')->limit(10)->get();
 
+        dd($available_stock_cost);
         $data['available_stock_count'] = $available_stock_count;
         $data['sold_stock_count'] = $sold_stock_count;
         $data['available_stock_cost'] = $available_stock_cost;
