@@ -20,6 +20,7 @@ use App\Models\Customer_model;
 use App\Models\Storage_model;
 use App\Models\Grade_model;
 use App\Models\Multi_type_model;
+use App\Models\Product_storage_sort_model;
 use App\Models\Variation_model;
 use App\Models\Stock_model;
 use Symfony\Component\HttpFoundation\Request;
@@ -1130,6 +1131,9 @@ class Report extends Component
     }
 
     public function vendor_report($vendor_id){
+        $start_date = request('start_date') ?? Carbon::now()->startOfMonth();
+        $end_date = request('end_date') ?? Carbon::now()->endOfMonth();
+
         $vendor = Customer_model::withCount([
 
             'orders as purchase_qty' => function ($query) {
@@ -1148,6 +1152,7 @@ class Report extends Component
                 $query->where('orders.order_type_id', 2)->join('order_items', 'orders.id', '=', 'order_items.order_id')
                     ->select(DB::raw('SUM(order_items.price)'));
             },
+
         ])
         ->find($vendor_id);
         $data['vendor'] = $vendor;
@@ -1182,6 +1187,26 @@ class Report extends Component
             return $stock->stock_operations->first()->description ?? 'no_description';
         });
         $data['repair_report'] = $repair_report;
+
+        $order_ids = Order_model::where('customer_id', $vendor_id)->whereBetween('created_at', [$start_date, $end_date])->pluck('id');
+        $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function ($q) use ($order_ids){
+            $q->whereIn('order_id', $order_ids);
+        })->orderBy('product_id')->orderBy('storage')->get();
+
+        $result = [];
+        foreach($product_storage_sort as $pss){
+            $product = $pss->product;
+            $storage = $pss->storage_id->name ?? null;
+
+            $datas = [];
+            $datas['pss_id'] = $pss->id;
+            $datas['model'] = $product->model.' '.$storage;
+            $datas['available_stock_count'] = $pss->stocks->whereIn('order_id',$order_ids)->where('status',1)->count();
+            $datas['sold_stock_count'] = $pss->stocks->whereIn('order_id',$order_ids)->where('status',2)->count();
+
+            $result[] = $datas;
+        }
+        $data['purchase_report'] = $result;
 
         // dd($repair_report);
         return view('livewire.vendor_report_new')->with($data);
