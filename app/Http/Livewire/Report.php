@@ -1170,7 +1170,7 @@ class Report extends Component
         $available_stock_count = $available_stock_ids->count();
         $sold_stock_count = $sold_stock_ids->count();
         $available_stock_cost = Order_item_model::whereIn('stock_id', $available_stock_ids)->whereIn('order_id', $order_ids)->sum('price');
-        $sold_stock_cost = Order_item_model::whereIn('stock_id', $sold_stock_ids)->whereNotIn('order_id', $order_ids)->pluck('price','stock_id');
+        $sold_stock_cost = Order_item_model::whereIn('stock_id', $sold_stock_ids)->whereNotIn('order_id', $order_ids)->orderBy('id')->pluck('price','stock_id')->sum();
 
         dd($sold_stock_cost);
 
