@@ -41,17 +41,17 @@
 
             <div class="text-center row">
                 <div class="col-6"><h6>Total Purchased:</h6></div><div class="col-6"><h6>{{ $vendor->purchase_qty }}</h6></div>
-                <div class="col-6"><h6>Total Purchase Cost:</h6></div><div class="col-6"><h6>€{{ amount_formatter($vendor->purchase_cost,2) }}</h6></div>
+                <div class="col-6"><h6>Total Purchase Cost:</h6></div><div class="col-6"><h6>€ {{ amount_formatter($vendor->purchase_cost,2) }}</h6></div>
                 <div class="col-6"><h6>Total RMA:</h6></div><div class="col-6"><h6>{{ $vendor->rma_qty }}</h6></div>
-                <div class="col-6"><h6>Total RMA Cost:</h6></div><div class="col-6"><h6>€{{ amount_formatter($vendor->rma_price,2) }}</h6></div>
+                <div class="col-6"><h6>Total RMA Cost:</h6></div><div class="col-6"><h6>€ {{ amount_formatter($vendor->rma_price,2) }}</h6></div>
 
             </div>
 
             <div class="text-center row">
-                <div class="col-6"><h6>Total Items Sold:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-                <div class="col-6"><h6>Total Sale Price:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-                <div class="col-6"><h6>Total Item Remaining:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
-                <div class="col-6"><h6>Total Remaining Cost:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+                <div class="col-6"><h6>Total Items Sold:</h6></div><div class="col-6"><h6>{{ $sold_stock_count }}</h6></div>
+                <div class="col-6"><h6>Total Sale Price:</h6></div><div class="col-6"><h6>{{  }}</h6></div>
+                <div class="col-6"><h6>Total Item Remaining:</h6></div><div class="col-6"><h6>{{ $available_stock_count }}</h6></div>
+                <div class="col-6"><h6>Total Remaining Cost:</h6></div><div class="col-6"><h6>{{ $available_stock_cost }}</h6></div>
 
             </div>
 
@@ -90,7 +90,7 @@
                             {{-- <td>{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</td> --}}
                             <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#graded_count_modal">{{ $summery['model'] }}</a></td>
                             <td>{{ $summery['sold_stock_count'] ." + ". $summery['available_stock_count'] ." = ". $summery['sold_stock_count'] + $summery['available_stock_count'] }}</td>
-                            <td>{{ amount_formatter($summery['stock_cost']) }}</td>
+                            <td>€ {{ amount_formatter($summery['stock_cost']) }}</td>
                         </tr>
                         {{-- @endif --}}
                     @endforeach

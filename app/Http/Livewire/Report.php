@@ -1161,6 +1161,39 @@ class Report extends Component
         $data['vendor'] = $vendor;
 
 
+        $order_ids = Order_model::where('customer_id', $vendor_id)->whereBetween('created_at', [$start_date, $end_date])->pluck('id');
+
+        $available_stock_count = Stock_model::whereIn('order_id', $order_ids)->where('status',1)->count();
+        $sold_stock_count = Stock_model::whereIn('order_id', $order_ids)->where('status',2)->count();
+        $available_stock_cost = Stock_model::whereIn('order_id', $order_ids)->where('status',1)->sum('purchase_item.price');
+
+        $data['available_stock_count'] = $available_stock_count;
+        $data['sold_stock_count'] = $sold_stock_count;
+        $data['available_stock_cost'] = $available_stock_cost;
+
+
+
+        $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function ($q) use ($order_ids){
+            $q->whereIn('order_id', $order_ids);
+        })->orderBy('product_id')->orderBy('storage')->get();
+
+        $result = [];
+        foreach($product_storage_sort as $pss){
+            $product = $pss->product;
+            $storage = $pss->storage_id->name ?? null;
+
+            $datas = [];
+            $datas['pss_id'] = $pss->id;
+            $datas['model'] = $product->model.' '.$storage;
+            $datas['available_stock_count'] = $pss->stocks->whereIn('order_id',$order_ids)->where('status',1)->count();
+            $datas['sold_stock_count'] = $pss->stocks->whereIn('order_id',$order_ids)->where('status',2)->count();
+            $datas['stock_cost'] = $pss->stocks->whereIn('order_id',$order_ids)->sum('purchase_item.price');
+
+            $result[] = $datas;
+        }
+        $data['purchase_report'] = $result;
+
+
         $rma_report = Stock_model::whereHas('order',function ($q) use ($vendor_id){
                 $q->where('customer_id', $vendor_id);
             })->whereHas('variation', function ($q){
@@ -1191,26 +1224,6 @@ class Report extends Component
         });
         $data['repair_report'] = $repair_report;
 
-        $order_ids = Order_model::where('customer_id', $vendor_id)->whereBetween('created_at', [$start_date, $end_date])->pluck('id');
-        $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function ($q) use ($order_ids){
-            $q->whereIn('order_id', $order_ids);
-        })->orderBy('product_id')->orderBy('storage')->get();
-
-        $result = [];
-        foreach($product_storage_sort as $pss){
-            $product = $pss->product;
-            $storage = $pss->storage_id->name ?? null;
-
-            $datas = [];
-            $datas['pss_id'] = $pss->id;
-            $datas['model'] = $product->model.' '.$storage;
-            $datas['available_stock_count'] = $pss->stocks->whereIn('order_id',$order_ids)->where('status',1)->count();
-            $datas['sold_stock_count'] = $pss->stocks->whereIn('order_id',$order_ids)->where('status',2)->count();
-            $datas['stock_cost'] = $pss->stocks->whereIn('order_id',$order_ids)->sum('purchase_item.price');
-
-            $result[] = $datas;
-        }
-        $data['purchase_report'] = $result;
 
         // dd($repair_report);
         return view('livewire.vendor_report_new')->with($data);
