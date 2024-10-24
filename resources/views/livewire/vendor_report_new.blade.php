@@ -49,9 +49,9 @@
 
             <div class="text-center row">
                 <div class="col-6"><h6>Total Items Sold:</h6></div><div class="col-6"><h6>{{ $sold_stock_count }}</h6></div>
-                <div class="col-6"><h6>Total Sale Price:</h6></div><div class="col-6"><h6></h6></div>
+                <div class="col-6"><h6>Total Sale Price:</h6></div><div class="col-6"><h6>€{{ amount_formatter($sold_stock_cost) }}</h6></div>
                 <div class="col-6"><h6>Total Item Remaining:</h6></div><div class="col-6"><h6>{{ $available_stock_count }}</h6></div>
-                <div class="col-6"><h6>Total Remaining Cost:</h6></div><div class="col-6"><h6>{{ $available_stock_cost }}</h6></div>
+                <div class="col-6"><h6>Total Remaining Cost:</h6></div><div class="col-6"><h6>€{{ amount_formatter($available_stock_cost) }}</h6></div>
 
             </div>
 
