@@ -61,6 +61,8 @@ class ProjectedSalesExport
         $pdf = new TCPDF();
         $pdf->SetMargins(10, 10, 10);
 
+        $pdf->setTitle('Projected Sales');
+
 
         foreach($result as $category => $cat){
             // Add heading cell at the top center
