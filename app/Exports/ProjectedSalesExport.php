@@ -75,10 +75,10 @@ class ProjectedSalesExport
                 $pdf->SetFont('times', 'B', 10);
                 // Add headings
                 $pdf->Cell(8, 0, 'No');
-                $pdf->Cell(80, 0, 'Model');
-                $pdf->Cell(12, 0, 'Available Stock');
+                $pdf->Cell(100, 0, 'Model');
+                $pdf->Cell(20, 0, 'Available Stock');
                 foreach($months as $month){
-                    $pdf->Cell(12, 0, $month);
+                    $pdf->Cell(15, 0, $month);
                 }
 
 
@@ -96,14 +96,14 @@ class ProjectedSalesExport
                     $pdf->MultiCell(8, 6, $i, 1, 'L', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
                     // Model Name (wraps text if too long)
-                    $pdf->MultiCell(80, 6, $data['model'], 1, 'L', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                    $pdf->MultiCell(100, 6, $data['model'], 1, 'L', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
                     $pdf->SetFont('times', 'B', 12);
                     // Stock count
-                    $pdf->MultiCell(12, 6, $data['available_stock'], 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                    $pdf->MultiCell(20, 6, $data['available_stock'], 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
                     foreach($months as $month){
-                        $pdf->MultiCell(12, 6, $data[$month], 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                        $pdf->MultiCell(15, 6, $data[$month], 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
                     }
                     // // Average cost
                     // $pdf->MultiCell(18, 6, '€ '.number_format($data['average_cost'], 2), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
