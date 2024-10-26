@@ -103,9 +103,10 @@ class ProjectedSalesExport
                     $pdf->SetFont('times', 'B', 12);
                     // Stock count
                     $pdf->MultiCell(25, 6, $data['available_stock'], 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
-
+                    $j = count($months);
                     foreach($months as $month){
-                        $pdf->MultiCell(20, 6, $data[$month], 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                        $j--;
+                        $pdf->MultiCell(20, 6, $data[$month], 1, 'C', false, $j == 0 ? 1 : 0, '', '', true, 0, false, true, 6, 'T', true);
                     }
                     // // Average cost
                     // $pdf->MultiCell(18, 6, '€ '.number_format($data['average_cost'], 2), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
