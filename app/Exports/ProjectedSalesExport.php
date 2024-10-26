@@ -107,6 +107,7 @@ class ProjectedSalesExport
                     foreach($months as $month){
                         $j--;
                         $pdf->MultiCell(20, 6, $data[$month], 1, 'C', false, $j == 0 ? 1 : 0, '', '', true, 0, false, true, 6, 'T', true);
+                        $pdf->SetFont('times', '', 12);
                     }
                     // // Average cost
                     // $pdf->MultiCell(18, 6, '€ '.number_format($data['average_cost'], 2), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
