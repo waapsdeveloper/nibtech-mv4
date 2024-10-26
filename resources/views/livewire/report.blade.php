@@ -21,6 +21,7 @@
             </div>
             <div>
                 <div class="btn-group p-1" role="group">
+                    <a href="{{url('report/projected_sales')}}" class="btn btn-link" target="_blank">Projected Sales</a>
                     <button type="button" class="btn-sm btn-secondary dropdown-toggle" id="pack_sheet" data-bs-toggle="dropdown" aria-expanded="false">
                     Orders Report
                     </button>

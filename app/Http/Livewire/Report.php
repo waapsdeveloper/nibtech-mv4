@@ -6,6 +6,7 @@ use App\Exports\B2COrderReportExport;
 use App\Exports\BatchInitialReportExport;
 use App\Exports\BatchReportExport;
 use App\Exports\OrderReportExport;
+use App\Exports\ProjectedSalesExport;
 use App\Models\Brand_model;
 use App\Models\Category_model;
 use Carbon\Carbon;
@@ -352,6 +353,11 @@ class Report extends Component
         $data['end_date'] = date("Y-m-d", strtotime($end_date));
         return view('livewire.report')->with($data);
     }
+    public function projected_sales(){
+        $pdf = new ProjectedSalesExport();
+        $pdf->generatePdf();
+    }
+
     public function ecommerce_report()
     {
         $data['categories'] = Category_model::pluck('name','id');
