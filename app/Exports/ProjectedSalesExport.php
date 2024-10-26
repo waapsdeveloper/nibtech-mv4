@@ -70,7 +70,7 @@ class ProjectedSalesExport
                 // Add a new page
                 $pdf->AddPage('L');
                 $pdf->SetFont('times', 'B', 14);
-                $pdf->Cell(0, 9, $categories[$category] . " - " . $brands[$brand], 0, 1, 'C');
+                $pdf->Cell(0, 10, $categories[$category] . " - " . $brands[$brand], 0, 1, 'C');
                 $pdf->SetAutoPageBreak(TRUE, 15);
                 // Set font
 
