@@ -76,11 +76,11 @@ class ProjectedSalesExport
 
                 $pdf->SetFont('times', 'B', 10);
                 // Add headings
-                $pdf->Cell(8, 0, 'No');
-                $pdf->Cell(100, 0, 'Model');
-                $pdf->Cell(25, 0, 'Available Stock');
+                $pdf->Cell(8, 0, 'No', 1, 0, 'C');
+                $pdf->Cell(100, 0, 'Model', 1, 0, 'C');
+                $pdf->Cell(25, 0, 'Available Stock', 1, 0, 'C');
                 foreach($months as $month){
-                    $pdf->Cell(20, 0, $month);
+                    $pdf->Cell(20, 0, $month, 1, 0, 'C');
                 }
 
 
