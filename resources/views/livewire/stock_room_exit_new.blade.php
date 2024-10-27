@@ -56,6 +56,17 @@
 session()->forget('success');
 @endphp
 @endif
+@if (session('info'))
+<div class="alert alert-info alert-dismissible fade show" role="alert">
+    <span class="alert-inner--icon"><i class="fe fe-thumbs-up"></i></span>
+    <span class="alert-inner--text"><strong>{{session('info')}}</strong></span>
+    <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
+</div>
+<br>
+@php
+session()->forget('info');
+@endphp
+@endif
 @if (session('error'))
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
         <span class="alert-inner--icon"><i class="fe fe-thumbs-down"></i></span>
