@@ -17,6 +17,7 @@
         @endphp
 		<title> {{ $title_page ?? null }} Britain Tech – Admin Panel </title>
 
+
         @include('layouts.components.styles')
         <style>
 
@@ -37,6 +38,9 @@
             }
         </style>
         @livewireStyles
+        <script src="//unpkg.com/alpinejs" defer></script>
+
+        <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 	</head>
 
 	<body class="ltr main-body app sidebar-mini">
