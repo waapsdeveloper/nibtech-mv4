@@ -25,6 +25,7 @@ class Variation_model extends Model
         'color',
         'storage',
         'grade',
+        'sub_grade',
         'state',
     ];
     // protected static function booted()
@@ -41,6 +42,7 @@ class Variation_model extends Model
                     ->where('storage', $this->storage)
                     ->where('color', $this->color)
                     ->where('grade', $this->grade)
+                    ->where('sub_grade', $this->sub_grade)
                     ->whereNotNull('sku')
                     ->where('id', '!=', $this->id);
     }
@@ -72,6 +74,10 @@ class Variation_model extends Model
     public function grade_id()
     {
         return $this->belongsTo(Grade_model::class, 'grade', 'id');
+    }
+    public function sub_grade_id()
+    {
+        return $this->hasOne(Grade_model::class, 'id', 'sub_grade');
     }
     public function stocks()
     {

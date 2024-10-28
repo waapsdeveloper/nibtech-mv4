@@ -173,7 +173,7 @@ class RMA extends Component
                 }
 
                 $s_variation = $stock->variation;
-                $variation = Variation_model::firstOrNew(['product_id' => $s_variation->product_id, 'storage' => $s_variation->storage, 'color' => $s_variation->color, 'grade' => request('grade')]);
+                $variation = Variation_model::firstOrNew(['product_id' => $s_variation->product_id, 'storage' => $s_variation->storage, 'color' => $s_variation->color, 'grade' => request('grade'), 'sub_grade' => request('sub_grade')]);
 
                 $variation->stock += 1;
                 $variation->status = 1;

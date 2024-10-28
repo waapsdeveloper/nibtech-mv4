@@ -266,7 +266,7 @@
 
                                         <tr>
                                             <td>{{ $i + 1 }}</td>
-                                            <td>{{ $products[$item->variation->product_id]}} {{$storages[$item->variation->storage] ?? null}} {{$colors[$item->variation->color] ?? null}} {{$grades[$item->variation->grade] }}</td>
+                                            <td>{{ $products[$item->variation->product_id]}} {{$storages[$item->variation->storage] ?? null}} {{$colors[$item->variation->color] ?? null}} {{$grades[$item->variation->grade] }} {{$grades[$item->variation->sub_grade] ?? '' }}</td>
                                             <td>{{ $item->imei.$item->serial_number }}</td>
                                             <td>{{ $item->order->customer->first_name }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
@@ -301,7 +301,7 @@
                             isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
                             isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
                         @endphp
-                        {{ $variation->product->model." ".$storage." ".$color." ".$variation->grade_id->name }}
+                        {{ $variation->product->model." ".$storage." ".$color." ".$variation->grade_id->name }} {{ $variation->sub_grade_id->name ?? '' }}
                     </div>
                             {{-- {{ $variation }} --}}
                     <div class="card-body"><div class="table-responsive" style="max-height: 400px">
@@ -444,6 +444,7 @@
                                             isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
                                             isset($variation->color)?$color = $colors[$variation->color]:$color = null;
                                             isset($variation->grade)?$grade = $grades[$variation->grade]:$grade = null;
+                                            isset($variation->sub_grade)?$sub_grade = $grades[$variation->sub_grade]:$sub_grade = null;
 
                                         @endphp
                                         <tr>
@@ -451,7 +452,7 @@
                                             {{-- <td>{{ $item->order->customer->first_name }}</td> --}}
                                             <td>{{ $item->imei.$item->serial_number }}</td>
                                             <td>
-                                                {{ $product." ".$storage." ".$color." ".$grade }}
+                                                {{ $product." ".$storage." ".$color." ".$grade." ".$sub_grade }}
                                             </td>
 
                                             @if ($process->status == 3 && session('user')->hasPermission('view_cost'))

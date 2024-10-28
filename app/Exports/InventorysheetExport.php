@@ -27,6 +27,7 @@ class InventorysheetExport implements FromCollection, WithHeadings
         ->leftJoin('color', 'variation.color', '=', 'color.id')
         ->leftJoin('storage', 'variation.storage', '=', 'storage.id')
         ->leftJoin('grade', 'variation.grade', '=', 'grade.id')
+        ->leftJoin('grade as sub_grade', 'variation.sub_grade', '=', 'sub_grade.id')
         ->leftJoin('orders', 'stock.order_id', '=', 'orders.id')
         ->leftJoin('customer', 'orders.customer_id', '=', 'customer.id')
         ->leftJoin('order_items', function($join) {
@@ -51,6 +52,7 @@ class InventorysheetExport implements FromCollection, WithHeadings
             'color.name as color',
             'storage.name as storage',
             'grade.name as grade_name',
+            'sub_grade.name as sub_grade_name',
             'stock.imei as imei',
             'stock.serial_number as serial_number',
             'customer.first_name as vendor',
@@ -84,6 +86,9 @@ class InventorysheetExport implements FromCollection, WithHeadings
         ->when(request('grade') != '', function ($q) {
             $q->where('variation.grade', request('grade'));
         })
+        ->when(request('sub_grade') != '', function ($q) {
+            $q->where('variation.sub_grade', request('sub_grade'));
+        })
         ->when(request('vendor') != '', function ($q) {
             $q->where('orders.customer_id', request('vendor'));
         })
@@ -102,6 +107,7 @@ class InventorysheetExport implements FromCollection, WithHeadings
             'Color',
             'Storage',
             'Grade',
+            'Sub Grade',
             'IMEI',
             'Serial Number',
             'Vendor',

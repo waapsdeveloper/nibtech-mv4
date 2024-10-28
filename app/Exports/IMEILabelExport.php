@@ -15,7 +15,7 @@ class IMEILabelExport
         $stock_id = request('stock_id');
         $stock = Stock_model::find($stock_id);
         // Fetch the product variation, order, and stock movements
-        $variation = Variation_model::with(['product', 'storage_id', 'color_id', 'grade_id'])
+        $variation = Variation_model::with(['product', 'storage_id', 'color_id', 'grade_id', 'sub_grade_id'])
                 ->find($stock->variation_id);
 
         $orders = Order_item_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
@@ -47,9 +47,10 @@ class IMEILabelExport
         $storage = $variation->storage_id->name ?? '';
         $color = $variation->color_id->name ?? '';
         $grade = $variation->grade_id->name ?? '';
+        $sub_grade = $variation->sub_grade_id->name ?? '';
         // Write product information
         $html = '
-            <strong>' . $model . ' ' . $storage . ' ' . $color . ' ' . $grade . '<br>
+            <strong>' . $model . ' ' . $storage . ' ' . $color . ' ' . $grade . ' ' . $sub_grade . '<br>
             IMEI:</strong> ' . $imei;
 
         $pdf->writeHTML($html, true, false, true, false, '');
@@ -72,8 +73,9 @@ class IMEILabelExport
         $new_storage = $new_variation->storage_id->name ?? '';
         $new_color = $new_variation->color_id->name ?? '';
         $new_grade = $new_variation->grade_id->name ?? '';
+        $new_sub_grade = $new_variation->sub_grade_id->name ?? '';
         $movementDetails = $movement->created_at . ' - ' . ($movement->admin->first_name ?? 'Unknown') . ' - ' .
-            ' From: ' . ($new_model . ' ' . $new_storage . ' ' . $new_color . ' ' . $new_grade) . ' - ' . $movement->description;
+            ' From: ' . ($new_model . ' ' . $new_storage . ' ' . $new_color . ' ' . $new_grade . ' ' . $new_sub_grade) . ' - ' . $movement->description;
         $pdf->Write(0, $movementDetails, '', 0, 'L', true, 0, false, false, 0);
 
 

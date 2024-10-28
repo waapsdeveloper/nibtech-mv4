@@ -109,7 +109,7 @@
             @endif
         </div>
         @if (isset($stock))
-            <h5 class="mb-0"> <small>Current Variation:&nbsp;&nbsp;</small> {{ $stock->variation->product->model ?? "Variation Issue"}}{{" - " . (isset($stock->variation->storage_id)?$stock->variation->storage_id->name . " - " : null) . (isset($stock->variation->color_id)?$stock->variation->color_id->name. " - ":null)}} <strong><u>{{ $stock->variation->grade_id->name ?? null }}</u></strong></h5>
+            <h5 class="mb-0"> <small>Current Variation:&nbsp;&nbsp;</small> {{ $stock->variation->product->model ?? "Variation Issue"}}{{" - " . (isset($stock->variation->storage_id)?$stock->variation->storage_id->name . " - " : null) . (isset($stock->variation->color_id)?$stock->variation->color_id->name. " - ":null)}} <strong><u>{{ $stock->variation->grade_id->name ?? null }} {{ (isset($stock->variation->sub_grade_id)?$stock->variation->sub_grade_id->name:null)}}</u></strong></h5>
         @endif
         <div style="border-bottom: 1px solid rgb(216, 212, 212);">
         </div>
@@ -150,15 +150,21 @@
                                 @if (session('user')->hasPermission('imei_grade_correction'))
                                     <form action="{{ url('move_inventory/change_grade/true')}}" method="POST" class="form-inline">
                                         @csrf
-                                        <select name="repair[grade]" class="form-select wd-150">
+                                        <select name="grade" class="form-select wd-150">
                                             <option value="">Move to</option>
+                                            @foreach ($grades as $id => $grade)
+                                                <option value="{{ $id }}">{{ $grade }}</option>
+                                            @endforeach
+                                        </select>
+                                        <select name="sub_grade" class="form-select wd-150">
+                                            <option value="">Sub Grade</option>
                                             @foreach ($grades as $id => $grade)
                                                 <option value="{{ $id }}">{{ $grade }}</option>
                                             @endforeach
                                         </select>
 
                                         <div class="form-floating">
-                                            <input type="text" class="form-control" name="repair[description]" placeholder="Reason" style="width: 270px;">
+                                            <input type="text" class="form-control" name="description" placeholder="Reason" style="width: 270px;">
                                             {{-- <input type="text" class="form-control" name="repair[imei]" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset"> --}}
                                             <label for="">Reason</label>
                                         </div>
@@ -227,7 +233,7 @@
                                             @endif</td>
                                             <td>
                                                 @if ($item->variation ?? false)
-                                                    <strong>{{ $item->variation->sku }}</strong>{{ " - " . $item->variation->product->model . " - " . (isset($item->variation->storage_id)?$item->variation->storage_id->name . " - " : null) . (isset($item->variation->color_id)?$item->variation->color_id->name. " - ":null)}} <strong><u>{{ $item->variation->grade_id->name ?? "Missing Grade" }}</u></strong>
+                                                    <strong>{{ $item->variation->sku }}</strong>{{ " - " . $item->variation->product->model . " - " . (isset($item->variation->storage_id)?$item->variation->storage_id->name . " - " : null) . (isset($item->variation->color_id)?$item->variation->color_id->name. " - ":null)}} <strong><u>{{ $item->variation->grade_id->name ?? "Missing Grade" }} {{ $item->variation->sub_grade_id->name ?? "" }}</u></strong>
                                                 @endif
                                                 @if ($item->care_id != null && $order->order_type_id == 3)
                                                     <a class="" href="https://backmarket.fr/bo_merchant/customer-request/{{ $item->care_id }}" target="_blank"><strong class="text-danger">Conversation</strong></a>
@@ -495,12 +501,12 @@
                                                 <td title="{{ $operation->id }}">{{ $i + 1 }}</td>
                                                 <td>
                                                     @if ($operation->old_variation ?? false)
-                                                        <strong>{{ $operation->old_variation->sku }}</strong>{{ " - " . $operation->old_variation->product->model . " - " . (isset($operation->old_variation->storage_id)?$operation->old_variation->storage_id->name . " - " : null) . (isset($operation->old_variation->color_id)?$operation->old_variation->color_id->name. " - ":null)}} <strong><u>{{ (isset($operation->old_variation->grade_id)?$operation->old_variation->grade_id->name:null)}} </u></strong>
+                                                        <strong>{{ $operation->old_variation->sku }}</strong>{{ " - " . $operation->old_variation->product->model . " - " . (isset($operation->old_variation->storage_id)?$operation->old_variation->storage_id->name . " - " : null) . (isset($operation->old_variation->color_id)?$operation->old_variation->color_id->name. " - ":null)}} <strong><u>{{ (isset($operation->old_variation->grade_id)?$operation->old_variation->grade_id->name:null)}} {{ $operation->old_variation->sub_grade_id->name ?? "" }} </u></strong>
                                                     @endif
                                                 </td>
                                                 <td>
                                                     @if ($operation->new_variation ?? false)
-                                                        <strong>{{ $operation->new_variation->sku }}</strong>{{ " - " . $operation->new_variation->product->model . " - " . (isset($operation->new_variation->storage_id)?$operation->new_variation->storage_id->name . " - " : null) . (isset($operation->new_variation->color_id)?$operation->new_variation->color_id->name. " - ":null)}} <strong><u>{{ $operation->new_variation->grade_id->name ?? "Missing Grade" }}</u></strong>
+                                                        <strong>{{ $operation->new_variation->sku }}</strong>{{ " - " . $operation->new_variation->product->model . " - " . (isset($operation->new_variation->storage_id)?$operation->new_variation->storage_id->name . " - " : null) . (isset($operation->new_variation->color_id)?$operation->new_variation->color_id->name. " - ":null)}} <strong><u>{{ $operation->new_variation->grade_id->name ?? "Missing Grade" }} {{ $operation->new_variation->sub_grade_id->name ?? "" }}</u></strong>
                                                     @endif
                                                 </td>
                                                 <td>{{ $operation->stock->imei.$operation->stock->serial_number }}</td>

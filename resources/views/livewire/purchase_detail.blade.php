@@ -543,8 +543,9 @@
                                     isset($variation->color)?$color = $colors[$variation->color]:$color = null;
                                     isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
                                     isset($variation->grade)?$grade = $grades[$variation->grade]:$grade = null;
+                                    isset($variation->sub_grade)?$sub_grade = $grades[$variation->sub_grade]:$sub_grade = null;
                                 @endphp
-                                {{ $products[$variation->product_id]." ".$storage." ".$color." ".$grade }}
+                                {{ $products[$variation->product_id]." ".$storage." ".$color." ".$grade." ".$sub_grade }}
                             </div>
                                     {{-- {{ $variation }} --}}
                             <div class="card-body"><div class="table-responsive" style="max-height: 400px">
@@ -666,8 +667,9 @@
                                                         isset($variation->color)?$color = $colors[$variation->color]:$color = null;
                                                         isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
                                                         isset($variation->grade)?$grade = $grades[$variation->grade]:$grade = null;
+                                                        isset($variation->sub_grade)?$sub_grade = $grades[$variation->sub_grade]:$sub_grade = null;
                                                         @endphp
-                                                        {{ $product." ".$storage." ".$color}} {{$grade }}
+                                                        {{ $product." ".$storage." ".$color}} {{$grade }} {{$sub_grade}}
                                                     </td>
                                                     <td title="Double click to change" data-stock="{{ $stock->id }}">{{ $stock->imei.$stock->serial_number }}</td>
                                                     <td>{{ $item->order->customer->first_name }}</td>

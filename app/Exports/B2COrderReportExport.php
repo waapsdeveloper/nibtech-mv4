@@ -22,6 +22,7 @@ class B2COrderReportExport implements FromCollection, WithHeadings
         ->leftJoin('color', 'variation.color', '=', 'color.id')
         ->leftJoin('storage', 'variation.storage', '=', 'storage.id')
         ->leftJoin('grade', 'variation.grade', '=', 'grade.id')
+        ->leftJoin('grade as sub_grade', 'variation.sub_grade', '=', 'sub_grade.id')
         ->leftJoin('order_items as purchase_item', function ($join) {
             $join->on('stock.id', '=', 'purchase_item.stock_id')
                 ->whereRaw('purchase_item.order_id = stock.order_id');
@@ -35,6 +36,7 @@ class B2COrderReportExport implements FromCollection, WithHeadings
             'color.name as color',
             'storage.name as storage',
             'grade.name as grade_name',
+            'sub_grade.name as sub_grade_name',
             'stock.imei as imei',
             'stock.serial_number as serial_number',
             'stock.tester as tester',
@@ -73,6 +75,7 @@ class B2COrderReportExport implements FromCollection, WithHeadings
             'Color',
             'Storage',
             'Grade',
+            'Sub Grade',
             'IMEI',
             'Serial Number',
             'Tester',

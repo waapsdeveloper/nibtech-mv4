@@ -562,7 +562,7 @@
                                         @endphp
                                         <tr>
                                             <td>{{ $i }}</td>
-                                            <td>{{ $products[$variation->product_id]}} {{$storages[$variation->storage] ?? null}} {{$colors[$variation->color] ?? null}} {{$grades[$variation->grade] }}</td>
+                                            <td>{{ $products[$variation->product_id]}} {{$storages[$variation->storage] ?? null}} {{$colors[$variation->color] ?? null}} {{$grades[$variation->grade] }} {{$grades[$variation->sub_grade] ?? '' }}</td>
                                             <td>{{ $stock->imei.$stock->serial_number }}</td>
                                             <td>{{ $customer->first_name }}</td>
                                             @if (session('user')->hasPermission('view_price'))
@@ -656,7 +656,7 @@
                                         @endphp
                                         <tr @if($purchase_item->price != $price) style="background: LightGreen" @endif>
                                             <td>{{ $i }}</td>
-                                            <td>{{ $colors[$variation->color] ?? null }} - {{ $grades[$variation->grade] ?? null }}</td>
+                                            <td>{{ $colors[$variation->color] ?? null }} - {{ $grades[$variation->grade] ?? null }} {{ $grades[$variation->sub_grade] ?? null }}</td>
                                             {{-- <td>{{ $item->order->customer->first_name }}</td> --}}
                                             <td>{{ $item->imei.$item->serial_number }}</td>
                                             @if (session('user')->hasPermission('view_price'))

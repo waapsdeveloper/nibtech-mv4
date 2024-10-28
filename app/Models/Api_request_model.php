@@ -91,7 +91,15 @@ class Api_request_model extends Model
                 // retrieve its index
                 $grade = array_search($gradeName, $lowercaseGrades);
             }else{
-                if($gradeName == '' || $gradeName == 'a+' || $gradeName == 'a/a+' || $gradeName == 'ug'){
+
+                if(str_contains($gradeName, ' | ')){
+                    $gradeName1 = explode(' | ', $gradeName)[0];
+                    $grade = array_search($gradeName1, $lowercaseGrades);
+
+                    $gradeName2 = explode(' | ', $gradeName)[1];
+                    $sub_grade = array_search($gradeName2, $lowercaseGrades);
+
+                }elseif($gradeName == '' || $gradeName == 'a+' || $gradeName == 'a/a+' || $gradeName == 'ug'){
                     $grade = 7;
                 }elseif($gradeName == 'd'){
                     $grade = $stock->variation->grade;
@@ -137,8 +145,11 @@ class Api_request_model extends Model
                     'product_id' => $stock->variation->product_id,
                     'storage' => $stock->variation->storage,
                     'color' => $stock->variation->color,
-                    'grade' => $stock->variation->grade
+                    'grade' => $stock->variation->grade,
                 ];
+                if(isset($sub_grade)){
+                    $new_variation['sub_grade'] = $sub_grade;
+                }
 
                     $new_variation['storage'] = $storage;
                 if($stock->variation->storage != null && $stock->variation->storage != 0 && $stock->variation->storage != $storage){

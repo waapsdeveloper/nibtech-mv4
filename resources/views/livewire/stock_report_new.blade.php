@@ -61,7 +61,7 @@
                                 @endphp
                                 <tr>
                                     <td>{{ $s+1 }}</td>
-                                    <td>{{ $products[$variation->product_id] ?? ''}} {{ $storages[$variation->storage] ?? '' }} {{ $colors[$variation->color] ?? '' }} {{ $grades[$variation->grade] ?? '' }}</td>
+                                    <td>{{ $products[$variation->product_id] ?? ''}} {{ $storages[$variation->storage] ?? '' }} {{ $colors[$variation->color] ?? '' }} {{ $grades[$variation->grade] ?? '' }} {{ $grades[$variation->sub_grade] ?? '' }}</td>
                                     <td><a href="#" onclick="window.open('{{url('report')}}/vendor_report/{{$purchase_order->customer_id}}?start_date={{request('start_date')}}&end_date={{request('end_date')}}','_blank','print_popup','width=1800,height=800');">{{ $vendors[$purchase_order->customer_id] }} </a></td>
                                     <td><a title="{{$stock->id}} | Search Serial" href="{{url('imei')."?imei=".$stock->imei.$stock->serial_number}}" target="_blank"> {{$stock->imei.$stock->serial_number }} </a></td>
                                     @if (session('user')->hasPermission('view_cost'))

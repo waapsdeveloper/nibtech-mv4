@@ -125,6 +125,7 @@ class MoveInventory extends Component
                 $storage = $stock->variation->storage;
                 $color = $stock->variation->color;
                 $grade = $stock->variation->grade;
+                $sub_grade = $stock->variation->sub_grade;
                 if(session('user')->hasPermission('change_variation')){
                     if(request('product') != ''){
                         $product_id = request('product');
@@ -147,14 +148,18 @@ class MoveInventory extends Component
                     }
                 }
 
-                    if(request('grade') != ''){
-                        $grade = request('grade');
-                    }
+                if(request('grade') != ''){
+                    $grade = request('grade');
+                }
+                if(request('sub_grade') != ''){
+                    $sub_grade = request('sub_grade');
+                }
                 $new_variation = Variation_model::firstOrNew([
                     'product_id' => $product_id,
                     'storage' => $storage,
                     'color' => $color,
                     'grade' => $grade,
+                    'sub_grade' => $sub_grade,
                 ]);
                 $new_variation->status = 1;
 

@@ -249,6 +249,14 @@
                                                     @endforeach
                                                 </select>
                                             </td>
+                                            <td>
+                                                <select name="update[sub_grade]" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
+                                                    <option value="">None</option>
+                                                    @foreach ($grades as $grade)
+                                                        <option value="{{ $grade->id }}" {{ $product->grade == $grade->id ? 'selected' : '' }}>{{ $grade->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </td>
                                             <td><a href="{{ url('inventory').'?variation='.$product->id}}"> {{ $product->available_stocks_count }} </a></td>
                                             <td>{{ $product->price }}</td>
                                             <td>{{ $product->updated_at }}</td>
