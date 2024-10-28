@@ -55,7 +55,7 @@ class InventorysheetExport implements FromCollection, WithHeadings
             'stock.serial_number as serial_number',
             'customer.first_name as vendor',
             'orders.reference_id as reference_id',
-            // 'order_items.price as cost',
+            'order_items.price as cost',
             'stock_operations.description as reason'
         )
         ->where('stock.status', 1)
@@ -106,7 +106,7 @@ class InventorysheetExport implements FromCollection, WithHeadings
             'Serial Number',
             'Vendor',
             'Reference',
-            // 'Cost',
+            'Cost',
             'Change Grade Reason'
         ];
     }
