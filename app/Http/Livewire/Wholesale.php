@@ -107,7 +107,7 @@ class Wholesale extends Component
         Order_model::where('id',$order_id)->delete();
         Order_issue_model::where('order_id',$order_id)->delete();
         session()->put('success', 'Order deleted successfully');
-        return redirect()->back();
+        return redirect(url('wholesale'));
     }
     public function delete_order_item($item_id){
         // dd($item_id);
