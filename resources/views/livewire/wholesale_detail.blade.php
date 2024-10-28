@@ -52,11 +52,11 @@
                         <label for="rate">Exchange Rate</label>
                     </div>
                     <div class="form-floating">
-                        <input type="text" class="form-control" id="reference" name="reference" placeholder="Enter Reference" value="{{$order->reference}}" required>
+                        <input type="text" class="form-control" id="reference" name="reference" placeholder="Enter Reference" value="{{$order->reference}}" required onchange="submitForm()">
                         <label for="reference">Reference</label>
                     </div>
                     <div class="form-floating">
-                        <input type="text" class="form-control" id="tracking_number" name="tracking_number" placeholder="Enter Tracking Number" value="{{$order->tracking_number}}" required>
+                        <input type="text" class="form-control" id="tracking_number" name="tracking_number" placeholder="Enter Tracking Number" value="{{$order->tracking_number}}">
                         <label for="tracking_number">Tracking Number</label>
                     </div>
                     <button type="submit" class="btn btn-success" name="approve" value="1">Approve</button>
