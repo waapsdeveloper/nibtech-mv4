@@ -140,11 +140,18 @@ class Wholesale extends Component
         $order->customer_id = request('customer_id');
         $order->reference = request('reference');
         $order->tracking_number = request('tracking_number');
-        $order->status = 3;
-        $order->processed_at = now()->format('Y-m-d H:i:s');
+
+        if(request('approve') == 1){
+            $order->status = 3;
+            $order->processed_at = now()->format('Y-m-d H:i:s');
+        }
         $order->save();
 
-        return redirect()->back();
+        if(request('approve') == 1){
+            return redirect()->back();
+        }else{
+            return "Updated";
+        }
     }
     public function wholesale_revert_status($order_id){
         $order = Order_model::find($order_id);

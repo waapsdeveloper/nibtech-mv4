@@ -28,7 +28,7 @@
                     </span> --}}
                 {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">BulkSale Order Detail</span><br> --}}
                 @if ($order->status == 2)
-                <form class="form-inline" style="max-width: 600px" method="POST" action="{{url('wholesale/approve').'/'.$order->id}}">
+                <form class="form-inline" id="approveform" style="max-width: 600px" method="POST" action="{{url('wholesale/approve').'/'.$order->id}}">
                     @csrf
                     <div class="">
                         <select name="customer_id" class="form-select">
@@ -59,9 +59,30 @@
                         <input type="text" class="form-control" id="tracking_number" name="tracking_number" placeholder="Enter Tracking Number" value="{{$order->tracking_number}}" required>
                         <label for="tracking_number">Tracking Number</label>
                     </div>
-                    <button type="submit" class="btn btn-success">Approve</button>
+                    <button type="submit" class="btn btn-success" name="approve" value="1">Approve</button>
                     <a class="btn btn-danger" href="{{url('delete_wholesale') . "/" . $order->id }}">Delete</a>
                 </form>
+
+                    {{-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> --}}
+                    <script>
+                        function submitForm() {
+                            var form = $("#approveform");
+                            var actionUrl = form.attr('action');
+
+                            $.ajax({
+                                type: "POST",
+                                url: actionUrl,
+                                data: form.serialize(), // serializes the form's elements.
+                                success: function(data) {
+                                    alert("Success: " + data); // show response from the PHP script.
+                                },
+                                error: function(jqXHR, textStatus, errorThrown) {
+                                    alert("Error: " + textStatus + " - " + errorThrown);
+                                }
+                            });
+                        }
+
+                    </script>
                 @else
                 Tracking Number: <a href="https://www.dhl.com/gb-en/home/tracking/tracking-express.html?submit=1&tracking-id={{$order->tracking_number}}" target="_blank"> {{$order->tracking_number}}</a>
                 <br>
