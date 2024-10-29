@@ -58,6 +58,7 @@ class PacksheetExport implements FromCollection, WithHeadings
         ->where('orders.deleted_at',null)
         ->where('order_items.deleted_at', null)
         ->orderBy('products.model', 'ASC')
+        ->orderBy('storage.name', 'ASC')
         ->get();
 
         return $data;
