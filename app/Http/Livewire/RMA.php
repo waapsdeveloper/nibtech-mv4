@@ -185,7 +185,7 @@ class RMA extends Component
                     'stock_id' => $stock->id,
                     'old_variation_id' => $stock->variation_id,
                     'new_variation_id' => $variation->id,
-                    'description' => $description,
+                    'description' => "RMA removed from ".$order->reference_id." | ".$description,
                     'admin_id' => session('user_id'),
                 ]);
 
