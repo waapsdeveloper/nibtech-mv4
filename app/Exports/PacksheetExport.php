@@ -45,6 +45,7 @@ class PacksheetExport implements FromCollection, WithHeadings
             'stock.imei as imei',
             'stock.serial_number as serial_number',
             'p_orders.reference_id as po',
+            'p_orders.created_at as po_date',
             'stock_operations.description as issue',
             'admin.first_name as admin',
             // 'order_items.price as price'
@@ -72,6 +73,7 @@ class PacksheetExport implements FromCollection, WithHeadings
             'IMEI',
             'Serial Number',
             'PO',
+            'PO Date',
             'Issue',
             'Admin',
             // 'Price'
