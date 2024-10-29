@@ -178,7 +178,7 @@ class Stock_room extends Component
                 // Initialize the counter if it doesn't exist
                 session()->put('counter', 1);
             }
-            if (in_array($grade, [5, 7])) {
+            if (in_array($grade, [9, 7])) {
                 session()->put('info', 'Stock Exit: '.$model.' - '.$storage.' - '.$color.' - '.$grade);
             } else {
                 session()->put('success', 'Stock Exit: '.$model.' - '.$storage.' - '.$color.' - '.$grade);
