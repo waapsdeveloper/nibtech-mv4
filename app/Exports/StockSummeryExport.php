@@ -83,13 +83,14 @@ class StockSummeryExport
                 // Add a new page
                 $pdf->AddPage();
                 $pdf->SetFont('times', 'B', 16);
-                $pdf->Cell(0, 15, $categories[$category] . " - " . $brands[$brand], 0, 0, 'C');
+                $pdf->Cell(0, 15, $categories[$category] . " - " . $brands[$brand], 0, 0, 'L');
+                $pdf->SetFont('times', 'B', 12);
                 $pdf->Cell(0, 0, 'DateTime: '.date('Y-m-d h:i:s'), 0, 1, 'R');
                 $pdf->SetAutoPageBreak(TRUE, 15);
                 // Set font
 
-                $pdf->SetFont('times', 'B', 10);
                 // Add headings
+                $pdf->SetFont('times', 'B', 10);
                 $pdf->Cell(8, 0, 'No');
                 $pdf->Cell(80, 0, 'Model');
                 $pdf->Cell(12, 0, 'Count');
