@@ -87,7 +87,7 @@ class Variation extends Component
         if($update['grade'] != null && $update['grade'] != $variation->grade){
             $variation->grade = $update['grade'];
         }
-        if($update['sub_grade'] != null && $update['sub_grade'] != $variation->sub_grade){
+        if(isset($update['sub_grade']) && $update['sub_grade'] != null && $update['sub_grade'] != $variation->sub_grade){
             $variation->sub_grade = $update['sub_grade'];
         }
         $variation->save();
