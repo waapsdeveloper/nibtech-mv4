@@ -553,7 +553,7 @@ class Index extends Component
         echo "Orders: ".$orders->count()."<br>";
 
         $order_charges = Order_charge_model::whereIn('order_id', $orders)->whereHas('charge_value.charge', function($q){
-            $q->where('name','LIKE','Payment Method Charge');
+            $q->where('name','LIKE','%Payment Method Charge%');
         });
 
         echo "Payment Charges: ".$order_charges->count()."<br>";
