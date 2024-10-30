@@ -39,8 +39,7 @@ class Inventory extends Component
 
         if(request('pss') != null){
             $pss = Product_storage_sort_model::find(request('pss'));
-            request()->merge(['storage' => $pss->storage]);
-            request()->merge(['product' => $pss->product_id]);
+            request()->merge(['storage' => $pss->storage, 'product' => $pss->product_id]);
 
         }
         $data['vendors'] = Customer_model::where('is_vendor',1)->pluck('first_name','id');
