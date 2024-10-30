@@ -127,8 +127,8 @@ class Inventory extends Component
             ->get(['product_id', 'storage']);
 
             // Process the retrieved data to get stock IDs
-            $result = $available_stocks->map(function ($variation) {
-                $stocks = $variation->stocks;
+            $result = $available_stocks->map(function ($variation) use ($aftersale) {
+                $stocks = $variation->stocks->whereNotIn('id', $aftersale); // Filter out aftersale stocks
 
                 // Collect all stock IDs
                 $stockIds = $stocks->pluck('id');
