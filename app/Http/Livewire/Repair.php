@@ -638,18 +638,18 @@ class Repair extends Component
                     ->whereRaw('purchase_item.order_id = stock.order_id');
             })
             ->select(
-                'variation.id as variation_id',
+                // 'variation.id as variation_id',
                 'products.model',
-                'variation.color',
+                // 'variation.color',
                 'variation.storage',
-                'variation.grade',
+                // 'variation.grade',
                 DB::raw('AVG(purchase_item.price) as average_price'),
                 DB::raw('COUNT(process_stock.id) as total_quantity'),
                 DB::raw('SUM(purchase_item.price) as total_price')
             )
             ->where('process_stock.process_id',$process_id)
             ->where('process_stock.deleted_at',null)
-            ->groupBy('variation.id','products.model', 'variation.color', 'variation.storage', 'variation.grade')
+            ->groupBy('products.model', 'variation.storage')
             ->orderBy('products.model', 'ASC')
             ->get();
 
