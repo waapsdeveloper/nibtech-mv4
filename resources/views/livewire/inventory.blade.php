@@ -337,6 +337,8 @@
                     <tbody>
                         @php
                             $i = 0;
+                            $total_quantity = 0;
+                            $total_cost = 0;
                         @endphp
                         @foreach ($available_stock_summery as $summery)
 
@@ -348,6 +350,8 @@
                             }else{
                                 $storage = null;
                             }
+                            $total_quantity += $summery['quantity'];
+                            $total_cost += $summery['total_cost'];
                         @endphp
                             <tr>
                                 <td>{{ ++$i }}</td>
@@ -361,8 +365,8 @@
                     <tfoot>
                         <tr>
                             <td colspan="2"><b>Total</b></td>
-                            <td><b>{{ $available_stock_summery->sum('quantity') }}</b></td>
-                            <td title="{{ amount_formatter($available_stock_summery->sum('total_cost')/ $available_stock_summery->sum('quantity'),2) }}"><b>{{ amount_formatter($available_stock_summery->sum('total_cost'),2) }}</b></td>
+                            <td><b>{{ $total_quantity }}</b></td>
+                            <td title="{{ amount_formatter($total_cost/$total_quantity,2) }}"><b>{{ amount_formatter($total_cost,2) }}</b></td>
                         </tr>
                     </tfoot>
 
