@@ -136,7 +136,7 @@ class Inventory extends Component
                 $datas['quantity'] = count($stock_ids);
                 $datas['stock_ids'] = $stock_ids->toArray();
                 // $datas['average_cost'] = $purchase_items->avg('price');
-                $datas['total_cost'] = $purchase_items->sum('price');
+                $datas['total_cost'] = $purchase_items;
 
                 $result[] = $datas;
             }
