@@ -40,7 +40,7 @@ class Listing extends Component
         $data['products'] = Products_model::all();
         $data['storages'] = Storage_model::pluck('name','id');
         $data['colors'] = Color_model::pluck('name','id');
-        $data['grades'] = Grade_model::pluck('name','id')->toArray();
+        $data['grades'] = Grade_model::where('id',"<",6)->pluck('name','id')->toArray();
 
         $data['variations'] = Variation_model::with('listings', 'listings.country_id', 'listings.currency', 'product','available_stocks','pending_orders')
             ->when(request('reference_id') != '', function ($q) {

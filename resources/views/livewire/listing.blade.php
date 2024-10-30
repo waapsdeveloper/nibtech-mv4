@@ -260,7 +260,8 @@
 
                         </div>
                         <div>
-                            <a href="{{url('order').'?sku='.$variation->sku}}" target="_blank">  Pending Order Items: {{ $variation->pending_orders->count() }} </a>
+                            <a class="btn btn-link" href="{{url('order').'?sku='.$variation->sku}}" target="_blank">  Pending Order Items: {{ $variation->pending_orders->count() }} </a>
+                            {{ $variation->available_stocks->count() }} Available
                         </div>
                         <div>
                             status: {{ $variation->status }}
@@ -418,8 +419,6 @@
                                     @php
                                         $i = 0;
                                         $id = [];
-                                    @endphp
-                                    @php
                                         $stocks = $variation->available_stocks;
                                         // $items = $stocks->order_item;
                                         $j = 0;
