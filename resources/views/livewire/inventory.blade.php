@@ -71,7 +71,7 @@
                     <datalist id="product-menu">
                         <option value="">Select</option>
                         @foreach ($products as $id => $model)
-                            <option value="{{ $id }}" @if(isset($_GET['product']) && $id == $_GET['product']) {{'selected'}}@endif>{{ $model }}</option>
+                            <option value="{{ $id }}" @if(isset(request('product')) && $id == request('product')) {{'selected'}}@endif>{{ $model }}</option>
                         @endforeach
                     </datalist>
                 </div>
@@ -82,7 +82,7 @@
                     <select name="storage" class="form-control form-select">
                         <option value="">Storage</option>
                         @foreach ($storages as $id=>$name)
-                            <option value="{{ $id }}" @if(isset($_GET['storage']) && $id == $_GET['storage']) {{'selected'}}@endif>{{ $name }}</option>
+                            <option value="{{ $id }}" @if(isset(request('storage')) && $id == request('storage')) {{'selected'}}@endif>{{ $name }}</option>
                         @endforeach
                     </select>
                 </div>
