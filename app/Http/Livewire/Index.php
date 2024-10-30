@@ -16,6 +16,7 @@ use App\Models\Color_model;
 use App\Models\Storage_model;
 use App\Models\Grade_model;
 use App\Models\Ip_address_model;
+use App\Models\Order_charge_model;
 use App\Models\Product_storage_sort_model;
 use App\Models\Variation_model;
 use App\Models\Stock_model;
@@ -548,10 +549,10 @@ class Index extends Component
     public function test(){
         ini_set('max_execution_time', 1200);
         ini_set('memory_limit', '2048M');
-        $orders = Order_model::where('order_type_id',3)->where('status',3)->where('processed_at','>=','2024--08-01')->get();
+        $orders = Order_model::where('order_type_id',3)->where('status',3)->where('processed_at','>=','2024--08-01')->pluck('id');
         echo "Orders: ".$orders->count()."<br>";
 
-        $order_charges = $orders->order_charges->whereHas('charge_value.charge', function($q){
+        $order_charges = Order_charge_model::whereIn('order_id', $orders)->whereHas('charge_value.charge', function($q){
             $q->where('name','LIKE','Payment Method Charge');
         });
 
