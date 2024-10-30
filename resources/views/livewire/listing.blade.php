@@ -308,12 +308,22 @@
                                             {{-- @endif --}}
                                         @endforeach
                                     </tbody>
+                                    @php
+                                        if ($i > 0) {
+                                            $average = amount_formatter(array_sum($prices)/$i);
+                                            $best_price = $average + ($average*0.15);
+                                        } else {
+                                            $average = 0;
+                                            $best_price = 0;
+                                        }
+
+                                    @endphp
                                     <thead>
                                         <tr>
                                             <th><small><b>No</b></small></th>
                                             <th><small><b>IMEI/Serial</b></small></th>
                                             @if (session('user')->hasPermission('view_cost'))
-                                            <th><small><b>Cost | Average: {{ amount_formatter(array_sum($prices)/$i) }}</b></small></th>
+                                            <th><small><b>Cost | Average: {{ $average }}</b></small></th>
                                             @endif
                                         </tr>
                                     </thead>
@@ -328,7 +338,7 @@
                                         <th><small><b>Country</b></small></th>
                                         @if (session('user')->hasPermission('view_price'))
                                         <th><small><b>BuyBox Price</b></small></th>
-                                        <th width="150"><small><b>Min Price (€{{amount_formatter((array_sum($prices)/$i) + (array_sum($prices)/$i*0.15) )}})</b></small></th>
+                                        <th width="150"><small><b>Min Price (€{{ $best_price }})</b></small></th>
                                         <th width="150"><small><b>Price</b></small></th>
                                         <th><small><b>Max Price</b></small></th>
                                         @endif
