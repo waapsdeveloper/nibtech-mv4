@@ -174,7 +174,7 @@
                             $totalQty += $item->total_quantity;
 
                             if($item->storage){
-                                $storage = $storages[$item->storage] . " - " ;
+                                $storage = $storages[$item->storage] ;
                             }else {
                                 $storage = null;
                             }
