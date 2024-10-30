@@ -235,7 +235,7 @@
                 <a href="{{url('inventory')}}?status=2" class="btn btn-link @if (request('status') == 2) bg-white @endif ">Pending</a>
                 <a href="{{url('inventory')}}" class="btn btn-link">All</a>
                 @if (session('user')->hasPermission('view_inventory_summery'))
-                <button class="btn btn-link" type="submit" form="summery">Summery</button>
+                <button class="btn btn-link  @if (request('summery') == 1) bg-white @endif" type="submit" form="summery">Summery</button>
                 <form method="GET" action="" id="summery">
                     <input type="hidden" name="summery" value="1">
                     <input type="hidden" name="category" value="{{ Request::get('category') }}">
@@ -353,11 +353,18 @@
                                 <td>{{ ++$i }}</td>
                                 <td>{{ $products[$summery['product_id']]." ".$storage }}</td>
                                 <td>{{ $summery['quantity'] }}</td>
-                                <td title="{{ $summery['average_cost'] }}">{{ amount_formatter($summery['total_cost'],2) }}</td>
+                                <td title="{{ amount_formatter($summery['average_cost']) }}">{{ amount_formatter($summery['total_cost'],2) }}</td>
                             </tr>
                             {{-- @endif --}}
                         @endforeach
                     </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="2"><b>Total</b></td>
+                            <td><b>{{ $available_stock_summery->sum('quantity') }}</b></td>
+                            <td title="{{ amount_formatter($available_stock_summery->sum('total_cost')/ $available_stock_summery->sum('quantity'),2) }}"><b>{{ amount_formatter($available_stock_summery->sum('total_cost'),2) }}</b></td>
+                        </tr>
+                    </tfoot>
 
                 </table>
             </div>
