@@ -116,7 +116,7 @@ class Inventory extends Component
                 })->pluck('id');
 
             $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q) use ($variation_ids){
-                $q->where('stock.variation_id', $variation_ids);
+                $q->whereIn('stock.variation_id', $variation_ids);
             })->orderBy('product_id')->orderBy('storage')->get();
 
             $result = [];
