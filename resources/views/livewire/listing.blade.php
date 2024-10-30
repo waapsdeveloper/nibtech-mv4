@@ -184,7 +184,6 @@
         @if (isset($variations) && (!request('status') || request('status') == 1))
         <div class="d-flex justify-content-between">
             <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$variations->firstItem()}} {{ __('locale.To') }} {{$variations->lastItem()}} {{ __('locale.Out Of') }} {{$variations->total()}} </h5>
-
             <div class="d-flex p-2">
                 <div class="mx-2">
                 <form method="get" action="" class="row form-inline">
@@ -270,6 +269,12 @@
                             {{ $variation->sku." - ".$variation->product->model." ".$storage." ".$color." ".$grade }}
                             </a>
                         </div>
+                        <span id="sales_{{$variation->id}}">
+
+                        </span>
+                        <script>
+                            $('#sales_{{$variation->id}}').load("{{url('listing/get_sales').'/'.$variation->id}}");
+                        </script>
                         <div>
                             <form class="form-inline" method="POST" id="change_qty_{{$variation->id}}" action="{{url('listing/update_quantity').'/'.$variation->id}}">
                                 @csrf

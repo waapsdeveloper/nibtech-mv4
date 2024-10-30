@@ -12,7 +12,8 @@ use App\Models\Currency_exchange_model;
 use App\Models\ExchangeRate;
 use App\Models\Storage_model;
     use App\Models\Grade_model;
-    use App\Models\Order_status_model;
+use App\Models\Order_item_model;
+use App\Models\Order_status_model;
 use App\Models\Variation_model;
 use Google\Service\Books\Category;
 
@@ -189,6 +190,13 @@ class Listing extends Component
 
 
         return view('livewire.listing')->with($data);
+    }
+    public function get_last_week_average($id){
+        $order_items = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
+            $q->whereBetween('created_at', [now()->subDays(7), now()])->where('order_type_id',3);
+        })->avg('price');
+
+        return "7 days average: €".$order_items;
     }
 
     public function update_quantity($id){
