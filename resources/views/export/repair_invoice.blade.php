@@ -178,14 +178,9 @@
                             }else {
                                 $storage = null;
                             }
-                            if($item->color){
-                                $color = $colors[$item->color] . " - " ;
-                            }else {
-                                $color = null;
-                            }
                         @endphp
                         <tr>
-                            <td width="320">{{ $item->model . " - " . $storage . $color . $grades[$item->grade] }}</td>
+                            <td width="320">{{ $item->model . " - " . $storage }}</td>
                             @if ($invoice != 1)
                             <td width="80" align="right">€{{ amount_formatter($item->average_price,2) }}</td>
                             @else
