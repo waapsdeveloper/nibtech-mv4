@@ -133,7 +133,7 @@ class Listing extends Component
     public function get_competitors($id){
         $listing = Listing_model::find($id);
         $bm = new BackMarketAPIController();
-        $response = $bm->getListingCompetitors($listing->reference_id);
+        $response = $bm->getListingCompetitors($listing->reference_id, $listing->country_id->market_code);
         print_r($response);
         echo "Hello";
     }
