@@ -131,7 +131,9 @@ class Inventory extends Component
                 $purchase_items = Order_item_model::whereIn('stock_id', $stock_ids)->whereHas('order', function ($q) {
                     $q->where('order_type_id', 1);
                 })->sum('price');
-
+                if(count($stock_ids) == 0){
+                    continue;
+                }
                 $datas = [];
                 $datas['pss_id'] = $pss->id;
                 $datas['product_id'] = $pss->product_id;
