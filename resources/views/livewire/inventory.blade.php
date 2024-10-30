@@ -374,11 +374,31 @@
                                 <td>{{ ++$i }}</td>
                                 {{-- <td>{{ $products[$summery['product_id']]." ".$storage }}</td> --}}
                                 <td><button class="btn btn-link" type="submit" form="search_summery" name="pss" value="{{$summery['pss_id']}}">{{ $summery['model'] }}</button></td>
-                                <td title="{{$summery['stock_ids']}}">{{ $summery['quantity'] }}</td>
+                                <td title="{{$summery['stock_ids']}}"><a id="test{{$i}}" href="javascript:void(0)">{{ $summery['quantity'] }}</a></td>
                                 <td
                                 {{-- title="{{ amount_formatter($summery['average_cost']) }}" --}}
                                 >{{ amount_formatter($summery['total_cost'],2) }}</td>
                             </tr>
+
+                            <script type="text/javascript">
+
+
+                                document.getElementById("test{{$i}}").onclick = function(){
+                                    @php
+                                        foreach ($summery['stock_imeis'] as $val) {
+
+                                            echo "window.open('".url("imei")."?imei=".$val."','_blank');
+                                            ";
+                                        }
+                                        foreach ($summery['stock_serials'] as $val) {
+
+                                            echo "window.open('".url("imei")."?imei=".$val."','_blank');
+                                            ";
+                                        }
+
+                                    @endphp
+                                }
+                            </script>
                             {{-- @endif --}}
                         @endforeach
                     </tbody>

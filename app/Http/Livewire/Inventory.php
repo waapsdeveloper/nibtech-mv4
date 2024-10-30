@@ -129,7 +129,10 @@ class Inventory extends Component
                 $product = $pss->product;
                 $storage = $pss->storage_id->name ?? null;
 
-                $stock_ids = $pss->stocks->where('deleted_at',null)->whereIn('variation_id',$variation_ids)->where('status',1)->pluck('id');
+                $stocks = $pss->stocks->where('deleted_at',null)->whereIn('variation_id',$variation_ids)->where('status',1)->get();
+                $stock_ids = $stocks->pluck('id');
+                $stock_imeis = $stocks->whereNotNull('imei')->pluck('imei');
+                $stock_serials = $stocks->whereNotNull('serial_number')->pluck('serial_number');
 
                 $purchase_items = Order_item_model::whereIn('stock_id', $stock_ids)->whereHas('order', function ($q) {
                     $q->where('order_type_id', 1);
@@ -142,6 +145,8 @@ class Inventory extends Component
                 $datas['model'] = $product->model.' '.$storage;
                 $datas['quantity'] = count($stock_ids);
                 $datas['stock_ids'] = $stock_ids->toArray();
+                $datas['stock_imeis'] = $stock_imeis->toArray();
+                $datas['stock_serials'] = $stock_serials->toArray();
                 // $datas['average_cost'] = $purchase_items->avg('price');
                 $datas['total_cost'] = $purchase_items;
 
