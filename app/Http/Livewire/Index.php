@@ -6,6 +6,7 @@ use App\Exports\StockSummeryExport;
 use App\Models\Admin_model;
 use App\Models\Brand_model;
 use App\Models\Category_model;
+use App\Models\Charge_value_model;
 use Carbon\Carbon;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
@@ -552,9 +553,10 @@ class Index extends Component
         $orders = Order_model::where('order_type_id',3)->where('status',3)->where('processed_at','>=','2024--08-01')->pluck('id');
         echo "Orders: ".$orders->count()."<br>";
 
-        $order_charges = Order_charge_model::whereIn('order_id', $orders)->whereHas('charge_value.charge', function($q){
+        $charge_values = Charge_value_model::whereHas('charge', function($q){
             $q->where('name','LIKE','%Payment Method Charge%');
-        });
+        })->pluck('id');
+        $order_charges = Order_charge_model::whereIn('order_id', $orders)->whereIn('charge_value_id', $charge_values)->get();
 
         echo "Payment Charges: ".$order_charges->count()."<br>";
 
