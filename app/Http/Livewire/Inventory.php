@@ -129,7 +129,20 @@ class Inventory extends Component
                 $product = $pss->product;
                 $storage = $pss->storage_id->name ?? null;
 
-                $stocks = $pss->stocks->where('deleted_at',null)->whereIn('variation_id',$variation_ids)->where('status',1);
+                $stocks = $pss->stocks->where('deleted_at',null)->whereIn('variation_id',$variation_ids)->where('status',1)
+                ->when(request('aftersale') != 1, function ($q) use ($aftersale) {
+                    return $q->whereNotIn('id',$aftersale);
+                })
+                ->when(request('vendor') != '', function ($q) {
+                    return $q->whereHas('order', function ($q) {
+                        $q->where('customer_id', request('vendor'));
+                    });
+                })
+                ->when(request('status') != '', function ($q) {
+                    return $q->whereHas('order', function ($q) {
+                        $q->where('status', request('status'));
+                    });
+                });
                 $stock_ids = $stocks->pluck('id');
                 $stock_imeis = $stocks->whereNotNull('imei')->pluck('imei');
                 $stock_serials = $stocks->whereNotNull('serial_number')->pluck('serial_number');
