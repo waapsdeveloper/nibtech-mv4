@@ -556,9 +556,9 @@ class Index extends Component
         $charge_values = Charge_value_model::whereHas('charge', function($q){
             $q->where('name','LIKE','%Payment Method Charge%');
         })->pluck('id');
-        dd($charge_values);
+        // dd($charge_values);
         echo "Payment Charges: ".$charge_values->count()."<br>";
-        $order_charges = Order_charge_model::whereIn('order_id', $orders)->whereIn('charge_value_id', $charge_values)->get();
+        $order_charges = Order_charge_model::whereIn('order_id', $orders->toArray())->whereIn('charge_value_id', $charge_values->toArray())->get();
 
         echo "Payment Charges: ".$order_charges->count()."<br>";
 
