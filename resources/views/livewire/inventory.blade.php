@@ -384,7 +384,7 @@
                                     <span class="badge badge-danger">{{ $duplicate_count }} Duplicate</span>
                                 @endif
                                 <td
-                                {{-- title="{{ amount_formatter($summery['average_cost']) }}" --}}
+                                title="{{ amount_formatter($summery['total_cost']/$summery['quantity']) }}"
                                 >{{ amount_formatter($summery['total_cost'],2) }}</td>
                             </tr>
 
@@ -409,7 +409,7 @@
                         <tr>
                             <td colspan="2"><b>Total</b></td>
                             <td><b>{{ $total_quantity }}</b></td>
-                            {{-- <td title="{{ amount_formatter($total_cost/$total_quantity,2) }}"><b>{{ amount_formatter($total_cost,2) }}</b></td> --}}
+                            <td title="{{ amount_formatter($total_cost/$total_quantity,2) }}"><b>{{ amount_formatter($total_cost,2) }}</b></td>
                         </tr>
                     </tfoot>
 
