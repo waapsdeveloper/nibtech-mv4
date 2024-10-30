@@ -128,7 +128,7 @@ class Inventory extends Component
                 $stock_imeis = $stocks->whereNotNull('imei')->pluck('imei');
                 $stock_serials = $stocks->whereNotNull('serial_number')->pluck('serial_number');
 
-                $purchase_items = Order_item_model::whereIn('stock_id', $stock_ids)->whereHas('order', function ($q) {
+                $purchase_items = Order_item_model::whereIn('stock_id', $stock_ids)->whereIn('order_id', $order_ids)->whereHas('order', function ($q) {
                     $q->where('order_type_id', 1);
                 })->sum('price');
                 if(count($stock_ids) == 0){
