@@ -256,7 +256,7 @@ Route::post('variation/update_product/{id}', [Variation::class,'update_product']
 Route::post('variation/merge/{id}', [Variation::class,'merge'])->name('merge_variation');
 
 Route::get('listing', Listing::class)->name('view_listing');
-Route::get('listing/get_competitors', [Listing::class,'get_competitors'])->name('view_listing');
+Route::get('listing/get_competitors/{id}', [Listing::class,'get_competitors'])->name('view_listing');
 Route::post('listing/update_quantity/{id}', [Listing::class,'update_quantity'])->name('update_listing_quantity');
 Route::post('listing/update_price/{id}', [Listing::class,'update_price'])->name('update_listing_price');
 
