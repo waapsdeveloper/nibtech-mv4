@@ -195,8 +195,11 @@ class Listing extends Component
         $order_items = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
             $q->whereBetween('created_at', [now()->subDays(7), now()])->where('order_type_id',3);
         })->avg('price');
+        $order_items_count = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
+            $q->whereBetween('created_at', [now()->subDays(7), now()])->where('order_type_id',3);
+        })->count();
 
-        return "7 days average: €".amount_formatter($order_items);
+        return "7 days average: €".amount_formatter($order_items)." (".$order_items_count.")";
     }
     public function get_sales($id){
         $week = $this->get_last_week_average($id);
