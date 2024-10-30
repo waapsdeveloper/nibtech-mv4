@@ -562,7 +562,7 @@ class Index extends Component
         $order_charges = Order_charge_model::whereIn('charge_value_id', $charge_values->toArray())
         ->whereHas('order', function($q) use ($orders){
             $q->where('order_type_id',3)->where('status',3)->where('processed_at','>=','2024--08-01');
-        })->get();
+        })->toSql();
         dd($order_charges);
         // echo "Payment Charges: ".$order_charges->count()."<br>";
 
