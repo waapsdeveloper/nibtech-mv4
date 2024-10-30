@@ -570,7 +570,7 @@ class Index extends Component
             $q->where('order_type_id',3)->where('status',3)->where('processed_at','>=','2024--08-01');
         })->get();
         // echo "Payment Charges: ".$order_charges->count()."<br>";
-
+        echo "All Charges: ".$all_charges->count()."<br>";
 
         // ini_set('max_execution_time', 1200);
         // Variation_model::where('product_storage_sort_id',null)->each(function($variation){
