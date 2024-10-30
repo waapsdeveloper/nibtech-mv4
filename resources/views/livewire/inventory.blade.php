@@ -230,9 +230,9 @@
         <div class="d-flex justify-content-between">
             <div>
 
-                <a href="{{url('inventory')}}?status=3&grade[]=2&grade[]=3&grade[]=5&grade[]=7&grade[]=9" class="btn btn-link">RTG</a>
-                <a href="{{url('inventory')}}?status=3" class="btn btn-link">Active</a>
-                <a href="{{url('inventory')}}?status=2" class="btn btn-link">Pending</a>
+                <a href="{{url('inventory')}}?status=3&grade[]=1&grade[]=2&grade[]=3&grade[]=5&grade[]=7&grade[]=9" class="btn btn-link @if (request('status') == 3 && request('grade') == [1,2,3,5,7,9]) bg-white @endif ">RTG</a>
+                <a href="{{url('inventory')}}?status=3" class="btn btn-link @if (request('status') == 3) bg-white @endif ">Active</a>
+                <a href="{{url('inventory')}}?status=2" class="btn btn-link @if (request('status') == 2) bg-white @endif ">Pending</a>
                 <a href="{{url('inventory')}}" class="btn btn-link">All</a>
                 @if (session('user')->hasPermission('view_inventory_summery'))
                 <button class="btn btn-link" type="submit" form="summery">Summery</button>
