@@ -149,6 +149,7 @@ class Listing extends Component
             ->where('sku', '!=', null)
             ->orderBy('products.model', 'asc') // Order by product model in ascending order
             ->orderBy('listed_stock', 'desc') // Secondary order by listed stock
+            ->select('variation.*') // Select only the variation columns
             ->paginate(10)
             ->onEachSide(5)
             ->appends(request()->except('page'));
