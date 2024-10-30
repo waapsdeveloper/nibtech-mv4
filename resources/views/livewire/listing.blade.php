@@ -185,8 +185,8 @@
         <div class="d-flex justify-content-between">
             <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$variations->firstItem()}} {{ __('locale.To') }} {{$variations->lastItem()}} {{ __('locale.Out Of') }} {{$variations->total()}} </h5>
 
-            <div class="d-flex">
-                <div>
+            <div class="d-flex p-2">
+                <div class="mx-2">
                 <form method="get" action="" class="row form-inline">
                     <label for="perPage" class="card-title inline">Sort:</label>
                     <select name="sort" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
