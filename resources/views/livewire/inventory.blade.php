@@ -374,7 +374,7 @@
                                 <td>{{ ++$i }}</td>
                                 {{-- <td>{{ $products[$summery['product_id']]." ".$storage }}</td> --}}
                                 <td><button class="btn btn-link" type="submit" form="search_summery" name="pss" value="{{$summery['pss_id']}}">{{ $summery['model'] }}</button></td>
-                                <td title="{{$summery['stock_ids']}}"><a id="test{{$i}}" href="javascript:void(0)">{{ $summery['quantity'] }}</a></td>
+                                <td title="{{json_encode($summery['stock_ids'])}}"><a id="test{{$i}}" href="javascript:void(0)">{{ $summery['quantity'] }}</a></td>
                                 <td
                                 {{-- title="{{ amount_formatter($summery['average_cost']) }}" --}}
                                 >{{ amount_formatter($summery['total_cost'],2) }}</td>
