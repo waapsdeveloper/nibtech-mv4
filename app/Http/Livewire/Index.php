@@ -568,12 +568,9 @@ class Index extends Component
 
         $all_charges = Order_charge_model::whereHas('order', function($q) use ($orders){
             $q->where('order_type_id',3)->where('status',3)->where('processed_at','>=','2024--08-01');
-        })->get();
+        })->pluck('amount');
         // echo "Payment Charges: ".$order_charges->count()."<br>";
         echo "All Charges: ".$all_charges->count()."<br>";
-        $pay_charges = $all_charges->whereIn('charge_value_id', $charge_values->toArray());
-
-        echo "Payment Charges: ".$pay_charges->count()."<br>";
         echo "Total Payment Charges: ".$all_charges->sum('amount')."<br>";
 
         // ini_set('max_execution_time', 1200);
