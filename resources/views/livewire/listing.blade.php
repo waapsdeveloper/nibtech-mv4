@@ -273,11 +273,11 @@
 
                         </span>
                         <script>
-                            $(document).load(function () {
-                                $('#sales_{{$variation->id}}').load("{{url('listing/get_sales').'/'.$variation->id}}");
+                            $(document).ready(function () {
+                                $('#sales_{{$variation->id}}').load("{{ url('listing/get_sales') . '/' . $variation->id }}");
                             });
-                            // $('#sales_{{$variation->id}}').load("{{url('listing/get_sales').'/'.$variation->id}}");
                         </script>
+
                         <div>
                             <form class="form-inline" method="POST" id="change_qty_{{$variation->id}}" action="{{url('listing/update_quantity').'/'.$variation->id}}">
                                 @csrf
