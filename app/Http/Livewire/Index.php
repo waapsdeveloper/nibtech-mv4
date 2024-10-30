@@ -546,7 +546,8 @@ class Index extends Component
     }
 
     public function test(){
-
+        ini_set('max_execution_time', 1200);
+        ini_set('memory_limit', '2048M');
         $orders = Order_model::where('order_type_id',3)->where('status',3)->where('processed_at','>=','2024--08-01')->get();
         echo "Orders: ".$orders->count()."<br>";
 
