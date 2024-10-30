@@ -261,10 +261,11 @@
                         </div>
                         <div>
                             <a class="btn btn-link" href="{{url('order').'?sku='.$variation->sku}}" target="_blank">  Pending Order Items: {{ $variation->pending_orders->count() }} </a>
-                            {{ $variation->available_stocks->count() }} Available
+                            <span class="">{{ $variation->available_stocks->count() }} Available</span>
                         </div>
                         <div>
                             status: {{ $variation->status }}
+
                         </div>
                     </div>
                             {{-- {{ $variation }} --}}
@@ -311,7 +312,7 @@
                                         <tr @if ($listing->buybox != 1) style="background: pink;" @endif>
                                             <td title="{{$listing->id." ".$listing->country_id->title}}"><img src="{{ asset('assets/img/flags/').'/'.strtolower($listing->country_id->code).'.svg' }}" height="15"> {{ $listing->country_id->code }}</td>
                                             @if (session('user')->hasPermission('view_price'))
-                                            <td>{{$sign.$listing->buybox_price}}</td>
+                                            <td><a href="{{url('listing/get_competitors').'/'.$listing->id}}" target="_blank">{{$listing->buybox_price}}</a></td>
                                             <form class="form-inline" method="POST" id="change_min_price_{{$listing->id}}" action="{{url('listing/update_price').'/'.$listing->id}}">
                                                 @csrf
                                                 <input type="submit" hidden>
