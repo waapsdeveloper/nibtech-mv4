@@ -134,7 +134,7 @@ class Listing extends Component
         $listing = Listing_model::find($id);
         $bm = new BackMarketAPIController();
         $response = $bm->getListingCompetitors($listing->reference_id);
-        return $response;
+        print_r($response);
     }
     public function refresh_stock(){
         $listings = Listing_model::where('reference_id','!=',NULL)->pluck('reference_id','id');
