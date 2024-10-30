@@ -325,7 +325,7 @@
                 Available Stock Summery
             </div>
             <div class="card-body"><div class="table-responsive">
-                <form method="GET" action="" target="_blank" id="search">
+                <form method="GET" action="" target="_blank" id="search_summery">
                     <input type="hidden" name="category" value="{{ Request::get('category') }}">
                     <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
                     @if (Request::get('grade'))
@@ -371,7 +371,7 @@
                             <tr>
                                 <td>{{ ++$i }}</td>
                                 {{-- <td>{{ $products[$summery['product_id']]." ".$storage }}</td> --}}
-                                <td><button class="btn btn-link" type="submit" form="search" name="pss" value="{{$summery['pss_id']}}">{{ $summery['model'] }}</button></td>
+                                <td><button class="btn btn-link" type="submit" form="search_summery" name="pss" value="{{$summery['pss_id']}}">{{ $summery['model'] }}</button></td>
                                 <td>{{ $summery['quantity'] }}</td>
                                 <td
                                 {{-- title="{{ amount_formatter($summery['average_cost']) }}" --}}
