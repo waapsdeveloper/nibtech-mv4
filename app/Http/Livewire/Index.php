@@ -558,9 +558,9 @@ class Index extends Component
         })->pluck('id');
         // dd($charge_values);
         echo "Payment Charges: ".$charge_values->count()."<br>";
-        $order_charges = Order_charge_model::whereIn('order_id', $orders->toArray())->whereIn('charge_value_id', $charge_values->toArray())->get();
-
-        echo "Payment Charges: ".$order_charges->count()."<br>";
+        $order_charges = Order_charge_model::whereIn('order_id', $orders->toArray())->whereIn('charge_value_id', $charge_values->toArray())->toSql();
+        dd($order_charges);
+        // echo "Payment Charges: ".$order_charges->count()."<br>";
 
 
         // ini_set('max_execution_time', 1200);
