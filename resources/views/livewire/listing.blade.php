@@ -261,8 +261,10 @@
                         </div>
                         <div>
                             <a class="btn btn-link" href="{{url('order').'?sku='.$variation->sku}}" target="_blank">  Pending Order Items: {{ $variation->pending_orders->count() }} </a>
-                            <span class="">{{ $variation->available_stocks->count() }} Available</span>
+
                         </div>
+                        <span class="">{{ $variation->available_stocks->count() }} Available</span>
+                        <span class="">{{ $variation->listings->count() }} Listings</span>
                         <div>
                             status: {{ $variation->status }}
 
@@ -407,15 +409,6 @@
                         <div class="col-md-5">
                             <div class="table-responsive" style="max-height: 683px; overflow:scroll;">
                             <table class="table table-bordered table-hover mb-0 text-md-nowrap">
-                                <thead>
-                                    <tr>
-                                        <th><small><b>No</b></small></th>
-                                        <th><small><b>IMEI/Serial</b></small></th>
-                                        @if (session('user')->hasPermission('view_cost'))
-                                        <th><small><b>Cost</b></small></th>
-                                        @endif
-                                    </tr>
-                                </thead>
                                 <tbody>
                                     @php
                                         $i = 0;
@@ -444,6 +437,15 @@
                                         {{-- @endif --}}
                                     @endforeach
                                 </tbody>
+                                <thead>
+                                    <tr>
+                                        <th><small><b>No</b></small></th>
+                                        <th><small><b>IMEI/Serial</b></small></th>
+                                        @if (session('user')->hasPermission('view_cost'))
+                                        <th><small><b>Cost</b> Average: {{ average($prices) }}</small></th>
+                                        @endif
+                                    </tr>
+                                </thead>
                             </table>
                         </div>
                         </div>
