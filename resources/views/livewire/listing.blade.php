@@ -186,6 +186,7 @@
             <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$variations->firstItem()}} {{ __('locale.To') }} {{$variations->lastItem()}} {{ __('locale.Out Of') }} {{$variations->total()}} </h5>
 
             <div class="d-flex">
+                <div>
                 <form method="get" action="" class="row form-inline">
                     <label for="perPage" class="card-title inline">Sort:</label>
                     <select name="sort" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
@@ -215,6 +216,8 @@
                     <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
 
                 </form>
+                </div>
+                <div>
                 <form method="get" action="" class="row form-inline">
                     <label for="perPage" class="card-title inline">per page:</label>
                     <select name="per_page" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
@@ -243,6 +246,7 @@
                     <input type="hidden" name="sort" value="{{ Request::get('sort') }}">
                     <input type="hidden" name="page" value="{{ Request::get('page') }}">
                 </form>
+                </div>
             </div>
         </div>
 
