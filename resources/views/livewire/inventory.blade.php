@@ -325,6 +325,21 @@
                 Available Stock Summery
             </div>
             <div class="card-body"><div class="table-responsive">
+                <form method="GET" action="" target="_blank" id="search">
+                    <input type="hidden" name="category" value="{{ Request::get('category') }}">
+                    <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
+                    @if (Request::get('grade'))
+
+                    @foreach (Request::get('grade') as $grd)
+
+                        <input type="hidden" name="grade[]" value="{{ $grd }}">
+                    @endforeach
+                    @endif
+                    <input type="hidden" name="replacement" value="{{ Request::get('replacement') }}">
+                    <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
+                    <input type="hidden" name="status" value="{{ Request::get('status') }}">
+                    <input type="hidden" name="vendor" value="{{ Request::get('vendor') }}">
+                </form>
                 <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                     <thead>
                         <tr>
@@ -356,7 +371,7 @@
                             <tr>
                                 <td>{{ ++$i }}</td>
                                 {{-- <td>{{ $products[$summery['product_id']]." ".$storage }}</td> --}}
-                                <td>{{ $summery['model'] }}</td>
+                                <td><button class="btn btn-link" type="submit" form="search" name="pss" value="{{$summery['pss_id']}}">{{ $summery['model'] }}</button></td>
                                 <td>{{ $summery['quantity'] }}</td>
                                 <td
                                 {{-- title="{{ amount_formatter($summery['average_cost']) }}" --}}

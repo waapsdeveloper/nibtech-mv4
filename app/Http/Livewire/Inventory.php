@@ -37,6 +37,12 @@ class Inventory extends Component
             $per_page = 10;
         }
 
+        if(request('pss') != null){
+            $pss = Product_storage_sort_model::find(request('pss'));
+            request()->merge(['storage' => $pss->storage]);
+            request()->merge(['product' => $pss->product_id]);
+
+        }
         $data['vendors'] = Customer_model::where('is_vendor',1)->pluck('first_name','id');
         $data['colors'] = Color_model::pluck('name','id');
         $data['storages'] = Storage_model::pluck('name','id');
@@ -132,6 +138,8 @@ class Inventory extends Component
 
                 $datas = [];
                 $datas['pss_id'] = $pss->id;
+                $datas['product_id'] = $pss->product_id;
+                $datas['storage'] = $pss->storage;
                 $datas['model'] = $product->model.' '.$storage;
                 $datas['quantity'] = count($stock_ids);
                 $datas['stock_ids'] = $stock_ids->toArray();
