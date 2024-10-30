@@ -42,6 +42,12 @@ class Listing extends Component
         $data['colors'] = Color_model::pluck('name','id');
         $data['grades'] = Grade_model::where('id',"<",6)->pluck('name','id')->toArray();
 
+        if(request('per_page') != null){
+            $per_page = request('per_page');
+        }else{
+            $per_page = 10;
+        }
+        $data['per_page'] = $per_page;
         // $data['variations'] = Variation_model::with('listings', 'listings.country_id', 'listings.currency', 'product','available_stocks','pending_orders')
         //     ->join('products', 'products.id', '=', 'variations.product_id')
         //     ->when(request('reference_id') != '', function ($q) {
@@ -100,7 +106,6 @@ class Listing extends Component
         //     ->appends(request()->except('page'));
 
         $data['variations'] = Variation_model::with('listings', 'listings.country_id', 'listings.currency', 'product', 'available_stocks', 'pending_orders')
-            ->join('products', 'variation.product_id', '=', 'products.id') // Join the products table
             ->when(request('reference_id') != '', function ($q) {
                 return $q->where('reference_id', request('reference_id'));
             })
@@ -147,13 +152,37 @@ class Listing extends Component
                 return $q->where('state', request('state'));
             })
             ->where('sku', '!=', null)
-            ->orderBy('products.model', 'asc') // Order by product model in ascending order
-            ->orderBy('variation.storage', 'asc') // Secondary order by storage
-            ->orderBy('variation.color', 'asc') // Secondary order by color
-            ->orderBy('variation.grade', 'asc') // Secondary order by grade
-            // ->orderBy('listed_stock', 'desc') // Secondary order by listed stock
-            ->select('variation.*') // Select only the variation columns
-            ->paginate(10)
+            ->when(request('sort') == 4, function ($q) {
+                return $q->join('products', 'variation.product_id', '=', 'products.id') // Join the products table
+                    ->orderBy('products.model', 'asc') // Order by product model in ascending order
+                    ->orderBy('variation.storage', 'asc') // Secondary order by storage
+                    ->orderBy('variation.color', 'asc') // Secondary order by color
+                    ->orderBy('variation.grade', 'asc') // Secondary order by grade
+                    // ->orderBy('listed_stock', 'desc') // Secondary order by listed stock
+                    ->select('variation.*'); // Select only the variation columns
+            })
+            ->when(request('sort') == 3, function ($q) {
+                return $q->join('products', 'variation.product_id', '=', 'products.id') // Join the products table
+                    ->orderBy('products.model', 'desc') // Order by product model in descending order
+                    ->orderBy('variation.storage', 'asc') // Secondary order by storage
+                    ->orderBy('variation.color', 'asc') // Secondary order by color
+                    ->orderBy('variation.grade', 'asc') // Secondary order by grade
+                    // ->orderBy('listed_stock', 'desc') // Secondary order by listed stock
+                    ->select('variation.*'); // Select only the variation columns
+            })
+            ->when(request('sort') == 2, function ($q) {
+                return $q->orderBy('listed_stock', 'asc') // Order by listed stock in ascending order
+                    ->orderBy('variation.storage', 'asc') // Secondary order by storage
+                    ->orderBy('variation.color', 'asc') // Secondary order by color
+                    ->orderBy('variation.grade', 'asc'); // Secondary order by grade
+            })
+            ->when(request('sort') == 1 || request('sort') == null, function ($q) {
+                return $q->orderBy('listed_stock', 'desc') // Order by listed stock in descending order
+                    ->orderBy('variation.storage', 'asc') // Secondary order by storage
+                    ->orderBy('variation.color', 'asc') // Secondary order by color
+                    ->orderBy('variation.grade', 'asc'); // Secondary order by grade
+            })
+            ->paginate($per_page)
             ->onEachSide(5)
             ->appends(request()->except('page'));
 
