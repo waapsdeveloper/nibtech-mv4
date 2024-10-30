@@ -148,7 +148,10 @@ class Listing extends Component
             })
             ->where('sku', '!=', null)
             ->orderBy('products.model', 'asc') // Order by product model in ascending order
-            ->orderBy('listed_stock', 'desc') // Secondary order by listed stock
+            ->orderBy('variation.storage', 'asc') // Secondary order by storage
+            ->orderBy('variation.color', 'asc') // Secondary order by color
+            ->orderBy('variation.grade', 'asc') // Secondary order by grade
+            // ->orderBy('listed_stock', 'desc') // Secondary order by listed stock
             ->select('variation.*') // Select only the variation columns
             ->paginate(10)
             ->onEachSide(5)
