@@ -563,7 +563,7 @@ class Index extends Component
         ->whereHas('order', function($q) use ($orders){
             $q->where('order_type_id',3)->where('status',3)->where('processed_at','>=','2024--08-01');
         })->toSql();
-        dd($order_charges);
+        print_r($order_charges);
         // echo "Payment Charges: ".$order_charges->count()."<br>";
 
 
