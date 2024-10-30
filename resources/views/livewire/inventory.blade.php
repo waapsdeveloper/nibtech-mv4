@@ -378,7 +378,7 @@
                             <tr>
                                 <td>{{ ++$i }}</td>
                                 {{-- <td>{{ $products[$summery['product_id']]." ".$storage }}</td> --}}
-                                <td><button class="btn btn-link" type="submit" form="search_summery" name="pss" value="{{$summery['pss_id']}}">{{ $summery['model'] }}</button></td>
+                                <td><button class="btn py-0 btn-link" type="submit" form="search_summery" name="pss" value="{{$summery['pss_id']}}">{{ $summery['model'] }}</button></td>
                                 <td title="{{json_encode($summery['stock_ids'])}}"><a id="test{{$i}}" href="javascript:void(0)">{{ $summery['quantity'] }}</a>
                                 @if ($duplicates)
                                     <span class="badge badge-danger">{{ $duplicate_count }} Duplicate</span>
