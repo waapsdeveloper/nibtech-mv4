@@ -369,12 +369,20 @@
                             // }
                             $total_quantity += $summery['quantity'];
                             $total_cost += $summery['total_cost'];
+                            $stock_imeis = array_merge($summery['stock_imeis'],$summery['stock_serials']);
+                            $temp_array = array_unique($stock_imeis);
+                            $duplicates = sizeof($temp_array) != sizeof($stock_imeis);
+                            $duplicate_count = sizeof($stock_imeis) - sizeof($temp_array);
+
                         @endphp
                             <tr>
                                 <td>{{ ++$i }}</td>
                                 {{-- <td>{{ $products[$summery['product_id']]." ".$storage }}</td> --}}
                                 <td><button class="btn btn-link" type="submit" form="search_summery" name="pss" value="{{$summery['pss_id']}}">{{ $summery['model'] }}</button></td>
-                                <td title="{{json_encode($summery['stock_ids'])}}"><a id="test{{$i}}" href="javascript:void(0)">{{ $summery['quantity'] }}</a></td>
+                                <td title="{{json_encode($summery['stock_ids'])}}"><a id="test{{$i}}" href="javascript:void(0)">{{ $summery['quantity'] }}</a>
+                                @if ($duplicates)
+                                    <span class="badge badge-danger">{{ $duplicate_count }} Duplicate</span>
+                                @endif
                                 <td
                                 {{-- title="{{ amount_formatter($summery['average_cost']) }}" --}}
                                 >{{ amount_formatter($summery['total_cost'],2) }}</td>
@@ -385,12 +393,7 @@
 
                                 document.getElementById("test{{$i}}").onclick = function(){
                                     @php
-                                        foreach ($summery['stock_imeis'] as $val) {
-
-                                            echo "window.open('".url("imei")."?imei=".$val."','_blank');
-                                            ";
-                                        }
-                                        foreach ($summery['stock_serials'] as $val) {
+                                        foreach ($stock_imeis as $val) {
 
                                             echo "window.open('".url("imei")."?imei=".$val."','_blank');
                                             ";
