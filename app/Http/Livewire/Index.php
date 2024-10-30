@@ -565,6 +565,10 @@ class Index extends Component
             $q->where('order_type_id',3)->where('status',3)->where('processed_at','>=','2024--08-01');
         })->get();
         print_r($order_charges);
+
+        $all_charges = Order_charge_model::whereHas('order', function($q) use ($orders){
+            $q->where('order_type_id',3)->where('status',3)->where('processed_at','>=','2024--08-01');
+        })->get();
         // echo "Payment Charges: ".$order_charges->count()."<br>";
 
 
