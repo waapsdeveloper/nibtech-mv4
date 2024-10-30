@@ -124,7 +124,7 @@ class Inventory extends Component
                 $product = $pss->product;
                 $storage = $pss->storage_id->name ?? null;
 
-                $stock_ids = $pss->stocks->where('variation_id',$variation_ids)->where('status',1)->pluck('id');
+                $stock_ids = $pss->stocks->whereIn('variation_id',$variation_ids)->where('status',1)->pluck('id');
                 $purchase_items = Order_item_model::whereIn('stock_id', $stock_ids)->whereHas('order', function ($q) {
                     $q->where('order_type_id', 1);
                 })->pluck('price');
