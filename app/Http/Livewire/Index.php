@@ -571,7 +571,7 @@ class Index extends Component
         })->pluck('amount');
         // echo "Payment Charges: ".$order_charges->count()."<br>";
         echo "All Charges: ".$all_charges->count()."<br>";
-        echo "Total Payment Charges: ".array_sum($all_charges)."<br>";
+        echo "Total Payment Charges: ".array_sum($all_charges->toArray())."<br>";
 
         // ini_set('max_execution_time', 1200);
         // Variation_model::where('product_storage_sort_id',null)->each(function($variation){
