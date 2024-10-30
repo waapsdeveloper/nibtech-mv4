@@ -550,6 +550,7 @@ class Index extends Component
     public function test(){
         ini_set('max_execution_time', 1200);
         ini_set('memory_limit', '2048M');
+        ini_set('group_concat_max_len', 4294967295);
         $orders = Order_model::where('order_type_id',3)->where('status',3)->where('processed_at','>=','2024--08-01')->pluck('id');
         echo "Orders: ".$orders->count()."<br>";
 
