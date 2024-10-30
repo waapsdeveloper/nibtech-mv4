@@ -277,7 +277,7 @@
 
 
                     <div class="card-body " style="display: flex; direction: rtl;">
-                        <div class="col-md-5">
+                        <div class="col-md-5" style="direction: ltr;">
                             <div class="table-responsive" style="max-height: 683px; overflow:scroll;">
                                 <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                                     <tbody>
@@ -320,7 +320,7 @@
                                 </table>
                             </div>
                         </div>
-                        <div class="col-md-7">
+                        <div class="col-md-7" style="direction: ltr;">
                             <div class="table-responsive">
                             <table class="table table-hover mb-0 text-md-nowrap">
                                 <thead>
