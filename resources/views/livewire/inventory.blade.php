@@ -345,17 +345,18 @@
                         @php
                             // print_r($summery);
                             // continue;
-                            if($summery['storage'] > 0){
-                                $storage = $storages[$summery['storage']];
-                            }else{
-                                $storage = null;
-                            }
+                            // if($summery['storage'] > 0){
+                            //     $storage = $storages[$summery['storage']];
+                            // }else{
+                            //     $storage = null;
+                            // }
                             $total_quantity += $summery['quantity'];
                             $total_cost += $summery['total_cost'];
                         @endphp
                             <tr>
                                 <td>{{ ++$i }}</td>
-                                <td>{{ $products[$summery['product_id']]." ".$storage }}</td>
+                                {{-- <td>{{ $products[$summery['product_id']]." ".$storage }}</td> --}}
+                                <td>{{ $summery['model'] }}</td>
                                 <td>{{ $summery['quantity'] }}</td>
                                 <td title="{{ amount_formatter($summery['average_cost']) }}">{{ amount_formatter($summery['total_cost'],2) }}</td>
                             </tr>
