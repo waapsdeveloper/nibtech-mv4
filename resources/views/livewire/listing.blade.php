@@ -264,7 +264,6 @@
 
                         </div>
                         <span class="">{{ $variation->available_stocks->count() }} Available</span>
-                        <span class="">{{ $variation->listings->count() }} Listings</span>
                         <div>
                             status: {{ $variation->status }}
 
