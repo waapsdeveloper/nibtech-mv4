@@ -557,12 +557,13 @@ class Index extends Component
         $charge_values = Charge_value_model::whereHas('charge', function($q){
             $q->where('name','LIKE','%Payment Method Charge%');
         })->pluck('id');
+        print_r($charge_values);
         // dd($charge_values);
         echo "Payment Charges: ".$charge_values->count()."<br>";
         $order_charges = Order_charge_model::whereIn('charge_value_id', $charge_values->toArray())
         ->whereHas('order', function($q) use ($orders){
             $q->where('order_type_id',3)->where('status',3)->where('processed_at','>=','2024--08-01');
-        })->toSql();
+        })->get();
         print_r($order_charges);
         // echo "Payment Charges: ".$order_charges->count()."<br>";
 
