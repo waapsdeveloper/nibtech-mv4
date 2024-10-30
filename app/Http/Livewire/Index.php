@@ -3,7 +3,6 @@
 namespace App\Http\Livewire;
 
 use App\Exports\StockSummeryExport;
-use App\Http\Controllers\BackMarketAPIController;
 use App\Models\Admin_model;
 use App\Models\Brand_model;
 use App\Models\Category_model;
@@ -20,8 +19,6 @@ use App\Models\Ip_address_model;
 use App\Models\Product_storage_sort_model;
 use App\Models\Variation_model;
 use App\Models\Stock_model;
-use DateTime;
-use Symfony\Component\HttpFoundation\Request;
 
 class Index extends Component
 {
@@ -29,7 +26,7 @@ class Index extends Component
     {
 
     }
-    public function render(Request $request)
+    public function render()
     {
         session()->forget('rep');
         $data['title_page'] = "Dashboard";
@@ -163,10 +160,12 @@ class Index extends Component
                 ->when(request('data') == 1, function($q) use ($variation_ids){
                     return $q->whereIn('variation_id', $variation_ids);
                 })
+
                 ->selectRaw('AVG(CASE WHEN orders.currency = 4 THEN order_items.price END) as average_eur')
                 ->selectRaw('SUM(CASE WHEN orders.currency = 4 THEN order_items.price END) as total_eur')
                 ->selectRaw('SUM(CASE WHEN orders.currency = 5 THEN order_items.price END) as total_gbp')
                 ->join('orders', 'order_items.order_id', '=', 'orders.id')
+                ->where('orders.order_type_id',3)
                 ->Where('orders.deleted_at',null)
                 ->Where('order_items.deleted_at',null)
                 ->first();
@@ -276,100 +275,6 @@ class Index extends Component
         $ip_address->save();
         return redirect()->back();
     }
-    // public function refresh_sales_chart(){
-    //     $order = [];
-    //     $dates = [];
-    //     $k = 0;
-    //     $today = date('d');
-    //     for ($i = 2; $i >= 0; $i--) {
-    //         $j = $i+1;
-    //         $k++;
-    //         $start = date('Y-m-25 23:00:00', strtotime("-".$j." months"));
-    //         $end = date('Y-m-5 22:59:59', strtotime("-".$i." months"));
-    //         $orders = Order_model::where('processed_at', '>=', $start)->where('order_type_id',3)
-    //             ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->count();
-    //         $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
-    //             $q->where('processed_at', '>=', $start)->where('order_type_id',3)
-    //             ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',4);
-    //         })->whereIn('status',[3,6])->sum('price');
-    //         $pound = Order_item_model::whereHas('order', function($q) use ($start,$end) {
-    //             $q->where('processed_at', '>=', $start)->where('order_type_id',3)
-    //             ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',5);
-    //         })->whereIn('status',[3,6])->sum('price');
-    //         $order[$k] = $orders;
-    //         $eur[$k] = $euro;
-    //         $gbp[$k] = $pound;
-    //         $dates[$k] = date('25 M', strtotime("-".$j." months")) . " - " . date('05 M', strtotime("-".$i." months"));
-    //         if($i == 0 && $today < 6){
-    //             continue;
-    //         }
-    //         $k++;
-    //         $start = date('Y-m-5 23:00:00', strtotime("-".$i." months"));
-    //         $end = date('Y-m-15 22:59:59', strtotime("-".$i." months"));
-    //         $orders = Order_model::where('processed_at', '>=', $start)->where('order_type_id',3)
-    //             ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->count();
-    //         $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
-    //             $q->where('processed_at', '>=', $start)->where('order_type_id',3)
-    //             ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',4);
-    //         })->whereIn('status',[3,6])->sum('price');
-    //         $pound = Order_item_model::whereHas('order', function($q) use ($start,$end) {
-    //             $q->where('processed_at', '>=', $start)->where('order_type_id',3)
-    //             ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',5);
-    //         })->whereIn('status',[3,6])->sum('price');
-    //         $order[$k] = $orders;
-    //         $eur[$k] = $euro;
-    //         $gbp[$k] = $pound;
-    //         $dates[$k] = date('05 M', strtotime("-".$i." months")) . " - " . date('15 M', strtotime("-".$i." months"));
-    //         if($i == 0 && $today < 16){
-    //             continue;
-    //         }
-    //         $k++;
-    //         $start = date('Y-m-15 23:00:00', strtotime("-".$i." months"));
-    //         $end = date('Y-m-25 22:59:59', strtotime("-".$i." months"));
-    //         $orders = Order_model::where('processed_at', '>=', $start)->where('order_type_id',3)
-    //             ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->count();
-    //         $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
-    //             $q->where('processed_at', '>=', $start)->where('order_type_id',3)
-    //             ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',4);
-    //         })->whereIn('status',[3,6])->sum('price');
-    //         $pound = Order_item_model::whereHas('order', function($q) use ($start,$end) {
-    //             $q->where('processed_at', '>=', $start)->where('order_type_id',3)
-    //             ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',5);
-    //         })->whereIn('status',[3,6])->sum('price');
-    //         $order[$k] = $orders;
-    //         $eur[$k] = $euro;
-    //         $gbp[$k] = $pound;
-    //         $dates[$k] = date('15 M', strtotime("-".$i." months")) . " - " . date('25 M', strtotime("-".$i." months"));
-
-    //         if($i == 0 && $today > 25){
-    //             $k++;
-    //             $start = date('Y-m-25 23:00:00', strtotime("-".$i." months"));
-    //             $end = date('Y-m-5 22:59:59', strtotime("+1 months"));
-    //             $orders = Order_model::where('processed_at', '>=', $start)->where('order_type_id',3)
-    //                 ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->count();
-    //             $euro = Order_item_model::whereHas('order', function($q) use ($start,$end) {
-    //                 $q->where('processed_at', '>=', $start)->where('order_type_id',3)
-    //                 ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',4);
-    //             })->whereIn('status',[3,6])->sum('price');
-    //             $pound = Order_item_model::whereHas('order', function($q) use ($start,$end) {
-    //                 $q->where('processed_at', '>=', $start)->where('order_type_id',3)
-    //                 ->where('processed_at', '<=', $end)->whereIn('status',[3,6])->where('currency',5);
-    //             })->whereIn('status',[3,6])->sum('price');
-    //             $order[$k] = $orders;
-    //             $eur[$k] = $euro;
-    //             $gbp[$k] = $pound;
-    //             $dates[$k] = date('25 M', strtotime("-".$i." months")) . " - " . date('05 M', strtotime("+1 months"));
-    //         }
-    //     }
-    //     echo '<script> ';
-    //     echo 'sessionStorage.setItem("total2", "' . implode(',', $order) . '");';
-    //     echo 'sessionStorage.setItem("approved2", "' . implode(',', $eur) . '");';
-    //     echo 'sessionStorage.setItem("failed2", "' . implode(',', $gbp) . '");';
-    //     echo 'sessionStorage.setItem("dates2", "' . implode(',', $dates) . '");';
-    //     echo 'window.location.href = document.referrer; </script>';
-    //     // sleep(2);
-    //     // return redirect()->back();
-    // }
     public function refresh_sales_chart() {
         $order = [];
         $eur = [];
@@ -432,194 +337,6 @@ class Index extends Component
         echo 'window.location.href = document.referrer; </script>';
     }
 
-    // public function refresh_10_days_chart()
-    // {
-    //     $order = [];
-    //     // $eur = [];
-    //     // $gbp = [];
-    //     $dates = [];
-
-    //     $today = date('d');
-    //     $current_month = date('m');
-    //     $current_year = date('Y');
-
-    //     // Determine the date range based on the current day
-    //     if ($today >= 6 && $today <= 15) {
-    //         $start_day = 6;
-    //         $end_day = 15;
-    //     } elseif ($today >= 16 && $today <= 25) {
-    //         $start_day = 16;
-    //         $end_day = 25;
-    //     } else {
-    //         // Handle the case for 26th to 5th of the next month
-    //         $start_day = 26;
-    //         $end_day = 5;
-
-    //         // If today is between 1 and 5, set the start to the previous month
-    //         if ($today <= 5) {
-    //             $current_month = date('m', strtotime('-1 month'));
-    //             $current_year = date('Y', strtotime('-1 month'));
-    //         }
-    //     }
-
-    //     $i = $start_day;
-    //     while (true) {
-    //         // Handle day, month, and year transitions
-    //         $date_str = "$current_year-$current_month-$i";
-    //         $start = date('Y-m-d 00:00:00', strtotime($date_str));
-    //         $end = date('Y-m-d 23:59:59', strtotime($date_str));
-
-    //         $orders = Order_model::where('created_at', '>=', $start)
-    //             ->where('created_at', '<=', $end)
-    //             ->where('order_type_id', 3)
-    //             // ->whereIn('status', [2, 3, 6])
-    //             ->count();
-
-    //         // $euro = Order_item_model::whereHas('order', function ($q) use ($start, $end) {
-    //         //     $q->where('processed_at', '>=', $start)
-    //         //         ->where('processed_at', '<=', $end)
-    //         //         ->where('order_type_id', 3)
-    //         //         ->whereIn('status', [3, 6])
-    //         //         ->where('currency', 4);
-    //         // })->whereIn('status', [3, 6])->sum('price');
-
-    //         // $pound = Order_item_model::whereHas('order', function ($q) use ($start, $end) {
-    //         //     $q->where('processed_at', '>=', $start)
-    //         //         ->where('processed_at', '<=', $end)
-    //         //         ->where('order_type_id', 3)
-    //         //         ->whereIn('status', [3, 6])
-    //         //         ->where('currency', 5);
-    //         // })->whereIn('status', [3, 6])->sum('price');
-
-    //         $order[] = $orders;
-    //         // $eur[] = $euro;
-    //         // $gbp[] = $pound;
-    //         $dates[] = date('d-m-Y', strtotime($date_str));
-
-    //         // Move to the next day
-    //         if ($i == $end_day) {
-    //             break;
-    //         }
-
-    //         $i++;
-    //         // Handle end of month transition
-    //         if ($i > date('t', strtotime("$current_year-$current_month-01"))) {
-    //             $i = 1; // Reset day to 1
-    //             $current_month = date('m', strtotime('+1 month', strtotime("$current_year-$current_month-01")));
-    //             $current_year = date('Y', strtotime('+1 month', strtotime("$current_year-$current_month-01")));
-    //         }
-
-    //         // Handle start of month transition from 26th to 5th
-    //         if ($start_day == 26 && $i == 6) {
-    //             break;
-    //         }
-    //     }
-
-    //     $order_data = implode(',', $order);
-    //     // $eur_data = implode(',', $eur);
-    //     // $gbp_data = implode(',', $gbp);
-    //     $dates_data = implode(',', $dates);
-
-    //     echo '<script>
-    //         sessionStorage.setItem("total3", "' . $order_data . '");
-    //         sessionStorage.setItem("dates3", "' . $dates_data . '");
-    //     </script>';
-    //     $order2 = [];
-    //     // $eur = [];
-    //     // $gbp = [];
-    //     $dates2 = [];
-
-    //     $today2 = $start_day-1;
-    //     $current_month2 = date('m');
-    //     $current_year2 = date('Y');
-
-    //     // Determine the date range based on the current day
-    //     if ($today2 >= 6 && $today2 <= 15) {
-    //         $start_day = 6;
-    //         $end_day = 15;
-    //     } elseif ($today2 >= 16 && $today2 <= 25) {
-    //         $start_day = 16;
-    //         $end_day = 25;
-    //             $current_month2 = date('m', strtotime('-1 month'));
-    //             $current_year2 = date('Y', strtotime('-1 month'));
-    //     } else {
-    //         // Handle the case for 26th to 5th of the next month
-    //         $start_day = 26;
-    //         $end_day = 5;
-
-    //         // If today2 is between 1 and 5, set the start to the previous month
-    //         // if ($today2 <= 5 || $today2 <= 25) {
-    //             $current_month2 = date('m', strtotime('-1 month'));
-    //             $current_year2 = date('Y', strtotime('-1 month'));
-    //         // }
-    //     }
-
-    //     $i = $start_day;
-    //     while (true) {
-    //         // Handle day, month, and year transitions
-    //         $date_str = "$current_year2-$current_month2-$i";
-    //         $start = date('Y-m-d 00:00:00', strtotime($date_str));
-    //         $end = date('Y-m-d 23:59:59', strtotime($date_str));
-
-    //         $orders2 = Order_model::where('created_at', '>=', $start)
-    //             ->where('created_at', '<=', $end)
-    //             ->where('order_type_id', 3)
-    //             // ->whereIn('status', [2, 3, 6])
-    //             ->count();
-
-    //         // $euro = Order_item_model::whereHas('order', function ($q) use ($start, $end) {
-    //         //     $q->where('processed_at', '>=', $start)
-    //         //         ->where('processed_at', '<=', $end)
-    //         //         ->where('order_type_id', 3)
-    //         //         ->whereIn('status', [3, 6])
-    //         //         ->where('currency', 4);
-    //         // })->whereIn('status', [3, 6])->sum('price');
-
-    //         // $pound = Order_item_model::whereHas('order', function ($q) use ($start, $end) {
-    //         //     $q->where('processed_at', '>=', $start)
-    //         //         ->where('processed_at', '<=', $end)
-    //         //         ->where('order_type_id', 3)
-    //         //         ->whereIn('status', [3, 6])
-    //         //         ->where('currency', 5);
-    //         // })->whereIn('status', [3, 6])->sum('price');
-
-    //         $order2[] = $orders2;
-    //         // $eur[] = $euro;
-    //         // $gbp[] = $pound;
-    //         $dates2[] = date('d-m-Y', strtotime($date_str));
-
-    //         // Move to the next day
-    //         if ($i == $end_day) {
-    //             break;
-    //         }
-
-    //         $i++;
-    //         // Handle end of month transition
-    //         if ($i > date('t', strtotime("$current_year2-$current_month2-01"))) {
-    //             $i = 1; // Reset day to 1
-    //             $current_month2 = date('m');
-    //             $current_year2 = date('Y');
-    //             // $current_month = date('m', strtotime('+1 month', strtotime("$current_year-$current_month-01")));
-    //             // $current_year = date('Y', strtotime('+1 month', strtotime("$current_year-$current_month-01")));
-    //         }
-
-    //         // Handle start of month transition from 26th to 5th
-    //         if ($start_day == 26 && $i == 6) {
-    //             break;
-    //         }
-    //     }
-
-    //     $order_data2 = implode(',', $order2);
-    //     // $eur_data = implode(',', $eur);
-    //     // $gbp_data = implode(',', $gbp);
-    //     $dates_data = implode(',', $dates2);
-
-    //     echo '<script>
-    //         sessionStorage.setItem("total32", "' . $order_data2 . '");
-    //         sessionStorage.setItem("dates32", "' . $dates_data . '");
-    //         window.location.href = document.referrer;
-    //     </script>';
-    // }
     public function refresh_7_days_chart()
     {
         $order = [];
@@ -826,98 +543,6 @@ class Index extends Component
         $pdf = new StockSummeryExport();
         $pdf->generatePdf();
 
-        // ini_set('max_execution_time', 1200);
-        // ini_set('memory_limit', '2048M');
-
-        // $grades = [1,2,3,4,5];
-
-        // $categories = Category_model::pluck('name','id');
-        // $brands = Brand_model::pluck('name','id');
-        // $grade_names = Grade_model::whereIn('id', $grades)->pluck('name','id');
-        // $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q){
-        //     $q->where('stock.status',1);
-        // })->orderBy('product_id')->orderBy('storage')->get();
-
-        // $result = [];
-        // foreach($product_storage_sort as $pss){
-        //     $product = $pss->product;
-        //     $storage = $pss->storage_id->name ?? null;
-        //     $data = [];
-        //     $data['model'] = $product->model.' '.$storage;
-        //     $data['stock_count'] = 0;
-        //     $data['average_cost'] = 0;
-        //     $data['graded_average_cost'] = [];
-        //     $data['graded_stock_count'] = [];
-
-        //     // print_r($pss->stocks->where('status',1));
-        //     foreach($pss->stocks->where('status',1) as $stock){
-        //         $variation = $stock->variation;
-        //         if(in_array($variation->grade, $grades)){
-        //             $purchase_item = $stock->order_items->where('order_id',$stock->order_id)->first();
-        //             if($purchase_item == null){
-        //                 echo 'Purchase item not found for stock id: '.$stock->id;
-        //                 continue;
-        //             }
-        //             $data['average_cost'] += $purchase_item->price;
-        //             $data['stock_count']++;
-        //             if(!isset($data['graded_average_cost'][$variation->grade])){
-        //                 $data['graded_average_cost'][$variation->grade] = 0;
-        //             }
-        //             if(!isset($data['graded_stock_count'][$variation->grade])){
-        //                 $data['graded_stock_count'][$variation->grade] = 0;
-        //             }
-        //             $data['graded_average_cost'][$variation->grade] += $purchase_item->price;
-        //             $data['graded_stock_count'][$variation->grade]++;
-        //         }
-        //     }
-        //     if($data['stock_count'] == 0){
-        //         continue;
-        //     }
-        //     $data['average_cost'] = $data['average_cost']/$data['stock_count'];
-        //     foreach($grades as $grade){
-        //         if(!isset($data['graded_average_cost'][$grade])){
-        //             continue;
-        //         }
-        //         if(!isset($data['graded_stock_count'][$grade])){
-        //             continue;
-        //         }
-        //         $data['graded_average_cost'][$grade] = $data['graded_average_cost'][$grade]/$data['graded_stock_count'][$grade];
-        //     }
-        //     $result[$product->category][$product->brand][] = $data;
-        // }
-        // foreach($result as $category => $cat){
-        //     echo $categories[$category].'<br>';
-        //     foreach($cat as $brand => $datas){
-        //         echo $brands[$brand].'<br>';
-        //         echo '<table border="1">';
-        //         echo '<tr>';
-        //         echo '<th>Model</th>';
-        //         echo '<th>Count</th>';
-        //         echo '<th>Average Cost</th>';
-        //         foreach($grade_names as $id => $grade){
-        //             echo '<th>'.$grade.'</th>';
-        //         }
-        //         echo '</tr>';
-
-        //         foreach($datas as $data){
-        //             echo '<tr>';
-        //             echo '<td>'.$data['model'].'</td>';
-        //             echo '<td style="text-align:center;">'.$data['stock_count'].'</td>';
-        //             echo '<td style="text-align:center;">'.number_format($data['average_cost'],2).'</td>';
-        //             foreach($grade_names as $id => $grade){
-        //                 if(isset($data['graded_average_cost'][$id])){
-        //                     echo '<td style="text-align:center;">'.number_format($data['graded_average_cost'][$id],2).'</td>';
-        //                 }else{
-        //                     echo '<td style="text-align:center;">0</td>';
-        //                 }
-        //             }
-        //             echo '</tr>';
-        //         }
-        //         echo '</table>';
-
-
-        //     }
-        // }
     }
 
     public function test(){
