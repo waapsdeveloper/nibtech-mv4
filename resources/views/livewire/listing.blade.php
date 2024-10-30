@@ -442,7 +442,7 @@
                                         <th><small><b>No</b></small></th>
                                         <th><small><b>IMEI/Serial</b></small></th>
                                         @if (session('user')->hasPermission('view_cost'))
-                                        <th><small><b>Cost</b> Average: {{ average($prices) }}</small></th>
+                                        <th><small><b>Cost</b> Average: {{ amount_formatter(array_sum($prices)/$i) }}</small></th>
                                         @endif
                                     </tr>
                                 </thead>
