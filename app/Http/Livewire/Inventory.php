@@ -125,16 +125,17 @@ class Inventory extends Component
                 $storage = $pss->storage_id->name ?? null;
 
                 $stock_ids = $pss->stocks->whereIn('variation_id',$variation_ids)->where('status',1)->pluck('id');
+
                 $purchase_items = Order_item_model::whereIn('stock_id', $stock_ids)->whereHas('order', function ($q) {
                     $q->where('order_type_id', 1);
-                })->pluck('price');
+                })->sum('price');
 
                 $datas = [];
                 $datas['pss_id'] = $pss->id;
                 $datas['model'] = $product->model.' '.$storage;
                 $datas['quantity'] = count($stock_ids);
                 $datas['stock_ids'] = $stock_ids->toArray();
-                $datas['average_cost'] = $purchase_items->avg('price');
+                // $datas['average_cost'] = $purchase_items->avg('price');
                 $datas['total_cost'] = $purchase_items->sum('price');
 
                 $result[] = $datas;

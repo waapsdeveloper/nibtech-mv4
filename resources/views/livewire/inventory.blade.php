@@ -358,7 +358,9 @@
                                 {{-- <td>{{ $products[$summery['product_id']]." ".$storage }}</td> --}}
                                 <td>{{ $summery['model'] }}</td>
                                 <td>{{ $summery['quantity'] }}</td>
-                                <td title="{{ amount_formatter($summery['average_cost']) }}">{{ amount_formatter($summery['total_cost'],2) }}</td>
+                                <td
+                                {{-- title="{{ amount_formatter($summery['average_cost']) }}" --}}
+                                >{{ amount_formatter($summery['total_cost'],2) }}</td>
                             </tr>
                             {{-- @endif --}}
                         @endforeach
