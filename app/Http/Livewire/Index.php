@@ -574,7 +574,7 @@ class Index extends Component
         $pay_charges = $all_charges->whereIn('charge_value_id', $charge_values->toArray());
 
         echo "Payment Charges: ".$pay_charges->count()."<br>";
-        echo "Total Payment Charges: ".$pay_charges->sum('amount')."<br>";
+        echo "Total Payment Charges: ".$all_charges->sum('amount')."<br>";
 
         // ini_set('max_execution_time', 1200);
         // Variation_model::where('product_storage_sort_id',null)->each(function($variation){
