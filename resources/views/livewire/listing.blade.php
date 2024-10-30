@@ -271,7 +271,7 @@
                     </div>
                             {{-- {{ $variation }} --}}
                     <div class="card-body row">
-                        <div class="col-md-5 align-self-end float-right">
+                        <div class="col-md-5" style="float: right;">
                             <div class="table-responsive" style="max-height: 683px; overflow:scroll;">
                                 <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                                     <tbody>
