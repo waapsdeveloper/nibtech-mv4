@@ -198,7 +198,11 @@ class Listing extends Component
 
         return "7 days average: €".$order_items;
     }
+    public function get_sales($id){
+        $week = $this->get_last_week_average($id);
 
+        return $week;
+    }
     public function update_quantity($id){
         $variation = Variation_model::find($id);
         $variation->listed_stock = request('stock');
