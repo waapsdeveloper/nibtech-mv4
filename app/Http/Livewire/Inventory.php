@@ -117,7 +117,7 @@ class Inventory extends Component
 
             $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q) use ($variation_ids){
                 $q->whereIn('stock.variation_id', $variation_ids)->where('stock.deleted_at',null);
-            })->where('deleted_at',null)->orderBy('product_id')->orderBy('storage')->get();
+            })->where('product_storage_sort.deleted_at',null)->orderBy('product_id')->orderBy('storage')->get();
 
             $result = [];
             foreach($product_storage_sort as $pss){
