@@ -84,16 +84,6 @@ class Inventory extends Component
                 ->when(request('variation') != '', function ($q) {
                     return $q->where('id', request('variation'));
                 })
-                ->when(request('vendor') != '', function ($q) {
-                    return $q->whereHas('stocks.order', function ($q) {
-                        $q->where('customer_id', request('vendor'));
-                    });
-                })
-                ->when(request('status') != '', function ($q) {
-                    return $q->whereHas('stocks.order', function ($q) {
-                        $q->where('status', request('status'));
-                    });
-                })
                 ->when(request('storage') != '', function ($q) {
                     return $q->where('storage', request('storage'));
                 })
@@ -119,7 +109,11 @@ class Inventory extends Component
                 ->when(request('sub_grade') != [], function ($q) {
                     return $q->whereIn('sub_grade', request('sub_grade'));
                 })->pluck('id');
-
+            $order_ids = Order_model::when(request('vendor') != '', function ($q) {
+                    $q->where('customer_id', request('vendor'));
+                })->when(request('status') != '', function ($q) {
+                    $q->where('status', request('status'));
+                })->pluck('id');
             $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q) use ($variation_ids){
                 $q->whereIn('stock.variation_id', $variation_ids)->where('stock.deleted_at',null);
             })->orderBy('product_id')->orderBy('storage')->get();
@@ -129,7 +123,7 @@ class Inventory extends Component
                 $product = $pss->product;
                 $storage = $pss->storage_id->name ?? null;
 
-                $stocks = $pss->stocks->where('deleted_at',null)->whereIn('variation_id',$variation_ids)->where('status',1)
+                $stocks = $pss->stocks->where('deleted_at',null)->whereIn('order_id', $order_ids)->whereIn('variation_id',$variation_ids)->where('status',1)
                 ->when(request('aftersale') != 1, function ($q) use ($aftersale) {
                     return $q->whereNotIn('id',$aftersale);
                 })
