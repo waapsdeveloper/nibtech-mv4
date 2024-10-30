@@ -182,7 +182,7 @@
         @endif
 
         @if (isset($variations) && (!request('status') || request('status') == 1))
-        {{-- <div class="row"> --}}
+        <div class="d-flex justify-content-between">
             <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$variations->firstItem()}} {{ __('locale.To') }} {{$variations->lastItem()}} {{ __('locale.Out Of') }} {{$variations->total()}} </h5>
 
             <div class=" mg-b-0">
@@ -244,6 +244,7 @@
                     <input type="hidden" name="page" value="{{ Request::get('page') }}">
                 </form>
             </div>
+        </div>
 
             @foreach ($variations as $variation)
             {{-- <div class="col-md-4"> --}}
