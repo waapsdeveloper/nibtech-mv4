@@ -270,8 +270,14 @@
                         </div>
                     </div>
                             {{-- {{ $variation }} --}}
-                    <div class="card-body row">
-                        <div class="col-md-5" style="float: right;">
+
+                {{-- create a div with 2 right to left columns --}}
+
+
+
+
+                    <div class="card-body " style="display: flex; direction: rtl;">
+                        <div class="col-md-5">
                             <div class="table-responsive" style="max-height: 683px; overflow:scroll;">
                                 <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                                     <tbody>
