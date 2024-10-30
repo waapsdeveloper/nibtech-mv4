@@ -315,6 +315,7 @@
             <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
             <input type="hidden" name="status" value="{{ Request::get('status') }}">
             <input type="hidden" name="vendor" value="{{ Request::get('vendor') }}">
+
         </form>
         <br>
 
@@ -328,6 +329,7 @@
                 <form method="GET" action="" target="_blank" id="search_summery">
                     <input type="hidden" name="category" value="{{ Request::get('category') }}">
                     <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
+                    <input type="hidden" name="color" value="{{ Request::get('color') }}">
                     @if (Request::get('grade'))
 
                     @foreach (Request::get('grade') as $grd)
