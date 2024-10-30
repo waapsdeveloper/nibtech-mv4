@@ -271,6 +271,49 @@
                     </div>
                             {{-- {{ $variation }} --}}
                     <div class="card-body row">
+                        <div class="col-md-5 align-self-end">
+                            <div class="table-responsive" style="max-height: 683px; overflow:scroll;">
+                                <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                                    <tbody>
+                                        @php
+                                            $i = 0;
+                                            $id = [];
+                                            $stocks = $variation->available_stocks;
+                                            // $items = $stocks->order_item;
+                                            $j = 0;
+                                            $prices = [];
+                                            // print_r($stocks);
+                                        @endphp
+
+                                        @foreach ($stocks as $item)
+                                            {{-- @dd($item) --}}
+                                            {{-- @if($item->order_item[0]->order_id == $order_id) --}}
+                                            @php
+                                            $i ++;
+                                            $prices[] = $item->purchase_item->price ?? 0;
+                                        @endphp
+                                            <tr>
+                                                <td>{{ $i }}</td>
+                                                <td data-stock="{{ $item->id }}"><a href="{{ url('imei?imei=').$item->imei.$item->serial_number }}" target="_blank">{{ $item->imei.$item->serial_number }}</a></td>
+                                                @if (session('user')->hasPermission('view_cost'))
+                                                <td>€{{$item->purchase_item->price ?? "Error in Purchase Entry" }}</td>
+                                                @endif
+                                            </tr>
+                                            {{-- @endif --}}
+                                        @endforeach
+                                    </tbody>
+                                    <thead>
+                                        <tr>
+                                            <th><small><b>No</b></small></th>
+                                            <th><small><b>IMEI/Serial</b></small></th>
+                                            @if (session('user')->hasPermission('view_cost'))
+                                            <th><small><b>Cost | Average: {{ amount_formatter(array_sum($prices)/$i) }}</b></small></th>
+                                            @endif
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
                         <div class="col-md-7">
                             <div class="table-responsive">
                             <table class="table table-hover mb-0 text-md-nowrap">
@@ -279,7 +322,7 @@
                                         <th><small><b>Country</b></small></th>
                                         @if (session('user')->hasPermission('view_price'))
                                         <th><small><b>BuyBox Price</b></small></th>
-                                        <th width="150"><small><b>Min Price</b></small></th>
+                                        <th width="150"><small><b>Min Price (€{{amount_formatter((array_sum($prices)/$i) + (array_sum($prices)/$i*0.15) )}})</b></small></th>
                                         <th width="150"><small><b>Price</b></small></th>
                                         <th><small><b>Max Price</b></small></th>
                                         @endif
@@ -404,49 +447,6 @@
                                 </tbody>
                             </table>
                             </div>
-                        </div>
-                        <div class="col-md-5">
-                            <div class="table-responsive" style="max-height: 683px; overflow:scroll;">
-                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
-                                <tbody>
-                                    @php
-                                        $i = 0;
-                                        $id = [];
-                                        $stocks = $variation->available_stocks;
-                                        // $items = $stocks->order_item;
-                                        $j = 0;
-                                        $prices = [];
-                                        // print_r($stocks);
-                                    @endphp
-
-                                    @foreach ($stocks as $item)
-                                        {{-- @dd($item) --}}
-                                        {{-- @if($item->order_item[0]->order_id == $order_id) --}}
-                                        @php
-                                        $i ++;
-                                        $prices[] = $item->purchase_item->price ?? 0;
-                                    @endphp
-                                        <tr>
-                                            <td>{{ $i }}</td>
-                                            <td data-stock="{{ $item->id }}"><a href="{{ url('imei?imei=').$item->imei.$item->serial_number }}" target="_blank">{{ $item->imei.$item->serial_number }}</a></td>
-                                            @if (session('user')->hasPermission('view_cost'))
-                                            <td>€{{$item->purchase_item->price ?? "Error in Purchase Entry" }}</td>
-                                            @endif
-                                        </tr>
-                                        {{-- @endif --}}
-                                    @endforeach
-                                </tbody>
-                                <thead>
-                                    <tr>
-                                        <th><small><b>No</b></small></th>
-                                        <th><small><b>IMEI/Serial</b></small></th>
-                                        @if (session('user')->hasPermission('view_cost'))
-                                        <th><small><b>Cost | Average: {{ amount_formatter(array_sum($prices)/$i) }}</b></small></th>
-                                        @endif
-                                    </tr>
-                                </thead>
-                            </table>
-                        </div>
                         </div>
                         <br>
                     {{-- <div class="text-end">Average Cost: {{array_sum($prices)/count($prices) }} &nbsp;&nbsp;&nbsp; Total: {{$i }}</div> --}}
