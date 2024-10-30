@@ -647,6 +647,7 @@
                                     @php
                                         $i = 0;
                                         $total = 0;
+                                        $total_cost = 0;
                                     @endphp
                                     <form method="POST" action="{{url('wholesale')}}/update_prices" id="update_prices_{{ $key."_".$key2 }}">
                                         @csrf
@@ -674,6 +675,7 @@
                                                 $ex_price = $price * $order->exchange_rate;
                                             }
                                             $total += $price;
+                                            $total_cost += $purchase_item->price;
                                         @endphp
                                         <tr @if($purchase_item->price != $price) style="background: LightGreen" @endif>
                                             <td>{{ $i }}</td>
@@ -708,7 +710,7 @@
                             <label for="unit-price" class="">Change Unit Price: </label>
                             <input type="number" name="unit_price" id="unit_price" step="0.01" class="w-50 border-0" placeholder="Input Unit price" form="update_prices_{{ $key."_".$key2 }}">
                         </div>
-                        <div>Average: {{amount_formatter($total/$i,2) }}</div>
+                        <div title="Average Cost: {{amount_formatter($total_cost/$i,2)}}">Average: {{amount_formatter($total/$i,2) }}</div>
                         @endif
                         <div>Total: {{$i }}</div>
                     </div>
