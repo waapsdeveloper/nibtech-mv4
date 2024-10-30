@@ -196,7 +196,7 @@ class Listing extends Component
             $q->whereBetween('created_at', [now()->subDays(7), now()])->where('order_type_id',3);
         })->avg('price');
 
-        return "7 days average: €".$order_items;
+        return "7 days average: €".amount_formatter($order_items);
     }
     public function get_sales($id){
         $week = $this->get_last_week_average($id);
