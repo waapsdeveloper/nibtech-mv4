@@ -89,6 +89,35 @@
                         let listingsTable = '';
                         let stockPrices = [];
 
+                        $.ajax({
+                            url: "{{ url('api/internal/get_variation_available_stocks') }}/" + variation.id,
+                            type: 'GET',
+                            dataType: 'json',
+                            success: function(data) {
+                                data.stocks.forEach(function(item, index) {
+                                    // console.log(data.stock_costs[item.id]);
+                                    let price = data.stock_costs[item.id];
+                                    stockPrices.push(price);
+                                    // Load stock cost via AJAX
+                                    stocksTable += `
+                                        <tr>
+                                            <td>${index + 1}</td>
+                                            <td data-stock="${item.id}">
+                                                <a href="{{ url('imei?imei=') }}${item.imei}${item.serial_number}" target="_blank">
+                                                    ${item.imei}${item.serial_number}
+                                                </a>
+                                            </td>
+                                            <td id="cost_${item.id}">€${price}</td>
+                                        </tr>`;
+
+
+                                });
+                                    updateAverageCost(variation.id, stockPrices);
+                            },
+                            error: function(xhr) {
+                                console.error(xhr.responseText);
+                            }
+                        });
                         // variation.available_stocks.forEach(function(item, index) {
                         //     // Load stock cost via AJAX
                         //     $.ajax({
