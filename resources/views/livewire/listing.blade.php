@@ -586,10 +586,18 @@
             });
 
             function load(url) {
-                var xhr = new XMLHttpRequest();
-                xhr.open('GET', url, false);
-                xhr.send();
-                return xhr.responseText;
+                var result = null;
+                // AJAX call to load the price
+                $.ajax({
+                    url: url,
+                    type: 'get',
+                    dataType: 'html',
+                    async: false,
+                    success: function(data) {
+                        result = data;
+                    }
+                });
+                return result;
             }
 
         </script>
