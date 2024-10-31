@@ -199,7 +199,7 @@ class Listing extends Component
             $q->whereBetween('created_at', [now()->subDays(7), now()])->where('order_type_id',3);
         })->count();
 
-        return "7 days average: €".amount_formatter($order_items)." (".$order_items_count.")";
+        return "7 days: €".amount_formatter($order_items)." (".$order_items_count.")";
     }
     public function get_2_week_average($id){
         $order_items = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
@@ -209,7 +209,7 @@ class Listing extends Component
             $q->whereBetween('created_at', [now()->subDays(14), now()])->where('order_type_id',3);
         })->count();
 
-        return "14 days average: €".amount_formatter($order_items)." (".$order_items_count.")";
+        return "14 days: €".amount_formatter($order_items)." (".$order_items_count.")";
     }
     public function get_30_days_average($id){
         $order_items = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
@@ -219,7 +219,7 @@ class Listing extends Component
             $q->whereBetween('created_at', [now()->subDays(30), now()])->where('order_type_id',3);
         })->count();
 
-        return "30 days average: €".amount_formatter($order_items)." (".$order_items_count.")";
+        return "30 days: €".amount_formatter($order_items)." (".$order_items_count.")";
     }
 
     public function get_sales($id){
@@ -227,7 +227,7 @@ class Listing extends Component
         $week .= " ".$this->get_2_week_average($id);
         $week .= " ".$this->get_30_days_average($id);
 
-        return $week;
+        return "Average: ".$week;
     }
     public function update_quantity($id){
         $variation = Variation_model::find($id);
