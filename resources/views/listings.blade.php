@@ -249,7 +249,9 @@
                     dataType: 'json',
                     success: function(response) {
                         // Assuming the response contains 'updatedQuantity'
-                        let listedStock = response.updatedQuantity;
+                        // console.log(response.updatedQuantity);
+                        // return response.updatedQuantity;
+                        $('#quantity_'+variationId).val(response.updatedQuantity);
                         // You can then update the DOM or any UI elements with this value
                     },
                     error: function(xhr) {
