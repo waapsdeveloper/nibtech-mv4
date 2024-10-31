@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ApiRequestController;
+use App\Http\Controllers\InternalApiController;
 use App\Http\Controllers\TestingController;
 use App\Models\Admin_model;
 use Illuminate\Http\Request;
@@ -34,4 +35,12 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // return response()->json('Hello');
     Route::resource('/request', ApiRequestController::class);
     // Route::post('request', [ApiRequestController::class, 'store']);
+});
+
+Route::group(['middleware' => ['internal.only']], function () {
+    Route::get('/internal/get_variations', [InternalApiController::class, 'get_variations']);
+    Route::get('/internal/get_variation_available_stocks/{id}', [InternalApiController::class, 'get_variation_available_stocks']);
+
+
+
 });

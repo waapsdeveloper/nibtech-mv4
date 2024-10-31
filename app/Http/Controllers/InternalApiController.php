@@ -1,62 +1,15 @@
 <?php
 
-namespace App\Http\Livewire;
-    use App\Http\Controllers\BackMarketAPIController;
-use App\Models\Brand_model;
-use App\Models\Category_model;
-use Livewire\Component;
-    use App\Models\Listing_model;
-    use App\Models\Products_model;
-    use App\Models\Color_model;
-use App\Models\Currency_exchange_model;
-use App\Models\ExchangeRate;
-use App\Models\Storage_model;
-    use App\Models\Grade_model;
+namespace App\Http\Controllers;
+
 use App\Models\Order_item_model;
-use App\Models\Order_status_model;
 use App\Models\Stock_model;
 use App\Models\Variation_model;
-use Google\Service\Books\Category;
+use Illuminate\Http\Request;
 
-class Listing extends Component
+class InternalApiController extends Controller
 {
-    public function mount()
-    {
-        $user_id = session('user_id');
-        if($user_id == NULL){
-            return redirect('index');
-        }
-    }
-    public function render()
-    {
-
-        $data['title_page'] = "Listings";
-        // $this->refresh_stock();
-        $user_id = session('user_id');
-        $data['order_statuses'] = Order_status_model::get();
-        $data['bm'] = new BackMarketAPIController();
-
-        $data['eur_gbp'] = ExchangeRate::where('target_currency','GBP')->first()->rate;
-        $data['categories'] = Category_model::all();
-        $data['brands'] = Brand_model::all();
-        $data['products'] = Products_model::all();
-        $data['storages'] = Storage_model::pluck('name','id');
-        $data['colors'] = Color_model::pluck('name','id');
-        $data['grades'] = Grade_model::where('id',"<",6)->pluck('name','id')->toArray();
-
-        if(request('per_page') != null){
-            $per_page = request('per_page');
-        }else{
-            $per_page = 10;
-        }
-        $data['per_page'] = $per_page;
-
-
-        $data['variations'] = $this->get_variations();
-
-
-        return view('livewire.listing')->with($data);
-    }
+    //
     public function get_variations(){
         if(request('per_page') != null){
             $per_page = request('per_page');
@@ -141,9 +94,7 @@ class Listing extends Component
                 ->orderBy('variation.grade', 'asc'); // Secondary order by grade
         })
         ->paginate($per_page)
-        ->onEachSide(5)
         ->appends(request()->except('page'));
-
     }
     public function get_variation_available_stocks($id){
         $stocks = Stock_model::where('variation_id',$id)->where('status',1)->get();
@@ -154,6 +105,15 @@ class Listing extends Component
 
         return response()->json(['stocks'=>$stocks, 'stock_costs'=>$stock_costs]);
 
+    }
+
+    public function get_stock_cost($id){
+        $stock = Stock_model::find($id);
+        return $stock->purchase_item->price;
+    }
+    public function get_stock_price($id){
+        $stock = Stock_model::find($id);
+        return $stock->last_item()->price;
     }
     public function get_last_week_average($id){
         $order_items = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
@@ -193,56 +153,4 @@ class Listing extends Component
 
         return "Average: ".$week;
     }
-    public function update_quantity($id){
-        $variation = Variation_model::find($id);
-        $variation->listed_stock = request('stock');
-        $variation->save();
-        $bm = new BackMarketAPIController();
-        $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>request('stock')]));
-
-        return $response->quantity;
-    }
-    public function update_price($id){
-        $listing = Listing_model::find($id);
-        $bm = new BackMarketAPIController();
-        if(request('min_price')){
-            $listing->min_price = request('min_price');
-            $response = $bm->updateOneListing($listing->variation->reference_id,json_encode(['min_price'=>request('min_price')]), $listing->country_id->market_code);
-        }elseif(request('price')){
-            $listing->price = request('price');
-            $response = $bm->updateOneListing($listing->variation->reference_id,json_encode(['price'=>request('price')]), $listing->country_id->market_code);
-        }
-
-        $listing->save();
-        // print_r($response);
-        // die;
-        if(request('min_price')){
-            return $response->min_price;
-        }elseif(request('price')){
-            return $response->price;
-        }
-    }
-    public function get_competitors($id){
-        $listing = Listing_model::find($id);
-        $bm = new BackMarketAPIController();
-        $response = $bm->getListingCompetitors($listing->variation->reference_id, $listing->country_id->market_code);
-        dd($response);
-        echo "Hello";
-    }
-    public function refresh_stock(){
-        $listings = Listing_model::where('reference_id','!=',NULL)->pluck('reference_id','id');
-        $bm = new BackMarketAPIController();
-        foreach($listings as $id => $reference_id){
-            $var = $bm->getOneListing($reference_id);
-            // echo $id." ".$reference_id;
-            // dd($var);
-
-            listing_model::where('id', $id)->update([
-                'sku' => $var->sku,
-                'stock' => $var->quantity,
-            ]);
-        }
-
-    }
-
 }

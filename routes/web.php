@@ -32,6 +32,7 @@ use App\Http\Controllers\ExchangeRateController;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\GoogleController;
+use App\Http\Controllers\ListingController;
 use App\Http\Controllers\ReportController;
 use App\Http\Livewire\Stock_room;
 use App\Http\Livewire\Wholesale_return;
@@ -259,10 +260,15 @@ Route::post('variation/update_product/{id}', [Variation::class,'update_product']
 Route::post('variation/merge/{id}', [Variation::class,'merge'])->name('merge_variation');
 
 Route::get('listing', Listing::class)->name('view_listing');
+Route::get('get_variations', [Listing::class,'get_variations'])->name('view_listing');
+Route::get('get_variation_available_stock/{id}', [Listing::class,'get_variation_available_stock'])->name('view_listing');
 Route::get('listing/get_competitors/{id}', [Listing::class,'get_competitors'])->name('view_listing');
 Route::get('listing/get_sales/{id}', [Listing::class,'get_sales'])->name('view_listing');
 Route::post('listing/update_quantity/{id}', [Listing::class,'update_quantity'])->name('update_listing_quantity');
 Route::post('listing/update_price/{id}', [Listing::class,'update_price'])->name('update_listing_price');
+
+Route::get('listing_new', [ListingController::class, 'index'])->name('view_listing');
+
 
 Route::get('process', Process::class)->name('view_process');
 

@@ -288,7 +288,6 @@
                                 <button id="send_{{$variation->id}}" class="btn btn-light d-none" onclick="submitForm(event, {{$variation->id}})">Push</button>
                             </form>
 
-                            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
                             <script>
                                 function toggleButtonOnChange(variationId, inputElement) {
                                     // Get the original value
@@ -368,7 +367,7 @@
                         <div class="col-md-5" style="direction: ltr;">
                             <div class="table-responsive" style="max-height: 683px; overflow:scroll;">
                                 <table class="table table-bordered table-hover mb-0 text-md-nowrap">
-                                    <tbody>
+                                    <tbody id="stocks_{{$variation->id}}">
                                         @php
                                             $i = 0;
                                             $id = [];
@@ -596,6 +595,32 @@
             $(document).ready(function() {
                 $('.test').select2();
             });
+
+            function get_variations(reference_id, category, brand, product, sku, color, storage, grade, listed_stock, available_stock, state, page, per_page, sort) {
+                $.ajax({
+                    url: "{{ url('listing/get_variations') }}",
+                    type: 'GET',
+                    data: {
+                        reference_id: reference_id,
+                        category: category,
+                        brand: brand,
+                        product: product,
+                        sku: sku,
+                        color: color,
+                        storage: storage,
+                        grade: grade,
+                        listed_stock: listed_stock,
+                        available_stock: available_stock,
+                        state: state,
+                        page: page,
+                        per_page: per_page,
+                        sort: sort
+                    },
+                    success: function(data) {
+                        $('#variations').html(data);
+                    }
+                });
+            }
 
         </script>
 		<!--Internal Sparkline js -->
