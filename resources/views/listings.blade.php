@@ -94,12 +94,13 @@
                             type: 'GET',
                             dataType: 'json',
                             success: function(data) {
+                                datass = '';
                                 data.stocks.forEach(function(item, index) {
                                     // console.log(data.stock_costs[item.id]);
                                     let price = data.stock_costs[item.id];
                                     stockPrices.push(price);
                                     // Load stock cost via AJAX
-                                    stocksTable += `
+                                    datass += `
                                         <tr>
                                             <td>${index + 1}</td>
                                             <td data-stock="${item.id}">
@@ -112,7 +113,9 @@
 
 
                                 });
-                                    updateAverageCost(variation.id, stockPrices);
+                                updateAverageCost(variation.id, stockPrices);
+                                stocksTable = datass;
+                                $('#stocks_'+variation.id).html(datass);
                             },
                             error: function(xhr) {
                                 console.error(xhr.responseText);
