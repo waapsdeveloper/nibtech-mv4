@@ -373,7 +373,7 @@
                                             {{-- @if($item->order_item[0]->order_id == $order_id) --}}
                                             <script>
                                                 $(document).ready(function () {
-                                                    price = load({{url('get_stock_cost').'/'.$item->id}});
+                                                    price = load("{{url('get_stock_cost').'/'.$item->id}}");
                                                     $('#cost_{{ $item->id }}').html('€' + price);
                                                     prices.push(price);
                                                     i++;
@@ -395,12 +395,6 @@
                                         @endforeach
                                     </tbody>
                                     <script>
-                                        function load(url) {
-                                            var xhr = new XMLHttpRequest();
-                                            xhr.open('GET', url, false);
-                                            xhr.send();
-                                            return xhr.responseText;
-                                        }
                                         if (i > 0) {
                                             average = prices.reduce((a, b) => a + b) / i;
                                             best_price = average + (average * 0.15);
@@ -586,6 +580,13 @@
             $(document).ready(function() {
                 $('.test').select2();
             });
+
+            function load(url) {
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', url, false);
+                xhr.send();
+                return xhr.responseText;
+            }
 
         </script>
 		<!--Internal Sparkline js -->
