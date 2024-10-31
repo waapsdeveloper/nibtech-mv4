@@ -270,7 +270,6 @@
                             {{ $variation->sku." - ".$variation->product->model." ".$storage." ".$color." ".$grade }}
                             </a>
                             </h5>
-                            <br>
                             <span id="sales_{{$variation->id}}"></span>
                         </div>
                         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
