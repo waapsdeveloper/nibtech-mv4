@@ -373,7 +373,7 @@
                                             {{-- @if($item->order_item[0]->order_id == $order_id) --}}
                                             <script>
                                                 $(document).ready(function () {
-                                                    price = load("{{url('get_stock_cost').'/'.$item->id}}");
+                                                    price = load_page("{{url('get_stock_cost').'/'.$item->id}}");
                                                     $('#cost_{{ $item->id }}').html('€' + price);
                                                     prices.push(price);
                                                     i++;
@@ -585,7 +585,7 @@
                 $('.test').select2();
             });
 
-            function load(url) {
+            function load_page(url) {
                 var result = null;
                 // AJAX call to load the price
                 $.ajax({
