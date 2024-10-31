@@ -181,6 +181,24 @@
         @endphp
         @endif
 
+        <script>
+
+            function load_page(url) {
+                var result = null;
+                // AJAX call to load the price
+                $.ajax({
+                    url: url,
+                    type: 'get',
+                    dataType: 'html',
+                    async: false,
+                    success: function(data) {
+                        result = data;
+                    }
+                });
+                return result;
+            }
+
+        </script>
         @if (isset($variations) && (!request('status') || request('status') == 1))
         <div class="d-flex justify-content-between">
             <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$variations->firstItem()}} {{ __('locale.To') }} {{$variations->lastItem()}} {{ __('locale.Out Of') }} {{$variations->total()}} </h5>
@@ -582,21 +600,6 @@
             $(document).ready(function() {
                 $('.test').select2();
             });
-
-            function load_page(url) {
-                var result = null;
-                // AJAX call to load the price
-                $.ajax({
-                    url: url,
-                    type: 'get',
-                    dataType: 'html',
-                    async: false,
-                    success: function(data) {
-                        result = data;
-                    }
-                });
-                return result;
-            }
 
         </script>
 		<!--Internal Sparkline js -->
