@@ -180,6 +180,7 @@
         session()->forget('error');
         @endphp
         @endif
+
         @if (isset($variations) && (!request('status') || request('status') == 1))
         <div class="d-flex justify-content-between">
             <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$variations->firstItem()}} {{ __('locale.To') }} {{$variations->lastItem()}} {{ __('locale.Out Of') }} {{$variations->total()}} </h5>
@@ -288,6 +289,7 @@
                                 <button id="send_{{$variation->id}}" class="btn btn-light d-none" onclick="submitForm(event, {{$variation->id}})">Push</button>
                             </form>
 
+                            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
                             <script>
                                 function toggleButtonOnChange(variationId, inputElement) {
                                     // Get the original value
@@ -328,21 +330,6 @@
                                 $("#change_qty_{{$variation->id}}").submit(function(e) {
                                     submitForm(e, {{$variation->id}});
                                 });
-                                function load_page(url) {
-                                    var result = null;
-                                    // AJAX call to load the price
-                                    $.ajax({
-                                        url: url,
-                                        type: 'get',
-                                        dataType: 'html',
-                                        async: false,
-                                        success: function(data) {
-                                            result = data;
-                                        }
-                                    });
-                                    return result;
-                                }
-
                             </script>
 
                         </div>
@@ -367,7 +354,7 @@
                         <div class="col-md-5" style="direction: ltr;">
                             <div class="table-responsive" style="max-height: 683px; overflow:scroll;">
                                 <table class="table table-bordered table-hover mb-0 text-md-nowrap">
-                                    <tbody id="stocks_{{$variation->id}}">
+                                    <tbody>
                                         @php
                                             $i = 0;
                                             $id = [];
@@ -377,46 +364,31 @@
                                             $prices = [];
                                             // print_r($stocks);
                                         @endphp
-                                        <script>
-                                            var prices = [];
-                                            var i = 0;
-                                        </script>
+
                                         @foreach ($stocks as $item)
                                             {{-- @dd($item) --}}
                                             {{-- @if($item->order_item[0]->order_id == $order_id) --}}
-                                            <script>
-                                                    price = load_page("{{url('get_stock_cost').'/'.$item->id}}");
-                                                    $('#cost_{{ $item->id }}').html('€' + price);
-                                                    prices.push(price);
-                                                    i++;
-                                            </script>
+                                            {{-- <script>
+                                                $(document).ready(function () {
+                                                    price = load({{url(get_stock_cost($item->id))}});
+                                                });
+                                            </script> --}}
                                             @php
                                                 $i ++;
-                                                // $price = $item->purchase_item->price ?? 0;
-                                                // $prices[] = $price;
+                                                $price = $item->purchase_item->price ?? 0;
+                                                $prices[] = $price;
                                             @endphp
                                             <tr>
                                                 <td>{{ $i }}</td>
                                                 <td data-stock="{{ $item->id }}"><a href="{{ url('imei?imei=').$item->imei.$item->serial_number }}" target="_blank">{{ $item->imei.$item->serial_number }}</a></td>
                                                 @if (session('user')->hasPermission('view_cost'))
-                                                <td id="cost_{{ $item->id }}"></td>
+                                                <td>€{{$price }}</td>
                                                 @endif
                                             </tr>
                                             {{-- @endif --}}
                                         @endforeach
                                     </tbody>
-                                    <script>
-                                        if (i > 0) {
-                                            average = prices.reduce((a, b) => a + b) / i;
-                                            best_price = average + (average * 0.15);
-                                            average = average.toFixed(2);
-                                        } else {
-                                            average = 0;
-                                            best_price = 0;
-                                        }
-
-                                    </script>
-                                    {{-- @php
+                                    @php
                                         if ($i > 0) {
                                             $average = array_sum($prices)/$i;
                                             $best_price = $average + ($average*0.15);
@@ -426,13 +398,13 @@
                                             $best_price = 0;
                                         }
 
-                                    @endphp --}}
+                                    @endphp
                                     <thead>
                                         <tr>
                                             <th><small><b>No</b></small></th>
                                             <th><small><b>IMEI/Serial</b></small></th>
                                             @if (session('user')->hasPermission('view_cost'))
-                                            <th><small><b>Cost | Average: <u id="average_cost_{{$variation->id}}"></u></b></small></th>
+                                            <th><small><b>Cost | Average: {{ $average }}</b></small></th>
                                             @endif
                                         </tr>
                                     </thead>
@@ -447,18 +419,13 @@
                                         <th><small><b>Country</b></small></th>
                                         @if (session('user')->hasPermission('view_price'))
                                         <th><small><b>BuyBox Price</b></small></th>
-                                        <th width="150"><small><b>Min Price ( <u id="best_price_{{$variation->id}}"></u> )</b></small></th>
+                                        <th width="150"><small><b>Min Price (€{{ $best_price }})</b></small></th>
                                         <th width="150"><small><b>Price</b></small></th>
                                         <th><small><b>Max Price</b></small></th>
                                         @endif
                                         <th><small><b>Date</b></small></th>
                                     </tr>
                                 </thead>
-                                <script>
-
-                                    document.getElementById('average_cost_{{$variation->id}}').innerHTML = "€"+average;
-                                    document.getElementById('best_price_{{$variation->id}}').innerHTML = "€"+best_price.toFixed(2);
-                                </script>
                                 <tbody>
                                     @php
                                         $i = 0;
@@ -595,32 +562,6 @@
             $(document).ready(function() {
                 $('.test').select2();
             });
-
-            function get_variations(reference_id, category, brand, product, sku, color, storage, grade, listed_stock, available_stock, state, page, per_page, sort) {
-                $.ajax({
-                    url: "{{ url('listing/get_variations') }}",
-                    type: 'GET',
-                    data: {
-                        reference_id: reference_id,
-                        category: category,
-                        brand: brand,
-                        product: product,
-                        sku: sku,
-                        color: color,
-                        storage: storage,
-                        grade: grade,
-                        listed_stock: listed_stock,
-                        available_stock: available_stock,
-                        state: state,
-                        page: page,
-                        per_page: per_page,
-                        sort: sort
-                    },
-                    success: function(data) {
-                        $('#variations').html(data);
-                    }
-                });
-            }
 
         </script>
 		<!--Internal Sparkline js -->
