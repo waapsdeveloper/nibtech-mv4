@@ -384,8 +384,9 @@
                                     </tbody>
                                     @php
                                         if ($i > 0) {
-                                            $average = amount_formatter(array_sum($prices)/$i);
+                                            $average = array_sum($prices)/$i;
                                             $best_price = $average + ($average*0.15);
+                                            $average = amount_formatter($average);
                                         } else {
                                             $average = 0;
                                             $best_price = 0;
