@@ -833,6 +833,14 @@ class Inventory extends Component
         return redirect()->back();
     }
 
+    public function get_stock_cost($id){
+        $stock = Stock_model::find($id);
+        return $stock->purchase_item->price;
+    }
+    public function get_stock_price($id){
+        $stock = Stock_model::find($id);
+        return $stock->last_item()->price;
+    }
     public function export(){
 
         return Excel::download(new InventorysheetExport, 'inventory.xlsx');

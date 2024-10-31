@@ -238,6 +238,9 @@ Route::get('inventory/get_products', [Inventory::class,'get_products'])->name('v
 Route::get('inventory/get_variations/{id}', [Inventory::class,'get_variations'])->name('view_inventory');
 Route::post('inventory/export', [Inventory::class,'export'])->name('view_inventory');
 
+Route::get('get_stock_cost/{id}', [Inventory::class,'get_stock_cost'])->name('view_inventory');
+Route::get('get_stock_price/{id}', [Inventory::class,'get_stock_price'])->name('view_inventory');
+
 Route::get('inventory/start_verification', [Inventory::class,'start_verification'])->name('inventory_verification');
 Route::get('inventory/verification', [Inventory::class,'verification'])->name('inventory_verification');
 Route::get('inventory/resume_verification', [Inventory::class,'resume_verification'])->name('inventory_verification');

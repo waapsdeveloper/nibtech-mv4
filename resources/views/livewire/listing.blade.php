@@ -513,7 +513,8 @@
                                                         url: actionUrl,
                                                         data: form.serialize(), // serializes the form's elements.
                                                         success: function(data) {
-                                                            alert("Success: Price changed to " + data); // show response from the PHP script.
+                                                            // alert("Success: Price changed to " + data); // show response from the PHP script.
+                                                            $('#price_' + listingId).addClass('bg-green'); // hide the button after submission
                                                             $('#send_' + listingId).addClass('d-none'); // hide the button after submission
                                                             // $('quantity_' + listingId).val(data)
                                                         },
