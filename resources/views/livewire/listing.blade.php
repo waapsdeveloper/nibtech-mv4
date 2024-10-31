@@ -268,10 +268,9 @@
                             <a href="https://www.backmarket.fr/bo_merchant/listings/active?sku={{ $sku }}" title="View BM Ad" target="_blank">
                             {{ $variation->sku." - ".$variation->product->model." ".$storage." ".$color." ".$grade }}
                             </a>
+                            <br>
+                            <span id="sales_{{$variation->id}}"></span>
                         </div>
-                        <span id="sales_{{$variation->id}}">
-
-                        </span>
                         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
                         <script>
                             $(document).ready(function () {
