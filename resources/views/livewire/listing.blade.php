@@ -368,15 +368,24 @@
                                         @foreach ($stocks as $item)
                                             {{-- @dd($item) --}}
                                             {{-- @if($item->order_item[0]->order_id == $order_id) --}}
+                                            <script>
+                                                $(document).ready(function () {
+                                                    price = load({{url(get_stock_cost($item->id))}});
+                                                    @php
+                                                        $price = price;
+                                                    @endphp
+                                                });
+                                            </script>
                                             @php
-                                            $i ++;
-                                            $prices[] = $item->purchase_item->price ?? 0;
-                                        @endphp
+                                                $i ++;
+                                                // $price = $item->purchase_item->price ?? 0;
+                                                $prices[] = $price;
+                                            @endphp
                                             <tr>
                                                 <td>{{ $i }}</td>
                                                 <td data-stock="{{ $item->id }}"><a href="{{ url('imei?imei=').$item->imei.$item->serial_number }}" target="_blank">{{ $item->imei.$item->serial_number }}</a></td>
                                                 @if (session('user')->hasPermission('view_cost'))
-                                                <td>€{{$item->purchase_item->price ?? "Error in Purchase Entry" }}</td>
+                                                <td>€{{$price }}</td>
                                                 @endif
                                             </tr>
                                             {{-- @endif --}}
