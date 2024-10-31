@@ -64,6 +64,10 @@
         $(document).ready(function() {
             fetchVariations(); // Fetch variations on page load
 
+            let storages = {!! json_encode($storages) !!};
+            let colors = {!! json_encode($colors) !!};
+            let grades = {!! json_encode($grades) !!};
+
             function fetchVariations() {
                 $.ajax({
                     url: "{{ url('api/internal/get_variations') }}", // Adjust the URL to your route
@@ -81,13 +85,14 @@
             function displayVariations(variations) {
                 let variationsContainer = $('#variations'); // The container where data will be displayed
                 variationsContainer.empty(); // Clear any existing content
-                console.log(variations);
+                // console.log(variations);
                 // Check if there's data
                 if (variations.data.length > 0) {
                     variations.data.forEach(function(variation) {
                         let stocksTable = '';
                         let listingsTable = '';
                         let stockPrices = [];
+                        let listedStock = fetchUpdatedQuantity(variation.id);
 
                         $.ajax({
                             url: "{{ url('api/internal/get_variation_available_stocks') }}/" + variation.id,
@@ -121,34 +126,6 @@
                                 console.error(xhr.responseText);
                             }
                         });
-                        // variation.available_stocks.forEach(function(item, index) {
-                        //     // Load stock cost via AJAX
-                        //     $.ajax({
-                        //         url: "{{ url('get_stock_cost') }}/" + item.id,
-                        //         type: 'GET',
-                        //         dataType: 'json',
-                        //         success: function(price) {
-                        //             stockPrices.push(price);
-                        //             stocksTable += `
-                        //                 <tr>
-                        //                     <td>${index + 1}</td>
-                        //                     <td data-stock="${item.id}">
-                        //                         <a href="{{ url('imei?imei=') }}${item.imei}${item.serial_number}" target="_blank">
-                        //                             ${item.imei}${item.serial_number}
-                        //                         </a>
-                        //                     </td>
-                        //                     <td id="cost_${item.id}">€${price}</td>
-                        //                 </tr>`;
-
-                        //             // Update average cost
-                        //             updateAverageCost(variation.id, stockPrices);
-                        //         },
-                        //         error: function(xhr) {
-                        //             console.error(xhr.responseText);
-                        //         }
-                        //     });
-                        // });
-
                         variation.listings.forEach(function(listing) {
                             listingsTable += `
                                 <tr ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
@@ -177,7 +154,39 @@
                         // Create variation card
                         variationsContainer.append(`
                             <div class="card">
-                                <div class="card-title">${variation.product.model}</div>
+                                <div class="card-header pb-0 d-flex justify-content-between">
+                                    <div>
+                                        <h5>
+                                            <a href="https://www.backmarket.fr/bo_merchant/listings/active?sku=${variation.sku}" title="View BM Ad" target="_blank">
+                                                ${variation.sku} - ${variation.product.model} ${storages[variation.storage] || ''} ${colors[variation.color] || ''} ${grades[variation.grade] || ''}
+                                            </a>
+                                        </h5>
+                                        <span id="sales_${variation.id}"></span>
+                                    </div>
+
+
+                                    <div>
+                                        <form class="form-inline" method="POST" id="change_qty_${variation.id}" action="{{url('listing/update_quantity')}}/${variation.id}">
+                                            @csrf
+                                            <div class="form-floating">
+                                                <input type="number" class="form-control" name="stock" id="quantity_${variation.id}" value="${listedStock || 0}" style="width:80px;" oninput="toggleButtonOnChange(${variation.id}, this)">
+                                                <label for="">Stock</label>
+                                            </div>
+                                            <button id="send_${variation.id}" class="btn btn-light d-none" onclick="submitForm(event, ${variation.id})">Push</button>
+                                        </form>
+                                    </div>
+
+                                    <div>
+                                        <a class="btn btn-link" href="{{url('order').'?sku='}}$(variation.sku)" target="_blank">
+                                            Pending Order Items: ${variation.pending_orders_count || 0}
+                                        </a>
+                                    </div>
+
+                                    <span class="">${variation.available_stocks_count || 0} Available</span>
+                                    <div>
+                                        Status: ${variation.status || 'N/A'}
+                                    </div>
+                                </div>
                                 <div class="card-body">
                                     <div class="col-md-5">
                                         <div class="table-responsive">
@@ -217,6 +226,8 @@
                                 </div>
                             </div>
                         `);
+
+                        $('#sales_'+variation.id).load("{{ url('listing/get_sales') . '/'}}${variation.id}");
                     });
                 } else {
                     variationsContainer.append('<p>No variations found.</p>');
@@ -231,6 +242,23 @@
                     $(`#average_cost_${variationId}`).text('€0.00');
                 }
             }
+            function fetchUpdatedQuantity(variationId, bm) {
+                return $.ajax({
+                    url: `{{ url('api/internal/get_updated_quantity') }}/${variationId}`,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        // Assuming the response contains 'updatedQuantity'
+                        let listedStock = response.updatedQuantity;
+                        // You can then update the DOM or any UI elements with this value
+                    },
+                    error: function(xhr) {
+                        console.error("Error fetching quantity:", xhr.responseText);
+                    }
+                });
+            }
+
+
         });
     </script>
 @endsection

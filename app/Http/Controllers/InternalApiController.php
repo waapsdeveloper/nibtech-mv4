@@ -153,4 +153,13 @@ class InternalApiController extends Controller
 
         return "Average: ".$week;
     }
+    public function getUpdatedQuantity($variationId)
+    {
+        $bm = new BackMarketAPIController();
+        // Call update_qty on the variation instance
+        $variation = Variation_model::findOrFail($variationId);
+        $updatedQuantity = $variation->update_qty($bm);
+        return response()->json(['updatedQuantity' => $updatedQuantity]);
+    }
+
 }
