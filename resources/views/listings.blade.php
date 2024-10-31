@@ -22,6 +22,9 @@
             display: flex;
             direction: rtl;
         }
+        .card-body * {
+            direction: ltr;
+        }
         .table-responsive {
             max-height: 683px;
             overflow: scroll;
@@ -86,33 +89,33 @@
                         let listingsTable = '';
                         let stockPrices = [];
 
-                        variation.available_stocks.forEach(function(item, index) {
-                            // Load stock cost via AJAX
-                            $.ajax({
-                                url: "{{ url('get_stock_cost') }}/" + item.id,
-                                type: 'GET',
-                                dataType: 'json',
-                                success: function(price) {
-                                    stockPrices.push(price);
-                                    stocksTable += `
-                                        <tr>
-                                            <td>${index + 1}</td>
-                                            <td data-stock="${item.id}">
-                                                <a href="{{ url('imei?imei=') }}${item.imei}${item.serial_number}" target="_blank">
-                                                    ${item.imei}${item.serial_number}
-                                                </a>
-                                            </td>
-                                            <td id="cost_${item.id}">€${price}</td>
-                                        </tr>`;
+                        // variation.available_stocks.forEach(function(item, index) {
+                        //     // Load stock cost via AJAX
+                        //     $.ajax({
+                        //         url: "{{ url('get_stock_cost') }}/" + item.id,
+                        //         type: 'GET',
+                        //         dataType: 'json',
+                        //         success: function(price) {
+                        //             stockPrices.push(price);
+                        //             stocksTable += `
+                        //                 <tr>
+                        //                     <td>${index + 1}</td>
+                        //                     <td data-stock="${item.id}">
+                        //                         <a href="{{ url('imei?imei=') }}${item.imei}${item.serial_number}" target="_blank">
+                        //                             ${item.imei}${item.serial_number}
+                        //                         </a>
+                        //                     </td>
+                        //                     <td id="cost_${item.id}">€${price}</td>
+                        //                 </tr>`;
 
-                                    // Update average cost
-                                    updateAverageCost(variation.id, stockPrices);
-                                },
-                                error: function(xhr) {
-                                    console.error(xhr.responseText);
-                                }
-                            });
-                        });
+                        //             // Update average cost
+                        //             updateAverageCost(variation.id, stockPrices);
+                        //         },
+                        //         error: function(xhr) {
+                        //             console.error(xhr.responseText);
+                        //         }
+                        //     });
+                        // });
 
                         variation.listings.forEach(function(listing) {
                             listingsTable += `
