@@ -403,8 +403,6 @@
                                             average = 0;
                                             best_price = 0;
                                         }
-                                        document.getElementById('average_cost_{{$variation->id}}').innerHTML = "€"+average;
-                                        document.getElementById('best_price_{{$variation->id}}').innerHTML = "€"+best_price;
 
                                     </script>
                                     {{-- @php
@@ -445,6 +443,11 @@
                                         <th><small><b>Date</b></small></th>
                                     </tr>
                                 </thead>
+                                <script>
+
+                                    document.getElementById('average_cost_{{$variation->id}}').innerHTML = "€"+average;
+                                    document.getElementById('best_price_{{$variation->id}}').innerHTML = "€"+best_price.toFixed(2);
+                                </script>
                                 <tbody>
                                     @php
                                         $i = 0;
