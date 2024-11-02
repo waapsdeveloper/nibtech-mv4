@@ -269,7 +269,7 @@ class Repair extends Component
                 continue;
             }
             $process_stock = Process_stock_model::whereHas('process', function ($q) {
-                $q->where('process_type_id', 5);
+                $q->where('process_type_id', 9);
             })->where('stock_id',$stock->id)->where('status',1)->orderBy('id','desc')->first();
             if($process_stock == null){
                 $error .= "IMEI ".$imei." not found in any list<br>";
