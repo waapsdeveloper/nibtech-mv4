@@ -119,6 +119,8 @@ Route::get('return/revert_status/{id}', [SalesReturn::class,'return_revert_statu
 Route::get('repair', Repair::class)->name('view_repair');
 Route::post('add_repair', [Repair::class,'add_repair'])->name('add_repair');
 Route::post('check_repair_item/{id}', [Repair::class,'check_repair_item'])->name('add_repair_item');
+Route::get('external_repair_receive', [Repair::class,'external_repair_receive'])->name('receive_repair_item');
+Route::post('receive_repair_items', [Repair::class,'receive_repair_items'])->name('receive_repair_item');
 Route::post('receive_repair_item/{id}', [Repair::class,'receive_repair_item'])->name('receive_repair_item');
 Route::post('add_repair_item/{id}', [Repair::class,'add_repair_item'])->name('add_repair_item');
 Route::post('repair/add_repair_sheet/{id}', [Repair::class,'add_repair_sheet'])->name('add_repair_item');

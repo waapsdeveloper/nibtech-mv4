@@ -203,17 +203,6 @@ class Repair extends Component
             return $variation->stocks->isNotEmpty();
         });
 
-        // $order_issues = Order_issue_model::where('order_id',$process_id)->select(
-        //     DB::raw('JSON_UNQUOTE(JSON_EXTRACT(data, "$.name")) AS name'),
-        //     'message',
-        //     DB::raw('COUNT(*) as count'),
-        //     DB::raw('GROUP_CONCAT(JSON_OBJECT("id", id, "order_id", order_id, "data", data, "message", message, "created_at", created_at, "updated_at", updated_at)) AS all_rows')
-        // )
-        // ->groupBy('name', 'message')
-        // ->get();
-        // // dd($order_issues);
-
-        // $data['order_issues'] = $order_issues;
         $data['variations'] = $variations;
         $last_ten = Process_stock_model::where('process_id',$process_id)->orderBy('id','desc')->limit(10)->get();
         $data['last_ten'] = $last_ten;
@@ -252,6 +241,49 @@ class Repair extends Component
         return redirect(url('repair/detail').'/'.$process->id);
     }
 
+    public function external_repair_receive(){
+        $processed_stocks = Process_stock_model::when(session('process_stock_ids'), function ($q) {
+            return $q->whereIn('id', session('process_stock_ids'));
+        })
+        ->orderByDesc('updated_at')->get();
+        $data['processed_stocks'] = $processed_stocks;
+
+        return view('livewire.external_repair_receive_new')->with($data);
+    }
+    public function receive_repair_items(){
+        $error = "";
+        if(session('process_stock_ids') == null){
+            $process_stock_ids = [];
+        }else{
+            $process_stock_ids = session('process_stock_ids');
+        }
+        $imeis = request('imei');
+        $imeis = explode(" ",$imeis);
+        foreach($imeis as $imei){
+            $stock = Stock_model::where('imei',$imei)->orWhere('serial_number',$imei)->first();
+            if($stock == null){
+                $error .= "IMEI ".$imei." not found<br>";
+                continue;
+            }
+            $process_stock = Process_stock_model::whereHas('process', function ($q) {
+                $q->where('process_type_id', 5);
+            })->where('stock_id',$stock->id)->where('status',1)->orderBy('id','desc')->first();
+            if($process_stock == null){
+                $error .= "IMEI ".$imei." not found in any list<br>";
+                continue;
+            }
+            $this->receive_repair_item($process_stock->process_id,$imei,1);
+            $process_stock_ids[] = $process_stock->id;
+
+        }
+        if($error != ""){
+            session()->put('error', $error);
+        }else{
+            session()->put('success', 'Stocks added successfully');
+        }
+        session()->put('process_stock_ids', $process_stock_ids);
+        return redirect()->back();
+    }
     public function receive_repair_item($process_id, $imei = null, $back = null){
 
         if(request('check_testing_days') > 0){
@@ -276,7 +308,6 @@ class Repair extends Component
             }else{
                 return 1;
             }
-
         }
         $process_stock = Process_stock_model::where(['process_id'=>$process_id,'stock_id'=>$stock->id])->first();
         if(!$process_stock){
