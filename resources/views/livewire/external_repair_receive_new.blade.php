@@ -128,7 +128,7 @@ session()->forget('error');
                         @endphp
                         <tr>
                             <td>{{ $i }}</td>
-                            <td>{{ $process_stock->process->reference_id }}</td>
+                            <td>{{ $processed_stock->process->reference_id }}</td>
                             <td>{{ $item->imei.$item->serial_number }}</td>
                             <td>
                                 {{ $product." ".$storage." ".$color." ".$grade." ".$sub_grade }}
