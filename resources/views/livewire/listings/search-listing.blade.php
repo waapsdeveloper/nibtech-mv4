@@ -23,7 +23,7 @@
                         <label for="">SKU</label>
                     </div>
                 </div>
-                <div class="col-md-2 col-sm-6">
+                <div class="col-md-1 col-sm-6">
                     <select name="color" class="form-control form-select" data-bs-placeholder="Select Status">
                         <option value="">Color</option>
                         @foreach ($colors as $id => $color)
@@ -31,7 +31,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-2 col-sm-6">
+                <div class="col-md-1 col-sm-6">
                     <select name="storage" class="form-control form-select" data-bs-placeholder="Select Status">
                         <option value="">Storage</option>
                         @foreach ($storages as $id => $storage)
