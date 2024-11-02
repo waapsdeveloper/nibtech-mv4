@@ -262,6 +262,7 @@ class Repair extends Component
         }
         $imeis = request('imei');
         $imeis = explode(" ",$imeis);
+        echo "<pre>";
         foreach($imeis as $imei){
             $stock = Stock_model::where('imei',$imei)->orWhere('serial_number',$imei)->first();
             if($stock == null){
@@ -289,6 +290,7 @@ class Repair extends Component
             session()->put('success', 'Stocks added successfully');
         }
         session()->put('process_stock_ids', $process_stock_ids);
+        echo "</pre>";
         // return redirect()->back();
     }
     public function receive_repair_item($process_id, $imei = null, $back = null){
