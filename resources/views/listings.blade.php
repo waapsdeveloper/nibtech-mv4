@@ -26,7 +26,7 @@
             direction: ltr;
         }
         .table-responsive {
-            max-height: 700px;
+            max-height: 772px;
             overflow: scroll;
         }
         .breadcrumb-header {
