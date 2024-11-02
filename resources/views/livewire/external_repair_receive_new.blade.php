@@ -87,61 +87,54 @@ session()->forget('error');
             <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                 <thead>
                     <tr>
-                        <th><small><b>#</b></small></th>
-                        <th><small><b>Process</b></small></th>
-                        <th><small><b>IMEI/Serial</b></small></th>
-                        {{-- @if (session('user')->hasPermission('view_cost')) --}}
-                        <th><small><b>Name</b></small></th>
-                        {{-- @endif --}}
-                        <th><small><b>Last Updated</b></small></th>
-
-                        @if (session('user')->hasPermission('delete_repair_item'))
-                        {{-- <th></th> --}}
-                        @endif
+                        <th><small><b>No</b></small></th>
+                        <th><small><b>Reference ID</b></small></th>
+                        <th><small><b>Repairer</b></small></th>
+                        <th><small><b>Price</b></small></th>
+                        <th><small><b>IMEI</b></small></th>
+                        <th><small><b>Status</b></small></th>
+                        <th><small><b>Creation Date | TN</b></small></th>
                     </tr>
                 </thead>
                 <tbody>
-                    {{-- <form method="POST" action="{{url('repair')}}/update_prices" id="update_prices_{{ $variation->id }}"> --}}
-                        @csrf
                     @php
                         $i = 0;
                         $id = [];
                     @endphp
-                    @php
-                        // $items = $stocks->order_item;
-                        $j = 0;
-                        $total = 0;
-                        // print_r($variation);
-                    @endphp
-
-                    @foreach ($processed_stocks as $processed_stock)
-                        {{-- @dd($item->sale_item) --}}
+                    @foreach ($processed_stocks as $index => $p_stock)
                         @php
-                            $item = $processed_stock->stock;
-                            $variation = $item->variation;
-                            $i ++;
-
-                            isset($variation->product)?$product = $products[$variation->product_id]:$product = null;
-                            isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
-                            isset($variation->color)?$color = $colors[$variation->color]:$color = null;
-                            isset($variation->grade)?$grade = $grades[$variation->grade]:$grade = null;
-                            isset($variation->sub_grade)?$sub_grade = $grades[$variation->sub_grade]:$sub_grade = null;
-
+                            $process = $p_stock->process;
+                            $j = 0;
                         @endphp
-                        <tr>
-                            <td>{{ $i }}</td>
-                            <td>{{ $processed_stock->process->reference_id }}</td>
-                            <td>{{ $item->imei.$item->serial_number }}</td>
-                            <td>
-                                {{ $product." ".$storage." ".$color." ".$grade." ".$sub_grade }}
-                            </td>
-                            <td>{{$processed_stock->updated_at}}</td>
-                            @if (session('user')->hasPermission('delete_repair_item'))
-                            {{-- <td><a href="{{ url('delete_repair_item').'/'.$item->process_stock($process_id)->id }}"><i class="fa fa-trash"></i></a></td> --}}
-                            @endif
-                        </tr>
+
+                            <tr>
+                                <td title="{{ $p_stock->id }}">{{ $i + 1 }}</td>
+                                <td><a href="{{url('repair/detail/'.$process->id)}}?status=1">{{ $process->reference_id }}</a></td>
+                                <td>@if ($process->customer)
+                                    {{ $process->customer->first_name." ".$process->customer->last_name }}
+                                @endif</td>
+                                <td>
+                                    {{ $process->currency_id->sign.amount_formatter($p_stock->price,2) }}
+                                </td>
+                                <td style="width:240px" class="text-success text-uppercase" title="{{ $p_stock->stock_id }}" id="copy_imei_{{ $process->id }}">
+                                    @isset($p_stock->stock->imei) {{ $p_stock->stock->imei }}&nbsp; @endisset
+                                    @isset($p_stock->stock->serial_number) {{ $p_stock->stock->serial_number }}&nbsp; @endisset
+                                    @isset($p_stock->admin_id) | {{ $p_stock->admin->first_name }} |
+                                    @else
+                                    @isset($process->processed_by) | {{ $process->admin->first_name }} | @endisset
+                                    @endisset
+                                </td>
+                                <td>@if ($p_stock->status == 1)
+                                    Sent
+                                    @else
+                                    Received
+                                @endif</td>
+                                <td style="width:220px">{{ $p_stock->created_at}} <br> {{ $process->tracking_number }}</td>
+                            </tr>
+                        @php
+                            $i ++;
+                        @endphp
                     @endforeach
-                    </form>
                 </tbody>
             </table>
         </div>
