@@ -91,9 +91,6 @@ session()->forget('error');
                         {{-- @if (session('user')->hasPermission('view_cost')) --}}
                         <th><small><b>Name</b></small></th>
                         {{-- @endif --}}
-                        @if ($process->status == 3 && session('user')->hasPermission('view_cost'))
-                        <th><small><b>Cost</b></small></th>
-                        @endif
                         <th><small><b>Last Updated</b></small></th>
 
                         @if (session('user')->hasPermission('delete_repair_item'))
@@ -136,10 +133,6 @@ session()->forget('error');
                             <td>
                                 {{ $product." ".$storage." ".$color." ".$grade." ".$sub_grade }}
                             </td>
-
-                            @if ($process->status == 3 && session('user')->hasPermission('view_cost'))
-                            <td>{{ amount_formatter($processed_stock->price,2) }}</td>
-                            @endif
                             <td>{{$processed_stock->updated_at}}</td>
                             @if (session('user')->hasPermission('delete_repair_item'))
                             {{-- <td><a href="{{ url('delete_repair_item').'/'.$item->process_stock($process_id)->id }}"><i class="fa fa-trash"></i></a></td> --}}
