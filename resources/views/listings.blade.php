@@ -152,14 +152,14 @@
                                             <input type="number" class="form-control" id="min_price_${listing.id}" name="min_price" step="0.01" value="${listing.min_price}">
                                             <label for="">Min Price</label>
                                         </div>
-                                        ${pm_append}
+                                        <small>${pm_append}</small>
                                     </td>
                                     <td>
                                         <div class="form-floating">
                                             <input type="number" class="form-control" id="price_${listing.id}" name="price" step="0.01" value="${listing.price}">
                                             <label for="">Price</label>
                                         </div>
-                                        ${p_append}
+                                        <small>${p_append}</small>
                                     </td>
                                     <td>${listing.max_price}</td>
                                     <td>${listing.updated_at}</td>
