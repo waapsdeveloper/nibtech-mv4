@@ -93,7 +93,7 @@
             function displayVariations(variations) {
                 let variationsContainer = $('#variations'); // The container where data will be displayed
                 variationsContainer.empty(); // Clear any existing content
-                // console.log(variations);
+                console.log(variations);
                 // Check if there's data
                 if (variations.data.length > 0) {
                     variations.data.forEach(function(variation) {
