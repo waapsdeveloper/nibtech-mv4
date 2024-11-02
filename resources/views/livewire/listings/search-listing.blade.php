@@ -1,12 +1,12 @@
         <form action="" method="GET" id="search">
             <div class="row">
-                <div class="col-md col-sm-6">
+                <div class="col-md-2 col-sm-6">
                     <div class="form-floating">
                         <input type="text" class="form-control" id="reference_id" name="reference_id" placeholder="Enter IMEI" value="@isset($_GET['reference_id']){{$_GET['reference_id']}}@endisset">
                         <label for="reference_id">Reference ID</label>
                     </div>
                 </div>
-                <div class="col-md col-sm-6">
+                <div class="col-md-2 col-sm-6">
                     {{-- <div class="card-header">
                         <h4 class="card-title mb-1">Category</h4>
                     </div> --}}
@@ -17,7 +17,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md col-sm-6">
+                <div class="col-md-2 col-sm-6">
                     {{-- <div class="card-header">
                         <h4 class="card-title mb-1">Brand</h4>
                     </div> --}}
@@ -28,7 +28,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md col-sm-6">
+                <div class="col-md-2 col-sm-6">
                     <div class="form-floating">
                         <input type="text" id="product" name="product" list="products" class="form-control" data-bs-placeholder="Select Status" value="@isset($_GET['product']){{$_GET['product']}}@endisset">
                         <label for="product">Product</label>
@@ -39,13 +39,13 @@
                             @endforeach
                         </datalist>
                 </div>
-                <div class="col-md col-sm-6">
+                <div class="col-md-2 col-sm-6">
                     <div class="form-floating">
                         <input type="text" class="form-control" name="sku" placeholder="Enter IMEI" value="@isset($_GET['sku']){{$_GET['sku']}}@endisset">
                         <label for="">SKU</label>
                     </div>
                 </div>
-                <div class="col-md col-sm-6">
+                <div class="col-md-2 col-sm-6">
                     <select name="color" class="form-control form-select" data-bs-placeholder="Select Status">
                         <option value="">Color</option>
                         @foreach ($colors as $id => $color)
@@ -53,7 +53,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md col-sm-6">
+                <div class="col-md-2 col-sm-6">
                     <select name="storage" class="form-control form-select" data-bs-placeholder="Select Status">
                         <option value="">Storage</option>
                         @foreach ($storages as $id => $storage)
@@ -61,7 +61,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md col-sm-6">
+                <div class="col-md-2 col-sm-6">
                     <select name="grade[]" class="form-control form-select" data-bs-placeholder="Select Status" multiple>
                         <option value="">Grade</option>
                         @foreach ($grades as $id => $grade)
@@ -69,21 +69,21 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md col-sm-6">
+                <div class="col-md-2 col-sm-6">
                     <select name="listed_stock" class="form-control form-select" data-bs-placeholder="Select listed Stock">
                         <option value="">Listed Stock</option>
                         <option value="1" @if(isset($_GET['listed_stock']) && $_GET['listed_stock'] == 1) {{'selected'}}@endif>With Listing</option>
                         <option value="2" @if(isset($_GET['listed_stock']) && $_GET['listed_stock'] == 2) {{'selected'}}@endif>Without Listing</option>
                     </select>
                 </div>
-                <div class="col-md col-sm-6">
+                <div class="col-md-2 col-sm-6">
                     <select name="available_stock" class="form-control form-select" data-bs-placeholder="Select Available Stock">
                         <option value="">Available Stock</option>
                         <option value="1" @if(isset($_GET['available_stock']) && $_GET['available_stock'] == 1) {{'selected'}}@endif>With Stock</option>
                         <option value="2" @if(isset($_GET['available_stock']) && $_GET['available_stock'] == 2) {{'selected'}}@endif>Without Stock</option>
                     </select>
                 </div>
-                <div class="col-md col-sm-6">
+                <div class="col-md-2 col-sm-6">
                     <select name="state" class="form-control form-select" data-bs-placeholder="Select Publication State">
                         <option value="">Publication State</option>
                         <option value="0" @if(isset($_GET['state']) && $_GET['state'] == 0) {{'selected'}}@endif>Missing price or comment</option>
