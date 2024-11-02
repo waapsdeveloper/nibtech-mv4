@@ -39,8 +39,8 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-2 col-sm-6">
-                    <select name="grade[]" class="form-control form-select" data-bs-placeholder="Select Status" multiple>
+                <div class="col-md-4 col-sm-6">
+                    <select name="grade[]" class="form-control form-select" data-bs-placeholder="Select Status select-2" multiple>
                         <option value="">Grade</option>
                         @foreach ($grades as $id => $grade)
                             <option value="{{$id}}" @if(isset($_GET['grade']) && $id == $_GET['grade']) {{'selected'}}@endif>{{$grade}}</option>
