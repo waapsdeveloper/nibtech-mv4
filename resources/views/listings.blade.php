@@ -26,7 +26,7 @@
             direction: ltr;
         }
         .table-responsive {
-            max-height: 683px;
+            max-height: 700px;
             overflow: scroll;
         }
         .breadcrumb-header {
@@ -215,10 +215,10 @@
                                                 <thead>
                                                     <tr>
                                                         <th><small><b>Country</b></small></th>
-                                                        <th><small><b>BuyBox Price</b></small></th>
-                                                        <th><small><b>Min Price</b></small></th>
+                                                        <th><small><b>BuyBox</b></small></th>
+                                                        <th title="Min Price"><small><b>Min</b></small></th>
                                                         <th><small><b>Price</b></small></th>
-                                                        <th><small><b>Max Price</b></small></th>
+                                                        <th title="Max Price"><small><b>Max</b></small></th>
                                                         <th><small><b>Date</b></small></th>
                                                     </tr>
                                                 </thead>
