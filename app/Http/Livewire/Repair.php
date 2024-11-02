@@ -242,6 +242,10 @@ class Repair extends Component
     }
 
     public function external_repair_receive(){
+        $data['storages'] = Storage_model::pluck('name','id');
+        $data['products'] = Products_model::pluck('model','id');
+        $data['grades'] = Grade_model::pluck('name','id');
+        $data['colors'] = Color_model::pluck('name','id');
         $processed_stocks = Process_stock_model::when(session('process_stock_ids'), function ($q) {
             return $q->whereIn('id', session('process_stock_ids'));
         })
