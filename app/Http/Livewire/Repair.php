@@ -262,7 +262,7 @@ class Repair extends Component
         }
         $imeis = request('imei');
         $imeis = explode(" ",$imeis);
-        echo "<pre>";
+        // echo "<pre>";
         foreach($imeis as $imei){
             $stock = Stock_model::where('imei',$imei)->orWhere('serial_number',$imei)->first();
             if($stock == null){
@@ -276,13 +276,13 @@ class Repair extends Component
                 $error .= "IMEI ".$imei." not found in any list<br>";
                 continue;
             }
-            echo $process_stock->process_id;
-            echo $imei;
+            // echo $process_stock->process_id;
+            // echo $imei;
 
-            echo $this->receive_repair_item($process_stock->process_id,$imei,1);
+            $this->receive_repair_item($process_stock->process_id,$imei,1);
             $process_stock_ids[] = $process_stock->id;
             // print_r(session()->all());
-            echo "<br>";
+            // echo "<br>";
         }
         if($error != ""){
             session()->put('error', $error);
@@ -290,8 +290,8 @@ class Repair extends Component
             session()->put('success', 'Stocks added successfully');
         }
         session()->put('process_stock_ids', $process_stock_ids);
-        echo "</pre>";
-        // return redirect()->back();
+        // echo "</pre>";
+        return redirect()->back();
     }
     public function receive_repair_item($process_id, $imei = null, $back = null){
 
@@ -299,7 +299,7 @@ class Repair extends Component
             session()->put('check_testing_days',request('check_testing_days'));
         }
         if($imei == null && request('imei')){
-            echo $imei = request('imei');
+            $imei = request('imei');
         }
         if(ctype_digit($imei)){
             $i = $imei;
