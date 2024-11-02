@@ -137,8 +137,8 @@
                             let p_append = '';
                             let pm_append = '';
                             if (listing.currency_id == 5) {
-                                p_append = 'Minimum: £'+m_price.toFixed(2);
-                                pm_append = 'Minimum: £'+m_min_price.toFixed(2);
+                                p_append = 'Min: £'+m_price.toFixed(2);
+                                pm_append = 'Min: £'+m_min_price.toFixed(2);
                             }
                             listingsTable += `
                                 <tr ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
