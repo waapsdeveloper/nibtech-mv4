@@ -281,7 +281,7 @@ class Repair extends Component
 
             echo $this->receive_repair_item($process_stock->process_id,$imei,1);
             $process_stock_ids[] = $process_stock->id;
-            print_r(session());
+            print_r(session()->all());
 
         }
         if($error != ""){
