@@ -133,6 +133,11 @@
                             }
                         });
                         variation.listings.forEach(function(listing) {
+                            if (listing.currency_id == 5) {
+                                let p_append = 'Minimum: £'+m_min_price;
+                            }else{
+                                let p_append = '';
+                            }
                             listingsTable += `
                                 <tr ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
                                     <td title="${listing.id} ${listing.country_id.title}">
@@ -145,7 +150,7 @@
                                             <input type="number" class="form-control" id="min_price_${listing.id}" name="min_price" step="0.01" value="${listing.min_price}">
                                             <label for="">Min Price</label>
                                         </div>
-                                        @if (${listing.currency_id} == 5) Minimum: £{{ m_min_price }} @endif
+                                        ${p_append}
                                     </td>
                                     <td>
                                         <div class="form-floating">
