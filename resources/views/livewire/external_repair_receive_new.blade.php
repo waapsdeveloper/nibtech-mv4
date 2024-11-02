@@ -74,7 +74,7 @@ session()->forget('info');
 session()->forget('error');
 @endphp
 @endif
-@if (isset($processsed_stocks))
+@if (isset($processed_stocks))
 
     <div class="card">
         <div class="card-header pb-0">
