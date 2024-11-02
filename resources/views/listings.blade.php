@@ -128,6 +128,7 @@
                                 updateAverageCost(variation.id, stockPrices);
                                 stocksTable = datass;
                                 $('#stocks_'+variation.id).html(datass);
+                                $('#available_stock_'+variation.id).html(data.index + ' Available');
                             },
                             error: function(xhr) {
                                 console.error(xhr.responseText);
@@ -197,10 +198,7 @@
                                         </a>
                                     </div>
 
-                                    <span class="">${variation.available_stocks_count || 0} Available</span>
-                                    <div>
-                                        Status: ${variation.status || 'N/A'}
-                                    </div>
+                                    <span class="" id="available_stock_${variation.id}">${variation.available_stocks_count || 0} Available</span>
                                 </div>
                                 <div class="card-body p-2">
                                     <div class="col-md-5">
