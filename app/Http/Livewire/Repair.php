@@ -275,7 +275,7 @@ class Repair extends Component
                 $error .= "IMEI ".$imei." not found in any list<br>";
                 continue;
             }
-            $this->receive_repair_item($process_stock->process_id,$imei,1);
+            echo $this->receive_repair_item($process_stock->process_id,$imei,1);
             $process_stock_ids[] = $process_stock->id;
 
         }
@@ -285,7 +285,7 @@ class Repair extends Component
             session()->put('success', 'Stocks added successfully');
         }
         session()->put('process_stock_ids', $process_stock_ids);
-        return redirect()->back();
+        // return redirect()->back();
     }
     public function receive_repair_item($process_id, $imei = null, $back = null){
 
