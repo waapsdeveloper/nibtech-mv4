@@ -280,4 +280,9 @@
 
         });
     </script>
+
+
+    <!-- INTERNAL Select2 js -->
+    <script src="{{asset('assets/plugins/select2/js/select2.full.min.js')}}"></script>
+    <script src="{{asset('assets/js/select2.js')}}"></script>
 @endsection
