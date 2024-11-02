@@ -33,6 +33,11 @@
             padding: 15px;
             background-color: #f8f9fa;
         }
+.form-floating>.form-control,
+.form-floating>.form-control-plaintext,
+.form-floating>.form-select {
+  height: calc(2.3rem + 2px) !important;
+}
     </style>
 @endsection
 
