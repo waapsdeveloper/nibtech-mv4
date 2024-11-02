@@ -117,7 +117,7 @@
                                             <td>${index + 1}</td>
                                             <td data-stock="${item.id}">
                                                 <a href="{{ url('imei?imei=') }}${item.imei}${item.serial_number}" target="_blank">
-                                                    ${item.imei}${item.serial_number}
+                                                    ${item.imei ?? ''}${item.serial_number ?? ''}
                                                 </a>
                                             </td>
                                             <td id="cost_${item.id}">€${price}</td>
