@@ -128,7 +128,7 @@
                                 updateAverageCost(variation.id, stockPrices);
                                 stocksTable = datass;
                                 $('#stocks_'+variation.id).html(datass);
-                                $('#available_stock_'+variation.id).html(data.index + ' Available');
+                                $('#available_stock_'+variation.id).html(index + ' Available');
                             },
                             error: function(xhr) {
                                 console.error(xhr.responseText);
