@@ -281,7 +281,7 @@ class Repair extends Component
 
             echo $this->receive_repair_item($process_stock->process_id,$imei,1);
             $process_stock_ids[] = $process_stock->id;
-            print_r(session()->all());
+            // print_r(session()->all());
 
         }
         if($error != ""){
@@ -299,7 +299,7 @@ class Repair extends Component
             session()->put('check_testing_days',request('check_testing_days'));
         }
         if(request('imei')){
-            $imei = request('imei');
+            echo $imei = request('imei');
         }
         if(ctype_digit($imei)){
             $i = $imei;
