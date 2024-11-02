@@ -137,7 +137,6 @@ session()->forget('error');
                             @if (session('user')->hasPermission('delete_repair_item'))
                             {{-- <td><a href="{{ url('delete_repair_item').'/'.$item->process_stock($process_id)->id }}"><i class="fa fa-trash"></i></a></td> --}}
                             @endif
-                            <input type="hidden" name="item_ids[]" value="{{ $item->process_stock($process_id)->id }}">
                         </tr>
                     @endforeach
                     </form>
