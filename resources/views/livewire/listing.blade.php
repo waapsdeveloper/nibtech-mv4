@@ -419,7 +419,7 @@
                                         <th><small><b>Country</b></small></th>
                                         @if (session('user')->hasPermission('view_price'))
                                         <th><small><b>BuyBox Price</b></small></th>
-                                        <th width="150"><small><b>Min Price (€{{ $best_price }})</b></small></th>
+                                        <th width="150"><small><b>Min Price (€{{ amount_formatter($best_price) }})</b></small></th>
                                         <th width="150"><small><b>Price</b></small></th>
                                         <th><small><b>Max Price</b></small></th>
                                         @endif
