@@ -203,7 +203,7 @@
                                         </a>
                                     </div>
 
-                                    <span class="" id="available_stock_${variation.id}">${variation.available_stocks_count || 0} Available</span>
+                                    <span class="" id="available_stock_${variation.id}">${variation.available_stocks.length || 0} Available</span>
                                 </div>
                                 <div class="card-body p-2">
                                     <div class="col-md-5">
@@ -245,7 +245,7 @@
                             </div>
                         `);
 
-                        $('#sales_'+variation.id).load("{{ url('listing/get_sales') . '/'}}${variation.id}");
+                        $('#sales_'+variation.id).load("{{ url('listing/get_sales') . '/'}}"+variation.id);
                     });
                 } else {
                     variationsContainer.append('<p>No variations found.</p>');
