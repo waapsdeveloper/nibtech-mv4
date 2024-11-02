@@ -275,6 +275,9 @@ class Repair extends Component
                 $error .= "IMEI ".$imei." not found in any list<br>";
                 continue;
             }
+            echo $process_stock->process_id;
+            echo $imei;
+
             echo $this->receive_repair_item($process_stock->process_id,$imei,1);
             $process_stock_ids[] = $process_stock->id;
 
