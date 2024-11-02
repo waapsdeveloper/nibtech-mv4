@@ -107,7 +107,9 @@
                             dataType: 'json',
                             success: function(data) {
                                 datass = '';
+                                count = 0;
                                 data.stocks.forEach(function(item, index) {
+                                    count++;
                                     // console.log(data.stock_costs[item.id]);
                                     let price = data.stock_costs[item.id];
                                     stockPrices.push(price);
@@ -128,7 +130,7 @@
                                 updateAverageCost(variation.id, stockPrices);
                                 stocksTable = datass;
                                 $('#stocks_'+variation.id).html(datass);
-                                $('#available_stock_'+variation.id).html(index + ' Available');
+                                $('#available_stock_'+variation.id).html(count + ' Available');
                             },
                             error: function(xhr) {
                                 console.error(xhr.responseText);
