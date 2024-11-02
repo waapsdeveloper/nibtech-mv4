@@ -98,7 +98,7 @@
                         let listingsTable = '';
                         let stockPrices = [];
                         let listedStock = fetchUpdatedQuantity(variation.id);
-                        let m_min_price = variation.listings{where('currency_id',4)->min('min_price');}
+                        let m_min_price = Math.min(...variation.listings.filter(listing => listing.currency_id === 4).map(listing => listing.min_price));
 
                         $.ajax({
                             url: "{{ url('api/internal/get_variation_available_stocks') }}/" + variation.id,
