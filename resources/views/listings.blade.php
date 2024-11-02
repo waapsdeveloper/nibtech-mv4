@@ -67,6 +67,8 @@
 @section('scripts')
     <script>
         $(document).ready(function() {
+            $(.select2).select2();
+
             fetchVariations(); // Fetch variations on page load
 
             let storages = {!! json_encode($storages) !!};
