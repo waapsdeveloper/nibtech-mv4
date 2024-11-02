@@ -74,6 +74,8 @@ session()->forget('info');
 session()->forget('error');
 @endphp
 @endif
+@if ($processsed_stocks)
+
     <div class="card">
         <div class="card-header pb-0">
             <div class="d-flex justify-content-between">
@@ -144,6 +146,7 @@ session()->forget('error');
             </table>
         </div>
     </div>
+@endif
 
     @endsection
 
