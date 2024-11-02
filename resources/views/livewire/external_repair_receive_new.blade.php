@@ -93,7 +93,8 @@ session()->forget('error');
                         <th><small><b>Price</b></small></th>
                         <th><small><b>IMEI</b></small></th>
                         <th><small><b>Status</b></small></th>
-                        <th><small><b>Creation Date | TN</b></small></th>
+                        <th><small><b>Creation Date</b></small></th>
+                        <th><small><b>Update Date</b></small></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -129,7 +130,8 @@ session()->forget('error');
                                     @else
                                     Received
                                 @endif</td>
-                                <td style="width:220px">{{ $p_stock->created_at}} <br> {{ $process->tracking_number }}</td>
+                                <td>{{ $p_stock->created_at}} <br> {{ $process->tracking_number }}</td>
+                                <td>{{ $p_stock->updated_at }}</td>
                             </tr>
                         @php
                             $i ++;
