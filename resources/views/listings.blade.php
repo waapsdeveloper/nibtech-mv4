@@ -152,7 +152,7 @@
                                         </div>
                                     </td>
                                     <td>${listing.max_price}</td>
-                                    <td>${listing.updated_at}</td>
+                                    <td>${dateFormatter(listing.updated_at)}</td>
                                 </tr>`;
                         });
 
