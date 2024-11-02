@@ -92,12 +92,22 @@ class Api_request_model extends Model
                 $grade = array_search($gradeName, $lowercaseGrades);
             }else{
 
-                if(str_contains($gradeName, ' | ')){
-                    $gradeName1 = explode(' | ', $gradeName)[0];
-                    $grade = array_search($gradeName1, $lowercaseGrades);
+                if(str_contains($gradeName, '|')){
+                    $gradeName1 = explode('|', $gradeName)[0];
+                    if($gradeName1 == 'ws'){
+                        $grade = 11;
+                    }elseif($gradeName1 == 'bt'){
+                        $grade = 21;
+                    }else{
+                        $grade = array_search($gradeName1, $lowercaseGrades);
+                    }
 
-                    $gradeName2 = explode(' | ', $gradeName)[1];
-                    $sub_grade = array_search($gradeName2, $lowercaseGrades);
+                    $gradeName2 = explode('|', $gradeName)[1];
+                    if($gradeName2 == 'ok'){
+                        $sub_grade = 5;
+                    }else{
+                        $sub_grade = array_search($gradeName2, $lowercaseGrades);
+                    }
 
                 }elseif($gradeName == '' || $gradeName == 'a+' || $gradeName == 'a/a+' || $gradeName == 'ug'){
                     $grade = 7;
