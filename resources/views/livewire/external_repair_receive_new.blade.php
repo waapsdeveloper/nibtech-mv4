@@ -79,7 +79,7 @@ session()->forget('error');
     <div class="card">
         <div class="card-header pb-0">
             <div class="d-flex justify-content-between">
-                <h4 class="card-title mg-b-0">Latest Scanned</h4>
+                <h4 class="card-title mg-b-0">Received Today</h4>
             </div>
         </div>
         <div class="card-body"><div class="table-responsive">

@@ -187,7 +187,7 @@
                                         Status: ${variation.status || 'N/A'}
                                     </div>
                                 </div>
-                                <div class="card-body">
+                                <div class="card-body p-2">
                                     <div class="col-md-5">
                                         <div class="table-responsive">
                                             <table class="table table-bordered table-hover mb-0 text-md-nowrap">
