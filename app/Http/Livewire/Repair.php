@@ -298,7 +298,7 @@ class Repair extends Component
         if(request('check_testing_days') > 0){
             session()->put('check_testing_days',request('check_testing_days'));
         }
-        if(request('imei')){
+        if($imei == null && request('imei')){
             echo $imei = request('imei');
         }
         if(ctype_digit($imei)){
