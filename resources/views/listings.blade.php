@@ -145,7 +145,7 @@
                                             <input type="number" class="form-control" id="min_price_${listing.id}" name="min_price" step="0.01" value="${listing.min_price}">
                                             <label for="">Min Price</label>
                                         </div>
-                                        `+if (listing.currency_id === 5) {"Minimun: £"+m_min_price}+`
+                                        @if (listing.currency_id === 5) Minimum: £{{ m_min_price }} @endif
                                     </td>
                                     <td>
                                         <div class="form-floating">
