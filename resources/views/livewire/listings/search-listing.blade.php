@@ -40,7 +40,7 @@
                     </select>
                 </div>
                 <div class="col-md-4 col-sm-6">
-                    <select name="grade[]" class="form-control form-select" data-bs-placeholder="Select Status select2" multiple>
+                    <select name="grade[]" class="form-control form-select select2" data-bs-placeholder="Select Status" multiple>
                         <option value="">Grade</option>
                         @foreach ($grades as $id => $grade)
                             <option value="{{$id}}" @if(isset($_GET['grade']) && $id == $_GET['grade']) {{'selected'}}@endif>{{$grade}}</option>
