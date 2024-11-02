@@ -199,7 +199,7 @@
 
                                     <div>
                                         <a class="btn btn-link" href="{{url('order').'?sku='}}$(variation.sku)" target="_blank">
-                                            Pending Order Items: ${variation.pending_orders_count || 0}
+                                            Pending Order Items: ${variation.pending_orders.count || 0}
                                         </a>
                                     </div>
 
