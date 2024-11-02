@@ -236,6 +236,9 @@ class Order extends Component
                 ->select('orders.id','orders.reference_id','orders.customer_id','orders.delivery_note_url','orders.label_url','orders.tracking_number','orders.status','orders.processed_by','orders.created_at','orders.processed_at');
         })
         // })
+        ->when(request('adm') > 0, function ($q) {
+            return $q->orderBy('orders.processed_at', 'desc');
+        })
         ->orderBy('orders.reference_id', 'desc'); // Secondary order by reference_id
 
 
