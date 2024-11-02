@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('styles')
+<link href="{{asset('assets/plugins/select2/css/select2.min.css')}}" rel="stylesheet" />
     <style>
         .card {
             border: 1px solid #016a5949;
