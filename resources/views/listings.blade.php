@@ -99,6 +99,7 @@
                         let stockPrices = [];
                         let listedStock = fetchUpdatedQuantity(variation.id);
                         let m_min_price = Math.min(...variation.listings.filter(listing => listing.currency_id === 4).map(listing => listing.min_price));
+                        let m_price = Math.min(...variation.listings.filter(listing => listing.currency_id === 4).map(listing => listing.price));
 
                         $.ajax({
                             url: "{{ url('api/internal/get_variation_available_stocks') }}/" + variation.id,
@@ -134,8 +135,10 @@
                         });
                         variation.listings.forEach(function(listing) {
                             let p_append = '';
+                            let pm_append = '';
                             if (listing.currency_id == 5) {
-                                p_append = 'Minimum: £'+m_min_price;
+                                p_append = 'Minimum: $'+m_price.toFixed(2);
+                                pm_append = 'Minimum: £'+m_min_price.toFixed(2);
                             }
                             listingsTable += `
                                 <tr ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
@@ -149,13 +152,14 @@
                                             <input type="number" class="form-control" id="min_price_${listing.id}" name="min_price" step="0.01" value="${listing.min_price}">
                                             <label for="">Min Price</label>
                                         </div>
-                                        ${p_append}
+                                        ${pm_append}
                                     </td>
                                     <td>
                                         <div class="form-floating">
                                             <input type="number" class="form-control" id="price_${listing.id}" name="price" step="0.01" value="${listing.price}">
                                             <label for="">Price</label>
                                         </div>
+                                        ${p_append}
                                     </td>
                                     <td>${listing.max_price}</td>
                                     <td>${listing.updated_at}</td>
