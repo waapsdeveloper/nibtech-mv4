@@ -133,10 +133,9 @@
                             }
                         });
                         variation.listings.forEach(function(listing) {
+                            let p_append = '';
                             if (listing.currency_id == 5) {
-                                let p_append = 'Minimum: £'+m_min_price;
-                            }else{
-                                let p_append = '';
+                                p_append = 'Minimum: £'+m_min_price;
                             }
                             listingsTable += `
                                 <tr ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
