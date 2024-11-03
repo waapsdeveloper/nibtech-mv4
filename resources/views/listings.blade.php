@@ -131,7 +131,10 @@
     <div id="variations">
         <!-- Variations will be loaded here via AJAX -->
     </div>
-    <div id="pagination-container" class="pagination"></div>
+    <nav aria-label="Page navigation">
+        <ul id="pagination-container" class="pagination justify-content-center"></ul>
+    </nav>
+
 
 @endsection
 
@@ -266,33 +269,49 @@
                     }
                 });
             }
+
             function updatePagination(response) {
                 let paginationContainer = $('#pagination-container');
                 paginationContainer.empty(); // Clear existing pagination
 
-                if (response.links.length > 0) {
-                    response.links.forEach(link => {
-                        if (link.url) {
-                            paginationContainer.append(`
-                                <a href="#" class="pagination-link ${link.active ? 'active' : ''}" data-page="${new URL(link.url).searchParams.get('page')}">
-                                    ${link.label}
-                                </a>
-                            `);
-                        } else {
-                            paginationContainer.append(`
-                                <span class="pagination-disabled">${link.label}</span>
-                            `);
-                        }
-                    });
+                // Add Previous button
+                if (response.prev_page_url) {
+                    paginationContainer.append(`
+                        <li class="page-item">
+                            <a class="page-link" href="#" data-page="${new URL(response.prev_page_url).searchParams.get('page')}">&laquo; Previous</a>
+                        </li>
+                    `);
+                } else {
+                    paginationContainer.append('<li class="page-item disabled"><span class="page-link">&laquo; Previous</span></li>');
+                }
+
+                // Add page links
+                response.links.forEach(link => {
+                    if (link.url) {
+                        paginationContainer.append(`
+                            <li class="page-item ${link.active ? 'active' : ''}">
+                                <a class="page-link" href="#" data-page="${new URL(link.url).searchParams.get('page')}">${link.label}</a>
+                            </li>
+                        `);
+                    } else {
+                        paginationContainer.append(`
+                            <li class="page-item disabled"><span class="page-link">${link.label}</span></li>
+                        `);
+                    }
+                });
+
+                // Add Next button
+                if (response.next_page_url) {
+                    paginationContainer.append(`
+                        <li class="page-item">
+                            <a class="page-link" href="#" data-page="${new URL(response.next_page_url).searchParams.get('page')}">Next &raquo;</a>
+                        </li>
+                    `);
+                } else {
+                    paginationContainer.append('<li class="page-item disabled"><span class="page-link">Next &raquo;</span></li>');
                 }
             }
 
-            // Event listener for pagination clicks
-            $(document).on('click', '.pagination-link', function(e) {
-                e.preventDefault();
-                let page = $(this).data('page');
-                fetchVariations(page);
-            });
 
             function displayVariations(variations) {
                 let variationsContainer = $('#variations'); // The container where data will be displayed
