@@ -160,8 +160,9 @@
                     </form>
                 </div>
             @endif
-
+            @if (isset($stock))
             <a href="{{ url('imei/print_label').'?stock_id='.$stock->id}}" target="_blank" class="btn btn-secondary"><i class="fa fa-print"></i></a>
+            @endif
         </div>
         <hr style="border-bottom: 1px solid rgb(62, 45, 45);">
         <br>
