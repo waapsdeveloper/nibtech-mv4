@@ -208,6 +208,9 @@ class IMEI extends Component
         $pdfExport = new IMEILabelExport();
         $pdfExport->generatePdf();
 
+        echo "<script>
+            window.print();
+        </script>";
     }
 
     public function change_po($stock_id){
