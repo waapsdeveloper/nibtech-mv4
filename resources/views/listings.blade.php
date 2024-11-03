@@ -222,7 +222,7 @@
                                     <span class="" id="available_stock_${variation.id}">${variation.available_stocks.length || 0} Available</span>
                                 </div>
                                 <div class="card-body p-2">
-                                    <div class="col-md-5">
+                                    <div class="col-md">
                                         <div class="table-responsive">
                                             <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                                                 <thead>
@@ -238,7 +238,7 @@
                                             </table>
                                         </div>
                                     </div>
-                                    <div class="col-md-7">
+                                    <div class="col-md">
                                         <div class="table-responsive">
                                             <table class="table table-hover mb-0 text-md-nowrap">
                                                 <thead>
