@@ -4,9 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
-use DB;
-use Google\Service\AndroidEnterprise\Permission;
 use Illuminate\Auth\Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 
