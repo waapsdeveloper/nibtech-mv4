@@ -251,16 +251,13 @@
                     variationsContainer.append('<p>No variations found.</p>');
                 }
             }
+
             function updateAverageCost(variationId, prices) {
                 if (prices.length > 0) {
-                    let validPrices = prices.filter(price => !isNaN(price) && price !== null);
-                    if (validPrices.length > 0) {
-                        let average = validPrices.reduce((a, b) => a + b, 0) / validPrices.length;
-                        console.log(validPrices, average);
-                        $(`#average_cost_${variationId}`).text(`€${average.toFixed(2)}`);
-                    } else {
-                        $(`#average_cost_${variationId}`).text('€0.00');
-                    }
+
+                    let average = prices.reduce((a, b) => a + b, 0) / prices.length;
+                    console.log(prices, average, prices.reduce((a, b) => a + b, 0), prices.length);
+                    $(`#average_cost_${variationId}`).text(`€${average.toFixed(2)}`);
                 } else {
                     $(`#average_cost_${variationId}`).text('€0.00');
                 }
