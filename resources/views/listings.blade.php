@@ -131,6 +131,8 @@
     <div id="variations">
         <!-- Variations will be loaded here via AJAX -->
     </div>
+    <div id="pagination-container" class="pagination"></div>
+
 @endsection
 
 @section('scripts')
@@ -226,7 +228,7 @@
 
             fetchVariations(); // Fetch variations on page load
 
-            function fetchVariations() {
+            function fetchVariations(page = 1) {
                 // Collect form data or input values to create query parameters
                 let params = {
                     reference_id: $('#reference_id').val(),
@@ -257,13 +259,40 @@
                     dataType: 'json', // Expecting a JSON response
                     success: function(data) {
                         displayVariations(data);
+                        updatePagination(data);
                     },
                     error: function(xhr) {
                         console.error(xhr.responseText); // Log any errors for debugging
                     }
                 });
             }
+            function updatePagination(response) {
+                let paginationContainer = $('#pagination-container');
+                paginationContainer.empty(); // Clear existing pagination
 
+                if (response.links.length > 0) {
+                    response.links.forEach(link => {
+                        if (link.url) {
+                            paginationContainer.append(`
+                                <a href="#" class="pagination-link ${link.active ? 'active' : ''}" data-page="${new URL(link.url).searchParams.get('page')}">
+                                    ${link.label}
+                                </a>
+                            `);
+                        } else {
+                            paginationContainer.append(`
+                                <span class="pagination-disabled">${link.label}</span>
+                            `);
+                        }
+                    });
+                }
+            }
+
+            // Event listener for pagination clicks
+            $(document).on('click', '.pagination-link', function(e) {
+                e.preventDefault();
+                let page = $(this).data('page');
+                fetchVariations(page);
+            });
 
             function displayVariations(variations) {
                 let variationsContainer = $('#variations'); // The container where data will be displayed
