@@ -158,9 +158,9 @@
             let colors = {!! json_encode($colors) !!};
             let grades = {!! json_encode($grades) !!};
 
-            fetchVariations(); // Fetch variations on page loadfunction
+            fetchVariations(); // Fetch variations on page load
 
-            fetchVariations() {
+            function fetchVariations() {
                 // Collect form data or input values to create query parameters
                 let params = {
                     reference_id: $('#reference_id').val(),
