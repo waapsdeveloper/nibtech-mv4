@@ -133,6 +133,7 @@
                                 updateAverageCost(variation.id, stockPrices);
                                 stocksTable = datass;
                                 $('#stocks_'+variation.id).html(datass);
+                                $('#average_cost_'+variation.id).text(`€${(stockPrices.reduce((a, b) => a + b, 0) / stockPrices.length).toFixed(2)}`);
                                 $('#available_stock_'+variation.id).html(count + ' Available');
                             },
                             error: function(xhr) {
@@ -213,7 +214,7 @@
                                                     <tr>
                                                         <th><small><b>No</b></small></th>
                                                         <th><small><b>IMEI/Serial</b></small></th>
-                                                        <th><small><b>Cost</b></small></th>
+                                                        <th><small>Cost<b id="average_cost_${variation.id}"></b></small></th>
                                                     </tr>
                                                 </thead>
                                                 <tbody id="stocks_${variation.id}">
