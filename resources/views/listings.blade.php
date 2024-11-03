@@ -154,15 +154,23 @@
                                     </td>
                                     <td><a href="{{ url('listing/get_competitors') }}/${listing.id}" target="_blank">${listing.buybox_price}</a></td>
                                     <td>
+                                        <form class="form-inline" method="POST" id="change_min_price_${listing.id}" action="{{url('listing/update_price').'/'.$listing->id}}">
+                                            @csrf
+                                            <input type="submit" hidden>
+                                        </form>
+                                        <form class="form-inline" method="POST" id="change_price_${listing.id}" action="{{url('listing/update_price').'/'.$listing->id}}">
+                                            @csrf
+                                            <input type="submit" hidden>
+                                        </form>
                                         <div class="form-floating">
-                                            <input type="number" class="form-control" id="min_price_${listing.id}" name="min_price" step="0.01" value="${listing.min_price}">
+                                            <input type="number" class="form-control" id="min_price_${listing.id}" name="min_price" step="0.01" value="${listing.min_price}" form="change_min_price_${listing.id}">
                                             <label for="">Min Price</label>
                                         </div>
                                         ${pm_append}
                                     </td>
                                     <td>
                                         <div class="form-floating">
-                                            <input type="number" class="form-control" id="price_${listing.id}" name="price" step="0.01" value="${listing.price}">
+                                            <input type="number" class="form-control" id="price_${listing.id}" name="price" step="0.01" value="${listing.price}" form="change_price_${listing.id}">
                                             <label for="">Price</label>
                                         </div>
                                         ${p_append}
@@ -170,6 +178,14 @@
                                     <td>${listing.max_price}</td>
                                     <td>${listing.updated_at}</td>
                                 </tr>`;
+
+                            $("#change_min_price_"+listing.id).submit(function(e) {
+                                submitForm2(e, listing.id);
+                            });
+                            $("#change_price_"+listing.id).submit(function(e) {
+                                submitForm3(e, listing.id);
+                            });
+
                         });
 
                         // Create variation card
@@ -245,6 +261,9 @@
                             </div>
                         `);
 
+                        $("#change_qty_"+variation.id).submit(function(e) {
+                                submitForm(e, variation->id);
+                            });
                         $('#sales_'+variation.id).load("{{ url('listing/get_sales') . '/'}}"+variation.id);
                     });
                 } else {
@@ -277,6 +296,72 @@
                     },
                     error: function(xhr) {
                         console.error("Error fetching quantity:", xhr.responseText);
+                    }
+                });
+            }
+
+
+            function submitForm(event, variationId) {
+                event.preventDefault(); // avoid executing the actual submit of the form.
+
+                var form = $('#change_qty_' + variationId);
+                var actionUrl = form.attr('action');
+
+                $.ajax({
+                    type: "POST",
+                    url: actionUrl,
+                    data: form.serialize(), // serializes the form's elements.
+                    success: function(data) {
+                        alert("Success: Quantity changed to " + data); // show response from the PHP script.
+                        $('#send_' + variationId).addClass('d-none'); // hide the button after submission
+                        $('quantity_' + variationId).val(data)
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert("Error: " + textStatus + " - " + errorThrown);
+                    }
+                });
+            }
+
+
+            function submitForm2(event, listingId) {
+                event.preventDefault(); // avoid executing the actual submit of the form.
+
+                var form = $('#change_min_price_' + listingId);
+                var actionUrl = form.attr('action');
+
+                $.ajax({
+                    type: "POST",
+                    url: actionUrl,
+                    data: form.serialize(), // serializes the form's elements.
+                    success: function(data) {
+                        // alert("Success: Min Price changed to " + data); // show response from the PHP script.
+                        $('#min_price_' + listingId).addClass('bg-green'); // hide the button after submission
+                        // $('quantity_' + listingId).val(data)
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert("Error: " + textStatus + " - " + errorThrown);
+                    }
+                });
+            }
+
+            function submitForm3(event, listingId) {
+                event.preventDefault(); // avoid executing the actual submit of the form.
+
+                var form = $('#change_price_' + listingId);
+                var actionUrl = form.attr('action');
+
+                $.ajax({
+                    type: "POST",
+                    url: actionUrl,
+                    data: form.serialize(), // serializes the form's elements.
+                    success: function(data) {
+                        // alert("Success: Price changed to " + data); // show response from the PHP script.
+                        $('#price_' + listingId).addClass('bg-green'); // hide the button after submission
+                        $('#send_' + listingId).addClass('d-none'); // hide the button after submission
+                        // $('quantity_' + listingId).val(data)
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert("Error: " + textStatus + " - " + errorThrown);
                     }
                 });
             }
