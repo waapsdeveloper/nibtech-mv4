@@ -257,7 +257,7 @@
                                         ${p_append}
                                     </td>
                                     <td>${listing.max_price}</td>
-                                    <td>${listing.updated_at}</td>
+                                    <td>${new Date(listing.updated_at)}</td>
                                 </tr>`;
                                 $(document).ready(function() {
                                     $("#change_min_price_" + listing.id).on('submit', function(e) {
