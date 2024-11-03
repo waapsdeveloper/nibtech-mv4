@@ -255,7 +255,7 @@
             function updateAverageCost(variationId, prices) {
                 if (prices.length > 0) {
 
-                    let average = prices.reduce((a, b) => a + b, 0) / prices.length;
+                    let average = prices.reduce((a, b) => parseInt(a) + parseInt(b), 0) / prices.length;
                     console.log(prices, average, prices.reduce((a, b) => parseInt(a) + parseInt(b), 0), prices.length);
                     $(`#average_cost_${variationId}`).text(`€${average.toFixed(2)}`);
                 } else {
