@@ -207,6 +207,12 @@ class IMEI extends Component
     public function print_label(){
         $pdfExport = new IMEILabelExport();
         $pdfExport->generatePdf();
+
+        echo '<script>
+            window.onload = function() {
+                window.print();
+            }
+        </script>';
     }
 
     public function change_po($stock_id){
