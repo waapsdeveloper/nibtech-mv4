@@ -70,7 +70,6 @@
         $(document).ready(function() {
             $('.select2').select2();
 
-            fetchVariations(); // Fetch variations on page load
 
             let storages = {!! json_encode($storages) !!};
             let colors = {!! json_encode($colors) !!};
@@ -156,6 +155,7 @@
                 });
             }
 
+            fetchVariations(); // Fetch variations on page load
             function fetchVariations() {
                 $.ajax({
                     url: "{{ url('api/internal/get_variations') }}", // Adjust the URL to your route
