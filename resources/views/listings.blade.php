@@ -67,15 +67,8 @@
 
 @section('scripts')
     <script>
-        $(document).ready(function() {
-            $('.select2').select2();
 
-
-            let storages = {!! json_encode($storages) !!};
-            let colors = {!! json_encode($colors) !!};
-            let grades = {!! json_encode($grades) !!};
-
-            function toggleButtonOnChange(variationId, inputElement) {
+        function toggleButtonOnChange(variationId, inputElement) {
                 // Get the original value
                 var originalValue = inputElement.defaultValue;
 
@@ -154,6 +147,14 @@
                     }
                 });
             }
+
+        $(document).ready(function() {
+            $('.select2').select2();
+
+
+            let storages = {!! json_encode($storages) !!};
+            let colors = {!! json_encode($colors) !!};
+            let grades = {!! json_encode($grades) !!};
 
             fetchVariations(); // Fetch variations on page load
             function fetchVariations() {
