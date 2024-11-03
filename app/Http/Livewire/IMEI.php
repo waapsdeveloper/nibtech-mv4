@@ -205,11 +205,6 @@ class IMEI extends Component
     }
 
     public function print_label(){
-        echo '<script>
-            window.onload = function() {
-                window.print();
-            }
-        </script>';
         $pdfExport = new IMEILabelExport();
         $pdfExport->generatePdf();
 
