@@ -262,7 +262,7 @@
                         `);
 
                         $("#change_qty_"+variation.id).submit(function(e) {
-                                submitForm(e, variation->id);
+                                submitForm(e, variation.id);
                             });
                         $('#sales_'+variation.id).load("{{ url('listing/get_sales') . '/'}}"+variation.id);
                     });
