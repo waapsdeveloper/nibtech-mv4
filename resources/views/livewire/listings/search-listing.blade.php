@@ -1,4 +1,4 @@
-<form action="" method="GET" id="search">
+
     <div class="row">
         <div class="col-md-2 col-sm-6">
             <div class="form-floating">
@@ -105,7 +105,6 @@
     <input type="hidden" name="page" value="{{ Request::get('page') }}">
     <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
     <input type="hidden" name="sort" value="{{ Request::get('sort') }}">
-</form>
 <br>
 @if (session('success'))
 <div class="alert alert-success alert-dismissible fade show" role="alert">

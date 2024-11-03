@@ -58,7 +58,9 @@
     <!-- /Breadcrumb -->
 
     <br>
-    <livewire:search-listing />
+    <form action="" method="GET" id="search" onsubmit="fetchVariations()">
+        <livewire:search-listing />
+    </form>
 
     <div id="variations">
         <!-- Variations will be loaded here via AJAX -->
@@ -156,10 +158,32 @@
             let colors = {!! json_encode($colors) !!};
             let grades = {!! json_encode($grades) !!};
 
-            fetchVariations(); // Fetch variations on page load
-            function fetchVariations() {
+            fetchVariations(); // Fetch variations on page loadfunction
+
+            fetchVariations() {
+                // Collect form data or input values to create query parameters
+                let params = {
+                    reference_id: $('#reference_id').val(),
+                    product: $('#product').val(),
+                    sku: $('input[name="sku"]').val(),
+                    color: $('select[name="color"]').val(),
+                    storage: $('select[name="storage"]').val(),
+                    grade: $('select[name="grade[]"]').val(), // Use .val() for multiple selects if needed
+                    category: $('select[name="category"]').val(),
+                    brand: $('select[name="brand"]').val(),
+                    listed_stock: $('select[name="listed_stock"]').val(),
+                    available_stock: $('select[name="available_stock"]').val(),
+                    state: $('select[name="state"]').val()
+                };
+
+                // Convert params object to a query string
+                let queryString = $.param(params);
+
+                // Append query string to the URL
+                let url = "{{ url('api/internal/get_variations') }}" + '?' + queryString;
+
                 $.ajax({
-                    url: "{{ url('api/internal/get_variations') }}", // Adjust the URL to your route
+                    url: url,
                     type: 'GET',
                     dataType: 'json', // Expecting a JSON response
                     success: function(data) {
@@ -170,6 +194,7 @@
                     }
                 });
             }
+
 
             function displayVariations(variations) {
                 let variationsContainer = $('#variations'); // The container where data will be displayed
