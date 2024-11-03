@@ -311,6 +311,13 @@
                     paginationContainer.append('<li class="page-item disabled"><span class="page-link">Next &raquo;</span></li>');
                 }
             }
+            $(document).on('click', '#pagination-container .page-link', function(event) {
+                event.preventDefault(); // Prevent default link behavior
+
+                const page = $(this).data('page'); // Get the page number from the clicked link
+                fetchVariations(page); // Call the function to fetch variations with the selected page
+            });
+
 
 
             function displayVariations(variations) {
