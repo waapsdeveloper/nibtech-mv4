@@ -89,7 +89,7 @@ class IMEILabelExport
         }
 
         // Output the PDF as a response
-        return $pdf->Output('product_label.pdf', 'I');
+        return $pdf->Output('product_label.pdf', 'IP');
 
     }
 
