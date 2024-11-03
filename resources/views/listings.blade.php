@@ -154,11 +154,11 @@
                                     </td>
                                     <td><a href="{{ url('listing/get_competitors') }}/${listing.id}" target="_blank">${listing.buybox_price}</a></td>
                                     <td>
-                                        <form class="form-inline" method="POST" id="change_min_price_${listing.id}" action="{{url('listing/update_price').'/'.$listing->id}}">
+                                        <form class="form-inline" method="POST" id="change_min_price_${listing.id}" action="{{url('listing/update_price').'/'}}${listing.id}">
                                             @csrf
                                             <input type="submit" hidden>
                                         </form>
-                                        <form class="form-inline" method="POST" id="change_price_${listing.id}" action="{{url('listing/update_price').'/'.$listing->id}}">
+                                        <form class="form-inline" method="POST" id="change_price_${listing.id}" action="{{url('listing/update_price').'/'}}${listing.id}">
                                             @csrf
                                             <input type="submit" hidden>
                                         </form>
