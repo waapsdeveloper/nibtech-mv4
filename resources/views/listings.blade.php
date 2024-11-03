@@ -300,6 +300,20 @@
                 });
             }
 
+            function toggleButtonOnChange(variationId, inputElement) {
+                // Get the original value
+                var originalValue = inputElement.defaultValue;
+
+                // Get the current value
+                var currentValue = inputElement.value;
+
+                // Show the button only if the value has changed
+                if (currentValue != originalValue) {
+                    $('#send_' + variationId).removeClass('d-none');
+                } else {
+                    $('#send_' + variationId).addClass('d-none');
+                }
+            }
 
             function submitForm(event, variationId) {
                 event.preventDefault(); // avoid executing the actual submit of the form.
