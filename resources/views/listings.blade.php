@@ -62,6 +62,36 @@
         <livewire:search-listing />
     </form>
 
+    <div>
+        <form method="get" action="" class="row form-inline">
+            <label for="perPage" class="card-title inline">per page:</label>
+            <select name="per_page" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
+                <option value="10" {{ Request::get('per_page') == 10 ? 'selected' : '' }}>10</option>
+                <option value="20" {{ Request::get('per_page') == 20 ? 'selected' : '' }}>20</option>
+                <option value="50" {{ Request::get('per_page') == 50 ? 'selected' : '' }}>50</option>
+                <option value="100" {{ Request::get('per_page') == 100 ? 'selected' : '' }}>100</option>
+            </select>
+            <input type="hidden" name="reference_id" value="{{ Request::get('reference_id') }}">
+            <input type="hidden" name="category" value="{{ Request::get('category') }}">
+            <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
+            <input type="hidden" name="product" value="{{ Request::get('product') }}">
+            <input type="hidden" name="sku" value="{{ Request::get('sku') }}">
+            <input type="hidden" name="color" value="{{ Request::get('color') }}">
+            <input type="hidden" name="storage" value="{{ Request::get('storage') }}">
+            @if (Request::get('grade'))
+
+            @foreach (Request::get('grade') as $grd)
+
+                <input type="hidden" name="grade[]" value="{{ $grd }}">
+            @endforeach
+            @endif
+            <input type="hidden" name="listed_stock" value="{{ Request::get('listed_stock') }}">
+            <input type="hidden" name="available_stock" value="{{ Request::get('available_stock') }}">
+            <input type="hidden" name="state" value="{{ Request::get('state') }}">
+            <input type="hidden" name="sort" value="{{ Request::get('sort') }}">
+            <input type="hidden" name="page" value="{{ Request::get('page') }}">
+        </form>
+    </div>
     <div id="variations">
         <!-- Variations will be loaded here via AJAX -->
     </div>
