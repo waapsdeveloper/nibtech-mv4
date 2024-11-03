@@ -213,7 +213,7 @@
                                                     <tr>
                                                         <th><small><b>No</b></small></th>
                                                         <th><small><b>IMEI/Serial</b></small></th>
-                                                        <th><b><small>Cost<b id="average_cost_${variation.id}"></b></small></b></th>
+                                                        <th><small><b>Cost</b> (<b id="average_cost_${variation.id}"></b>)</small></th>
                                                     </tr>
                                                 </thead>
                                                 <tbody id="stocks_${variation.id}">
