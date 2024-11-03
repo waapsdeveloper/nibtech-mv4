@@ -227,6 +227,12 @@
                                 p_append = 'Min: £'+m_price.toFixed(2);
                                 pm_append = 'Min: £'+m_min_price.toFixed(2);
                             }
+                            $("#change_min_price_"+listing.id).submit(function(e) {
+                                submitForm2(e, listing.id);
+                            });
+                            $("#change_price_"+listing.id).submit(function(e) {
+                                submitForm3(e, listing.id);
+                            });
                             listingsTable += `
                                 <tr ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
                                     <td title="${listing.id} ${listing.country_id.title}">
@@ -260,12 +266,6 @@
                                     <td>${listing.updated_at}</td>
                                 </tr>`;
 
-                            $("#change_min_price_"+listing.id).submit(function(e) {
-                                submitForm2(e, listing.id);
-                            });
-                            $("#change_price_"+listing.id).submit(function(e) {
-                                submitForm3(e, listing.id);
-                            });
 
                         });
 
