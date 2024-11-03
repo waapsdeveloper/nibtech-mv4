@@ -247,7 +247,7 @@
                     state: $('select[name="state"]').val(),
                     sort: $('select[name="sort"]').val(),
                     per_page: $('select[name="per_page"]').val(),
-                    page: $('input[name="page"]').val()
+                    page: page
                 };
 
                 // Convert params object to a query string
