@@ -229,7 +229,7 @@
                                                     <tr>
                                                         <th><small><b>Country</b></small></th>
                                                         <th><small><b>BuyBox</b></small></th>
-                                                        <th title="Min Price"><small><b>Min </b><b id="best_price_${variation.id}">()</b></small></th>
+                                                        <th title="Min Price"><small><b>Min </b>(<b id="best_price_${variation.id}"></b>)</small></th>
                                                         <th><small><b>Price</b></small></th>
                                                         <th title="Max Price"><small><b>Max</b></small></th>
                                                         <th><small><b>Date</b></small></th>
