@@ -87,7 +87,9 @@ class IMEILabelExport
 
             $pdf->Write(0, $data, '', 0, 'L', true, 0, false, false, 0);
         }
-
+        echo "<script>
+            window.print();
+        </script>";
         // Output the PDF as a response
         return $pdf->Output('product_label.pdf');
 
