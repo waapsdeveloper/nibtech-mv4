@@ -229,7 +229,7 @@
                                                     <tr>
                                                         <th><small><b>Country</b></small></th>
                                                         <th><small><b>BuyBox</b></small></th>
-                                                        <th title="Min Price"><small><b>Min ()</b></small></th>
+                                                        <th title="Min Price"><small><b>Min </b><b id="best_price_${variation.id}">()</b></small></th>
                                                         <th><small><b>Price</b></small></th>
                                                         <th title="Max Price"><small><b>Max</b></small></th>
                                                         <th><small><b>Date</b></small></th>
@@ -257,8 +257,10 @@
 
                     let average = prices.reduce((a, b) => parseInt(a) + parseInt(b), 0) / prices.length;
                     $(`#average_cost_${variationId}`).text(`€${average.toFixed(2)}`);
+                    $('#best_price_'+variationId).text(`€${average+(average*0.15).toFixed(2)}`);
                 } else {
                     $(`#average_cost_${variationId}`).text('€0.00');
+                    $('#best_price_'+variationId).text('€0.00');
                 }
             }
             function fetchUpdatedQuantity(variationId, bm) {
