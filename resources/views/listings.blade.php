@@ -203,7 +203,10 @@
                     brand: $('select[name="brand"]').val(),
                     listed_stock: $('select[name="listed_stock"]').val(),
                     available_stock: $('select[name="available_stock"]').val(),
-                    state: $('select[name="state"]').val()
+                    state: $('select[name="state"]').val(),
+                    sort: $('select[name="sort"]').val(),
+                    per_page: $('select[name="per_page"]').val(),
+                    page: $('input[name="page"]').val()
                 };
 
                 // Convert params object to a query string
