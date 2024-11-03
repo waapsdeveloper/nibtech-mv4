@@ -213,7 +213,7 @@
                                                     <tr>
                                                         <th><small><b>No</b></small></th>
                                                         <th><small><b>IMEI/Serial</b></small></th>
-                                                        <th><small>Cost<b id="average_cost_${variation.id}"></b></small></th>
+                                                        <th><b><small>Cost<b id="average_cost_${variation.id}"></b></small></b></th>
                                                     </tr>
                                                 </thead>
                                                 <tbody id="stocks_${variation.id}">
@@ -256,7 +256,6 @@
                 if (prices.length > 0) {
 
                     let average = prices.reduce((a, b) => parseInt(a) + parseInt(b), 0) / prices.length;
-                    console.log(prices, average, prices.reduce((a, b) => parseInt(a) + parseInt(b), 0), prices.length);
                     $(`#average_cost_${variationId}`).text(`€${average.toFixed(2)}`);
                 } else {
                     $(`#average_cost_${variationId}`).text('€0.00');
