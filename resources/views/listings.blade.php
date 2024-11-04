@@ -65,16 +65,16 @@
     <div class="d-flex justify-content-between">
         <h5 class="card-title mg-b-0" id="page_info"> </h5>
         <div class="d-flex p-2">
-            <div class="mx-2">
-            <form method="get" action="" class="form-inline">
+            {{-- <div class="mx-2"> --}}
+            {{-- <form method="get" action="" class="form-inline"> --}}
                 <label for="perPage" class="card-title inline">Sort:</label>
-                <select name="sort" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
+                <select name="sort" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()" form="search">
                     <option value="1" {{ Request::get('sort') == 1 ? 'selected' : '' }}>Stock DESC</option>
                     <option value="2" {{ Request::get('sort') == 2 ? 'selected' : '' }}>Stock ASC</option>
                     <option value="3" {{ Request::get('sort') == 3 ? 'selected' : '' }}>Name DESC</option>
                     <option value="4" {{ Request::get('sort') == 4 ? 'selected' : '' }}>Name ASC</option>
                 </select>
-                <input type="hidden" name="reference_id" value="{{ Request::get('reference_id') }}">
+                {{-- <input type="hidden" name="reference_id" value="{{ Request::get('reference_id') }}">
                 <input type="hidden" name="category" value="{{ Request::get('category') }}">
                 <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
                 <input type="hidden" name="product" value="{{ Request::get('product') }}">
@@ -92,20 +92,20 @@
                 <input type="hidden" name="available_stock" value="{{ Request::get('available_stock') }}">
                 <input type="hidden" name="state" value="{{ Request::get('state') }}">
                 <input type="hidden" name="page" value="{{ Request::get('page') }}">
-                <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
+                <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}"> --}}
 
-            </form>
-            </div>
-            <div>
-            <form method="get" action="" class="form-inline">
+            {{-- </form> --}}
+            {{-- </div>
+            <div> --}}
+            {{-- <form method="get" action="" class="form-inline"> --}}
                 <label for="perPage" class="card-title inline">per page:</label>
-                <select name="per_page" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
+                <select name="per_page" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()" form="search">
                     <option value="10" {{ Request::get('per_page') == 10 ? 'selected' : '' }}>10</option>
                     <option value="20" {{ Request::get('per_page') == 20 ? 'selected' : '' }}>20</option>
                     <option value="50" {{ Request::get('per_page') == 50 ? 'selected' : '' }}>50</option>
                     <option value="100" {{ Request::get('per_page') == 100 ? 'selected' : '' }}>100</option>
                 </select>
-                <input type="hidden" name="reference_id" value="{{ Request::get('reference_id') }}">
+                {{-- <input type="hidden" name="reference_id" value="{{ Request::get('reference_id') }}">
                 <input type="hidden" name="category" value="{{ Request::get('category') }}">
                 <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
                 <input type="hidden" name="product" value="{{ Request::get('product') }}">
@@ -124,8 +124,8 @@
                 <input type="hidden" name="state" value="{{ Request::get('state') }}">
                 <input type="hidden" name="sort" value="{{ Request::get('sort') }}">
                 <input type="hidden" name="page" value="{{ Request::get('page') }}">
-            </form>
-            </div>
+            </form> --}}
+            {{-- </div> --}}
         </div>
     </div>
     <div id="variations">
