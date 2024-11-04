@@ -109,7 +109,7 @@ class MoveInventory extends Component
                 }
 
                 $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
-                if ($imei == '' || !$stock) {
+                if ($imei == '' || !$stock || $stock == null) {
                     session()->put('error', 'IMEI Invalid / Not Available');
                     // return redirect()->back();
                     continue;
