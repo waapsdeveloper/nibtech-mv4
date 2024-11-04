@@ -327,19 +327,18 @@
 {
                 var mywindow = window.open('', 'PRINT', 'height=400,width=600');
 
-                // mywindow.document.write('<html><head><title>' + document.title  + '</title>');
-                // mywindow.document.write('<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" type="text/css" />');
-                // mywindow.document.write('</head><body >');
-                mywindow.document.write("@extends('layouts.new')");
+                mywindow.document.write('<html><head><title>' + document.title  + '</title>');
+                mywindow.document.write('<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" type="text/css" />');
+                mywindow.document.write('</head><body >');
                 mywindow.document.write('<h1>' + document.title  + '</h1>');
                 mywindow.document.write(document.getElementById(elem).innerHTML);
-                // mywindow.document.write('</body></html>');
+                mywindow.document.write('</body></html>');
 
                 mywindow.document.close(); // necessary for IE >= 10
                 mywindow.focus(); // necessary for IE >= 10*/
 
                 mywindow.print();
-                // mywindow.close();
+                mywindow.close();
 
                 return true;
             }
