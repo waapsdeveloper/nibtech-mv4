@@ -330,10 +330,10 @@
 {
                 var mywindow = window.open('', 'PRINT', 'height=400,width=600');
 
-                mywindow.document.write('<html><head><title>' + document.title  + '</title>');
+                mywindow.document.write('<html><head>');
                 mywindow.document.write(`<link rel="stylesheet" href="{{asset('assets/plugins/bootstrap/css/bootstrap.min.css')}}" type="text/css" />`);
                 mywindow.document.write(`<link rel="stylesheet" href="{{asset('assets/css/style.css')}}" type="text/css" />`);
-                mywindow.document.write('</head><body >');
+                mywindow.document.write('<title>' + document.title  + '</title></head><body >');
                 mywindow.document.write(document.getElementById(elem).innerHTML);
                 mywindow.document.write('</body></html>');
 
