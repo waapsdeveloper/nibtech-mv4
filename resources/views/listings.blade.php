@@ -66,7 +66,7 @@
         <h5 class="card-title mg-b-0" id="page_info"> </h5>
         <div class="d-flex p-2">
             <div class="mx-2">
-            <form method="get" action="" class="row form-inline">
+            <form method="get" action="" class="form-inline">
                 <label for="perPage" class="card-title inline">Sort:</label>
                 <select name="sort" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
                     <option value="1" {{ Request::get('sort') == 1 ? 'selected' : '' }}>Stock DESC</option>
@@ -97,7 +97,7 @@
             </form>
             </div>
             <div>
-            <form method="get" action="" class="row form-inline">
+            <form method="get" action="" class="form-inline">
                 <label for="perPage" class="card-title inline">per page:</label>
                 <select name="per_page" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
                     <option value="10" {{ Request::get('per_page') == 10 ? 'selected' : '' }}>10</option>
