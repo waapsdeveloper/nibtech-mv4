@@ -64,7 +64,7 @@
 
     <div class="d-flex justify-content-between">
         <h5 class="card-title mg-b-0" id="page_info"> </h5>
-        <div class="d-flex p-2">
+        <div class="d-flex p-2 justify-content-between">
             {{-- <div class="mx-2"> --}}
             {{-- <form method="get" action="" class="form-inline"> --}}
                 <label for="perPage" class="form-label">Sort:</label>
