@@ -8568,7 +8568,7 @@ textarea.form-control.is-invalid, textarea.form-control.parsley-error {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
+  /* width: 36px; */
   height: 38px;
   border-width: 0;
   background-color: #f0f0f8;
