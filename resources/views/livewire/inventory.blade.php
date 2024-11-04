@@ -330,7 +330,6 @@
                 mywindow.document.write('<html><head><title>' + document.title  + '</title>');
                 mywindow.document.write(`<link rel="stylesheet" href="{{asset('assets/plugins/bootstrap/css/bootstrap.min.css')}}" type="text/css" />`);
                 mywindow.document.write('</head><body >');
-                mywindow.document.write('<h1>' + document.title  + '</h1>');
                 mywindow.document.write(document.getElementById(elem).innerHTML);
                 mywindow.document.write('</body></html>');
 
