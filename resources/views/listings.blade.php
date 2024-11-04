@@ -507,10 +507,9 @@
 
             function updateAverageCost(variationId, prices) {
                 if (prices.length > 0) {
-                    console.log(prices.length, prices.reduce((a, b) => parseInt(a) + parseInt(b), 0));
-                    let average = prices.reduce((a, b) => parseInt(a) + parseInt(b), 0) / parseInt(prices.length);
+                    let average = prices.reduce((a, b) => parseFloat(a) + parseFloat(b), 0) / prices.length;
                     $(`#average_cost_${variationId}`).text(`€${average.toFixed(2)}`);
-                    $('#best_price_'+variationId).text(`€${(parseInt(average)+(parseInt(average)*0.15)).toFixed(2)}`);
+                    $('#best_price_'+variationId).text(`€${(parseFloat(average)+(parseFloat(average)*0.15)).toFixed(2)}`);
                 } else {
                     $(`#average_cost_${variationId}`).text('€0.00');
                     // $('#best_price_'+variationId).text('€0.00');
