@@ -247,7 +247,6 @@
             let storages = {!! json_encode($storages) !!};
             let colors = {!! json_encode($colors) !!};
             let grades = {!! json_encode($grades) !!};
-            checkMinPriceDiff();
             fetchVariations(); // Fetch variations on page load
 
             function fetchVariations(page = 1) {
