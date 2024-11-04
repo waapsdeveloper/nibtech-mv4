@@ -2,12 +2,9 @@
 
 namespace App\Models;
 
-use App\Http\Livewire\Listing;
-use App\Http\Livewire\Variation;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Scopes\Status_not_3_scope;
 
 
 class Variation_model extends Model
@@ -21,6 +18,7 @@ class Variation_model extends Model
         // other fields...
         'product_id',
         'reference_id',
+        'reference_uuid',
         'sku',
         'color',
         'storage',

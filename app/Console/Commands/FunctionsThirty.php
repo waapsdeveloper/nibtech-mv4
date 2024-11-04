@@ -50,12 +50,17 @@ class FunctionsThirty extends Command
                     // $list = $bm->getOneListing($list->listing_id);
                     $variation = Variation_model::firstOrNew(['reference_id' => trim($list->listing_id), 'sku' => trim($list->sku)]);
                     $variation->name = $list->title;
+                    $variation->reference_uuid = $list->id;
                     $variation->grade = (int)$list->state + 1;
                     $variation->state = $list->publication_state;
                     $variation->status = 1;
                     // ... other fields
                     $variation->save();
                     echo $list->listing_id." ";
+                }
+                if($variation->reference_uuid == null){
+                    $variation->reference_uuid = $list->id;
+                    $variation->save();
                 }
                 $currency = Currency_model::where('code',$list->currency)->first();
                 // echo $list->currency;
