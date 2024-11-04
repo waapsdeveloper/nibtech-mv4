@@ -298,7 +298,7 @@
             </div>
             @else
 
-            <button class="btn btn-secondary" id="print_btn" onclick="PrintElem('print_inv')"><i class="fa fa-print"></i></button>
+            <button class="btn btn-sm btn-secondary" id="print_btn" onclick="PrintElem('print_inv')"><i class="fa fa-print"></i></button>
             @endif
         </div>
         <form id="export" method="POST" target="_blank" action="{{url('inventory/export')}}">
