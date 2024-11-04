@@ -412,15 +412,17 @@
                                 $(document).ready(function() {
                                     $("#change_min_price_" + listing.id).on('submit', function(e) {
                                         submitForm2(e, listing.id);
-                                        $('#price_' + listing.id).attr('min', $('#min_price_' + listing.id).val());
-                                        $('#price_' + listing.id).attr('max', $('#min_price_' + listing.id).val()+85%);
+                                        let min_val = $('#min_price_' + listing.id).val();
+                                        $('#price_' + listing.id).attr('min', min_val);
+                                        $('#price_' + listing.id).attr('max', min_val+(min_val*0.85));
 
                                     });
 
                                     $("#change_price_" + listing.id).on('submit', function(e) {
                                         submitForm3(e, listing.id);
-                                        $('#min_price_' + listing.id).attr('max', $('#price_' + listing.id).val());
-                                        $('#min_price_' + listing.id).attr('min', $('#price_' + listing.id).val()-85%);
+                                        let price_val = $('#price_' + listing.id).val();
+                                        $('#min_price_' + listing.id).attr('max', price_val);
+                                        $('#min_price_' + listing.id).attr('min', price_val-(price_val*0.85));
                                     });
                                 });
 
