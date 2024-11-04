@@ -67,7 +67,7 @@
         <div class="d-flex p-2">
             {{-- <div class="mx-2"> --}}
             {{-- <form method="get" action="" class="form-inline"> --}}
-                <label for="perPage" class="card-title inline">Sort:</label>
+                <label for="perPage" class="form-label">Sort:</label>
                 <select name="sort" class="form-select" id="perPage" onchange="this.form.submit()" form="search">
                     <option value="1" {{ Request::get('sort') == 1 ? 'selected' : '' }}>Stock DESC</option>
                     <option value="2" {{ Request::get('sort') == 2 ? 'selected' : '' }}>Stock ASC</option>
@@ -98,7 +98,7 @@
             {{-- </div>
             <div> --}}
             {{-- <form method="get" action="" class="form-inline"> --}}
-                <label for="perPage" class="card-title inline">Per&nbsp;Page:</label>
+                <label for="perPage" class="form-label">Per&nbsp;Page:</label>
                 <select name="per_page" class="form-select" id="perPage" onchange="this.form.submit()" form="search">
                     <option value="10" {{ Request::get('per_page') == 10 ? 'selected' : '' }}>10</option>
                     <option value="20" {{ Request::get('per_page') == 20 ? 'selected' : '' }}>20</option>
