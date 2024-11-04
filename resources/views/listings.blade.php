@@ -193,8 +193,8 @@
                         $('#min_price_' + listingId).addClass('bg-green'); // hide the button after submission
                         // $('quantity_' + listingId).val(data)
 
-                        let min = $('#min_price_' + listing.id);
-                        let price = $('#price_' + listing.id);
+                        let min = $('#min_price_' + listingId);
+                        let price = $('#price_' + listingId);
                         let min_val = min.val();
                         let price_val = price.val();
                         if (min_val > price_val || min_val < price_val*0.85) {
@@ -226,8 +226,8 @@
                         $('#price_' + listingId).addClass('bg-green'); // hide the button after submission
                         // $('#send_' + listingId).addClass('d-none'); // hide the button after submission
                         // $('quantity_' + listingId).val(data)
-                        let min = $('#min_price_' + listing.id);
-                        let price = $('#price_' + listing.id);
+                        let min = $('#min_price_' + listingId);
+                        let price = $('#price_' + listingId);
                         let min_val = min.val();
                         let price_val = price.val();
                         if (min_val > price_val || min_val < price_val*0.85) {
