@@ -126,7 +126,7 @@ class Inventory extends Component
                 $product = $pss->product;
                 $storage = $pss->storage_id->name ?? null;
 
-                $stocks = $pss->stocks->where('deleted_at',null)->whereIn('order_id', $order_ids)->whereIn('variation_id',$variation_ids)->where('status',1);
+                $stocks = $pss->stocks->where('deleted_at',null)->whereNotIn('id',$aftersale)->whereIn('order_id', $order_ids)->whereIn('variation_id',$variation_ids)->where('status',1);
                 $stock_ids = $stocks->pluck('id');
                 $stock_imeis = $stocks->whereNotNull('imei')->pluck('imei');
                 $stock_serials = $stocks->whereNotNull('serial_number')->pluck('serial_number');
