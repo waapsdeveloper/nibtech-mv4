@@ -412,10 +412,15 @@
                                 $(document).ready(function() {
                                     $("#change_min_price_" + listing.id).on('submit', function(e) {
                                         submitForm2(e, listing.id);
+                                        $('#price_' + listing.id).attr('min', $('#min_price_' + listing.id).val());
+                                        $('#price_' + listing.id).attr('max', $('#min_price_' + listing.id).val()+85%);
+
                                     });
 
                                     $("#change_price_" + listing.id).on('submit', function(e) {
                                         submitForm3(e, listing.id);
+                                        $('#min_price_' + listing.id).attr('max', $('#price_' + listing.id).val());
+                                        $('#min_price_' + listing.id).attr('min', $('#price_' + listing.id).val()-85%);
                                     });
                                 });
 
