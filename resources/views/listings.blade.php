@@ -414,7 +414,7 @@
                                         submitForm2(e, listing.id);
                                         let min_val = $('#min_price_' + listing.id).val();
                                         $('#price_' + listing.id).attr('min', min_val);
-                                        $('#price_' + listing.id).attr('max', min_val+(min_val*0.85));
+                                        $('#price_' + listing.id).attr('max', min_val/0.85);
 
                                     });
 
@@ -422,7 +422,7 @@
                                         submitForm3(e, listing.id);
                                         let price_val = $('#price_' + listing.id).val();
                                         $('#min_price_' + listing.id).attr('max', price_val);
-                                        $('#min_price_' + listing.id).attr('min', price_val-(price_val*0.85));
+                                        $('#min_price_' + listing.id).attr('min', price_val*0.85);
                                     });
                                 });
 
