@@ -410,6 +410,12 @@
                                     <td>${new Date(listing.updated_at)}</td>
                                 </tr>`;
                                 $(document).ready(function() {
+                                    let min_val = $('#min_price_' + listing.id).val();
+                                    $('#price_' + listing.id).attr('min', min_val);
+                                    $('#price_' + listing.id).attr('max', min_val/0.85);
+                                    let price_val = $('#price_' + listing.id).val();
+                                    $('#min_price_' + listing.id).attr('max', price_val);
+                                    $('#min_price_' + listing.id).attr('min', price_val*0.85);
                                     $("#change_min_price_" + listing.id).on('submit', function(e) {
                                         submitForm2(e, listing.id);
                                         let min_val = $('#min_price_' + listing.id).val();
