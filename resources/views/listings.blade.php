@@ -382,7 +382,7 @@
                                 updateAverageCost(variation.id, stockPrices);
                                 stocksTable = datass;
                                 $('#stocks_'+variation.id).html(datass);
-                                $('#available_stock_'+variation.id).html(count + ' Available');
+                                // $('#available_stock_'+variation.id).html(count + ' Available');
                             },
                             error: function(xhr) {
                                 console.error(xhr.responseText);
@@ -468,11 +468,12 @@
                                     </div>
 
                                     <div>
+                                        <h6>
                                         <a class="btn btn-link" href="{{url('order').'?sku='}}$(variation.sku)" target="_blank">
                                             Pending Order Items: ${variation.pending_orders.length || 0}
-                                        </a>
-                                        <span class="" id="available_stock_${variation.id}">Available ${variation.available_stocks.length || 0}</span>
-                                        <span>Difference: ${variation.available_stocks.length - variation.pending_orders.length}</span>
+                                        </a></h6>
+                                        <h6 class="" id="available_stock_${variation.id}">Available: ${variation.available_stocks.length || 0}</h6>
+                                        <h6>Difference: ${variation.available_stocks.length - variation.pending_orders.length}</h6>
                                     </div>
 
                                 </div>
