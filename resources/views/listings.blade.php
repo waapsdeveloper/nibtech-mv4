@@ -467,7 +467,7 @@
                                         </form>
                                     </div>
 
-                                    <div>
+                                    <div class="align-end">
                                         <h6>
                                         <a class="" href="{{url('order').'?sku='}}$(variation.sku)" target="_blank">
                                             Pending Order Items: ${variation.pending_orders.length || 0}
