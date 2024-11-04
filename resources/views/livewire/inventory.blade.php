@@ -343,14 +343,11 @@
                 return true;
             }
 
-            $(document).ready(function(){
-                PrintElem('print_inv');
-            });
         </script>
         <div class="card" id="print_inv">
             <div class="card-header pb-0 d-flex justify-content-between">
                 <h4 class="card-title">Available Stock Summery</h4>
-                <button class="btn btn-secondary" onclick="PrintElem('print_inv')"><i class="fa fa-print"></i></button>
+                <button class="btn btn-sm btn-secondary" onclick="PrintElem('print_inv')"><i class="fa fa-print"></i></button>
             </div>
             <div class="card-body"><div class="table-responsive">
                 <form method="GET" action="" target="_blank" id="search_summery">
