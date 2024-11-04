@@ -201,6 +201,10 @@ class MoveInventory extends Component
 
         if ($id != null) {
             $stock_operation = Stock_operations_model::find($id);
+            if($stock_operation == null){
+                session()->put('error', 'Stock Operation Not Found');
+                return redirect()->back();
+            }
             $stock = $stock_operation->stock;
             if($id == $stock->latest_operation->id){
                 $stock->variation_id = $stock_operation->old_variation_id;
