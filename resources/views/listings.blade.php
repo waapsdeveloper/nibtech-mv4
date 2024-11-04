@@ -192,6 +192,18 @@
                         // alert("Success: Min Price changed to " + data); // show response from the PHP script.
                         $('#min_price_' + listingId).addClass('bg-green'); // hide the button after submission
                         // $('quantity_' + listingId).val(data)
+
+                        let min = $('#min_price_' + listing.id);
+                        let price = $('#price_' + listing.id);
+                        let min_val = min.val();
+                        let price_val = price.val();
+                        if (min_val > price_val || min_val < price_val*0.85) {
+                            min.addClass('bg-red');
+                            price.addClass('bg-red');
+                        }else{
+                            min.removeClass('bg-red');
+                            price.removeClass('bg-red');
+                        }
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
                         alert("Error: " + textStatus + " - " + errorThrown);
@@ -212,8 +224,20 @@
                     success: function(data) {
                         // alert("Success: Price changed to " + data); // show response from the PHP script.
                         $('#price_' + listingId).addClass('bg-green'); // hide the button after submission
-                        $('#send_' + listingId).addClass('d-none'); // hide the button after submission
+                        // $('#send_' + listingId).addClass('d-none'); // hide the button after submission
                         // $('quantity_' + listingId).val(data)
+                        let min = $('#min_price_' + listing.id);
+                        let price = $('#price_' + listing.id);
+                        let min_val = min.val();
+                        let price_val = price.val();
+                        if (min_val > price_val || min_val < price_val*0.85) {
+                            min.addClass('bg-red');
+                            price.addClass('bg-red');
+                        }else{
+                            min.removeClass('bg-red');
+                            price.removeClass('bg-red');
+                        }
+
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
                         alert("Error: " + textStatus + " - " + errorThrown);
@@ -410,25 +434,13 @@
                                     <td>${new Date(listing.updated_at)}</td>
                                 </tr>`;
                                 $(document).ready(function() {
-                                    let min_val = $('#min_price_' + listing.id).val();
-                                    $('#price_' + listing.id).attr('min', min_val);
-                                    $('#price_' + listing.id).attr('max', min_val/0.85);
-                                    let price_val = $('#price_' + listing.id).val();
-                                    $('#min_price_' + listing.id).attr('max', price_val);
-                                    $('#min_price_' + listing.id).attr('min', price_val*0.85);
                                     $("#change_min_price_" + listing.id).on('submit', function(e) {
                                         submitForm2(e, listing.id);
-                                        let min_val = $('#min_price_' + listing.id).val();
-                                        $('#price_' + listing.id).attr('min', min_val);
-                                        $('#price_' + listing.id).attr('max', min_val/0.85);
 
                                     });
 
                                     $("#change_price_" + listing.id).on('submit', function(e) {
                                         submitForm3(e, listing.id);
-                                        let price_val = $('#price_' + listing.id).val();
-                                        $('#min_price_' + listing.id).attr('max', price_val);
-                                        $('#min_price_' + listing.id).attr('min', price_val*0.85);
                                     });
                                 });
 
