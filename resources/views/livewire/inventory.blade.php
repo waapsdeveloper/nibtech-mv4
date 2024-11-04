@@ -321,6 +321,7 @@
 
 
         @if (session('user')->hasPermission('view_inventory_summery') && request('summery') && request('summery') == 1)
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script>
             function PrintElem(elem)
 {
