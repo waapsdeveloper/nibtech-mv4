@@ -278,11 +278,11 @@
                 if (response.prev_page_url) {
                     paginationContainer.append(`
                         <li class="page-item">
-                            <a class="page-link" href="#" data-page="${new URL(response.first_page_url).searchParams.get('page')}">First</a>
+                            <a class="page-link w-auto" href="#" data-page="${new URL(response.first_page_url).searchParams.get('page')}">First</a>
                         </li>
                     `);
                 } else {
-                    paginationContainer.append('<li class="page-item disabled"><span class="page-link">First</span></li>');
+                    paginationContainer.append('<li class="page-item disabled"><span class="page-link w-auto">First</span></li>');
                 }
 
                 // Add page links
@@ -304,11 +304,11 @@
                 if (response.next_page_url) {
                     paginationContainer.append(`
                         <li class="page-item">
-                            <a class="page-link" href="#" data-page="${new URL(response.last_page_url).searchParams.get('page')}">Last</a>
+                            <a class="page-link w-auto" href="#" data-page="${new URL(response.last_page_url).searchParams.get('page')}">Last</a>
                         </li>
                     `);
                 } else {
-                    paginationContainer.append('<li class="page-item disabled"><span class="page-link">Last</span></li>');
+                    paginationContainer.append('<li class="page-item disabled"><span class="page-link w-auto">Last</span></li>');
                 }
             }
             $(document).on('click', '#pagination-container .page-link', function(event) {
