@@ -228,9 +228,9 @@ class Listing extends Component
         // print_r($response);
         // die;
         if(request('min_price')){
-            return $response->min_price;
+            return $response;
         }elseif(request('price')){
-            return $response->price;
+            return $response;
         }
     }
     public function get_competitors($id){
