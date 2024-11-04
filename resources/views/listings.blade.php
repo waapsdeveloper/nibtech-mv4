@@ -199,7 +199,9 @@
                         let price_val = price.val();
                         if (min_val > price_val || min_val < price_val*0.85) {
                             min.addClass('bg-red');
+                            min.removeClass('bg-green');
                             price.addClass('bg-red');
+                            price.removeClass('bg-green');
                         }else{
                             min.removeClass('bg-red');
                             price.removeClass('bg-red');
@@ -232,7 +234,9 @@
                         let price_val = price.val();
                         if (min_val > price_val || min_val < price_val*0.85) {
                             min.addClass('bg-red');
+                            min.removeClass('bg-green');
                             price.addClass('bg-red');
+                            price.removeClass('bg-green');
                         }else{
                             min.removeClass('bg-red');
                             price.removeClass('bg-red');
