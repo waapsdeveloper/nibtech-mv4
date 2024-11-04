@@ -177,6 +177,22 @@
                 });
             }
 
+            function checkMinPriceDiff(listingId){
+
+                let min = $('#min_price_' + listingId);
+                let price = $('#price_' + listingId);
+                let min_val = min.val();
+                let price_val = price.val();
+                if (min_val > price_val || min_val < price_val*0.85) {
+                    min.addClass('bg-red');
+                    min.removeClass('bg-green');
+                    price.addClass('bg-red');
+                    price.removeClass('bg-green');
+                }else{
+                    min.removeClass('bg-red');
+                    price.removeClass('bg-red');
+                }
+            }
 
             function submitForm2(event, listingId) {
                 event.preventDefault(); // avoid executing the actual submit of the form.
@@ -193,19 +209,7 @@
                         $('#min_price_' + listingId).addClass('bg-green'); // hide the button after submission
                         // $('quantity_' + listingId).val(data)
 
-                        let min = $('#min_price_' + listingId);
-                        let price = $('#price_' + listingId);
-                        let min_val = min.val();
-                        let price_val = price.val();
-                        if (price_val < min_val  || price_val > min_val/0.85) {
-                            min.addClass('bg-red');
-                            min.removeClass('bg-green');
-                            price.addClass('bg-red');
-                            price.removeClass('bg-green');
-                        }else{
-                            min.removeClass('bg-red');
-                            price.removeClass('bg-red');
-                        }
+                        checkMinPriceDiff(listingId);
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
                         alert("Error: " + textStatus + " - " + errorThrown);
@@ -228,20 +232,7 @@
                         $('#price_' + listingId).addClass('bg-green'); // hide the button after submission
                         // $('#send_' + listingId).addClass('d-none'); // hide the button after submission
                         // $('quantity_' + listingId).val(data)
-                        let min = $('#min_price_' + listingId);
-                        let price = $('#price_' + listingId);
-                        let min_val = min.val();
-                        let price_val = price.val();
-                        if (min_val > price_val || min_val < price_val*0.85) {
-                            min.addClass('bg-red');
-                            min.removeClass('bg-green');
-                            price.addClass('bg-red');
-                            price.removeClass('bg-green');
-                        }else{
-                            min.removeClass('bg-red');
-                            price.removeClass('bg-red');
-                        }
-
+                        checkMinPriceDiff(listingId);
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
                         alert("Error: " + textStatus + " - " + errorThrown);
