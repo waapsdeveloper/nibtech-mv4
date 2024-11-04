@@ -471,9 +471,10 @@
                                         <a class="btn btn-link" href="{{url('order').'?sku='}}$(variation.sku)" target="_blank">
                                             Pending Order Items: ${variation.pending_orders.length || 0}
                                         </a>
+                                        <span class="" id="available_stock_${variation.id}">Available ${variation.available_stocks.length || 0}</span>
+                                        <span>Difference: ${variation.available_stocks.length - variation.pending_orders.length}</span>
                                     </div>
 
-                                    <span class="" id="available_stock_${variation.id}">${variation.available_stocks.length || 0} Available</span>
                                 </div>
                                 <div class="card-body p-2">
                                     <div class="col-md-auto">
