@@ -75,6 +75,9 @@ class Inventory extends Component
         if(session('user')->hasPermission('view_inventory_summery') && request('summery') && request('summery') == 1){
 
             ini_set('memory_limit', '2048M');
+            ini_set('max_execution_time', 300);
+            ini_set('pdo_mysql.max_input_vars', '10000');
+
             $variation_ids = Variation_model::whereHas('stocks', function ($query) use ($aftersale) {
                     $query->where('status', 1)
                     ->when(request('aftersale') != 1, function ($q) use ($aftersale) {
