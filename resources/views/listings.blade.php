@@ -275,15 +275,15 @@
                 paginationContainer.empty(); // Clear existing pagination
 
                 // Add Previous button
-                if (response.prev_page_url) {
-                    paginationContainer.append(`
-                        <li class="page-item">
-                            <a class="page-link" href="#" data-page="${new URL(response.prev_page_url).searchParams.get('page')}">&laquo; Previous</a>
-                        </li>
-                    `);
-                } else {
-                    paginationContainer.append('<li class="page-item disabled"><span class="page-link">&laquo; Previous</span></li>');
-                }
+                // if (response.prev_page_url) {
+                //     paginationContainer.append(`
+                //         <li class="page-item">
+                //             <a class="page-link" href="#" data-page="${new URL(response.prev_page_url).searchParams.get('page')}">&laquo; Previous</a>
+                //         </li>
+                //     `);
+                // } else {
+                //     paginationContainer.append('<li class="page-item disabled"><span class="page-link">&laquo; Previous</span></li>');
+                // }
 
                 // Add page links
                 response.links.forEach(link => {
@@ -301,15 +301,15 @@
                 });
 
                 // Add Next button
-                if (response.next_page_url) {
-                    paginationContainer.append(`
-                        <li class="page-item">
-                            <a class="page-link" href="#" data-page="${new URL(response.next_page_url).searchParams.get('page')}">Next &raquo;</a>
-                        </li>
-                    `);
-                } else {
-                    paginationContainer.append('<li class="page-item disabled"><span class="page-link">Next &raquo;</span></li>');
-                }
+                // if (response.next_page_url) {
+                //     paginationContainer.append(`
+                //         <li class="page-item">
+                //             <a class="page-link" href="#" data-page="${new URL(response.next_page_url).searchParams.get('page')}">Next &raquo;</a>
+                //         </li>
+                //     `);
+                // } else {
+                //     paginationContainer.append('<li class="page-item disabled"><span class="page-link">Next &raquo;</span></li>');
+                // }
             }
             $(document).on('click', '#pagination-container .page-link', function(event) {
                 event.preventDefault(); // Prevent default link behavior
