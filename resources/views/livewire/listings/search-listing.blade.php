@@ -98,7 +98,7 @@
         </div>
         <div class="">
             <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
-            <a href="{{url('order')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
+            <a href="{{url('listing')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
         </div>
     </div>
 
