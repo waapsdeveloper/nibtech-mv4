@@ -198,7 +198,7 @@ class Listing extends Component
 
     public function get_sales($id){
         $week = $this->get_today_average($id);
-        $week .= " - ".$this->get_last_week_average($id);
+        $week .= " - Previous - ".$this->get_last_week_average($id);
         $week .= " - ".$this->get_2_week_average($id);
         $week .= " - ".$this->get_30_days_average($id);
 
