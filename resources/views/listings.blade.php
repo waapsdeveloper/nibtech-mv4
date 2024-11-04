@@ -290,12 +290,12 @@
                     if (link.url) {
                         paginationContainer.append(`
                             <li class="page-item ${link.active ? 'active' : ''}">
-                                <a class="page-link" href="#" data-page="${new URL(link.url).searchParams.get('page')}">${link.label}</a>
+                                <a class="page-link w-auto" href="#" data-page="${new URL(link.url).searchParams.get('page')}">${link.label}</a>
                             </li>
                         `);
                     } else {
                         paginationContainer.append(`
-                            <li class="page-item disabled"><span class="page-link">${link.label}</span></li>
+                            <li class="page-item disabled"><span class="page-link w-auto">${link.label}</span></li>
                         `);
                     }
                 });
