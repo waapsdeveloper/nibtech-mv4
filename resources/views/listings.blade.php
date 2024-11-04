@@ -458,7 +458,7 @@
                                     <div>
                                         <h5>
                                             <a href="https://www.backmarket.fr/bo_merchant/listings/active?sku=${variation.sku}" title="View BM Ad" target="_blank">
-                                                <span style="background-color: ${variation.color}; width: 20px; height: 20px; display: inline-block;"></span>
+                                                <span style="background-color: ${colors[variation.color]}; width: 20px; height: 20px; display: inline-block;"></span>
                                                 ${variation.sku} - ${variation.product.model} ${storages[variation.storage] || ''} ${colors[variation.color] || ''} ${grades[variation.grade] || ''}
                                             </a>
                                         </h5>
