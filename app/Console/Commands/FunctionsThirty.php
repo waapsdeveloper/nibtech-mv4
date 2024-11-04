@@ -58,10 +58,6 @@ class FunctionsThirty extends Command
                     $variation->save();
                     echo $list->listing_id." ";
                 }
-                if($variation->reference_uuid == null){
-                    $variation->reference_uuid = $list->id;
-                    $variation->save();
-                }
                 $currency = Currency_model::where('code',$list->currency)->first();
                 // echo $list->currency;
                 if($variation == null){
@@ -75,6 +71,9 @@ class FunctionsThirty extends Command
                     $listing->currency_id = $currency->id;
                     // ... other fields
                     $listing->save();
+                    if($variation->reference_uuid == null){
+                        $variation->reference_uuid = $list->id;
+                    }
                     $variation->save();
                 }
             }
