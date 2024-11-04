@@ -1,12 +1,12 @@
 
     <div class="row">
-        <div class="col-md-2 col-sm-6">
+        <div class="col-md col-sm-6">
             <div class="form-floating">
                 <input type="text" class="form-control" id="reference_id" name="reference_id" placeholder="Enter IMEI" value="@isset($_GET['reference_id']){{$_GET['reference_id']}}@endisset">
                 <label for="reference_id">Reference ID</label>
             </div>
         </div>
-        <div class="col-md-2 col-sm-6">
+        <div class="col-md col-sm-6">
             <div class="form-floating">
                 <input type="text" id="product" name="product" list="products" class="form-control" data-bs-placeholder="Select Status" value="@isset($_GET['product']){{$_GET['product']}}@endisset">
                 <label for="product">Product</label>
@@ -23,7 +23,7 @@
                 <label for="">SKU</label>
             </div>
         </div>
-        <div class="col-md-1 col-sm-6">
+        <div class="col-md col-sm-6">
             <select name="color" class="form-control form-select" data-bs-placeholder="Select Status">
                 <option value="">Color</option>
                 @foreach ($colors as $id => $color)
@@ -31,7 +31,7 @@
                 @endforeach
             </select>
         </div>
-        <div class="col-md-1 col-sm-6">
+        <div class="col-md col-sm-6">
             <select name="storage" class="form-control form-select" data-bs-placeholder="Select Status">
                 <option value="">Storage</option>
                 @foreach ($storages as $id => $storage)
@@ -47,9 +47,8 @@
                 @endforeach
             </select>
         </div>
-        <br>
-        <br>
-        <br>
+    </div>
+    <div class="row">
         <div class="col-md-2 col-sm-6">
             {{-- <div class="card-header">
                 <h4 class="card-title mb-1">Category</h4>
