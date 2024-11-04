@@ -141,7 +141,6 @@ class Listing extends Component
                 ->orderBy('variation.grade', 'asc'); // Secondary order by grade
         })
         ->paginate($per_page)
-        ->onEachSide(5)
         ->appends(request()->except('page'));
 
     }
