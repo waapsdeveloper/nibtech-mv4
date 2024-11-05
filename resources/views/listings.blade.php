@@ -394,8 +394,8 @@
                             let p_append = '';
                             let pm_append = '';
                             if (listing.currency_id == 5) {
-                                p_append = 'Min: £'+(m_price*eurToGbp).toFixed(2);
-                                pm_append = 'Min: £'+(m_min_price*eurToGbp).toFixed(2);
+                                p_append = 'break: £'+(m_price*eurToGbp).toFixed(2);
+                                pm_append = 'break: £'+(m_min_price*eurToGbp).toFixed(2);
                             }
                             listingsTable += `
                                 <tr ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
@@ -429,7 +429,7 @@
                                         ${p_append}
                                     </td>
                                     <td>${listing.max_price}</td>
-                                    <td>${new Date(listing.updated_at)}</td>
+                                    <td>${new Date(listing.updated_at).toGMTString()}</td>
                                 </tr>`;
                                 $(document).ready(function() {
                                     $("#change_min_price_" + listing.id).on('submit', function(e) {
