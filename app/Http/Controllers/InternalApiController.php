@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Country_model;
 use App\Models\Listing_model;
 use App\Models\Order_item_model;
 use App\Models\Stock_model;
@@ -176,11 +177,10 @@ class InternalApiController extends Controller
     public function getCompetitors($id){
         $variation = Variation_model::find($id);
         $bm = new BackMarketAPIController();
-        $response = $bm->getListingCompetitors($variation->reference_uuid);
-        $listings = Listing_model::where('variation_id',$id)->get();
-        foreach($listings as $listing){
-            $country_code = $listing->country_id->code;
-            $list = $response->where('market',$country_code);
+        $responses = $bm->getListingCompetitors($variation->reference_uuid);
+        foreach($responses as $list){
+            $country = Country_model::where('code',$list->market)->first();
+            $listing = Listing_model::firstOrNew(['variation_id'=>$id, 'country'=>$country->id]);
             $listing->reference_uuid = $list->product_id;
             $listing->price = $list->price->amount;
             $listing->min_price = $list->min_price->amount;
@@ -189,6 +189,7 @@ class InternalApiController extends Controller
             $listing->buybox_winner_price = $list->winner_price->amount;
             $listing->save();
         }
+        $listings = Listing_model::where('variation_id',$id)->get();
         return response()->json(['listings'=>$listings]);
     }
 
