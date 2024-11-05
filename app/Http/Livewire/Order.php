@@ -1366,7 +1366,7 @@ class Order extends Component
             // echo $variation." ".$data->imei." ".$data->cost;
 
             if($this->add_purchase_item($issue->order_id, $imei, $variation, $data->cost, 1) == 1){
-                if($data['imei']){
+                if($data->imei){
 
                     $stock = Stock_model::where('imei',$imei)->orWhere('serial_number', $imei)->where('status','!=',null)->first();
                     $stock_operation = new Stock_operations_model();
