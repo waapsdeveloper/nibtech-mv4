@@ -129,7 +129,7 @@
         </div>
     </div>
     <div id="variations">
-        <!-- Variations will be ed here via AJAX -->
+        <!-- Variations will be loaded here via AJAX -->
     </div>
     <nav aria-label="Page navigation">
         <ul id="pagination-container" class="pagination justify-content-center"></ul>
@@ -249,7 +249,7 @@
             let grades = {!! json_encode($grades) !!};
             let eurToGbp = {!! json_encode($eur_gbp) !!};
 
-            fetchVariations(); // Fetch variations on page
+            fetchVariations(); // Fetch variations on page load
 
             function fetchVariations(page = 1) {
                 // Collect form data or input values to create query parameters
@@ -368,7 +368,7 @@
                                     // console.log(data.stock_costs[item.id]);
                                     let price = data.stock_costs[item.id];
                                     stockPrices.push(price);
-                                    //  stock cost via AJAX
+                                    // Load stock cost via AJAX
                                     datass += `
                                         <tr>
                                             <td>${index + 1}</td>
@@ -529,7 +529,7 @@
                         $("#change_qty_"+variation.id).submit(function(e) {
                                 submitForm(e, variation.id);
                             });
-                        $('#sales_'+variation.id).("{{ url('listing/get_sales') . '/'}}"+variation.id);
+                        $('#sales_'+variation.id).load("{{ url('listing/get_sales') . '/'}}"+variation.id);
                     });
                 } else {
                     variationsContainer.append('<p>No variations found.</p>');
