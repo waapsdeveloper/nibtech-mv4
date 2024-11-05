@@ -179,6 +179,7 @@
                                         <th><small><b>Color</b></small></th>
                                         <th><small><b>Storage</b></small></th>
                                         <th><small><b>Grade</b></small></th>
+                                        <th><small><b>Sub Grade</b></small></th>
                                         <th><small><b>Stock</b></small></th>
                                         <th><small><b>Price</b></small></th>
                                         <th><small><b>Datetime</b></small></th>
