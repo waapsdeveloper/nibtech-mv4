@@ -392,8 +392,8 @@
                         });
                         variation.listings.forEach(function(listing) {
                             if (listing.currency_id == 5) {
-                                p_append = 'break: £'+(m_price*eurToGbp).toFixed(2);
-                                pm_append = 'break: £'+(m_min_price*eurToGbp).toFixed(2);
+                                let p_append = 'break: £'+(m_price*eurToGbp).toFixed(2);
+                                let pm_append = 'break: £'+(m_min_price*eurToGbp).toFixed(2);
                             }else{
                                 let p_append = '';
                                 let pm_append = '';
