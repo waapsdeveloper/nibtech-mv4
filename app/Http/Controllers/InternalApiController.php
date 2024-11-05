@@ -189,6 +189,7 @@ class InternalApiController extends Controller
             $listing->buybox_winner_price = $list->winner_price->amount;
             $listing->save();
         }
+        return response()->json(['listings'=>$listings]);
     }
 
 }
