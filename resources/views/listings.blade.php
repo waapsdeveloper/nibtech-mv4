@@ -142,103 +142,103 @@
     <script>
 
         function toggleButtonOnChange(variationId, inputElement) {
-                // Get the original value
-                var originalValue = inputElement.defaultValue;
+            // Get the original value
+            var originalValue = inputElement.defaultValue;
 
-                // Get the current value
-                var currentValue = inputElement.value;
+            // Get the current value
+            var currentValue = inputElement.value;
 
-                // Show the button only if the value has changed
-                if (currentValue != originalValue) {
-                    $('#send_' + variationId).removeClass('d-none');
-                } else {
-                    $('#send_' + variationId).addClass('d-none');
+            // Show the button only if the value has changed
+            if (currentValue != originalValue) {
+                $('#send_' + variationId).removeClass('d-none');
+            } else {
+                $('#send_' + variationId).addClass('d-none');
+            }
+        }
+
+        function submitForm(event, variationId) {
+            event.preventDefault(); // avoid executing the actual submit of the form.
+
+            var form = $('#change_qty_' + variationId);
+            var actionUrl = form.attr('action');
+
+            $.ajax({
+                type: "POST",
+                url: actionUrl,
+                data: form.serialize(), // serializes the form's elements.
+                success: function(data) {
+                    alert("Success: Quantity changed to " + data); // show response from the PHP script.
+                    $('#send_' + variationId).addClass('d-none'); // hide the button after submission
+                    $('quantity_' + variationId).val(data)
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert("Error: " + textStatus + " - " + errorThrown);
                 }
+            });
+        }
+
+        function checkMinPriceDiff(listingId){
+
+            let min = $('#min_price_' + listingId);
+            let price = $('#price_' + listingId);
+            let min_val = min.val();
+            let price_val = price.val();
+            if (min_val > price_val || min_val < price_val*0.85) {
+                min.addClass('bg-red');
+                min.removeClass('bg-green');
+                price.addClass('bg-red');
+                price.removeClass('bg-green');
+            }else{
+                min.removeClass('bg-red');
+                price.removeClass('bg-red');
             }
+        }
 
-            function submitForm(event, variationId) {
-                event.preventDefault(); // avoid executing the actual submit of the form.
+        function submitForm2(event, listingId) {
+            event.preventDefault(); // avoid executing the actual submit of the form.
 
-                var form = $('#change_qty_' + variationId);
-                var actionUrl = form.attr('action');
+            var form = $('#change_min_price_' + listingId);
+            var actionUrl = "{{ url('listing/update_price') }}/" + listingId;
 
-                $.ajax({
-                    type: "POST",
-                    url: actionUrl,
-                    data: form.serialize(), // serializes the form's elements.
-                    success: function(data) {
-                        alert("Success: Quantity changed to " + data); // show response from the PHP script.
-                        $('#send_' + variationId).addClass('d-none'); // hide the button after submission
-                        $('quantity_' + variationId).val(data)
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        alert("Error: " + textStatus + " - " + errorThrown);
-                    }
-                });
-            }
+            $.ajax({
+                type: "POST",
+                url: actionUrl,
+                data: form.serialize(), // serializes the form's elements.
+                success: function(data) {
+                    // alert("Success: Min Price changed to " + data); // show response from the PHP script.
+                    $('#min_price_' + listingId).addClass('bg-green'); // hide the button after submission
+                    // $('quantity_' + listingId).val(data)
 
-            function checkMinPriceDiff(listingId){
-
-                let min = $('#min_price_' + listingId);
-                let price = $('#price_' + listingId);
-                let min_val = min.val();
-                let price_val = price.val();
-                if (min_val > price_val || min_val < price_val*0.85) {
-                    min.addClass('bg-red');
-                    min.removeClass('bg-green');
-                    price.addClass('bg-red');
-                    price.removeClass('bg-green');
-                }else{
-                    min.removeClass('bg-red');
-                    price.removeClass('bg-red');
+                    checkMinPriceDiff(listingId);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert("Error: " + textStatus + " - " + errorThrown);
                 }
-            }
+            });
+        }
 
-            function submitForm2(event, listingId) {
-                event.preventDefault(); // avoid executing the actual submit of the form.
+        function submitForm3(event, listingId, actionUrl) {
+            event.preventDefault(); // avoid executing the actual submit of the form.
 
-                var form = $('#change_min_price_' + listingId);
-                var actionUrl = "{{ url('listing/update_price') }}/" + listingId;
+            var form = $('#change_price_' + listingId);
+            var actionUrl = "{{ url('listing/update_price') }}/" + listingId;
 
-                $.ajax({
-                    type: "POST",
-                    url: actionUrl,
-                    data: form.serialize(), // serializes the form's elements.
-                    success: function(data) {
-                        // alert("Success: Min Price changed to " + data); // show response from the PHP script.
-                        $('#min_price_' + listingId).addClass('bg-green'); // hide the button after submission
-                        // $('quantity_' + listingId).val(data)
-
-                        checkMinPriceDiff(listingId);
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        alert("Error: " + textStatus + " - " + errorThrown);
-                    }
-                });
-            }
-
-            function submitForm3(event, listingId, actionUrl) {
-                event.preventDefault(); // avoid executing the actual submit of the form.
-
-                var form = $('#change_price_' + listingId);
-                var actionUrl = "{{ url('listing/update_price') }}/" + listingId;
-
-                $.ajax({
-                    type: "POST",
-                    url: actionUrl,
-                    data: form.serialize(), // serializes the form's elements.
-                    success: function(data) {
-                        // alert("Success: Price changed to " + data); // show response from the PHP script.
-                        $('#price_' + listingId).addClass('bg-green'); // hide the button after submission
-                        // $('#send_' + listingId).addClass('d-none'); // hide the button after submission
-                        // $('quantity_' + listingId).val(data)
-                        checkMinPriceDiff(listingId);
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        alert("Error: " + textStatus + " - " + errorThrown);
-                    }
-                });
-            }
+            $.ajax({
+                type: "POST",
+                url: actionUrl,
+                data: form.serialize(), // serializes the form's elements.
+                success: function(data) {
+                    // alert("Success: Price changed to " + data); // show response from the PHP script.
+                    $('#price_' + listingId).addClass('bg-green'); // hide the button after submission
+                    // $('#send_' + listingId).addClass('d-none'); // hide the button after submission
+                    // $('quantity_' + listingId).val(data)
+                    checkMinPriceDiff(listingId);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert("Error: " + textStatus + " - " + errorThrown);
+                }
+            });
+        }
 
         $(document).ready(function() {
             $('.select2').select2();
@@ -247,6 +247,8 @@
             let storages = {!! json_encode($storages) !!};
             let colors = {!! json_encode($colors) !!};
             let grades = {!! json_encode($grades) !!};
+            let eurToGbp = {!! json_encode($eur_gbp) !!};
+
             fetchVariations(); // Fetch variations on page load
 
             function fetchVariations(page = 1) {
@@ -392,8 +394,8 @@
                             let p_append = '';
                             let pm_append = '';
                             if (listing.currency_id == 5) {
-                                p_append = 'Min: £'+m_price.toFixed(2);
-                                pm_append = 'Min: £'+m_min_price.toFixed(2);
+                                p_append = 'Min: £'+(m_price*eurToGbp).toFixed(2);
+                                pm_append = 'Min: £'+(m_min_price*eurToGbp).toFixed(2);
                             }
                             listingsTable += `
                                 <tr ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>

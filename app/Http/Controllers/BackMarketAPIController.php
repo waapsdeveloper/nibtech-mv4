@@ -637,9 +637,9 @@ class BackMarketAPIController extends Controller
         return $result;
     }
 
-    public function getListingCompetitors($listing_id, $code) {
+    public function getListingCompetitors($listing_id) {
         $end_point = 'backbox/v1/competitors/' . $listing_id;
-        $result = $this->apiGet($end_point, $code);
+        $result = $this->apiGet($end_point);
         return $result;
     }
     // public function getAllListings($publication_state = null, $param = []) {

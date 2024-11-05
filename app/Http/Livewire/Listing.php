@@ -233,9 +233,10 @@ class Listing extends Component
         }
     }
     public function get_competitors($id){
-        $listing = Listing_model::find($id);
+        $variation = Variation_model::find($id);
         $bm = new BackMarketAPIController();
-        $response = $bm->getListingCompetitors($listing->variation->reference_uuid, $listing->country_id->market_code);
+        $response = $bm->getListingCompetitors($variation->reference_uuid);
+        $listings = Listing_model::where('variation_id',$id)->get();
         dd($response);
         echo "Hello";
     }
