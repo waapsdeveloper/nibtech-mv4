@@ -348,6 +348,7 @@
                 // Check if there's data
                 if (variations.data.length > 0) {
                     variations.data.forEach(function(variation) {
+                        load("{{ url('api/internal/get_competitors')}}/${variation.id}");
                         let stocksTable = '';
                         let listingsTable = '';
                         let stockPrices = [];

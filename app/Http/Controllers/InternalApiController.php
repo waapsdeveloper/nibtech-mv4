@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Listing_model;
 use App\Models\Order_item_model;
 use App\Models\Stock_model;
 use App\Models\Variation_model;
@@ -115,39 +116,50 @@ class InternalApiController extends Controller
         $stock = Stock_model::find($id);
         return $stock->last_item()->price;
     }
-    public function get_last_week_average($id){
+    public function get_today_average($id){
         $order_items = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
-            $q->whereBetween('created_at', [now()->subDays(7), now()])->where('order_type_id',3);
+            $q->whereBetween('created_at', [now()->startOfDay(), now()])->where('order_type_id',3);
         })->avg('price');
         $order_items_count = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
-            $q->whereBetween('created_at', [now()->subDays(7), now()])->where('order_type_id',3);
+            $q->whereBetween('created_at', [now()->startOfDay(), now()])->where('order_type_id',3);
+        })->count();
+
+        return "Today: €".amount_formatter($order_items)." (".$order_items_count.")";
+    }
+    public function get_last_week_average($id){
+        $order_items = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
+            $q->whereBetween('created_at', [now()->subDays(7), now()->yesterday()->endOfDay()])->where('order_type_id',3);
+        })->avg('price');
+        $order_items_count = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
+            $q->whereBetween('created_at', [now()->subDays(7), now()->yesterday()->endOfDay()])->where('order_type_id',3);
         })->count();
 
         return "7 days: €".amount_formatter($order_items)." (".$order_items_count.")";
     }
     public function get_2_week_average($id){
         $order_items = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
-            $q->whereBetween('created_at', [now()->subDays(14), now()])->where('order_type_id',3);
+            $q->whereBetween('created_at', [now()->subDays(14), now()->yesterday()->endOfDay()])->where('order_type_id',3);
         })->avg('price');
         $order_items_count = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
-            $q->whereBetween('created_at', [now()->subDays(14), now()])->where('order_type_id',3);
+            $q->whereBetween('created_at', [now()->subDays(14), now()->yesterday()->endOfDay()])->where('order_type_id',3);
         })->count();
 
         return "14 days: €".amount_formatter($order_items)." (".$order_items_count.")";
     }
     public function get_30_days_average($id){
         $order_items = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
-            $q->whereBetween('created_at', [now()->subDays(30), now()])->where('order_type_id',3);
+            $q->whereBetween('created_at', [now()->subDays(30), now()->yesterday()->endOfDay()])->where('order_type_id',3);
         })->avg('price');
         $order_items_count = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
-            $q->whereBetween('created_at', [now()->subDays(30), now()])->where('order_type_id',3);
+            $q->whereBetween('created_at', [now()->subDays(30), now()->yesterday()->endOfDay()])->where('order_type_id',3);
         })->count();
 
         return "30 days: €".amount_formatter($order_items)." (".$order_items_count.")";
     }
 
     public function get_sales($id){
-        $week = $this->get_last_week_average($id);
+        $week = $this->get_today_average($id);
+        $week .= " - Previous - ".$this->get_last_week_average($id);
         $week .= " - ".$this->get_2_week_average($id);
         $week .= " - ".$this->get_30_days_average($id);
 
@@ -160,6 +172,23 @@ class InternalApiController extends Controller
         $variation = Variation_model::findOrFail($variationId);
         $updatedQuantity = $variation->update_qty($bm);
         return response()->json(['updatedQuantity' => $updatedQuantity]);
+    }
+    public function get_competitors($id){
+        $variation = Variation_model::find($id);
+        $bm = new BackMarketAPIController();
+        $response = $bm->getListingCompetitors($variation->reference_uuid);
+        $listings = Listing_model::where('variation_id',$id)->get();
+        foreach($listings as $listing){
+            $country_code = $listing->country_id->code;
+            $list = $response->where('market',$country_code);
+            $listing->reference_uuid = $list->product_id;
+            $listing->price = $list->price->amount;
+            $listing->min_price = $list->min_price->amount;
+            $listing->buybox = $list->is_winning;
+            $listing->buybox_price = $list->price_to_win->amount;
+            $listing->buybox_winner_price = $list->winner_price->amount;
+            $listing->save();
+        }
     }
 
 }

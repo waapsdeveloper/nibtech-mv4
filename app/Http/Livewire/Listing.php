@@ -237,8 +237,17 @@ class Listing extends Component
         $bm = new BackMarketAPIController();
         $response = $bm->getListingCompetitors($variation->reference_uuid);
         $listings = Listing_model::where('variation_id',$id)->get();
-        dd($response);
-        echo "Hello";
+        foreach($listings as $listing){
+            $country_code = $listing->country_id->code;
+            $list = $response->where('market',$country_code);
+            $listing->reference_uuid = $list->product_id;
+            $listing->price = $list->price->amount;
+            $listing->min_price = $list->min_price->amount;
+            $listing->buybox = $list->is_winning;
+            $listing->buybox_price = $list->price_to_win->amount;
+            $listing->buybox_winner_price = $list->winner_price->amount;
+            $listing->save();
+        }
     }
     public function refresh_stock(){
         $listings = Listing_model::where('reference_id','!=',NULL)->pluck('reference_id','id');
