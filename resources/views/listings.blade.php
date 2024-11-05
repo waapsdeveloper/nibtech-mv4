@@ -398,7 +398,7 @@
                             listingsTable += `
                                 <tr ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
                                     <td title="${listing.id} ${listing.country_id.title}">
-                                        a href="{{ url('listing/get_competitors') }}/${variation.reference_uuid}" target="_blank">
+                                        <a href="{{ url('listing/get_competitors') }}/${variation.reference_uuid}" target="_blank">
                                         <img src="{{ asset('assets/img/flags/') }}/${listing.country_id.code.toLowerCase()}.svg" height="15">
                                         ${listing.country_id.code}
                                         </a>
