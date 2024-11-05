@@ -391,12 +391,11 @@
                             }
                         });
                         variation.listings.forEach(function(listing) {
+                            let p_append = '';
+                            let pm_append = '';
                             if (listing.currency_id == 5) {
-                                let p_append = 'break: £'+(m_price*eurToGbp).toFixed(2);
-                                let pm_append = 'break: £'+(m_min_price*eurToGbp).toFixed(2);
-                            }else{
-                                let p_append = '';
-                                let pm_append = '';
+                                p_append = 'break: £'+(m_price*eurToGbp).toFixed(2);
+                                pm_append = 'break: £'+(m_min_price*eurToGbp).toFixed(2);
                             }
                             listingsTable += `
                                 <tr ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
