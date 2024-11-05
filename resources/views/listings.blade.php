@@ -391,16 +391,17 @@
                             }
                         });
                         variation.listings.forEach(function(listing) {
-                            let p_append = '';
-                            let pm_append = '';
                             if (listing.currency_id == 5) {
                                 p_append = 'break: £'+(m_price*eurToGbp).toFixed(2);
                                 pm_append = 'break: £'+(m_min_price*eurToGbp).toFixed(2);
+                            }else{
+                                let p_append = '';
+                                let pm_append = '';
                             }
                             listingsTable += `
                                 <tr ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
                                     <td title="${listing.id} ${listing.country_id.title}">
-                                        <a href="{{ url('listing/get_competitors') }}/${listing.id}" target="_blank">
+                                        <a href="https://www.backmarket.${listing.country_id.market_url}" target="_blank">
                                         <img src="{{ asset('assets/img/flags/') }}/${listing.country_id.code.toLowerCase()}.svg" height="15">
                                         ${listing.country_id.code}
                                         </a>

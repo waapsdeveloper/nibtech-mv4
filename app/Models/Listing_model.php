@@ -18,6 +18,7 @@ class Listing_model extends Model
         // other fields...
         'country',
         'variation_id',
+        'name',
         'min_price',
         'max_price',
         'price',

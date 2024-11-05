@@ -69,6 +69,9 @@ class FunctionsThirty extends Command
                     $variation->listed_stock = $list->quantity;
                     $listing->price = $list->price;
                     $listing->currency_id = $currency->id;
+                    if($listing->name == null){
+                        $listing->name = $list->title;
+                    }
                     // ... other fields
                     $listing->save();
                     if($variation->reference_uuid == null){
