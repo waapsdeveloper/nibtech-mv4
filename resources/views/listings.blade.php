@@ -400,7 +400,7 @@
                             listingsTable += `
                                 <tr ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
                                     <td title="${listing.id} ${listing.country_id.title}">
-                                        <a href="https://www.backmarket.${listing.country_id.market_url}/${listing.country_id.market_code}/p/${listing.name.replace(' ','-')}/${variation.reference_uuid}" target="_blank">
+                                        <a href="https://www.backmarket.${listing.country_id.market_url}/${listing.country_id.market_code}/p/${listing.name.replace(' ','-') ?? ''}/${variation.reference_uuid}" target="_blank">
                                         <img src="{{ asset('assets/img/flags/') }}/${listing.country_id.code.toLowerCase()}.svg" height="15">
                                         ${listing.country_id.code}
                                         </a>
