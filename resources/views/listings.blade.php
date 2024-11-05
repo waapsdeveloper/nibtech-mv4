@@ -405,12 +405,13 @@
                             listingsTable += `
                                 <tr ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
                                     <td title="${listing.id} ${listing.country_id.title}">
-                                        <a href="https://www.backmarket.${listing.country_id.market_url}/${listing.country_id.market_code}/p/${name}/${variation.reference_uuid}" target="_blank">
+                                        <a href="https://www.backmarket.${listing.country_id.market_url}/${listing.country_id.market_code}/p/gb/${listing.reference_uuid}" target="_blank">
                                         <img src="{{ asset('assets/img/flags/') }}/${listing.country_id.code.toLowerCase()}.svg" height="15">
                                         ${listing.country_id.code}
                                         </a>
                                     </td>
-                                    <td><a href="{{ url('listing/get_competitors') }}/${listing.id}" target="_blank">${listing.buybox_price}</a></td>
+                                    <td>${listing.buybox_price}</td>
+                                    <td>${listing.buybox_winner_price}</td>
                                     <td>
                                         <form class="form-inline" method="POST" id="change_min_price_${listing.id}">
                                             @csrf
@@ -433,7 +434,6 @@
                                         </div>
                                         ${p_append}
                                     </td>
-                                    <td>${listing.max_price}</td>
                                     <td>${new Date(listing.updated_at).toGMTString()}</td>
                                 </tr>`;
                                 $(document).ready(function() {
@@ -510,9 +510,9 @@
                                                     <tr>
                                                         <th><small><b>Country</b></small></th>
                                                         <th><small><b>BuyBox</b></small></th>
+                                                        <th title="Buybox Winner Price"><small><b>Winner</b></small></th>
                                                         <th title="Min Price" width="150"><small><b>Min </b>(<b id="best_price_${variation.id}"></b>)</small></th>
                                                         <th width="150"><small><b>Price</b></small></th>
-                                                        <th title="Max Price"><small><b>Max</b></small></th>
                                                         <th><small><b>Date</b></small></th>
                                                     </tr>
                                                 </thead>
