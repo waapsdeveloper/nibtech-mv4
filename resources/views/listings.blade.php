@@ -468,12 +468,12 @@
                                     </div>
 
                                     <div class="align-end">
-                                        <h6>
+                                        <h6 class="mb-0">
                                         <a class="" href="{{url('order').'?sku='}}$(variation.sku)" target="_blank">
                                             Pending Order Items: ${variation.pending_orders.length || 0}
                                         </a></h6>
-                                        <h6 class="" id="available_stock_${variation.id}">Available: ${variation.available_stocks.length || 0}</h6>
-                                        <h6>Difference: ${variation.available_stocks.length - variation.pending_orders.length}</h6>
+                                        <h6 class="mb-0" id="available_stock_${variation.id}">Available: ${variation.available_stocks.length || 0}</h6>
+                                        <h6 class="mb-0">Difference: ${variation.available_stocks.length - variation.pending_orders.length}</h6>
                                     </div>
 
                                 </div>
