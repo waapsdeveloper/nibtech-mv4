@@ -398,8 +398,10 @@
                             listingsTable += `
                                 <tr ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
                                     <td title="${listing.id} ${listing.country_id.title}">
+                                        a href="{{ url('listing/get_competitors') }}/${variation.reference_uuid}" target="_blank">
                                         <img src="{{ asset('assets/img/flags/') }}/${listing.country_id.code.toLowerCase()}.svg" height="15">
                                         ${listing.country_id.code}
+                                        </a>
                                     </td>
                                     <td><a href="{{ url('listing/get_competitors') }}/${listing.id}" target="_blank">${listing.buybox_price}</a></td>
                                     <td>
@@ -467,7 +469,7 @@
                                         </form>
                                     </div>
 
-                                    <div class="text-align-end">
+                                    <div class="text-end">
                                         <h6 class="mb-0">
                                         <a class="" href="{{url('order').'?sku='}}$(variation.sku)" target="_blank">
                                             Pending Order Items: ${variation.pending_orders.length || 0}
