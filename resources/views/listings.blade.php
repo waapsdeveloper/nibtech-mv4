@@ -399,7 +399,7 @@
                             }
                             let name = listing.name;
                             if (name != null) {
-                                name = name.replace(' ','-');
+                                name = name.replace(/ /g,'-');
                             }
                             listingsTable += `
                                 <tr ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
