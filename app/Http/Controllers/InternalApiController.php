@@ -178,6 +178,10 @@ class InternalApiController extends Controller
         $variation = Variation_model::find($id);
         $bm = new BackMarketAPIController();
         $responses = $bm->getListingCompetitors($variation->reference_uuid);
+        if($responses == null){
+            $listings = Listing_model::where('variation_id',$id)->get();
+            return response()->json(['listings'=>$listings]);
+        }
         foreach($responses as $list){
             $country = Country_model::where('code',$list->market)->first();
             $listing = Listing_model::firstOrNew(['variation_id'=>$id, 'country'=>$country->id]);

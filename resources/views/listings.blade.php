@@ -548,9 +548,12 @@
                                         <h6 class="mb-0" id="available_stock_${variation.id}">Available: ${variation.available_stocks.length || 0}</h6>
                                         <h6 class="mb-0">Difference: ${variation.available_stocks.length - variation.pending_orders.length}</h6>
                                     </div>
+                                    <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#details_${variation.id}" aria-expanded="false" aria-controls="details_${variation.id}">
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
 
                                 </div>
-                                <div class="card-body p-2">
+                                <div class="card-body p-2 collapse" id="details_${variation.id}">
                                     <div class="col-md-auto">
                                         <div class="table-responsive">
                                             <table class="table table-bordered table-hover mb-0 text-md-nowrap">
