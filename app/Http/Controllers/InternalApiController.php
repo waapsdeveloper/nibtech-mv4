@@ -173,7 +173,7 @@ class InternalApiController extends Controller
         $updatedQuantity = $variation->update_qty($bm);
         return response()->json(['updatedQuantity' => $updatedQuantity]);
     }
-    public function get_competitors($id){
+    public function getCompetitors($id){
         $variation = Variation_model::find($id);
         $bm = new BackMarketAPIController();
         $response = $bm->getListingCompetitors($variation->reference_uuid);
