@@ -248,6 +248,7 @@
             let colors = {!! json_encode($colors) !!};
             let grades = {!! json_encode($grades) !!};
             let eurToGbp = {!! json_encode($eur_gbp) !!};
+            let countries = {!! json_encode($countries) !!};
 
             fetchVariations(); // Fetch variations on page load
 
@@ -403,16 +404,12 @@
                                         p_append = 'break: £'+(m_price*eurToGbp).toFixed(2);
                                         pm_append = 'break: £'+(m_min_price*eurToGbp).toFixed(2);
                                     }
-                                    let name = listing.name;
-                                    if (name != null) {
-                                        name = name.replace(/ /g,'-');
-                                    }
                                     listingsTable += `
                                         <tr ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
-                                            <td title="${listing.id} ${listing.country_id.title}">
-                                                <a href="https://www.backmarket.${listing.country_id.market_url}/${listing.country_id.market_code}/p/gb/${listing.reference_uuid}" target="_blank">
-                                                <img src="{{ asset('assets/img/flags/') }}/${listing.country_id.code.toLowerCase()}.svg" height="15">
-                                                ${listing.country_id.code}
+                                            <td title="${listing.id} ${countries[listing.country].title}">
+                                                <a href="https://www.backmarket.${countries[listing.country].market_url}/${countries[listing.country].market_code}/p/gb/${listing.reference_uuid}" target="_blank">
+                                                <img src="{{ asset('assets/img/flags/') }}/${countries[listing.country].code.toLowerCase()}.svg" height="15">
+                                                ${countries[listing.country].code}
                                                 </a>
                                             </td>
                                             <td>${listing.buybox_price}</td>

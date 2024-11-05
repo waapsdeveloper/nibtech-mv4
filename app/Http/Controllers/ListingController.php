@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Color_model;
+use App\Models\Country_model;
 use App\Models\ExchangeRate;
 use App\Models\Grade_model;
 use App\Models\Storage_model;
@@ -19,6 +20,10 @@ class ListingController extends Controller
         $data['colors'] = Color_model::pluck('name','id');
         $data['grades'] = Grade_model::where('id',"<",6)->pluck('name','id')->toArray();
         $data['eur_gbp'] = ExchangeRate::where('target_currency','GBP')->first()->rate;
+        $countries = Country_model::all();
+        foreach($countries as $country){
+            $data['countries'][$country->id] = $country;
+        }
 
 
 
