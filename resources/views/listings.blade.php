@@ -398,7 +398,7 @@
                                 pm_append = 'break: £'+(m_min_price*eurToGbp).toFixed(2);
                             }
                             let name = listing.name;
-                            if (name.length > 1){
+                            if (name != null) {
                                 name = name.replace(' ','-');
                             }
                             listingsTable += `
