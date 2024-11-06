@@ -21,10 +21,13 @@ class IMEILabelExport
         $movement = Stock_operations_model::where('stock_id', $stock_id)->orderBy('id','desc')->first();
         $imei = $stock->imei ?? 'N/A';
 
-        $new_variation = $movement->old_variation;
-        $movementDetails = $movement->created_at . ' - ' . ($movement->admin->first_name ?? 'Unknown') . ' - ' .
-            'From: ' . ($new_variation->product->model . ' ' . $new_variation->storage_id->name ?? '' . ' ' . $new_variation->color_id->name ?? '');
-
+        if ($movement === null) {
+            $movementDetails = 'No movement history';
+        } else {
+            $new_variation = $movement->old_variation;
+            $movementDetails = $movement->created_at . ' - ' . ($movement->admin->first_name ?? 'Unknown') . ' - ' .
+                'From: ' . ($new_variation->product->model . ' ' . $new_variation->storage_id->name ?? '' . ' ' . $new_variation->color_id->name ?? '');
+        }
         // Generate Barcode as an Image
         $dnsid = new DNS1D();
         $barcodeImage = 'data:image/png;base64,' . base64_encode(
