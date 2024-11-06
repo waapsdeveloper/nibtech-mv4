@@ -42,8 +42,8 @@ Route::group(['middleware' => ['internal.only']], function () {
     Route::get('/internal/get_variation_available_stocks/{id}', [InternalApiController::class, 'get_variation_available_stocks']);
     Route::get('/internal/get_updated_quantity/{id}', [InternalApiController::class, 'getUpdatedQuantity']);
     Route::get('/internal/get_competitors/{id}', [InternalApiController::class, 'getCompetitors']);
-    Route::get('/internal/inventory_get_vendor_wise_average/{aftersale}', [InternalApiController::class, 'inventoryGetVendorWiseAverage']);
-    Route::get('/internal/inventory_get_average_cost/{aftersale}', [InternalApiController::class, 'inventoryGetAverageCost']);
+    Route::get('/internal/inventory_get_vendor_wise_average', [InternalApiController::class, 'inventoryGetVendorWiseAverage']);
+    Route::get('/internal/inventory_get_average_cost', [InternalApiController::class, 'inventoryGetAverageCost']);
 
 
 

@@ -204,6 +204,15 @@ class InternalApiController extends Controller
 
     public function inventoryGetVendorWiseAverage($aftersale){
 
+        if(request('aftersale') != 1){
+
+            $aftersale = Order_item_model::whereHas('order', function ($q) {
+                $q->where('order_type_id',4)->where('status','<',3);
+            })->pluck('stock_id')->toArray();
+        }else{
+            $aftersale = [];
+        }
+
         $data['vendor_average_cost'] = Stock_model::where('stock.deleted_at',null)->where('order_items.deleted_at',null)->where('orders.deleted_at',null)
 
 
@@ -276,7 +285,16 @@ class InternalApiController extends Controller
         return response()->json($data);
     }
 
-    public function inventoryGetAverageCost($aftersale){
+    public function inventoryGetAverageCost(){
+
+        if(request('aftersale') != 1){
+
+            $aftersale = Order_item_model::whereHas('order', function ($q) {
+                $q->where('order_type_id',4)->where('status','<',3);
+            })->pluck('stock_id')->toArray();
+        }else{
+            $aftersale = [];
+        }
 
         $data['average_cost'] = Stock_model::where('stock.deleted_at',null)->where('order_items.deleted_at',null)
 

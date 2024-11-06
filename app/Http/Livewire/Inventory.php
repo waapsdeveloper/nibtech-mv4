@@ -70,7 +70,6 @@ class Inventory extends Component
             $aftersale = [];
         }
 
-        $data['aftersale'] = $aftersale;
 
         if(session('user')->hasPermission('view_inventory_summery') && request('summery') && request('summery') == 1){
 

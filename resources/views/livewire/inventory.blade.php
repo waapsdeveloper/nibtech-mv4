@@ -705,7 +705,7 @@
             }
             function get_average_cost(){
                 $.ajax({
-                    url: "{{url('api/internal/inventory_get_average_cost').'/'.$aftersale}}",
+                    url: "{{url('api/internal/inventory_get_average_cost')}}",
                     type: 'GET',
                     success: function(data) {
                         $('#average_cost').html('Average Cost: '+data.average_price+' | Total Cost: '+data.total_price);
@@ -714,7 +714,7 @@
             }
             function get_vendor_wise_average(){
                 $.ajax({
-                    url: "{{url('api/internal/inventory_get_vendor_wise_average').'/'.$aftersale}}",
+                    url: "{{url('api/internal/inventory_get_vendor_wise_average')}}",
                     type: 'GET',
                     success: function(data) {
                         $('#vendor_wise_average').html('Vendor wise average: '+data);
