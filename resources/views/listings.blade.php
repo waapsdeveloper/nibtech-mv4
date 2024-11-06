@@ -517,7 +517,7 @@
                         // Create variation card
                         variationsContainer.append(`
                             <div class="card">
-                                <div class="card-header pb-0 d-flex justify-content-between">
+                                <div class="card-header py-0 d-flex justify-content-between">
                                     <div>
                                         <h5>
                                             <a href="https://www.backmarket.fr/bo_merchant/listings/active?sku=${variation.sku}" title="View BM Ad" target="_blank">
