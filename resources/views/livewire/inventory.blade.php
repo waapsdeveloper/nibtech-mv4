@@ -708,6 +708,7 @@
                     url: "{{url('api/internal/inventory_get_average_cost')}}",
                     type: 'GET',
                     success: function(data) {
+                        console.log(data);
                         $('#average_cost').html('Average Cost: '+data.average_price+' | Total Cost: '+data.total_price);
                     }
                 });
@@ -717,6 +718,7 @@
                     url: "{{url('api/internal/inventory_get_vendor_wise_average')}}",
                     type: 'GET',
                     success: function(data) {
+                        console.log(data);
                         $('#vendor_wise_average').html('Vendor wise average: '+data);
                     }
                 });
