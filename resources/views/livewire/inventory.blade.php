@@ -729,6 +729,7 @@
             $(document).ready(function(){
                 $('.select2').select2();
                 get_average_cost();
+                get_vendor_wise_average();
             });
 
         </script>
