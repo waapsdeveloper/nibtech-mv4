@@ -64,72 +64,23 @@
     <div class="d-flex justify-content-between">
         <h5 class="card-title mg-b-0" id="page_info"> </h5>
         <div class="d-flex p-2 justify-content-between">
-            {{-- <div class="mx-2"> --}}
-            {{-- <form method="get" action="" class="form-inline"> --}}
-                <label for="perPage" class="form-label">Sort:</label>
-                <select name="sort" class="form-select" id="perPage" onchange="this.form.submit()" form="search">
-                    <option value="1" {{ Request::get('sort') == 1 ? 'selected' : '' }}>Stock DESC</option>
-                    <option value="2" {{ Request::get('sort') == 2 ? 'selected' : '' }}>Stock ASC</option>
-                    <option value="3" {{ Request::get('sort') == 3 ? 'selected' : '' }}>Name DESC</option>
-                    <option value="4" {{ Request::get('sort') == 4 ? 'selected' : '' }}>Name ASC</option>
-                </select>
-                {{-- <input type="hidden" name="reference_id" value="{{ Request::get('reference_id') }}">
-                <input type="hidden" name="category" value="{{ Request::get('category') }}">
-                <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
-                <input type="hidden" name="product" value="{{ Request::get('product') }}">
-                <input type="hidden" name="sku" value="{{ Request::get('sku') }}">
-                <input type="hidden" name="color" value="{{ Request::get('color') }}">
-                <input type="hidden" name="storage" value="{{ Request::get('storage') }}">
-                @if (Request::get('grade'))
-
-                @foreach (Request::get('grade') as $grd)
-
-                    <input type="hidden" name="grade[]" value="{{ $grd }}">
-                @endforeach
-                @endif
-                <input type="hidden" name="listed_stock" value="{{ Request::get('listed_stock') }}">
-                <input type="hidden" name="available_stock" value="{{ Request::get('available_stock') }}">
-                <input type="hidden" name="state" value="{{ Request::get('state') }}">
-                <input type="hidden" name="page" value="{{ Request::get('page') }}">
-                <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}"> --}}
-
-            {{-- </form> --}}
-            {{-- </div>
-            <div> --}}
-            {{-- <form method="get" action="" class="form-inline"> --}}
-                <label for="perPage" class="form-label">Per&nbsp;Page:</label>
-                <select name="per_page" class="form-select" id="perPage" onchange="this.form.submit()" form="search">
-                    <option value="10" {{ Request::get('per_page') == 10 ? 'selected' : '' }}>10</option>
-                    <option value="20" {{ Request::get('per_page') == 20 ? 'selected' : '' }}>20</option>
-                    <option value="50" {{ Request::get('per_page') == 50 ? 'selected' : '' }}>50</option>
-                    <option value="100" {{ Request::get('per_page') == 100 ? 'selected' : '' }}>100</option>
-                </select>
-                {{-- <input type="hidden" name="reference_id" value="{{ Request::get('reference_id') }}">
-                <input type="hidden" name="category" value="{{ Request::get('category') }}">
-                <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
-                <input type="hidden" name="product" value="{{ Request::get('product') }}">
-                <input type="hidden" name="sku" value="{{ Request::get('sku') }}">
-                <input type="hidden" name="color" value="{{ Request::get('color') }}">
-                <input type="hidden" name="storage" value="{{ Request::get('storage') }}">
-                @if (Request::get('grade'))
-
-                @foreach (Request::get('grade') as $grd)
-
-                    <input type="hidden" name="grade[]" value="{{ $grd }}">
-                @endforeach
-                @endif
-                <input type="hidden" name="listed_stock" value="{{ Request::get('listed_stock') }}">
-                <input type="hidden" name="available_stock" value="{{ Request::get('available_stock') }}">
-                <input type="hidden" name="state" value="{{ Request::get('state') }}">
-                <input type="hidden" name="sort" value="{{ Request::get('sort') }}">
-                <input type="hidden" name="page" value="{{ Request::get('page') }}">
-            </form> --}}
-            {{-- </div> --}}
+            <label for="perPage" class="form-label">Sort:</label>
+            <select name="sort" class="form-select" id="perPage" onchange="this.form.submit()" form="search">
+                <option value="1" {{ Request::get('sort') == 1 ? 'selected' : '' }}>Stock DESC</option>
+                <option value="2" {{ Request::get('sort') == 2 ? 'selected' : '' }}>Stock ASC</option>
+                <option value="3" {{ Request::get('sort') == 3 ? 'selected' : '' }}>Name DESC</option>
+                <option value="4" {{ Request::get('sort') == 4 ? 'selected' : '' }}>Name ASC</option>
+            </select>
+            <label for="perPage" class="form-label">Per&nbsp;Page:</label>
+            <select name="per_page" class="form-select" id="perPage" onchange="this.form.submit()" form="search">
+                <option value="10" {{ Request::get('per_page') == 10 ? 'selected' : '' }}>10</option>
+                <option value="20" {{ Request::get('per_page') == 20 ? 'selected' : '' }}>20</option>
+                <option value="50" {{ Request::get('per_page') == 50 ? 'selected' : '' }}>50</option>
+                <option value="100" {{ Request::get('per_page') == 100 ? 'selected' : '' }}>100</option>
+            </select>
         </div>
     </div>
-    <div id="variations">
-        <!-- Variations will be loaded here via AJAX -->
-    </div>
+    <div id="variations"></div>
     <nav aria-label="Page navigation">
         <ul id="pagination-container" class="pagination justify-content-center"></ul>
     </nav>
@@ -141,6 +92,7 @@
     <script>
 
         function toggleButtonOnChange(variationId, inputElement) {
+
             // Get the original value
             var originalValue = inputElement.defaultValue;
 
@@ -237,6 +189,117 @@
                     alert("Error: " + textStatus + " - " + errorThrown);
                 }
             });
+        }
+
+        function getStocks(variationId){
+
+            $.ajax({
+                url: "{{ url('api/internal/get_variation_available_stocks') }}/" + variationId,
+                type: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    datass = '';
+                    count = 0;
+                    data.stocks.forEach(function(item, index) {
+                        count++;
+                        // console.log(data.stock_costs[item.id]);
+                        let price = data.stock_costs[item.id];
+                        stockPrices.push(price);
+                        // Load stock cost via AJAX
+                        datass += `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td data-stock="${item.id}">
+                                    <a href="{{ url('imei?imei=') }}${item.imei}${item.serial_number}" target="_blank">
+                                        ${item.imei ?? ''}${item.serial_number ?? ''}
+                                    </a>
+                                </td>
+                                <td id="cost_${item.id}">€${price}</td>
+                            </tr>`;
+
+
+                    });
+                    updateAverageCost(variationId, stockPrices);
+                    stocksTable = datass;
+                    $('#stocks_'+variationId).html(datass);
+                    // $('#available_stock_'+variationId).html(count + ' Available');
+                },
+                error: function(xhr) {
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+
+        function getListings(variationId){
+
+            $.ajax({
+                url: "{{ url('api/internal/get_competitors') }}/" + variationId,
+                type: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    data.listings.forEach(function(listing) {
+                        let p_append = '';
+                        let pm_append = '';
+                        if (listing.currency_id == 5) {
+                            p_append = 'break: £'+(m_price*eurToGbp).toFixed(2);
+                            pm_append = 'break: £'+(m_min_price*eurToGbp).toFixed(2);
+                        }
+                        listingsTable += `
+                            <tr ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
+                                <td title="${listing.id} ${countries[listing.country].title}">
+                                    <a href="https://www.backmarket.${countries[listing.country].market_url}/${countries[listing.country].market_code}/p/gb/${listing.reference_uuid}" target="_blank">
+                                    <img src="{{ asset('assets/img/flags/') }}/${countries[listing.country].code.toLowerCase()}.svg" height="15">
+                                    ${countries[listing.country].code}
+                                    </a>
+                                </td>
+                                <td>${listing.buybox_price}</td>
+                                <td>${listing.buybox_winner_price}</td>
+                                <td>
+                                    <form class="form-inline" method="POST" id="change_min_price_${listing.id}">
+                                        @csrf
+                                        <input type="submit" hidden>
+                                    </form>
+                                    <form class="form-inline" method="POST" id="change_price_${listing.id}">
+                                        @csrf
+                                        <input type="submit" hidden>
+                                    </form>
+                                    <div class="form-floating">
+                                        <input type="number" class="form-control" id="min_price_${listing.id}" name="min_price" step="0.01" value="${listing.min_price}" form="change_min_price_${listing.id}">
+                                        <label for="">Min Price</label>
+                                    </div>
+                                    ${pm_append}
+                                </td>
+                                <td>
+                                    <div class="form-floating">
+                                        <input type="number" class="form-control" id="price_${listing.id}" name="price" step="0.01" value="${listing.price}" form="change_price_${listing.id}">
+                                        <label for="">Price</label>
+                                    </div>
+                                    ${p_append}
+                                </td>
+                                <td>${new Date(listing.updated_at).toGMTString()}</td>
+                            </tr>`;
+                        $(document).ready(function() {
+                            $("#change_min_price_" + listing.id).on('submit', function(e) {
+                                submitForm2(e, listing.id);
+
+                            });
+
+                            $("#change_price_" + listing.id).on('submit', function(e) {
+                                submitForm3(e, listing.id);
+                            });
+                        });
+                    });
+                    $('#listings_'+variationId).html(listingsTable);
+                },
+                error: function(xhr) {
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+
+        function getVariationDetails(variationId) {
+            getStocks(variationId);
+            getListings(variationId);
         }
 
         $(document).ready(function() {
@@ -356,162 +419,64 @@
                         let m_min_price = Math.min(...variation.listings.filter(listing => listing.currency_id === 4).map(listing => listing.min_price));
                         let m_price = Math.min(...variation.listings.filter(listing => listing.currency_id === 4).map(listing => listing.price));
 
-                        $.ajax({
-                            url: "{{ url('api/internal/get_variation_available_stocks') }}/" + variation.id,
-                            type: 'GET',
-                            dataType: 'json',
-                            success: function(data) {
-                                datass = '';
-                                count = 0;
-                                data.stocks.forEach(function(item, index) {
-                                    count++;
-                                    // console.log(data.stock_costs[item.id]);
-                                    let price = data.stock_costs[item.id];
-                                    stockPrices.push(price);
-                                    // Load stock cost via AJAX
-                                    datass += `
-                                        <tr>
-                                            <td>${index + 1}</td>
-                                            <td data-stock="${item.id}">
-                                                <a href="{{ url('imei?imei=') }}${item.imei}${item.serial_number}" target="_blank">
-                                                    ${item.imei ?? ''}${item.serial_number ?? ''}
-                                                </a>
-                                            </td>
-                                            <td id="cost_${item.id}">€${price}</td>
-                                        </tr>`;
-
-
-                                });
-                                updateAverageCost(variation.id, stockPrices);
-                                stocksTable = datass;
-                                $('#stocks_'+variation.id).html(datass);
-                                // $('#available_stock_'+variation.id).html(count + ' Available');
-                            },
-                            error: function(xhr) {
-                                console.error(xhr.responseText);
-                            }
-                        });
-                        // $.ajax({
-                        //     url: "{{ url('api/internal/get_competitors') }}/" + variation.id,
-                        //     type: 'GET',
-                        //     dataType: 'json',
-                        //     success: function(data) {
-                        //         data.listings.forEach(function(listing) {
-                        //             let p_append = '';
-                        //             let pm_append = '';
-                        //             if (listing.currency_id == 5) {
-                        //                 p_append = 'break: £'+(m_price*eurToGbp).toFixed(2);
-                        //                 pm_append = 'break: £'+(m_min_price*eurToGbp).toFixed(2);
-                        //             }
-                        //             listingsTable += `
-                        //                 <tr ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
-                        //                     <td title="${listing.id} ${countries[listing.country].title}">
-                        //                         <a href="https://www.backmarket.${countries[listing.country].market_url}/${countries[listing.country].market_code}/p/gb/${listing.reference_uuid}" target="_blank">
-                        //                         <img src="{{ asset('assets/img/flags/') }}/${countries[listing.country].code.toLowerCase()}.svg" height="15">
-                        //                         ${countries[listing.country].code}
-                        //                         </a>
-                        //                     </td>
-                        //                     <td>${listing.buybox_price}</td>
-                        //                     <td>${listing.buybox_winner_price}</td>
-                        //                     <td>
-                        //                         <form class="form-inline" method="POST" id="change_min_price_${listing.id}">
-                        //                             @csrf
-                        //                             <input type="submit" hidden>
-                        //                         </form>
-                        //                         <form class="form-inline" method="POST" id="change_price_${listing.id}">
-                        //                             @csrf
-                        //                             <input type="submit" hidden>
-                        //                         </form>
-                        //                         <div class="form-floating">
-                        //                             <input type="number" class="form-control" id="min_price_${listing.id}" name="min_price" step="0.01" value="${listing.min_price}" form="change_min_price_${listing.id}">
-                        //                             <label for="">Min Price</label>
-                        //                         </div>
-                        //                         ${pm_append}
-                        //                     </td>
-                        //                     <td>
-                        //                         <div class="form-floating">
-                        //                             <input type="number" class="form-control" id="price_${listing.id}" name="price" step="0.01" value="${listing.price}" form="change_price_${listing.id}">
-                        //                             <label for="">Price</label>
-                        //                         </div>
-                        //                         ${p_append}
-                        //                     </td>
-                        //                     <td>${new Date(listing.updated_at).toGMTString()}</td>
-                        //                 </tr>`;
-                        //             $(document).ready(function() {
-                        //                 $("#change_min_price_" + listing.id).on('submit', function(e) {
-                        //                     submitForm2(e, listing.id);
-
-                        //                 });
-
-                        //                 $("#change_price_" + listing.id).on('submit', function(e) {
-                        //                     submitForm3(e, listing.id);
-                        //                 });
-                        //             });
-                        //         });
-                        //         $('#listings_'+variation.id).html(listingsTable);
-                        //     },
-                        //     error: function(xhr) {
-                        //         console.error(xhr.responseText);
+                        // variation.listings.forEach(function(listing) {
+                        //     let p_append = '';
+                        //     let pm_append = '';
+                        //     if (listing.currency_id == 5) {
+                        //         p_append = 'break: £'+(m_price*eurToGbp).toFixed(2);
+                        //         pm_append = 'break: £'+(m_min_price*eurToGbp).toFixed(2);
                         //     }
+                        //     let name = listing.name;
+                        //     if (name != null) {
+                        //         name = name.replace(/ /g,'-');
+                        //     }
+                        //     listingsTable += `
+                        //         <tr ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
+                        //             <td title="${listing.id} ${listing.country_id.title}">
+                        //                 <a href="https://www.backmarket.${listing.country_id.market_url}/${listing.country_id.market_code}/p/gb/${listing.reference_uuid}" target="_blank">
+                        //                 <img src="{{ asset('assets/img/flags/') }}/${listing.country_id.code.toLowerCase()}.svg" height="15">
+                        //                 ${listing.country_id.code}
+                        //                 </a>
+                        //             </td>
+                        //             <td>${listing.buybox_price}</td>
+                        //             <td>${listing.buybox_winner_price}</td>
+                        //             <td>
+                        //                 <form class="form-inline" method="POST" id="change_min_price_${listing.id}">
+                        //                     @csrf
+                        //                     <input type="submit" hidden>
+                        //                 </form>
+                        //                 <form class="form-inline" method="POST" id="change_price_${listing.id}">
+                        //                     @csrf
+                        //                     <input type="submit" hidden>
+                        //                 </form>
+                        //                 <div class="form-floating">
+                        //                     <input type="number" class="form-control" id="min_price_${listing.id}" name="min_price" step="0.01" value="${listing.min_price}" form="change_min_price_${listing.id}">
+                        //                     <label for="">Min Price</label>
+                        //                 </div>
+                        //                 ${pm_append}
+                        //             </td>
+                        //             <td>
+                        //                 <div class="form-floating">
+                        //                     <input type="number" class="form-control" id="price_${listing.id}" name="price" step="0.01" value="${listing.price}" form="change_price_${listing.id}">
+                        //                     <label for="">Price</label>
+                        //                 </div>
+                        //                 ${p_append}
+                        //             </td>
+                        //             <td>${new Date(listing.updated_at).toGMTString()}</td>
+                        //         </tr>`;
+                        //     $(document).ready(function() {
+                        //         $("#change_min_price_" + listing.id).on('submit', function(e) {
+                        //             submitForm2(e, listing.id);
+
+                        //         });
+
+                        //         $("#change_price_" + listing.id).on('submit', function(e) {
+                        //             submitForm3(e, listing.id);
+                        //         });
+                        //     });
+
+
                         // });
-                        variation.listings.forEach(function(listing) {
-                            let p_append = '';
-                            let pm_append = '';
-                            if (listing.currency_id == 5) {
-                                p_append = 'break: £'+(m_price*eurToGbp).toFixed(2);
-                                pm_append = 'break: £'+(m_min_price*eurToGbp).toFixed(2);
-                            }
-                            let name = listing.name;
-                            if (name != null) {
-                                name = name.replace(/ /g,'-');
-                            }
-                            listingsTable += `
-                                <tr ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
-                                    <td title="${listing.id} ${listing.country_id.title}">
-                                        <a href="https://www.backmarket.${listing.country_id.market_url}/${listing.country_id.market_code}/p/gb/${listing.reference_uuid}" target="_blank">
-                                        <img src="{{ asset('assets/img/flags/') }}/${listing.country_id.code.toLowerCase()}.svg" height="15">
-                                        ${listing.country_id.code}
-                                        </a>
-                                    </td>
-                                    <td>${listing.buybox_price}</td>
-                                    <td>${listing.buybox_winner_price}</td>
-                                    <td>
-                                        <form class="form-inline" method="POST" id="change_min_price_${listing.id}">
-                                            @csrf
-                                            <input type="submit" hidden>
-                                        </form>
-                                        <form class="form-inline" method="POST" id="change_price_${listing.id}">
-                                            @csrf
-                                            <input type="submit" hidden>
-                                        </form>
-                                        <div class="form-floating">
-                                            <input type="number" class="form-control" id="min_price_${listing.id}" name="min_price" step="0.01" value="${listing.min_price}" form="change_min_price_${listing.id}">
-                                            <label for="">Min Price</label>
-                                        </div>
-                                        ${pm_append}
-                                    </td>
-                                    <td>
-                                        <div class="form-floating">
-                                            <input type="number" class="form-control" id="price_${listing.id}" name="price" step="0.01" value="${listing.price}" form="change_price_${listing.id}">
-                                            <label for="">Price</label>
-                                        </div>
-                                        ${p_append}
-                                    </td>
-                                    <td>${new Date(listing.updated_at).toGMTString()}</td>
-                                </tr>`;
-                            $(document).ready(function() {
-                                $("#change_min_price_" + listing.id).on('submit', function(e) {
-                                    submitForm2(e, listing.id);
-
-                                });
-
-                                $("#change_price_" + listing.id).on('submit', function(e) {
-                                    submitForm3(e, listing.id);
-                                });
-                            });
-
-
-                        });
 
                         // Create variation card
                         variationsContainer.append(`
@@ -547,7 +512,7 @@
                                         <h6 class="mb-0" id="available_stock_${variation.id}">Available: ${variation.available_stocks.length || 0}</h6>
                                         <h6 class="mb-0">Difference: ${variation.available_stocks.length - variation.pending_orders.length}</h6>
                                     </div>
-                                    <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#details_${variation.id}" aria-expanded="false" aria-controls="details_${variation.id}">
+                                    <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#details_${variation.id}" aria-expanded="false" aria-controls="details_${variation.id}" onClick="getVariationDetails()">
                                         <i class="fas fa-chevron-down"></i>
                                     </button>
 
