@@ -123,7 +123,6 @@
                 </span>
                 @endif
             </div>
-            <div class="p-1">
                 @if ($order->status == 1)
                 <form class="form-inline" action="{{ url('wholesale_item_po').'/'.$order_id }}" method="POST" id="wholesale_item">
                     @csrf
@@ -196,7 +195,6 @@
                         setTimeout(function(){ document.getElementById('imei').focus();$('#imei').focus(); }, 500);
                     });
                 </script>
-            </div>
             <div class="p-2 tx-right">
                 @if ($order->status < 3)
                 <form method="POST" enctype="multipart/form-data" action="{{ url('wholesale/add_wholesale_sheet').'/'.$order_id}}" class="form-inline p-1">
