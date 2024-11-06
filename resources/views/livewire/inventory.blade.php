@@ -718,7 +718,11 @@
                     type: 'GET',
                     success: function(data) {
                         console.log(data);
-                        $('#vendor_wise_average').html('Vendor wise average: '+data);
+                        let vendorWiseAverage = '';
+                        data.forEach(function(v_cost) {
+                            vendorWiseAverage += `${v_cost.vendor_name ?? "Vendor Type Not Defined Correctly"}: ${parseFloat(v_cost.average_price).toFixed(2)} x ${v_cost.total_qty} = ${parseFloat(v_cost.total_price).toFixed(2)} (${parseFloat((v_cost.total_qty / {{ $stocks->total() }}) * 100).toFixed(2)}%) || `;
+                        });
+                        $('#vendor_wise_average').html('Vendor wise average: ' + vendorWiseAverage);
                     },
                     error: function(xhr) {
                         console.error("Error fetching quantity:", xhr.responseText);
