@@ -164,13 +164,13 @@
                 @if ($order->status == 2)
                 <form class="form-inline " action="{{ url('check_wholesale_item').'/'.$order_id }}" method="POST" id="wholesale_item">
                     @csrf
-                    <div class="wd-200">
-                    <select class="form-select select2" name="exclude_vendors[]" id="" multiple>
-                        <option value="">Exclude Vendor</option>
-                        @foreach ($vendors1 as $id => $vendor)
-                            <option value="{{ $id }}">{{ $vendor }}</option>
-                        @endforeach
-                    </select>
+                    <div class="form-floating wd-200">
+                        <select class="form-select select2" name="exclude_vendors[]" id="" multiple>
+                            @foreach ($vendors1 as $id => $vendor)
+                                <option value="{{ $id }}">{{ $vendor }}</option>
+                            @endforeach
+                        </select>
+                        <label for="">Exclude Vendor</label>
                     </div>
                     <div class="form-floating">
                         <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" id="imei" onload="this.focus()" onloadeddata="$(this).focus()" autofocus required>
