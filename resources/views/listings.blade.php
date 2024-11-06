@@ -232,7 +232,7 @@
             });
         }
 
-        function getListings(variationId){
+        function getListings(variationId, countries, eurToGbp, m_min_price, m_price) {
 
             let listingsTable = '';
             $.ajax({
@@ -515,7 +515,7 @@
                                         <h6 class="mb-0" id="available_stock_${variation.id}">Available: ${variation.available_stocks.length || 0}</h6>
                                         <h6 class="mb-0">Difference: ${variation.available_stocks.length - variation.pending_orders.length}</h6>
                                     </div>
-                                    <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#details_${variation.id}" aria-expanded="false" aria-controls="details_${variation.id}" onClick="getVariationDetails(${variation.id})">
+                                    <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#details_${variation.id}" aria-expanded="false" aria-controls="details_${variation.id}" onClick="getVariationDetails(${variation.id}, ${countries}, ${eurToGbp}, ${m_min_price}, ${m_price})">
                                         <i class="fas fa-chevron-down"></i>
                                     </button>
 
