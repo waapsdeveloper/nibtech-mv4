@@ -736,6 +736,7 @@
                         'grade': '{{ Request::get('grade') }}',
                         'vendor': '{{ Request::get('vendor') }}',
                         'status': '{{ Request::get('status') }}',
+                        'replacement': '{{ Request::get('replacement') }}',
                     },
                     success: function(data) {
                         console.log(data);
