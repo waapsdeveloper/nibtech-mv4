@@ -164,7 +164,7 @@
                 @if ($order->status == 2)
                 <form class="form-inline " action="{{ url('check_wholesale_item').'/'.$order_id }}" method="POST" id="wholesale_item">
                     @csrf
-                    <div class="input_group">
+                    <div class="wd-200">
                     <select class="form-select select2" name="exclude_vendors[]" id="" multiple>
                         <option value="">Exclude Vendor</option>
                         @foreach ($vendors1 as $id => $vendor)
