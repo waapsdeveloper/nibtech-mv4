@@ -57,7 +57,6 @@
     </div>
     <!-- /Breadcrumb -->
 
-    <br>
     <form action="" method="GET" id="search" onsubmit="fetchVariations()">
         <livewire:search-listing />
     </form>
