@@ -79,8 +79,7 @@ class Inventory extends Component
             ini_set('pdo_mysql.max_input_vars', '10000');
 
             $variation_ids = Variation_model::whereHas('stocks', function ($query) use ($aftersale) {
-                    $query->where('status', 1)
-                    ->when(request('aftersale') != 1, function ($q) use ($aftersale) {
+                    $query->where('status', 1)->when(request('aftersale') != 1, function ($q) use ($aftersale) {
                         return $q->whereNotIn('stock.id',$aftersale);
                     });
                 })
@@ -414,12 +413,6 @@ class Inventory extends Component
                 return $q->whereHas('variation', function ($q) {
                     // print_r(request('grade'));
                     $q->whereIn('grade', request('grade'));
-                });
-            })
-            ->when(request('sub_grade') != [], function ($q) {
-                return $q->whereHas('variation', function ($q) {
-                    // print_r(request('sub_grade'));
-                    $q->whereIn('sub_grade', request('sub_grade'));
                 });
             })
             ->orderBy('order_id','ASC')
