@@ -720,6 +720,9 @@
                         console.log(data);
                         $('#vendor_wise_average').html('Vendor wise average: '+data);
                     }
+                    error: function(data){
+                        console.log(data);
+                    }
                 });
             }
 
