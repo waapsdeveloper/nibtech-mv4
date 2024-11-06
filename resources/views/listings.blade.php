@@ -232,9 +232,10 @@
             });
         }
 
-        function getListings(variationId, countries, eurToGbp, m_min_price, m_price) {
+        function getListings(variationId, eurToGbp, m_min_price, m_price) {
 
             let listingsTable = '';
+            let countries = {!! json_encode($countries) !!};
             $.ajax({
                 url: "{{ url('api/internal/get_competitors') }}/" + variationId,
                 type: 'GET',
@@ -313,7 +314,6 @@
             let colors = {!! json_encode($colors) !!};
             let grades = {!! json_encode($grades) !!};
             let eurToGbp = {!! json_encode($eur_gbp) !!};
-            let countries = {!! json_encode($countries) !!};
 
             fetchVariations(); // Fetch variations on page load
 
@@ -515,7 +515,7 @@
                                         <h6 class="mb-0" id="available_stock_${variation.id}">Available: ${variation.available_stocks.length || 0}</h6>
                                         <h6 class="mb-0">Difference: ${variation.available_stocks.length - variation.pending_orders.length}</h6>
                                     </div>
-                                    <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#details_${variation.id}" aria-expanded="false" aria-controls="details_${variation.id}" onClick="getVariationDetails(${variation.id}, ${countries}, ${eurToGbp}, ${m_min_price}, ${m_price})">
+                                    <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#details_${variation.id}" aria-expanded="false" aria-controls="details_${variation.id}" onClick="getVariationDetails(${variation.id}, ${eurToGbp}, ${m_min_price}, ${m_price})">
                                         <i class="fas fa-chevron-down"></i>
                                     </button>
 
