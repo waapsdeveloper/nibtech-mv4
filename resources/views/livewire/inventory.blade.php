@@ -707,6 +707,16 @@
                 $.ajax({
                     url: "{{url('api/internal/inventory_get_average_cost')}}",
                     type: 'GET',
+                    params: {
+                        'category': '{{ Request::get('category') }}',
+                        'brand': '{{ Request::get('brand') }}',
+                        'product': '{{ Request::get('product') }}',
+                        'storage': '{{ Request::get('storage') }}',
+                        'color': '{{ Request::get('color') }}',
+                        'grade': '{{ Request::get('grade') }}',
+                        'vendor': '{{ Request::get('vendor') }}',
+                        'status': '{{ Request::get('status') }}',
+                    },
                     success: function(data) {
                         $('#average_cost').html('Average Cost: '+parseFloat(data.average_cost.average_price).toFixed(2)+' | Total Cost: '+parseFloat(data.average_cost.total_price).toFixed(2));
                     }
@@ -717,6 +727,16 @@
                 $.ajax({
                     url: "{{url('api/internal/inventory_get_vendor_wise_average')}}",
                     type: 'GET',
+                    params: {
+                        'category': '{{ Request::get('category') }}',
+                        'brand': '{{ Request::get('brand') }}',
+                        'product': '{{ Request::get('product') }}',
+                        'storage': '{{ Request::get('storage') }}',
+                        'color': '{{ Request::get('color') }}',
+                        'grade': '{{ Request::get('grade') }}',
+                        'vendor': '{{ Request::get('vendor') }}',
+                        'status': '{{ Request::get('status') }}',
+                    },
                     success: function(data) {
                         console.log(data);
                         let vendorWiseAverage = '';
