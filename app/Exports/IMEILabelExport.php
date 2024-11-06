@@ -108,18 +108,17 @@ class IMEILabelExport
 
         if (!$movement) {
             $pdf->Write(0, 'No movement history found', '', 0, 'L', true, 0, false, false, 0);
-            return $pdf->Output('product_label.pdf');
+        }else{
+            $new_variation = $movement->old_variation;
+            $new_model = $new_variation->product->model;
+            $new_storage = $new_variation->storage_id->name ?? '';
+            $new_color = $new_variation->color_id->name ?? '';
+            $new_grade = $new_variation->grade_id->name ?? '';
+            $new_sub_grade = $new_variation->sub_grade_id->name ?? '';
+            $movementDetails = $movement->created_at . ' - ' . ($movement->admin->first_name ?? 'Unknown') . ' - ' .
+                ' From: ' . ($new_model . ' ' . $new_storage . ' ' . $new_color . ' ' . $new_grade . ' ' . $new_sub_grade) . ' - ' . $movement->description;
+            $pdf->Write(0, $movementDetails, '', 0, 'L', true, 0, false, false, 0);
         }
-        $new_variation = $movement->old_variation;
-        $new_model = $new_variation->product->model;
-        $new_storage = $new_variation->storage_id->name ?? '';
-        $new_color = $new_variation->color_id->name ?? '';
-        $new_grade = $new_variation->grade_id->name ?? '';
-        $new_sub_grade = $new_variation->sub_grade_id->name ?? '';
-        $movementDetails = $movement->created_at . ' - ' . ($movement->admin->first_name ?? 'Unknown') . ' - ' .
-            ' From: ' . ($new_model . ' ' . $new_storage . ' ' . $new_color . ' ' . $new_grade . ' ' . $new_sub_grade) . ' - ' . $movement->description;
-        $pdf->Write(0, $movementDetails, '', 0, 'L', true, 0, false, false, 0);
-
 
         $pdf->Ln(2); // Add some spacing
         $pdf->Write(0, 'Orders History:', '', 0, 'L', true, 0, false, false, 0);
