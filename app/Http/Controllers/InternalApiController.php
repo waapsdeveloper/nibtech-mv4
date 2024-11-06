@@ -178,16 +178,16 @@ class InternalApiController extends Controller
         $variation = Variation_model::find($id);
         $bm = new BackMarketAPIController();
         $responses = $bm->getListingCompetitors($variation->reference_uuid);
-        if($responses == null){
-            $listings = Listing_model::where('variation_id',$id)->get();
-            return response()->json(['listings'=>$listings]);
-        }
         foreach($responses as $list){
             $country = Country_model::where('code',$list->market)->first();
             $listing = Listing_model::firstOrNew(['variation_id'=>$id, 'country'=>$country->id]);
             $listing->reference_uuid = $list->product_id;
-            $listing->price = $list->price->amount;
-            $listing->min_price = $list->min_price->amount;
+            if($list->price != null){
+                $listing->price = $list->price->amount;
+            }
+            if($list->min_price != null){
+                $listing->min_price = $list->min_price->amount;
+            }
             $listing->buybox = $list->is_winning;
             $listing->buybox_price = $list->price_to_win->amount;
             $listing->buybox_winner_price = $list->winner_price->amount;

@@ -164,9 +164,9 @@
                 @if ($order->status == 2)
                 <form class="form-inline" action="{{ url('check_wholesale_item').'/'.$order_id }}" method="POST" id="wholesale_item">
                     @csrf
-                    <select class="form-select" name="exclude_vendor" id="">
+                    <select class="form-control select2" name="exclude_vendors[]" id="" multiple>
                         <option value="">Exclude Vendor</option>
-                        @foreach ($vendors as $id => $vendor)
+                        @foreach ($vendor as $id => $vendor)
                             <option value="{{ $id }}">{{ $vendor }}</option>
                         @endforeach
                     </select>
@@ -746,6 +746,7 @@
                     $('#rate').val(''); // Clear the rate field if the currency is not in the list
                 }
             });
+            $('.select2').select2();
         });
     </script>
 		<!--Internal Sparkline js -->
