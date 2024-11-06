@@ -24,7 +24,7 @@ class PacksheetExport implements FromCollection, WithHeadings
         ->leftJoin('order_items', 'orders.id', '=', 'order_items.order_id')
         ->leftJoin('stock', 'order_items.stock_id', '=', 'stock.id')
         ->leftJoin('orders as p_orders', 'stock.order_id', '=', 'p_orders.id')
-        ->leftJoin('customers', 'p_orders.customer_id', '=', 'customers.id')
+        ->leftJoin('customer', 'p_orders.customer_id', '=', 'customer.id')
         ->leftJoin('variation', 'order_items.variation_id', '=', 'variation.id')
         ->leftJoin('products', 'variation.product_id', '=', 'products.id')
         ->leftJoin('color', 'variation.color', '=', 'color.id')
