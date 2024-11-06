@@ -523,16 +523,14 @@
                                     </div>
 
 
-                                    <div>
-                                        <form class="form-inline" method="POST" id="change_qty_${variation.id}" action="{{url('listing/update_quantity')}}/${variation.id}">
-                                            @csrf
-                                            <div class="form-floating">
-                                                <input type="number" class="form-control" name="stock" id="quantity_${variation.id}" value="${listedStock || 0}" style="width:80px;" oninput="toggleButtonOnChange(${variation.id}, this)">
-                                                <label for="">Stock</label>
-                                            </div>
-                                            <button id="send_${variation.id}" class="btn btn-light d-none" onclick="submitForm(event, ${variation.id})">Push</button>
-                                        </form>
-                                    </div>
+                                    <form class="form-inline" method="POST" id="change_qty_${variation.id}" action="{{url('listing/update_quantity')}}/${variation.id}">
+                                        @csrf
+                                        <div class="form-floating">
+                                            <input type="number" class="form-control" name="stock" id="quantity_${variation.id}" value="${listedStock || 0}" style="width:80px;" oninput="toggleButtonOnChange(${variation.id}, this)">
+                                            <label for="">Stock</label>
+                                        </div>
+                                        <button id="send_${variation.id}" class="btn btn-light d-none" onclick="submitForm(event, ${variation.id})">Push</button>
+                                    </form>
 
                                     <div class="text-center">
                                         <h6 class="mb-0">
@@ -588,8 +586,8 @@
                         `);
 
                         $("#change_qty_"+variation.id).submit(function(e) {
-                                submitForm(e, variation.id);
-                            });
+                            submitForm(e, variation.id);
+                        });
                         $('#sales_'+variation.id).load("{{ url('listing/get_sales') . '/'}}"+variation.id);
                     });
                 } else {
