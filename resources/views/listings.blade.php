@@ -193,6 +193,8 @@
 
         function getStocks(variationId){
 
+            let stocksTable = '';
+            let stockPrices = [];
             $.ajax({
                 url: "{{ url('api/internal/get_variation_available_stocks') }}/" + variationId,
                 type: 'GET',
@@ -232,6 +234,7 @@
 
         function getListings(variationId){
 
+            let listingsTable = '';
             $.ajax({
                 url: "{{ url('api/internal/get_competitors') }}/" + variationId,
                 type: 'GET',
