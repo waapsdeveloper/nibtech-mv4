@@ -35,7 +35,7 @@ class IMEILabelExport
         );
 
         // Generate the HTML view content
-        $html = view('pdf.imei_label', compact('variation', 'imei', 'orders', 'movementDetails', 'barcodeImage'))->render();
+        $html = view('export.imei_label', compact('variation', 'imei', 'orders', 'movementDetails', 'barcodeImage'))->render();
 
         // Initialize TCPDF
         $pdf = new TCPDF('P', 'mm', array(62, 100), true, 'UTF-8', false);
