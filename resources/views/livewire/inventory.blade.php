@@ -704,19 +704,21 @@
                 return true;
             }
             function get_average_cost(){
+                let params = {
+                    category: "{{ request('category') }}",
+                    brand: "{{ request('brand') }}",
+                    product: "{{ request('product') }}",
+                    storage: "{{ request('storage') }}",
+                    color: "{{ request('color') }}",
+                    grade: "{{ json_encode(request('grade')) }}",
+                    vendor: "{{ request('vendor') }}",
+                    status: "{{ request('status') }}",
+                }
+
+                let queryString = $.param(params);
                 $.ajax({
-                    url: "{{url('api/internal/inventory_get_average_cost')}}",
+                    url: "{{url('api/internal/inventory_get_average_cost')}}?"+queryString,
                     type: 'GET',
-                    params: {
-                        'category': "{{ request('category') }}",
-                        'brand': "{{ request('brand') }}",
-                        'product': "{{ request('product') }}",
-                        'storage': "{{ request('storage') }}",
-                        'color': "{{ request('color') }}",
-                        'grade': "{{ json_encode(request('grade')) }}",
-                        'vendor': "{{ request('vendor') }}",
-                        'status': "{{ request('status') }}",
-                    },
                     success: function(data) {
                         console.log(data);
                         $('#average_cost').html('Average Cost: '+parseFloat(data.average_cost.average_price).toFixed(2)+' | Total Cost: '+parseFloat(data.average_cost.total_price).toFixed(2));
@@ -725,20 +727,21 @@
             }
             function get_vendor_wise_average(){
                 vendors = {!! json_encode($vendors) !!};
+                let params = {
+                    category: "{{ request('category') }}",
+                    brand: "{{ request('brand') }}",
+                    product: "{{ request('product') }}",
+                    storage: "{{ request('storage') }}",
+                    color: "{{ request('color') }}",
+                    grade: "{{ json_encode(request('grade')) }}",
+                    vendor: "{{ request('vendor') }}",
+                    status: "{{ request('status') }}",
+                };
+
+                let queryString = $.param(params);
                 $.ajax({
-                    url: "{{url('api/internal/inventory_get_vendor_wise_average')}}",
+                    url: "{{url('api/internal/inventory_get_vendor_wise_average')}}?"+queryString,
                     type: 'GET',
-                    params: {
-                        'category': "{{ request('category') }}",
-                        'brand': "{{ request('brand') }}",
-                        'product': "{{ request('product') }}",
-                        'storage': "{{ request('storage') }}",
-                        'color': "{{ request('color') }}",
-                        'grade': "{{ json_encode(request('grade')) }}",
-                        'vendor': "{{ request('vendor') }}",
-                        'status': "{{ request('status') }}",
-                        'replacement': "{{ request('replacement') }}",
-                    },
                     success: function(data) {
                         console.log(data);
                         let vendorWiseAverage = '';
