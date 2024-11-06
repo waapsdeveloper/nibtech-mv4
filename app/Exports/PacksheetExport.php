@@ -47,7 +47,7 @@ class PacksheetExport implements FromCollection, WithHeadings
             'stock.serial_number as serial_number',
             'p_orders.reference_id as po',
             'p_orders.created_at as po_date',
-            'customers.first_name as vendor',
+            'customer.first_name as vendor',
             'stock_operations.description as issue',
             'admin.first_name as admin',
             // 'order_items.price as price'
