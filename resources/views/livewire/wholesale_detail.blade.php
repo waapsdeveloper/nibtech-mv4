@@ -167,7 +167,7 @@
                     <div class="form-floating wd-200">
                         <select class="form-select select2" name="exclude_vendors[]" id="" multiple>
                             @foreach ($vendors1 as $id => $vendor)
-                                <option value="{{ $id }}">{{ $vendor }}</option>
+                                <option value="{{ $id }}" @if(session('exclude_vendors') != null && in_array($id,session('exclude_vendors'))) {{'selected'}}@endif>{{ $vendor }}</option>
                             @endforeach
                         </select>
                         <label for="">Exclude Vendor</label>

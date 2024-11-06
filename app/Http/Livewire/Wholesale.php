@@ -349,8 +349,8 @@ class Wholesale extends Component
                 return 1;
             }
         }
-        if(request('exclude_vendor') != null){
-            if($stock->order->customer_id == request('exclude_vendor')){
+        if(request('exclude_vendors') != null){
+            if(in_array($stock->order->customer_id, request('exclude_vendor'))){
                 session()->put('error', 'Stock belongs to the Excluded Vendor');
                 if($back != 1){
                     return redirect()->back();
@@ -358,6 +358,7 @@ class Wholesale extends Component
                     return 1;
                 }
             }
+            session()->put('exclude_vendors', request('exclude_vendors'));
         }
         $variation = Variation_model::where(['id' => $stock->variation_id])->first();
         if($stock->status != 1){
