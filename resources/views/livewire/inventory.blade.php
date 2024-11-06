@@ -708,7 +708,6 @@
                     url: "{{url('api/internal/inventory_get_average_cost')}}",
                     type: 'GET',
                     success: function(data) {
-                        console.log(data);
                         $('#average_cost').html('Average Cost: '+parseFloat(data.average_cost.average_price).toFixed(2)+' | Total Cost: '+parseFloat(data.average_cost.total_price).toFixed(2));
                     }
                 });
