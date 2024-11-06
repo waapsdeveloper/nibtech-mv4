@@ -479,12 +479,6 @@ class Inventory extends Component
             });
         })
 
-        ->when(request('sub_grade') != [], function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->whereIn('sub_grade', request('sub_grade'));
-            });
-        })
-
         // ->join('order_items', 'stock.id', '=', 'order_items.stock_id')
         ->join('order_items', function ($join) {
             $join->on('stock.id', '=', 'order_items.stock_id')
@@ -585,11 +579,6 @@ class Inventory extends Component
                 $q->whereIn('grade', request('grade'));
             });
         })
-        ->when(request('sub_grade') != [], function ($q) {
-            return $q->whereHas('variation', function ($q) {
-                $q->whereIn('sub_grade', request('sub_grade'));
-            });
-        })
         // ->join('order_items', 'stock.id', '=', 'order_items.stock_id')
         ->join('order_items', function ($join) {
             $join->on('stock.id', '=', 'order_items.stock_id')
@@ -646,12 +635,6 @@ class Inventory extends Component
                 return $q->whereHas('stock.variation', function ($q) {
                     // print_r(request('grade'));
                     $q->whereIn('grade', request('grade'));
-                });
-            })
-            ->when(request('sub_grade') != [], function ($q) {
-                return $q->whereHas('stock.variation', function ($q) {
-                    // print_r(request('sub_grade'));
-                    $q->whereIn('sub_grade', request('sub_grade'));
                 });
             })
             // ->orderBy('product_id','ASC')
