@@ -728,14 +728,14 @@
                     url: "{{url('api/internal/inventory_get_vendor_wise_average')}}",
                     type: 'GET',
                     params: {
-                        'category': '{{ Request::get('category') }}',
+                        'category': "{{ Request::get('category') }}",
                         'brand': '{{ Request::get('brand') }}',
                         'product': '{{ Request::get('product') }}',
                         'storage': '{{ Request::get('storage') }}',
                         'color': '{{ Request::get('color') }}',
                         'grade': '{{ Request::get('grade') }}',
                         'vendor': '{{ Request::get('vendor') }}',
-                        'status': '{{ Request::get('status') }}',
+                        'status': "{{ Request::get('status') }}",
                         'replacement': '{{ Request::get('replacement') }}',
                     },
                     success: function(data) {
