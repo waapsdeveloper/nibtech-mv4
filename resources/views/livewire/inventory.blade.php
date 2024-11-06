@@ -721,7 +721,7 @@
                         console.log(data);
                         let vendorWiseAverage = '';
                         data.vendor_average_cost.forEach(function(v_cost) {
-                            vendor_name = vendors[v_cost.vendor_id] ?? "Vendor Type Not Defined Correctly";
+                            vendor_name = vendors[v_cost.customer_id] ?? "Vendor Type Not Defined Correctly";
                             vendorWiseAverage += `${vendor_name}: ${parseFloat(v_cost.average_price).toFixed(2)} x ${v_cost.total_qty} = ${parseFloat(v_cost.total_price).toFixed(2)} (${parseFloat((v_cost.total_qty / {{ $stocks->total() }}) * 100).toFixed(2)}%) || `;
                         });
                         $('#vendor_wise_average').html('Vendor wise average: ' + vendorWiseAverage);
