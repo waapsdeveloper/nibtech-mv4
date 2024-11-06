@@ -215,15 +215,15 @@
         @endif
         @if (session('user')->hasPermission('view_inventory_summery') && request('summery') != 1)
         @if (session('user')->hasPermission('view_cost') && $stocks->count() > 0)
-            <div class="">
-                Vendor wise average:
+            <div class="" id="vendor_wise_average">
+                {{-- Vendor wise average:
                 @foreach ($vendor_average_cost as $v_cost)
                     {{ $vendors[$v_cost->customer_id] ?? "Vendor Type Not Defined Correctly" }}:
                     {{ amount_formatter($v_cost->average_price,2) }} x
                     {{ $v_cost->total_qty }} =
                     {{ amount_formatter($v_cost->total_price,2) }} ({{amount_formatter($v_cost->total_qty/$stocks->total()*100,2)}}%) ||
 
-                @endforeach
+                @endforeach --}}
             </div>
             @endif
         @endif
@@ -324,29 +324,6 @@
 
 
         @if (session('user')->hasPermission('view_inventory_summery') && request('summery') && request('summery') == 1)
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script>
-            function PrintElem(elem)
-{
-                var mywindow = window.open('', 'PRINT', 'height=400,width=600');
-
-                mywindow.document.write('<html><head>');
-                mywindow.document.write(`<link rel="stylesheet" href="{{asset('assets/plugins/bootstrap/css/bootstrap.min.css')}}" type="text/css" />`);
-                mywindow.document.write(`<link rel="stylesheet" href="{{asset('assets/css/style.css')}}" type="text/css" />`);
-                mywindow.document.write('<title>' + document.title  + '</title></head><body >');
-                mywindow.document.write(document.getElementById(elem).innerHTML);
-                mywindow.document.write('</body></html>');
-
-                mywindow.document.close(); // necessary for IE >= 10
-                mywindow.focus(); // necessary for IE >= 10*/
-
-                mywindow.print();
-                mywindow.close();
-
-                return true;
-            }
-
-        </script>
         <div class="card" id="print_inv">
             <div class="card-header pb-0 d-flex justify-content-between">
                 <h4 class="card-title">Available Stock Summery</h4>
@@ -509,7 +486,7 @@
                             <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$stocks->firstItem()}} {{ __('locale.To') }} {{$stocks->lastItem()}} {{ __('locale.Out Of') }} {{$stocks->total()}} </h5>
 
                             @if (session('user')->hasPermission('view_cost'))
-                            <h5>Average Cost: {{ amount_formatter($average_cost->average_price,2) }} | Total Cost: {{ amount_formatter($average_cost->total_price,2) }}</h5>
+                            <h5 id="average_cost"></h5>
                             @endif
                             <div class=" mg-b-0">
                                 <form method="get" action="" class="row form-inline">
@@ -707,8 +684,47 @@
 
     @section('scripts')
         <script>
+            function PrintElem(elem)
+{
+                var mywindow = window.open('', 'PRINT', 'height=400,width=600');
+
+                mywindow.document.write('<html><head>');
+                mywindow.document.write(`<link rel="stylesheet" href="{{asset('assets/plugins/bootstrap/css/bootstrap.min.css')}}" type="text/css" />`);
+                mywindow.document.write(`<link rel="stylesheet" href="{{asset('assets/css/style.css')}}" type="text/css" />`);
+                mywindow.document.write('<title>' + document.title  + '</title></head><body >');
+                mywindow.document.write(document.getElementById(elem).innerHTML);
+                mywindow.document.write('</body></html>');
+
+                mywindow.document.close(); // necessary for IE >= 10
+                mywindow.focus(); // necessary for IE >= 10*/
+
+                mywindow.print();
+                mywindow.close();
+
+                return true;
+            }
+            function get_average_cost(){
+                $.ajax({
+                    url: "{{url('api/internal/inventory_get_average_cost').'/'.$aftersale}}",
+                    type: 'GET',
+                    success: function(data) {
+                        $('#average_cost').html('Average Cost: '+data.average_price+' | Total Cost: '+data.total_price);
+                    }
+                });
+            }
+            function get_vendor_wise_average(){
+                $.ajax({
+                    url: "{{url('api/internal/inventory_get_vendor_wise_average').'/'.$aftersale}}",
+                    type: 'GET',
+                    success: function(data) {
+                        $('#vendor_wise_average').html('Vendor wise average: '+data);
+                    }
+                });
+            }
+
             $(document).ready(function(){
                 $('.select2').select2();
+                get_average_cost();
             });
 
         </script>
