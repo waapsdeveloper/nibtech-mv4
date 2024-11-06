@@ -165,9 +165,19 @@
                 @if ($order->status == 2)
                 <form class="form-inline" action="{{ url('check_wholesale_item').'/'.$order_id }}" method="POST" id="wholesale_item">
                     @csrf
-                    <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
-                    <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
-                    <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
+                    <select class="form-select" name="exclude_vendor" id="">
+                        <option value="">Exclude Vendor</option>
+                        @foreach ($vendors as $id => $vendor)
+                            <option value="{{ $id }}">{{ $vendor }}</option>
+                        @endforeach
+                    </select>
+                    <div class="form-floating">
+                        <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" id="imei" onload="this.focus()" onloadeddata="$(this).focus()" autofocus required>
+                        <label for="">IMEI</label>
+                    </div>
+                    {{-- <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
+                    <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required> --}}
+                    <button class="btn btn-primary" type="submit">Insert</button>
 
                 </form>
                 @endif

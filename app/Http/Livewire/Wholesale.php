@@ -348,6 +348,16 @@ class Wholesale extends Component
                 return 1;
             }
         }
+        if(request('exclude_vendor') != null){
+            if($stock->order->customer_id == request('exclude_vendor')){
+                session()->put('error', 'Stock belongs to the Excluded Vendor');
+                if($back != 1){
+                    return redirect()->back();
+                }else{
+                    return 1;
+                }
+            }
+        }
         $variation = Variation_model::where(['id' => $stock->variation_id])->first();
         if($stock->status != 1){
             session()->put('error', 'Stock already sold');
