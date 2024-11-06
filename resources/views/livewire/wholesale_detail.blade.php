@@ -166,7 +166,7 @@
                     @csrf
                     <select class="form-control select2" name="exclude_vendors[]" id="" multiple>
                         <option value="">Exclude Vendor</option>
-                        @foreach ($vendor as $id => $vendor)
+                        @foreach ($vendors1 as $id => $vendor)
                             <option value="{{ $id }}">{{ $vendor }}</option>
                         @endforeach
                     </select>
