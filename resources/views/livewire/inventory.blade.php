@@ -713,6 +713,7 @@
                 });
             }
             function get_vendor_wise_average(){
+                vendors = {!! json_encode($vendors) !!};
                 $.ajax({
                     url: "{{url('api/internal/inventory_get_vendor_wise_average')}}",
                     type: 'GET',
@@ -720,7 +721,8 @@
                         console.log(data);
                         let vendorWiseAverage = '';
                         data.vendor_average_cost.forEach(function(v_cost) {
-                            vendorWiseAverage += `${v_cost.vendor_name ?? "Vendor Type Not Defined Correctly"}: ${parseFloat(v_cost.average_price).toFixed(2)} x ${v_cost.total_qty} = ${parseFloat(v_cost.total_price).toFixed(2)} (${parseFloat((v_cost.total_qty / {{ $stocks->total() }}) * 100).toFixed(2)}%) || `;
+                            vendor_name = vendors[v_cost.vendor_id] ?? "Vendor Type Not Defined Correctly";
+                            vendorWiseAverage += `${vendor_name}: ${parseFloat(v_cost.average_price).toFixed(2)} x ${v_cost.total_qty} = ${parseFloat(v_cost.total_price).toFixed(2)} (${parseFloat((v_cost.total_qty / {{ $stocks->total() }}) * 100).toFixed(2)}%) || `;
                         });
                         $('#vendor_wise_average').html('Vendor wise average: ' + vendorWiseAverage);
                     },
