@@ -268,6 +268,7 @@
                 type: 'GET',
                 dataType: 'json',
                 success: function(data) {
+                    listingsTable += data.error ? `<tr><td colspan="6">${data.error}</td></tr>` : '';
                     data.listings.forEach(function(listing) {
                         let p_append = '';
                         let pm_append = '';

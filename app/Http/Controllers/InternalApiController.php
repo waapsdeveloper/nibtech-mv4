@@ -175,10 +175,15 @@ class InternalApiController extends Controller
         return response()->json(['updatedQuantity' => $updatedQuantity]);
     }
     public function getCompetitors($id){
+        $error = "";
         $variation = Variation_model::find($id);
         $bm = new BackMarketAPIController();
         $responses = $bm->getListingCompetitors($variation->reference_uuid);
         foreach($responses as $list){
+            if(is_string($list)){
+                $error .= $list;
+                continue;
+            }
             $country = Country_model::where('code',$list->market)->first();
             $listing = Listing_model::firstOrNew(['variation_id'=>$id, 'country'=>$country->id]);
             $listing->reference_uuid = $list->product_id;
@@ -194,7 +199,7 @@ class InternalApiController extends Controller
             $listing->save();
         }
         $listings = Listing_model::where('variation_id',$id)->get();
-        return response()->json(['listings'=>$listings]);
+        return response()->json(['listings'=>$listings, 'error'=>$error]);
     }
 
 }
