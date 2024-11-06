@@ -202,7 +202,7 @@ class InternalApiController extends Controller
         return response()->json(['listings'=>$listings, 'error'=>$error]);
     }
 
-    public function inventoryGetVendorWiseAverage($aftersale){
+    public function inventoryGetVendorWiseAverage(){
 
         if(request('aftersale') != 1){
 
