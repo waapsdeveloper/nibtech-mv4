@@ -2,90 +2,49 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Label with History</title>
+    <title>IMEI Label</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            width: 62mm;
-            height: 100mm;
-            margin: 0;
-            padding: 0;
-        }
-        .label {
-            border: 1px solid #000;
-            padding: 5px;
-            width: 100%;
-            height: 100%;
-        }
-        h4, p {
-            margin: 5px 0;
-        }
-        .content {
-            font-size: 10px;
-        }
-        .barcode {
-            margin-top: 10px;
-            text-align: center;
-        }
-        table {
-            font-size: 9px;
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 2px;
-            border: 1px solid #000;
-        }
+        body { font-family: Arial, sans-serif; font-size: 9pt; margin: 5px; }
+        .container { padding: 10px; }
+        .header { text-align: center; font-weight: bold; margin-bottom: 10px; }
+        .info-section, .order-section, .movement-section { margin-bottom: 10px; }
+        .info-section strong { display: block; font-size: 10pt; margin-bottom: 5px; }
+        .barcode { text-align: center; margin: 10px 0; }
+        .section-title { font-weight: bold; margin-top: 5px; }
+        .details { margin-top: 5px; }
     </style>
 </head>
 <body>
-    <div class="label">
-        <h4>Product Label</h4>
-
-        <!-- Product Basic Information -->
-        <div class="content">
-            <p><strong>Order ID:</strong> {{ $order->reference_id }}</p>
-            <p><strong>Type:</strong> {{ $order->order_type->name }}</p>
-            <p><strong>Customer:</strong> {{ $order->customer->first_name ?? '' }} {{ $order->customer->last_name ?? '' }}</p>
-            <p><strong>SKU:</strong> {{ $variation->sku }}</p>
-            <p><strong>Product:</strong> {{ $variation->product->model }}</p>
-            <p><strong>Grade:</strong> {{ $variation->grade->name ?? 'N/A' }}</p>
-            <p><strong>Storage:</strong> {{ $variation->storage->name ?? 'N/A' }}</p>
-            <p><strong>Color:</strong> {{ $variation->color->name ?? 'N/A' }}</p>
+    <div class="container">
+        <div class="header">
+            {{ $variation->product->model ?? 'Model Unknown' }} - {{ $variation->storage_id->name ?? '' }} - {{ $variation->color_id->name ?? '' }}
         </div>
 
-        <!-- Movement History Table -->
-        <h4>History</h4>
-        <table>
-            <thead>
-                <tr>
-                    <th>Type</th>
-                    <th>Admin</th>
-                    <th>Date</th>
-                    <th>Old SKU</th>
-                    <th>New SKU</th>
-                    <th>IMEI</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($movements as $movement)
-                    <tr>
-                        <td>{{ $movement->type }}</td>
-                        <td>{{ $movement->admin->first_name ?? 'N/A' }}</td>
-                        <td>{{ $movement->created_at }}</td>
-                        <td>{{ $movement->old_variation->sku ?? 'N/A' }}</td>
-                        <td>{{ $movement->new_variation->sku ?? 'N/A' }}</td>
-                        <td>{{ $movement->stock->imei ?? 'N/A' }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+        <div class="info-section">
+            <strong>IMEI:</strong> {{ $imei }}
+        </div>
 
-        <!-- IMEI Barcode Section -->
-        <div class="barcode">
-            <img src="data:image/png;base64,{{ DNS1D::getBarcodePNG($imei, 'C39') }}" alt="barcode" />
-            <p>{{ $imei }}</p>
+        @if($imei !== 'N/A')
+            <div class="barcode">
+                <!-- Barcode placeholder; actual barcode will be rendered in the controller -->
+                <img src="data:image/png;base64,{{ $barcodeImage }}" alt="IMEI Barcode" />
+            </div>
+        @endif
+
+        <div class="movement-section">
+            <div class="section-title">Stock Movement History:</div>
+            <div class="details">
+                {{ $movementDetails ?? 'No movement history available.' }}
+            </div>
+        </div>
+
+        <div class="order-section">
+            <div class="section-title">Orders History:</div>
+            @foreach($orders as $item)
+                <div class="details">
+                    Order: {{ $item->order->reference_id ?? 'Unknown' }} - Type: {{ $item->order->order_type->name ?? 'N/A' }} - Customer: {{ $item->order->customer->first_name ?? 'Unknown' }} - Status: {{ $item->order->order_status->name ?? 'N/A' }}
+                </div>
+            @endforeach
         </div>
     </div>
 </body>

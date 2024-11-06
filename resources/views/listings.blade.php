@@ -313,7 +313,6 @@
                         $(document).ready(function() {
                             $("#change_min_price_" + listing.id).on('submit', function(e) {
                                 submitForm2(e, listing.id);
-
                             });
 
                             $("#change_price_" + listing.id).on('submit', function(e) {
