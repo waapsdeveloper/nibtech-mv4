@@ -271,7 +271,9 @@ class InternalApiController extends Controller
                 return $q->whereHas('variation', function ($q) {
                     if (request('grade') !== null) {
                         $grades = json_decode(html_entity_decode(request('grade')));
-                        $q->whereIn('grade', $grades);
+                        if($grades != null){
+                            $q->whereIn('grade', $grades);
+                        }
                     }
                 });
             })
