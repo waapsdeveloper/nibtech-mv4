@@ -276,7 +276,7 @@
                         let p_append = '';
                         let pm_append = '';
                         if (listing.currency_id == 5) {
-                            p_append = 'break: £'+(parseFloat(m_price)*parseFloat(eurToGbp))).toFixed(2);
+                            p_append = 'break: £'+(parseFloat(m_price)*parseFloat(eurToGbp)).toFixed(2);
                             pm_append = 'break: £'+(parseFloat(m_min_price)*parseFloat(eurToGbp)).toFixed(2);
                         }
                         listingsTable += `
