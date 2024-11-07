@@ -335,12 +335,6 @@
             getStocks(variationId);
             getListings(variationId);
         }
-        function openAllVariations() {
-            // $('.multi_collapse').collapse('show');
-            variation_ids.forEach(function(variationId) {
-                getVariationDetails(variationId);
-            });
-        }
         $(document).ready(function() {
             $('.select2').select2();
 
@@ -444,6 +438,12 @@
 
             function displayVariations(variations) {
                 let variation_ids = variations.data.map(variation => variation.id);
+
+                function openAllVariations() {
+                    variation_ids.forEach(variationId => {
+                        getVariationDetails(variationId);
+                    });
+                }
                 let variationsContainer = $('#variations'); // The container where data will be displayed
                 variationsContainer.empty(); // Clear any existing content
                 // console.log(variations);
