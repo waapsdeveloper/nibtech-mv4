@@ -266,7 +266,9 @@ class InternalApiController extends Controller
             })
             ->when(request('grade') != [], function ($q) {
                 return $q->whereHas('variation', function ($q) {
-                    $q->whereIn('grade', json_decode(request('grade')));
+                    if (request('grade') !== null) {
+                        $q->whereIn('grade', json_decode(request('grade')));
+                    }
                 });
             })
             // ->join('order_items', 'stock.id', '=', 'order_items.stock_id')
