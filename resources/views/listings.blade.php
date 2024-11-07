@@ -64,6 +64,9 @@
     <div class="d-flex justify-content-between">
         <h5 class="card-title mg-b-0" id="page_info"> </h5>
         <div class="d-flex p-2 justify-content-between">
+
+            <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target=".multi_collapse" aria-expanded="false" aria-controls="multiCollapseExample1 multiCollapseExample2">Toggle both elements</button>
+            {{-- <input class="form-check-input" type="radio" id="open_all" name="open_all" value="1" onchange="this.form.submit()" form="search"> --}}
             <label for="perPage" class="form-label">Sort:</label>
             <select name="sort" class="form-select" id="perPage" onchange="this.form.submit()" form="search">
                 <option value="1" {{ Request::get('sort') == 1 ? 'selected' : '' }}>Stock DESC</option>
@@ -360,6 +363,7 @@
                     state: $('select[name="state"]').val(),
                     sort: $('select[name="sort"]').val(),
                     per_page: $('select[name="per_page"]').val(),
+                    open_all: $('input[name="open_all"]').val(),
                     page: page
                 };
 
@@ -545,7 +549,7 @@
                                     </button>
 
                                 </div>
-                                <div class="card-body p-2 collapse" id="details_${variation.id}">
+                                <div class="card-body p-2 collapse multi_collapse" id="details_${variation.id}">
                                     <div class="col-md-auto">
                                         <div class="table-responsive">
                                             <table class="table table-bordered table-hover mb-0 text-md-nowrap">
