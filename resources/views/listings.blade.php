@@ -324,6 +324,7 @@
                         });
                     });
                     $('#listings_'+variationId).html(listingsTable);
+                    console.log(data);
                 },
                 error: function(xhr) {
                     console.error(xhr.responseText);
