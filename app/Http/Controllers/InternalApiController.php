@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Country_model;
 use App\Models\Listing_model;
 use App\Models\Order_item_model;
+use App\Models\Products_model;
 use App\Models\Stock_model;
 use App\Models\Variation_model;
 use Illuminate\Http\Request;
@@ -215,10 +216,16 @@ class InternalApiController extends Controller
         }else{
             $aftersale = [];
         }
-
+        if(request('brand') != '' || request('category') != '' ){
+            $product_ids = Products_model::
+            when(request('category') != '', function ($q) {
+                return $q->where('category', request('category'));
+            })
+            ->when(request('brand') != '', function ($q) {
+                return $q->where('brand', request('brand'));
+            })->pluck('id')->toArray();
+        }
         $data['vendor_average_cost'] = Stock_model::where('stock.deleted_at',null)->where('order_items.deleted_at',null)->where('orders.deleted_at',null)
-
-
             ->when(request('aftersale') != 1, function ($q) use ($aftersale) {
                 return $q->whereNotIn('stock.id',$aftersale);
             })
@@ -252,16 +259,20 @@ class InternalApiController extends Controller
                     $q->where('color', request('color'));
                 });
             })
-            ->when(request('category') != '', function ($q) {
-                return $q->whereHas('variation.product', function ($q) {
-                    $q->where('category', request('category'));
+            ->when(request('category') != '' || request('brand') != '', function ($q) use ($product_ids) {
+                return $q->whereHas('variation', function ($q) use ($product_ids) {
+                    $q->whereIn('product_id', $product_ids);
                 });
             })
-            ->when(request('brand') != '', function ($q) {
-                return $q->whereHas('variation.product', function ($q) {
-                    $q->where('brand', request('brand'));
-                });
-            })
+            //     return $q->whereHas('variation.product', function ($q) {
+            //         $q->where('category', request('category'));
+            //     });
+            // })
+            // ->when(request('brand') != '', function ($q) {
+            //     return $q->whereHas('variation.product', function ($q) {
+            //         $q->where('brand', request('brand'));
+            //     });
+            // })
             ->when(request('product') != '', function ($q) {
                 return $q->whereHas('variation', function ($q) {
                     $q->where('product_id', request('product'));
@@ -366,8 +377,6 @@ class InternalApiController extends Controller
                     }
                 });
             })
-
-
             // ->join('order_items', 'stock.id', '=', 'order_items.stock_id')
             ->join('order_items', function ($join) {
                 $join->on('stock.id', '=', 'order_items.stock_id')
