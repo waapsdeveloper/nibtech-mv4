@@ -302,7 +302,6 @@ class InternalApiController extends Controller
         }else{
             $aftersale = [];
         }
-        return request()->all();
         $data['average_cost'] = Stock_model::where('stock.deleted_at',null)->where('order_items.deleted_at',null)
 
 
