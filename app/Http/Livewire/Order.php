@@ -1373,7 +1373,7 @@ class Order extends Component
 
                     $stock = Stock_model::where('imei',$imei)->orWhere('serial_number', $imei)->where('status','!=',null)->first();
                     $stock_operation = new Stock_operations_model();
-                    $stock_operation->new_operation($stock->id, null, null, null, $stock->variation_id, $stock->variation_id, "IMEI Changed from ".$issue->data['imei']);
+                    $stock_operation->new_operation($stock->id, null, null, null, $stock->variation_id, $stock->variation_id, "IMEI Changed from ".$data->imei);
                 }
                 $issue->delete();
             }
