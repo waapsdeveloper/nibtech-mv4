@@ -459,64 +459,64 @@
                         // $('#open_all_variations').on('click', function() {
                         //     getVariationDetails(variation.id, eurToGbp, m_min_price, m_price, 1)
                         // });
-                        // variation.listings.forEach(function(listing) {
-                        //     let p_append = '';
-                        //     let pm_append = '';
-                        //     if (listing.currency_id == 5) {
-                        //         p_append = 'break: £'+(m_price*eurToGbp).toFixed(2);
-                        //         pm_append = 'break: £'+(m_min_price*eurToGbp).toFixed(2);
-                        //     }
-                        //     let name = listing.name;
-                        //     if (name != null) {
-                        //         name = name.replace(/ /g,'-');
-                        //     }
-                        //     listingsTable += `
-                        //         <tr ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
-                        //             <td title="${listing.id} ${listing.country_id.title}">
-                        //                 <a href="https://www.backmarket.${listing.country_id.market_url}/${listing.country_id.market_code}/p/gb/${listing.reference_uuid}" target="_blank">
-                        //                 <img src="{{ asset('assets/img/flags/') }}/${listing.country_id.code.toLowerCase()}.svg" height="15">
-                        //                 ${listing.country_id.code}
-                        //                 </a>
-                        //             </td>
-                        //             <td>${listing.buybox_price}</td>
-                        //             <td>${listing.buybox_winner_price}</td>
-                        //             <td>
-                        //                 <form class="form-inline" method="POST" id="change_min_price_${listing.id}">
-                        //                     @csrf
-                        //                     <input type="submit" hidden>
-                        //                 </form>
-                        //                 <form class="form-inline" method="POST" id="change_price_${listing.id}">
-                        //                     @csrf
-                        //                     <input type="submit" hidden>
-                        //                 </form>
-                        //                 <div class="form-floating">
-                        //                     <input type="number" class="form-control" id="min_price_${listing.id}" name="min_price" step="0.01" value="${listing.min_price}" form="change_min_price_${listing.id}">
-                        //                     <label for="">Min Price</label>
-                        //                 </div>
-                        //                 ${pm_append}
-                        //             </td>
-                        //             <td>
-                        //                 <div class="form-floating">
-                        //                     <input type="number" class="form-control" id="price_${listing.id}" name="price" step="0.01" value="${listing.price}" form="change_price_${listing.id}">
-                        //                     <label for="">Price</label>
-                        //                 </div>
-                        //                 ${p_append}
-                        //             </td>
-                        //             <td>${new Date(listing.updated_at).toGMTString()}</td>
-                        //         </tr>`;
-                        //     $(document).ready(function() {
-                        //         $("#change_min_price_" + listing.id).on('submit', function(e) {
-                        //             submitForm2(e, listing.id);
+                        variation.listings.forEach(function(listing) {
+                            let p_append = '';
+                            let pm_append = '';
+                            if (listing.currency_id == 5) {
+                                p_append = 'break: £'+(m_price*eurToGbp).toFixed(2);
+                                pm_append = 'break: £'+(m_min_price*eurToGbp).toFixed(2);
+                            }
+                            let name = listing.name;
+                            if (name != null) {
+                                name = name.replace(/ /g,'-');
+                            }
+                            listingsTable += `
+                                <tr ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
+                                    <td title="${listing.id} ${listing.country_id.title}">
+                                        <a href="https://www.backmarket.${listing.country_id.market_url}/${listing.country_id.market_code}/p/gb/${listing.reference_uuid}" target="_blank">
+                                        <img src="{{ asset('assets/img/flags/') }}/${listing.country_id.code.toLowerCase()}.svg" height="15">
+                                        ${listing.country_id.code}
+                                        </a>
+                                    </td>
+                                    <td>${listing.buybox_price}</td>
+                                    <td>${listing.buybox_winner_price}</td>
+                                    <td>
+                                        <form class="form-inline" method="POST" id="change_min_price_${listing.id}">
+                                            @csrf
+                                            <input type="submit" hidden>
+                                        </form>
+                                        <form class="form-inline" method="POST" id="change_price_${listing.id}">
+                                            @csrf
+                                            <input type="submit" hidden>
+                                        </form>
+                                        <div class="form-floating">
+                                            <input type="number" class="form-control" id="min_price_${listing.id}" name="min_price" step="0.01" value="${listing.min_price}" form="change_min_price_${listing.id}">
+                                            <label for="">Min Price</label>
+                                        </div>
+                                        ${pm_append}
+                                    </td>
+                                    <td>
+                                        <div class="form-floating">
+                                            <input type="number" class="form-control" id="price_${listing.id}" name="price" step="0.01" value="${listing.price}" form="change_price_${listing.id}">
+                                            <label for="">Price</label>
+                                        </div>
+                                        ${p_append}
+                                    </td>
+                                    <td>${new Date(listing.updated_at).toGMTString()}</td>
+                                </tr>`;
+                            $(document).ready(function() {
+                                $("#change_min_price_" + listing.id).on('submit', function(e) {
+                                    submitForm2(e, listing.id);
 
-                        //         });
+                                });
 
-                        //         $("#change_price_" + listing.id).on('submit', function(e) {
-                        //             submitForm3(e, listing.id);
-                        //         });
-                        //     });
+                                $("#change_price_" + listing.id).on('submit', function(e) {
+                                    submitForm3(e, listing.id);
+                                });
+                            });
 
 
-                        // });
+                        });
 
                         // Create variation card
                         variationsContainer.append(`
