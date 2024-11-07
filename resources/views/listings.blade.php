@@ -65,7 +65,7 @@
         <h5 class="card-title mg-b-0" id="page_info"> </h5>
         <div class="d-flex p-2 justify-content-between">
 
-            <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target=".multi_collapse" id="open_all_variations">Toggle All</button>
+            <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target=".multi_collapse" id="open_all_variations">Toggle&nbsp;All</button>
             {{-- <input class="form-check-input" type="radio" id="open_all" name="open_all" value="1" onchange="this.form.submit()" form="search"> --}}
             <label for="perPage" class="form-label">Sort:</label>
             <select name="sort" class="form-select" id="perPage" onchange="this.form.submit()" form="search">
