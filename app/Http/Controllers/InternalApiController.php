@@ -360,6 +360,7 @@ class InternalApiController extends Controller
                 });
             })
 
+
             // ->join('order_items', 'stock.id', '=', 'order_items.stock_id')
             ->join('order_items', function ($join) {
                 $join->on('stock.id', '=', 'order_items.stock_id')
