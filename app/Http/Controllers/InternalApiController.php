@@ -239,14 +239,13 @@ class InternalApiController extends Controller
             ->when(request('stock_status') == '', function ($q) {
                 return $q->where('stock.status', 1);
             })
-            ->when(request('vendor') != '', function ($q) {
-                return $q->whereHas('order', function ($q) {
-                    $q->where('customer_id', request('vendor'));
-                });
-            })
-            ->when(request('status') != '', function ($q) {
-                return $q->whereHas('order', function ($q) {
-                    $q->where('status', request('status'));
+
+            ->whereHas('order', function ($q) {
+                $q->when(request('vendor') != '', function ($q) {
+                    return $q->where('customer_id', request('vendor'));
+                })
+                ->when(request('status') != '', function ($q) {
+                    return $q->where('status', request('status'));
                 });
             })
             ->whereHas('variation', function ($q) use ($product_ids) {
@@ -269,45 +268,6 @@ class InternalApiController extends Controller
                     }
                 });
             })
-            // ->when(request('storage') != '', function ($q) {
-            //     return $q->whereHas('variation', function ($q) {
-            //         $q->where('storage', request('storage'));
-            //     });
-            // })
-            // ->when(request('color') != '', function ($q) {
-            //     return $q->whereHas('variation', function ($q) {
-            //         $q->where('color', request('color'));
-            //     });
-            // })
-            // ->when(request('category') != '' || request('brand') != '', function ($q) use ($product_ids) {
-            //     return $q->whereHas('variation', function ($q) use ($product_ids) {
-            //         $q->whereIn('product_id', $product_ids);
-            //     });
-            // })
-            //     return $q->whereHas('variation.product', function ($q) {
-            //         $q->where('category', request('category'));
-            //     });
-            // })
-            // ->when(request('brand') != '', function ($q) {
-            //     return $q->whereHas('variation.product', function ($q) {
-            //         $q->where('brand', request('brand'));
-            //     });
-            // })
-            // ->when(request('product') != '', function ($q) {
-            //     return $q->whereHas('variation', function ($q) {
-            //         $q->where('product_id', request('product'));
-            //     });
-            // })
-            // ->when(request('grade') != [], function ($q) {
-            //     return $q->whereHas('variation', function ($q) {
-            //         if (request('grade') !== null) {
-            //             $grades = json_decode(html_entity_decode(request('grade')));
-            //             if($grades != null){
-            //                 $q->whereIn('grade', $grades);
-            //             }
-            //         }
-            //     });
-            // })
 
             // ->join('order_items', 'stock.id', '=', 'order_items.stock_id')
             ->join('order_items', function ($join) {
@@ -336,6 +296,15 @@ class InternalApiController extends Controller
         }else{
             $aftersale = [];
         }
+        if(request('brand') != '' || request('category') != '' ){
+            $product_ids = Products_model::
+            when(request('category') != '', function ($q) {
+                return $q->where('category', request('category'));
+            })
+            ->when(request('brand') != '', function ($q) {
+                return $q->where('brand', request('brand'));
+            })->pluck('id')->toArray();
+        }
         $data['average_cost'] = Stock_model::where('stock.deleted_at',null)->where('order_items.deleted_at',null)
 
 
@@ -352,48 +321,31 @@ class InternalApiController extends Controller
             ->when(request('stock_status') == '', function ($q) {
                 return $q->where('stock.status', 1);
             })
-            ->when(request('vendor') != '', function ($q) {
-                return $q->whereHas('order', function ($q) {
-                    $q->where('customer_id', request('vendor'));
+            ->whereHas('order', function ($q) {
+                $q->when(request('vendor') != '', function ($q) {
+                    return $q->where('customer_id', request('vendor'));
+                })
+                ->when(request('status') != '', function ($q) {
+                    return $q->where('status', request('status'));
                 });
             })
-            ->when(request('status') != '', function ($q) {
-                return $q->whereHas('order', function ($q) {
-                    $q->where('status', request('status'));
-                });
-            })
-            ->when(request('storage') != '', function ($q) {
-                return $q->whereHas('variation', function ($q) {
-                    $q->where('storage', request('storage'));
-                });
-            })
-            ->when(request('color') != '', function ($q) {
-                return $q->whereHas('variation', function ($q) {
-                    $q->where('color', request('color'));
-                });
-            })
-            ->when(request('category') != '', function ($q) {
-                return $q->whereHas('variation.product', function ($q) {
-                    $q->where('category', request('category'));
-                });
-            })
-            ->when(request('brand') != '', function ($q) {
-                return $q->whereHas('variation.product', function ($q) {
-                    $q->where('brand', request('brand'));
-                });
-            })
-            ->when(request('product') != '', function ($q) {
-                return $q->whereHas('variation', function ($q) {
-                    $q->where('product_id', request('product'));
-                });
-            })
-            ->when(request('grade') != [], function ($q) {
-                return $q->whereHas('variation', function ($q) {
-                    if (request('grade') !== null) {
-                        $grades = json_decode(html_entity_decode(request('grade')));
-                        if($grades != null){
-                            $q->whereIn('grade', $grades);
-                        }
+            ->whereHas('variation', function ($q) use ($product_ids) {
+                $q->when(request('category') != '' || request('brand') != '', function ($q) use ($product_ids) {
+                    return $q->whereIn('product_id', $product_ids);
+                })
+                ->when(request('storage') != '', function ($q) {
+                    return $q->where('storage', request('storage'));
+                })
+                ->when(request('color') != '', function ($q) {
+                    return $q->where('color', request('color'));
+                })
+                ->when(request('product') != '', function ($q) {
+                    return $q->where('product_id', request('product'));
+                })
+                ->when(request('grade') != '', function ($q) {
+                    $grades = json_decode(html_entity_decode(request('grade')));
+                    if($grades != null){
+                        $q->whereIn('grade', $grades);
                     }
                 });
             })
