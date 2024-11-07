@@ -447,7 +447,7 @@
                 // Check if there's data
                 if (variations.data.length > 0) {
                     $('#open_all_variations').click(function() {
-                        vaiation_ids.forEach(function(variation_id) {
+                        variation_ids.forEach(function(variation_id) {
                             getVariationDetails(variation_id);
                         });
                     });
