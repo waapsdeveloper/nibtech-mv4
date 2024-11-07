@@ -65,7 +65,7 @@
         <h5 class="card-title mg-b-0" id="page_info"> </h5>
         <div class="d-flex p-2 justify-content-between">
 
-            <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target=".multi_collapse" aria-expanded="false" aria-controls="multiCollapseExample1 multiCollapseExample2">Toggle both elements</button>
+            <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target=".multi_collapse" aria-expanded="false" aria-controls="multiCollapseExample1 multiCollapseExample2" onClick="openAllVariations()">Toggle All</button>
             {{-- <input class="form-check-input" type="radio" id="open_all" name="open_all" value="1" onchange="this.form.submit()" form="search"> --}}
             <label for="perPage" class="form-label">Sort:</label>
             <select name="sort" class="form-select" id="perPage" onchange="this.form.submit()" form="search">
@@ -335,7 +335,12 @@
             getStocks(variationId);
             getListings(variationId);
         }
-
+        function openAllVariations() {
+            $('.multi_collapse').collapse('show');
+            variation_ids.forEach(function(variationId) {
+                getVariationDetails(variationId);
+            });
+        }
         $(document).ready(function() {
             $('.select2').select2();
 
@@ -438,6 +443,7 @@
 
 
             function displayVariations(variations) {
+                let variation_ids = variations.data.map(variation => variation.id);
                 let variationsContainer = $('#variations'); // The container where data will be displayed
                 variationsContainer.empty(); // Clear any existing content
                 // console.log(variations);
@@ -446,6 +452,7 @@
                 if (variations.data.length > 0) {
                     variations.data.forEach(function(variation) {
                         // load("{{ url('api/internal/get_competitors')}}/${variation.id}");
+
                         let stocksTable = '';
                         let listingsTable = '';
                         let stockPrices = [];
