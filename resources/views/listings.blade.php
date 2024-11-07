@@ -332,7 +332,6 @@
         }
 
         function getVariationDetails(variationId, eurToGbp, m_min_price, m_price, check = 0) {
-            getStocks(variationId);
             getListings(variationId, eurToGbp, m_min_price, m_price, check);
         }
         $(document).ready(function() {
@@ -455,7 +454,7 @@
                         let listedStock = fetchUpdatedQuantity(variation.id);
                         let m_min_price = Math.min(...variation.listings.filter(listing => listing.currency_id === 4).map(listing => listing.min_price));
                         let m_price = Math.min(...variation.listings.filter(listing => listing.currency_id === 4).map(listing => listing.price));
-
+                        getStocks(variation.id);
                         // $('#open_all_variations').on('click', function() {
                         //     getVariationDetails(variation.id, eurToGbp, m_min_price, m_price, 1)
                         // });
