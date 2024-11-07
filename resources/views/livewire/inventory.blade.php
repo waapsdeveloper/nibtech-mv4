@@ -759,9 +759,9 @@
 
             $(document).ready(function(){
                 $('.select2').select2();
-                if(isset({{$stocks}})){
+                // if(isset({{$stocks}})){
 
-                }
+                // }
                 // let total_stocks = {{ $stocks->total() }} ?? 0;
                 // get_average_cost();
 
