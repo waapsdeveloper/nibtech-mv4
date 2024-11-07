@@ -725,7 +725,7 @@
                     }
                 });
             }
-            function get_vendor_wise_average(total_stocks ?? 0){
+            function get_vendor_wise_average(total_stocks = 0){
                 vendors = {!! json_encode($vendors) !!};
                 let params = {
                     category: "{{ request('category') }}",
