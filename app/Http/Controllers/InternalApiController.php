@@ -283,6 +283,7 @@ class InternalApiController extends Controller
             })
             ->join('orders', 'stock.order_id', '=', 'orders.id')
             ->select('orders.customer_id')
+            ->selectRaw('COUNT(order_items.id) as total_qty')
             ->selectRaw('AVG(order_items.price) as average_price')
             ->selectRaw('SUM(order_items.price) as total_price')
             ->selectRaw('COUNT(order_items.id) as total_qty')

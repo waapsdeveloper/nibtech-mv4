@@ -762,7 +762,15 @@
                 $('.select2').select2();
                 get_average_cost();
 
-                // get_vendor_wise_average(total_stocks);
+                let total_stocks = 0;
+
+                @if (request('summery') != 1)
+                    @if (session('user')->hasPermission('view_cost') && $stocks->count() > 0)
+                        total_stocks = {{ $stocks->total() }};
+                    @endif
+                @endif
+
+                get_vendor_wise_average(total_stocks);
 
             });
 
