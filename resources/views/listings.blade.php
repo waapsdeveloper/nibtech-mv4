@@ -336,7 +336,7 @@
             getListings(variationId);
         }
         function openAllVariations() {
-            $('.multi_collapse').collapse('show');
+            // $('.multi_collapse').collapse('show');
             variation_ids.forEach(function(variationId) {
                 getVariationDetails(variationId);
             });
