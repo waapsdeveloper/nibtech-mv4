@@ -1109,6 +1109,9 @@ class Order extends Component
                     $issue[$dr]['data']['row'] = $dr;
                     $issue[$dr]['data']['name'] = $n;
                     $issue[$dr]['data']['storage'] = $st;
+                    if($variation){
+                        $issue[$dr]['data']['variation'] = $variation->id;
+                    }
                     if($color){
                         $issue[$dr]['data']['color'] = $d[$color];
                     }
@@ -1420,6 +1423,18 @@ class Order extends Component
             $new_stock->save();
 
             $issue->delete();
+
+        }
+        if(request('repurchase') == 1){
+            $data = json_decode($issue->data);
+            if($this->add_purchase_item($issue->order_id, $data->imei, $data->variation, $data->cost, 1) == 1){
+                if($data->imei){
+                    $stock = Stock_model::where('imei',$data->imei)->orWhere('serial_number', $data->imei)->where('status','!=',null)->first();
+                    $stock_operation = new Stock_operations_model();
+                    $stock_operation->new_operation($stock->id, null, null, null, $stock->variation_id, $stock->variation_id, "IMEI Repurchased");
+                }
+                $issue->delete();
+            }
 
         }
         return redirect()->back();

@@ -266,7 +266,7 @@ class InternalApiController extends Controller
             })
             ->when(request('grade') != [], function ($q) {
                 return $q->whereHas('variation', function ($q) {
-                    $q->whereIn('grade', request('grade'));
+                    $q->whereIn('grade', json_decode(request('grade')));
                 });
             })
             // ->join('order_items', 'stock.id', '=', 'order_items.stock_id')
@@ -349,7 +349,7 @@ class InternalApiController extends Controller
             })
             ->when(request('grade') != [], function ($q) {
                 return $q->whereHas('variation', function ($q) {
-                    $q->whereIn('grade', request('grade'));
+                    $q->whereIn('grade', json_decode(request('grade')));
                 });
             })
 
