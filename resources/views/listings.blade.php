@@ -65,7 +65,7 @@
         <h5 class="card-title mg-b-0" id="page_info"> </h5>
         <div class="d-flex p-2 justify-content-between">
 
-            <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target=".multi_collapse" aria-expanded="false" aria-controls="multiCollapseExample1 multiCollapseExample2" id="open_all_variations">Toggle All</button>
+            <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target=".multi_collapse" id="open_all_variations">Toggle All</button>
             {{-- <input class="form-check-input" type="radio" id="open_all" name="open_all" value="1" onchange="this.form.submit()" form="search"> --}}
             <label for="perPage" class="form-label">Sort:</label>
             <select name="sort" class="form-select" id="perPage" onchange="this.form.submit()" form="search">
@@ -262,12 +262,12 @@
             });
         }
 
-        function getListings(variationId, eurToGbp, m_min_price, m_price) {
+        function getListings(variationId, eurToGbp, m_min_price, m_price, check = 0){
 
             let listingsTable = '';
             let countries = {!! json_encode($countries) !!};
             $.ajax({
-                url: "{{ url('api/internal/get_competitors') }}/" + variationId,
+                url: "{{ url('api/internal/get_competitors') }}/" + variationId+"/"+check,
                 type: 'GET',
                 dataType: 'json',
                 success: function(data) {
@@ -331,9 +331,9 @@
             });
         }
 
-        function getVariationDetails(variationId) {
+        function getVariationDetails(variationId, eurToGbp, m_min_price, m_price, check = 0) {
             getStocks(variationId);
-            getListings(variationId);
+            getListings(variationId, eurToGbp, m_min_price, m_price, check);
         }
         $(document).ready(function() {
             $('.select2').select2();
@@ -446,11 +446,6 @@
                 $('#page_info').text(`From ${variations.from} To ${variations.to} Out Of ${variations.total}`);
                 // Check if there's data
                 if (variations.data.length > 0) {
-                    $('#open_all_variations').click(function() {
-                        variation_ids.forEach(function(variation_id) {
-                            getVariationDetails(variation_id);
-                        });
-                    });
                     variations.data.forEach(function(variation) {
                         // load("{{ url('api/internal/get_competitors')}}/${variation.id}");
 
@@ -461,6 +456,9 @@
                         let m_min_price = Math.min(...variation.listings.filter(listing => listing.currency_id === 4).map(listing => listing.min_price));
                         let m_price = Math.min(...variation.listings.filter(listing => listing.currency_id === 4).map(listing => listing.price));
 
+                        $('#open_all_variations').on('click', function() {
+                            getVariationDetails(variation.id, eurToGbp, m_min_price, m_price, 1)
+                        });
                         // variation.listings.forEach(function(listing) {
                         //     let p_append = '';
                         //     let pm_append = '';

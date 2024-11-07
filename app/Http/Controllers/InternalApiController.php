@@ -174,29 +174,32 @@ class InternalApiController extends Controller
         $updatedQuantity = $variation->update_qty($bm);
         return response()->json(['updatedQuantity' => $updatedQuantity]);
     }
-    public function getCompetitors($id){
+    public function getCompetitors($id, $no_check = 0){
         $error = "";
         $variation = Variation_model::find($id);
-        $bm = new BackMarketAPIController();
-        $responses = $bm->getListingCompetitors($variation->reference_uuid);
-        foreach($responses as $list){
-            if(is_string($list)){
-                $error .= $list;
-                continue;
+        if($no_check = 0){
+
+            $bm = new BackMarketAPIController();
+            $responses = $bm->getListingCompetitors($variation->reference_uuid);
+            foreach($responses as $list){
+                if(is_string($list)){
+                    $error .= $list;
+                    continue;
+                }
+                $country = Country_model::where('code',$list->market)->first();
+                $listing = Listing_model::firstOrNew(['variation_id'=>$id, 'country'=>$country->id]);
+                $listing->reference_uuid = $list->product_id;
+                if($list->price != null){
+                    $listing->price = $list->price->amount;
+                }
+                if($list->min_price != null){
+                    $listing->min_price = $list->min_price->amount;
+                }
+                $listing->buybox = $list->is_winning;
+                $listing->buybox_price = $list->price_to_win->amount;
+                $listing->buybox_winner_price = $list->winner_price->amount;
+                $listing->save();
             }
-            $country = Country_model::where('code',$list->market)->first();
-            $listing = Listing_model::firstOrNew(['variation_id'=>$id, 'country'=>$country->id]);
-            $listing->reference_uuid = $list->product_id;
-            if($list->price != null){
-                $listing->price = $list->price->amount;
-            }
-            if($list->min_price != null){
-                $listing->min_price = $list->min_price->amount;
-            }
-            $listing->buybox = $list->is_winning;
-            $listing->buybox_price = $list->price_to_win->amount;
-            $listing->buybox_winner_price = $list->winner_price->amount;
-            $listing->save();
         }
         $listings = Listing_model::where('variation_id',$id)->get();
         return response()->json(['listings'=>$listings, 'error'=>$error]);
