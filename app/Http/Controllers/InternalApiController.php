@@ -369,6 +369,7 @@ class InternalApiController extends Controller
                     ->where('order_items.deleted_at', null)
                     ->whereRaw('order_items.order_id = stock.order_id');
             })
+            ->selectRaw('COUNT(order_items.id) as total_qty')
             ->selectRaw('AVG(order_items.price) as average_price')
             ->selectRaw('SUM(order_items.price) as total_price')
             // ->pluck('average_price')
