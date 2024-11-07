@@ -746,11 +746,13 @@
                     success: function(data) {
                         console.log(data);
                         let vendorWiseAverage = '';
+                        let total = 0;
                         data.vendor_average_cost.forEach(function(v_cost) {
+                            total += v_cost.total_qty;
                             vendor_name = vendors[v_cost.customer_id] ?? "Vendor Type Not Defined Correctly";
                             vendorWiseAverage += `${vendor_name}: ${parseFloat(v_cost.average_price).toFixed(2)} x ${v_cost.total_qty} = ${parseFloat(v_cost.total_price).toFixed(2)} (${parseFloat((v_cost.total_qty / total_stocks) * 100).toFixed(2)}%) || `;
                         });
-                        $('#vendor_wise_average').html('Vendor wise average: ' + vendorWiseAverage);
+                        $('#vendor_wise_average').html('Vendor wise average: ' + vendorWiseAverage + 'Total: ' + total);
                     },
                     error: function(xhr) {
                         console.error("Error fetching quantity:", xhr.responseText);
