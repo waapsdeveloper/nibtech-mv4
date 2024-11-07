@@ -456,9 +456,9 @@
                         let m_min_price = Math.min(...variation.listings.filter(listing => listing.currency_id === 4).map(listing => listing.min_price));
                         let m_price = Math.min(...variation.listings.filter(listing => listing.currency_id === 4).map(listing => listing.price));
 
-                        $('#open_all_variations').on('click', function() {
-                            getVariationDetails(variation.id, eurToGbp, m_min_price, m_price, 1)
-                        });
+                        // $('#open_all_variations').on('click', function() {
+                        //     getVariationDetails(variation.id, eurToGbp, m_min_price, m_price, 1)
+                        // });
                         // variation.listings.forEach(function(listing) {
                         //     let p_append = '';
                         //     let pm_append = '';
