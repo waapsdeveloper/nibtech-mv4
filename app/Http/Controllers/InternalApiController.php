@@ -249,21 +249,41 @@ class InternalApiController extends Controller
                     $q->where('status', request('status'));
                 });
             })
-            ->when(request('storage') != '', function ($q) {
-                return $q->whereHas('variation', function ($q) {
-                    $q->where('storage', request('storage'));
+            ->whereHas('variation', function ($q) use ($product_ids) {
+                $q->when(request('category') != '' || request('brand') != '', function ($q) use ($product_ids) {
+                    return $q->whereIn('product_id', $product_ids);
+                })
+                ->when(request('storage') != '', function ($q) {
+                    return $q->where('storage', request('storage'));
+                })
+                ->when(request('color') != '', function ($q) {
+                    return $q->where('color', request('color'));
+                })
+                ->when(request('product') != '', function ($q) {
+                    return $q->where('product_id', request('product'));
+                })
+                ->when(request('grade') != '', function ($q) {
+                    $grades = json_decode(html_entity_decode(request('grade')));
+                    if($grades != null){
+                        $q->whereIn('grade', $grades);
+                    }
                 });
             })
-            ->when(request('color') != '', function ($q) {
-                return $q->whereHas('variation', function ($q) {
-                    $q->where('color', request('color'));
-                });
-            })
-            ->when(request('category') != '' || request('brand') != '', function ($q) use ($product_ids) {
-                return $q->whereHas('variation', function ($q) use ($product_ids) {
-                    $q->whereIn('product_id', $product_ids);
-                });
-            })
+            // ->when(request('storage') != '', function ($q) {
+            //     return $q->whereHas('variation', function ($q) {
+            //         $q->where('storage', request('storage'));
+            //     });
+            // })
+            // ->when(request('color') != '', function ($q) {
+            //     return $q->whereHas('variation', function ($q) {
+            //         $q->where('color', request('color'));
+            //     });
+            // })
+            // ->when(request('category') != '' || request('brand') != '', function ($q) use ($product_ids) {
+            //     return $q->whereHas('variation', function ($q) use ($product_ids) {
+            //         $q->whereIn('product_id', $product_ids);
+            //     });
+            // })
             //     return $q->whereHas('variation.product', function ($q) {
             //         $q->where('category', request('category'));
             //     });
@@ -273,21 +293,21 @@ class InternalApiController extends Controller
             //         $q->where('brand', request('brand'));
             //     });
             // })
-            ->when(request('product') != '', function ($q) {
-                return $q->whereHas('variation', function ($q) {
-                    $q->where('product_id', request('product'));
-                });
-            })
-            ->when(request('grade') != [], function ($q) {
-                return $q->whereHas('variation', function ($q) {
-                    if (request('grade') !== null) {
-                        $grades = json_decode(html_entity_decode(request('grade')));
-                        if($grades != null){
-                            $q->whereIn('grade', $grades);
-                        }
-                    }
-                });
-            })
+            // ->when(request('product') != '', function ($q) {
+            //     return $q->whereHas('variation', function ($q) {
+            //         $q->where('product_id', request('product'));
+            //     });
+            // })
+            // ->when(request('grade') != [], function ($q) {
+            //     return $q->whereHas('variation', function ($q) {
+            //         if (request('grade') !== null) {
+            //             $grades = json_decode(html_entity_decode(request('grade')));
+            //             if($grades != null){
+            //                 $q->whereIn('grade', $grades);
+            //             }
+            //         }
+            //     });
+            // })
 
             // ->join('order_items', 'stock.id', '=', 'order_items.stock_id')
             ->join('order_items', function ($join) {
