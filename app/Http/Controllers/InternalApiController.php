@@ -267,12 +267,12 @@ class InternalApiController extends Controller
             ->when(request('grade') != [], function ($q) {
                 return $q->whereHas('variation', function ($q) {
                     if (request('grade') !== null) {
-                        dd(request('grade'));
-                        dd(json_decode(request('grade')));
-                        $q->whereIn('grade', json_decode(request('grade')));
+                        $grades = json_decode(html_entity_decode(request('grade')));
+                        $q->whereIn('grade', $grades);
                     }
                 });
             })
+
             // ->join('order_items', 'stock.id', '=', 'order_items.stock_id')
             ->join('order_items', function ($join) {
                 $join->on('stock.id', '=', 'order_items.stock_id')
@@ -353,7 +353,10 @@ class InternalApiController extends Controller
             })
             ->when(request('grade') != [], function ($q) {
                 return $q->whereHas('variation', function ($q) {
-                    $q->whereIn('grade', json_decode(request('grade')));
+                    if (request('grade') !== null) {
+                        $grades = json_decode(html_entity_decode(request('grade')));
+                        $q->whereIn('grade', $grades);
+                    }
                 });
             })
 
