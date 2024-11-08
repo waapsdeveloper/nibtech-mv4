@@ -21,9 +21,10 @@ class InternalOnly
             Env::get('SERVER_IP'), // Get the server IP from .env file
         ];
 
+        $url = explode('/',Env::get('APP_URL'))[-1];
         // Check if the request originated from the allowed domain
         if ($request->getHost() !== Env::get('APP_URL')) {
-            dd($request->host(), Env::get('APP_URL'), request());
+            dd($request->getHost(), Env::get('APP_URL'), request(), $url);
             abort(401, 'Unauthorized accessu');
         }
 
