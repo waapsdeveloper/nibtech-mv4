@@ -21,7 +21,8 @@ class InternalOnly
             Env::get('SERVER_IP'), // Get the server IP from .env file
         ];
 
-        $url = end(explode('/',Env::get('APP_URL')));
+        $urlParts = explode('/', Env::get('APP_URL'));
+        $url = end($urlParts);
         // Check if the request originated from the allowed domain
         if ($request->getHost() !== Env::get('APP_URL')) {
             dd($request->getHost(), Env::get('APP_URL'), request(), $url);
