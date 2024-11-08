@@ -23,7 +23,7 @@ class InternalOnly
 
         // Check if the request originated from the allowed domain
         if ($request->getHost() !== Env::get('APP_URL')) {
-            abort(401, 'Unauthorized access');
+            abort(401, 'Unauthorized accessu');
         }
 
         if (!in_array($request->ip(), $allowedIps)) {
