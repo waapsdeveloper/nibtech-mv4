@@ -21,16 +21,16 @@ class InternalOnly
             Env::get('SERVER_IP'), // Get the server IP from .env file
         ];
 
-        if (!in_array($request->ip(), $allowedIps)) {
-            dd($request->ip());
-            abort(401, 'Unauthorized access');
-
-        }
         // Check if the request originated from the allowed domain
         if ($request->getHost() !== Env::get('APP_URL')) {
             abort(401, 'Unauthorized access');
         }
 
+        if (!in_array($request->ip(), $allowedIps)) {
+            dd($request->ip());
+            abort(401, 'Unauthorized access');
+
+        }
         return $next($request);
     }
 }
