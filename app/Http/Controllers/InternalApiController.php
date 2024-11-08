@@ -304,6 +304,8 @@ class InternalApiController extends Controller
             ->when(request('brand') != '', function ($q) {
                 return $q->where('brand', request('brand'));
             })->pluck('id')->toArray();
+        }else{
+            $product_ids = [];
         }
         $data['average_cost'] = Stock_model::where('stock.deleted_at',null)->where('order_items.deleted_at',null)
 
