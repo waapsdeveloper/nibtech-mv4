@@ -30,7 +30,7 @@ class InternalOnly
         }
 
         if (!in_array($request->ip(), $allowedIps)) {
-            dd($request->server_ip());
+            dd($request->ip(), $request->server('SERVER_ADDR'));
             abort(401, 'Unauthorized access');
 
         }
