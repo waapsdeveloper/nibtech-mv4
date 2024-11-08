@@ -29,9 +29,9 @@ class InternalOnly
             abort(401, 'Unauthorized accessu');
         }
 
-        if (!in_array($request->ip(), $allowedIps)) {
-            abort(401, 'Unauthorized access'.$request->ip(). $request->server('SERVER_ADDR'));
-        }
+        // if (!in_array($request->ip(), $allowedIps)) {
+        //     abort(401, 'Unauthorized access'.$request->ip(). $request->server('SERVER_ADDR'));
+        // }
         return $next($request);
     }
 }
