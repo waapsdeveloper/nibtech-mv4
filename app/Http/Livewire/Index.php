@@ -3,6 +3,7 @@
 namespace App\Http\Livewire;
 
 use App\Exports\StockSummeryExport;
+use App\Http\Controllers\BackMarketAPIController;
 use App\Models\Admin_model;
 use App\Models\Brand_model;
 use App\Models\Category_model;
@@ -548,64 +549,64 @@ class Index extends Component
     }
 
     public function test(){
-        ini_set('max_execution_time', 1200);
-        ini_set('memory_limit', '2048M');
-        ini_set('group_concat_max_len', 4294967295);
-        $orders = Order_model::where('order_type_id',3)->where('status',3)->where('processed_at','>=','2024--08-01')->pluck('price');
-        echo "Orders: ".$orders->count()."<br>";
-        echo "Total Orders: ".array_sum($orders->toArray())."<br>";
-
-        $charge_values = Charge_value_model::whereHas('charge', function($q){
-            $q->where('name','LIKE','%Payment Method Charge%');
-        })->pluck('id');
-        print_r($charge_values);
-        // dd($charge_values);
-        echo "Payment Charges: ".$charge_values->count()."<br>";
-        $order_charges = Order_charge_model::whereIn('charge_value_id', $charge_values->toArray())
-        ->whereHas('order', function($q) use ($orders){
-            $q->where('order_type_id',3)->where('status',3)->where('processed_at','>=','2024--08-01');
-        })->get();
-        print_r($order_charges);
-
-        $all_charges = Order_charge_model::whereHas('order', function($q) use ($orders){
-            $q->where('order_type_id',3)->where('status',3)->where('processed_at','>=','2024--08-01');
-        })->pluck('amount');
-        // echo "Payment Charges: ".$order_charges->count()."<br>";
-        echo "All Charges: ".$all_charges->count()."<br>";
-        echo "Total Payment Charges: ".array_sum($all_charges->toArray())."<br>";
-
         // ini_set('max_execution_time', 1200);
-        // Variation_model::where('product_storage_sort_id',null)->each(function($variation){
-        //     $pss = Product_storage_sort_model::firstOrNew(['product_id'=>$variation->product_id,'storage'=>$variation->storage]);
-        //     if($pss->id == null){
-        //         $pss->save();
-        //     }
-        //     $variation->product_storage_sort_id = $pss->id;
-        //     $variation->save();
-        // });
-        // $order_c = new Order();
-        // Order_model::where('scanned',null)->where('order_type_id',3)->where('tracking_number', '!=', null)->whereBetween('created_at', ['2024-05-01 00:00:00', now()->subDays(1)->format('Y-m-d H:i:s')])
-        // ->orderByDesc('id')->each(function($order) use ($order_c){
-        //     $order_c->getLabel($order->reference_id, false, true);
-        // });
+        // ini_set('memory_limit', '2048M');
+        // ini_set('group_concat_max_len', 4294967295);
+        // $orders = Order_model::where('order_type_id',3)->where('status',3)->where('processed_at','>=','2024--08-01')->pluck('price');
+        // echo "Orders: ".$orders->count()."<br>";
+        // echo "Total Orders: ".array_sum($orders->toArray())."<br>";
 
-        // $bm = new BackMarketAPIController();
-        // $resArray = $bm->getlabelData();
+        // $charge_values = Charge_value_model::whereHas('charge', function($q){
+        //     $q->where('name','LIKE','%Payment Method Charge%');
+        // })->pluck('id');
+        // print_r($charge_values);
+        // // dd($charge_values);
+        // echo "Payment Charges: ".$charge_values->count()."<br>";
+        // $order_charges = Order_charge_model::whereIn('charge_value_id', $charge_values->toArray())
+        // ->whereHas('order', function($q) use ($orders){
+        //     $q->where('order_type_id',3)->where('status',3)->where('processed_at','>=','2024--08-01');
+        // })->get();
+        // print_r($order_charges);
 
-        // $orders = [];
-        // if ($resArray !== null) {
-        //     foreach ($resArray as $data) {
-        //         if (!empty($data) && $data->hubScanned == true && !in_array($data->order, $orders)) {
-        //             $orders[] = $data->order;
-        //         }
-        //     }
-        // }
+        // $all_charges = Order_charge_model::whereHas('order', function($q) use ($orders){
+        //     $q->where('order_type_id',3)->where('status',3)->where('processed_at','>=','2024--08-01');
+        // })->pluck('amount');
+        // // echo "Payment Charges: ".$order_charges->count()."<br>";
+        // echo "All Charges: ".$all_charges->count()."<br>";
+        // echo "Total Payment Charges: ".array_sum($all_charges->toArray())."<br>";
 
-        // if($orders != []){
+        ini_set('max_execution_time', 1200);
+        Variation_model::where('product_storage_sort_id',null)->each(function($variation){
+            $pss = Product_storage_sort_model::firstOrNew(['product_id'=>$variation->product_id,'storage'=>$variation->storage]);
+            if($pss->id == null){
+                $pss->save();
+            }
+            $variation->product_storage_sort_id = $pss->id;
+            $variation->save();
+        });
+        $order_c = new Order();
+        Order_model::where('scanned',null)->where('order_type_id',3)->where('tracking_number', '!=', null)->whereBetween('created_at', ['2024-05-01 00:00:00', now()->subDays(1)->format('Y-m-d H:i:s')])
+        ->orderByDesc('id')->each(function($order) use ($order_c){
+            $order_c->getLabel($order->reference_id, false, true);
+        });
 
-        //     Order_model::whereIn('reference_id',$orders)->update(['scanned' => 1]);
+        $bm = new BackMarketAPIController();
+        $resArray = $bm->getlabelData();
 
-        // }
+        $orders = [];
+        if ($resArray !== null) {
+            foreach ($resArray as $data) {
+                if (!empty($data) && $data->hubScanned == true && !in_array($data->order, $orders)) {
+                    $orders[] = $data->order;
+                }
+            }
+        }
+
+        if($orders != []){
+
+            Order_model::whereIn('reference_id',$orders)->update(['scanned' => 1]);
+
+        }
 
 
     }
