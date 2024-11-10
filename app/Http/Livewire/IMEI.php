@@ -17,6 +17,7 @@ use App\Models\Stock_movement_model;
 use App\Models\Stock_operations_model;
 use App\Models\Storage_model;
 use App\Models\Variation_model;
+use App\Models\Vendor_grade_model;
 use Carbon\Carbon;
 
 
@@ -53,6 +54,7 @@ class IMEI extends Component
             $data['colors'] = Color_model::pluck('name','id');
             $data['storages'] = Storage_model::pluck('name','id');
             $data['grades'] = Grade_model::pluck('name','id');
+            $data['vendor_grades'] = Vendor_grade_model::pluck('name','id');
             if (request('imei') == '' || !$stock || $stock->status == null) {
                 session()->put('error', 'IMEI Invalid / Not Found');
                 // return redirect()->back(); // Redirect here is not recommended
