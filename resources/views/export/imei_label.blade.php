@@ -7,11 +7,14 @@
     <title>IMEI Barcode</title>
 </head>
 <body>
+        Hello
     @if ($barcode === 'IMEI not available')
         <p>{{ $barcode }}</p>
     @else
+        Hello
         <img src="data:image/png;base64,{{ $barcode }}" alt="IMEI Barcode">
         Hello
     @endif
+        Hello
 </body>
 </html>
