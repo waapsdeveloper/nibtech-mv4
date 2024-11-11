@@ -99,8 +99,8 @@ class IMEILabelExport
         $pdf->SetFont('times', '', 9);
         $pdf->SetLineStyle(['width' => 0.1, 'color' => [0, 0, 0]]);
 
-        $pdf->MultiCell(20, 5, 'SO: '.$reference, 0, 'L', 0, 0, '', '', true, 0, false, true, 0, 'T');
-        $pdf->MultiCell(42, 5, 'Model: '.$model.' '.$storage.' '.$color.' '.$grade.' '.$sub_grade, 0, 'L', 0, 0, '', '', true, 0, false, true, 0, 'T');
+        $pdf->MultiCell(20, 5, 'SO: '.$reference, 0, 'L', 0, 0, '', '', true, 0, false, true, 0, 'T', true);
+        $pdf->MultiCell(42, 5, 'Model: '.$model.' '.$storage.' '.$color.' '.$grade.' '.$sub_grade, 0, 'L', 0, 0, '', '', true, 0, false, true, 0, 'T', true);
 
 
         $model = $variation->product->model;
