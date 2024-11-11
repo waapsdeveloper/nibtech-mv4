@@ -6,6 +6,7 @@ use App\Models\Order_item_model;
 use App\Models\Stock_model;
 use App\Models\Stock_operations_model;
 use App\Models\Variation_model;
+use Picqer\Barcode\BarcodeGeneratorPNG;
 use TCPDF;
 
 class IMEILabelExport
@@ -138,22 +139,16 @@ class IMEILabelExport
         $stock = Stock_model::find($stock_id);
         $imei = $stock->imei ?? 'N/A';
 
-        // Create a new PDF document (we only use this to generate a barcode image)
-        $pdf = new TCPDF('P', 'mm', [62, 100], true, 'UTF-8', false);
-        $pdf->SetPrintHeader(false);
-        $pdf->SetPrintFooter(false);
-        $pdf->AddPage();
-
-        // Start output buffering
-        ob_start();
-        echo $pdf->write1DBarcode($imei, 'C128', '', '', '', 10, 0.4, ['position' => 'C', 'align' => 'C'], 'N');
-        // Add Barcode for IMEI if available
-        if ($imei !== 'N/A') {
-            // Generate barcode
-            $pdf->write1DBarcode($imei, 'C128', '', '', '', 10, 0.4, ['position' => 'C', 'align' => 'C'], 'N');
-        } else {
+        // If IMEI is not available, handle the response
+        if ($imei === 'N/A') {
             return view('export.imei_label')->with('barcode', 'IMEI not available');
         }
+
+        // Generate the barcode as a PNG image
+        $generator = new BarcodeGeneratorPNG();
+        $barcodeImage = base64_encode($generator->getBarcode($imei, $generator::TYPE_CODE_128));
+
+
 
         // Output the PDF page as an image in base64
         $barcodeImage = base64_encode(ob_get_clean());
