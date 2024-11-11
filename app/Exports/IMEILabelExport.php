@@ -148,7 +148,7 @@ class IMEILabelExport
         $generator = new BarcodeGeneratorPNG();
         $barcodeImage = base64_encode($generator->getBarcode($imei, $generator::TYPE_CODE_128));
 
-        dd($barcodeImage);
+        // dd($barcodeImage);
         // Pass barcode image to the view
         return view('export.imei_label')->with('barcode', $barcodeImage);
     }

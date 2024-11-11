@@ -11,6 +11,7 @@
         <p>{{ $barcode }}</p>
     @else
         <img src="data:image/png;base64,{{ $barcode }}" alt="IMEI Barcode">
+        Hello
     @endif
 </body>
 </html>
