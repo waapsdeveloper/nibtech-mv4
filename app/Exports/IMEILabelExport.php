@@ -147,12 +147,12 @@ class IMEILabelExport
         // Generate the barcode as a PNG image
         $generator = new BarcodeGeneratorPNG();
         $barcodeImage = base64_encode($generator->getBarcode($imei, $generator::TYPE_CODE_128));
-        dd($barcodeImage);
+
 
 
         // Output the PDF page as an image in base64
         $barcodeImage = base64_encode(ob_get_clean());
-
+        dd($barcodeImage);
 
         // Pass barcode image to the view
         return view('export.imei_label')->with('barcode', $barcodeImage);
