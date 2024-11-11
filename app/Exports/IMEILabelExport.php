@@ -58,6 +58,23 @@ class IMEILabelExport
 
         $orders = Order_item_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
 
+        $last_sale_order = Order_item_model::where('stock_id', $stock_id)->whereHas('order', function($q){
+            $q->whereIn('order_type_id', [3,5]);
+        })->orderBy('id','desc')->first();
+
+        if($last_sale_order->order->order_type_id == 3){
+            $reference = $last_sale_order->order->reference_id;
+        }else{
+            $reference = $last_sale_order->reference_id;
+        }
+
+        $last_variation = Variation_model::find($last_sale_order->variation_id);
+        $model = $last_variation->product->model;
+        $storage = $last_variation->storage_id->name ?? '';
+        $color = $last_variation->color_id->name ?? '';
+        $grade = $last_variation->grade_id->name ?? '';
+        $sub_grade = $last_variation->sub_grade_id->name ?? '';
+
         $movement = Stock_operations_model::where('stock_id', $stock_id)->orderBy('id','desc')->first();
         // Fallback to N/A if IMEI is not available
         $imei = $stock->imei ?? 'N/A';
@@ -81,6 +98,11 @@ class IMEILabelExport
         // Set font for the content
         $pdf->SetFont('times', '', 9);
         $pdf->SetLineStyle(['width' => 0.1, 'color' => [0, 0, 0]]);
+
+        $pdf->MultiCell(20, 5, 'SO: '.$reference, 0, 'L', 0, 0, '', '', true, 0, false, true, 0, 'T');
+        $pdf->MultiCell(42, 5, 'Model: '.$model.' '.$storage.' '.$color.' '.$grade.' '.$sub_grade, 0, 'L', 0, 0, '', '', true, 0, false, true, 0, 'T');
+
+
         $model = $variation->product->model;
         $storage = $variation->storage_id->name ?? '';
         $color = $variation->color_id->name ?? '';
