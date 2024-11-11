@@ -146,7 +146,7 @@ class IMEILabelExport
 
         // Start output buffering
         ob_start();
-
+        echo $pdf->write1DBarcode($imei, 'C128', '', '', '', 10, 0.4, ['position' => 'C', 'align' => 'C'], 'N');
         // Add Barcode for IMEI if available
         if ($imei !== 'N/A') {
             // Generate barcode
