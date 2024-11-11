@@ -173,9 +173,9 @@ class Stock_model extends Model
         if($stock->variation_id != $order_item->variation_id){
             $operations = new Stock_operations_model();
             if($override){
-                $operations->new_operation($stock->id, $order_id, $order_item_id, null, null, $stock->variation_id, $stock->variation_id, $message);
+                $operations->new_operation($stock->id, $order_item_id, null, null, $stock->variation_id, $stock->variation_id, $message);
             }else{
-                $operations->new_operation($stock->id, $order_id, $order_item_id, null, null, $stock->variation_id, $order_item->variation_id, $message);
+                $operations->new_operation($stock->id, $order_item_id, null, null, $stock->variation_id, $order_item->variation_id, $message);
                 $stock->variation_id = $order_item->variation_id;
             }
         }
