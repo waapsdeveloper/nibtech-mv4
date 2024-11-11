@@ -378,7 +378,7 @@
                                                 <table class="w-100">
                                                     <tr>
                                                         <td>Total:</td>
-                                                        <td class="tx-right"><a href="{{url('order')}}?start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ $total_orders }}</a></td>
+                                                        <td class="tx-right"><a href="{{url('order')}}?start_date={{ $start_date }}&end_date={{ $end_date }}" title="EUR Average: {{ amount_formatter($ttl_average,2) }} | EUR: {{ amount_formatter($ttl_eur,2) }} | GBP: {{ amount_formatter($ttl_gbp,2) }} | Go to orders page">{{ $total_orders }}</a></td>
                                                     </tr>
                                                     <tr>
                                                         <td>Pending:</td>

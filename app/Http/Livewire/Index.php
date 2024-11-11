@@ -159,6 +159,25 @@ class Index extends Component
                 return $q->whereIn('variation_id', $variation_ids);
             })->whereHas('sale_order')->count();
 
+            $data['total_order_items'] = Order_item_model::whereBetween('order_items.created_at', [$start_date, $end_date])
+                ->when(request('data') == 1, function($q) use ($variation_ids){
+                    return $q->whereIn('variation_id', $variation_ids);
+                })
+
+                ->selectRaw('AVG(CASE WHEN orders.currency = 4 THEN order_items.price END) as average_eur')
+                ->selectRaw('SUM(CASE WHEN orders.currency = 4 THEN order_items.price END) as total_eur')
+                ->selectRaw('SUM(CASE WHEN orders.currency = 5 THEN order_items.price END) as total_gbp')
+                ->join('orders', 'order_items.order_id', '=', 'orders.id')
+                ->where('orders.order_type_id',3)
+                ->Where('orders.deleted_at',null)
+                ->Where('order_items.deleted_at',null)
+                ->first();
+
+            $data['ttl_average'] = $data['total_order_items']->average_eur;
+            $data['ttl_eur'] = $data['total_order_items']->total_eur;
+            $data['ttl_gbp'] = $data['total_order_items']->total_gbp;
+
+
             $data['order_items'] = Order_item_model::whereBetween('orders.processed_at', [$start_date, $end_date])
                 ->when(request('data') == 1, function($q) use ($variation_ids){
                     return $q->whereIn('variation_id', $variation_ids);
