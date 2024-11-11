@@ -620,6 +620,9 @@
                                                     @if (session('user')->hasPermission('correction'))
                                                     <a class="dropdown-item" id="correction_{{ $item->id }}" href="javascript:void(0);" data-bs-target="#correction_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}"> Correction </a>
                                                     @endif
+                                                    @if (session('user')->hasPermission('correction_override'))
+                                                    <a class="dropdown-item" id="correction_{{ $item->id }}" href="javascript:void(0);" data-bs-target="#correction_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}" data-bs-override="true"> Correction (Override) </a>
+                                                    @endif
                                                     {{-- @endif --}}
                                                     @if (!$item->replacement)
                                                     <a class="dropdown-item" id="replacement_{{ $item->id }}" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}" data-bs-return="@if($item->check_return) 1 @endif"> Replacement </a>
@@ -934,7 +937,7 @@
                     <div class="modal-body pd-sm-40">
                         <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
                             type="button"><span aria-hidden="true">&times;</span></button>
-                        <h5 class="modal-title mg-b-5">Update Order</h5>
+                        <h5 class="modal-title mg-b-5">Update Order <strong id="override"></strong></h5>
                         <hr>
                         <form action="{{ url('order/correction') }}" method="POST" onsubmit="if ($('#correction_imei').val() == ''){ if (confirm('Remove IMEI from Order')){return true;}else{event.stopPropagation(); event.preventDefault();};};">
                             @csrf
@@ -1035,7 +1038,13 @@
             var item = button.data('bs-item') // Extract info from data-* attributes
             // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
             // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+            var override = button.data('bs-override') // Extract info from data-* attributes
             var modal = $(this)
+            if(override){
+                modal.find('.modal-title #override').text('(Override)')
+                // change form action
+                modal.find('form').attr('action', "{{ url('order/correction/true') }}")
+            }
             modal.find('.modal-body #order_reference').val(reference)
             modal.find('.modal-body #item_id').val(item)
             })

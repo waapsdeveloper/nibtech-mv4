@@ -77,6 +77,12 @@ class Variation_model extends Model
     {
         return $this->hasOne(Grade_model::class, 'id', 'sub_grade');
     }
+
+    public function images()
+    {
+        return $this->hasMany(Variation_image_model::class, 'variation_id', 'id')->orderBy('sort', 'asc');
+    }
+
     public function stocks()
     {
         return $this->hasMany(Stock_model::class, 'variation_id', 'id');

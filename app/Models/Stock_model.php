@@ -155,7 +155,7 @@ class Stock_model extends Model
         // Define a custom method to retrieve only one order item
         return $this->hasOne(Order_item_model::class, 'stock_id', 'id')->where('order_id', $order_id)->orderByDesc('id')->first();
     }
-    public function mark_sold($order_item_id, $tester = null, $message = null)
+    public function mark_sold($order_item_id, $tester = null, $message = null, $override = false)
     {
         $stock = $this;
         $order_item = Order_item_model::find($order_item_id);
@@ -172,8 +172,12 @@ class Stock_model extends Model
         }
         if($stock->variation_id != $order_item->variation_id){
             $operations = new Stock_operations_model();
-            $operations->new_operation($stock->id, $order_item_id, null, null, $stock->variation_id, $order_item->variation_id, $message);
-            $stock->variation_id = $order_item->variation_id;
+            if($override){
+                $operations->new_operation($stock->id, $order_id, $order_item_id, null, null, $stock->variation_id, $stock->variation_id, $message);
+            }else{
+                $operations->new_operation($stock->id, $order_id, $order_item_id, null, null, $stock->variation_id, $order_item->variation_id, $message);
+                $stock->variation_id = $order_item->variation_id;
+            }
         }
         $stock->save();
     }

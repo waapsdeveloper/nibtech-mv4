@@ -2226,7 +2226,7 @@ class Order extends Component
         return redirect()->back();
     }
 
-    public function correction(){
+    public function correction($override = false){
         $item = Order_item_model::find(request('correction')['item_id']);
         if(session('user')->hasPermission('correction')){
             if($item->quantity > 1 && $item->order->order_items->count() == 1){
@@ -2280,26 +2280,30 @@ class Order extends Component
                     $color = null;
                 }
                 $variant = $item->variation;
-                if(($stock->variation->product_id == $variant->product_id) || ($variant->product_id == 144 && $stock->variation->product_id == 229) || ($variant->product_id == 142 && $stock->variation->product_id == 143) || ($variant->product_id == 54 && $stock->variation->product_id == 55) || ($variant->product_id == 55 && $stock->variation->product_id == 54) || ($variant->product_id == 58 && $stock->variation->product_id == 59) || ($variant->product_id == 59 && $stock->variation->product_id == 58) || ($variant->product_id == 200 && $stock->variation->product_id == 160)){
-                }else{
+                if(($stock->variation->product_id == $variant->product_id) || ($variant->product_id == 144 && $stock->variation->product_id == 229) || ($variant->product_id == 142 && $stock->variation->product_id == 143) || ($variant->product_id == 54 && $stock->variation->product_id == 55) || ($variant->product_id == 55 && $stock->variation->product_id == 54) || ($variant->product_id == 58 && $stock->variation->product_id == 59) || ($variant->product_id == 59 && $stock->variation->product_id == 58) || ($variant->product_id == 200 && $stock->variation->product_id == 160)){}else{
                     session()->put('error', "Product Model not matched");
-                    return redirect()->back();
+                    if(session('user')->hasPermission('correction_override') && $override){}else{
+                        return redirect()->back();
+                    }
                 }
-                if(($stock->variation->storage == $variant->storage) || ($variant->storage == 5 && in_array($stock->variation->storage,[0,6]) && $variant->product->brand == 2) || (in_array($variant->product_id, [78,58,59]) && $variant->storage == 4 && in_array($stock->variation->storage,[0,5]))){
-                }else{
+                if(($stock->variation->storage == $variant->storage) || ($variant->storage == 5 && in_array($stock->variation->storage,[0,6]) && $variant->product->brand == 2) || (in_array($variant->product_id, [78,58,59]) && $variant->storage == 4 && in_array($stock->variation->storage,[0,5]))){}else{
                     session()->put('error', "Product Storage not matched");
-                    return redirect()->back();
+                    if(session('user')->hasPermission('correction_override') && $override){}else{
+                        return redirect()->back();
+                    }
                 }
                 if(!in_array($stock->variation->grade, [$variant->grade, 7, 9])){
                     session()->put('error', "Product Grade not matched");
-                    return redirect()->back();
+                    if(session('user')->hasPermission('correction_override') && $override){}else{
+                        return redirect()->back();
+                    }
                 }
                 if($item->stock != null){
                     $previous =  " | Previous IMEI: " . $item->stock->imei . $item->stock->serial_number;
                 }else{
                     $previous = null;
                 }
-                $stock->mark_sold($item->id, request('correction')['tester'], request('correction')['reason'].$previous);
+                $stock->mark_sold($item->id, request('correction')['tester'], request('correction')['reason'].$previous, $override);
                 // $stock->variation_id = $item->variation_id;
                 // $stock->tester = request('correction')['tester'];
                 // $stock->added_by = session('user_id');
@@ -2360,7 +2364,7 @@ class Order extends Component
             $item->save();
 
         }else{
-            session()->put('error', 'Update deadline exceeded');
+            session()->put('error', 'Permission Denied');
         }
         return redirect()->back();
     }
