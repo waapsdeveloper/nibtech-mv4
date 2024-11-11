@@ -23,7 +23,7 @@
         "mpdf/mpdf": "^8.2",
         "orangehill/iseed": "^3.0",
         "phpoffice/phpspreadsheet": "^1.29",
-        "picqer/php-barcode-generator": "*",
+        "picqer/php-barcode-generator": "^3.2",
         "pragmarx/google2fa": "^8.0",
         "pragmarx/google2fa-laravel": "^2.2",
         "setasign/fpdf": "^1.8",
