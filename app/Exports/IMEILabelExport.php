@@ -114,10 +114,10 @@ class IMEILabelExport
             <strong>' . $model . ' ' . $storage . ' ' . $color . ' ' . $grade . ' ' . $sub_grade . '<br>
             IMEI:</strong> ' . $imei;
 
-        $pdf->MultiCell(62, 5, $model . ' ' . $storage . ' ' . $color . ' ' . $grade . ' ' . $sub_grade, 0, 'C', 0, 0, '', '', true, 0, false, true, 0, 'T', true);
+        $pdf->MultiCell(62, 5, $model . ' ' . $storage . ' ' . $color . ' ' . $grade . ' ' . $sub_grade, 0, 'J', false, 1, null, null, true, 0, false, true, 0, 'T', true);
         // $pdf->writeHTML($html, true, false, true, false, '');
 
-        $pdf->MultiCell(62, 5, 'IMEI: '. $imei, 0, 'C', 0, 0, '', '', true, 0, false, true, 0, 'T', true);
+        $pdf->MultiCell(62, 5, 'IMEI: '. $imei, 0, 'C', false, 1, null, null, true, 0, false, true, 0, 'T', true);
 
         // Add Barcode for IMEI
         if ($imei !== 'N/A') {
