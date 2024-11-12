@@ -125,8 +125,8 @@ class IMEILabelExport
         // Write Stock Movement history if needed
         $pdf->Ln(2); // Add some spacing
 
-        $pdf->MultiCell(20, 4, 'V: '.$vendor, 0, 'L', false, 0, null, null, true, 0, false, true, 0, 'T', true);
-        $pdf->MultiCell(20, 4, 'ICloud Locked', 0, 'C', false, 0, null, null, true, 0, false, true, 0, 'T', true);
+        $pdf->MultiCell(25, 4, 'V: '.$vendor, 0, 'L', false, 0, null, null, true, 0, false, true, 0, 'T', true);
+        $pdf->MultiCell(15, 4, 'iCloud', 0, 'C', false, 0, null, null, true, 0, false, true, 0, 'T', true);
         $pdf->MultiCell(22, 4, '', 0, 'R', false, 1, null, null, true, 0, false, true, 0, 'T', true);
         $pdf->MultiCell(62, 4, '', 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
 
