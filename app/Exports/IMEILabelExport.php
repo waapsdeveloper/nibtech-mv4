@@ -110,7 +110,7 @@ class IMEILabelExport
         $grade = $variation->grade_id->name ?? '';
         $sub_grade = $variation->sub_grade_id->name ?? '';
         // Write product information
-        $pdf->MultiCell(62, 0, $model . ' ' . $storage . ' ' . $color . ' ' . $grade . ' ' . $sub_grade, 0, 'C', false, 1, null, null, true, 0, false, true, 0, 'T', true);
+        $pdf->MultiCell(62, 3, $model . ' ' . $storage . ' ' . $color . ' ' . $grade . ' ' . $sub_grade, 0, 'C', false, 1, null, null, true, 0, false, true, 0, 'T', true);
 
         $pdf->MultiCell(62, 0, 'IMEI: '. $imei, 0, 'C', false, 1, null, null, true, 0, false, true, 0, 'T', true);
 
@@ -125,10 +125,10 @@ class IMEILabelExport
         // Write Stock Movement history if needed
         $pdf->Ln(2); // Add some spacing
 
-        $pdf->MultiCell(20, 0, 'V: '.$vendor, 0, 'L', false, 0, null, null, true, 0, false, true, 0, 'T', true);
-        $pdf->MultiCell(20, 0, 'ICloud Locked', 0, 'C', false, 0, null, null, true, 0, false, true, 0, 'T', true);
-        $pdf->MultiCell(22, 0, '', 0, 'R', false, 1, null, null, true, 0, false, true, 0, 'T', true);
-        $pdf->MultiCell(62, 0, '', 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
+        $pdf->MultiCell(20, 3, 'V: '.$vendor, 0, 'L', false, 0, null, null, true, 0, false, true, 0, 'T', true);
+        $pdf->MultiCell(20, 3, 'ICloud Locked', 0, 'C', false, 0, null, null, true, 0, false, true, 0, 'T', true);
+        $pdf->MultiCell(22, 3, '', 0, 'R', false, 1, null, null, true, 0, false, true, 0, 'T', true);
+        $pdf->MultiCell(62, 3, '', 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
 
         $pdf->Ln(2); // Add some spacing
         $pdf->SetFont('times', '', 9);
