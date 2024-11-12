@@ -101,7 +101,7 @@ class IMEILabelExport
 
         $pdf->SetFont('times', 'B', 9);
         $pdf->MultiCell(25, 5, 'SO: '.$reference, 0, 'L', false, 0, null, null, true, 0, false, true, 0, 'T', true);
-        $pdf->MultiCell(37, 5, 'G: '.$grade.' '.$sub_grade, 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
+        $pdf->MultiCell(37, 5, 'SG: '.$grade.' '.$sub_grade, 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
 
 
         $model = $variation->product->model;
@@ -125,10 +125,20 @@ class IMEILabelExport
         // Write Stock Movement history if needed
         $pdf->Ln(2); // Add some spacing
 
-        $pdf->MultiCell(25, 4, 'V: '.$vendor, 0, 'L', false, 0, null, null, true, 0, false, true, 0, 'T', true);
-        $pdf->MultiCell(15, 4, 'iCloud', 0, 'C', false, 0, null, null, true, 0, false, true, 0, 'T', true);
-        $pdf->MultiCell(22, 4, '', 0, 'R', false, 1, null, null, true, 0, false, true, 0, 'T', true);
-        $pdf->MultiCell(62, 4, '', 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
+        $comment = $movement->description ?? '';
+        $explode = explode(' || ', $comment);
+        if(count($explode) == 3){
+            $pdf->MultiCell(25, 4, 'V: '.$vendor, 0, 'L', false, 0, null, null, true, 0, false, true, 0, 'T', true);
+            $pdf->MultiCell(15, 4, 'iCloud', 0, 'C', false, 0, null, null, true, 0, false, true, 0, 'T', true);
+            $pdf->MultiCell(22, 4, $explode[2], 0, 'R', false, 1, null, null, true, 0, false, true, 0, 'T', true);
+        }elseif(count($explode) == 2){
+            $pdf->MultiCell(25, 4, 'V: '.$vendor, 0, 'L', false, 0, null, null, true, 0, false, true, 0, 'T', true);
+            $pdf->MultiCell(37, 4, $explode[1], 0, 'R', false, 1, null, null, true, 0, false, true, 0, 'T', true);
+        }else{
+            $pdf->MultiCell(62, 4, 'V: '.$vendor, 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
+        }
+
+        $pdf->MultiCell(62, 4, 'C: '. $explode[0], 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
 
         $pdf->Ln(2); // Add some spacing
         $pdf->SetFont('times', '', 9);
