@@ -138,7 +138,7 @@ class IMEILabelExport
             $pdf->MultiCell(62, 4, 'V: '.$vendor, 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
         }
 
-        $pdf->MultiCell(62, 4, 'C: '. $explode[0], 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
+        $pdf->MultiCell(62, 4, 'Cmt: '. $explode[0], 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
 
         $pdf->Ln(2); // Add some spacing
         $pdf->SetFont('times', '', 9);
@@ -162,7 +162,7 @@ class IMEILabelExport
         $pdf->Write(0, 'Orders History:', '', 0, 'L', true, 0, false, false, 0);
         foreach($orders as $item){
             $customer = $item->order->customer->first_name ?? 'Unknown';
-            $data = 'Order: '.$item->order->reference_id.' T: '.$item->order->order_type->name . ' C: ' . $customer . ' S: ' . $item->order->order_status->name;
+            $data = 'O: '.$item->order->reference_id.' T: '.$item->order->order_type->name . ' C: ' . $customer . ' S: ' . $item->order->order_status->name;
 
             $pdf->Write(0, $data, '', 0, 'L', true, 0, false, false, 0);
         }
