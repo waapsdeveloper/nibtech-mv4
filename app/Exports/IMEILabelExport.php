@@ -55,7 +55,7 @@ class IMEILabelExport
         // Fetch the product variation, order, and stock movements
         $variation = Variation_model::with(['product', 'storage_id', 'color_id', 'grade_id', 'sub_grade_id'])
                 ->find($stock->variation_id);
-
+        $vendor = $stock->order->customer->first_name ?? 'Unknown';
         $orders = Order_item_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
 
         $last_sale_order = Order_item_model::where('stock_id', $stock_id)->whereHas('order', function($q){
@@ -65,7 +65,7 @@ class IMEILabelExport
         if($last_sale_order->order->order_type_id == 3){
             $reference = $last_sale_order->order->reference_id;
         }else{
-            $reference = $last_sale_order->reference_id;
+            $reference = $last_sale_order->reference_id.' (R)';
         }
 
         $last_variation = Variation_model::find($last_sale_order->variation_id);
@@ -100,8 +100,8 @@ class IMEILabelExport
         $pdf->SetLineStyle(['width' => 0.1, 'color' => [0, 0, 0]]);
 
         $pdf->SetFont('times', 'B', 9);
-        $pdf->MultiCell(20, 5, 'SO: '.$reference, 0, 'L', false, 0, null, null, true, 0, false, true, 0, 'T', true);
-        $pdf->MultiCell(42, 5, 'Grade: '.$grade.' '.$sub_grade, 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
+        $pdf->MultiCell(25, 5, 'SO: '.$reference, 0, 'L', false, 0, null, null, true, 0, false, true, 0, 'T', true);
+        $pdf->MultiCell(37, 5, 'G: '.$grade.' '.$sub_grade, 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
 
 
         $model = $variation->product->model;
@@ -110,12 +110,7 @@ class IMEILabelExport
         $grade = $variation->grade_id->name ?? '';
         $sub_grade = $variation->sub_grade_id->name ?? '';
         // Write product information
-        $html = '
-            <strong>' . $model . ' ' . $storage . ' ' . $color . ' ' . $grade . ' ' . $sub_grade . '<br>
-            IMEI:</strong> ' . $imei;
-
         $pdf->MultiCell(62, 0, $model . ' ' . $storage . ' ' . $color . ' ' . $grade . ' ' . $sub_grade, 0, 'C', false, 1, null, null, true, 0, false, true, 0, 'T', true);
-        // $pdf->writeHTML($html, true, false, true, false, '');
 
         $pdf->MultiCell(62, 0, 'IMEI: '. $imei, 0, 'C', false, 1, null, null, true, 0, false, true, 0, 'T', true);
 
@@ -128,6 +123,13 @@ class IMEILabelExport
         }
 
         // Write Stock Movement history if needed
+        $pdf->Ln(2); // Add some spacing
+
+        $pdf->MultiCell(20, 0, 'V: '.$vendor, 0, 'L', false, 0, null, null, true, 0, false, true, 0, 'T', true);
+        $pdf->MultiCell(20, 0, 'ICloud Locked', 0, 'C', false, 0, null, null, true, 0, false, true, 0, 'T', true);
+        $pdf->MultiCell(22, 0, '', 0, 'R', false, 1, null, null, true, 0, false, true, 0, 'T', true);
+        $pdf->MultiCell(62, 0, '', 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
+
         $pdf->Ln(2); // Add some spacing
         $pdf->SetFont('times', '', 9);
         $pdf->Write(0, 'Stock Movement History:', '', 0, 'L', true, 0, false, false, 0);
