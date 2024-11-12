@@ -111,10 +111,8 @@ class IMEILabelExport
         $sub_grade = $variation->sub_grade_id->name ?? '';
         // Write product information
         $html = '
-            <div style="text-align: center;">
             <strong>' . $model . ' ' . $storage . ' ' . $color . ' ' . $grade . ' ' . $sub_grade . '<br>
-            IMEI:</strong> ' . $imei . '
-            </div>';
+            IMEI:</strong> ' . $imei;
 
         $pdf->writeHTML($html, true, false, true, false, '');
 
