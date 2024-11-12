@@ -110,11 +110,11 @@ class IMEILabelExport
         $grade = $variation->grade_id->name ?? '';
         $sub_grade = $variation->sub_grade_id->name ?? '';
         // Write product information
-        $html = '<center>
+        $html = '
             <strong>' . $model . ' ' . $storage . ' ' . $color . ' ' . $grade . ' ' . $sub_grade . '<br>
-            IMEI:</strong> ' . $imei . '</center>';
+            IMEI:</strong> ' . $imei;
 
-        $pdf->writeHTML($html, true, false, true, false, '');
+        $pdf->writeHTML($html, true, false, true, false, 'C');
 
         // Add Barcode for IMEI
         if ($imei !== 'N/A') {
