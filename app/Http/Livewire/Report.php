@@ -1349,7 +1349,7 @@ class Report extends Component
         }
         if(file_exists('rep_pass.txt')){
             $password = file_get_contents('rep_pass.txt');
-            if(request('old_password') != $password){
+            if(session('user_id') != 1 && request('old_password') != $password){
                 session()->put('error', 'Incorrect old password');
                 return redirect()->back();
             }
