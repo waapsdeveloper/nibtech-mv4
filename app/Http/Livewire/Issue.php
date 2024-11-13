@@ -20,7 +20,8 @@ class Issue extends Component
 {
 
     public function render()
-    {;
+    {
+        ini_set('max_execution_time', 1200);
         if(request('per_page') != null){
             $per_page = request('per_page');
         }else{
