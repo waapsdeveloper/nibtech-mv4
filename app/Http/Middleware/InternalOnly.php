@@ -25,7 +25,7 @@ class InternalOnly
         $url = end($urlParts);
         // Check if the request originated from the allowed domain
         if ($request->getHost() !== $url) {
-            // dd($request->getHost(), Env::get('APP_URL'), request(), $url);
+            dd($request->getHost(), Env::get('APP_URL'), request(), $url);
             abort(401, 'Unauthorized accessu');
         }
 
