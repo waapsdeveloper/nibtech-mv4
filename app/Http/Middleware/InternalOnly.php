@@ -24,10 +24,10 @@ class InternalOnly
         $urlParts = explode('/', Env::get('APP_URL'));
         $url = end($urlParts);
         // Check if the request originated from the allowed domain
-        if ($request->getHost() !== $url) {
-            dd($request->getHost(), Env::get('APP_URL'), request(), $url);
-            abort(401, 'Unauthorized accessu');
-        }
+        // if ($request->getHost() !== $url) {
+        //     dd($request->getHost(), Env::get('APP_URL'), request(), $url);
+        //     abort(401, 'Unauthorized accessu');
+        // }
 
         // if (!in_array($request->ip(), $allowedIps)) {
         //     abort(401, 'Unauthorized access'.$request->ip(). $request->server('SERVER_ADDR'));
