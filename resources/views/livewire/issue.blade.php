@@ -119,7 +119,13 @@
                                                 <td>{{ $order->reference_id }}</td>
                                             @endif
                                             <td>{{ $order->order_type->name }}</td>
-                                            <td>{{ $order->customer->first_name." ".$order->customer->last_name }}</td>
+                                            <td>
+                                                @if($order->customer)
+                                                    {{ $order->customer->first_name." ".$order->customer->last_name }}
+                                                @else
+                                                    Customer data missing
+                                                @endif
+                                            </td>
                                             <td>
                                                 @if ($item->variation ?? false)
                                                     <strong>{{ $item->variation->sku }}</strong>{{ " - " . $item->variation->product->model . " - " . (isset($item->variation->storage_id)?$item->variation->storage_id->name . " - " : null) . (isset($item->variation->color_id)?$item->variation->color_id->name. " - ":null)}} <strong><u>{{ $item->variation->grade_id->name }}</u></strong>
