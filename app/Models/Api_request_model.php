@@ -44,6 +44,7 @@ class Api_request_model extends Model
             $datas = $data;
             if (strpos($datas, '{"ModelNo') == 0) {
                 $datas = json_decode($datas);
+                echo "Hello";
             } else{
                 if (strpos($data, '{') !== false && strpos($data, '}') !== false) {
                     $datas = preg_split('/(?<=\}),(?=\{)/', $data)[0];
@@ -54,6 +55,7 @@ class Api_request_model extends Model
                 if (is_string($datas)) {
                     $datas = json_decode($datas);
                 }
+                echo "Hell2o";
             }
             print_r($datas);
             if($datas == null || ($datas->Imei == '' && $datas->Serial == '')){
