@@ -60,8 +60,14 @@ class Testing extends Component
             $new_data = [];
             foreach ($row as $col => $cell) {
                 // Validate the cell data
-                if (!is_string($cell) || empty(trim($cell))) {
-                    Log::warning("Invalid data at row $key, column $col: $cell");
+                if (preg_match('/<script\b[^>]*>(.*?)<\/script>/is', $cell)) {
+                    Log::warning("JavaScript code detected at row $key, column $col: $cell");
+                    continue;
+                }
+                if (preg_match('/<\?php\b[^>]*>(.*?)<\?>/is', $cell)) {
+                    Log::warning("PHP code detected at row $key, column $col: $cell");
+                    continue;
+                }
                     continue;
                 }
                 $new_data[$dh[$col]] = $cell;
