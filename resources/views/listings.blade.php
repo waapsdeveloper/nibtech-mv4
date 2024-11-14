@@ -275,7 +275,7 @@
             let listingsTable = '';
             let countries = {!! json_encode($countries) !!};
             let params = {
-                _token: "{{ csrf_token() }}"
+                csrf: "{{ csrf_token() }}"
             };
             let queryString = $.param(params);
             $.ajax({
@@ -375,7 +375,7 @@
                     sort: $('select[name="sort"]').val(),
                     per_page: $('select[name="per_page"]').val(),
                     open_all: $('input[name="open_all"]').val(),
-                    page: page
+                    page: page,
                     csrf: "{{ csrf_token() }}"
                 };
 
