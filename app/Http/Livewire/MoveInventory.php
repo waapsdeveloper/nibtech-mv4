@@ -91,7 +91,7 @@ class MoveInventory extends Component
     }
 
     public function change_grade($allow_same = false){
-        $description = request('description');
+
         if(request('grade')){
             session()->put('grade',request('grade'));
         }
@@ -101,7 +101,7 @@ class MoveInventory extends Component
         if (request('imei')) {
             $imeis = explode(' ',request('imei'));
             foreach($imeis as $imei){
-
+                $description = request('description');
                 if (ctype_digit($imei)) {
                     $i = $imei;
                     $s = null;
