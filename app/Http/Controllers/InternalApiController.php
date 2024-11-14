@@ -128,6 +128,16 @@ class InternalApiController extends Controller
 
         return "Today: €".amount_formatter($order_items)." (".$order_items_count.")";
     }
+    public function get_yesterday_average($id){
+        $order_items = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
+            $q->whereBetween('created_at', [now()->yesterday()->startOfDay(), now()->yesterday()->endOfDay()])->where('order_type_id',3);
+        })->avg('price');
+        $order_items_count = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
+            $q->whereBetween('created_at', [now()->yesterday()->startOfDay(), now()->yesterday()->endOfDay()])->where('order_type_id',3);
+        })->count();
+
+        return "Yesterday: €".amount_formatter($order_items)." (".$order_items_count.")";
+    }
     public function get_last_week_average($id){
         $order_items = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
             $q->whereBetween('created_at', [now()->subDays(7), now()->yesterday()->endOfDay()])->where('order_type_id',3);
@@ -161,7 +171,8 @@ class InternalApiController extends Controller
 
     public function get_sales($id){
         $week = $this->get_today_average($id);
-        $week .= " - Previous - ".$this->get_last_week_average($id);
+        $week .= " - Previous - ".$this->get_yesterday_average($id);
+        $week .= " - ".$this->get_last_week_average($id);
         $week .= " - ".$this->get_2_week_average($id);
         $week .= " - ".$this->get_30_days_average($id);
 

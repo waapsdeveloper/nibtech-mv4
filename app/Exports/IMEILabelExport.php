@@ -141,32 +141,32 @@ class IMEILabelExport
 
         $pdf->MultiCell(58, 0, 'Cmt: '. $explode[0], 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
 
-        $pdf->Ln(2); // Add some spacing
-        $pdf->SetFont('times', '', 9);
-        $pdf->Write(0, 'Stock Movement History:', '', 0, 'L', true, 0, false, false, 0);
+        // $pdf->Ln(2); // Add some spacing
+        // $pdf->SetFont('times', '', 9);
+        // $pdf->Write(0, 'Stock Movement History:', '', 0, 'L', true, 0, false, false, 0);
 
         if (!$movement) {
             $pdf->Write(0, 'No movement history found', '', 0, 'L', true, 0, false, false, 0);
         }else{
-            $new_variation = $movement->old_variation;
-            $new_model = $new_variation->product->model;
-            $new_storage = $new_variation->storage_id->name ?? '';
-            $new_color = $new_variation->color_id->name ?? '';
-            $new_grade = $new_variation->grade_id->name ?? '';
-            $new_sub_grade = $new_variation->sub_grade_id->name ?? '';
-            $movementDetails = $movement->created_at . ' - ' . ($movement->admin->first_name ?? 'Unknown') . ' - ' .
-                ' From: ' . ($new_model . ' ' . $new_storage . ' ' . $new_color . ' ' . $new_grade . ' ' . $new_sub_grade) . ' - ' . $movement->description;
-            $pdf->Write(0, $movementDetails, '', 0, 'L', true, 0, false, false, 0);
+            // $new_variation = $movement->old_variation;
+            // $new_model = $new_variation->product->model;
+            // $new_storage = $new_variation->storage_id->name ?? '';
+            // $new_color = $new_variation->color_id->name ?? '';
+            // $new_grade = $new_variation->grade_id->name ?? '';
+            // $new_sub_grade = $new_variation->sub_grade_id->name ?? '';
+            // $movementDetails = $movement->created_at . ' - ' . ($movement->admin->first_name ?? 'Unknown') . ' - ' .
+            //     ' From: ' . ($new_model . ' ' . $new_storage . ' ' . $new_color . ' ' . $new_grade . ' ' . $new_sub_grade) . ' - ' . $movement->description;
+            // $pdf->Write(0, $movementDetails, '', 0, 'L', true, 0, false, false, 0);
         }
 
-        $pdf->Ln(2); // Add some spacing
-        $pdf->Write(0, 'Orders History:', '', 0, 'L', true, 0, false, false, 0);
-        foreach($orders as $item){
-            $customer = $item->order->customer->first_name ?? 'Unknown';
-            $data = 'O: '.$item->order->reference_id.' T: '.$item->order->order_type->name . ' C: ' . $customer . ' S: ' . $item->order->order_status->name;
+        // $pdf->Ln(2); // Add some spacing
+        // $pdf->Write(0, 'Orders History:', '', 0, 'L', true, 0, false, false, 0);
+        // foreach($orders as $item){
+            // $customer = $item->order->customer->first_name ?? 'Unknown';
+            // $data = 'O: '.$item->order->reference_id.' T: '.$item->order->order_type->name . ' C: ' . $customer . ' S: ' . $item->order->order_status->name;
 
-            $pdf->Write(0, $data, '', 0, 'L', true, 0, false, false, 0);
-        }
+            // $pdf->Write(0, $data, '', 0, 'L', true, 0, false, false, 0);
+        // }
         // Output the PDF as a response
         return $pdf->Output('product_label.pdf');
 
