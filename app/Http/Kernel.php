@@ -70,5 +70,6 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'internal.only' => \App\Http\Middleware\InternalOnly::class,
         'verify' => \App\Http\Middleware\VerifyCsrfToken::class,
+        'start' => \Illuminate\Session\Middleware\StartSession::class,
     ];
 }
