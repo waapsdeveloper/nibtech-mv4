@@ -177,6 +177,11 @@ class Repair extends Component
 
         $data['title_page'] = "Repair Detail";
         // $data['imeis'] = Stock_model::whereIn('status',[1,3])->orderBy('serial_number','asc')->orderBy('imei','asc')->get();
+        if(request('per_page') != null){
+            $per_page = request('per_page');
+        }else{
+            $per_page = 20;
+        }
         $data['exchange_rates'] = ExchangeRate::pluck('rate','target_currency');
         $data['storages'] = Storage_model::pluck('name','id');
         $data['products'] = Products_model::pluck('model','id');
@@ -204,7 +209,7 @@ class Repair extends Component
         });
 
         $data['variations'] = $variations;
-        $last_ten = Process_stock_model::where('process_id',$process_id)->orderBy('id','desc')->limit(10)->get();
+        $last_ten = Process_stock_model::where('process_id',$process_id)->orderBy('id','desc')->limit($per_page)->get();
         $data['last_ten'] = $last_ten;
         $processed_stocks = Process_stock_model::where(['process_id'=>$process_id,'status'=>2])->orderByDesc('updated_at')->get();
         $data['processed_stocks'] = $processed_stocks;
