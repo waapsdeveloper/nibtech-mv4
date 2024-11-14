@@ -713,6 +713,7 @@
                     grade: "{{ json_encode(request('grade')) }}",
                     vendor: "{{ request('vendor') }}",
                     status: "{{ request('status') }}",
+                    csrf: "{{ csrf_token() }}"
                 }
 
                 let queryString = $.param(params);
@@ -737,6 +738,7 @@
                     grade: "{{ json_encode(request('grade')) }}",
                     vendor: "{{ request('vendor') }}",
                     status: "{{ request('status') }}",
+                    csrf: "{{ csrf_token() }}"
                 };
 
                 let queryString = $.param(params);

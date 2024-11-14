@@ -205,8 +205,12 @@
             }
         }
         function fetchUpdatedQuantity(variationId, bm) {
+            let params = {
+                csrf: "{{ csrf_token() }}"
+            };
+            let queryString = $.param(params);
             return $.ajax({
-                url: `{{ url('api/internal/get_updated_quantity') }}/${variationId}`,
+                url: `{{ url('api/internal/get_updated_quantity') }}/${variationId}?${queryString}`,
                 type: 'GET',
                 dataType: 'json',
                 success: function(response) {
@@ -225,8 +229,12 @@
 
             let stocksTable = '';
             let stockPrices = [];
+            let params = {
+                csrf: "{{ csrf_token() }}"
+            };
+            let queryString = $.param(params);
             $.ajax({
-                url: "{{ url('api/internal/get_variation_available_stocks') }}/" + variationId,
+                url: "{{ url('api/internal/get_variation_available_stocks') }}/" + variationId+"?"+queryString,
                 type: 'GET',
                 dataType: 'json',
                 success: function(data) {
@@ -266,8 +274,12 @@
 
             let listingsTable = '';
             let countries = {!! json_encode($countries) !!};
+            let params = {
+                csrf: "{{ csrf_token() }}"
+            };
+            let queryString = $.param(params);
             $.ajax({
-                url: "{{ url('api/internal/get_competitors') }}/" + variationId+"/"+check,
+                url: "{{ url('api/internal/get_competitors') }}/" + variationId+"/"+check+"?"+queryString,
                 type: 'GET',
                 dataType: 'json',
                 success: function(data) {
@@ -364,6 +376,7 @@
                     per_page: $('select[name="per_page"]').val(),
                     open_all: $('input[name="open_all"]').val(),
                     page: page
+                    csrf: "{{ csrf_token() }}"
                 };
 
                 // Convert params object to a query string
@@ -598,7 +611,7 @@
                         $("#change_qty_"+variation.id).submit(function(e) {
                             submitForm(e, variation.id);
                         });
-                        $('#sales_'+variation.id).load("{{ url('api/internal/get_sales') . '/'}}"+variation.id);
+                        $('#sales_'+variation.id).load("{{ url('api/internal/get_sales') . '/'}}"+variation.id+"?csrf={{ csrf_token() }}");
                     });
                 } else {
                     variationsContainer.append('<p>No variations found.</p>');
