@@ -167,7 +167,7 @@
                                     <td>€{{ amount_formatter($sales->eur_items_sum,2) }} @if ($returns != null) (€{{ amount_formatter($returns->eur_items_sum,2) }}) @endif</td>
                                     <td>£{{ amount_formatter($gbp_items_sum,2) }} @if ($returns != null && isset($returns->gbp_items_sum)) (£{{ amount_formatter($returns->gbp_items_sum,2) }}) @endif</td>
                                     @endif
-                                    <td>€{{ amount_formatter($total_eur,2)  }} + £{{ amount_formatter($total_gbp,2) }}</td>
+                                    <td title="EUR Average: €{{ amount_formatter($total_eur/$sales->orders_qty,2)  }}">€{{ amount_formatter($total_eur,2)  }} + £{{ amount_formatter($total_gbp,2) }}</td>
                                  </tr>
                             @endforeach
                             @foreach ($aggregated_returns as $s => $returns)
