@@ -613,10 +613,15 @@ class Index extends Component
         $resArray = $bm->getlabelData();
 
         $orders = [];
+        $deliveries = [];
         if ($resArray !== null) {
             foreach ($resArray as $data) {
                 if (!empty($data) && $data->hubScanned == true && !in_array($data->order, $orders)) {
                     $orders[] = $data->order;
+
+                }
+                if (!empty($data) && !isset($deliveries[$data->order]) && $data->dateDelivery != null) {
+                    $deliveries[$data->order] = $data->dateDelivery;
                 }
             }
         }
@@ -624,6 +629,13 @@ class Index extends Component
         if($orders != []){
 
             Order_model::whereIn('reference_id',$orders)->update(['scanned' => 1]);
+
+        }
+        if($deliveries != []){
+
+            foreach($deliveries as $order => $delivery){
+                Order_model::where('reference_id',$order)->update(['delivered_at' => $delivery]);
+            }
 
         }
 

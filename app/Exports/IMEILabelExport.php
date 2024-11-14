@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\Order_item_model;
+use App\Models\Order_model;
 use App\Models\Stock_model;
 use App\Models\Stock_operations_model;
 use App\Models\Variation_model;
@@ -67,6 +68,7 @@ class IMEILabelExport
         }else{
             $reference = $last_sale_order->reference_id.' (R)';
         }
+        $last_order = Order_model::where('reference_id', $reference)->where('order_type_id',3)->first();
 
         $last_variation = Variation_model::find($last_sale_order->variation_id);
         $model = $last_variation->product->model;

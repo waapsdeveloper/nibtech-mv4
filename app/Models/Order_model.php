@@ -142,6 +142,7 @@ class Order_model extends Model
 
             $order->created_at = Carbon::parse($orderObj->date_creation)->format('Y-m-d H:i:s');
             $order->updated_at = Carbon::parse($orderObj->date_modification)->format('Y-m-d H:i:s');
+
             // echo Carbon::parse($orderObj->date_creation)->format('Y-m-d H:i:s'). "       ";
             // ... other fields
             $order->save();
