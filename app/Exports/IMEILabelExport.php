@@ -108,7 +108,7 @@ class IMEILabelExport
 
         $pdf->SetFont('times', 'B', 9);
         $pdf->MultiCell(42, 5, $reference.' | '.$grade.' '.$sub_grade, 0, 'L', false, 0, null, null, true, 0, false, true, 0, 'T', true);
-        $pdf->MultiCell(18, 4, $lock, 0, 'R', false, 1, null, null, true, 0, false, true, 0, 'T', true);
+        $pdf->MultiCell(16, 4, $lock, 0, 'R', false, 1, null, null, true, 0, false, true, 0, 'T', true);
 
 
         $model = $variation->product->model;
@@ -117,9 +117,9 @@ class IMEILabelExport
         $grade = $variation->grade_id->name ?? '';
         $sub_grade = $variation->sub_grade_id->name ?? '';
         // Write product information
-        $pdf->MultiCell(62, 4, $model . ' ' . $storage . ' ' . $color . ' ' . $grade . ' ' . $sub_grade, 0, 'C', false, 1, null, null, true, 0, false, true, 0, 'T', true);
+        $pdf->MultiCell(58, 4, $model . ' ' . $storage . ' ' . $color . ' ' . $grade . ' ' . $sub_grade, 0, 'C', false, 1, null, null, true, 0, false, true, 0, 'T', true);
 
-        $pdf->MultiCell(62, 0, 'IMEI: '. $imei, 0, 'C', false, 1, null, null, true, 0, false, true, 0, 'T', true);
+        $pdf->MultiCell(58, 0, 'IMEI: '. $imei, 0, 'C', false, 1, null, null, true, 0, false, true, 0, 'T', true);
 
         // Add Barcode for IMEI
         if ($imei !== 'N/A') {
@@ -136,10 +136,10 @@ class IMEILabelExport
             $pdf->MultiCell(37, 4, 'V: '.$vendor, 0, 'L', false, 0, null, null, true, 0, false, true, 0, 'T', true);
             $pdf->MultiCell(30, 4, $explode[1], 0, 'R', false, 1, null, null, true, 0, false, true, 0, 'T', true);
         }else{
-            $pdf->MultiCell(62, 4, 'V: '.$vendor, 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
+            $pdf->MultiCell(58, 4, 'V: '.$vendor, 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
         }
 
-        $pdf->MultiCell(62, 0, 'Cmt: '. $explode[0], 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
+        $pdf->MultiCell(58, 0, 'Cmt: '. $explode[0], 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
 
         $pdf->Ln(2); // Add some spacing
         $pdf->SetFont('times', '', 9);
