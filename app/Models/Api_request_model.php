@@ -44,6 +44,7 @@ class Api_request_model extends Model
             $datas = $data;
             if (strpos($datas, '{"ModelNo') == 0) {
                 $datas = json_decode($datas);
+                $datas = json_decode($datas);
                 echo "Hello";
             } else{
                 if (strpos($data, '{') !== false && strpos($data, '}') !== false) {
