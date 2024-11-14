@@ -65,7 +65,7 @@
         <div class="row mb-3">
 
             <div class="col-md">
-                <select name="vendor" class="form-select">
+                <select name="vendor" class="form-select" form="index">
                     <option value="">Vendor</option>
                     @foreach ($vendors as $id=>$name)
                         <option value="{{ $id }}" @if(isset(request('vendor')) && $id == request('vendor')) {{'selected'}}@endif>{{ $name }}</option>
