@@ -591,14 +591,23 @@ class Order extends Component
 
         // $orderItem->stock->delete();
         $stock = Stock_model::find($orderItem->stock_id);
-        if($stock->status == 1){
-            $stock->delete();
-        }else{
-            $stock->order_id = null;
-            $stock->status = null;
-            $stock->save();
-        }
+        $lp_item = Order_item_model::where('stock_id',$orderItem->stock_id)->where('order_id','!=',$orderItem->order_id)
+        ->whereHas('orders', function ($query) {
+            $query->where('order_type_id', 1);
+        })->orderBy('id','desc')->first();
 
+        if($lp_item != null){
+            $stock->order_id = $lp_item->order_id;
+            $stock->save();
+        }else{
+            if($stock->status == 1){
+                $stock->delete();
+            }else{
+                $stock->order_id = null;
+                $stock->status = null;
+                $stock->save();
+            }
+        }
         $orderItem->delete();
 
         return redirect()->back();
