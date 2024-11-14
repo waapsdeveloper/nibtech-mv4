@@ -12,6 +12,7 @@ use App\Models\Products_model;
 use App\Models\Stock_operations_model;
 use App\Models\Storage_model;
 use App\Models\Variation_model;
+use App\Models\Vendor_grade_model;
 use Carbon\Carbon;
 
 
@@ -35,6 +36,7 @@ class MoveInventory extends Component
         $data['colors'] = Color_model::pluck('name','id');
         $data['storages'] = Storage_model::pluck('name','id');
         $data['grades'] = Grade_model::all();
+        $data['vendor_grades'] = Vendor_grade_model::all();
 
         $start_date = Carbon::now()->startOfDay();
         $end_date = date('Y-m-d 23:59:59');
@@ -145,6 +147,15 @@ class MoveInventory extends Component
                         $p_order->save();
 
                         // dd($p_order);
+                    }
+                    if(request('vendor_grade') != ''){
+                        $vendor_grade = request('vendor_grade');
+                        $p_order = $stock->purchase_item;
+
+                        $description .= "Vendor Grade changed from ".$p_order->reference_id;
+                        $p_order->reference_id = $vendor_grade;
+                        $p_order->save();
+
                     }
                 }
 

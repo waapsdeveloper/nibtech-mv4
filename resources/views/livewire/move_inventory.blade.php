@@ -115,6 +115,14 @@
                                 <label for="">Price</label>
                             </div>
                         </div>
+                        <div class="col-md col-sm-2">
+                            <select name="vendor_grade" class="form-control form-select">
+                                <option value="">Vendor Grade</option>
+                                @foreach ($vendor_grades as $vendor_grade)
+                                    <option value="{{ $vendor_grade->id }}" @if(session('vendor_grade') && $vendor_grade->id == session('vendor_grade')) {{'selected'}}@endif @if(request('vendor_grade') && $vendor_grade->id == request('vendor_grade')) {{'selected'}}@endif>{{ $vendor_grade->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                         </div>
                         <br>
                     @endif
