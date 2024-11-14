@@ -153,7 +153,7 @@
 
                         <div class="form-floating">
                             <input type="text" class="form-control pd-x-20" name="return[battery]" placeholder="Battery Details" style="width: 100px;">
-                            <label for="">Battery status</label>
+                            <label for="">Battery</label>
                         </div>
                         <div class="form-check form-check-inline">
                             <input class="form-check-input" type="checkbox" name="return[locked]" value="1" id="locked">
