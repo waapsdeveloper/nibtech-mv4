@@ -621,7 +621,7 @@ class Index extends Component
 
                 }
                 if (!empty($data) && !isset($deliveries[$data->order]) && $data->dateDelivery != null) {
-                    $deliveries[$data->order] = $data->dateDelivery;
+                    $deliveries[$data->order] = Carbon::parse($data->dateDelivery);
                 }
             }
         }

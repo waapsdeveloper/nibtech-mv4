@@ -2693,6 +2693,9 @@ class Order extends Component
             }elseif($datas->results[0]->hubScanned == true){
                 $order = Order_model::where('reference_id',$order_id)->first();
                 $order->scanned = 1;
+                if($order->dateDelivery != null){
+                    $order->delivered_at = Carbon::parse($datas->results[0]->dateDelivery);
+                }
                 $order->save();
             }
         }
