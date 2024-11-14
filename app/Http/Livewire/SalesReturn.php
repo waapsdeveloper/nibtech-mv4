@@ -334,6 +334,11 @@ class SalesReturn extends Component
                     if($return['battery'] != null){
                         $return['description'] .= " || B: ".$return['battery'];
                     }
+
+                    if($return['locked'] != null){
+                        $return['description'] .= " || L: ".$return['locked'];
+                    }
+
                     $stock_operation = Stock_operations_model::create([
                         'stock_id' => $stock->id,
                         'old_variation_id' => $stock->variation_id,

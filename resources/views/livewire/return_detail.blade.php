@@ -152,10 +152,13 @@
                         </div>
 
                         <div class="form-floating">
-                            <input type="text" class="form-control pd-x-20" name="return[battery]" placeholder="Battery Details" style="width: 50px;">
+                            <input type="text" class="form-control pd-x-20" name="return[battery]" placeholder="Battery Details" style="width: 100px;">
                             <label for="">Battery status</label>
                         </div>
-
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" name="return[locked]" value="1" id="locked">
+                            <label class="form-check-label" for="locked">Locked</label>
+                        </div>
 
                         <input type="hidden" name="return[order_id]" value="{{ $restock['order_id'] }}">
                         <input type="hidden" name="return[reference_id]" value="{{ $restock['reference_id'] }}">
