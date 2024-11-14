@@ -598,7 +598,7 @@
                         $("#change_qty_"+variation.id).submit(function(e) {
                             submitForm(e, variation.id);
                         });
-                        $('#sales_'+variation.id).load("{{ url('listing/get_sales') . '/'}}"+variation.id);
+                        $('#sales_'+variation.id).load("{{ url('api/internal/get_sales') . '/'}}"+variation.id);
                     });
                 } else {
                     variationsContainer.append('<p>No variations found.</p>');
