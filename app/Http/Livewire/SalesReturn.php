@@ -335,7 +335,7 @@ class SalesReturn extends Component
                         $return['description'] .= " || B: ".$return['battery'];
                     }
 
-                    if($return['locked'] != null){
+                    if(isset($return['locked'])){
                         $return['description'] .= " || L: ".$return['locked'];
                     }
 
