@@ -207,6 +207,7 @@ Route::post('move_inventory/delete_multiple_moves', [MoveInventory::class,'delet
 Route::get('move_inventory/check_storage_change', [MoveInventory::class,'check_storage_change'])->name('move_inventory');
 
 Route::get('testing', Testing::class)->name('view_testing_api_data');
+Route::post('testing/upload_excel', [Testing::class, 'upload_excel'])->name('upload_testing_api_data');
 Route::get('testing/repush/{id}', [Testing::class, 'repush'])->name('repush_testing_api_data');
 
 Route::get('order', Order::class)->name('view_order');
