@@ -331,7 +331,7 @@ class SalesReturn extends Component
 
                     print_r($order_item);
 
-                    if($return['battery'] != null){
+                    if(isset($return['battery'])){
                         $return['description'] .= " || B: ".$return['battery'];
                     }
 
