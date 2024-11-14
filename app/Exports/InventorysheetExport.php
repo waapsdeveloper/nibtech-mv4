@@ -34,7 +34,9 @@ class InventorysheetExport implements FromCollection, WithHeadings
             $join->on('stock.id', '=', 'order_items.stock_id')
                  ->whereColumn('order_items.order_id', 'stock.order_id');
         })
-        ->leftJoin('vendor_grade', 'order_items.reference_id', '=', 'vendor_grade.id')
+        ->leftJoin('vendor_grade', function($join) {
+            $join->on(DB::raw('COALESCE(order_items.reference_id, 0)'), '=', 'vendor_grade.id');
+        })
         ->leftJoin('stock_operations', function($join) {
             $join->on('stock.id', '=', 'stock_operations.stock_id')
                  ->whereColumn('stock_operations.new_variation_id', 'stock.variation_id')
