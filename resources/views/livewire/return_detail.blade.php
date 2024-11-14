@@ -151,6 +151,12 @@
                             <label for="">Reason</label>
                         </div>
 
+                        <div class="form-floating">
+                            <input type="text" class="form-control pd-x-20" name="return[battery]" placeholder="Battery Details" style="width: 50px;">
+                            <label for="">Battery status</label>
+                        </div>
+
+
                         <input type="hidden" name="return[order_id]" value="{{ $restock['order_id'] }}">
                         <input type="hidden" name="return[reference_id]" value="{{ $restock['reference_id'] }}">
                         <input type="hidden" name="return[stock_id]" value="{{ $restock['stock_id'] }}">
@@ -161,7 +167,9 @@
                 </div>
             @endif
             @if (isset($stock))
-            <a href="{{ url('imei/print_label').'?stock_id='.$stock->id}}" target="_blank" class="btn btn-secondary"><i class="fa fa-print"></i></a>
+            <div class="p-2">
+                <a href="{{ url('imei/print_label').'?stock_id='.$stock->id}}" target="_blank" class="btn btn-secondary"><i class="fa fa-print"></i></a>
+            </div>
             @endif
         </div>
         <hr style="border-bottom: 1px solid rgb(62, 45, 45);">

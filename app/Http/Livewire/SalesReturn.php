@@ -331,6 +331,9 @@ class SalesReturn extends Component
 
                     print_r($order_item);
 
+                    if($return['battery'] != null){
+                        $return['description'] .= " || B: ".$return['battery'];
+                    }
                     $stock_operation = Stock_operations_model::create([
                         'stock_id' => $stock->id,
                         'old_variation_id' => $stock->variation_id,
