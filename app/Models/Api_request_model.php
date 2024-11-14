@@ -55,6 +55,7 @@ class Api_request_model extends Model
                     $datas = json_decode($datas);
                 }
             }
+            print_r($datas);
             if($datas == null || ($datas->Imei == '' && $datas->Serial == '')){
                 continue;
             }
