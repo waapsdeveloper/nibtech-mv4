@@ -87,8 +87,8 @@ class InventorysheetExport implements FromCollection, WithHeadings
         ->when(request('product') != '', function ($q) {
             $q->where('variation.product_id', request('product'));
         })
-        ->when(request('grade') != '', function ($q) {
-            $q->where('variation.grade', request('grade'));
+        ->when(request('grade') != [], function ($q) {
+            return $q->whereIn('variation.grade', request('grade'));
         })
         ->when(request('sub_grade') != '', function ($q) {
             $q->where('variation.sub_grade', request('sub_grade'));
