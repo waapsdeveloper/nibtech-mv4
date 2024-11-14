@@ -41,7 +41,13 @@ class Api_request_model extends Model
         foreach($requests as $request){
             unset($sub_grade);
             $data = $request->request;
-            $datas = preg_split('/(?<=\}),(?=\{)/', $data)[0];
+            $datas = $data;
+            if (is_string($datas)) {
+                $datas = json_decode($datas);
+            }
+            if (strpos($data, '{') !== false && strpos($data, '}') !== false) {
+                $datas = preg_split('/(?<=\}),(?=\{)/', $data)[0];
+            }
             if (is_string($datas)) {
                 $datas = json_decode($datas);
             }
