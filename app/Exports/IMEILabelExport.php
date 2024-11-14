@@ -76,6 +76,13 @@ class IMEILabelExport
         $sub_grade = $last_variation->sub_grade_id->name ?? '';
 
         $movement = Stock_operations_model::where('stock_id', $stock_id)->orderBy('id','desc')->first();
+        $comment = $movement->description ?? '';
+        $explode = explode(' || ', $comment);
+        if(count($explode) == 3){
+            $lock = "iCloud On";
+        }else{
+            $lock = "iCloud Off";
+        }
         // Fallback to N/A if IMEI is not available
         $imei = $stock->imei ?? 'N/A';
 
@@ -100,8 +107,8 @@ class IMEILabelExport
         $pdf->SetLineStyle(['width' => 0.1, 'color' => [0, 0, 0]]);
 
         $pdf->SetFont('times', 'B', 9);
-        $pdf->MultiCell(25, 5, 'SO: '.$reference, 0, 'L', false, 0, null, null, true, 0, false, true, 0, 'T', true);
-        $pdf->MultiCell(37, 5, 'SG: '.$grade.' '.$sub_grade, 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
+        $pdf->MultiCell(42, 5, $reference.' | '.$grade.' '.$sub_grade, 0, 'L', false, 0, null, null, true, 0, false, true, 0, 'T', true);
+        $pdf->MultiCell(20, 4, $lock, 0, 'R', false, 1, null, null, true, 0, false, true, 0, 'T', true);
 
 
         $model = $variation->product->model;
@@ -125,15 +132,9 @@ class IMEILabelExport
         // Write Stock Movement history if needed
         $pdf->Ln(2); // Add some spacing
 
-        $comment = $movement->description ?? '';
-        $explode = explode(' || ', $comment);
-        if(count($explode) == 3){
-            $pdf->MultiCell(25, 4, 'V: '.$vendor, 0, 'L', false, 0, null, null, true, 0, false, true, 0, 'T', true);
-            $pdf->MultiCell(15, 4, 'iCloud', 0, 'C', false, 0, null, null, true, 0, false, true, 0, 'T', true);
-            $pdf->MultiCell(22, 4, $explode[2], 0, 'R', false, 1, null, null, true, 0, false, true, 0, 'T', true);
-        }elseif(count($explode) == 2){
-            $pdf->MultiCell(25, 4, 'V: '.$vendor, 0, 'L', false, 0, null, null, true, 0, false, true, 0, 'T', true);
-            $pdf->MultiCell(37, 4, $explode[1], 0, 'R', false, 1, null, null, true, 0, false, true, 0, 'T', true);
+        if(count($explode) > 1){
+            $pdf->MultiCell(37, 4, 'V: '.$vendor, 0, 'L', false, 0, null, null, true, 0, false, true, 0, 'T', true);
+            $pdf->MultiCell(30, 4, $explode[1], 0, 'R', false, 1, null, null, true, 0, false, true, 0, 'T', true);
         }else{
             $pdf->MultiCell(62, 4, 'V: '.$vendor, 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
         }
