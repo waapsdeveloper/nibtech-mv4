@@ -148,6 +148,13 @@ class MoveInventory extends Component
                     }
                 }
 
+                if(request('battery') != null){
+                    $description .= " || B: ".request('battery');
+                }
+
+                if(request('locked') != null){
+                    $description .= " || L: ".request('locked');
+                }
                 if(request('grade') != ''){
                     $grade = request('grade');
                 }

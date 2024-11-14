@@ -288,6 +288,15 @@
                                             {{-- <input type="text" class="form-control" name="return[imei]" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset"> --}}
                                             <label for="">Reason</label>
                                         </div>
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control pd-x-20" name="battery" placeholder="Battery Details" style="width: 100px;">
+                                            <label for="">Battery</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" name="locked" value="1" id="locked">
+                                            <label class="form-check-label" for="locked">Locked</label>
+                                        </div>
+
 
                                         <input type="hidden" name="imei" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset">
                                         <button class="btn btn-secondary pd-x-20" name="grade" value="8" type="submit">Repair</button>
