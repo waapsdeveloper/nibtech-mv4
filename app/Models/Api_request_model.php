@@ -42,7 +42,7 @@ class Api_request_model extends Model
             unset($sub_grade);
             $data = $request->request;
             $datas = $data;
-            if (strpos($datas, '{"ModelNo') == 0) {
+            if (strpos($datas, '"{\"ModelNo') != 0) {
                 $datas = json_decode($datas);
                 $datas = json_decode($datas);
                 echo "Hello";
