@@ -230,7 +230,7 @@
             let stocksTable = '';
             let stockPrices = [];
             let params = {
-                csrf: "{{ csrf_token() }}"
+                // csrf: "{{ csrf_token() }}"
             };
             let queryString = $.param(params);
             $.ajax({
