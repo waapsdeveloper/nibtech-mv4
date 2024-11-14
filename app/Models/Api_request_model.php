@@ -45,7 +45,7 @@ class Api_request_model extends Model
             if (strpos($datas, '"{\"ModelNo') != 0) {
                 $datas = json_decode($datas);
                 $datas = json_decode($datas);
-                echo "Hello";
+                // echo "Hello";
             } else{
                 if (strpos($data, '{') !== false && strpos($data, '}') !== false) {
                     $datas = preg_split('/(?<=\}),(?=\{)/', $data)[0];
@@ -56,15 +56,12 @@ class Api_request_model extends Model
                 if (is_string($datas)) {
                     $datas = json_decode($datas);
                 }
-                echo "Hell2o";
+                // echo "Hell2o";
             }
-            echo "<br>";
-            print_r($datas);
+            // echo "<br>";
+            // print_r($datas);
 
 
-            if($datas == null || ($datas->Imei == '' && $datas->Serial == '')){
-                continue;
-            }
             $stock = Stock_model::where('imei',$datas->Imei)->orWhere('imei',$datas->Imei2)->orWhere('serial_number',$datas->Serial)->first();
 
             if(!$stock && $datas->Imei == '' && $datas->Imei2 == ''){
