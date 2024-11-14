@@ -58,9 +58,9 @@ class Api_request_model extends Model
                 }
                 echo "Hell2o";
             }
-            if($datas == null || ($datas->Imei == '' && $datas->Serial == '')){
-                // continue;
+            if(!is_object($datas)){
                 print_r($datas);
+
             }
             if($datas == null || ($datas->Imei == '' && $datas->Serial == '')){
                 continue;
