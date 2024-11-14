@@ -592,7 +592,7 @@ class Order extends Component
         // $orderItem->stock->delete();
         $stock = Stock_model::find($orderItem->stock_id);
         $lp_item = Order_item_model::where('stock_id',$orderItem->stock_id)->where('order_id','!=',$orderItem->order_id)
-        ->whereHas('orders', function ($query) {
+        ->whereHas('order', function ($query) {
             $query->where('order_type_id', 1);
         })->orderBy('id','desc')->first();
 
