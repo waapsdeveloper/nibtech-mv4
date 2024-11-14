@@ -275,7 +275,7 @@
             let listingsTable = '';
             let countries = {!! json_encode($countries) !!};
             let params = {
-                csrf: "{{ csrf_token() }}"
+                _token: "{{ csrf_token() }}"
             };
             let queryString = $.param(params);
             $.ajax({
