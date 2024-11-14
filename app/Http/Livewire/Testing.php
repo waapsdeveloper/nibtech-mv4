@@ -68,8 +68,6 @@ class Testing extends Component
                     Log::warning("PHP code detected at row $key, column $col: $cell");
                     continue;
                 }
-                    continue;
-                }
                 $new_data[$dh[$col]] = $cell;
             }
             $api_request = Api_request_model::firstOrNew([
@@ -77,6 +75,9 @@ class Testing extends Component
             ]);
             $api_request->save();
         }
+
+        // Delete the temporary file
+
         session()->flash('message', 'Excel file uploaded successfully');
         return redirect()->back();
 
