@@ -142,7 +142,7 @@ class MoveInventory extends Component
                         $price = request('price');
                         $p_order = $stock->purchase_item;
 
-                        $description .= "Price changed from ".$p_order->price;
+                        $description .= " Price changed from ".$p_order->price;
                         $p_order->price = $price;
                         $p_order->save();
 
@@ -152,7 +152,7 @@ class MoveInventory extends Component
                         $vendor_grade = request('vendor_grade');
                         $p_order = $stock->purchase_item;
 
-                        $description .= "Vendor Grade changed from ".$p_order->reference_id;
+                        $description .= " Vendor Grade changed from ".$p_order->reference_id;
                         $p_order->reference_id = $vendor_grade;
                         $p_order->save();
 
