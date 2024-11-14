@@ -126,7 +126,7 @@
 
                                     $total_repair_cost += $sales->items_repair_sum;
                                     $total_fee += $sales->charges;
-                                    $total_eur = $sales->eur_items_sum - $sale_cost - $sales->items_repair_sum;
+                                    $total_eur = $sales->eur_items_sum - $sale_cost - $sales->items_repair_sum - $sales->charges;
                                     $total_gbp = $sales->gbp_items_sum ?? 0;
                                     $gbp_items_sum = $sales->gbp_items_sum ?? 0;
                                     if($returns != null){
@@ -301,7 +301,7 @@
                                 @if (session('user')->hasPermission('view_cost'))
                                 <td title=""><strong>€{{ amount_formatter($total_sale_cost-$total_return_cost,2) }}</strong></td>
                                 <td><strong>€{{ amount_formatter($total_repair_cost-$total_repair_return_cost,2) }}</strong></td>
-                                <td><strong>{{ amount_formatter(0,2) }}</strong></td>
+                                <td><strong>{{ amount_formatter($total_fee,2) }}</strong></td>
                                 @endif
                                 @if (session('user')->hasPermission('view_price'))
                                 <td><strong>€{{ amount_formatter($total_sale_eur_items-$total_return_eur_items,2) }}</strong></td>
