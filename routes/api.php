@@ -37,7 +37,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // Route::post('request', [ApiRequestController::class, 'store']);
 });
 
-Route::group(['middleware' => ['start', 'internal.only', 'verify']], function () {
+Route::group(['middleware' => ['internal.only']], function () {
     Route::get('/internal/get_variations', [InternalApiController::class, 'get_variations']);
     Route::get('/internal/get_sales/{id}', [InternalApiController::class, 'get_sales']);
     Route::get('/internal/get_variation_available_stocks/{id}', [InternalApiController::class, 'get_variation_available_stocks']);
