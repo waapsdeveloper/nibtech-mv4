@@ -635,7 +635,23 @@
                             @php
 
                                 $data = $result->request;
-                                $datas = json_decode(json_decode(preg_split('/(?<=\}),(?=\{)/', $data)[0]));
+                                $datas = $data;
+                                if (strpos($datas, '"{\"ModelNo') != 0) {
+                                    $datas = json_decode($datas);
+                                    $datas = json_decode($datas);
+                                    // echo "Hello";
+                                } else{
+                                    if (strpos($data, '{') !== false && strpos($data, '}') !== false) {
+                                        $datas = preg_split('/(?<=\}),(?=\{)/', $data)[0];
+                                    }
+                                    if (is_string($datas)) {
+                                        $datas = json_decode($datas);
+                                    }
+                                    if (is_string($datas)) {
+                                        $datas = json_decode($datas);
+                                    }
+                                    // echo "Hell2o";
+                                }
                                 echo "Test DateTime s: ".$result->created_at;
                                 echo "<a href='".url('testing/repush/'.$result->id)."'> Repush Test</a><br>";
                                 print_r($datas);
