@@ -133,8 +133,8 @@ class IMEILabelExport
         $pdf->Ln(2); // Add some spacing
 
         if(count($explode) > 1){
-            $pdf->MultiCell(37, 4, 'V: '.$vendor, 0, 'L', false, 0, null, null, true, 0, false, true, 0, 'T', true);
-            $pdf->MultiCell(30, 4, $explode[1], 0, 'R', false, 1, null, null, true, 0, false, true, 0, 'T', true);
+            $pdf->MultiCell(28, 4, 'V: '.$vendor, 0, 'L', false, 0, null, null, true, 0, false, true, 0, 'T', true);
+            $pdf->MultiCell(20, 4, $explode[1], 0, 'R', false, 1, null, null, true, 0, false, true, 0, 'T', true);
         }else{
             $pdf->MultiCell(58, 4, 'V: '.$vendor, 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
         }
