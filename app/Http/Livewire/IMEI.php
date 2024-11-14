@@ -348,6 +348,9 @@ class IMEI extends Component
 
         // Now, process the rest of the order items based on the rules
         foreach ($order_items as $item) {
+            if($item->order->order_type_id == 1){
+                $order_id = $item->order_id;
+            }
             $last_item = Order_item_model::find($linked_id);
             if (in_array($item->order->order_type_id, [3, 5, 2]) && $linked_id && in_array($last_item->order->order_type_id, [1, 4, 6])) {
                 // $new_order[] = $item;
@@ -392,6 +395,9 @@ class IMEI extends Component
         }
 
         foreach ($reserve as $item_id) {
+            if($item->order->order_type_id == 1){
+                $order_id = $item->order_id;
+            }
             $item2 = Order_item_model::find($item_id);
             $last_item = Order_item_model::find($linked_id);
             if (in_array($item2->order->order_type_id, [3, 5, 2]) && $linked_id && in_array($last_item->order->order_type_id, [1, 4, 6])) {
@@ -441,7 +447,8 @@ class IMEI extends Component
                 $linked_id = $item2->id;
             }
         }
-
+        $stock->order_id = $order_id;
+        $stock->save();
         session()->put('success', 'Rearranged Successfully');
         return redirect()->back();
     }
