@@ -42,17 +42,18 @@ class Api_request_model extends Model
             unset($sub_grade);
             $data = $request->request;
             $datas = $data;
-            if (is_string($datas)) {
+            if (strpos($datas, '{"ModelNo') == 0) {
                 $datas = json_decode($datas);
-            }
-            // if (strpos($data, '{') !== false && strpos($data, '}') !== false) {
-            //     $datas = preg_split('/(?<=\}),(?=\{)/', $data)[0];
-            // }
-            if (is_string($datas)) {
-                $datas = json_decode($datas);
-            }
-            if (is_string($datas)) {
-                $datas = json_decode($datas);
+            } else{
+                if (strpos($data, '{') !== false && strpos($data, '}') !== false) {
+                    $datas = preg_split('/(?<=\}),(?=\{)/', $data)[0];
+                }
+                if (is_string($datas)) {
+                    $datas = json_decode($datas);
+                }
+                if (is_string($datas)) {
+                    $datas = json_decode($datas);
+                }
             }
             if($datas == null || ($datas->Imei == '' && $datas->Serial == '')){
                 continue;
