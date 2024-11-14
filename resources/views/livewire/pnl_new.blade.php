@@ -76,6 +76,7 @@
                                 $total_approved_sale_gbp_items = 0;
                                 $total_sale_cost = 0;
                                 $total_repair_cost = 0;
+                                $total_fee = 0;
                                 $total_eur_profit = 0;
                                 $total_gbp_profit = 0;
 
@@ -122,7 +123,9 @@
                                     $total_sale_eur_items += $sales->eur_items_sum;
                                     $total_sale_gbp_items += $sales->gbp_items_sum ?? 0;
                                     $total_sale_cost += $sale_cost;
+
                                     $total_repair_cost += $sales->items_repair_sum;
+                                    $total_fee += $sales->charges;
                                     $total_eur = $sales->eur_items_sum - $sale_cost - $sales->items_repair_sum;
                                     $total_gbp = $sales->gbp_items_sum ?? 0;
                                     $gbp_items_sum = $sales->gbp_items_sum ?? 0;
@@ -158,7 +161,7 @@
                                     @if (session('user')->hasPermission('view_cost'))
                                     <td title="{{count(explode(',',$sales->stock_ids))}}">€{{ amount_formatter($sale_cost,2) }} @if ($returns != null) (€{{ amount_formatter($return_cost,2) }}) @endif</td>
                                     <td>€{{ amount_formatter($sales->items_repair_sum,2) }} @if ($returns != null) (€{{ amount_formatter($returns->items_repair_sum,2) }}) @endif</td>
-                                    <td>{{ amount_formatter(0,2) }} @if ($returns != null) () @endif</td>
+                                    <td>{{ amount_formatter($sales->charges,2) }} @if ($returns != null) () @endif</td>
                                    @endif
                                     @if (session('user')->hasPermission('view_price'))
                                     <td>€{{ amount_formatter($sales->eur_items_sum,2) }} @if ($returns != null) (€{{ amount_formatter($returns->eur_items_sum,2) }}) @endif</td>
