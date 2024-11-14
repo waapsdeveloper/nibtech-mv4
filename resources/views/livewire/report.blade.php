@@ -68,7 +68,7 @@
                 <select name="vendor" class="form-select" form="index">
                     <option value="">Vendor</option>
                     @foreach ($vendors as $id=>$name)
-                        <option value="{{ $id }}" @if(isset(request('vendor')) && $id == request('vendor')) {{'selected'}}@endif>{{ $name }}</option>
+                        <option value="{{ $id }}" @if(isset($_GET['vendor']) && $id == $_GET['vendor']) {{'selected'}}@endif>{{ $name }}</option>
                     @endforeach
                 </select>
             </div>
