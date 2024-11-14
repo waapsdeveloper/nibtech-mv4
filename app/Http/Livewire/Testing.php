@@ -75,8 +75,8 @@ class Testing extends Component
             ]);
             $api_request->save();
         }
-
         // Delete the temporary file
+        unlink($excelFilePath);
 
         session()->flash('message', 'Excel file uploaded successfully');
         return redirect()->back();
