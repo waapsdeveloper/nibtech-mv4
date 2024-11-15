@@ -20,7 +20,7 @@ class IMEILabelExport
         $variation = Variation_model::with(['product', 'storage_id', 'color_id', 'grade_id', 'sub_grade_id'])
                 ->find($stock->variation_id);
         $vendor = $stock->order->customer->first_name ?? 'Unknown';
-        $orders = Order_item_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
+        // $orders = Order_item_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
 
         $last_sale_order = Order_item_model::where('stock_id', $stock_id)->whereHas('order', function($q){
             $q->whereIn('order_type_id', [3,5]);
@@ -65,14 +65,15 @@ class IMEILabelExport
         $movement = Stock_operations_model::where('stock_id', $stock_id)->orderBy('id','desc')->first();
         $comment = $movement->description ?? '';
         $explode = explode(' || ', $comment);
-        if(count($explode) == 3){
-            $lock = "iCloud On";
-        }else{
-            $lock = "iCloud Off";
-            foreach($explode as $item){
-                if(str_contains($item, 'L: 1')){
-                    $lock = "iCloud On";
-                }
+        $lock = "iCloud Off";
+        $battery = "BS: ";
+        foreach($explode as $key => $item){
+            if($key == 0){
+                $comment = $item;
+            }elseif(str_contains($item, 'L: 1')){
+                $lock = "iCloud On";
+            }else{
+                $battery = $item;
             }
         }
         // Fallback to N/A if IMEI is not available
@@ -124,19 +125,18 @@ class IMEILabelExport
         // Write Stock Movement history if needed
         $pdf->Ln(2); // Add some spacing
 
-        if(count($explode) > 1){
-            $pdf->MultiCell(28, 4, 'V: '.$vendor, 0, 'L', false, 0, null, null, true, 0, false, true, 0, 'T', true);
-            $pdf->MultiCell(20, 4, $explode[1], 0, 'R', false, 1, null, null, true, 0, false, true, 0, 'T', true);
-        }else{
-            $pdf->MultiCell(58, 4, 'V: '.$vendor, 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
-        }
+        $pdf->MultiCell(28, 4, 'V: '.$vendor, 0, 'L', false, 0, null, null, true, 0, false, true, 0, 'T', true);
+        $pdf->MultiCell(20, 4, $battery, 0, 'R', false, 1, null, null, true, 0, false, true, 0, 'T', true);
 
 
         $pdf->MultiCell(58, 0, 'Invoice: '. $shipment_date, 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
 
         $pdf->MultiCell(58, 0, 'Delivery: '. $delivery_date, 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
 
-        $pdf->MultiCell(58, 0, 'Cmt: '. $explode[0], 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
+        $pdf->MultiCell(58, 0, 'Update: '. $movement->created_at, 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
+
+
+        $pdf->MultiCell(58, 0, 'Cmt: '. $comment, 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
 
         // $pdf->Ln(2); // Add some spacing
         // $pdf->SetFont('times', '', 9);
