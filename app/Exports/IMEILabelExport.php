@@ -40,6 +40,9 @@ class IMEILabelExport
             $color = $last_variation->color_id->name ?? '';
             $grade = $last_variation->grade_id->name ?? '';
             $sub_grade = $last_variation->sub_grade_id->name ?? '';
+            $shipment_date = $last_order->processed_at;
+            $delivery_date = $last_order->delivered_at;
+
         }else{
             $reference = 'N/A';
             $model = 'N/A';
@@ -47,6 +50,9 @@ class IMEILabelExport
             $color = 'N/A';
             $grade = 'N/A';
             $sub_grade = 'N/A';
+            $shipment_date = 'N/A';
+            $delivery_date = 'N/A';
+
         }
         $movement = Stock_operations_model::where('stock_id', $stock_id)->orderBy('id','desc')->first();
         $comment = $movement->description ?? '';
@@ -116,6 +122,11 @@ class IMEILabelExport
         }else{
             $pdf->MultiCell(58, 4, 'V: '.$vendor, 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
         }
+
+
+        $pdf->MultiCell(58, 0, 'Invoice: '. $shipment_date, 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
+
+        $pdf->MultiCell(58, 0, 'Delivery: '. $delivery_date, 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
 
         $pdf->MultiCell(58, 0, 'Cmt: '. $explode[0], 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
 
