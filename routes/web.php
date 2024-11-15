@@ -262,16 +262,22 @@ Route::get('variation', Variation::class)->name('view_variation');
 Route::post('variation/update_product/{id}', [Variation::class,'update_product'])->name('update_variation');
 Route::post('variation/merge/{id}', [Variation::class,'merge'])->name('merge_variation');
 
-Route::get('listing_old', Listing::class)->name('view_listing');
-Route::get('get_variations', [Listing::class,'get_variations'])->name('view_listing');
-Route::get('get_variation_available_stock/{id}', [Listing::class,'get_variation_available_stock'])->name('view_listing');
-Route::get('listing/get_competitors/{id}', [Listing::class,'get_competitors'])->name('view_listing');
-Route::get('listing/get_sales/{id}', [Listing::class,'get_sales'])->name('view_listing');
-Route::post('listing/update_quantity/{id}', [Listing::class,'update_quantity'])->name('update_listing_quantity');
-Route::post('listing/update_price/{id}', [Listing::class,'update_price'])->name('update_listing_price');
+// Route::get('listing_old', Listing::class)->name('view_listing');
+// Route::get('get_variations', [Listing::class,'get_variations'])->name('view_listing');
+// Route::get('get_variation_available_stock/{id}', [Listing::class,'get_variation_available_stock'])->name('view_listing');
+// Route::get('listing/get_competitors/{id}', [Listing::class,'get_competitors'])->name('view_listing');
+// Route::get('listing/get_sales/{id}', [Listing::class,'get_sales'])->name('view_listing');
+// Route::post('listing/update_quantity/{id}', [Listing::class,'update_quantity'])->name('update_listing_quantity');
+// Route::post('listing/update_price/{id}', [Listing::class,'update_price'])->name('update_listing_price');
 
 Route::get('listing', [ListingController::class, 'index'])->name('view_listing');
-Route::get('listing_new', [ListingController::class, 'index'])->name('view_listing');
+Route::get('listing/get_variations', [ListingController::class, 'get_variations'])->name('view_listing');
+Route::get('listing/get_sales/{id}', [ListingController::class, 'get_sales'])->name('view_listing');
+Route::get('listing/get_variation_available_stocks/{id}', [ListingController::class, 'get_variation_available_stocks'])->name('view_listing');
+Route::get('listing/get_updated_quantity/{id}', [ListingController::class, 'getUpdatedQuantity'])->name('view_listing');
+Route::get('listing/get_competitor+s/{id}/{no_check?}', [ListingController::class, 'getCompetitors'])->name('view_listing');
+Route::post('listing/update_quantity/{id}', [ListingController::class,'update_quantity'])->name('update_listing_quantity');
+Route::post('listing/update_price/{id}', [ListingController::class,'update_price'])->name('update_listing_price');
 
 
 Route::get('process', Process::class)->name('view_process');

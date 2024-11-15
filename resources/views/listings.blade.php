@@ -210,7 +210,7 @@
             };
             let queryString = $.param(params);
             return $.ajax({
-                url: `{{ url('api/internal/get_updated_quantity') }}/${variationId}?${queryString}`,
+                url: `{{ url('listing/get_updated_quantity') }}/${variationId}?${queryString}`,
                 type: 'GET',
                 dataType: 'json',
                 success: function(response) {
@@ -234,7 +234,7 @@
             };
             let queryString = $.param(params);
             $.ajax({
-                url: "{{ url('api/internal/get_variation_available_stocks') }}/" + variationId+"?"+queryString,
+                url: "{{ url('listing/get_variation_available_stocks') }}/" + variationId+"?"+queryString,
                 type: 'GET',
                 dataType: 'json',
                 success: function(data) {
@@ -279,7 +279,7 @@
             };
             let queryString = $.param(params);
             $.ajax({
-                url: "{{ url('api/internal/get_competitors') }}/" + variationId+"/"+check+"?"+queryString,
+                url: "{{ url('listing/get_competitors') }}/" + variationId+"/"+check+"?"+queryString,
                 type: 'GET',
                 dataType: 'json',
                 success: function(data) {
@@ -383,7 +383,7 @@
                 let queryString = $.param(params);
 
                 // Append query string to the URL
-                let url = "{{ url('api/internal/get_variations') }}" + '?' + queryString;
+                let url = "{{ url('listing/get_variations') }}" + '?' + queryString;
 
                 $.ajax({
                     url: url,
@@ -460,7 +460,7 @@
                 // Check if there's data
                 if (variations.data.length > 0) {
                     variations.data.forEach(function(variation) {
-                        // load("{{ url('api/internal/get_competitors')}}/${variation.id}");
+                        // load("{{ url('listing/get_competitors')}}/${variation.id}");
 
                         let stocksTable = '';
                         let listingsTable = '';
@@ -611,7 +611,7 @@
                         $("#change_qty_"+variation.id).submit(function(e) {
                             submitForm(e, variation.id);
                         });
-                        $('#sales_'+variation.id).load("{{ url('api/internal/get_sales') . '/'}}"+variation.id+"?csrf={{ csrf_token() }}");
+                        $('#sales_'+variation.id).load("{{ url('listing/get_sales') . '/'}}"+variation.id+"?csrf={{ csrf_token() }}");
                     });
                 } else {
                     variationsContainer.append('<p>No variations found.</p>');
