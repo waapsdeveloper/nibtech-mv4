@@ -492,7 +492,7 @@
                                         </a>
                                     </td>
                                     <td>${listing.buybox_price}</td>
-                                    <td>${listing.buybox_winner_price}</td>
+                                    <td>${listing.buybox !== 1 ? listing.buybox_winner_price : ''}</td>
                                     <td>
                                         <form class="form-inline" method="POST" id="change_min_price_${listing.id}">
                                             @csrf
