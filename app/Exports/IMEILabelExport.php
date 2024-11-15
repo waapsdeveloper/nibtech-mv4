@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use App\Http\Livewire\Order;
 use App\Models\Order_item_model;
 use App\Models\Order_model;
 use App\Models\Stock_model;
@@ -33,6 +34,14 @@ class IMEILabelExport
                 $r_id = $last_sale_order->reference_id;
             }
             $last_order = Order_model::where('reference_id', $r_id)->where('order_type_id',3)->first();
+
+            if($last_order != null && $last_order->delivered_at == null){
+                $order_l = new Order();
+                $order_l->getLabel($r_id, FALSE, TRUE);
+
+                $last_order = Order_model::where('reference_id', $r_id)->where('order_type_id',3)->first();
+
+            }
 
             $last_variation = Variation_model::find($last_sale_order->variation_id);
             $model = $last_variation->product->model;
