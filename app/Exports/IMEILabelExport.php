@@ -136,6 +136,7 @@ class IMEILabelExport
         $pdf->MultiCell(58, 0, 'Update: '. $movement->created_at, 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
 
 
+        $pdf->SetFont('times', 'B', 10);
         $pdf->MultiCell(58, 0, 'Cmt: '. $comment, 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
 
         // $pdf->Ln(2); // Add some spacing
