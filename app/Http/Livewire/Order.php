@@ -2704,6 +2704,7 @@ class Order extends Component
                 $order->scanned = 1;
                 if($order->dateDelivery != null){
                     $order->delivered_at = Carbon::parse($datas->results[0]->dateDelivery);
+                    return $order->delivered_at;
                 }
                 $order->save();
             }
