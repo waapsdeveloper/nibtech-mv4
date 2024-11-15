@@ -54,7 +54,11 @@ class IMEILabelExport
         if(count($explode) == 3){
             $lock = "iCloud On";
         }else{
-            $lock = "iCloud Off";
+            if(str_contains($explode[0], 'L: 1')){
+                $lock = "iCloud On";
+            }else{
+                $lock = "iCloud Off";
+            }
         }
         // Fallback to N/A if IMEI is not available
         $imei = $stock->imei ?? $stock->serial_number ?? 'N/A';
