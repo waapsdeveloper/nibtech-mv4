@@ -40,7 +40,6 @@ class IMEILabelExport
                 $order_l->getLabel($r_id, true, true);
 
                 $last_order = Order_model::where('reference_id', $r_id)->where('order_type_id',3)->first();
-                echo "dsadasd";
             }
 
             $last_variation = Variation_model::find($last_sale_order->variation_id);
