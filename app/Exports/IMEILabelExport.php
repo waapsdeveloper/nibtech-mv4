@@ -54,7 +54,7 @@ class IMEILabelExport
         if(count($explode) == 3){
             $lock = "iCloud On";
         }else{
-            if(str_contains($explode[0], 'L: 1')){
+            if(str_contains($explode[1], 'L: 1')){
                 $lock = "iCloud On";
             }else{
                 $lock = "iCloud Off";
