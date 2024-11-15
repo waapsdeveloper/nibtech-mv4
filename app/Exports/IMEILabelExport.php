@@ -103,6 +103,7 @@ class IMEILabelExport
         $pdf->MultiCell(42, 5, 'SO: '.$reference.' | '.$grade.' '.$sub_grade, 0, 'L', false, 0, null, null, true, 0, false, true, 0, 'T', true);
         $pdf->MultiCell(16, 4, $lock, 0, 'R', false, 1, null, null, true, 0, false, true, 0, 'T', true);
 
+        $pdf->Ln(2); // Add some spacing
 
         $model = $variation->product->model;
         $storage = $variation->storage_id->name ?? '';
