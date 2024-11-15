@@ -38,13 +38,13 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 });
 
 Route::group(['middleware' => ['internal.only']], function () {
-    Route::get('/internal/get_variations', [InternalApiController::class, 'get_variations']);
-    Route::get('/internal/get_sales/{id}', [InternalApiController::class, 'get_sales']);
-    Route::get('/internal/get_variation_available_stocks/{id}', [InternalApiController::class, 'get_variation_available_stocks']);
-    Route::get('/internal/get_updated_quantity/{id}', [InternalApiController::class, 'getUpdatedQuantity']);
-    Route::get('/internal/get_competitors/{id}/{no_check?}', [InternalApiController::class, 'getCompetitors']);
-    Route::get('/internal/inventory_get_vendor_wise_average', [InternalApiController::class, 'inventoryGetVendorWiseAverage']);
-    Route::get('/internal/inventory_get_average_cost', [InternalApiController::class, 'inventoryGetAverageCost']);
+    // Route::get('/internal/get_variations', [InternalApiController::class, 'get_variations']);
+    // Route::get('/internal/get_sales/{id}', [InternalApiController::class, 'get_sales']);
+    // Route::get('/internal/get_variation_available_stocks/{id}', [InternalApiController::class, 'get_variation_available_stocks']);
+    // Route::get('/internal/get_updated_quantity/{id}', [InternalApiController::class, 'getUpdatedQuantity']);
+    // Route::get('/internal/get_competitors/{id}/{no_check?}', [InternalApiController::class, 'getCompetitors']);
+    // Route::get('/internal/inventory_get_vendor_wise_average', [InternalApiController::class, 'inventoryGetVendorWiseAverage']);
+    // Route::get('/internal/inventory_get_average_cost', [InternalApiController::class, 'inventoryGetAverageCost']);
 
 
 

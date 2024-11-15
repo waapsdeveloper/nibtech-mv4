@@ -718,7 +718,7 @@
 
                 let queryString = $.param(params);
                 $.ajax({
-                    url: "{{url('api/internal/inventory_get_average_cost')}}?"+queryString,
+                    url: "{{url('inventory/inventory_get_average_cost')}}?"+queryString,
                     type: 'GET',
                     success: function(data) {
                         console.log(data);
@@ -743,7 +743,7 @@
 
                 let queryString = $.param(params);
                 $.ajax({
-                    url: "{{url('api/internal/inventory_get_vendor_wise_average')}}?"+queryString,
+                    url: "{{url('inventory/inventory_get_vendor_wise_average')}}?"+queryString,
                     type: 'GET',
                     success: function(data) {
                         console.log(data);

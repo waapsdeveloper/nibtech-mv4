@@ -240,6 +240,8 @@ Route::post('order/dispatch_allowed/{id}', [Order::class,'dispatch_allowed'])->n
 Route::get('inventory', Inventory::class)->name('view_inventory');
 Route::get('inventory/get_products', [Inventory::class,'get_products'])->name('view_inventory');
 Route::get('inventory/get_variations/{id}', [Inventory::class,'get_variations'])->name('view_inventory');
+Route::get('inventory/inventory_get_vendor_wise_average', [Inventory::class, 'inventoryGetVendorWiseAverage'])->name('view_inventory');
+Route::get('inventory/inventory_get_average_cost', [Inventory::class, 'inventoryGetAverageCost'])->name('view_inventory');
 Route::post('inventory/export', [Inventory::class,'export'])->name('view_inventory');
 
 Route::get('get_stock_cost/{id}', [Inventory::class,'get_stock_cost'])->name('view_inventory');
