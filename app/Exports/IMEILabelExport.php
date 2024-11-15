@@ -11,44 +11,6 @@ use TCPDF;
 
 class IMEILabelExport
 {
-    // public function generatePdf()
-    // {
-    //     $stock_id = request('stock_id');
-    //     $stock = Stock_model::find($stock_id);
-    //     $variation = Variation_model::with(['product', 'storage_id', 'color_id', 'grade_id', 'sub_grade_id'])
-    //                 ->find($stock->variation_id);
-    //     $orders = Order_item_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
-    //     $movement = Stock_operations_model::where('stock_id', $stock_id)->orderBy('id','desc')->first();
-    //     $imei = $stock->imei ?? 'N/A';
-
-    //     $new_variation = $movement->old_variation;
-    //     $movementDetails = $movement->created_at . ' - ' . ($movement->admin->first_name ?? 'Unknown') . ' - ' .
-    //         'From: ' . ($new_variation->product->model . ' ' . $new_variation->storage_id->name ?? '' . ' ' . $new_variation->color_id->name ?? '');
-
-    //     // Generate Barcode as an Image
-    //     $barcodeImage = 'data:image/png;base64,' . base64_encode(
-    //         \DNS1D::getBarcodePNG($imei, 'C128')
-    //     );
-
-    //     // Generate the HTML view content
-    //     $html = view('pdf.imei_label', compact('variation', 'imei', 'orders', 'movementDetails', 'barcodeImage'))->render();
-
-    //     // Initialize TCPDF
-    //     $pdf = new TCPDF('P', 'mm', array(62, 100), true, 'UTF-8', false);
-    //     $pdf->SetCreator(PDF_CREATOR);
-    //     $pdf->setPrintHeader(false);
-    //     $pdf->setPrintFooter(false);
-    //     $pdf->SetMargins(2, 5, 2);
-    //     $pdf->AddPage();
-    //     $pdf->SetFont('times', '', 9);
-
-    //     // Render HTML to PDF
-    //     $pdf->writeHTML($html, true, false, true, false, '');
-
-    //     // Output the PDF
-    //     return $pdf->Output('product_label.pdf');
-    // }
-
     public function generatePdf()
     {
         $stock_id = request('stock_id');
@@ -62,21 +24,30 @@ class IMEILabelExport
         $last_sale_order = Order_item_model::where('stock_id', $stock_id)->whereHas('order', function($q){
             $q->whereIn('order_type_id', [3,5]);
         })->orderBy('id','desc')->first();
+        if($last_sale_order != null){
+            if($last_sale_order->order->order_type_id == 3){
+                $reference = $last_sale_order->order->reference_id;
+                $r_id = $reference;
+            }else{
+                $reference = $last_sale_order->reference_id.' (R)';
+                $r_id = $last_sale_order->reference_id;
+            }
+            $last_order = Order_model::where('reference_id', $r_id)->where('order_type_id',3)->first();
 
-        if($last_sale_order->order->order_type_id == 3){
-            $reference = $last_sale_order->order->reference_id;
+            $last_variation = Variation_model::find($last_sale_order->variation_id);
+            $model = $last_variation->product->model;
+            $storage = $last_variation->storage_id->name ?? '';
+            $color = $last_variation->color_id->name ?? '';
+            $grade = $last_variation->grade_id->name ?? '';
+            $sub_grade = $last_variation->sub_grade_id->name ?? '';
         }else{
-            $reference = $last_sale_order->reference_id.' (R)';
+            $reference = 'N/A';
+            $model = 'N/A';
+            $storage = 'N/A';
+            $color = 'N/A';
+            $grade = 'N/A';
+            $sub_grade = 'N/A';
         }
-        $last_order = Order_model::where('reference_id', $reference)->where('order_type_id',3)->first();
-
-        $last_variation = Variation_model::find($last_sale_order->variation_id);
-        $model = $last_variation->product->model;
-        $storage = $last_variation->storage_id->name ?? '';
-        $color = $last_variation->color_id->name ?? '';
-        $grade = $last_variation->grade_id->name ?? '';
-        $sub_grade = $last_variation->sub_grade_id->name ?? '';
-
         $movement = Stock_operations_model::where('stock_id', $stock_id)->orderBy('id','desc')->first();
         $comment = $movement->description ?? '';
         $explode = explode(' || ', $comment);
@@ -109,7 +80,7 @@ class IMEILabelExport
         $pdf->SetLineStyle(['width' => 0.1, 'color' => [0, 0, 0]]);
 
         $pdf->SetFont('times', 'B', 9);
-        $pdf->MultiCell(42, 5, $reference.' | '.$grade.' '.$sub_grade, 0, 'L', false, 0, null, null, true, 0, false, true, 0, 'T', true);
+        $pdf->MultiCell(42, 5, 'SO: '.$reference.' | '.$grade.' '.$sub_grade, 0, 'L', false, 0, null, null, true, 0, false, true, 0, 'T', true);
         $pdf->MultiCell(16, 4, $lock, 0, 'R', false, 1, null, null, true, 0, false, true, 0, 'T', true);
 
 
