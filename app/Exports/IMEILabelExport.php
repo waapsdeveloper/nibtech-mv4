@@ -86,7 +86,7 @@ class IMEILabelExport
             $lock = "iCloud Off";
         }
         // Fallback to N/A if IMEI is not available
-        $imei = $stock->imei ?? 'N/A';
+        $imei = $stock->imei ?? $stock->serial_number ?? 'N/A';
 
         // Create a new PDF document using TCPDF
         $pdf = new TCPDF('P', 'mm', array(62, 100), true, 'UTF-8', false);
