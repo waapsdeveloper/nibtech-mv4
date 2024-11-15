@@ -2709,7 +2709,7 @@ class Order extends Component
             }
         }
         if($data == true){
-            dd($datas);
+            return $datas;
         }else{
             return redirect()->back();
         }

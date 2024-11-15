@@ -37,7 +37,7 @@ class IMEILabelExport
 
             if($last_order != null && $last_order->delivered_at == null){
                 $order_l = new Order();
-                $order_l->getLabel($r_id, FALSE, TRUE);
+                $order_l->getLabel($r_id, true, true);
 
                 $last_order = Order_model::where('reference_id', $r_id)->where('order_type_id',3)->first();
                 echo "dsadasd";
