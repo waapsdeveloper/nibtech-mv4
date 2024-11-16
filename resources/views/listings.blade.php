@@ -204,7 +204,8 @@
             listings.forEach(function(listing) {
                 $('#min_price_' + listing.id).val(min_price);
                 $('#price_' + listing.id).val(price);
-
+                submitForm2(event, listing.id);
+                submitForm3(event, listing.id);
             });
         }
 
