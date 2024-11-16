@@ -202,8 +202,8 @@
             var price = $('#all_price_' + variationId).val();
 
             listings.forEach(function(listing) {
-                let min = $('#min_price_' + listing);
-                let price = $('#price_' + listing);
+                let min = $('#min_price_' + listing.id);
+                let price = $('#price_' + listing.id);
                 min.val(min_price);
                 price.val(price);
             });
