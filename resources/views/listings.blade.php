@@ -583,11 +583,11 @@
                                 <div class="d-flex justify-content-between">
 
                                     <div class="p-2">
-                                        <h6 class="d-inline">Without&nbsp;Buybox</h6>
+                                        <h6 class="text-center">Without&nbsp;Buybox</h6>
                                         ${withoutBuybox}
                                     </div>
                                     <div class="p-2">
-                                        <h6 class="d-inline">Change&nbsp;All&nbsp;€&nbsp;prices</h6>
+                                        <h6 class="text-center">Change&nbsp;All&nbsp;€&nbsp;prices</h6>
                                         <form method="POST" id="change_all_min_price_${variation.id}">
                                             @csrf
                                             <input type="submit" hidden>
@@ -606,7 +606,7 @@
                                         </div>
                                     </div>
                                     <div class="p-2 mw-50">
-                                        <h6 class="d-inline">With&nbsp;Buybox</h6>
+                                        <h6 class="text-center">With&nbsp;Buybox</h6>
                                         ${withBuybox}
                                     </div>
                                 </div>
