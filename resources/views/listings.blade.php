@@ -586,7 +586,7 @@
                                         <h6 class="d-inline">Without Buybox</h6>
                                         ${withoutBuybox}
                                     </div>
-                                    <div class="p-2">
+                                    <div class="p-2 d-flex">
                                         <h6 class="d-inline">Change All € prices</h6>
                                         <form method="POST" id="change_all_min_price_${variation.id}">
                                             @csrf
