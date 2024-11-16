@@ -673,7 +673,7 @@
 
                         $(document).ready(function() {
 
-                            $("#change_all_prices_" + variation.id).on('submit', function(e) {
+                            $("#change_all_price_" + variation.id).on('submit', function(e) {
                                 submitForm4(e, variation.id);
                             });
                         });
