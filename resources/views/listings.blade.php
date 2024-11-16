@@ -588,22 +588,18 @@
                                     </div>
                                     <div class="p-2">
                                         <h6 class="text-center">Change&nbsp;All&nbsp;€&nbsp;prices</h6>
-                                        <form method="POST" id="change_all_min_price_${variation.id}">
+                                        <form class="form-inline" method="POST" id="change_all_price_${variation.id}">
                                             @csrf
-                                            <input type="submit" hidden>
+                                            <div class="form-floating d-inline">
+                                                <input type="number" class="form-control" form="change_all_min_price_${variation.id}" name="change_all_min_price" step="0.01" value="" style="width:80px;">
+                                                <label for="">Min&nbsp;Price</label>
+                                            </div>
+                                            <div class="form-floating d-inline">
+                                                <input type="number" class="form-control" form="change_all_price_${variation.id}" name="change_all_price" step="0.01" value="" style="width:80px;">
+                                                <label for="">Price</label>
+                                            </div>
+                                            <input type="submit" class="btn btn-light" value="Push">
                                         </form>
-                                        <div class="form-floating d-inline">
-                                            <input type="number" class="form-control" form="change_all_min_price_${variation.id}" name="change_all_min_price" step="0.01" value="" style="width:80px;">
-                                            <label for="">Min&nbsp;Price</label>
-                                        </div>
-                                        <form method="POST" id="change_all_price_${variation.id}">
-                                            @csrf
-                                            <input type="submit" hidden>
-                                        </form>
-                                        <div class="form-floating d-inline">
-                                            <input type="number" class="form-control" form="change_all_price_${variation.id}" name="change_all_price" step="0.01" value="" style="width:80px;">
-                                            <label for="">Price</label>
-                                        </div>
                                     </div>
                                     <div class="p-2 mw-50">
                                         <h6 class="text-center">With&nbsp;Buybox</h6>
