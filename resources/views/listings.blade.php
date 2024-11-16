@@ -607,11 +607,11 @@
                                 <div class="d-flex justify-content-between">
 
                                     <div class="p-2">
-                                        <h6 class="text-center">Without&nbsp;Buybox</h6>
+                                        <h6 class="d-inline">Without&nbsp;Buybox</h6>
                                         ${withoutBuybox}
                                     </div>
                                     <div class="p-2">
-                                        <h6 class="text-center">Change&nbsp;All&nbsp;€&nbsp;prices</h6>
+                                        <h6 class="d-inline">Change&nbsp;All&nbsp;€&nbsp;prices</h6>
                                         <form class="form-inline" method="POST" id="change_all_price_${variation.id}">
                                             @csrf
                                             <div class="form-floating d-inline">
