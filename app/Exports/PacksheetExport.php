@@ -24,6 +24,13 @@ class PacksheetExport implements FromCollection, WithHeadings
         ->leftJoin('order_items', 'orders.id', '=', 'order_items.order_id')
         ->leftJoin('stock', 'order_items.stock_id', '=', 'stock.id')
         ->leftJoin('orders as p_orders', 'stock.order_id', '=', 'p_orders.id')
+        ->leftJoin('order_items as p_item', function($join) {
+            $join->on('stock.id', '=', 'p_item.stock_id')
+                 ->whereColumn('p_item.order_id', 'stock.order_id');
+        })
+        ->leftJoin('vendor_grade', function($join) {
+            $join->on(DB::raw('COALESCE(p_item.reference_id, 0)'), '=', 'vendor_grade.id');
+        })
         ->leftJoin('customer', 'p_orders.customer_id', '=', 'customer.id')
         ->leftJoin('variation', 'order_items.variation_id', '=', 'variation.id')
         ->leftJoin('products', 'variation.product_id', '=', 'products.id')
@@ -48,6 +55,7 @@ class PacksheetExport implements FromCollection, WithHeadings
             'p_orders.reference_id as po',
             'p_orders.created_at as po_date',
             'customer.first_name as vendor',
+            'vendor_grade.name as vendor_grade',
             'stock_operations.description as issue',
             'admin.first_name as admin',
             // 'order_items.price as price'
@@ -78,6 +86,7 @@ class PacksheetExport implements FromCollection, WithHeadings
             'PO',
             'PO Date',
             'Vendor',
+            'Vendor Grade',
             'Issue',
             'Admin',
             // 'Price'
