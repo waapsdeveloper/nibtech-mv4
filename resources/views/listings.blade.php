@@ -461,7 +461,8 @@
                 if (variations.data.length > 0) {
                     variations.data.forEach(function(variation) {
                         // load("{{ url('listing/get_competitors')}}/${variation.id}");
-
+                        let withBuybox = '';
+                        let withoutBuybox = '';
                         let stocksTable = '';
                         let listingsTable = '';
                         let stockPrices = [];
@@ -482,6 +483,17 @@
                             let name = listing.name;
                             if (name != null) {
                                 name = name.replace(/ /g,'-');
+                            }
+                            if(listing.buybox == 1){
+                                withBuybox += `<a href="https://www.backmarket.${listing.country_id.market_url}/${listing.country_id.market_code}/p/gb/${listing.reference_uuid}" target="_blank" class="btn btn-link border">
+                                        <img src="{{ asset('assets/img/flags/') }}/${listing.country_id.code.toLowerCase()}.svg" height="15">
+                                        ${listing.country_id.code}
+                                        </a>`;
+                            }else{
+                                withoutBuybox += `<a href="https://www.backmarket.${listing.country_id.market_url}/${listing.country_id.market_code}/p/gb/${listing.reference_uuid}" target="_blank" class="btn btn-link danger border">
+                                        <img src="{{ asset('assets/img/flags/') }}/${listing.country_id.code.toLowerCase()}.svg" height="15">
+                                        ${listing.country_id.code}
+                                        </a>`;
                             }
                             listingsTable += `
                                 <tr ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
@@ -567,6 +579,17 @@
                                         <i class="fas fa-chevron-down"></i>
                                     </button>
 
+                                </div>
+                                <div class="d-flex justify-content-between">
+
+                                    <div class="p-2">
+                                        <h6>With Buybox</h6>
+                                        ${withBuybox}
+                                    </div>
+                                    <div class="p-2">
+                                        <h6>Without Buybox</h6>
+                                        ${withoutBuybox}
+                                    </div>
                                 </div>
                                 <div class="card-body p-2 collapse multi_collapse" id="details_${variation.id}">
                                     <div class="col-md-auto">
