@@ -202,10 +202,14 @@
             var price = $('#all_price_' + variationId).val();
 
             listings.forEach(function(listing) {
-                $('#min_price_' + listing.id).val(min_price);
-                $('#price_' + listing.id).val(price);
-                submitForm2(event, listing.id);
-                submitForm3(event, listing.id);
+                if (min_price > 0){
+                    $('#min_price_' + listing.id).val(min_price);
+                    submitForm2(event, listing.id);
+                }
+                if (price > 0){
+                    $('#price_' + listing.id).val(price);
+                    submitForm3(event, listing.id);
+                }
             });
         }
 
