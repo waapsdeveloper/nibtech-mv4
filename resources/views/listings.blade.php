@@ -194,6 +194,21 @@
             });
         }
 
+        function submitForm4(event, variationId) {
+            event.preventDefault(); // avoid executing the actual submit of the form.
+
+            var form = $('#change_all_price_' + variationId);
+            var min_price = $('#all_min_price_' + variationId).val();
+            var price = $('#all_price_' + variationId).val();
+
+            eur_listings[variationId].forEach(function(listing) {
+                let min = $('#min_price_' + listing.id);
+                let price = $('#price_' + listing.id);
+                min.val(min_price);
+                price.val(price);
+            });
+        }
+
         function updateAverageCost(variationId, prices) {
             if (prices.length > 0) {
                 let average = prices.reduce((a, b) => parseFloat(a) + parseFloat(b), 0) / prices.length;
@@ -349,6 +364,7 @@
         }
         $(document).ready(function() {
             $('.select2').select2();
+            let eur_listings = [];
 
 
             let storages = {!! json_encode($storages) !!};
@@ -479,6 +495,9 @@
                             if (listing.currency_id == 5) {
                                 p_append = 'break: £'+(m_price*eurToGbp).toFixed(2);
                                 pm_append = 'break: £'+(m_min_price*eurToGbp).toFixed(2);
+                            }else{
+                                eur_listings[variation.id].push(listing);
+
                             }
                             let name = listing.name;
                             if (name != null) {
@@ -486,9 +505,9 @@
                             }
                             if(listing.buybox == 1){
                                 withBuybox += `<a href="https://www.backmarket.${listing.country_id.market_url}/${listing.country_id.market_code}/p/gb/${listing.reference_uuid}" target="_blank" class="btn btn-link border p-1 m-1">
-                                        <img src="{{ asset('assets/img/flags/') }}/${listing.country_id.code.toLowerCase()}.svg" height="10">
-                                        ${listing.country_id.code}
-                                        </a>`;
+                                    <img src="{{ asset('assets/img/flags/') }}/${listing.country_id.code.toLowerCase()}.svg" height="10">
+                                    ${listing.country_id.code}
+                                </a>`;
                             }else{
                                 withoutBuybox += `<a href="https://www.backmarket.${listing.country_id.market_url}/${listing.country_id.market_code}/p/gb/${listing.reference_uuid}" target="_blank" class="btn btn-link text-danger border border-danger p-1 m-1">
                                         <img src="{{ asset('assets/img/flags/') }}/${listing.country_id.code.toLowerCase()}.svg" height="10">
@@ -591,11 +610,11 @@
                                         <form class="form-inline" method="POST" id="change_all_price_${variation.id}">
                                             @csrf
                                             <div class="form-floating d-inline">
-                                                <input type="number" class="form-control" form="change_all_min_price_${variation.id}" name="change_all_min_price" step="0.01" value="" style="width:80px;">
+                                                <input type="number" class="form-control" id="all_min_price_${variation.id}" name="all_min_price" step="0.01" value="" style="width:80px;">
                                                 <label for="">Min&nbsp;Price</label>
                                             </div>
                                             <div class="form-floating d-inline">
-                                                <input type="number" class="form-control" form="change_all_price_${variation.id}" name="change_all_price" step="0.01" value="" style="width:80px;">
+                                                <input type="number" class="form-control" id="all_price_${variation.id}" name="all_price" step="0.01" value="" style="width:80px;">
                                                 <label for="">Price</label>
                                             </div>
                                             <input type="submit" class="btn btn-light" value="Push">
@@ -650,6 +669,13 @@
                             submitForm(e, variation.id);
                         });
                         $('#sales_'+variation.id).load("{{ url('listing/get_sales') . '/'}}"+variation.id+"?csrf={{ csrf_token() }}");
+
+                        $(document).ready(function() {
+
+                            $("#change_all_prices_" + variation.id).on('submit', function(e) {
+                                submitForm4(e, variation.id);
+                            });
+                        });
                     });
                 } else {
                     variationsContainer.append('<p>No variations found.</p>');
