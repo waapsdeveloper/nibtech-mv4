@@ -277,7 +277,7 @@ Route::get('listing/get_variations', [ListingController::class, 'get_variations'
 Route::get('listing/get_sales/{id}', [ListingController::class, 'get_sales'])->name('view_listing');
 Route::get('listing/get_variation_available_stocks/{id}', [ListingController::class, 'get_variation_available_stocks'])->name('view_listing');
 Route::get('listing/get_updated_quantity/{id}', [ListingController::class, 'getUpdatedQuantity'])->name('view_listing');
-Route::get('listing/get_competitor+s/{id}/{no_check?}', [ListingController::class, 'getCompetitors'])->name('view_listing');
+Route::get('listing/get_competitors/{id}/{no_check?}', [ListingController::class, 'getCompetitors'])->name('view_listing');
 Route::post('listing/update_quantity/{id}', [ListingController::class,'update_quantity'])->name('update_listing_quantity');
 Route::post('listing/update_price/{id}', [ListingController::class,'update_price'])->name('update_listing_price');
 
