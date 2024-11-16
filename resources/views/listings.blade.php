@@ -582,13 +582,13 @@
                                 </div>
                                 <div class="d-flex justify-content-between">
 
-                                    <div class="p-2">
-                                        <h6>With Buybox</h6>
-                                        ${withBuybox}
-                                    </div>
-                                    <div class="p-2">
+                                    <div class="p-2 d-flex">
                                         <h6>Without Buybox</h6>
                                         ${withoutBuybox}
+                                    </div>
+                                    <div class="p-2 d-flex">
+                                        <h6>With Buybox</h6>
+                                        ${withBuybox}
                                     </div>
                                 </div>
                                 <div class="card-body p-2 collapse multi_collapse" id="details_${variation.id}">
