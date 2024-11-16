@@ -605,7 +605,7 @@
                                             <label for="">Price</label>
                                         </div>
                                     </div>
-                                    <div class="p-2 mx-w-50">
+                                    <div class="p-2 mw-50">
                                         <h6 class="d-inline">With&nbsp;Buybox</h6>
                                         ${withBuybox}
                                     </div>
