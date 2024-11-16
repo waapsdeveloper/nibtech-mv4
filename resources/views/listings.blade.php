@@ -496,6 +496,7 @@
                                 p_append = 'break: £'+(m_price*eurToGbp).toFixed(2);
                                 pm_append = 'break: £'+(m_min_price*eurToGbp).toFixed(2);
                             }else{
+                                eur_listings[variation.id] = eur_listings[variation.id] || [];
                                 eur_listings[variation.id].push(listing);
 
                             }
