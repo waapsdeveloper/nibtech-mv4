@@ -583,11 +583,11 @@
                                 <div class="d-flex justify-content-between">
 
                                     <div class="p-2">
-                                        <h6 class"d-inline">Without Buybox</h6>
+                                        <h6 class="d-inline">Without Buybox</h6>
                                         ${withoutBuybox}
                                     </div>
                                     <div class="p-2">
-                                        <h6 class"d-inline">With Buybox</h6>
+                                        <h6 class="d-inline">With Buybox</h6>
                                         ${withBuybox}
                                     </div>
                                 </div>
