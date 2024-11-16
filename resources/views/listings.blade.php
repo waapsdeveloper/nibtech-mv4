@@ -583,18 +583,18 @@
                                 <div class="d-flex justify-content-between">
 
                                     <div class="p-2">
-                                        <h6 class="d-inline">Without Buybox</h6>
+                                        <h6 class="d-inline">Without&nbsp;Buybox</h6>
                                         ${withoutBuybox}
                                     </div>
                                     <div class="p-2 d-flex">
-                                        <h6 class="d-inline">Change All € prices</h6>
+                                        <h6 class="d-inline">Change&nbsp;All&nbsp;€&nbsp;prices</h6>
                                         <form method="POST" id="change_all_min_price_${variation.id}">
                                             @csrf
                                             <input type="submit" hidden>
                                         </form>
                                         <div class="form-floating">
                                             <input type="number" class="form-control" form="change_all_min_price_${variation.id}" name="change_all_min_price" step="0.01" value="" style="width:80px;">
-                                            <label for="">Min Price</label>
+                                            <label for="">Min&nbsp;Price</label>
                                         </div>
                                         <form method="POST" id="change_all_price_${variation.id}">
                                             @csrf
@@ -606,7 +606,7 @@
                                         </div>
                                     </div>
                                     <div class="p-2">
-                                        <h6 class="d-inline">With Buybox</h6>
+                                        <h6 class="d-inline">With&nbsp;Buybox</h6>
                                         ${withBuybox}
                                     </div>
                                 </div>
