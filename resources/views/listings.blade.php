@@ -194,16 +194,16 @@
             });
         }
 
-        function submitForm4(event, variationId) {
+        function submitForm4(event, variationId, listings) {
             event.preventDefault(); // avoid executing the actual submit of the form.
 
             var form = $('#change_all_price_' + variationId);
             var min_price = $('#all_min_price_' + variationId).val();
             var price = $('#all_price_' + variationId).val();
 
-            eur_listings[variationId].forEach(function(listing) {
-                let min = $('#min_price_' + listing.id);
-                let price = $('#price_' + listing.id);
+            listings.forEach(function(listing) {
+                let min = $('#min_price_' + listing);
+                let price = $('#price_' + listing);
                 min.val(min_price);
                 price.val(price);
             });
@@ -674,7 +674,7 @@
                         $(document).ready(function() {
 
                             $("#change_all_price_" + variation.id).on('submit', function(e) {
-                                submitForm4(e, variation.id);
+                                submitForm4(e, variation.id, eur_listings[variation.id]);
                             });
                         });
                     });
