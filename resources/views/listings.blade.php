@@ -481,7 +481,7 @@
                 if (variations.data.length > 0) {
                     variations.data.forEach(function(variation) {
                         // load("{{ url('listing/get_competitors')}}/${variation.id}");
-                        let withBuybox = '';
+                        // let withBuybox = '';
                         let withoutBuybox = '';
                         let stocksTable = '';
                         let listingsTable = '';
@@ -509,10 +509,10 @@
                                 name = name.replace(/ /g,'-');
                             }
                             if(listing.buybox == 1){
-                                withBuybox += `<a href="https://www.backmarket.${listing.country_id.market_url}/${listing.country_id.market_code}/p/gb/${listing.reference_uuid}" target="_blank" class="btn btn-link border p-1 m-1">
-                                    <img src="{{ asset('assets/img/flags/') }}/${listing.country_id.code.toLowerCase()}.svg" height="10">
-                                    ${listing.country_id.code}
-                                </a>`;
+                                // withBuybox += `<a href="https://www.backmarket.${listing.country_id.market_url}/${listing.country_id.market_code}/p/gb/${listing.reference_uuid}" target="_blank" class="btn btn-link border p-1 m-1">
+                                //     <img src="{{ asset('assets/img/flags/') }}/${listing.country_id.code.toLowerCase()}.svg" height="10">
+                                //     ${listing.country_id.code}
+                                // </a>`;
                             }else{
                                 withoutBuybox += `<a href="https://www.backmarket.${listing.country_id.market_url}/${listing.country_id.market_code}/p/gb/${listing.reference_uuid}" target="_blank" class="btn btn-link text-danger border border-danger p-1 m-1">
                                         <img src="{{ asset('assets/img/flags/') }}/${listing.country_id.code.toLowerCase()}.svg" height="10">
@@ -625,9 +625,8 @@
                                             <input type="submit" class="btn btn-light" value="Push">
                                         </form>
                                     </div>
-                                    <div class="p-2 mw-50">
-                                        <h6 class="text-center">With&nbsp;Buybox</h6>
-                                        ${withBuybox}
+                                    <div class="p-2">
+
                                     </div>
                                 </div>
                                 <div class="card-body p-2 collapse multi_collapse" id="details_${variation.id}">
