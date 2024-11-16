@@ -1273,7 +1273,7 @@ class Order extends Component
             }
             // $stock->status = 2;
         }else{
-            $stock2 = Stock_model::withTrashed()->where(['imei' => $i, 'serial_number' => $s])->first();
+            $stock2 = Stock_model::withTrashed()->where(['imei' => $i, 'serial_number' => $s])->orderByDesc('id')->first();
             if($stock2 != null){
                 $stock2->restore();
                 $stock2->order_id = $order_id;
