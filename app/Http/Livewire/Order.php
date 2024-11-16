@@ -1223,7 +1223,7 @@ class Order extends Component
         }
         return redirect(url('purchase/detail').'/'.$order->id);
     }
-    public function add_purchase_item($order_id, $imei = null, $variation_id = null, $price = null, $return = null){
+    public function add_purchase_item($order_id, $imei = null, $variation_id = null, $price = null, $return = null, $v_grade = null){
         $issue = [];
         if(request('imei')){
             $imei = request('imei');
@@ -1237,6 +1237,9 @@ class Order extends Component
         $variation = Variation_model::find($variation_id);
         if(request('price')){
             $price = request('price');
+        }
+        if(request('v_grade')){
+            $v_grade = request('v_grade');
         }
 
         if(ctype_digit($imei)){
@@ -1258,6 +1261,7 @@ class Order extends Component
             $issue['data']['imei'] = $i.$s;
             $issue['data']['cost'] = $price;
             $issue['data']['stock_id'] = $stock->id;
+            $issue['data']['v_grade'] = $v_grade;
             if($stock->order_id == $order_id && $stock->status == 1){
                 $issue['message'] = 'Duplicate IMEI';
             }else{
@@ -1276,6 +1280,7 @@ class Order extends Component
                 $stock2->status = 1;
                 $stock2->save();
                 $order_item = Order_item_model::firstOrNew(['order_id' => $order_id, 'variation_id' => $variation->id, 'stock_id' => $stock2->id]);
+                $order_item->reference_id = $v_grade;
                 $order_item->quantity = 1;
                 $order_item->price = $price;
                 $order_item->status = 3;
@@ -1300,6 +1305,7 @@ class Order extends Component
 
                 $order_item = new Order_item_model();
                 $order_item->order_id = $order_id;
+                $order_item->reference_id = $v_grade;
                 $order_item->variation_id = $variation->id;
                 $order_item->stock_id = $stock->id;
                 $order_item->quantity = 1;
@@ -1315,6 +1321,7 @@ class Order extends Component
                 $issue['data']['imei'] = $i.$s;
                 $issue['data']['cost'] = $price;
                 $issue['data']['stock_id'] = $stock->id;
+                $issue['data']['v_grade'] = $v_grade;
                 $issue['message'] = 'Additional Item';
             }
 
@@ -1376,8 +1383,9 @@ class Order extends Component
             $variation = request('variation');
             $data = json_decode($issue->data);
             // echo $variation." ".$data->imei." ".$data->cost;
+            $v_grade = $data->v_grade ?? null;
 
-            if($this->add_purchase_item($issue->order_id, $imei, $variation, $data->cost, 1) == 1){
+            if($this->add_purchase_item($issue->order_id, $imei, $variation, $data->cost, 1, $v_grade) == 1){
                 if($data->imei){
 
                     $stock = Stock_model::where('imei',$imei)->orWhere('serial_number', $imei)->where('status','!=',null)->first();
