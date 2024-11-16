@@ -209,7 +209,7 @@ class ListingController extends Controller
     public function getCompetitors($id, $no_check = 0){
         $error = "";
         $variation = Variation_model::find($id);
-        if($no_check = 0){
+        // if($no_check = 0){
 
             $bm = new BackMarketAPIController();
             $responses = $bm->getListingCompetitors($variation->reference_uuid);
@@ -232,7 +232,10 @@ class ListingController extends Controller
                 $listing->buybox_winner_price = $list->winner_price->amount;
                 $listing->save();
             }
-        }
+            if($no_check == 1){
+                return $responses;
+            }
+        // }
         $listings = Listing_model::where('variation_id',$id)->get();
         return response()->json(['listings'=>$listings, 'error'=>$error]);
     }
