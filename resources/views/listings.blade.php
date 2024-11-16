@@ -485,12 +485,12 @@
                                 name = name.replace(/ /g,'-');
                             }
                             if(listing.buybox == 1){
-                                withBuybox += `<a href="https://www.backmarket.${listing.country_id.market_url}/${listing.country_id.market_code}/p/gb/${listing.reference_uuid}" target="_blank" class="btn btn-link border p-1">
+                                withBuybox += `<a href="https://www.backmarket.${listing.country_id.market_url}/${listing.country_id.market_code}/p/gb/${listing.reference_uuid}" target="_blank" class="btn btn-link border p-1 m-1">
                                         <img src="{{ asset('assets/img/flags/') }}/${listing.country_id.code.toLowerCase()}.svg" height="10">
                                         ${listing.country_id.code}
                                         </a>`;
                             }else{
-                                withoutBuybox += `<a href="https://www.backmarket.${listing.country_id.market_url}/${listing.country_id.market_code}/p/gb/${listing.reference_uuid}" target="_blank" class="btn btn-link text-danger border border-danger p-1">
+                                withoutBuybox += `<a href="https://www.backmarket.${listing.country_id.market_url}/${listing.country_id.market_code}/p/gb/${listing.reference_uuid}" target="_blank" class="btn btn-link text-danger border border-danger p-1 m-1">
                                         <img src="{{ asset('assets/img/flags/') }}/${listing.country_id.code.toLowerCase()}.svg" height="10">
                                         ${listing.country_id.code}
                                         </a>`;
