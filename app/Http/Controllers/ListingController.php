@@ -218,6 +218,10 @@ class ListingController extends Controller
                     $error .= $list;
                     continue;
                 }
+                if(is_array($list)){
+                    $error .= $list;
+                    continue;
+                }
                 $country = Country_model::where('code',$list->market)->first();
                 $listing = Listing_model::firstOrNew(['variation_id'=>$id, 'country'=>$country->id]);
                 $listing->reference_uuid = $list->product_id;
