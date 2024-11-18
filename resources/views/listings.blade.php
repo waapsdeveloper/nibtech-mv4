@@ -386,7 +386,7 @@
                     sku: $('input[name="sku"]').val(),
                     color: $('select[name="color"]').val(),
                     storage: $('select[name="storage"]').val(),
-                    grade: $('select[name="grade[]"]').val(), // Use .val() for multiple selects if needed
+                    grade[]: $('select[name="grade[]"]').val(), // Use .val() for multiple selects if needed
                     category: $('select[name="category"]').val(),
                     brand: $('select[name="brand"]').val(),
                     listed_stock: $('select[name="listed_stock"]').val(),
