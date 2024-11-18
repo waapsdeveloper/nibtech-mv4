@@ -219,7 +219,7 @@ class ListingController extends Controller
                     continue;
                 }
                 if(is_array($list)){
-                    $error .= $list;
+                    $error .= json_encode($list);
                     continue;
                 }
                 $country = Country_model::where('code',$list->market)->first();
