@@ -214,7 +214,7 @@ class ListingController extends Controller
             $bm = new BackMarketAPIController();
             $responses = $bm->getListingCompetitors($variation->reference_uuid);
             foreach($responses as $list){
-                if(is_string($list)){
+                if(is_string($list) || is_int($list)){
                     $error .= $list;
                     continue;
                 }
