@@ -16,6 +16,19 @@ class AppServiceProvider extends ServiceProvider
     public function register()
     {
         //
+        $host = request()->getHost(); // Get the current domain
+        $envFile = match ($host) {
+            'sdpos.nibritaintech.com' => '.env.sdpos',
+            'egpos.nibritaintech.com' => '.env.egpos',
+            default => '.env',
+        };
+
+        $filePath = base_path($envFile);
+
+        if (file_exists($filePath)) {
+            $dotenv = \Dotenv\Dotenv::createImmutable(base_path(), $envFile);
+            $dotenv->load();
+        }
     }
 
     /**
