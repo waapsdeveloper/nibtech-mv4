@@ -593,7 +593,7 @@
 
                                     <div class="text-center">
                                         <h6 class="mb-0">
-                                        <a class="" href="{{url('order').'?sku='}}$(variation.sku)" target="_blank">
+                                        <a class="" href="{{url('order').'?sku='}}${variation.sku}" target="_blank">
                                             Pending Order Items: ${variation.pending_orders.length || 0}
                                         </a></h6>
                                         <h6 class="mb-0" id="available_stock_${variation.id}">Available: ${variation.available_stocks.length || 0}</h6>
