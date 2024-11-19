@@ -103,7 +103,7 @@
         <!-- /breadcrumb -->
         <div class="text-center" style="border-bottom: 1px solid rgb(216, 212, 212);">
                 {{-- <center><h4>RMA Order Detail</h4></center> --}}
-                <h5>Reference: {{ $order->reference_id }} | Vendor: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->count() }} @if (session('user')->hasPermission('view_cost')) | Total Price: {{ $order->currency_id->sign.amount_formatter($order->order_items->sum('price'),2) }} @endif</h5>
+                <h5>Reference: {{ $order->reference_id }} | Vendor: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->count() }} @if (session('user')->hasPermission('view_cost')) | Total Price: {{ '€'.amount_formatter($order->order_items->sum('price'),2) }} @endif</h5>
 
         </div>
         <br>
