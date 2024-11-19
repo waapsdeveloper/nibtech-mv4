@@ -382,12 +382,11 @@ class Wholesale_return extends Component
                     session()->put('success','Item added');
                     $label_url = url('imei/print_label')."?stock_id=".$stock->id;
                     echo '<script>
-                    var newTab2 = window.open("'.$label_url.'", "_blank");
-                    newTab2.onload = function() {
-                        newTab2.print();
-                    };
-
-
+                        var newTab2 = window.open("'.$label_url.'", "_blank");
+                        newTab2.onload = function() {
+                            newTab2.print();
+                        };
+                        window.location.href = document.referrer;
                     </script>';
                 }else{
                     session()->put('error','Item already added');
@@ -399,7 +398,7 @@ class Wholesale_return extends Component
         }
 
         echo "<script> window.location.href = document.referrer; </script>";
-        return redirect()->back();
+        // return redirect()->back();
 
 
     }
