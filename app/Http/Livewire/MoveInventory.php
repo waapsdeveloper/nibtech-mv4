@@ -100,7 +100,12 @@ class MoveInventory extends Component
 
         if (request('imei')) {
             $imeis = explode(' ',request('imei'));
-            foreach($imeis as $imei){
+            $imei_count = count($imeis);
+            if(request('price')){
+                $prices = explode(' ',request('price'));
+            }
+
+            foreach($imeis as $key => $imei){
                 $description = request('description');
                 if (ctype_digit($imei)) {
                     $i = $imei;
@@ -139,7 +144,11 @@ class MoveInventory extends Component
                         $color = request('color');
                     }
                     if(request('price') != ''){
-                        $price = request('price');
+                        if($imei_count == count($prices)){
+                            $price = $prices[$key];
+                        }else{
+                            $price = request('price');
+                        }
                         $p_order = $stock->purchase_item;
 
                         $description .= " Price changed from ".$p_order->price;
