@@ -62,7 +62,7 @@ class PacksheetExport implements FromCollection, WithHeadings
             // Conditional price based on invoice flag
             $this->invoice == 1
                 ? DB::raw('order_items.price * orders.exchange_rate as price') // Use exchange rate if invoice = 1
-                : ''
+                : 'order_items.price as price'
         )
         ->where('orders.id', request('id'))
         ->where('orders.deleted_at',null)
