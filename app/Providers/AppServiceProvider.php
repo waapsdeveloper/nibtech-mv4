@@ -30,8 +30,13 @@ class AppServiceProvider extends ServiceProvider
             $dotenv->load();
         }
 
-        // Refresh Laravel configuration
-        // app()->make('config')->clearResolvedInstances();
+        if ($filePath == '.env.egpos') {
+            // Refresh Laravel configuration
+            app()->make('config')->clearResolvedInstances();
+            app()->make('config')->load();
+
+
+        }
     }
 
     /**
