@@ -378,6 +378,11 @@ class Inventory extends Component
                     $q->where('orders.customer_id', request('vendor'));
                 });
             })
+            ->when(request('batch') != '', function ($q) {
+                return $q->whereHas('order', function ($q) {
+                    $q->where('orders.reference_id', request('batch'));
+                });
+            })
             ->when(request('status') != '', function ($q) {
                 return $q->whereHas('order', function ($q) {
                     $q->where('orders.status', request('status'));
