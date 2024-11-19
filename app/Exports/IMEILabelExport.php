@@ -30,8 +30,13 @@ class IMEILabelExport
                 $reference = $last_sale_order->order->reference_id;
                 $r_id = $reference;
             }else{
-                $reference = $last_sale_order->reference_id.' (R)';
-                $r_id = $last_sale_order->reference_id;
+                if($last_sale_order->order->reference_id == 999){
+                    $reference = $last_sale_order->order->reference_id.' (R)';
+                    $r_id = $last_sale_order->order->reference_id;
+                }else{
+                    $reference = $last_sale_order->order->reference_id;
+                    $r_id = $reference;
+                }
             }
             $last_order = Order_model::where('reference_id', $r_id)->whereIn('order_type_id',[3,5])->first();
 
