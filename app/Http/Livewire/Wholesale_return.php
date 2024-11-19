@@ -399,7 +399,7 @@ class Wholesale_return extends Component
         }
 
         echo "<script> window.location.href = document.referrer; </script>";
-        // return redirect()->back();
+        return redirect()->back();
 
 
     }
