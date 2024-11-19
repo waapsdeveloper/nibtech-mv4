@@ -147,6 +147,7 @@ class MoveInventory extends Component
                         if($imei_count == count($prices)){
                             $price = $prices[$key];
                         }else{
+                            echo $imei_count." ".count($prices);
                             $price = request('price');
                         }
                         $p_order = $stock->purchase_item;
