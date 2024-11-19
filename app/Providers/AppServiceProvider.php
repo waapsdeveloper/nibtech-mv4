@@ -25,6 +25,10 @@ class AppServiceProvider extends ServiceProvider
 
         $filePath = base_path($envFile);
 
+        if (file_exists($filePath)) {
+            $dotenv = \Dotenv\Dotenv::createImmutable(base_path(), $envFile);
+            $dotenv->load();
+        }
 
         if ($envFile == '.env.egpos') {
             // Refresh Laravel configuration
@@ -34,10 +38,6 @@ class AppServiceProvider extends ServiceProvider
 
 
 
-        }
-        if (file_exists($filePath)) {
-            $dotenv = \Dotenv\Dotenv::createImmutable(base_path(), $envFile);
-            $dotenv->load();
         }
     }
 

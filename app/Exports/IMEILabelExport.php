@@ -33,13 +33,13 @@ class IMEILabelExport
                 $reference = $last_sale_order->reference_id.' (R)';
                 $r_id = $last_sale_order->reference_id;
             }
-            $last_order = Order_model::where('reference_id', $r_id)->where('order_type_id',3)->first();
+            $last_order = Order_model::where('reference_id', $r_id)->whereIn('order_type_id',[3,5])->first();
 
             if($last_order != null && $last_order->delivered_at == null){
                 $order_l = new Order();
                 $order_l->getLabel($r_id, true, true);
 
-                $last_order = Order_model::where('reference_id', $r_id)->where('order_type_id',3)->first();
+                $last_order = Order_model::where('reference_id', $r_id)->whereIn('order_type_id',[3,5])->first();
             }
 
             $last_variation = Variation_model::find($last_sale_order->variation_id);
