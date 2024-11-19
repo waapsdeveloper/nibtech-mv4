@@ -380,6 +380,11 @@ class Wholesale_return extends Component
                     $stock->save();
 
                     session()->put('success','Item added');
+                    $label_url = url('imei/print_label')."?stock_id=".$stock->id;
+                    echo '<script>
+                    var newTab2 = window.open("'.$label_url.'", "_blank");
+
+                    </script>';
                 }else{
                     session()->put('error','Item already added');
                 }
