@@ -26,7 +26,6 @@ class AppServiceProvider extends ServiceProvider
         $filePath = base_path($envFile);
 
         if (file_exists($filePath)) {
-            echo $filePath;
             $dotenv = \Dotenv\Dotenv::createImmutable(base_path(), $envFile);
             $dotenv->load();
         }
