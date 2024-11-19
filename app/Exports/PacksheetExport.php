@@ -58,11 +58,11 @@ class PacksheetExport implements FromCollection, WithHeadings
             'vendor_grade.name as vendor_grade',
             'stock_operations.description as issue',
             'admin.first_name as admin',
-            // 'order_items.price as price'
+            'order_items.price as price',
             // Conditional price based on invoice flag
             $this->invoice == 1
                 ? DB::raw('order_items.price * orders.exchange_rate as price') // Use exchange rate if invoice = 1
-                : 'order_items.price as price'
+                : ''
         )
         ->where('orders.id', request('id'))
         ->where('orders.deleted_at',null)
@@ -89,8 +89,8 @@ class PacksheetExport implements FromCollection, WithHeadings
             'Vendor Grade',
             'Issue',
             'Admin',
-            // 'Price'
-            $this->invoice == 1 ? 'Price (Multiplied by Exchange Rate)' : 'Price'
+            'Price',
+            $this->invoice == 1 ? 'Price (Multiplied by Exchange Rate)' : ''
         ];
     }
 }
