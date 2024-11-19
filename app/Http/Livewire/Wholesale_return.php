@@ -291,6 +291,11 @@ class Wholesale_return extends Component
                     session()->put('error', 'IMEI Sold to different customer');
                     return redirect()->back();
                 }
+                if($last_item->order->processed_at < now()->subDays(60)){
+                    session()->put('error', 'IMEI Sold more than 60 days ago');
+                    return redirect()->back();
+                }
+
                 $stock_id = $stock->id;
                 $orders = Order_item_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
                 $data['stock'] = $stock;
