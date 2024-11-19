@@ -399,7 +399,7 @@
                                         <tr>
                                             <td>{{ $i }}</td>
                                             <td>{{ $colors[$variation->color] ?? null }} - {{ $grades[$variation->grade] ?? null }}</td>
-                                            <td>{{ $item->imei.$item->serial_number }}</td>
+                                            <td><a title="{{$item->id}} | Search Serial" href="{{url('imei')."?imei=".$item->imei.$item->serial_number}}" target="_blank"> {{$item->imei.$item->serial_number }} </a></td>
                                             <td @if (session('user')->hasPermission('view_cost') && $item->purchase_item != null) title="Cost Price: €{{ amount_formatter($item->purchase_item->price,2) }}" @endif>
                                                 {{ $item->order->customer->first_name }}
                                                 @if (session('user')->hasPermission('view_cost'))
