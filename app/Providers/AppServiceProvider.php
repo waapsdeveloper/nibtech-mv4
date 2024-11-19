@@ -16,6 +16,7 @@ class AppServiceProvider extends ServiceProvider
     public function register()
     {
         //
+        echo request()->getHost();
         $host = request()->getHost(); // Get the current domain
         $envFile = match ($host) {
             'sdpos.nibritaintech.com' => '.env.sdpos',
