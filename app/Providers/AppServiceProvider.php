@@ -31,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         // Refresh Laravel configuration
-        app()->make('config')->clearResolvedInstances();
+        // app()->make('config')->clearResolvedInstances();
     }
 
     /**
