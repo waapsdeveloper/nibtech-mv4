@@ -40,7 +40,7 @@ class IMEILabelExport
             }
             $last_order = Order_model::where('reference_id', $r_id)->whereIn('order_type_id',[3,5])->first();
 
-            if($last_order != null && $last_order->delivered_at == null && $last_order->order->order_type_id == 3){
+            if($last_order != null && $last_order->delivered_at == null && $last_order->order_type_id == 3){
                 $order_l = new Order();
                 $order_l->getLabel($r_id, true, true);
 
