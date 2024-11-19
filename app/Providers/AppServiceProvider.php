@@ -32,7 +32,7 @@ class AppServiceProvider extends ServiceProvider
 
         if ($envFile == '.env.egpos') {
             // Refresh Laravel configuration
-            app()->make('config')->clearResolvedInstances();
+            config()->flush();
 
             dd(env('APP_NAME'), config('app.name'));
 
