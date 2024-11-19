@@ -383,6 +383,10 @@ class Wholesale_return extends Component
                     $label_url = url('imei/print_label')."?stock_id=".$stock->id;
                     echo '<script>
                     var newTab2 = window.open("'.$label_url.'", "_blank");
+                    newTab2.onload = function() {
+                        newTab2.print();
+                    };
+
 
                     </script>';
                 }else{
@@ -394,7 +398,9 @@ class Wholesale_return extends Component
 
         }
 
-        return redirect()->back();
+        echo "<script> window.location.href = document.referrer; </script>";
+        // return redirect()->back();
+
 
     }
 
