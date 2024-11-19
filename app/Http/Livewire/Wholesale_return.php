@@ -31,6 +31,8 @@ class Wholesale_return extends Component
 
         $data['title_page'] = "Bulksale Returns";
 
+        $data['vendors'] = Customer_model::where('is_vendor','!=',null)->pluck('company','id');
+
         $data['latest_reference'] = Order_model::where('order_type_id',4)->orderBy('reference_id','DESC')->first()->reference_id;
         $data['order_statuses'] = Order_status_model::get();
         if(request('per_page') != null){
