@@ -175,13 +175,12 @@
                                             <tr>
                                                 <td>{{ $i + 1 }}</td>
                                                 <td><a href="{{url('wholesale_return/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
-                                                <td><a href="{{url('edit-customer/'.$order->customer_id)}}">{{ $order->customer->company ?? null }}</a></td>
+
+                                                <td>{{ $vendors[$order->customer_id] }}</td>
                                                 @if (session('user')->hasPermission('view_price'))
-                                                <td>Є{{ amount_formatter($order->total_price,2) }}</td>
+                                                <td>€{{ amount_formatter($price,2) }}</td>
                                                 @endif
-                                                <td>{{ $order->available_stock."/".$order->total_quantity }}@if ($order->status == 2)
-                                                    (Pending)
-                                                @endif</td>
+                                                <td>{{ $order->order_items_count }}</td>
                                                 <td style="width:220px">{{ $order->created_at." ".$order->updated_at }}</td>
                                                 {{-- <td>
                                                     <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
