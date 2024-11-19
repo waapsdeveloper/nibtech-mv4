@@ -168,6 +168,8 @@
                                             }
                                             $items = $order->order_items;
                                             $j = 0;
+                                            $price = $order->order_items_sum_price;
+
                                             // print_r($order);
                                         @endphp
 
