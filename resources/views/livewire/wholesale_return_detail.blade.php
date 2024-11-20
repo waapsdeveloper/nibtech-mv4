@@ -93,7 +93,7 @@
                     <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI"> --}}
                     <select name="grade" class="form-control form-select" required>
                         <option value="">Move to</option>
-                        <option value="0" @if(session('grade') && session('grade') == 0) {{'selected'}}@endif @if(request('grade') && request('grade') == 0) {{'selected'}}@endif>Old Grade</option>
+                        <option value="0" @if(session('grade') == 0) {{'selected'}}@endif>Old Grade</option>
                         @foreach ($grades as $id => $name)
                             @if($id > 5)
                             <option value="{{ $id }}" @if(session('grade') && $id == session('grade')) {{'selected'}}@endif @if(request('grade') && $id == request('grade')) {{'selected'}}@endif>{{ $name }}</option>
