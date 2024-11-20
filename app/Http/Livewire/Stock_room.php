@@ -151,6 +151,10 @@ class Stock_room extends Component
                 session()->put('error', 'IMEI Already Sold');
                 return redirect()->back(); // Redirect here is not recommended
             }
+            if($stock->variation->grade == 17){
+                session()->put('error', 'IMEI Flagged');
+                return redirect()->back(); // Redirect here is not recommended
+            }
             if(request('description') == null){
                 session()->put('error', 'Description Required');
                 return redirect()->back(); // Redirect here is not recommended
