@@ -26,6 +26,26 @@ $app = new Illuminate\Foundation\Application(
 |
 */
 
+$host = request()->getHost(); // Get the current domain
+$envFile = match ($host) {
+    'sdpos.nibritaintech.com' => '.env.sdpos',
+    'egpos.nibritaintech.com' => '.env.egpos.nibritaintech.com',
+    default => '.env',
+};
+if(isset($_SERVER['HTTP_HOST']) && !empty($_SERVER['HTTP_HOST'])){
+    $domain = $_SERVER['HTTP_HOST'];
+}
+
+if (isset($domain)) {
+    $dotenv = Dotenv\Dotenv::createImmutable(base_path(), '.env.'.$domain);
+
+    try {
+        $dotenv->load();
+    } catch (\Dotenv\Exception\InvalidPathException $e) {
+        // No custom .env file found for this domain
+    }
+}
+
 $app->singleton(
     Illuminate\Contracts\Http\Kernel::class,
     App\Http\Kernel::class
