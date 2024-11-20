@@ -36,7 +36,7 @@ class AppServiceProvider extends ServiceProvider
                 Config::set($key, $value);
             }
             // Verify the new values
-            dd(env('APP_NAME'), config('app.name'));
+            // dd(env('APP_NAME'), config('app.name'));
         }
 
 
