@@ -17,42 +17,26 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        // Load default `.env` first
-        $host = request()->getHost(); // Get the current domain
+        // Fetch current domain
+        $host = request()->getHost();
 
-        $envFile = match ($host) {
-            'sdpos.nibritaintech.com' => '.env.sdpos',
-            'egpos.nibritaintech.com' => '.env.egpos',
-            default => '.env',
-        };
+        if($host == 'egpos.nibritaintech.com'){
 
-        // Load the domain-specific `.env` file if it exists
-        $filePath = base_path($envFile);
-        if (file_exists($filePath)) {
-            $dotenv = \Dotenv\Dotenv::createImmutable(base_path(), $envFile);
-            $dotenv->load();
+            // Query the master database for the current domain's database credentials
+            $domainConfig = DB::connection('master')->table('domains')->where('domain', $host)->first();
 
-            // Update Laravel's config values based on the newly loaded `.env`
-            foreach ($_ENV as $key => $value) {
-                Config::set($key, $value);
-            }
+            if ($domainConfig) {
+                Config::set('database.connections.mysql.host', $domainConfig->db_host);
+                Config::set('database.connections.mysql.port', $domainConfig->db_port);
+                Config::set('database.connections.mysql.database', $domainConfig->db_name);
+                Config::set('database.connections.mysql.username', $domainConfig->db_username);
+                Config::set('database.connections.mysql.password', $domainConfig->db_password);
 
-            // Update Laravel's database configuration dynamically
-            if($envFile == '.env.egpos') {
-
-                // Clear cached configurations
-                // config()->flush();
-                // config()->clear();
-                // Artisan::call('config:clear');
-
-                echo Config::set('database.connections.mysql.host', env('DB_HOST'));
-                echo Config::set('database.connections.mysql.port', env('DB_PORT'));
-                echo Config::set('database.connections.mysql.database', env('DB_DATABASE'));
-                echo Config::set('database.connections.mysql.username', env('DB_USERNAME'));
-                echo Config::set('database.connections.mysql.password', env('DB_PASSWORD'));
-                DB::reconnect();
-
-                dd(Config::get('database.connections.mysql'));
+                // Reconnect to the database with the updated configuration
+                DB::purge('mysql');
+                DB::reconnect('mysql');
+            } else {
+                abort(403, 'Unauthorized domain.');
             }
         }
     }

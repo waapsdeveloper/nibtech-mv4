@@ -34,6 +34,19 @@ return [
     */
 
     'connections' => [
+        'master' => [
+            'driver' => 'mysql',
+            'host' => env('MASTER_DB_HOST', '127.0.0.1'),
+            'port' => env('MASTER_DB_PORT', '3306'),
+            'database' => env('MASTER_DB_DATABASE', 'sdposMaster'),
+            'username' => env('MASTER_DB_USERNAME', 'haleem'),
+            'password' => env('MASTER_DB_PASSWORD', 'Halim@425336'),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ],
 
         'sqlite' => [
             'driver' => 'sqlite',
