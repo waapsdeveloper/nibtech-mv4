@@ -118,7 +118,7 @@ class BackMarketAPIController extends Controller
         $url = "https://www.backmarket.fr/ws/sav";
 
         // Basic Authorization Header
-        $authorizationHeader = "Basic YmEyMTkyNTI0MjAwY2ZkZTgwNDM1MzpCTVQtMWZhMTRkZmU2YzQyMjVmOWVkNDBiZDY1ZTk3ZmQzN2FhNDhkZDIwOQ==";
+        $authorizationHeader = "Basic ".config('backmarket.api_key_2');
 
         // Make the PATCH request
         $response = Http::withHeaders([
