@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
@@ -40,6 +41,8 @@ class TenantCron extends Command
     {
         // Example: Run scheduled tasks or business logic
         Log::info("Cron job executed for {$domain->domain}");
+
+        Artisan::call('schedule:run'); // Run Laravel's scheduler
         // Add your domain-specific jobs here
     }
 }
