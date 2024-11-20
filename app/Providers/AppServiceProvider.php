@@ -43,7 +43,7 @@ class AppServiceProvider extends ServiceProvider
                 echo Config::set('database.connections.mysql.username', env('DB_USERNAME'));
                 echo Config::set('database.connections.mysql.password', env('DB_PASSWORD'));
 
-                die;
+                dd(Config::get('database.connections.mysql'));
             }
         }
     }
