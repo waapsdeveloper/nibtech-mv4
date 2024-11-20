@@ -14,7 +14,7 @@ class TenantCron extends Command
 
     public function handle()
     {
-        $domains = DB::connection('sdposMaster')->table('domains')->get();
+        $domains = DB::connection('master')->table('domains')->get();
 
         foreach ($domains as $domain) {
             // Dynamically update database connection
