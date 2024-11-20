@@ -35,7 +35,7 @@ class AppServiceProvider extends ServiceProvider
             foreach ($_ENV as $key => $value) {
                 Config::set($key, $value);
             }
-            dd($_ENV);
+            dd($_ENV, Config::get('app.name'));
             // Verify the new values
             // dd(env('APP_NAME'), config('app.name'));
         }
