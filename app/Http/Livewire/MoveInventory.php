@@ -133,6 +133,12 @@ class MoveInventory extends Component
                 $color = $stock->variation->color;
                 $grade = $stock->variation->grade;
                 $sub_grade = $stock->variation->sub_grade;
+                if(request('if_grade') != ''){
+                    if($grade != request('if_grade')){
+                        session()->put('error', $imei.' Stock Grade Not Matched');
+                        // return redirect()->back();
+                        continue;
+                    }
                 if(session('user')->hasPermission('change_variation')){
                     if(request('product') != ''){
                         $product_id = request('product');
