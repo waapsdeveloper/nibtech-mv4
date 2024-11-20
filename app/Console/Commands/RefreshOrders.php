@@ -53,9 +53,9 @@ class RefreshOrders extends Command
             DB::purge('mysql'); // Clear cached database connection
             DB::reconnect('mysql'); // Reconnect to the updated database
 
-            if($domain->domain == 'sdpos.nibritaintech.com'){
-                continue;
-            }
+            // if($domain->domain == 'sdpos.nibritaintech.com'){
+            //     continue;
+            // }
             $this->info("Running cron for domain: {$domain->domain}");
 
             // Execute tenant-specific logic
