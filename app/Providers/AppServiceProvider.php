@@ -20,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
         // Fetch current domain
         $host = request()->getHost();
 
-        if($host == 'egpos.nibritaintech.com'){
+        // if($host == 'egpos.nibritaintech.com'){
 
             // Query the master database for the current domain's database credentials
             $domainConfig = DB::connection('master')->table('domains')->where('domain', $host)->first();
@@ -38,7 +38,7 @@ class AppServiceProvider extends ServiceProvider
             } else {
                 dd(403, 'Unauthorized domain.');
             }
-        }
+        // }
     }
 
     /**
