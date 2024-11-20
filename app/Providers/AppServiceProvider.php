@@ -34,6 +34,13 @@ class AppServiceProvider extends ServiceProvider
             foreach ($_ENV as $key => $value) {
                 Config::set($key, $value);
             }
+
+            // Update Laravel's database configuration dynamically
+            Config::set('database.connections.mysql.host', env('DB_HOST'));
+            Config::set('database.connections.mysql.port', env('DB_PORT'));
+            Config::set('database.connections.mysql.database', env('DB_DATABASE'));
+            Config::set('database.connections.mysql.username', env('DB_USERNAME'));
+            Config::set('database.connections.mysql.password', env('DB_PASSWORD'));
         }
     }
 
