@@ -4,7 +4,9 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -39,13 +41,16 @@ class AppServiceProvider extends ServiceProvider
             if($envFile == '.env.egpos') {
 
                 // Clear cached configurations
-                config()->flush();
+                // config()->flush();
+                config()->clear();
+                Artisan::call('config:clear');
 
                 echo Config::set('database.connections.mysql.host', env('DB_HOST'));
                 echo Config::set('database.connections.mysql.port', env('DB_PORT'));
                 echo Config::set('database.connections.mysql.database', env('DB_DATABASE'));
                 echo Config::set('database.connections.mysql.username', env('DB_USERNAME'));
                 echo Config::set('database.connections.mysql.password', env('DB_PASSWORD'));
+                DB::reconnect();
 
                 dd(Config::get('database.connections.mysql'));
             }
