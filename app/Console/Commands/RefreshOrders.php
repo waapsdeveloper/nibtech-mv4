@@ -56,12 +56,12 @@ class RefreshOrders extends Command
             $this->info("Running cron for domain: {$domain->domain}");
 
             // Execute tenant-specific logic
-            $this->runTenantSpecificJobs();
+            $this->runTenantSpecificJobs($domain->domain);
         }
 
         $this->info('Tenant cron completed for all domains.');
     }
-    public function runTenantSpecificJobs()
+    public function runTenantSpecificJobs($domain)
     {
 
         $bm = new BackMarketAPIController();
@@ -82,7 +82,13 @@ class RefreshOrders extends Command
             }
         }
         echo 2;
-        $resArray = $bm->getAllOrders(1, ['page-size'=>50]);
+
+        if($domain == 'egpos.nibritaintech.com'){
+            $modification = '2021-09-01T00:00:00Z';
+        } else {
+            $modification = false;
+        }
+        $resArray = $bm->getAllOrders(1, ['page-size'=>50], $modification);
         if ($resArray !== null) {
             // print_r($resArray);
             foreach ($resArray as $orderObj) {
