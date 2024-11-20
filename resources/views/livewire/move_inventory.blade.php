@@ -153,7 +153,7 @@
 
                             <div class="col-md col-sm-2">
                                 <select name="if_grade" class="form-control form-select">
-                                    <option value="">Don't Move if Grade</option>
+                                    <option value="">Don't Move if not Grade</option>
                                     @foreach ($grades as $grade)
                                         <option value="{{ $grade->id }}">{{ $grade->name }}</option>
                                     @endforeach
