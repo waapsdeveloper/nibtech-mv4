@@ -37,6 +37,10 @@ class AppServiceProvider extends ServiceProvider
 
             // Update Laravel's database configuration dynamically
             if($envFile == '.env.egpos') {
+
+                // Clear cached configurations
+                config()->flush();
+
                 echo Config::set('database.connections.mysql.host', env('DB_HOST'));
                 echo Config::set('database.connections.mysql.port', env('DB_PORT'));
                 echo Config::set('database.connections.mysql.database', env('DB_DATABASE'));
