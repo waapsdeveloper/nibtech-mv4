@@ -149,6 +149,18 @@
                                 <label for="">Reason</label>
                             </div>
                         </div>
+                        @if (session('user')->hasPermission('advanced_move_inventory'))
+
+                            <div class="col-md col-sm-2">
+                                <select name="if_grade" class="form-control form-select">
+                                    <option value="">Don't Move if Grade</option>
+                                    @foreach ($grades as $grade)
+                                        <option value="{{ $grade->id }}">{{ $grade->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                        @endif
                         <div class="col-md col-sm-2">
                             <div class="form-floating">
                                 <input type="text" class="form-control focused" id="imeiInput" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" onload="this.focus()" autofocus required>
