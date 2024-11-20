@@ -390,13 +390,13 @@ class BackMarketAPIController extends Controller
             Log::channel('slack')->info("Care API: ".json_encode($result));
         }
     }
-    public function getAllOrders($page = 1, $param = []) {
+    public function getAllOrders($page = 1, $param = [], $date_modification = false) {
         $end_point = 'orders';
 
-        // if (!$date_modification) {
+        if (!$date_modification) {
             $date_modification = date("Y-m-d+H:i:s", time() - 1 * 24 * 60 * 60);
             // $date_modification = "2024-04-21+00:00:00";
-        // }
+        }
 
         $end_point .= "?date_modification=$date_modification";
 
