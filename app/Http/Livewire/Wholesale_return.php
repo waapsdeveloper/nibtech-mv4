@@ -340,7 +340,13 @@ class Wholesale_return extends Component
             }
             $wholesale_return = $restock;
             $s_variation = $stock->variation;
-            $variation = Variation_model::firstOrNew(['product_id' => $s_variation->product_id, 'storage' => $s_variation->storage, 'color' => $s_variation->color, 'grade' => request('grade')]);
+            $grade = request('grade');
+            if($grade == 0){
+                $grade = $stock->latest_operation->old_variation->grade;
+            }
+
+
+            $variation = Variation_model::firstOrNew(['product_id' => $s_variation->product_id, 'storage' => $s_variation->storage, 'color' => $s_variation->color, 'grade' => $grade]);
 
             $variation->stock += 1;
             $variation->status = 1;
