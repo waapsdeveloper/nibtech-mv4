@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Config;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -29,24 +30,16 @@ class AppServiceProvider extends ServiceProvider
             $dotenv = \Dotenv\Dotenv::createImmutable(base_path(), $envFile);
             $dotenv->load();
         }
-
-        if ($envFile == '.env.egpos') {
-            // Refresh Laravel configuration
-            // App::make('config')->set('app.name', env('APP_NAME'));
-            // config()->flush();
-            // Refresh Laravel configuration
-            $dotenv = \Dotenv\Dotenv::createImmutable(base_path(), $envFile);
-            $dotenv->load();
-
+        // Manually refresh Laravel's configuration if the environment file changes
+        if ($envFile === '.env.egpos') {
             foreach ($_ENV as $key => $value) {
-                App::make('config')->set($key, $value);
+                Config::set($key, $value);
             }
-
+            // Verify the new values
             dd(env('APP_NAME'), config('app.name'));
-
-
-
         }
+
+
     }
 
     /**
