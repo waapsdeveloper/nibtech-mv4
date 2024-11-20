@@ -4,7 +4,6 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 
 class AppServiceProvider extends ServiceProvider
@@ -16,33 +15,26 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        // Load default `.env` first
         $host = request()->getHost(); // Get the current domain
-        if($host == 'egpos.nibritaintech.com'){
 
-            $envFile = match ($host) {
-                'sdpos.nibritaintech.com' => '.env.sdpos',
-                'egpos.nibritaintech.com' => '.env.egpos.nibritaintech.com',
-                // default => '.env',
-            };
+        $envFile = match ($host) {
+            'sdpos.nibritaintech.com' => '.env.sdpos',
+            'egpos.nibritaintech.com' => '.env.egpos',
+            default => '.env',
+        };
 
-            $filePath = base_path($envFile);
+        // Load the domain-specific `.env` file if it exists
+        $filePath = base_path($envFile);
+        if (file_exists($filePath)) {
+            $dotenv = \Dotenv\Dotenv::createImmutable(base_path(), $envFile);
+            $dotenv->load();
 
-            if (file_exists($filePath)) {
-                $dotenv = \Dotenv\Dotenv::createImmutable(base_path(), $envFile);
-                $dotenv->load();
+            // Update Laravel's config values based on the newly loaded `.env`
+            foreach ($_ENV as $key => $value) {
+                Config::set($key, $value);
             }
-            // Manually refresh Laravel's configuration if the environment file changes
-            // if ($envFile === '.env.egpos') {
-                foreach ($_ENV as $key => $value) {
-                    Config::set($key, $value);
-                }
-                dd($_ENV, Config::get('app.name'));
-                // Verify the new values
-                // dd(env('APP_NAME'), config('app.name'));
-            // }
         }
-
     }
 
     /**
@@ -52,10 +44,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
         Paginator::useBootstrapFive();
         Paginator::useBootstrapFour();
         date_default_timezone_set("Europe/London");
+
+        // Handle locale settings
         view()->composer('*', function ($view) {
             $locale = session()->get('locale', 'en');
             app()->setLocale($locale);
