@@ -42,7 +42,7 @@ class AppServiceProvider extends ServiceProvider
 
                 // Clear cached configurations
                 // config()->flush();
-                config()->clear();
+                // config()->clear();
                 Artisan::call('config:clear');
 
                 echo Config::set('database.connections.mysql.host', env('DB_HOST'));
