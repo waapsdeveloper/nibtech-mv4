@@ -18,28 +18,30 @@ class AppServiceProvider extends ServiceProvider
     {
         //
         $host = request()->getHost(); // Get the current domain
-        $envFile = match ($host) {
-            'sdpos.nibritaintech.com' => '.env.sdpos',
-            'egpos.nibritaintech.com' => '.env.egpos.nibritaintech.com',
-            default => '.env',
-        };
+        if($host == 'egpos.nibritaintech.com'){
 
-        $filePath = base_path($envFile);
+            $envFile = match ($host) {
+                'sdpos.nibritaintech.com' => '.env.sdpos',
+                'egpos.nibritaintech.com' => '.env.egpos.nibritaintech.com',
+                default => '.env',
+            };
 
-        if (file_exists($filePath)) {
-            $dotenv = \Dotenv\Dotenv::createImmutable(base_path(), $envFile);
-            $dotenv->load();
-        }
-        // Manually refresh Laravel's configuration if the environment file changes
-        if ($envFile === '.env.egpos') {
-            foreach ($_ENV as $key => $value) {
-                Config::set($key, $value);
+            $filePath = base_path($envFile);
+
+            if (file_exists($filePath)) {
+                $dotenv = \Dotenv\Dotenv::createImmutable(base_path(), $envFile);
+                $dotenv->load();
             }
-            dd($_ENV, Config::get('app.name'));
-            // Verify the new values
-            // dd(env('APP_NAME'), config('app.name'));
+            // Manually refresh Laravel's configuration if the environment file changes
+            // if ($envFile === '.env.egpos') {
+                foreach ($_ENV as $key => $value) {
+                    Config::set($key, $value);
+                }
+                dd($_ENV, Config::get('app.name'));
+                // Verify the new values
+                // dd(env('APP_NAME'), config('app.name'));
+            // }
         }
-
 
     }
 
