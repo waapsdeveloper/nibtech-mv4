@@ -23,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
             $envFile = match ($host) {
                 'sdpos.nibritaintech.com' => '.env.sdpos',
                 'egpos.nibritaintech.com' => '.env.egpos.nibritaintech.com',
-                default => '.env',
+                // default => '.env',
             };
 
             $filePath = base_path($envFile);
