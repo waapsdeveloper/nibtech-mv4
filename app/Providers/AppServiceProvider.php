@@ -34,6 +34,13 @@ class AppServiceProvider extends ServiceProvider
             // Refresh Laravel configuration
             // App::make('config')->set('app.name', env('APP_NAME'));
             // config()->flush();
+            // Refresh Laravel configuration
+            $dotenv = \Dotenv\Dotenv::createImmutable(base_path(), $envFile);
+            $dotenv->load();
+
+            foreach ($_ENV as $key => $value) {
+                App::make('config')->set($key, $value);
+            }
 
             dd(env('APP_NAME'), config('app.name'));
 
