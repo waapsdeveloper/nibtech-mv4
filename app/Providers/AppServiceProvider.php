@@ -36,7 +36,7 @@ class AppServiceProvider extends ServiceProvider
                 DB::purge('mysql');
                 DB::reconnect('mysql');
             } else {
-                abort(403, 'Unauthorized domain.');
+                dd(403, 'Unauthorized domain.');
             }
         }
     }
