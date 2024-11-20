@@ -139,6 +139,7 @@ class MoveInventory extends Component
                         // return redirect()->back();
                         continue;
                     }
+                }
                 if(session('user')->hasPermission('change_variation')){
                     if(request('product') != ''){
                         $product_id = request('product');
