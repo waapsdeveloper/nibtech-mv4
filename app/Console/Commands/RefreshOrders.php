@@ -53,6 +53,9 @@ class RefreshOrders extends Command
             DB::purge('mysql'); // Clear cached database connection
             DB::reconnect('mysql'); // Reconnect to the updated database
 
+            if($domain->domain == 'sdpos.nibritaintech.com'){
+                continue;
+            }
             $this->info("Running cron for domain: {$domain->domain}");
 
             // Execute tenant-specific logic
@@ -86,7 +89,6 @@ class RefreshOrders extends Command
         if($domain == 'egpos.nibritaintech.com'){
             $modification = '2024-03-01 00:00:00';
         } else {
-            die;
             $modification = false;
         }
         $resArray = $bm->getAllOrders(1, ['page-size'=>50], $modification);
