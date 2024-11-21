@@ -33,7 +33,7 @@ class IMEILabelExport
                 if($last_sale_order->order->reference_id == 999){
                     $reference = $last_sale_order->reference_id;
                     while($reference == 999){
-                        $reference = $last_sale_order->replacement->reference_id;
+                        $reference = $last_sale_order->replacement_of->reference_id;
                     }
 
                     $r_id = $reference;
