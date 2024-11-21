@@ -135,7 +135,7 @@ class BackMarketAPIController extends Controller
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
         if(config('app.name') == 'EliteGadget'){
-            Log::info("API GET: ".json_encode($api_call_data));
+            Log::info("API GET: ".json_encode($api_call_data).$get_result);
         }
         return json_decode($get_result);
     }
