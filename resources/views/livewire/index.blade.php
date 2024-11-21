@@ -572,7 +572,7 @@
                                         <tr>
                                             <td>${element.variation}</td>
                                             <td>${element.total_quantity_sold}</td>
-                                            <td>{{ number_format(${element.average_price}, 2) }}</td>
+                                            <td>${element.average_price}</td>
                                             <td>${element.total_quantity_stocked}</td>
                                         </tr>
                     `;
