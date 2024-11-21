@@ -105,39 +105,37 @@ class RefreshOrders extends Command
         echo 2;
 
         if($domain == 'egpos.nibritaintech.com'){
-            $modification = '2024-01-01+00:00:00';
+            $modification = '2024-03-01+00:00:00';
         } else {
             $modification = false;
         }
-        // for($page = 40; $page <= 82; $page++){
-            $resArray = $bm->getAllOrders(40, ['page-size'=>50], $modification);
-            if ($resArray !== null) {
-                // print_r($resArray);
-                foreach ($resArray as $orderObj) {
-                    if (!empty($orderObj)) {
-                    // print_r($orderObj);
-                    $order_model->updateOrderInDB($orderObj, false, $bm, $currency_codes, $country_codes);
-                    $order_item_model->updateOrderItemsInDB($orderObj,null,$bm);
-                    echo 3;
-                    // Dispatch the job to update or insert data into the database
-                    // Serialize the payload data to compare
-                    // $serializedPayload = serialize([$orderObj]);
+        $resArray = $bm->getAllOrders(1, ['page-size'=>50], $modification);
+        if ($resArray !== null) {
+            // print_r($resArray);
+            foreach ($resArray as $orderObj) {
+                if (!empty($orderObj)) {
+                // print_r($orderObj);
+                $order_model->updateOrderInDB($orderObj, false, $bm, $currency_codes, $country_codes);
+                $order_item_model->updateOrderItemsInDB($orderObj,null,$bm);
+                echo 3;
+                // Dispatch the job to update or insert data into the database
+                // Serialize the payload data to compare
+                // $serializedPayload = serialize([$orderObj]);
 
-                    // // Query the database to check if a job with the same payload already exists
-                    // if (!Job_model::where('payload', $serializedPayload)->exists()) {
-                    //     // Dispatch the job if it doesn't already exist
-                    //     UpdateOrderInDB::dispatch($orderObj);
-                    // }
+                // // Query the database to check if a job with the same payload already exists
+                // if (!Job_model::where('payload', $serializedPayload)->exists()) {
+                //     // Dispatch the job if it doesn't already exist
+                //     UpdateOrderInDB::dispatch($orderObj);
+                // }
 
-                    // $this->updateOrderItemsInDB($orderObj);
-                    }
-                    // print_r($orderObj);
-                    // if($i == 0){ break; } else { $i++; }
+                // $this->updateOrderItemsInDB($orderObj);
                 }
-            } else {
-                echo 'No orders have been modified in 3 months!';
+                // print_r($orderObj);
+                // if($i == 0){ break; } else { $i++; }
             }
-        // }
+        } else {
+            echo 'No orders have been modified in 3 months!';
+        }
 
     }
 
