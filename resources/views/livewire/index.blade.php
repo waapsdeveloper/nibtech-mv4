@@ -535,6 +535,7 @@
         <script>
             $(document).ready(function(){
                 $('#required_restock').load("{{ url('index/required_restock') }}");
+            });
 
         </script>
 		<script src="{{asset('assets/plugins/chartjs/Chart.bundle.min.js')}}"></script>
