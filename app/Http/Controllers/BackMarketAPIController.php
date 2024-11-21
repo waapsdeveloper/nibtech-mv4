@@ -397,7 +397,7 @@ class BackMarketAPIController extends Controller
             $end_point_next = $end_point . $end_point_next_tail;
             $result_next = $this->apiGet($end_point_next);
             if(!isset($result_next->results)){
-                dd($end_point_next);
+                dd($result_next);
             }
             $result_next_array = $result_next->results;
 
