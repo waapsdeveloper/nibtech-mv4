@@ -284,7 +284,7 @@ class Index extends Component
 
         if(session('user')->hasPermission('dashboard_required_restock')){
 
-            $start_date = now()->subDays(30);
+            $start_date = now()->subDays(30)->startOfDay()->format('Y-m-d');
             $products = Products_model::orderBy('model','asc')->pluck('model','id');
             $storages = Storage_model::pluck('name','id');
             $colors = Color_model::pluck('name','id');
