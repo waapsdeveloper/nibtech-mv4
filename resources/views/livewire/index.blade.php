@@ -567,7 +567,7 @@
                                     <tbody>
                                         `;
                 let data = load_data("{{ url('index/required_restock') }}");
-                data.sort((a, b) => a.total_quantity_stocked - b.total_quantity_stocked);
+                data.sort((a, b) => a.total_quantity_stocked - b.total_quantity_stocked || b.total_quantity_sold - a.total_quantity_sold);
                 data.forEach(element => {
                     new_data += `
                                         <tr>
