@@ -813,7 +813,7 @@
                                                         <td>
 
                                                             @if ($itm->variation ?? false)
-                                                                <strong>{{ $itm->variation->sku }}</strong>{{ " - " . $itm->variation->product->model . " - " . (isset($itm->variation->storage)?$storages[$itm->variation->storage] . " - " : null) . (isset($itm->variation->color)?$colors[$itm->variation->color]. " - ":null)}} <strong><u>{{ $grades[$itm->variation->grade] }}</u></strong>
+                                                                <strong>{{ $itm->variation->sku }}</strong>{{ " - " . (isset($itm->variation->product)?$itm->variation->product->model: 'Model not defined') . " - " . (isset($itm->variation->storage)?$storages[$itm->variation->storage] . " - " : null) . (isset($itm->variation->color)?$colors[$itm->variation->color]. " - ":null)}} <strong><u>{{ $grades[$itm->variation->grade] }}</u></strong>
                                                             @endif
 
                                                             @if ($itm->care_id != null)
