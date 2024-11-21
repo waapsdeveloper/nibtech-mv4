@@ -280,6 +280,94 @@ class Index extends Component
         $data['end_date'] = date("Y-m-d", strtotime($end_date));
         return view('livewire.index')->with($data);
     }
+    public function required_restock(){
+
+        $products = Products_model::orderBy('model','asc')->pluck('model','id');
+        $storages = Storage_model::pluck('name','id');
+        $colors = Color_model::pluck('name','id');
+        $grades = Grade_model::pluck('name','id');
+
+        if(request('per_page_2') != null){
+            $per_page_2 = request('per_page_2');
+        }else{
+            $per_page_2 = 10;
+        }
+        $variation_ids = [];
+        if(request('data') == 1){
+
+            $variation_ids = Variation_model::withoutGlobalScope('Status_not_3_scope')->select('id')
+            ->when(request('product') != '', function ($q) {
+                return $q->where('product_id', '=', request('product'));
+            })
+            ->when(request('sku') != '', function ($q) {
+                return $q->where('sku', 'LIKE', '%'.request('sku').'%');
+            })
+            ->when(request('category') != '', function ($q) {
+                return $q->whereHas('product', function ($qu) {
+                    $qu->where('category', '=', request('category'));
+                });
+            })
+            ->when(request('brand') != '', function ($q) {
+                return $q->whereHas('product', function ($qu) {
+                    $qu->where('brand', '=', request('brand'));
+                });
+            })
+            ->when(request('storage') != '', function ($q) {
+                return $q->where('variation.storage', 'LIKE', request('storage') . '%');
+            })
+            ->when(request('color') != '', function ($q) {
+                return $q->where('variation.color', 'LIKE', request('color') . '%');
+            })
+            ->when(request('grade') != '', function ($q) {
+                return $q->where('variation.grade', 'LIKE', request('grade') . '%');
+            })->pluck('id')->toArray();
+        }
+
+        $variation_sales = Order_item_model::when(request('data') == 1, function($q) use ($variation_ids){
+            return $q->whereIn('variation_id', $variation_ids);
+        })
+        ->whereHas('order', function ($q) {
+            $q->where(['order_type_id'=>3])
+            ->where('created_at', '>=', now()->subDays(30));
+        })
+        ->select('variation_id', DB::raw('SUM(quantity) as total_quantity_sold'), DB::raw('AVG(price) as average_price'))
+        ->groupBy('variation_id')
+        ->orderByDesc('total_quantity_sold')
+        // ->take($per_page_2)
+        ->get()
+        ->keyBy('variation_id');
+
+        $variation_stock = Stock_model::whereIn('variation_id', $variation_sales->pluck('variation_id')->toArray())
+        ->where('status',1)
+        ->select('variation_id', DB::raw('COUNT(*) as total_quantity_stocked'))
+        ->groupBy('variation_id')
+        ->orderBy('total_quantity_stocked')
+        ->get()
+        ->keyBy('variation_id');
+
+        $variations = Variation_model::whereIn('id', $variation_stock->pluck('variation_id')->toArray())->get();
+
+
+
+        $merged_data = $variations->map(function ($variation) use ($variation_sales, $variation_stock, $products, $storages, $colors, $grades) {
+
+            $model = $products[$variation->product_id] ?? 'Model not found';
+            $storage = $storages[$variation->storage] ?? '';
+            $color = $colors[$variation->color] ?? '';
+            $grade = $grades[$variation->grade] ?? '';
+
+
+            return [
+                'variation' => $model . ' ' . $storage . ' ' . $color . ' ' . $grade,
+                'total_quantity_sold' => $variation_sales[$variation->id]->total_quantity_sold ?? 0,
+                'average_price' => $variation_sales[$variation->id]->average_price ?? 0,
+                'total_quantity_stocked' => $variation_stock[$variation->id]->total_quantity_stocked ?? 0,
+            ];
+        });
+
+        return response()->json($merged_data);
+
+    }
     public function toggle_amount_view(){
         if(session('amount_view') == 1){
             session()->put('amount_view',0);
