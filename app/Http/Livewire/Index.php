@@ -365,7 +365,7 @@ class Index extends Component
                     'average_price' => $variation_sales[$variation->id]->average_price ?? 0,
                     'total_quantity_stocked' => $variation_stock[$variation->id]->total_quantity_stocked ?? 0,
                 ];
-            })->sortBy('total_quantity_stocked')->sortByDesc('total_quantity_sold')->values()->all();
+            })->sortBy('total_quantity_stocked')->sortByDesc('total_quantity_sold');
 
             return response()->json($merged_data);
 
