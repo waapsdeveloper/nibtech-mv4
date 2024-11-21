@@ -534,7 +534,52 @@
 		<!-- Internal Chart.Bundle js-->
         <script>
             $(document).ready(function(){
-                $('#required_restock').load("{{ url('index/required_restock') }}");
+                let restock = $('#required_restock');
+                let load_data = function(url){
+                    let data = [];
+                    $.ajax({
+                        url: url,
+                        type: 'GET',
+                        async: false,
+                        success: function(response){
+                            data = response;
+                        }
+                    });
+                    return data;
+                }
+                let new_data = '';
+                let data = load_data("{{ url('index/required_restock') }}");
+                data.forEach(element => {
+                    new_data.append(`
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">Restock Required</h4>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-bordered table-hover text-md-nowrap">
+                                    <thead>
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>Sales</th>
+                                            <th>Avg</th>
+                                            <th>Stock</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>${element.variation}</td>
+                                            <td>${element.total_quantity_sold}</td>
+                                            <td>${element.average_price}</td>
+                                            <td>${element.total_quantity_stocked}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `);
+                });
+                restock.html(new_data);
+
             });
 
         </script>
