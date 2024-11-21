@@ -91,6 +91,10 @@ class Order_item_model extends Model
     {
         return $this->hasOne(Order_item_model::class, 'care_id', 'id');
     }
+    public function replacement_of()
+    {
+        return $this->hasOne(Order_item_model::class, 'id', 'care_id');
+    }
     public function check_replacement()
     {
         $item = $this;
