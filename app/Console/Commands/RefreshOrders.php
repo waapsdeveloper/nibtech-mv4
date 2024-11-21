@@ -106,9 +106,11 @@ class RefreshOrders extends Command
 
         if($domain == 'egpos.nibritaintech.com'){
             $modification = '2024-01-01+00:00:00';
-        for($page = 40; $page <= 82; $page++){
-
-            $resArray = $bm->getAllOrders($page, ['page-size'=>50], $modification);
+        } else {
+            $modification = false;
+        }
+        // for($page = 40; $page <= 82; $page++){
+            $resArray = $bm->getAllOrders(40, ['page-size'=>50], $modification);
             if ($resArray !== null) {
                 // print_r($resArray);
                 foreach ($resArray as $orderObj) {
@@ -135,10 +137,7 @@ class RefreshOrders extends Command
             } else {
                 echo 'No orders have been modified in 3 months!';
             }
-        }
-    } else {
-        $modification = false;
-    }
+        // }
 
     }
 
