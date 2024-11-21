@@ -108,7 +108,7 @@ class RefreshOrders extends Command
             $modification = '2024-01-01+00:00:00';
         for($page = 40; $page <= 82; $page++){
 
-            $resArray = $bm->getAllOrders(1, ['page-size'=>50, 'page'=>$page], $modification);
+            $resArray = $bm->getAllOrders($page, ['page-size'=>50], $modification);
             if ($resArray !== null) {
                 // print_r($resArray);
                 foreach ($resArray as $orderObj) {
