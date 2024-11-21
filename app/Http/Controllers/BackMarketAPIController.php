@@ -23,36 +23,6 @@ class BackMarketAPIController extends Controller
         self::$YOUR_ACCESS_TOKEN = config('backmarket.api_key_1');
         self::$YOUR_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36";
     }
-    // public function requestGet($end_point){
-    //     if(substr($end_point, 0, 1) === '/') {
-    //         $end_point = substr($end_point, 1);
-    //     }
-
-    //     $api_call_data['Content-Type'] = 'application/json';
-    //     $api_call_data['Accept'] = 'application/json';
-    //     $api_call_data['Accept-Language'] = self::$COUNTRY_CODE;
-    //     $api_call_data['Authorization'] = 'Basic ' . self::$YOUR_ACCESS_TOKEN;
-    //     $api_call_data['User-Agent'] = self::$YOUR_USER_AGENT;
-
-    //     $headers = [];
-    //     foreach($api_call_data as $key => $value) {
-    //         array_push($headers, "$key:$value");
-    //     }
-
-    //     $target_url = self::$base_url . $end_point;
-
-    //     // Specify the URL
-    //     $url = "https://www.backmarket.fr/ws/sav";
-
-
-    //     // Make the GET request
-    //     $response = Http::withHeaders([
-    //         "Accept" => "application/json",
-    //         "Authorization" => $api_call_data['Authorization'],
-    //     ])->get($target_url);
-
-    //     return json_decode($response);
-    // }
     public function requestGet($end_point, $retryCount = 0){
         if(substr($end_point, 0, 1) === '/') {
             $end_point = substr($end_point, 1);
