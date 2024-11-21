@@ -532,6 +532,8 @@
 
     @section('scripts')
 		<!-- Internal Chart.Bundle js-->
+        @if (session('user')->hasPermission('dashboard_required_restock'))
+
         <script>
             $(document).ready(function(){
                 let restock = $('#required_restock');
@@ -586,6 +588,7 @@
             });
 
         </script>
+        @endif
 		<script src="{{asset('assets/plugins/chartjs/Chart.bundle.min.js')}}"></script>
 
 		<!-- Moment js -->
