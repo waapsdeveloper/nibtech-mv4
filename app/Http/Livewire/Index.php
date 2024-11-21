@@ -284,6 +284,7 @@ class Index extends Component
 
         if(session('user')->hasPermission('dashboard_required_restock')){
 
+            $start_date = now()->subDays(30)->startOfDay();
             $products = Products_model::orderBy('model','asc')->pluck('model','id');
             $storages = Storage_model::pluck('name','id');
             $colors = Color_model::pluck('name','id');
@@ -328,9 +329,9 @@ class Index extends Component
             $variation_sales = Order_item_model::when(request('data') == 1, function($q) use ($variation_ids){
                 return $q->whereIn('variation_id', $variation_ids);
             })
-            ->whereHas('order', function ($q) {
+            ->whereHas('order', function ($q) use ($start_date) {
                 $q->where(['order_type_id'=>3])
-                ->where('created_at', '>=', now()->subDays(30));
+                ->where('created_at', '>=', $start_date);
             })
             ->select('variation_id', DB::raw('SUM(quantity) as total_quantity_sold'), DB::raw('AVG(price) as average_price'))
             ->groupBy('variation_id')
@@ -351,7 +352,7 @@ class Index extends Component
 
 
 
-            $merged_data = $variations->map(function ($variation) use ($variation_sales, $variation_stock, $products, $storages, $colors, $grades) {
+            $merged_data = $variations->map(function ($variation) use ($variation_sales, $variation_stock, $products, $storages, $colors, $grades, $start_date) {
 
                 $model = $products[$variation->product_id] ?? 'Model not found';
                 $storage = $storages[$variation->storage] ?? '';
@@ -361,10 +362,12 @@ class Index extends Component
 
                 return [
                     'variation_id' => $variation->id,
+                    'sku' => $variation->sku,
                     'variation' => $model . ' ' . $storage . ' ' . $color . ' ' . $grade,
                     'total_quantity_sold' => $variation_sales[$variation->id]->total_quantity_sold ?? 0,
                     'average_price' => amount_formatter($variation_sales[$variation->id]->average_price) ?? 0,
                     'total_quantity_stocked' => $variation_stock[$variation->id]->total_quantity_stocked ?? 0,
+                    'start_date' => $start_date,
                 ];
             });
 
