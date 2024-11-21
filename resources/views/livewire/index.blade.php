@@ -335,7 +335,7 @@
                                     </div>
                                 </div>
                             @endif
-
+                            <div id="required_restock"></div>
                             @if (session('user')->hasPermission('10_day_sales_chart'))
 
 							<div class="card custom-card overflow-hidden">
@@ -534,11 +534,9 @@
 		<!-- Internal Chart.Bundle js-->
         <script>
             $(document).ready(function(){
-                $('.select2').select2();
-            })
-            $('.select2').select2({
-            placeholder: 'Select an option'
+                $('#required_restock').load("{{ url('index/required_restock') }}");
             });
+
         </script>
 		<script src="{{asset('assets/plugins/chartjs/Chart.bundle.min.js')}}"></script>
 
