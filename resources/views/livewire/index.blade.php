@@ -549,6 +549,7 @@
                     });
                     return data;
                 }
+                let i = 0;
                 let new_data = `
                         <div class="card">
                             <div class="card-header">
@@ -558,6 +559,7 @@
                                 <table class="table table-bordered table-hover text-md-nowrap">
                                     <thead>
                                         <tr>
+                                            <th>No</th>
                                             <th>Product</th>
                                             <th>Sales</th>
                                             <th>Avg</th>
@@ -571,6 +573,7 @@
                 data.forEach(element => {
                     new_data += `
                                         <tr>
+                                            <td>${i += 1}</td>
                                             <td><a href="{{url('inventory')}}?variation=${element.variation_id}">${element.variation}</a></td>
                                             <td><a href="{{url('order')}}?sku=${element.sku}&start_date=${element.start_date}">${element.total_quantity_sold}</a></td>
                                             <td>${element.average_price}</td>
