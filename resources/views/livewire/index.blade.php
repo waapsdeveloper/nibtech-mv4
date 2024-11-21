@@ -552,7 +552,7 @@
                 let new_data = `
                         <div class="card">
                             <div class="card-header">
-                                <h4 class="card-title">Restock Required</h4>
+                                <h4 class="card-title">Restock Required based on 30 day sales</h4>
                             </div>
                             <div class="card-body">
                                 <table class="table table-bordered table-hover text-md-nowrap">
