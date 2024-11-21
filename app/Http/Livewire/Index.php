@@ -360,6 +360,7 @@ class Index extends Component
 
 
                 return [
+                    'variation_id' => $variation->id,
                     'variation' => $model . ' ' . $storage . ' ' . $color . ' ' . $grade,
                     'total_quantity_sold' => $variation_sales[$variation->id]->total_quantity_sold ?? 0,
                     'average_price' => amount_formatter($variation_sales[$variation->id]->average_price) ?? 0,

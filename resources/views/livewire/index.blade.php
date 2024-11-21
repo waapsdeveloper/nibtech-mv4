@@ -571,7 +571,7 @@
                 data.forEach(element => {
                     new_data += `
                                         <tr>
-                                            <td>${element.variation}</td>
+                                            <td><a href="{{url('inventory')}}?variation=${element.variation_id}">${element.variation}</a></td>
                                             <td>${element.total_quantity_sold}</td>
                                             <td>${element.average_price}</td>
                                             <td>${element.total_quantity_stocked}</td>
