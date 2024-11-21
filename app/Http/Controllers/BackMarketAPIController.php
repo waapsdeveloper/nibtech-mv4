@@ -135,6 +135,8 @@ class BackMarketAPIController extends Controller
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
+        Log::info("API GET: ".$get_result);
+
         return json_decode($get_result);
     }
 
