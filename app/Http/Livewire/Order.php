@@ -283,8 +283,8 @@ class Order extends Component
                 $this->recheck($ref);
             }
         }
-        if(count($data['orders']) == 0 && request('order_id')){
-            $ors = explode(' ',request('order_id'));
+        $ors = explode(' ',request('order_id'));
+        if(count($data['orders']) != count($ors) && request('order_id')){
             foreach($ors as $or){
                 $this->recheck($or);
             }
