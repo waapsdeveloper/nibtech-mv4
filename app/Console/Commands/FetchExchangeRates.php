@@ -30,6 +30,24 @@ class FetchExchangeRates extends Command
             Config::set('database.connections.mysql.database', $domain->db_name);
             Config::set('database.connections.mysql.username', $domain->db_username);
             Config::set('database.connections.mysql.password', $domain->db_password);
+            // App Configuration
+            Config::set('app.url', 'https://' . $domain->domain);
+            Config::set('app.name', $domain->app_name);
+            Config::set('app.logo', $domain->app_logo);
+            Config::set('app.status', $domain->app_status);
+
+            // SMTP Configuration
+            Config::set('mail.mailer', 'smtp');
+            Config::set('mail.host', $domain->smtp_host);
+            Config::set('mail.port', $domain->smtp_port);
+            Config::set('mail.username', $domain->smtp_username);
+            Config::set('mail.password', $domain->smtp_password);
+            Config::set('mail.encryption', $domain->smtp_encryption);
+
+            // Backmarket API Configuration
+            Config::set('backmarket.api_key_1', $domain->backmarket_api_key_1);
+            Config::set('backmarket.api_key_2', $domain->backmarket_api_key_2);
+
 
             DB::purge('mysql'); // Clear cached database connection
             DB::reconnect('mysql'); // Reconnect to the updated database
