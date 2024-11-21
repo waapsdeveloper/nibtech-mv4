@@ -362,7 +362,7 @@ class Index extends Component
                 return [
                     'variation' => $model . ' ' . $storage . ' ' . $color . ' ' . $grade,
                     'total_quantity_sold' => $variation_sales[$variation->id]->total_quantity_sold ?? 0,
-                    'average_price' => $variation_sales[$variation->id]->average_price ?? 0,
+                    'average_price' => amount_formatter($variation_sales[$variation->id]->average_price) ?? 0,
                     'total_quantity_stocked' => $variation_stock[$variation->id]->total_quantity_stocked ?? 0,
                 ];
             });
