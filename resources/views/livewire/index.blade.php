@@ -547,10 +547,7 @@
                     });
                     return data;
                 }
-                let new_data = '';
-                let data = load_data("{{ url('index/required_restock') }}");
-                data.forEach(element => {
-                    new_data += `
+                let new_data = `
                         <div class="card">
                             <div class="card-header">
                                 <h4 class="card-title">Restock Required</h4>
@@ -566,18 +563,24 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        `;
+                let data = load_data("{{ url('index/required_restock') }}");
+                data.forEach(element => {
+                    new_data += `
                                         <tr>
                                             <td>${element.variation}</td>
                                             <td>${element.total_quantity_sold}</td>
                                             <td>${element.average_price}</td>
                                             <td>${element.total_quantity_stocked}</td>
                                         </tr>
+                    `;
+                });
+                new_data += `
                                     </tbody>
                                 </table>
                             </div>
                         </div>
-                    `;
-                });
+                `;
                 restock.html(new_data);
 
             });
