@@ -105,7 +105,7 @@ class RefreshOrders extends Command
         echo 2;
 
         if($domain == 'egpos.nibritaintech.com'){
-            $modification = '2024-03-01+00:00:00';
+            $modification = '2024-01-01+00:00:00';
         } else {
             $modification = false;
         }
