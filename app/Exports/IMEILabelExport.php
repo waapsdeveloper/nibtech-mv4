@@ -31,7 +31,7 @@ class IMEILabelExport
                 $r_id = $reference;
             }else{
                 if($last_sale_order->order->reference_id == 999){
-                    $reference = $last_sale_order->order->reference_id.' (R)';
+                    $reference = $last_sale_order->reference_id.' (R)';
                     $r_id = $last_sale_order->order->reference_id;
                 }else{
                     $reference = $last_sale_order->order->reference_id;
