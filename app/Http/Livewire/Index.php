@@ -359,6 +359,10 @@ class Index extends Component
                 $color = $colors[$variation->color] ?? '';
                 $grade = $grades[$variation->grade] ?? '';
 
+                // $sale = $variation_sales[$variation->id]->total_
+                // $stock = $variation_stock[$variation->id] ?? null;
+
+                // if()
 
                 return [
                     'variation_id' => $variation->id,
