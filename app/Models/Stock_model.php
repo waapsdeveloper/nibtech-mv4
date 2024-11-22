@@ -127,6 +127,11 @@ class Stock_model extends Model
     {
         return $this->hasOne(Order_model::class, 'id', 'order_id')->where('status',3);
     }
+    public function first_item()
+    {
+        // Define a custom method to retrieve only one order item
+        return $this->hasOne(Order_item_model::class, 'stock_id', 'id')->whereNull('linked_id');
+    }
     public function purchase_item()
     {
         // Define a custom method to retrieve only one order item

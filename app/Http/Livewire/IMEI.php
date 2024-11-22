@@ -109,7 +109,7 @@ class IMEI extends Component
             if($items4->count() == 1){
                 foreach($items4 as $item4){
                     if($stock->purchase_item){
-                        if($item4->linked_id != $stock->purchase_item->id && $item4->linked_id != null){
+                        if($item4->linked_id != $stock->purchase_item->id && $item4->linked_id != $stock->first_item->id && $item4->linked_id != null){
                             $item4->linked_id = $stock->purchase_item->id;
                             $item4->save();
                         }
