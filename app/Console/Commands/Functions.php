@@ -89,6 +89,7 @@ class Functions extends Command
         echo 4;
         $this->push_testing_api();
         echo 5;
+        $this->misc();
     }
     private function refund_currency(){
 
@@ -153,6 +154,22 @@ class Functions extends Command
     public function push_testing_api(){
         $testing = new Api_request_model();
         $testing->push_testing();
+    }
+    private function misc(){
+
+        Variation_model::where('product_storage_sort_id',null)->each(function($variation){
+            $pss = Product_storage_sort_model::firstOrNew(['product_id'=>$variation->product_id,'storage'=>$variation->storage]);
+            if($pss->id == null){
+                $pss->save();
+            }
+            $variation->product_storage_sort_id = $pss->id;
+            $variation->save();
+        });
+        $order_c = new Order();
+        Order_model::where('scanned',null)->where('order_type_id',3)->where('tracking_number', '!=', null)->whereBetween('created_at', ['2024-05-01 00:00:00', now()->subDays(1)->format('Y-m-d H:i:s')])
+        ->orderByDesc('id')->each(function($order) use ($order_c){
+            $order_c->getLabel($order->reference_id, false, true);
+        });
     }
 
 }
