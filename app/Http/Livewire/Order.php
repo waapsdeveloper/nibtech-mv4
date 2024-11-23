@@ -2707,7 +2707,7 @@ class Order extends Component
         $datas = $bm->getOrderLabel($order_id);
         if($update == true){
             // dd($datas);
-            if($datas->results == []){
+            if($datas == null || $datas->results == []){
                 print_r($datas);
             }elseif($datas->results[0]->hubScanned == true){
                 $order = Order_model::where('reference_id',$order_id)->first();
