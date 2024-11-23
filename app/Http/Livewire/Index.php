@@ -667,13 +667,13 @@ class Index extends Component
     }
 
     public function test(){
-        $variations = Variation_model::where('listed_stock','>',0)->whereNotNull('reference_id')->pluck('reference_id');
+        // $variations = Variation_model::where('listed_stock','>',0)->whereNotNull('reference_id')->pluck('reference_id');
 
 
-        $bm = new BackMarketAPIController();
-        foreach($variations as $variation){
-            $response = $bm->updateOneListing($variation,json_encode(['quantity'=>0]));
-        }
+        // $bm = new BackMarketAPIController();
+        // foreach($variations as $variation){
+        //     $response = $bm->updateOneListing($variation,json_encode(['quantity'=>0]));
+        // }
         // ini_set('max_execution_time', 1200);
         // ini_set('memory_limit', '2048M');
         // ini_set('group_concat_max_len', 4294967295);
