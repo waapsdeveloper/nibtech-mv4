@@ -160,7 +160,7 @@ class Functions extends Command
     }
     private function misc(){
 
-        Variation_model::where('product_storage_sort_id',null)->each(function($variation){
+        Variation_model::whereNull('product_storage_sort_id')->whereNull('deleted_at')->each(function($variation){
             $pss = Product_storage_sort_model::firstOrNew(['product_id'=>$variation->product_id,'storage'=>$variation->storage]);
             if($pss->id == null){
                 $pss->save();
