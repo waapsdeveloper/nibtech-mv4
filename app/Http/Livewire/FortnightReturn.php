@@ -36,6 +36,12 @@ class FortnightReturn extends Component
         $data['storages'] = Storage_model::pluck('name','id');
         $data['grades'] = Grade_model::all();
 
+        if(request('tested_by') != NULL){
+            $data['request_params'] = '?tested_by='.request('tested_by');
+        }else{
+            $data['request_params'] = '';
+        }
+
         $start_date = Carbon::now()->startOfMonth();
         $end_date = date('Y-m-d 23:59:59');
         if (request('start_date') != NULL && request('end_date') != NULL) {
@@ -82,7 +88,13 @@ class FortnightReturn extends Component
         })
         ->whereHas('order', function ($q) {
             $q->where('order_type_id',4);
-        })->whereHas('refund_order')->orderBy('created_at','desc')
+        })->whereHas('refund_order')
+        ->when(request('tested_by'), function ($query) {
+            $query->whereHas('stock', function ($q) {
+                $q->where('tester', request('tested_by'));
+            });
+        })
+        ->orderBy('created_at','desc')
         ->get();
 
         $data['latest_items'] = $latest_items;
