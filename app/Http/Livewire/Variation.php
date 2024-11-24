@@ -44,8 +44,7 @@ class Variation extends Component
         $data['colors'] = Color_model::all();
         $data['storages'] = Storage_model::all();
         $data['grades'] = Grade_model::all();
-        $duplicates = Variation_model::select(DB::raw('GROUP_CONCAT(id) as ids'))
-            ->groupBy('product_id', 'storage', 'color', 'grade')
+        $duplicates = Variation_model::groupBy('product_id', 'storage', 'color', 'grade')
             ->havingRaw('COUNT(*) > 1')
             ->get()
             ->pluck('ids')
