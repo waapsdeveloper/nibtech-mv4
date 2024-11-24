@@ -50,7 +50,13 @@ class FortnightReturn extends Component
         })
         ->whereHas('order', function ($q) {
             $q->where('order_type_id',4);
-        })->whereHas('refund_order')->orderBy('created_at','desc')
+        })->whereHas('refund_order')
+        ->when(request('tested_by'), function ($query) {
+            $query->whereHas('stock', function ($q) {
+                $q->where('tester', request('tested_by'));
+            });
+        })
+        ->orderBy('created_at','desc')
         ->get();
 
         foreach($latest_items as $item){
