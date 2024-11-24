@@ -40,15 +40,25 @@ class Product_Variation extends Component
         $data['colors'] = Color_model::all();
         $data['storages'] = Storage_model::all();
         $data['grades'] = Grade_model::all();
-        $data['variations'] = Variation_model::
-        when(request('grade') != '', function ($q) {
-            return $q->where('grade', request('grade'));
-        })
-        ->orderBy('id','desc')
-        ->paginate($per_page)
-        ->onEachSide(5)
-        ->appends(request()->except('page'));
 
+
+        $duplicates = Variation_model::whereHas('duplicates')->get();
+
+        if($duplicates->count() > 0){
+            $data['variations'] = $duplicates
+            ->paginate($per_page)
+            ->onEachSide(5)
+            ->appends(request()->except('page'));
+        }else{
+            $data['variations'] = Variation_model::
+            when(request('grade') != '', function ($q) {
+                return $q->where('grade', request('grade'));
+            })
+            ->orderBy('id','desc')
+            ->paginate($per_page)
+            ->onEachSide(5)
+            ->appends(request()->except('page'));
+        }
         return view('livewire.variation')->with($data);
     }
 
