@@ -160,19 +160,22 @@ class Functions extends Command
     }
     private function misc(){
 
-        $variations = Variation_model::whereNull('product_storage_sort_id')->whereNull('deleted_at')->get();
+        $variations = Variation_model::whereNull('product_storage_sort_id')->get();
 
-        foreach($variations as $variation){
-            if($variation->product_id == null || $variation->storage == null){
-                continue;
-            }
-            $pss = Product_storage_sort_model::firstOrNew(['product_id'=>$variation->product_id,'storage'=>$variation->storage]);
-            if($pss->id == null){
-                $pss->save();
-            }
-            $variation->product_storage_sort_id = $pss->id;
-            $variation->save();
-        };
+        if($variations->count() > 0){
+            echo $variations->count();
+            foreach($variations as $variation){
+                if($variation->product_id == null || $variation->storage == null){
+                    continue;
+                }
+                $pss = Product_storage_sort_model::firstOrNew(['product_id'=>$variation->product_id,'storage'=>$variation->storage]);
+                if($pss->id == null){
+                    $pss->save();
+                }
+                $variation->product_storage_sort_id = $pss->id;
+                $variation->save();
+            };
+        }
         $order_c = new Order();
         Order_model::where('scanned',null)->where('order_type_id',3)->where('tracking_number', '!=', null)->whereBetween('created_at', ['2024-05-01 00:00:00', now()->subDays(1)->format('Y-m-d H:i:s')])
         ->orderByDesc('id')->each(function($order) use ($order_c){
