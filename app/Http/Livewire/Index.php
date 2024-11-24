@@ -362,20 +362,20 @@ class Index extends Component
                 $sale = $variation_sales[$variation->id]->total_quantity_sold ?? 0;
                 $stock = $variation_stock[$variation->id]->total_quantity_stocked ?? 0;
 
-                if($stock > $sale*0.2){
-                    return null;
+                if($stock < $sale*0.2){
+
+
+                    return [
+                        'variation_id' => $variation->id,
+                        'sku' => $variation->sku,
+                        'variation' => $model . ' ' . $storage . ' ' . $color . ' ' . $grade,
+                        'total_quantity_sold' => $variation_sales[$variation->id]->total_quantity_sold ?? 0,
+                        'average_price' => amount_formatter($variation_sales[$variation->id]->average_price) ?? 0,
+                        'total_quantity_stocked' => $variation_stock[$variation->id]->total_quantity_stocked ?? 0,
+                        'start_date' => $start_date,
+                    ];
+
                 }
-
-
-                return [
-                    'variation_id' => $variation->id,
-                    'sku' => $variation->sku,
-                    'variation' => $model . ' ' . $storage . ' ' . $color . ' ' . $grade,
-                    'total_quantity_sold' => $variation_sales[$variation->id]->total_quantity_sold ?? 0,
-                    'average_price' => amount_formatter($variation_sales[$variation->id]->average_price) ?? 0,
-                    'total_quantity_stocked' => $variation_stock[$variation->id]->total_quantity_stocked ?? 0,
-                    'start_date' => $start_date,
-                ];
             });
 
             return response()->json($merged_data);
