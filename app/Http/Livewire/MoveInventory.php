@@ -67,11 +67,9 @@ class MoveInventory extends Component
                 return $q->where('created_at','>=',$start_date)->where('created_at','<=',$end_date);
             })
             ->when(request('moved') == 1, function ($q) {
-                return $q->whereHas('stock', function ($query) {
-                    $query->whereHas('variation', function ($subQuery) {
-                        $subQuery->whereColumn('product_id', '!=', 'new_variation.product_id')
-                        ->whereColumn('storage', '!=', 'new_variation.storage');
-                    });
+                return $q->whereHas('old_variation', function ($subQuery) {
+                    $subQuery->whereColumn('product_id', '!=', 'new_variation.product_id')
+                    ->whereColumn('storage', '!=', 'new_variation.storage');
                 });
             })
 
