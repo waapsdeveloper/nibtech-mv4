@@ -298,7 +298,7 @@ class Index extends Component
             $variation_ids = [];
             if(request('data') == 1){
 
-                $variation_ids = Variation_model::withoutGlobalScope('Status_not_3_scope')->select('id')
+                $variation_ids = Variation_model::select('id')
                 ->when(request('product') != '', function ($q) {
                     return $q->where('product_id', '=', request('product'));
                 })
@@ -359,10 +359,13 @@ class Index extends Component
                 $color = $colors[$variation->color] ?? '';
                 $grade = $grades[$variation->grade] ?? '';
 
-                // $sale = $variation_sales[$variation->id]->total_
-                // $stock = $variation_stock[$variation->id] ?? null;
+                $sale = $variation_sales[$variation->id]->total_quantity_sold ?? 0;
+                $stock = $variation_stock[$variation->id]->total_quantity_stocked ?? 0;
 
-                // if()
+                if($stock > $sale*0.2){
+                    return null;
+                }
+
 
                 return [
                     'variation_id' => $variation->id,
