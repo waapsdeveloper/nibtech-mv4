@@ -181,7 +181,7 @@
                                   <th><small><b>Grade</b></small></th>
                                   <th><small><b>Sub Grade</b></small></th>
                                   <th><small><b>Stock</b></small></th>
-                                  <th><small><b>Price</b></small></th>
+                                  {{-- <th><small><b>Price</b></small></th> --}}
                                   <th><small><b>Datetime</b></small></th>
                               </tr>
                           </thead>
@@ -259,7 +259,7 @@
                                           </select>
                                       </td>
                                       <td><a href="{{ url('inventory').'?variation='.$product->id}}"> {{ $product->available_stocks_count }} </a></td>
-                                      <td>{{ $product->price }}</td>
+                                      {{-- <td>{{ $product->price }}</td> --}}
                                       <td>{{ $product->updated_at }}</td>
                                       <td>
 
