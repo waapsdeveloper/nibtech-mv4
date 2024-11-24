@@ -349,11 +349,8 @@ class Index extends Component
             ->keyBy('variation_id');
 
             $variations = Variation_model::whereIn('id', $variation_stock->pluck('variation_id')->toArray())->get();
-
-
-
-            $merged_data = $variations->map(function ($variation) use ($variation_sales, $variation_stock, $products, $storages, $colors, $grades, $start_date) {
-
+            $merged_data = [];
+            foreach($variations as $variation){
                 $model = $products[$variation->product_id] ?? 'Model not found';
                 $storage = $storages[$variation->storage] ?? '';
                 $color = $colors[$variation->color] ?? '';
@@ -363,9 +360,7 @@ class Index extends Component
                 $stock = $variation_stock[$variation->id]->total_quantity_stocked ?? 0;
 
                 if($stock < $sale*0.2){
-
-
-                    return [
+                    $merged_data[] = [
                         'variation_id' => $variation->id,
                         'sku' => $variation->sku,
                         'variation' => $model . ' ' . $storage . ' ' . $color . ' ' . $grade,
@@ -374,9 +369,8 @@ class Index extends Component
                         'total_quantity_stocked' => $variation_stock[$variation->id]->total_quantity_stocked ?? 0,
                         'start_date' => $start_date,
                     ];
-
                 }
-            });
+            }
 
             return response()->json($merged_data);
 
