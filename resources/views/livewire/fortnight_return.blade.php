@@ -142,7 +142,7 @@
             <div class="col-xl-12">
                 <div class="card">
                     <div class="card-header pb-0">
-                        <a href="{{ url('fortnight_return/print')}}" class="btn btn-secondary">Export</a>
+                        <a href="{{ url('fortnight_return/print').$request_param}}" class="btn btn-secondary">Export</a>
                         @foreach ($returns as $return)
                             <a href="{{ url('fortnight_return').'?tested_by='.$return->tested_by }}" class="btn btn-link">{{ $return }}</a>
                         @endforeach
