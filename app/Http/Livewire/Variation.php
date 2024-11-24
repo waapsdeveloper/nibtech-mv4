@@ -44,19 +44,18 @@ class Variation extends Component
         $data['colors'] = Color_model::all();
         $data['storages'] = Storage_model::all();
         $data['grades'] = Grade_model::all();
-        $duplicates = Variation_model::groupBy('product_id', 'storage', 'color', 'grade')
+        $array = [];
+        $duplicates = Variation_model::select(DB::raw('GROUP_CONCAT(id) as ids'))
+            ->groupBy('product_id', 'storage', 'color', 'grade')
             ->havingRaw('COUNT(*) > 1')
-            ->get()
-            ->pluck('ids')
-            ->map(function($ids) {
-            return explode(',', $ids);
-            })
-            ->flatten()
-            ->toArray();
-        if(count($duplicates) > 0){
-            dd($duplicates);
+            ->get();
+        foreach($duplicates as $duplicate){
+            $array = array_merge($array, explode(',',$duplicate->ids));
+        }
+        if(count($array) > 0){
+            // dd($duplicates);
             $data['variations'] = Variation_model::
-            whereIn('id', $duplicates)
+            whereIn('id', $array)
             ->paginate($per_page)
             ->onEachSide(5)
             ->appends(request()->except('page'));
