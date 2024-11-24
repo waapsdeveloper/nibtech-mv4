@@ -40,8 +40,8 @@ class Variation_model extends Model
                     ->where('storage', $this->storage)
                     ->where('color', $this->color)
                     ->where('grade', $this->grade)
-                    ->where('sub_grade', $this->sub_grade)
-                    ->whereNotNull('sku')
+                    // ->where('sub_grade', $this->sub_grade)
+                    // ->whereNotNull('sku')
                     ->where('id', '!=', $this->id);
     }
     public function hasDuplicate()
@@ -51,7 +51,7 @@ class Variation_model extends Model
 
     public function scopeHasDuplicate($query)
     {
-        $query->whereHas('duplicate');
+        $query->whereHas('duplicates');
     }
 
     public function product(){
