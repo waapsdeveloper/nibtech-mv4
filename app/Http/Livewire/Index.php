@@ -359,7 +359,7 @@ class Index extends Component
                 $sale = $variation_sales[$variation->id]->total_quantity_sold ?? 0;
                 $stock = $variation_stock[$variation->id]->total_quantity_stocked ?? 0;
 
-                if($stock < $sale*0.2){
+                if($stock < $sale*0.2 && $sale > 100){
                     $merged_data[] = [
                         'variation_id' => $variation->id,
                         'sku' => $variation->sku,
