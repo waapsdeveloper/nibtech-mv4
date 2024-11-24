@@ -46,7 +46,7 @@ class Variation extends Component
         $data['grades'] = Grade_model::all();
 
 
-        $duplicates = Variation_model::whereHas('hasDuplicate')->get();
+        $duplicates = Variation_model::whereHas('duplicates')->get();
 
         if($duplicates->count() > 0){
             $data['variations'] = $duplicates
