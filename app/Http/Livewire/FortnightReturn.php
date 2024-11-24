@@ -37,9 +37,9 @@ class FortnightReturn extends Component
         $data['grades'] = Grade_model::all();
 
         if(request('tested_by') != NULL){
-            $data['request_params'] = '?tested_by='.request('tested_by');
+            $data['request_param'] = '?tested_by='.request('tested_by');
         }else{
-            $data['request_params'] = '';
+            $data['request_param'] = '';
         }
 
         $start_date = Carbon::now()->startOfMonth();
