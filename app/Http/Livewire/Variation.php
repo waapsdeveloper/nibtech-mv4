@@ -44,10 +44,8 @@ class Variation extends Component
         $data['colors'] = Color_model::all();
         $data['storages'] = Storage_model::all();
         $data['grades'] = Grade_model::all();
-
-
-        $duplicates = Variation_model::with('duplicates')->whereHas('duplicates')->get();
-
+        $duplicates = Variation_model::groupBy('reference_id', 'product_id', 'storage', 'color', 'grade')
+            ->havingRaw('COUNT(*) > 1');
         if($duplicates->count() > 0){
             $data['variations'] = $duplicates
             ->paginate($per_page)
