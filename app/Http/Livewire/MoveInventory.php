@@ -68,7 +68,7 @@ class MoveInventory extends Component
             })
             ->when(request('moved') == 1, function ($q) {
                 return $q->whereHas('old_variation', function ($query) {
-                    $query->whereHas('stock_operation', function ($innerQuery) {
+                    $query->whereHas('stock_operations', function ($innerQuery) {
                         $innerQuery->whereHas('new_variation', function ($subQuery) {
                             $subQuery->whereColumn('product_id', '!=', 'new_variation.product_id')
                                      ->whereColumn('storage', '!=', 'new_variation.storage');
