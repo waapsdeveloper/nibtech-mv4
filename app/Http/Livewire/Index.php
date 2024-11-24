@@ -362,6 +362,10 @@ class Index extends Component
                 if($stock < $sale*0.2 && $sale > 100){
                     $merged_data[] = [
                         'variation_id' => $variation->id,
+                        'product_id' => $variation->product_id,
+                        'storage' => $variation->storage,
+                        'color' => $variation->color,
+                        'grade' => $variation->grade,
                         'sku' => $variation->sku,
                         'variation' => $model . ' ' . $storage . ' ' . $color . ' ' . $grade,
                         'total_quantity_sold' => $variation_sales[$variation->id]->total_quantity_sold ?? 0,
