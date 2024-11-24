@@ -44,30 +44,41 @@ class Variation extends Component
         $data['colors'] = Color_model::all();
         $data['storages'] = Storage_model::all();
         $data['grades'] = Grade_model::all();
-        $data['variations'] = Variation_model::
-            when(request('reference_id') != '', function ($q) {
-                return $q->where('reference_id', request('reference_id'));
-            })
-            ->when(request('product') != '', function ($q) {
-                return $q->where('product_id', request('product'));
-            })
-            ->when(request('sku') != '', function ($q) {
-                return $q->where('sku', 'LIKE', '%'.request('sku').'%');
-            })
-            ->when(request('color') != '', function ($q) {
-                return $q->where('color', request('color'));
-            })
-            ->when(request('storage') != '', function ($q) {
-                return $q->where('storage', request('storage'));
-            })
-            ->when(request('grade') != '', function ($q) {
-                return $q->where('grade', request('grade'));
-            })
-            ->withCount('available_stocks')
-            ->orderBy('name','desc')
+
+
+        $duplicates = Variation_model::whereHas('duplicates')->get();
+
+        if($duplicates->count() > 0){
+            $data['variations'] = $duplicates
             ->paginate($per_page)
             ->onEachSide(5)
             ->appends(request()->except('page'));
+        }else{
+            $data['variations'] = Variation_model::
+                when(request('reference_id') != '', function ($q) {
+                    return $q->where('reference_id', request('reference_id'));
+                })
+                ->when(request('product') != '', function ($q) {
+                    return $q->where('product_id', request('product'));
+                })
+                ->when(request('sku') != '', function ($q) {
+                    return $q->where('sku', 'LIKE', '%'.request('sku').'%');
+                })
+                ->when(request('color') != '', function ($q) {
+                    return $q->where('color', request('color'));
+                })
+                ->when(request('storage') != '', function ($q) {
+                    return $q->where('storage', request('storage'));
+                })
+                ->when(request('grade') != '', function ($q) {
+                    return $q->where('grade', request('grade'));
+                })
+                ->withCount('available_stocks')
+                ->orderBy('name','desc')
+                ->paginate($per_page)
+                ->onEachSide(5)
+                ->appends(request()->except('page'));
+        }
 
         return view('livewire.variation')->with($data);
     }
