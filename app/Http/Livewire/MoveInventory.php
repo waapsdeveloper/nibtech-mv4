@@ -66,6 +66,14 @@ class MoveInventory extends Component
             ->when((request('search') == '' || request('start_date') != NULL || request('end_date') != NULL), function ($q) use ($start_date,$end_date) {
                 return $q->where('created_at','>=',$start_date)->where('created_at','<=',$end_date);
             })
+            ->when(request('moved') == 1, function ($q) {
+                return $q->whereHas('stock', function ($query) {
+                    $query->whereHas('variation', function ($subQuery) {
+                        $subQuery->whereColumn('product_id', '!=', 'new_variation.product_id')
+                        ->whereColumn('storage', '!=', 'new_variation.storage');
+                    });
+                });
+            })
 
             ->when(request('adm') != '', function ($q) {
                 return $q->where('admin_id', request('adm'));
