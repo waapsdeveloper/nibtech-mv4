@@ -163,6 +163,9 @@ class Functions extends Command
         $variations = Variation_model::whereNull('product_storage_sort_id')->whereNull('deleted_at')->get();
 
         foreach($variations as $variation){
+            if($variation->product_id == null || $variation->storage == null){
+                continue;
+            }
             $pss = Product_storage_sort_model::firstOrNew(['product_id'=>$variation->product_id,'storage'=>$variation->storage]);
             if($pss->id == null){
                 $pss->save();
