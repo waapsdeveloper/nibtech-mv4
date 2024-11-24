@@ -55,6 +55,7 @@ class Variation extends Component
             ->flatten()
             ->toArray();
         if(count($duplicates) > 0){
+            dd($duplicates);
             $data['variations'] = Variation_model::
             whereIn('id', $duplicates)
             ->paginate($per_page)
