@@ -46,7 +46,7 @@ class Variation_model extends Model
     }
     public function hasDuplicate()
     {
-        return $this->duplicate()->exists();
+        return $this->duplicates()->exists();
     }
 
     public function scopeHasDuplicate($query)
