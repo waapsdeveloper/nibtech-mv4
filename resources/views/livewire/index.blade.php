@@ -574,7 +574,7 @@
                     new_data += `
                                         <tr>
                                             <td>${i += 1}</td>
-                                            <td><a href="{{url('inventory')}}?variation=${element.variation_id}">${element.variation}</a></td>
+                                            <td><a href="{{url('listing')}}?variation=${element.variation_id}">${element.variation}</a></td>
                                             <td><a href="{{url('order')}}?sku=${element.sku}&start_date=${element.start_date}">${element.total_quantity_sold}</a></td>
                                             <td>${element.average_price}</td>
                                             <td><a href="{{url('inventory')}}?variation=${element.variation_id}">${element.total_quantity_stocked}</a></td>
