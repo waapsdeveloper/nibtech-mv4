@@ -302,7 +302,7 @@ class Index extends Component
             if(request('max_stock') != null){
                 $max_stock = request('max_stock');
             }else{
-                $max_stock = 0;
+                $max_stock = 100;
             }
 
             $start_date = now()->subDays($days)->startOfDay()->format('Y-m-d');
@@ -380,9 +380,6 @@ class Index extends Component
                 $sale = $variation_sales[$variation->id]->total_quantity_sold ?? 0;
                 $stock = $variation_stock[$variation->id]->total_quantity_stocked ?? 0;
 
-                if($max_stock == 0){
-                    $max_stock = $stock;
-                }
 
                 if($stock < $sale*$difference && $sale >= $min_sale && $stock <= $max_stock){
                     $merged_data[] = [
