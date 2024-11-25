@@ -349,15 +349,15 @@
                                             </div>
                                             <div class="form-floating">
                                                 <input class="form-control" type="number" id="difference" name="difference" value="{{ Request::get('difference') ?? 0 }}">
-                                                <label for="difference">Percent Difference %</label>
+                                                <label for="difference">Difference %</label>
                                             </div>
                                             <div class="form-floating">
                                                 <input class="form-control" type="number" id="min_sales" name="min_sales" value="{{ Request::get('min_sales') ?? 0 }}">
-                                                <label for="min_sales">Minimum Sales</label>
+                                                <label for="min_sales">Min Sales</label>
                                             </div>
                                             <div class="form-floating">
                                                 <input class="form-control" type="number" id="max_stock" name="max_stock" value="{{ Request::get('max_stock') ?? 0 }}">
-                                                <label for="max_stock">Maximum Stock</label>
+                                                <label for="max_stock">Max Stock</label>
                                             </div>
                                             <button type="submit" class="btn btn-icon  btn-success me-1" hidden></button>
                                             </div>
