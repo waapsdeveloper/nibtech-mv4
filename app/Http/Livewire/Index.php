@@ -381,10 +381,10 @@ class Index extends Component
                 $stock = $variation_stock[$variation->id]->total_quantity_stocked ?? 0;
 
                 if($max_stock == 0){
-                    $max_stock = $stock+1;
+                    $max_stock = $stock;
                 }
 
-                if($stock < $sale*$difference && $sale >= $min_sale){
+                if($stock < $sale*$difference && $sale >= $min_sale && $stock <= $max_stock){
                     $merged_data[] = [
                         'variation_id' => $variation->id,
                         'product_id' => $variation->product_id,
