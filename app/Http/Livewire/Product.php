@@ -99,79 +99,75 @@ class Product extends Component
         return redirect()->back();
     }
 
-    public function import_product(){
+    // public function import_product(){
 
-        $excelFilePath = storage_path('app\listing.xlsx');
+    //     $excelFilePath = storage_path('app\listing.xlsx');
 
-        $data = Excel::toArray([], $excelFilePath)[0];
-        $dh = $data[0];
-        unset($data[0]);
-        $arrayLower = array_map('strtolower', $dh);
-        // print_r($arrayLower);
-        $category = 0;
-        $reference_id = 1;
-        $stock = 2;
-        $sku = 3;
-        $status = 4;
-        $model = 5;
-        $grade = 6;
-        $storage = 7;
-        $color = 8;
-        $brand = 9;
+    //     $data = Excel::toArray([], $excelFilePath)[0];
+    //     $dh = $data[0];
+    //     unset($data[0]);
+    //     $arrayLower = array_map('strtolower', $dh);
+    //     // print_r($arrayLower);
+    //     $reference_id = 2;
+    //     $sku = 3;
+    //     $model = 4;
+    //     $grade = 7;
+    //     $storage = 5;
+    //     $color = 6;
 
-        $storages = Storage_model::pluck('name','id')->toArray();
-        $colors = Color_model::pluck('name','id')->toArray();
+    //     $storages = Storage_model::pluck('name','id')->toArray();
+    //     $colors = Color_model::pluck('name','id')->toArray();
 
-        $products = Products_model::pluck('model','id')->toArray();
+    //     $products = Products_model::pluck('model','id')->toArray();
 
-        foreach($data as $dr => $d){
+    //     foreach($data as $dr => $d){
 
-            if(in_array(strtolower(trim($d[$model])), array_map('strtolower',$products))){
+    //         if(in_array(strtolower(trim($d[$model])), array_map('strtolower',$products))){
 
-                $product_id = array_search(strtolower(trim($d[$model])), array_map('strtolower',$products));
-            }else{
-                $product = new Products_model();
-                $product->category = trim($d[$category]);
-                $product->brand = trim($d[$brand]);
-                $product->model = trim($d[$model]);
-                $product->save();
+    //             $product_id = array_search(strtolower(trim($d[$model])), array_map('strtolower',$products));
+    //         }else{
+    //             $product = new Products_model();
+    //             $product->category = trim($d[$category]);
+    //             $product->brand = trim($d[$brand]);
+    //             $product->model = trim($d[$model]);
+    //             $product->save();
 
-                $product_id = $product->id;
+    //             $product_id = $product->id;
 
-                $products = Products_model::pluck('model','id')->toArray();
-            }
-            if(in_array(strtolower(trim($d[$storage])), array_map('strtolower',$storages))){
+    //             $products = Products_model::pluck('model','id')->toArray();
+    //         }
+    //         if(in_array(strtolower(trim($d[$storage])), array_map('strtolower',$storages))){
 
-                $storage_id = array_search(strtolower(trim($d[$storage])), array_map('strtolower',$storages));
-            }else{
-                if(trim($d[$storage]) == ''){
-                    $storage_id = null;
-                }
-            }
-            if(in_array(strtolower(trim($d[$color])), array_map('strtolower',$colors))){
+    //             $storage_id = array_search(strtolower(trim($d[$storage])), array_map('strtolower',$storages));
+    //         }else{
+    //             if(trim($d[$storage]) == ''){
+    //                 $storage_id = null;
+    //             }
+    //         }
+    //         if(in_array(strtolower(trim($d[$color])), array_map('strtolower',$colors))){
 
-                $color_id = array_search(strtolower(trim($d[$color])), array_map('strtolower',$colors));
-            }else{
-                if(trim($d[$color]) == ''){
-                    $color_id = null;
-                }else{
-                    $color_new = new Color_model();
-                    $color_new->name = trim($d[$color]);
-                    $color_new->save();
+    //             $color_id = array_search(strtolower(trim($d[$color])), array_map('strtolower',$colors));
+    //         }else{
+    //             if(trim($d[$color]) == ''){
+    //                 $color_id = null;
+    //             }else{
+    //                 $color_new = new Color_model();
+    //                 $color_new->name = trim($d[$color]);
+    //                 $color_new->save();
 
-                    $color_id = $color_new->id;
+    //                 $color_id = $color_new->id;
 
-                    $colors = Color_model::pluck('name','id')->toArray();
-                }
-            }
-            $variation = Variation_model::firstOrNew(['product_id' => $product_id, 'reference_id' => trim($d[$reference_id]), 'grade' => trim($d[$grade]), 'storage' => $storage_id, 'color' =>$color_id]);
-            $variation->sku = $d[$sku];
-            $variation->stock += trim($d[$stock]);
-            $variation->status = trim($d[$status]);
-            $variation->save();
-        }
+    //                 $colors = Color_model::pluck('name','id')->toArray();
+    //             }
+    //         }
+    //         $variation = Variation_model::firstOrNew(['product_id' => $product_id, 'reference_id' => trim($d[$reference_id]), 'grade' => trim($d[$grade]), 'storage' => $storage_id, 'color' =>$color_id]);
+    //         $variation->sku = $d[$sku];
+    //         $variation->stock += trim($d[$stock]);
+    //         $variation->status = trim($d[$status]);
+    //         $variation->save();
+    //     }
 
-    }
+    // }
     public function import_sku(){
 
         $excelFilePath = storage_path('app\listing.xlsx');
