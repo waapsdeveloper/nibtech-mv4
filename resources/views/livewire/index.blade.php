@@ -579,6 +579,19 @@
         @if (session('user')->hasPermission('dashboard_required_restock'))
 
         <script>
+            function load_data(url){
+                let data = [];
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    async: false,
+                    success: function(response){
+                        data = response;
+                    }
+                });
+                return data;
+            }
+
             $(document).ready(function(){
                 let restock = $('#required_restock');
                 let i = 0;
