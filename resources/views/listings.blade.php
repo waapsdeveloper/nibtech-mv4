@@ -270,7 +270,7 @@
                                 <td>${index + 1}</td>
                                 <td data-stock="${item.id}">
                                     <a href="{{ url('imei?imei=') }}${item.imei}${item.serial_number}" target="_blank">
-                                        ${item.imei ?? ''}${item.serial_number ?? ''}
+                                        ${item.imei ?? item.serial_number ?? ''}
                                     </a>
                                 </td>
                                 <td id="cost_${item.id}">€${price}</td>
@@ -596,7 +596,11 @@
                                         <a class="" href="{{url('order').'?sku='}}${variation.sku}" target="_blank">
                                             Pending Order Items: ${variation.pending_orders.length || 0}
                                         </a></h6>
-                                        <h6 class="mb-0" id="available_stock_${variation.id}">Available: ${variation.available_stocks.length || 0}</h6>
+                                        <h6 class="mb-0" id="available_stock_${variation.id}">
+                                            <a href="{{url('inventory').'?variation='}}${variation.id}" target="_blank">
+                                                Available: ${variation.available_stocks.length || 0}
+                                            </a>
+                                        </h6>
                                         <h6 class="mb-0">Difference: ${variation.available_stocks.length - variation.pending_orders.length}</h6>
                                     </div>
                                     <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#details_${variation.id}" aria-expanded="false" aria-controls="details_${variation.id}" onClick="getVariationDetails(${variation.id}, ${eurToGbp}, ${m_min_price}, ${m_price})">
