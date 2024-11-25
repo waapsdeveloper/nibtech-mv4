@@ -341,19 +341,19 @@
                                     <div class="card-header">
                                         <h4 class="card-title">Restock Required based on 30 day sales</h4>
                                         <form method="GET" action="" class="row form-inline">
-                                            <div class="form-floating">
+                                            <div class="col form-floating">
                                                 <input class="form-control" type="number" id="days" name="days" value="{{ Request::get('days') ?? 30 }}">
                                                 <label for="days">Days</label>
                                             </div>
-                                            <div class="form-floating">
+                                            <div class="col form-floating">
                                                 <input class="form-control" type="number" id="difference" name="difference" value="{{ Request::get('difference') ?? 0 }}">
                                                 <label for="difference">Percent Difference %</label>
                                             </div>
-                                            <div class="form-floating">
+                                            <div class="col form-floating">
                                                 <input class="form-control" type="number" id="min_sales" name="min_sales" value="{{ Request::get('min_sales') ?? 0 }}">
                                                 <label for="min_sales">Minimum Sales</label>
                                             </div>
-                                            <div class="form-floating">
+                                            <div class="col form-floating">
                                                 <input class="form-control" type="number" id="max_stock" name="max_stock" value="{{ Request::get('max_stock') ?? 0 }}">
                                                 <label for="max_stock">Maximum Stock</label>
                                             </div>
