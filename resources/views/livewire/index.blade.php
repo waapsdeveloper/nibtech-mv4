@@ -355,7 +355,7 @@
                                                 <label for="min_sales">Min Sales</label>
                                             </div>
                                             <div class="form-floating">
-                                                <input class="form-control" type="number" id="max_stock" name="max_stock" value="{{ Request::get('max_stock') ?? 0 }}" onchange="get_restock_data()">
+                                                <input class="form-control" type="number" id="max_stock" name="max_stock" value="{{ Request::get('max_stock') ?? 100 }}" onchange="get_restock_data()">
                                                 <label for="max_stock">Max Stock</label>
                                             </div>
                                         </div>
