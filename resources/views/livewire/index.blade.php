@@ -340,28 +340,25 @@
                                 <div class="card">
                                     <div class="card-header">
                                         <h4 class="card-title">Restock Required based on 30 day sales</h4>
-                                        <form method="GET" action="">
-                                            <div class="d-flex justify-content-between">
+                                        <div class="d-flex justify-content-between">
 
                                             <div class="form-floating">
-                                                <input class="form-control" type="number" id="days" name="days" value="{{ Request::get('days') ?? 30 }}">
+                                                <input class="form-control" type="number" id="days" name="days" value="{{ Request::get('days') ?? 30 }}" oninput="get_restock_data()">
                                                 <label for="days">Days</label>
                                             </div>
                                             <div class="form-floating">
-                                                <input class="form-control" type="number" id="difference" name="difference" value="{{ Request::get('difference') ?? 20 }}">
+                                                <input class="form-control" type="number" id="difference" name="difference" value="{{ Request::get('difference') ?? 20 }}" oninput="get_restock_data()">
                                                 <label for="difference">Difference %</label>
                                             </div>
                                             <div class="form-floating">
-                                                <input class="form-control" type="number" id="min_sales" name="min_sales" value="{{ Request::get('min_sales') ?? 100 }}">
+                                                <input class="form-control" type="number" id="min_sales" name="min_sales" value="{{ Request::get('min_sales') ?? 100 }}" oninput="get_restock_data()">
                                                 <label for="min_sales">Min Sales</label>
                                             </div>
                                             <div class="form-floating">
-                                                <input class="form-control" type="number" id="max_stock" name="max_stock" value="{{ Request::get('max_stock') ?? 0 }}">
+                                                <input class="form-control" type="number" id="max_stock" name="max_stock" value="{{ Request::get('max_stock') ?? 0 }}" oninput="get_restock_data()">
                                                 <label for="max_stock">Max Stock</label>
                                             </div>
-                                            <button type="submit" class="btn btn-icon  btn-success me-1" hidden></button>
-                                            </div>
-                                        </form>
+                                        </div>
                                     </div>
                                     <div class="card-body">
                                         <table class="table table-bordered table-hover text-md-nowrap">
