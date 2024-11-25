@@ -597,7 +597,7 @@
                                             Pending Order Items: ${variation.pending_orders.length || 0}
                                         </a></h6>
                                         <h6 class="mb-0" id="available_stock_${variation.id}">
-                                            <a href="{{url('inventory').'?variation='}}${variation.id}" target="_blank">
+                                            <a href="{{url('inventory').'?product='}}${variation.product_id}&storage=${variation.storage}&color=${variation.color}&grade[]=${variation.grade}" target="_blank">
                                                 Available: ${variation.available_stocks.length || 0}
                                             </a>
                                         </h6>
