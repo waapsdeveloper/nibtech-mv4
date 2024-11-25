@@ -557,12 +557,13 @@
                             @endif">
                                 <div class="card-header pb-0">
                                     @php
+                                        isset($variation->product_id)?$product = $products[$variation->product_id]:$product = null;
                                         isset($variation->color)?$color = $colors[$variation->color]:$color = null;
                                         isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
                                         isset($variation->grade)?$grade = $grades[$variation->grade]:$grade = null;
                                         isset($variation->sub_grade)?$sub_grade = $grades[$variation->sub_grade]:$sub_grade = null;
                                     @endphp
-                                    {{ $products[$variation->product_id]." ".$storage." ".$color." ".$grade." ".$sub_grade }}
+                                    {{ $product." ".$storage." ".$color." ".$grade." ".$sub_grade }}
                                 </div>
                                         {{-- {{ $variation }} --}}
                                 <div class="card-body"><div class="table-responsive" style="max-height: 400px">
