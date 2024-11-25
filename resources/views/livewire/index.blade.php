@@ -359,7 +359,7 @@
                                                 <input class="form-control" type="number" id="max_stock" name="max_stock" value="{{ Request::get('max_stock') ?? 0 }}">
                                                 <label for="max_stock">Maximum Stock</label>
                                             </div>
-                                            <button type="submit" class="btn btn-icon  btn-success me-1"><i class="fe fe-search"></i></button>
+                                            <button type="submit" class="btn btn-icon  btn-success me-1" hidden></button>
                                             </div>
                                         </form>
                                     </div>
