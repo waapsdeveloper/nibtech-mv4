@@ -343,19 +343,19 @@
                                         <div class="d-flex justify-content-between">
 
                                             <div class="form-floating">
-                                                <input class="form-control" type="number" id="days" name="days" value="{{ Request::get('days') ?? 30 }}" oninput="get_restock_data()">
+                                                <input class="form-control" type="number" id="days" name="days" value="{{ Request::get('days') ?? 30 }}" onchange="get_restock_data()">
                                                 <label for="days">Days</label>
                                             </div>
                                             <div class="form-floating">
-                                                <input class="form-control" type="number" id="difference" name="difference" value="{{ Request::get('difference') ?? 20 }}" oninput="get_restock_data()">
+                                                <input class="form-control" type="number" id="difference" name="difference" value="{{ Request::get('difference') ?? 20 }}" onchange="get_restock_data()">
                                                 <label for="difference">Difference %</label>
                                             </div>
                                             <div class="form-floating">
-                                                <input class="form-control" type="number" id="min_sales" name="min_sales" value="{{ Request::get('min_sales') ?? 100 }}" oninput="get_restock_data()">
+                                                <input class="form-control" type="number" id="min_sales" name="min_sales" value="{{ Request::get('min_sales') ?? 100 }}" onchange="get_restock_data()">
                                                 <label for="min_sales">Min Sales</label>
                                             </div>
                                             <div class="form-floating">
-                                                <input class="form-control" type="number" id="max_stock" name="max_stock" value="{{ Request::get('max_stock') ?? 0 }}" oninput="get_restock_data()">
+                                                <input class="form-control" type="number" id="max_stock" name="max_stock" value="{{ Request::get('max_stock') ?? 0 }}" onchange="get_restock_data()">
                                                 <label for="max_stock">Max Stock</label>
                                             </div>
                                         </div>
