@@ -348,11 +348,11 @@
                                                 <label for="days">Days</label>
                                             </div>
                                             <div class="form-floating">
-                                                <input class="form-control" type="number" id="difference" name="difference" value="{{ Request::get('difference') ?? 0 }}">
+                                                <input class="form-control" type="number" id="difference" name="difference" value="{{ Request::get('difference') ?? 20 }}">
                                                 <label for="difference">Difference %</label>
                                             </div>
                                             <div class="form-floating">
-                                                <input class="form-control" type="number" id="min_sales" name="min_sales" value="{{ Request::get('min_sales') ?? 0 }}">
+                                                <input class="form-control" type="number" id="min_sales" name="min_sales" value="{{ Request::get('min_sales') ?? 100 }}">
                                                 <label for="min_sales">Min Sales</label>
                                             </div>
                                             <div class="form-floating">
