@@ -384,7 +384,7 @@ class Index extends Component
                     $max_stock = $stock+1;
                 }
 
-                if($stock < $sale*$difference && $sale >= $min_sale && $stock <= $max_stock){
+                if($stock < $sale*$difference && $sale >= $min_sale){
                     $merged_data[] = [
                         'variation_id' => $variation->id,
                         'product_id' => $variation->product_id,
