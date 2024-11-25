@@ -140,6 +140,7 @@
                                     <input type="hidden" name="end_date" value="{{ Request::get('end_date') }}">
                                     <input type="hidden" name="status" value="{{ Request::get('status') }}">
                                     <input type="hidden" name="order_id" value="{{ Request::get('order_id') }}">
+                                    <input type="hidden" name="customer_id" value="{{ Request::get('customer_id') }}">
                                     <input type="hidden" name="sku" value="{{ Request::get('sku') }}">
                                     <input type="hidden" name="imei" value="{{ Request::get('imei') }}">
                                     <input type="hidden" name="page" value="{{ Request::get('page') }}">
