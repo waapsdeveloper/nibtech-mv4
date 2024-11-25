@@ -44,22 +44,22 @@ class Variation extends Component
         $data['colors'] = Color_model::all();
         $data['storages'] = Storage_model::all();
         $data['grades'] = Grade_model::all();
-        $array = [];
-        $duplicates = Variation_model::select(DB::raw('GROUP_CONCAT(id) as ids'))
-            ->groupBy('product_id', 'storage', 'color', 'grade')
-            ->havingRaw('COUNT(*) > 1')
-            ->get();
-        foreach($duplicates as $duplicate){
-            $array = array_merge($array, explode(',',$duplicate->ids));
-        }
-        if(count($array) > 0){
-            // dd($duplicates);
-            $data['variations'] = Variation_model::
-            whereIn('id', $array)
-            ->paginate($per_page)
-            ->onEachSide(5)
-            ->appends(request()->except('page'));
-        }else{
+        // $array = [];
+        // $duplicates = Variation_model::select(DB::raw('GROUP_CONCAT(id) as ids'))
+        //     ->groupBy('product_id', 'storage', 'color', 'grade')
+        //     ->havingRaw('COUNT(*) > 1')
+        //     ->get();
+        // foreach($duplicates as $duplicate){
+        //     $array = array_merge($array, explode(',',$duplicate->ids));
+        // }
+        // if(count($array) > 0){
+        //     // dd($duplicates);
+        //     $data['variations'] = Variation_model::
+        //     whereIn('id', $array)
+        //     ->paginate($per_page)
+        //     ->onEachSide(5)
+        //     ->appends(request()->except('page'));
+        // }else{
             $data['variations'] = Variation_model::
                 when(request('reference_id') != '', function ($q) {
                     return $q->where('reference_id', request('reference_id'));
@@ -84,7 +84,7 @@ class Variation extends Component
                 ->paginate($per_page)
                 ->onEachSide(5)
                 ->appends(request()->except('page'));
-        }
+        // }
 
         return view('livewire.variation')->with($data);
     }
