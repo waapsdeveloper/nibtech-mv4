@@ -335,7 +335,48 @@
                                     </div>
                                 </div>
                             @endif
-                            <div id="required_restock"></div>
+
+                            @if (session('user')->hasPermission('dashboard_required_restock'))
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h4 class="card-title">Restock Required based on 30 day sales</h4>
+                                        <form method="GET" action="" class="row form-inline">
+                                            <div class="form-floating">
+                                                <input class="form-control" type="number" id="days" name="days" value="{{ Request::get('days') ?? 30 }}">
+                                                <label for="days">Days</label>
+                                            </div>
+                                            <div class="form-floating">
+                                                <input class="form-control" type="number" id="difference" name="difference" value="{{ Request::get('difference') ?? 0 }}">
+                                                <label for="difference">Percent Difference %</label>
+                                            </div>
+                                            <div class="form-floating">
+                                                <input class="form-control" type="number" id="min_sales" name="min_sales" value="{{ Request::get('min_sales') ?? 0 }}">
+                                                <label for="min_sales">Minimum Sales</label>
+                                            </div>
+                                            <div class="form-floating">
+                                                <input class="form-control" type="number" id="max_stock" name="max_stock" value="{{ Request::get('max_stock') ?? 0 }}">
+                                                <label for="max_stock">Maximum Stock</label>
+                                            </div>
+                                            <button type="submit" class="btn btn-icon  btn-success me-1"><i class="fe fe-search"></i></button>
+                                        </form>
+                                    </div>
+                                    <div class="card-body">
+                                        <table class="table table-bordered table-hover text-md-nowrap">
+                                            <thead>
+                                                <tr>
+                                                    <th>No</th>
+                                                    <th>Product</th>
+                                                    <th>Sales</th>
+                                                    <th>Avg</th>
+                                                    <th>Stock</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="required_restock">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            @endif
                             @if (session('user')->hasPermission('10_day_sales_chart'))
 
 							<div class="card custom-card overflow-hidden">
@@ -537,37 +578,8 @@
         <script>
             $(document).ready(function(){
                 let restock = $('#required_restock');
-                let load_data = function(url){
-                    let data = [];
-                    $.ajax({
-                        url: url,
-                        type: 'GET',
-                        async: false,
-                        success: function(response){
-                            data = response;
-                        }
-                    });
-                    return data;
-                }
                 let i = 0;
-                let new_data = `
-                        <div class="card">
-                            <div class="card-header">
-                                <h4 class="card-title">Restock Required based on 30 day sales</h4>
-                            </div>
-                            <div class="card-body">
-                                <table class="table table-bordered table-hover text-md-nowrap">
-                                    <thead>
-                                        <tr>
-                                            <th>No</th>
-                                            <th>Product</th>
-                                            <th>Sales</th>
-                                            <th>Avg</th>
-                                            <th>Stock</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        `;
+                let new_data = ``;
                 let data = load_data("{{ url('index/required_restock') }}");
                 data.sort((a, b) => a.total_quantity_stocked - b.total_quantity_stocked || b.total_quantity_sold - a.total_quantity_sold);
                 data.forEach(element => {
@@ -581,12 +593,6 @@
                                         </tr>
                     `;
                 });
-                new_data += `
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                `;
                 restock.html(new_data);
 
             });

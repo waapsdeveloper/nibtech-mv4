@@ -284,7 +284,28 @@ class Index extends Component
 
         if(session('user')->hasPermission('dashboard_required_restock')){
 
-            $start_date = now()->subDays(30)->startOfDay()->format('Y-m-d');
+            if(request('days') != null){
+                $days = request('days');
+            }else{
+                $days = 30;
+            }
+            if(request('difference') != null){
+                $difference = request('difference')/100;
+            }else{
+                $difference = 0.2;
+            }
+            if(request('min_sale') != null){
+                $min_sale = request('min_sale');
+            }else{
+                $min_sale = 100;
+            }
+            if(request('max_stock') != null){
+                $max_stock = request('max_stock');
+            }else{
+                $max_stock = 0;
+            }
+
+            $start_date = now()->subDays($days)->startOfDay()->format('Y-m-d');
             $products = Products_model::orderBy('model','asc')->pluck('model','id');
             $storages = Storage_model::pluck('name','id');
             $colors = Color_model::pluck('name','id');
@@ -359,7 +380,11 @@ class Index extends Component
                 $sale = $variation_sales[$variation->id]->total_quantity_sold ?? 0;
                 $stock = $variation_stock[$variation->id]->total_quantity_stocked ?? 0;
 
-                if($stock < $sale*0.2 && $sale > 100){
+                if($max_stock == 0){
+                    $max_stock = $stock+1;
+                }
+
+                if($stock < $sale*$difference && $sale >= $min_sale && $stock <= $max_stock){
                     $merged_data[] = [
                         'variation_id' => $variation->id,
                         'product_id' => $variation->product_id,
