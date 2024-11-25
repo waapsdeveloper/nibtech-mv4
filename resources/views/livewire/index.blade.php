@@ -591,12 +591,19 @@
                 });
                 return data;
             }
+            function get_restock_data(){
+                let params = {
+                    days: $('#days').val(),
+                    difference: $('#difference').val(),
+                    min_sales: $('#min_sales').val(),
+                    max_stock: $('#max_stock').val()
+                }
+                let queryString = $.param(params);
 
-            $(document).ready(function(){
                 let restock = $('#required_restock');
                 let i = 0;
                 let new_data = ``;
-                let data = load_data("{{ url('index/required_restock') }}");
+                let data = load_data("{{ url('index/required_restock') }}"+ '?' + queryString);
                 data.sort((a, b) => a.total_quantity_stocked - b.total_quantity_stocked || b.total_quantity_sold - a.total_quantity_sold);
                 data.forEach(element => {
                     new_data += `
@@ -610,7 +617,27 @@
                     `;
                 });
                 restock.html(new_data);
+            }
 
+            $(document).ready(function(){
+                    // let restock = $('#required_restock');
+                    // let i = 0;
+                    // let new_data = ``;
+                    // let data = load_data("{{ url('index/required_restock') }}");
+                    // data.sort((a, b) => a.total_quantity_stocked - b.total_quantity_stocked || b.total_quantity_sold - a.total_quantity_sold);
+                    // data.forEach(element => {
+                    //     new_data += `
+                    //                         <tr>
+                    //                             <td>${i += 1}</td>
+                    //                             <td><a href="{{url('listing')}}?product=${element.product_id}&storage=${element.storage}&color=${element.color}&grade[]=${element.grade}" target="_blank">${element.variation}</a></td>
+                    //                             <td><a href="{{url('order')}}?sku=${element.sku}&start_date=${element.start_date}" target="_blank">${element.total_quantity_sold}</a></td>
+                    //                             <td>${element.average_price}</td>
+                    //                             <td><a href="{{url('inventory')}}?product=${element.product_id}&storage=${element.storage}&color=${element.color}&grade[]=${element.grade}" target="_blank">${element.total_quantity_stocked}</a></td>
+                    //                         </tr>
+                    //     `;
+                    // });
+                    // restock.html(new_data);
+                get_restock_data();
             });
 
         </script>
