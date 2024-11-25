@@ -269,7 +269,7 @@
                             <tr>
                                 <td>${index + 1}</td>
                                 <td data-stock="${item.id}">
-                                    <a href="{{ url('imei?imei=') }}${item.imei}${item.serial_number}" target="_blank">
+                                    <a href="{{ url('imei?imei=') }}${item.imei ?? item.serial_number}" target="_blank">
                                         ${item.imei ?? item.serial_number ?? ''}
                                     </a>
                                 </td>
