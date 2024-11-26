@@ -204,11 +204,13 @@ class Repair extends Component
         ->get();
 
         // Remove variations with no associated stocks
-        $variations = $variations->filter(function ($variation) {
-            return $variation->stocks->isNotEmpty();
-        });
+        if(request('hide') != 'all'){
+            $variations = $variations->filter(function ($variation) {
+                return $variation->stocks->isNotEmpty();
+            });
 
-        $data['variations'] = $variations;
+            $data['variations'] = $variations;
+        }
         $last_ten = Process_stock_model::where('process_id',$process_id)->orderBy('id','desc')->limit($per_page)->get();
         $data['last_ten'] = $last_ten;
         $processed_stocks = Process_stock_model::where(['process_id'=>$process_id,'status'=>2])->orderByDesc('updated_at')->get();

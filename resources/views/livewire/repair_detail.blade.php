@@ -239,6 +239,11 @@
                     <div class="card-header pb-0">
                         <div class="d-flex justify-content-between">
                             <h4 class="card-title mg-b-0">Latest Added Items</h4>
+                            @if (request('hide') == 'all')
+                                <a href="{{ url('wholesale/detail').'/'.$order_id }}" class="btn btn-sm btn-link">Show All</a>
+                            @else
+                                <a href="{{ url('wholesale/detail').'/'.$order_id.'?hide=all' }}" class="btn btn-sm btn-link">Hide All</a>
+                            @endif
                         </div>
                     </div>
                     <div class="card-body"><div class="table-responsive" style="max-height: 250px">
@@ -290,6 +295,7 @@
         <br>
         @endif
 
+        @if (request('hide') != 'all')
         <div @if ($process->status != 1)  class="row" @endif>
             <div @if ($process->status != 1) class="col-md-7 row" @else class="row" @endif>
 
@@ -481,6 +487,7 @@
 
             <button class="btn btn-link" id="open_all_imei">Open All IMEIs</button>
         </div>
+        @endif
 
     @endsection
 
