@@ -17,6 +17,7 @@ class Order_item_model extends Model
     protected $fillable = [
         // other fields...
         'reference_id',
+        'reference',
         'order_id',
         'variation_id',
         'stock_id',
