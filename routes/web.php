@@ -260,7 +260,7 @@ Route::post('belfast_inventory/aftersale_action/{id}/{action}', [Inventory::clas
 Route::get('product', Product::class)->name('view_product');
 Route::post('add_product', [Product::class,'add_product'])->name('add_product');
 Route::post('product/update_product/{id}', [Product::class,'update_product'])->name('update_product');
-Route::post('product/import_product', [Product::class,'import_product'])->name('import_product');
+Route::get('product/import_product', [Product::class,'import_product'])->name('import_product');
 
 Route::get('variation', Variation::class)->name('view_variation');
 Route::post('variation/update_product/{id}', [Variation::class,'update_product'])->name('update_variation');
