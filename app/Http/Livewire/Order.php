@@ -1755,7 +1755,8 @@ class Order extends Component
                     session()->put('error', "IMEI Flagged | Contact Admin");
                     return redirect()->back();
                 }
-                $stock_movement = Stock_movement_model::where(['stock_id'=>$stock[$i]->id, 'admin_id' => session('user_id'), 'received_at'=>null])->first();
+                $stock_movement = Stock_movement_model::where(['stock_id'=>$stock[$i]->id, 'received_at'=>null])->first();
+                // , 'admin_id' => session('user_id')
                 if($stock_movement == null){
                     session()->put('error', "Missing Exit Entry");
                     return redirect()->back();
