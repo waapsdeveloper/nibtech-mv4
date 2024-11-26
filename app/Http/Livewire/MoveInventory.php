@@ -69,16 +69,12 @@ class MoveInventory extends Component
             ->when(request('moved') == 1, function ($q) {
                 return $q->join('variation as old_variation', 'stock_operations.old_variation_id', '=', 'old_variation.id')
                          ->join('variation as new_variation', 'stock_operations.new_variation_id', '=', 'new_variation.id')
-                         ->join('stock', 'stock_operations.stock_id', '=', 'stock.id')
-                         ->join('variation as stock_variation', 'stock.variation_id', '=', 'stock_variation.id')
-                        //  ->where(function ($query) {
-                        //     $query->whereColumn('old_variation.product_id', '!=', 'stock_variation.product_id')
-                        //     ->orWhereColumn('old_variation.storage', '!=', 'stock_variation.storage');
-                        // })
-                        ->whereColumn(function ($query) {
-                            $query->whereColumn('new_variation.product_id', '!=', 'new_variation.product_id')
-                            ->orWhereColumn('new_variation.storage', '!=', 'new_variation.storage');
-                        })
+                        //  ->join('stock', 'stock_operations.stock_id', '=', 'stock.id')
+                        //  ->join('variation as stock_variation', 'stock.variation_id', '=', 'stock_variation.id')
+                        //  ->whereColumn('old_variation.product_id', '!=', 'stock_variation.product_id')
+                        // ->orWhereColumn('old_variation.storage', '!=', 'stock_variation.storage')
+                         ->whereColumn('old_variation.product_id', '!=', 'new_variation.product_id')
+                         ->orWhereColumn('old_variation.storage', '!=', 'new_variation.storage')
                          ->Where('old_variation.storage', '!=', 0)
                          ->select('stock_operations.*');
             })
