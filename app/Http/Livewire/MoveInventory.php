@@ -71,7 +71,7 @@ class MoveInventory extends Component
                          ->join('variation as new_variation', 'stock_operations.new_variation_id', '=', 'new_variation.id')
                          ->whereColumn('old_variation.product_id', '!=', 'new_variation.product_id')
                          ->orWhereColumn('old_variation.storage', '!=', 'new_variation.storage')
-                         ->orWhereColumn('old_variation.storage', '!=', 0)
+                         ->orWhere('old_variation.storage', '!=', 0)
                          ->select('stock_operations.*');
             })
             // ->when(request('moved') == 1, function ($q) {
