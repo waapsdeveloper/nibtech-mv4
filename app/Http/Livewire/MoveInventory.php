@@ -72,10 +72,10 @@ class MoveInventory extends Component
                          ->join('stock', 'stock_operations.stock_id', '=', 'stock.id')
                          ->join('variation as stock_variation', 'stock.variation_id', '=', 'stock_variation.id')
                          ->Where('old_variation.storage', '!=', 0)
-                         ->where(function ($query) {
-                            $query->whereColumn('old_variation.product_id', '!=', 'stock_variation.product_id')
-                            ->orWhereColumn('old_variation.storage', '!=', 'stock_variation.storage');
-                        })
+                        //  ->where(function ($query) {
+                        //     $query->whereColumn('old_variation.product_id', '!=', 'stock_variation.product_id')
+                        //     ->orWhereColumn('old_variation.storage', '!=', 'stock_variation.storage');
+                        // })
                         ->where(function ($query) {
                             $query->whereColumn('new_variation.product_id', '!=', 'new_variation.product_id')
                             ->orWhereColumn('new_variation.storage', '!=', 'new_variation.storage');
