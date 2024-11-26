@@ -101,7 +101,7 @@ class Product extends Component
 
     public function import_product(){
 
-        $excelFilePath = storage_path('app\listing.xlsx');
+        $excelFilePath = storage_path('app/listing.xlsx');
 
         $data = Excel::toArray([], $excelFilePath)[0];
         $dh = $data[0];
