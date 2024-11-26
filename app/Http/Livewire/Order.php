@@ -956,6 +956,10 @@ class Order extends Component
         $color = array_search('color', $arrayLower);
         $v_grade = array_search('grade', $arrayLower);
         $note = array_search('notes', $arrayLower);
+
+        if($note){
+            dd($data[1][$note]);
+        }
         // echo $cost;
         $grade = 9;
 
