@@ -153,9 +153,15 @@ class Product extends Component
                     $colors = Color_model::pluck('name','id')->toArray();
                 }
             }
-            $variation = Variation_model::firstOrNew(['product_id' => $product_id, 'reference_id' => trim($d[$reference_id]), 'grade' => trim($d[$grade]), 'storage' => $storage_id, 'color' =>$color_id]);
-            $variation->sku = $d[$sku];
+            $variation = Variation_model::where(['reference_id' => trim($d[$reference_id]), 'sku' => trim($d[$sku])])->first();
+            $variation->product_id = $product_id;
+            $variation->storage = $storage_id;
+            $variation->color = $color_id;
             $variation->save();
+
+            // $variation = Variation_model::firstOrNew(['product_id' => $product_id, 'reference_id' => trim($d[$reference_id]), 'grade' => trim($d[$grade]), 'storage' => $storage_id, 'color' =>$color_id]);
+            // $variation->sku = $d[$sku];
+            // $variation->save();
         }
 
     }
