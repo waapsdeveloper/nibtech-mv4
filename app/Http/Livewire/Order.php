@@ -955,6 +955,7 @@ class Order extends Component
         }
         $color = array_search('color', $arrayLower);
         $v_grade = array_search('grade', $arrayLower);
+        $note = array_search('notes', $arrayLower);
         // echo $cost;
         $grade = 9;
 
@@ -1019,6 +1020,9 @@ class Order extends Component
                     if($v_grade){
                         $issue[$dr]['data']['v_grade'] = $d[$v_grade];
                     }
+                    if($note){
+                        $issue[$dr]['data']['note'] = $d[$note];
+                    }
                     $issue[$dr]['data']['imei'] = $i.$s;
                     $issue[$dr]['data']['cost'] = $c;
                     $issue[$dr]['message'] = 'IMEI not Provided';
@@ -1037,6 +1041,9 @@ class Order extends Component
                     if($v_grade){
                         $issue[$dr]['data']['v_grade'] = $d[$v_grade];
                     }
+                    if($note){
+                        $issue[$dr]['data']['note'] = $d[$note];
+                    }
                     $issue[$dr]['data']['imei'] = $i.$s;
                     $issue[$dr]['data']['cost'] = $c;
                     $issue[$dr]['message'] = 'Name not Provided';
@@ -1054,6 +1061,9 @@ class Order extends Component
                 }
                 if($v_grade){
                     $issue[$dr]['data']['v_grade'] = $d[$v_grade];
+                }
+                if($note){
+                    $issue[$dr]['data']['note'] = $d[$note];
                 }
                 $issue[$dr]['data']['imei'] = $i.$s;
                 $issue[$dr]['data']['cost'] = $c;
@@ -1127,6 +1137,9 @@ class Order extends Component
                     if($v_grade){
                         $issue[$dr]['data']['v_grade'] = $d[$v_grade];
                     }
+                    if($note){
+                        $issue[$dr]['data']['note'] = $d[$note];
+                    }
                     $issue[$dr]['data']['imei'] = $i.$s;
                     $issue[$dr]['data']['cost'] = $c;
                     if($stock->order_id == $order->id && $stock->status == 1){
@@ -1170,6 +1183,9 @@ class Order extends Component
 
                         $order_item = Order_item_model::firstOrNew(['order_id' => $order->id, 'variation_id' => $variation->id, 'stock_id' => $stock->id]);
                         $order_item->reference_id = $grd;
+                        if($note){
+                            $order_item->reference = $d[$note];
+                        }
                         $order_item->quantity = 1;
                         $order_item->price = $c;
                         $order_item->status = 3;
@@ -1191,6 +1207,9 @@ class Order extends Component
                     }
                     if($v_grade){
                         $issue[$dr]['data']['v_grade'] = $d[$v_grade];
+                    }
+                    if($note){
+                        $issue[$dr]['data']['note'] = $d[$note];
                     }
                     $issue[$dr]['data']['imei'] = $i.$s;
                     $issue[$dr]['data']['cost'] = $c;
