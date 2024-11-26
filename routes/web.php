@@ -262,6 +262,7 @@ Route::post('add_product', [Product::class,'add_product'])->name('add_product');
 Route::post('product/update_product/{id}', [Product::class,'update_product'])->name('update_product');
 Route::get('product/import_product', [Product::class,'import_product'])->name('import_product');
 
+
 Route::get('variation', Variation::class)->name('view_variation');
 Route::post('variation/update_product/{id}', [Variation::class,'update_product'])->name('update_variation');
 Route::post('variation/merge/{id}', [Variation::class,'merge'])->name('merge_variation');
