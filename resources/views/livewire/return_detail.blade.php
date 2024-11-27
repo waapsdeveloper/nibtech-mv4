@@ -432,7 +432,7 @@
                                 @endforeach
                             </tbody>
                         </table>
-                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                            {{-- <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                                 <thead>
                                     <tr>
                                         <th><small><b>No</b></small></th>
@@ -512,7 +512,7 @@
                                         @endphp
                                     @endforeach
                                 </tbody>
-                            </table>
+                            </table> --}}
                         @endif
                         <br>
                     </div>
@@ -551,6 +551,7 @@
                                         <th><small><b>IMEI</b></small></th>
                                         <th><small><b>Vendor | Lot</b></small></th>
                                         <th><small><b>Reason</b></small></th>
+                                        <th><small><b>Added By</b></small></th>
                                         <th><small><b>DateTime</b></small></th>
                                     </tr>
                                 </thead>
@@ -574,6 +575,7 @@
                                                 <td>{{ $operation->stock->imei.$operation->stock->serial_number }}</td>
                                                 <td>{{ $operation->stock->order->customer->first_name." | ".$operation->stock->order->reference_id }}</td>
                                                 <td>{{ $operation->description }}</td>
+                                                <td>{{ $operation->admin->first_name ?? null }}</td>
                                                 <td>{{ $operation->created_at }}</td>
                                             </tr>
                                         @php
