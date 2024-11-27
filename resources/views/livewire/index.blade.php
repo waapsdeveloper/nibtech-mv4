@@ -594,13 +594,13 @@
                     difference: $('#difference').val(),
                     min_sales: $('#min_sales').val(),
                     max_stock: $('#max_stock').val(),
-                    category: '{{ Request::get('category') }}',
-                    brand: '{{ Request::get('brand') }}',
-                    product: '{{ Request::get('product') }}',
-                    sku: '{{ Request::get('sku') }}',
-                    storage: '{{ Request::get('storage') }}',
-                    color: '{{ Request::get('color') }}',
-                    grade: '{{ Request::get('grade') }}',
+                    category: "{{ Request::get('category') }}",
+                    brand: "{{ Request::get('brand') }}",
+                    product: "{{ Request::get('product') }}",
+                    sku: "{{ Request::get('sku') }}",
+                    storage: "{{ Request::get('storage') }}",
+                    color: "{{ Request::get('color') }}",
+                    grade: "{{ Request::get('grade') }}",
                 }
                 let queryString = $.param(params);
 
