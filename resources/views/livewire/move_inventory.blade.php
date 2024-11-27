@@ -275,8 +275,12 @@
                                     </select>
 
                                     <div class="form-floating">
-                                        <input class="form-control" id="search_input" name="search" type="text" value="@isset($_GET['search']){{$_GET['search']}}@endisset" onchange="this.form.submit()">
+                                        <input id="search_input" name="search" type="text" value="@isset($_GET['search']){{$_GET['search']}}@endisset" onchange="this.form.submit()">
                                         <label for="search_input"> Search Entry </label>
+                                    </div>
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="imei" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" onload="this.focus()" >
+                                        <label for="imei">IMEI</label>
                                     </div>
                                 </form>
                             </div>
