@@ -37,7 +37,7 @@ class AppServiceProvider extends ServiceProvider
                 Config::set('app.logo', $domainConfig->app_logo);
                 Config::set('app.icon', $domainConfig->app_icon);
                 Config::set('app.status', $domainConfig->app_status);
-
+                session()->put('app_logo', $domainConfig->app_logo);
                 // SMTP Configuration
                 Config::set('mail.mailer', 'smtp');
                 Config::set('mail.host', $domainConfig->smtp_host);
