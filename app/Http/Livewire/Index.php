@@ -369,7 +369,7 @@ class Index extends Component
             ->get()
             ->keyBy('variation_id');
 
-            $variations = Variation_model::whereIn('id', $variation_stock->pluck('variation_id')->toArray())->get();
+            $variations = Variation_model::whereIn('id', $variation_sales->pluck('variation_id')->toArray())->get();
             $merged_data = [];
             foreach($variations as $variation){
                 $model = $products[$variation->product_id] ?? 'Model not found';
