@@ -1,7 +1,7 @@
 				<!-- main-sidebar -->
 				<div class="sticky">
 					<aside class="app-sidebar">
-						<div class="main-sidebar-header active" @if (request()->getHost() == 'egpos.nibritaintech.com') style="background-color: #e1e1df;" @endif>
+						<div class="main-sidebar-header active">
 							<a class="header-logo active" href="{{url('index')}}">
 								<img src="{{asset('assets/img/brand').'/'.session('app_logo')}}" class="main-logo  desktop-logo" alt="logo" height="150" width="150">
 								<img src="{{asset('assets/img/brand/logo-white1.png')}}" class="main-logo  desktop-dark" alt="logo" height="150" width="150">
