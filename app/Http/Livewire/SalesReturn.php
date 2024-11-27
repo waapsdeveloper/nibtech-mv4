@@ -15,6 +15,7 @@ use App\Models\Currency_model;
 use App\Models\Grade_model;
 use App\Models\Order_issue_model;
 use App\Models\Stock_operations_model;
+use App\Models\Vendor_grade_model;
 use Illuminate\Support\Facades\DB;
 
 class SalesReturn extends Component
