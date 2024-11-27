@@ -158,6 +158,7 @@ class SalesReturn extends Component
         $data['grades'] = Grade_model::pluck('name','id');
         $data['colors'] = Color_model::pluck('name','id');
         $data['currencies'] = Currency_model::pluck('sign','id');
+        $data['vendor_grades'] = Vendor_grade_model::pluck('name','id');
 
         $data['imei'] = request('imei');
 
