@@ -259,7 +259,7 @@
 
                                 <form method="get" action="" class="row form-inline">
 
-                                    <div class="form-floating">
+                                    <div class="form-floating wd-100">
                                         <input class="form-control" id="start_date_input" name="start_date" id="datetimepicker" type="date" value="@isset($_GET['start_date']){{$_GET['start_date']}}@endisset" oninput="this.form.submit()">
                                         <label for="start_date_input">{{ __('locale.Start Date') }}</label>
                                     </div>
@@ -279,7 +279,7 @@
                                         <label for="search_input"> Search Entry </label>
                                     </div>
                                     <div class="form-floating">
-                                        <input type="text" class="form-control" id="imei" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" onload="this.focus()" >
+                                        <input type="text" class="form-control" id="imei" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset">
                                         <label for="imei">IMEI</label>
                                     </div>
                                 </form>
