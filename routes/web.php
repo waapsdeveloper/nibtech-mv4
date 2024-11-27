@@ -191,7 +191,7 @@ Route::get('imei/print_label', [IMEI::class,'print_label'])->name('view_imei');
 
 Route::get('stock_room', Stock_room::class)->name('view_stock_room');
 Route::get('stock_room/exit_scan', [Stock_room::class,'exit_scan'])->name('exit_stock');
-Route::get('stock_room/reset_counter', [Stock_room::class,'reset_counter'])->name('exit_stock');
+Route::get('stock_room/reset_counter', [Stock_room::class,'reset_counter'])->name('view_imei');
 Route::post('stock_room/exit', [Stock_room::class,'exit'])->name('exit_stock');
 Route::post('stock_room/receive', [Stock_room::class,'receive'])->name('receive_stock');
 
