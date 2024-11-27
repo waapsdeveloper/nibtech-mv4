@@ -326,6 +326,122 @@
                     <div class="card-body"><div class="table-responsive">
                         @if (isset($orders))
 
+                        <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                            <thead>
+                                <tr>
+                                    <th><small><b>No</b></small></th>
+                                    <th width="100px"><small><b>Order ID</b></small></th>
+                                    <th><small><b>Type</b></small></th>
+                                    <th><small><b>Customer / Vendor</b></small></th>
+                                    <th><small><b>Product</b></small></th>
+                                    <th><small><b>Qty</b></small></th>
+                                    <th><small><b>Price</b></small></th>
+                                    <th><small><b>IMEI</b></small></th>
+                                    <th><small><b>Creation Date | TN</b></small></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php
+                                    $i = 0;
+                                    $id = [];
+                                @endphp
+                                @foreach ($orders as $index => $item)
+                                    @php
+                                        $order = $item->order;
+                                        $j = 0;
+                                    @endphp
+
+                                    <tr>
+                                        <td title="{{ $item->id }}">{{ $i + 1 }}</td>
+                                        @if ($order->order_type_id == 1)
+                                            <td><a href="{{url('purchase/detail/'.$order->id)}}?status=1">{{ $order->reference_id."\n\r".$vendor_grades[$item->reference_id ?? 0] }}</a></td>
+                                        @elseif ($order->order_type_id == 2)
+                                            <td><a href="{{url('rma/detail/'.$order->id)}}">{{ $order->reference_id."\n\r".$item->reference_id }}</a></td>
+                                        @elseif ($order->order_type_id == 5 && $order->reference_id != 999)
+                                            <td><a href="{{url('wholesale/detail/'.$order->id)}}">{{ $order->reference_id."\n\r".$item->reference_id }}</a></td>
+                                        @elseif ($order->order_type_id == 5 && $order->reference_id == 999)
+                                            <td><a href="https://www.backmarket.fr/bo_merchant/orders/all?orderId={{ $item->reference_id }}" target="_blank">Replacement <br> {{ $item->reference_id }}</a></td>
+                                        @elseif ($order->order_type_id == 4)
+                                            <td><a href="{{url('return/detail/'.$order->id)}}">{{ $order->reference_id."\n\r".$item->reference_id }}</a></td>
+                                        @elseif ($order->order_type_id == 6)
+                                            <td><a href="{{url('wholesale_return/detail/'.$order->id)}}">{{ $order->reference_id."\n\r".$item->reference_id }}</a></td>
+                                        @elseif ($order->order_type_id == 3)
+                                            <td><a href="https://www.backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}" target="_blank">{{ $order->reference_id."\n\r".$item->reference_id }}</a></td>
+                                        @endif
+                                        @if ($order->order_type_id == 3)
+                                            <td>
+                                                <a href="{{ url('order').'?order_id='.$order->reference_id }}">{{ $order->order_type->name }}</a>
+                                            </td>
+                                        @else
+                                            <td>{{ $order->order_type->name }}</td>
+                                        @endif
+                                        <td>
+
+                                            @if ($order->customer != null)
+                                            <a title="Profile" href="{{url('edit-customer').'/'.$order->customer_id}}" target="_blank">{{ $order->customer->first_name." ".$order->customer->last_name }}</a></td>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if ($item->variation ?? false)
+                                                <strong>{{ $item->variation->sku }}</strong>{{ " - " . $item->variation->product->model . " - " . (isset($item->variation->storage_id)?$item->variation->storage_id->name . " - " : null) . (isset($item->variation->color_id)?$item->variation->color_id->name. " - ":null)}} <strong><u>{{ $item->variation->grade_id->name ?? "Missing Grade" }} {{ $item->variation->sub_grade_id->name ?? "" }}</u></strong>
+                                            @endif
+                                            @if ($item->care_id != null && $order->order_type_id == 3)
+                                                <a class="" href="https://backmarket.fr/bo_merchant/customer-request/{{ $item->care_id }}" target="_blank"><strong class="text-danger">Conversation</strong></a>
+                                            @endif
+                                        </td>
+                                        <td>{{ $item->quantity }}</td>
+                                        <td>
+                                        @if ($order->order_type_id == 1 && session('user')->hasPermission('view_cost'))
+                                            {{ $order->currency_id->sign.amount_formatter($item->price,2) }}
+                                        @elseif (session('user')->hasPermission('view_price'))
+                                            {{ $order->currency_id->sign.amount_formatter($item->price,2) }}
+                                        @endif
+                                        </td>
+                                        @if ($order->status == 3)
+                                        <td style="width:240px" class="text-success text-uppercase" title="{{ $item->stock_id }}" id="copy_imei_{{ $order->id }}">
+                                            @isset($item->stock->imei) {{ $item->stock->imei }}&nbsp; @endisset
+                                            @isset($item->stock->serial_number) {{ $item->stock->serial_number }}&nbsp; @endisset
+                                            @isset($item->admin_id) | {{ $item->admin->first_name }} |
+                                            @else
+                                            @isset($order->processed_by) | {{ $order->admin->first_name }} | @endisset
+                                            @endisset
+                                            @isset($item->stock->tester) ({{ $item->stock->tester }}) @endisset
+                                        </td>
+
+                                        @endif
+                                        @if ($order->status != 3)
+                                        <td style="width:240px" title="{{ $item->stock_id }}">
+                                                <strong class="text-danger">{{ $order->order_status->name }}</strong>
+                                            @isset($item->stock->imei) {{ $item->stock->imei }}&nbsp; @endisset
+                                            @isset($item->stock->serial_number) {{ $item->stock->serial_number }}&nbsp; @endisset
+                                            @isset($item->admin_id) | {{ $item->admin->first_name }} |
+                                            @else
+                                            @isset($order->processed_by) | {{ $order->admin->first_name }} | @endisset
+                                            @endisset
+                                            @isset($item->stock->tester) ({{ $item->stock->tester }}) @endisset
+                                        </td>
+                                        @endif
+                                        <td style="width:220px">{{ $item->created_at}}
+                                            <br> {{ $order->processed_at }}
+                                            @if ($order->tracking_number != null)
+                                                <br>
+                                                <a href="https://www.dhl.com/us-en/home/tracking/tracking-express.html?submit=1&tracking-id={{$order->tracking_number}}" target="_blank">{{$order->tracking_number}}</a>
+
+                                            @endif
+                                        </td>
+
+                                        @if (session('user')->hasPermission('imei_delete_order_item'))
+                                            <td>
+                                                <a href="{{url('imei/delete_order_item').'/'.$item->id}}" class="btn btn-link"><i class="fa fa-trash"></i></a>
+                                            </td>
+                                        @endif
+                                    </tr>
+                                    @php
+                                        $i ++;
+                                    @endphp
+                                @endforeach
+                            </tbody>
+                        </table>
                             <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                                 <thead>
                                     <tr>
