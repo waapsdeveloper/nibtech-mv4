@@ -3,7 +3,7 @@
 					<aside class="app-sidebar">
 						<div class="main-sidebar-header active">
 							<a class="header-logo active" href="{{url('index')}}">
-								<img src="{{asset('assets/img/brand/logo1.png')}}" class="main-logo  desktop-logo" alt="logo" height="150" width="150">
+								<img src="{{asset('assets/img/brand').'/'.session('app_logo')}}" class="main-logo  desktop-logo" alt="logo" height="150" width="150">
 								<img src="{{asset('assets/img/brand/logo-white1.png')}}" class="main-logo  desktop-dark" alt="logo" height="150" width="150">
 								<img src="{{asset('assets/img/brand/favicon1.png')}}" class="main-logo  mobile-logo" alt="logo">
 								<img src="{{asset('assets/img/brand/favicon-white1.png')}}" class="main-logo  mobile-dark" alt="logo">
