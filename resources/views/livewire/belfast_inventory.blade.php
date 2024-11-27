@@ -104,13 +104,8 @@
                 let selectedCategoryId = {{ request('category') }};
                 @if (request('brand'))
                     document.addEventListener('DOMContentLoaded', function() {
-                        selectBrand({{ request('brand') }})
-                    })
-                    // @if (request('product'))
-                    //     document.addEventListener('DOMContentLoaded', function() {
-                    //         selectProduct({{ request('product') }})
-                    //     })
-                    // @endif
+                        selectBrand({{ request('brand') }});
+                    });
                 @endif
             @else
                 let selectedCategoryId = null;
@@ -332,6 +327,20 @@
                                                         data-bs-action="{{ url('add_return_item').'/'.$return_order->id}}"
                                                         > Return as WIP </a>
 
+                                                    <a class="dropdown-item" id="action_{{ $stock->id }}" href="javascript:void(0);"
+                                                        data-bs-target="#action_model"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-reference="Mark as Fraud"
+                                                        data-bs-product="{{ $variation->product_id }}"
+                                                        data-bs-storage="{{ $variation->storage }}"
+                                                        data-bs-color="{{ $variation->color }}"
+                                                        data-bs-grade="{{ $variation->grade }}"
+                                                        data-bs-reference_id="{{ $order->reference_id }}"
+                                                        data-bs-stock_id="{{ $stock->id }}"
+                                                        data-bs-price="{{ $item->price }}"
+                                                        data-bs-linked_id="{{ $item->id }}"
+                                                        data-bs-action="{{ url('belfast_inventory/aftersale_action').'/'.$stock->id.'/  fraud' }}"
+                                                        > Mark as Fraud </a>
                                                 </div>
 
                                             </td>
@@ -369,6 +378,8 @@
                             <div class="form-group">
                                 <label for="">Reason</label>
                                 <textarea class="form-control" id="reason" name="return[description]"></textarea>
+                            </div>
+                            <div id="fraud_options">
                             </div>
                             <input type="hidden" id="product" name="return[product]">
                             <input type="hidden" id="storage" name="return[storage]">
