@@ -502,33 +502,37 @@ class Repair extends Component
         if(!request('bypass_check')){
             session()->forget('bypass_check');
         }
-        if(ctype_digit($imei)){
-            $i = $imei;
-            $s = null;
-        }else{
-            $i = null;
-            $s = $imei;
+
+        $imeis = explode(" ",$imei);
+
+        foreach($imeis as $imei){
+            if(ctype_digit($imei)){
+                $i = $imei;
+                $s = null;
+            }else{
+                $i = null;
+                $s = $imei;
+            }
+
+            $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
+
+            $variation = Variation_model::where(['id' => $stock->variation_id])->first();
+
+            $stock->status = 2;
+            $stock->save();
+
+            $variation->stock -= 1;
+            $variation->save();
+
+            $process_stock = new Process_stock_model();
+            $process_stock->process_id = $process_id;
+            $process_stock->stock_id = $stock->id;
+            $process_stock->admin_id = session('user_id');
+            $process_stock->status = 1;
+            $process_stock->save();
+
+            session()->put('success', 'Stock added successfully');
         }
-
-        $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
-
-        $variation = Variation_model::where(['id' => $stock->variation_id])->first();
-
-        $stock->status = 2;
-        $stock->save();
-
-        $variation->stock -= 1;
-        $variation->save();
-
-        $process_stock = new Process_stock_model();
-        $process_stock->process_id = $process_id;
-        $process_stock->stock_id = $stock->id;
-        $process_stock->admin_id = session('user_id');
-        $process_stock->status = 1;
-        $process_stock->save();
-
-        session()->put('success', 'Stock added successfully');
-
 
         // echo "<script>
 
