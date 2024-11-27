@@ -387,6 +387,10 @@
                                             @if ($item->care_id != null && $order->order_type_id == 3)
                                                 <a class="" href="https://backmarket.fr/bo_merchant/customer-request/{{ $item->care_id }}" target="_blank"><strong class="text-danger">Conversation</strong></a>
                                             @endif
+                                            @if ($item->reference != '')
+                                                <br>
+                                                Purchase Note: {{ $item->reference }}
+                                            @endif
                                         </td>
                                         <td>{{ $item->quantity }}</td>
                                         @if ($order->status == 3)
