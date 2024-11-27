@@ -259,8 +259,8 @@
 
                                 <form method="get" action="" class="row form-inline">
 
-                                    <div class="form-floating wd-100">
-                                        <input class="form-control" id="start_date_input" name="start_date" id="datetimepicker" type="date" value="@isset($_GET['start_date']){{$_GET['start_date']}}@endisset" oninput="this.form.submit()">
+                                    <div class="form-floating">
+                                        <input class="form-control wd-150" id="start_date_input" name="start_date" id="datetimepicker" type="date" value="@isset($_GET['start_date']){{$_GET['start_date']}}@endisset" oninput="this.form.submit()">
                                         <label for="start_date_input">{{ __('locale.Start Date') }}</label>
                                     </div>
                                     <div class="form-floating">
