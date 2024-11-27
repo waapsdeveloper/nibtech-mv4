@@ -257,7 +257,7 @@
 
                             <div class=" mg-b-0">
 
-                                <form method="get" action="" class="row form-inline d-flex">
+                                <form method="get" action="" class="form-inline">
 
                                     <div class="form-floating">
                                         <input class="form-control" id="start_date_input" name="start_date" id="datetimepicker" type="date" value="@isset($_GET['start_date']){{$_GET['start_date']}}@endisset" oninput="this.form.submit()">
