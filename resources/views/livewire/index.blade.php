@@ -601,6 +601,7 @@
                     storage: "{{ Request::get('storage') }}",
                     color: "{{ Request::get('color') }}",
                     grade: "{{ Request::get('grade') }}",
+                    data: "{{ Request::get('data') }}",
                 }
                 let queryString = $.param(params);
 
