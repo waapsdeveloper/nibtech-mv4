@@ -401,7 +401,7 @@ class Repair extends Component
 
         $imeis = explode(" ",$imei);
         if(count($imeis) > 1){
-            $back = 1;
+            $back = 2;
         }
         foreach($imeis as $imei){
         if(ctype_digit($imei)){
@@ -416,8 +416,10 @@ class Repair extends Component
 
         if($imei == '' || !$stock || $stock->status == null){
             session()->put('error', 'IMEI Invalid / Not Found');
-            if($back != 1){
+            if($back != 1 && $back != 2){
                 return redirect()->back();
+            }elseif($back == 2){
+                continue;
             }else{
                 return 1;
             }
@@ -426,24 +428,30 @@ class Repair extends Component
 
         if($stock->status != 1){
             session()->put('error', "Stock Already Sold");
-            if($back != 1){
+            if($back != 1 && $back != 2){
                 return redirect()->back();
+            }elseif($back == 2){
+                continue;
             }else{
                 return 1;
             }
         }
         if($stock->order->status == 2){
             session()->put('error', "Stock List Awaiting Approval");
-            if($back != 1){
+            if($back != 1 && $back != 2){
                 return redirect()->back();
+            }elseif($back == 2){
+                continue;
             }else{
                 return 1;
             }
         }
         if($stock->status != 1){
             session()->put('error', 'Stock already sold');
-            if($back != 1){
+            if($back != 1 && $back != 2){
                 return redirect()->back();
+            }elseif($back == 2){
+                continue;
             }else{
                 return 1;
             }
@@ -463,8 +471,10 @@ class Repair extends Component
             $this->add_repair_item($process_id, $imei, $back);
             session()->put('bypass_check', 1);
             request()->merge(['bypass_check'=> 1]);
-            if($back != 1){
+            if($back != 1 && $back != 2){
                 return redirect()->back();
+            }elseif($back == 2){
+                continue;
             }else{
                 return 1;
             }
