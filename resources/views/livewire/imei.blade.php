@@ -228,9 +228,12 @@
                                             @else
                                                 <td>{{ $order->order_type->name }}</td>
                                             @endif
-                                            <td>@if ($order->customer)
-                                                {{ $order->customer->first_name." ".$order->customer->last_name }}
-                                            @endif</td>
+                                            <td>
+
+                                                @if ($order->customer != null)
+                                                <a title="Profile" href="{{url('edit-customer').'/'.$order->customer_id}}" target="_blank">{{ $order->customer->first_name." ".$order->customer->last_name }}</a></td>
+                                                @endif
+                                            </td>
                                             <td>
                                                 @if ($item->variation ?? false)
                                                     <strong>{{ $item->variation->sku }}</strong>{{ " - " . $item->variation->product->model . " - " . (isset($item->variation->storage_id)?$item->variation->storage_id->name . " - " : null) . (isset($item->variation->color_id)?$item->variation->color_id->name. " - ":null)}} <strong><u>{{ $item->variation->grade_id->name ?? "Missing Grade" }} {{ $item->variation->sub_grade_id->name ?? "" }}</u></strong>
@@ -271,7 +274,14 @@
                                                 @isset($item->stock->tester) ({{ $item->stock->tester }}) @endisset
                                             </td>
                                             @endif
-                                            <td style="width:220px">{{ $item->created_at}} <br> {{ $order->processed_at." ".$order->tracking_number }}</td>
+                                            <td style="width:220px">{{ $item->created_at}}
+                                                <br> {{ $order->processed_at }}
+                                                @if ($order->tracking_number != null)
+                                                    <br>
+                                                    <a href="https://www.dhl.com/us-en/home/tracking/tracking-express.html?submit=1&tracking-id={{$order->tracking_number}}" target="_blank">{{$order->tracking_number}}</a>
+
+                                                @endif
+                                            </td>
 
                                             @if (session('user')->hasPermission('imei_delete_order_item'))
                                                 <td>
