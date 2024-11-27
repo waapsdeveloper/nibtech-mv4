@@ -398,6 +398,12 @@ class Repair extends Component
         if(request('imei')){
             $imei = request('imei');
         }
+
+        $imeis = explode(" ",$imei);
+        if(count($imeis) > 1){
+            $back = 1;
+        }
+        foreach($imeis as $imei){
         if(ctype_digit($imei)){
             $i = $imei;
             $s = null;
@@ -462,6 +468,10 @@ class Repair extends Component
             }else{
                 return 1;
             }
+        }
+        if(count($imeis) > 1){
+            return redirect()->back();
+        }
         // }else{
         //     session()->forget('bypass_check');
         //     // request()->merge(['bypass_check' => null]);
@@ -503,9 +513,6 @@ class Repair extends Component
             session()->forget('bypass_check');
         }
 
-        $imeis = explode(" ",$imei);
-
-        foreach($imeis as $imei){
             if(ctype_digit($imei)){
                 $i = $imei;
                 $s = null;
@@ -532,7 +539,7 @@ class Repair extends Component
             $process_stock->save();
 
             session()->put('success', 'Stock added successfully');
-        }
+
 
         // echo "<script>
 
