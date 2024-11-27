@@ -355,6 +355,13 @@ class SalesReturn extends Component
                     $stock->status = 1;
                     $stock->save();
 
+                    if (session()->has('counter')) {
+                        // Increment the counter
+                        session()->increment('counter');
+                    } else {
+                        // Initialize the counter if it doesn't exist
+                        session()->put('counter', 1);
+                    }
                     session()->put('success','Item added');
                 }else{
                     session()->put('error','Item already added');
@@ -411,9 +418,19 @@ class SalesReturn extends Component
                 return 1;
             }
         }
+
         $order_item->status = 2;
         $order_item->save();
 
+        if (session()->has('counter')) {
+            // Increment the counter
+            session()->increment('counter');
+        } else {
+            // Initialize the counter if it doesn't exist
+            session()->put('counter', 1);
+        }
+
+        session()->put('success', 'Item received');
 
         if($back != 1){
             return redirect()->back();
