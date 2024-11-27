@@ -257,7 +257,7 @@
 
                             <div class=" mg-b-0">
 
-                                <form method="get" action="" class="row form-inline">
+                                <form method="get" action="" class="row form-inline d-flex">
 
                                     <div class="form-floating">
                                         <input class="form-control" id="start_date_input" name="start_date" id="datetimepicker" type="date" value="@isset($_GET['start_date']){{$_GET['start_date']}}@endisset" oninput="this.form.submit()">
@@ -279,7 +279,7 @@
                                         <label for="search_input"> Search Entry </label>
                                     </div>
                                     <div class="form-floating">
-                                        <input type="text" class="form-control wd-150" id="imei" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset">
+                                        <input type="text" class="form-control" id="imei" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset">
                                         <label for="imei">IMEI</label>
                                     </div>
                                 </form>
