@@ -279,7 +279,7 @@
                                         <label for="search_input"> Search Entry </label>
                                     </div>
                                     <div class="form-floating">
-                                        <input type="text" class="form-control" id="imei" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset">
+                                        <input type="text" class="form-control" id="imei" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" onchange="this.form.submit()">
                                         <label for="imei">IMEI</label>
                                     </div>
                                 </form>
