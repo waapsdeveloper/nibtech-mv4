@@ -275,7 +275,7 @@
                                     </select>
 
                                     <div class="form-floating">
-                                        <input class="form-control" id="search_input" name="search" type="text" value="@isset($_GET['search']){{$_GET['search']}}@endisset" onchange="this.form.submit()">
+                                        <input class="form-control" id="search_input" name="search" type="text" value="@isset($_GET['search']){{$_GET['search']}}@endisset" onchange="this.form.submit()" placeholder="Search">
                                         <label for="search_input"> Search Entry </label>
                                     </div>
                                     <div class="form-floating">
