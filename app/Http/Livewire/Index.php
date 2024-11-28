@@ -155,9 +155,9 @@ class Index extends Component
             ->groupBy('hour')
             ->get();
 
-            if(session('user_id') == 1){
-                dd($data['invoiced_orders_by_hour']);
-            }
+            // if(session('user_id') == 1){
+            //     dd($data['invoiced_orders_by_hour']);
+            // }
             // Get Invoiced Orders By Hour
 
             $data['invoiced_items'] = Order_item_model::whereHas('order', function ($q) use ($start_date, $end_date) {
