@@ -431,7 +431,8 @@
                                                     </tr>
                                                     <tr>
                                                         <td title="
-                                                        {{ $invoiced_orders_by_hour }}
+                                                        @foreach ($invoiced_orders_by_hour as $hours)
+                                                            {{ $hours->hour }}: {{ $hours->total }} | {{ $admins[$hours->processed_by] }} /n/r
                                                         ">Invoiced:</td>
                                                         <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="{{ $invoiced_items }} Total Items | {{ $missing_imei }} Dispatched without Device | Go to orders page">{{ $invoiced_orders }}</a></td>
                                                     </tr>

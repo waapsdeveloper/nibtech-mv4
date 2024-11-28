@@ -48,6 +48,7 @@ class Index extends Component
         $data['colors'] = Color_model::pluck('name','id');
         $data['storages'] = Storage_model::pluck('name','id');
         $data['grades'] = Grade_model::pluck('name','id');
+        $data['admins'] = Admin_model::pluck('name','id');
 
         if(session('user')->hasPermission('add_ip')){
             if(Ip_address_model::where('ip',request()->ip())->where('status',1)->count() == 0){
