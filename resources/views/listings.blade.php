@@ -212,6 +212,29 @@
                 }
             });
         }
+        function submitForm5(event, listingId) {
+            event.preventDefault(); // avoid executing the actual submit of the form.
+
+            var form = $('#change_limit_' + listingId);
+            var actionUrl = "{{ url('listing/update_limit') }}/" + listingId;
+
+            $.ajax({
+                type: "POST",
+                url: actionUrl,
+                data: form.serialize(), // serializes the form's elements.
+                success: function(data) {
+                    // alert("Success: Min Price changed to " + data); // show response from the PHP script.
+                    $('#min_price_limit_' + listingId).addClass('bg-green'); // hide the button after submission
+                    $('#price_limit_' + listingId).addClass('bg-green'); // hide the button after submission
+                    // $('quantity_' + listingId).val(data)
+
+                    checkMinPriceDiff(listingId);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert("Error: " + textStatus + " - " + errorThrown);
+                }
+            });
+        }
 
         function updateAverageCost(variationId, prices) {
             if (prices.length > 0) {
@@ -318,6 +341,16 @@
                                     ${countries[listing.country].code}
                                     </a>
                                 </td>
+                                <form class="form-inline" method="POST" id="change_limit_${listing.id}">
+                                    @csrf
+                                    <input type="submit" hidden>
+                                </form>
+                                <td>
+                                    <input type="number" class="form-control" id="min_price_limit_${listing.id}" name="min_price_limit" step="0.01" value="${listing.min_price_limit}" form="change_limit_${listing.id}">
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control" id="price_limit_${listing.id}" name="price_limit" step="0.01" value="${listing.price_limit}" form="change_limit_${listing.id}">
+                                </td>
                                 <td>${listing.buybox_price}</td>
                                 <td>${listing.buybox !== 1 ? listing.buybox_winner_price : ''}</td>
                                 <td>
@@ -351,6 +384,9 @@
 
                             $("#change_price_" + listing.id).on('submit', function(e) {
                                 submitForm3(e, listing.id);
+                            });
+                            $('#change_limit_'+listing.id).on('submit', function(e) {
+                                submitForm5(e, listing.id);
                             });
                         });
                     });
@@ -527,6 +563,16 @@
                                         ${listing.country_id.code}
                                         </a>
                                     </td>
+                                    <form class="form-inline" method="POST" id="change_limit_${listing.id}">
+                                        @csrf
+                                        <input type="submit" hidden>
+                                    </form>
+                                    <td>
+                                        <input type="number" class="form-control" id="min_price_limit_${listing.id}" name="min_price_limit" step="0.01" value="${listing.min_price_limit}" form="change_limit_${listing.id}">
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control" id="price_limit_${listing.id}" name="price_limit" step="0.01" value="${listing.price_limit}" form="change_limit_${listing.id}">
+                                    </td>
                                     <td>${listing.buybox_price}</td>
                                     <td>${listing.buybox !== 1 ? listing.buybox_winner_price : ''}</td>
                                     <td>
@@ -556,11 +602,14 @@
                             $(document).ready(function() {
                                 $("#change_min_price_" + listing.id).on('submit', function(e) {
                                     submitForm2(e, listing.id);
-
                                 });
 
                                 $("#change_price_" + listing.id).on('submit', function(e) {
                                     submitForm3(e, listing.id);
+                                });
+
+                                $("#change_limit_" + listing.id).on('submit', function(e) {
+                                    submitForm5(e, listing.id);
                                 });
                             });
 
@@ -656,6 +705,8 @@
                                                 <thead>
                                                     <tr>
                                                         <th><small><b>Country</b></small></th>
+                                                        <th><small><b>min_price_limit</b></small></th>
+                                                        <th><small><b>price_limit</b></small></th>
                                                         <th><small><b>BuyBox</b></small></th>
                                                         <th title="Buybox Winner Price"><small><b>Winner</b></small></th>
                                                         <th title="Min Price" width="150"><small><b>Min </b>(<b id="best_price_${variation.id}"></b>)</small></th>

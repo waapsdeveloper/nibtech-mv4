@@ -272,5 +272,22 @@ class ListingController extends Controller
             return $response;
         }
     }
+    public function update_limit($id){
+        $listing = Listing_model::find($id);
+        $listing->min_price_limit = request('min_price_limit');
+        $listing->price_limit = request('price_limit');
+        if($listing->min_price_limit == null && $listing->price_limit == null){
+            $listing->handler_status = 0;
+        }
+        if($listing->min_price_limit != null && $listing->price_limit != null){
+            $listing->handler_status = 1;
+        }
+
+
+        $listing->save();
+        // print_r($response);
+        // die;
+        return $listing;
+    }
 
 }
