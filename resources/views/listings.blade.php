@@ -563,11 +563,11 @@
                                         ${listing.country_id.code}
                                         </a>
                                     </td>
-                                    <form class="form-inline" method="POST" id="change_limit_${listing.id}">
-                                        @csrf
-                                        <input type="submit" hidden>
-                                    </form>
                                     <td>
+                                        <form class="form-inline" method="POST" id="change_limit_${listing.id}">
+                                            @csrf
+                                            <input type="submit" hidden>
+                                        </form>
                                         <input type="number" class="form-control" id="min_price_limit_${listing.id}" name="min_price_limit" step="0.01" value="${listing.min_price_limit}" form="change_limit_${listing.id}">
                                     </td>
                                     <td>
