@@ -432,7 +432,7 @@
                                                     <tr>
                                                         <td title="
                                                         @foreach ($invoiced_orders_by_hour as $hours)
-                                                            {{ $hours->hour }}: {{ $hours->total }} | {{ $admins[$hours->processed_by] }} /n/r
+                                                            {{ $hours->hour }}: {{ $hours->total }} | {{ $admins[$hours->processed_by] }}
 
                                                         @endforeach
                                                         ">Invoiced:</td>
