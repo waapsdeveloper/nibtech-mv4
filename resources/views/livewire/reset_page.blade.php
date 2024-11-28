@@ -19,7 +19,7 @@
                             <div class="card-sigin mt-5 mt-md-0">
                                 <!-- Demo content-->
                                 <div class="main-card-signin d-md-flex">
-                                    <div class="wd-100p"><div class="d-flex mb-4"><img src="{{asset('assets/img/brand/favicon1.png')}}" class="sign-favicon ht-40" alt="logo"></div>
+                                    <div class="wd-100p"><div class="d-flex mb-4"><img src="{{asset('assets/img/brand').'/'.session('app_icon')}}" class="sign-favicon ht-40" alt="logo"></div>
                                         <div class="">
                                             <div class="main-signup-header">
                                                 <div class="panel panel-primary">
