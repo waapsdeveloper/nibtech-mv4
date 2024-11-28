@@ -461,12 +461,14 @@
                                                         @foreach ($invoiced_orders_by_hour as $hours)
                                                             {{ \Carbon\Carbon::createFromFormat('H', $hours->hour)->format('h A') }}: {{ $hours->total }} | {{ $admins[$hours->processed_by] }}
                                                         @endforeach
-                                                        " class="tooltip">Invoiced:
+                                                        ">
+                                                        <div class="tooltip">Invoiced:
                                                             <span class="tooltiptext">
                                                                 @foreach ($invoiced_orders_by_hour as $hours)
                                                                     {{ \Carbon\Carbon::createFromFormat('H', $hours->hour)->format('h A') }}: {{ $hours->total }} | {{ $admins[$hours->processed_by] }}
                                                                 @endforeach
                                                             </span>
+                                                        </div>
                                                         </td>
                                                         <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="{{ $invoiced_items }} Total Items | {{ $missing_imei }} Dispatched without Device | Go to orders page">{{ $invoiced_orders }}</a></td>
                                                     </tr>
