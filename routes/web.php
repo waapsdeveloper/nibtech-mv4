@@ -283,6 +283,7 @@ Route::get('listing/get_updated_quantity/{id}', [ListingController::class, 'getU
 Route::get('listing/get_competitors/{id}/{no_check?}', [ListingController::class, 'getCompetitors'])->name('view_listing');
 Route::post('listing/update_quantity/{id}', [ListingController::class,'update_quantity'])->name('update_listing_quantity');
 Route::post('listing/update_price/{id}', [ListingController::class,'update_price'])->name('update_listing_price');
+Route::post('listing/update_limit/{id}', [ListingController::class,'update_limit'])->name('update_listing_handler_limit');
 
 
 Route::get('process', Process::class)->name('view_process');
