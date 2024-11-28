@@ -305,7 +305,7 @@ canvas {
 
         <div class="invoice-headers">
             <div class="company-info">
-                <img src="{{ asset('assets/img/brand/logo1.png') }}" alt="Company Logo" height="100">
+                <img src="{{ asset('assets/img/brand').'/'.session('app_logo') }}" alt="Company Logo" height="100">
                 <br>
                 <br>
                 <h3><strong>(NI) Britain Tech Ltd</strong></h3>
