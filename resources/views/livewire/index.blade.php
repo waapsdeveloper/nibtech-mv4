@@ -430,11 +430,17 @@
                                                         <td class="tx-right"><a href="{{url('order')}}?care=1&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ $total_conversations }}</a></td>
                                                     </tr>
                                                     <tr>
-                                                        <td title="
+                                                        <td title="">
+                                                        <button type="button" class="btn btn-link" data-toggle="tooltip" data-html="true" title="
+                                                            <strong>
                                                         @foreach ($invoiced_orders_by_hour as $hours)
-                                                            {{ \Carbon\Carbon::createFromFormat('H', $hours->hour)->format('h A') }}: {{ $hours->total }} | {{ $admins[$hours->processed_by] }}
+                                                            {{ \Carbon\Carbon::createFromFormat('H', $hours->hour)->format('h A') }}: {{ $hours->total }} | {{ $admins[$hours->processed_by] }} <br>
                                                         @endforeach
-                                                        ">Invoiced:</td>
+                                                                </strong>
+                                                        ">
+                                                        Invoiced:
+                                                          </button>
+                                                        Invoiced:</td>
                                                         <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="{{ $invoiced_items }} Total Items | {{ $missing_imei }} Dispatched without Device | Go to orders page">{{ $invoiced_orders }}</a></td>
                                                     </tr>
                                                     @if (session('user')->hasPermission('dashboard_view_totals'))
