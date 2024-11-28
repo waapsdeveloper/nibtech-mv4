@@ -32,7 +32,7 @@
                                 <div class="card">
                                     <div class="card-body">
                                         <div class="main-content-label mg-b-5">
-                                           <img src="{{asset('assets/img/brand/favicon1.png')}}" height="50" width="50" alt="">
+                                           <img src="{{asset('assets/img/brand').'/'.session('app_icon')}}" height="50" width="50" alt="">
                                         </div>
                                         <p class="mg-b-20">{{ __('locale.Add a member to your team') }}.</p>
 
