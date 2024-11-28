@@ -9,7 +9,34 @@
 		<link href="{{asset('assets/plugins/datatable/css/dataTables.bootstrap5.css')}}" rel="stylesheet" />
 		<link href="{{asset('assets/plugins/datatable/css/buttons.bootstrap5.min.css')}}"  rel="stylesheet">
 		<link href="{{asset('assets/plugins/datatable/responsive.bootstrap5.css')}}" rel="stylesheet" />
+        <style>
+            /* Tooltip container */
+            .tooltip {
+              position: relative;
+              display: inline-block;
+              border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+            }
 
+            /* Tooltip text */
+            .tooltip .tooltiptext {
+              visibility: hidden;
+              width: 120px;
+              background-color: black;
+              color: #fff;
+              text-align: center;
+              padding: 5px 0;
+              border-radius: 6px;
+
+              /* Position the tooltip text - see examples below! */
+              position: absolute;
+              z-index: 1;
+            }
+
+            /* Show the tooltip text when you mouse over the tooltip container */
+            .tooltip:hover .tooltiptext {
+              visibility: visible;
+            }
+            </style>
     @endsection
 
     @section('content')
@@ -434,7 +461,13 @@
                                                         @foreach ($invoiced_orders_by_hour as $hours)
                                                             {{ \Carbon\Carbon::createFromFormat('H', $hours->hour)->format('h A') }}: {{ $hours->total }} | {{ $admins[$hours->processed_by] }}
                                                         @endforeach
-                                                        ">Invoiced:</td>
+                                                        " class="tooltip">Invoiced:
+                                                            <span class="tooltiptext">
+                                                                @foreach ($invoiced_orders_by_hour as $hours)
+                                                                    {{ \Carbon\Carbon::createFromFormat('H', $hours->hour)->format('h A') }}: {{ $hours->total }} | {{ $admins[$hours->processed_by] }}
+                                                                @endforeach
+                                                            </span>
+                                                        </td>
                                                         <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="{{ $invoiced_items }} Total Items | {{ $missing_imei }} Dispatched without Device | Go to orders page">{{ $invoiced_orders }}</a></td>
                                                     </tr>
                                                     @if (session('user')->hasPermission('dashboard_view_totals'))
