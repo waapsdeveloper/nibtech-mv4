@@ -431,7 +431,7 @@
                                                     </tr>
                                                     <tr>
                                                         <td title="">
-                                                        <button type="button" class="btn btn-link" data-toggle="tooltip" data-html="true" title="
+                                                        <button type="button" class="btn btn-link" data-bs-toggle="tooltip" data-bs-html="true" title="
                                                             <strong>
                                                         @foreach ($invoiced_orders_by_hour as $hours)
                                                             {{ \Carbon\Carbon::createFromFormat('H', $hours->hour)->format('h A') }}: {{ $hours->total }} | {{ $admins[$hours->processed_by] }} <br>
