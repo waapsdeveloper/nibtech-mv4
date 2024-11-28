@@ -705,8 +705,8 @@
                                                 <thead>
                                                     <tr>
                                                         <th><small><b>Country</b></small></th>
-                                                        <th><small><b>min_price_limit</b></small></th>
-                                                        <th><small><b>price_limit</b></small></th>
+                                                        <th><small><b>Min Handler</b></small></th>
+                                                        <th><small><b>Price Handler</b></small></th>
                                                         <th><small><b>BuyBox</b></small></th>
                                                         <th title="Buybox Winner Price"><small><b>Winner</b></small></th>
                                                         <th title="Min Price" width="150"><small><b>Min </b>(<b id="best_price_${variation.id}"></b>)</small></th>
