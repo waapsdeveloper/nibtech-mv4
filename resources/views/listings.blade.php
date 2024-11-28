@@ -341,15 +341,15 @@
                                     ${countries[listing.country].code}
                                     </a>
                                 </td>
-                                <form class="form-inline" method="POST" id="change_limit_${listing.id}">
-                                    @csrf
-                                    <input type="submit" hidden>
-                                </form>
                                 <td>
+                                    <form class="form-inline" method="POST" id="change_limit_${listing.id}">
+                                        @csrf
+                                        <input type="submit" hidden>
+                                    </form>
                                     <input type="number" class="form-control" id="min_price_limit_${listing.id}" name="min_price_limit" step="0.01" value="${listing.min_price_limit}" form="change_limit_${listing.id}">
                                 </td>
                                 <td>
-                                    <input type="number" class="form-control" id="price_limit_${listing.id}" name="price_limit" step="0.01" value="${listing.price_limit}" form="change_limit_${listing.id}">
+                                    <input type="number" class="form-control" id="price_limit_${listing.id}" name="price_limit" step="0.01" value="${listing.price_limit}" form="change_limit_${listing.id}" on>
                                 </td>
                                 <td>${listing.buybox_price}</td>
                                 <td>${listing.buybox !== 1 ? listing.buybox_winner_price : ''}</td>
