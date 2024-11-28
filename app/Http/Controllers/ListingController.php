@@ -120,7 +120,7 @@ class ListingController extends Controller
         ->appends(request()->except('page'));
     }
     public function get_variation_available_stocks($id){
-        $stocks = Stock_model::where('variation_id',$id)->where('status',1)->orderBy()->get();
+        $stocks = Stock_model::where('variation_id',$id)->where('status',1)->get();
 
         $stock_costs = Order_item_model::whereHas('order', function($q){
             $q->where('order_type_id',1);
