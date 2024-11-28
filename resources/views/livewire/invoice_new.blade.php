@@ -120,7 +120,7 @@ canvas {
                 <td style="text-align: left; padding:0; margin:0; line-height:10px">
 
                         <br><br>
-                        <img src="{{ public_path('assets/img/brand/logo1.png') }}" alt="" height="50">
+                        <img src="{{ public_path('assets/img/brand').'/'.session('app_logo') }}" alt="" height="50">
                 </td>
                 <td width="150"></td>
                 <td width="200" style="line-height:8px;">

@@ -13,7 +13,7 @@
         <div class="card-body m-2 p-2 d-flex justify-content-between">
 
             <div>
-                <img src="{{ asset('assets/img/brand/logo1.png') }}" alt="" height="60">
+                <img src="{{ asset('assets/img/brand').'/'.session('app_logo') }}" alt="" height="60">
                 <h4 class="mt-2"><strong>(NI) Britain Tech Ltd</strong></h4>
                 {{-- <h4>Cromac Square,</h4>
                 <h4>Forsyth House,</h4>

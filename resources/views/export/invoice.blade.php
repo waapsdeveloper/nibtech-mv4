@@ -69,7 +69,7 @@
             <tr style="text-align: center;">
                 <td style="text-align: center; padding:0; margin:0; line-height:10px">
 
-                        <img src="{{ public_path('assets/img/brand/logo1.png') }}" alt="" height="60">
+                        <img src="{{ public_path('assets/img/brand').'/'.session('app_logo') }}" alt="" height="60">
                         <h2><strong>(NI) Britain Tech Ltd</strong></h2>
                         <h4>Cromac Square, Forsyth House</h4>
                         <h4>Belfast, BT2 8LA</h4>
