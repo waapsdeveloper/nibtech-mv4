@@ -144,21 +144,20 @@ class Index extends Component
             })
             ->count();
 
-            // Get Invoiced Orders By Hour
+            // Get Invoiced Orders By Hour With Hour Label
             $data['invoiced_orders_by_hour'] = Order_model::where('processed_at', '>=', $start_date)->where('processed_at', '<=', $end_date)->where('order_type_id',3)
             ->whereHas('order_items', function ($q) use ($variation_ids) {
                 $q->when(request('data') == 1, function($q) use ($variation_ids){
                     return $q->whereIn('variation_id', $variation_ids);
                 });
             })
-            ->select(DB::raw('HOUR(processed_at) as hour'), DB::raw('COUNT(id) as count'))
-            ->groupBy(DB::raw('HOUR(processed_at)'))
+            ->selectRaw('HOUR(processed_at) as hour, COUNT(id) as total')
+            ->groupBy('hour')
             ->get();
-            $data['invoiced_orders_by_hour'] = $data['invoiced_orders_by_hour']->pluck('count','hour');
-            $data['invoiced_orders_by_hour'] = $data['invoiced_orders_by_hour']->toArray();
-            $data['invoiced_orders_by_hour'] = array_pad($data['invoiced_orders_by_hour'], 24, 0);
-            $data['invoiced_orders_by_hour'] = array_values($data['invoiced_orders_by_hour']);
-            $data['invoiced_orders_by_hour'] = implode(',', $data['invoiced_orders_by_hour']);
+
+            if(session('user_id') == 1){
+                dd($data['invoiced_orders_by_hour']);
+            }
             // Get Invoiced Orders By Hour
 
             $data['invoiced_items'] = Order_item_model::whereHas('order', function ($q) use ($start_date, $end_date) {
