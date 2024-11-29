@@ -1812,10 +1812,10 @@ class Order extends Component
                     return redirect()->back();
 
                 }
-                if($stock[$i]->variation->color != $variant->color && session('user_id') == 36){
-                    session()->put('error', "Product Color not matched");
-                    return redirect()->back();
-                }
+                // if($stock[$i]->variation->color != $variant->color && session('user_id') == 36){
+                //     session()->put('error', "Product Color not matched");
+                //     return redirect()->back();
+                // }
 
                 if($stock[$i]->variation_id != $variant->id){
                     echo "<script>
