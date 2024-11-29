@@ -50,7 +50,7 @@
     </div>
     <br>
     <div class="row">
-        <div class="col-md-2 col-sm-6">
+        <div class="col-md col-sm-6">
             {{-- <div class="card-header">
                 <h4 class="card-title mb-1">Category</h4>
             </div> --}}
@@ -61,7 +61,7 @@
                 @endforeach
             </select>
         </div>
-        <div class="col-md-2 col-sm-6">
+        <div class="col-md col-sm-6">
             {{-- <div class="card-header">
                 <h4 class="card-title mb-1">Brand</h4>
             </div> --}}
@@ -72,21 +72,21 @@
                 @endforeach
             </select>
         </div>
-        <div class="col-md-2 col-sm-6">
+        <div class="col-md col-sm-6">
             <select name="listed_stock" class="form-control form-select" data-bs-placeholder="Select listed Stock">
                 <option value="">Listed Stock</option>
                 <option value="1" @if(isset($_GET['listed_stock']) && $_GET['listed_stock'] == 1) {{'selected'}}@endif>With Listing</option>
                 <option value="2" @if(isset($_GET['listed_stock']) && $_GET['listed_stock'] == 2) {{'selected'}}@endif>Without Listing</option>
             </select>
         </div>
-        <div class="col-md-2 col-sm-6">
+        <div class="col-md col-sm-6">
             <select name="available_stock" class="form-control form-select" data-bs-placeholder="Select Available Stock">
                 <option value="">Available Stock</option>
                 <option value="1" @if(isset($_GET['available_stock']) && $_GET['available_stock'] == 1) {{'selected'}}@endif>With Stock</option>
                 <option value="2" @if(isset($_GET['available_stock']) && $_GET['available_stock'] == 2) {{'selected'}}@endif>Without Stock</option>
             </select>
         </div>
-        <div class="col-md-2 col-sm-6">
+        <div class="col-md col-sm-6">
             <select name="state" class="form-control form-select" data-bs-placeholder="Select Publication State">
                 <option value="">Publication State</option>
                 <option value="0" @if(isset($_GET['state']) && $_GET['state'] == 0) {{'selected'}}@endif>Missing price or comment</option>
@@ -94,6 +94,13 @@
                 <option value="2" @if(isset($_GET['state']) && $_GET['state'] == 2) {{'selected'}}@endif>Online</option>
                 <option value="3" @if(isset($_GET['state']) && $_GET['state'] == 3) {{'selected'}}@endif>Offline</option>
                 <option value="4" @if(isset($_GET['state']) && $_GET['state'] == 4) {{'selected'}}@endif>Deactivated</option>
+            </select>
+        </div>
+        <div class="col-md col-sm-6">
+            <select name="handler_status" class="form-select" data-bs-placeholder="Select Handler Status">
+                <option value="">Price Handler</option>
+                <option value="1" @if(isset($_GET['handler_status']) && $_GET['handler_status'] == 1) {{'selected'}}@endif>Active</option>
+                <option value="2" @if(isset($_GET['handler_status']) && $_GET['handler_status'] == 2) {{'selected'}}@endif>Inactive</option>
             </select>
         </div>
         <div class="">
