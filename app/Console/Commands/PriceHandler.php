@@ -103,6 +103,7 @@ class PriceHandler extends Command
                     $error .= json_encode($list);
                     continue;
                 }
+                echo $list->product_id;
                 $country = Country_model::where('code',$list->market)->first();
                 $listing = Listing_model::firstOrNew(['variation_id'=>$variation->id, 'country'=>$country->id]);
                 $listing->reference_uuid = $list->product_id;
