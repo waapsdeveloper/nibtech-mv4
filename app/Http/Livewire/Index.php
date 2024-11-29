@@ -154,6 +154,7 @@ class Index extends Component
             })
             ->selectRaw('HOUR(processed_at) as hour, COUNT(id) as total, processed_by')
             ->groupBy('hour', 'processed_by')
+            ->orderBy(['processed_by','hour'])
             ->get();
 
             // if(session('user_id') == 1){
