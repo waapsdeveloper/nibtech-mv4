@@ -91,7 +91,6 @@ class PriceHandler extends Command
         $variation_ids = $listings->pluck('variation_id');
         $variations = Variation_model::whereIn('id', $variation_ids)->get();
 
-        dd($variations);
         foreach ($variations as $variation) {
             echo "Hello";
 
