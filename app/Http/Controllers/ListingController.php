@@ -284,7 +284,7 @@ class ListingController extends Controller
         if($listing->min_price_limit == null && $listing->price_limit == null){
             $listing->handler_status = 0;
         }
-        if($listing->min_price_limit != null && $listing->price_limit != null){
+        if($listing->min_price_limit != null || $listing->price_limit != null){
             $listing->handler_status = 1;
         }
 
