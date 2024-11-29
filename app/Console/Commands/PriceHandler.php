@@ -135,6 +135,9 @@ class PriceHandler extends Command
                 $listing->save();
             }
         }
+        if($error != ''){
+            $this->info($error);
+        }
 
     }
 }
