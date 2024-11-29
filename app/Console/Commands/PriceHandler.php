@@ -105,7 +105,6 @@ class PriceHandler extends Command
                     $error .= json_encode($list);
                     continue;
                 }
-                echo $list->min_price;
                 $country = Country_model::where('code',$list->market)->first();
                 $listing = Listing_model::firstOrNew(['variation_id'=>$variation->id, 'country'=>$country->id]);
                 $listing->reference_uuid = $list->product_id;
@@ -129,7 +128,7 @@ class PriceHandler extends Command
                         $new_price = $listing->price;
                     }
                     $response = $bm->updateOneListing($listing->variation->reference_id,json_encode(['min_price'=>$new_min_price, 'price'=>$new_price]), $listing->country_id->market_code);
-                    echo $response;
+                    // echo $response;
                     $listing->price = $new_price;
                     $listing->min_price = $new_min_price;
                 }elseif($listing->handler_status == 1 && $listing->bybox !== 1 && ($listing->buybox_winner_price < $listing->min_price_limit || $listing->buybox_winner_price > $listing->price_limit)){
