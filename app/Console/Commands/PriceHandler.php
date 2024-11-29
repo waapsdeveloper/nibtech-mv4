@@ -90,6 +90,8 @@ class PriceHandler extends Command
         $listings = Listing_model::where('handler_status', 1)->get();
         $variation_ids = $listings->pluck('variation_id')->unique();
         $variations = Variation_model::whereIn('id', $variation_ids)->get();
+
+        dd($variations);
         foreach ($variations as $variation) {
             echo "Hello";
 
