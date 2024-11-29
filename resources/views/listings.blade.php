@@ -427,6 +427,7 @@
                     brand: $('select[name="brand"]').val(),
                     listed_stock: $('select[name="listed_stock"]').val(),
                     available_stock: $('select[name="available_stock"]').val(),
+                    handler_status: $('select[name="handler_status"]').val(),
                     state: $('select[name="state"]').val(),
                     sort: $('select[name="sort"]').val(),
                     per_page: $('select[name="per_page"]').val(),
