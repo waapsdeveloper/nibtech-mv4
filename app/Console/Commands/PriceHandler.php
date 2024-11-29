@@ -88,7 +88,7 @@ class PriceHandler extends Command
         $error = '';
         $bm = new BackMarketAPIController();
         $listings = Listing_model::where('handler_status', 1)->get();
-        $variation_ids = $listings->pluck('variation_id')->unique();
+        $variation_ids = $listings->pluck('variation_id');
         $variations = Variation_model::whereIn('id', $variation_ids)->get();
 
         dd($variations);
