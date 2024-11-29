@@ -15,6 +15,20 @@ $app = new Illuminate\Foundation\Application(
     $_ENV['APP_BASE_PATH'] ?? dirname(__DIR__)
 );
 
+// Detect the domain
+$domain = $_SERVER['HTTP_HOST'] ?? 'default';
+
+// Map domains to specific .env files
+$envFile = match ($domain) {
+    'egpos.nibritaintech.com' => '.env.egpos',
+    'sdpos.nibritaintech.com' => '.env.sdpos',
+    default => '.env',
+};
+
+// Override the environment file setting
+$app->useEnvironmentPath(base_path());
+$app->loadEnvironmentFrom($envFile);
+
 /*
 |--------------------------------------------------------------------------
 | Bind Important Interfaces
