@@ -154,9 +154,9 @@ class Index extends Component
             })
             ->selectRaw('HOUR(processed_at) as hour, COUNT(id) as total, processed_by')
             ->groupBy('hour', 'processed_by')
-            ->orderBy(['processed_by'])
             ->get();
 
+            $data['invoiced_orders_by_hour'] = $data['invoiced_orders_by_hour']->orderBy(['processed_by','hour']);
             // if(session('user_id') == 1){
             //     dd($data['invoiced_orders_by_hour']);
             // }
