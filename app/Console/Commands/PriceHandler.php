@@ -119,8 +119,8 @@ class PriceHandler extends Command
                 $listing->buybox_winner_price = $list->winner_price->amount;
                 $listing->save();
 
-                if($listing->handler_status == 1 && $listing->bybox !== 1 && $listing->buybox_winner_price > $listing->min_price_limit && ($listing->buybox_winner_price < $listing->price_limit || $listing->price_limit == 0)){
-                    $new_min_price = $listing->buybox_winner_price - 2;
+                if($listing->handler_status == 1 && $listing->bybox !== 1 && $listing->buybox_price > $listing->min_price_limit && ($listing->buybox_price < $listing->price_limit || $listing->price_limit == 0)){
+                    $new_min_price = $listing->buybox_price - 2;
 
                     if($new_min_price > $listing->price || $new_min_price < $listing->price*0.85){
                         $new_price = $new_min_price / 0.75;
@@ -131,7 +131,7 @@ class PriceHandler extends Command
                     // echo $response;
                     $listing->price = $new_price;
                     $listing->min_price = $new_min_price;
-                }elseif($listing->handler_status == 1 && $listing->bybox !== 1 && ($listing->buybox_winner_price < $listing->min_price_limit || $listing->buybox_winner_price > $listing->price_limit)){
+                }elseif($listing->handler_status == 1 && $listing->bybox !== 1 && ($listing->buybox_price < $listing->min_price_limit || $listing->buybox_price > $listing->price_limit)){
                     $listing->handler_status = 2;
                 }
                 $listing->save();
