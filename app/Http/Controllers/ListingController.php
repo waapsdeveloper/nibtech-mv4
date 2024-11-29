@@ -85,6 +85,11 @@ class ListingController extends Controller
         ->when(request('state') != '', function ($q) {
             return $q->where('state', request('state'));
         })
+        ->when(request('handler_status') != '', function ($q) {
+            return $q->whereHas('listings', function ($q) {
+                $q->where('handler_status', request('handler_status'));
+            });
+        })
         ->where('sku', '!=', null)
         ->when(request('sort') == 4, function ($q) {
             return $q->join('products', 'variation.product_id', '=', 'products.id') // Join the products table
