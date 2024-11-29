@@ -312,8 +312,8 @@ class Index extends Component
             }else{
                 $difference = 0.2;
             }
-            if(request('min_sale') != null){
-                $min_sale = request('min_sale');
+            if(request('min_sales') != null){
+                $min_sale = request('min_sales');
             }else{
                 $min_sale = 100;
             }
