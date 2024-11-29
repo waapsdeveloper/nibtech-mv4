@@ -121,6 +121,9 @@ class PriceHandler extends Command
 
                 if($listing->handler_status == 1 && $listing->bybox !== 1 && $listing->buybox_price > $listing->min_price_limit && ($listing->buybox_price < $listing->price_limit || $listing->price_limit == 0)){
                     $new_min_price = $listing->buybox_price - 2;
+                    if($new_min_price < $listing->min_price_limit){
+                        $new_min_price = $listing->min_price_limit;
+                    }
 
                     if($new_min_price > $listing->price || $new_min_price < $listing->price*0.85){
                         $new_price = $new_min_price / 0.75;
