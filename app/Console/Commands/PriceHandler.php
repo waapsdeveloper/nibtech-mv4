@@ -91,6 +91,7 @@ class PriceHandler extends Command
         $variation_ids = $listings->pluck('variation_id')->unique();
         $variations = Variation_model::whereIn('id', $variation_ids)->get();
         foreach ($variations as $variation) {
+            echo "Hello";
 
             $responses = $bm->getListingCompetitors($variation->reference_uuid);
 
