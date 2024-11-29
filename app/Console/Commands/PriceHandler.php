@@ -120,15 +120,14 @@ class PriceHandler extends Command
                 if($listing->handler_status == 1 && $listing->bybox !== 1 && $listing->buybox_winner_price > $listing->min_price_limit && $listing->buybox_winner_price < $listing->price_limit){
                     $new_min_price = $listing->buybox_winner_price - 2;
 
-                    if ($new_min_price > $listing->price || $new_min_price < $listing->price*0.85) {
+                    if($new_min_price > $listing->price || $new_min_price < $listing->price*0.85){
+
+                    }
                     $response = $bm->updateOneListing($listing->variation->reference_id,json_encode(['price'=>request('price')]), $listing->country_id->market_code);
 
                 }
 
             }
-        }
-        foreach ($listings as $listing) {
-
         }
 
     }
