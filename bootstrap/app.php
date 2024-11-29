@@ -16,18 +16,18 @@ $app = new Illuminate\Foundation\Application(
 );
 
 // Detect the domain
-$domain = $_SERVER['HTTP_HOST'] ?? 'default';
+// $domain = $_SERVER['HTTP_HOST'] ?? 'default';
 
-// Map domains to specific .env files
-$envFile = match ($domain) {
-    'egpos.nibritaintech.com' => '.env.egpos',
-    'sdpos.nibritaintech.com' => '.env.sdpos',
-    default => '.env',
-};
+// // Map domains to specific .env files
+// $envFile = match ($domain) {
+//     'egpos.nibritaintech.com' => '.env.egpos',
+//     'sdpos.nibritaintech.com' => '.env.sdpos',
+//     default => '.env',
+// };
 
-// Override the environment file setting
-$app->useEnvironmentPath(base_path());
-$app->loadEnvironmentFrom($envFile);
+// // Override the environment file setting
+// $app->useEnvironmentPath(base_path());
+// $app->loadEnvironmentFrom($envFile);
 
 /*
 |--------------------------------------------------------------------------
