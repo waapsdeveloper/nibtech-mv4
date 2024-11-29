@@ -240,7 +240,7 @@
             if (prices.length > 0) {
                 let average = prices.reduce((a, b) => parseFloat(a) + parseFloat(b), 0) / prices.length;
                 $(`#average_cost_${variationId}`).text(`€${average.toFixed(2)}`);
-                // $('#best_price_'+variationId).text(`€${(parseFloat(average)+(parseFloat(average)*0.12)+20).toFixed(2)}`);
+                $('#best_price_'+variationId).text(`€${((parseFloat(average)+20)/0.88).toFixed(2)}`);
             } else {
                 $(`#average_cost_${variationId}`).text('€0.00');
                 // $('#best_price_'+variationId).text('€0.00');
