@@ -156,7 +156,6 @@ class Index extends Component
             ->groupBy('hour', 'processed_by')
             ->get();
 
-            $data['invoiced_orders_by_hour'] = $data['invoiced_orders_by_hour']->sort(['processed_by','hour']);
             // if(session('user_id') == 1){
             //     dd($data['invoiced_orders_by_hour']);
             // }
