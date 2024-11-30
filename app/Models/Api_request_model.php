@@ -73,6 +73,8 @@ class Api_request_model extends Model
 
             if(in_array($datas->Memory, $storages)){
                 $storage = array_search($datas->Memory,$storages);
+            }else{
+                $storage = 0;
             }
             if(!in_array($datas->Imei, $imeis)){
                 $imeis[] = $datas->Imei;
