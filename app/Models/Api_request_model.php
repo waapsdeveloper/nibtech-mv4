@@ -204,7 +204,7 @@ class Api_request_model extends Model
                     $stock->imei = $datas->Imei;
                 }
                 $variation = Variation_model::firstOrNew($new_variation);
-                if($stock->status == 1 || $stock->last_item()->order->customer_id == 3955){
+                // if($stock->status == 1 || $stock->last_item()->order->customer_id == 3955){
 
                     if(isset($message)){
 
@@ -244,12 +244,12 @@ class Api_request_model extends Model
                     $request->status = 1;
                     $request->save();
 
-                }elseif($stock->status == 2){
+                // }elseif($stock->status == 2){
 
-                    $request->stock_id = $stock->id;
-                    $request->status = 2;
-                    $request->save();
-                }
+                //     $request->stock_id = $stock->id;
+                //     $request->status = 2;
+                //     $request->save();
+                // }
             }
         }
 
