@@ -461,7 +461,7 @@
                                                             <a onclick="alert(`
 
                                                             @foreach ($invoiced_orders_by_hour as $hours)
-                                                                {{ \Carbon\Carbon::createFromFormat('H', $hours->hour)->format('h A') }}: {{ $hours->total }} | {{ $admins[$hours->processed_by] }}
+                                                                {{ \Carbon\Carbon::createFromFormat('H', $hours->hour)->format('h A') }}: {{ $hours->total }} | {{ $admins[$hours->processed_by] ?? 'Unknown' }}
                                                             @endforeach
 
                                                             `)">Invoiced:</a>
