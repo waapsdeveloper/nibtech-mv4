@@ -447,7 +447,7 @@ canvas {
         <div class="store-policy">
             <h3>Store Policy</h3>
             <hr>
-            <p>Stock Sold on Marginal VAT Scheme. VAT Number: GB972500428</p>
+            <p>Stock Sold on Marginal VAT Scheme. VAT Number: {{ env('APP_VAT')}}</p>
         </div>
     </div>
     @endsection
