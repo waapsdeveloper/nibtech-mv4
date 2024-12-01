@@ -6,6 +6,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.0",
+        "anhskohbo/no-captcha": "*",
         "bacon/bacon-qr-code": "^2.0",
         "barryvdh/laravel-dompdf": "^2.1",
         "endroid/qr-code": "^5.0",

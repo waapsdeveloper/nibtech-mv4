@@ -36,6 +36,13 @@
                                                                 <div class="form-group">
                                                                     <label>Password</label> <input class="form-control" placeholder="Enter your password" name="password" type="password">
                                                                 </div>
+                                                                <div class="form-group mt-4">
+                                                                    {!! NoCaptcha::renderJs() !!}
+                                                                    {!! NoCaptcha::display() !!}
+                                                                    @error('g-recaptcha-response')
+                                                                        <span class="text-danger">{{ $message }}</span>
+                                                                    @enderror
+                                                                </div>
                                                                 @if(isset($error))
                                                                     <div class="alert alert-danger alert-dismissible fade show mb-0" role="alert">
                                                                         <span class="alert-inner--icon"><i class="fe fe-slash"></i></span>
