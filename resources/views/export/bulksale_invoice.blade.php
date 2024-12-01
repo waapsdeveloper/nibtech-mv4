@@ -78,7 +78,7 @@
                 </td>
                 <td width="150"></td>
                 <td width="200" style="line-height:8px;">
-                        <h4><strong>(NI) Britain Tech Ltd</strong></h4>
+                        <h4><strong>{{ env('APP_NAME') }}</strong></h4>
                         <h4>Cromac Square,</h4>
                         <h4>Forsyth House,</h4>
                         <h4>Belfast, BT2 8LA</h4>

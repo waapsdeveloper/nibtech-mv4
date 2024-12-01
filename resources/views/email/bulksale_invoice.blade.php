@@ -17,6 +17,6 @@
     <p>Please find the attached invoice for your recent purchase. Thank you for choosing us!</p>
 
     <p>Best regards,</p>
-    <p>Britain Tech Ltd.</p>
+    <p>{{ env('APP_NAME') }}.</p>
 </body>
 </html>
