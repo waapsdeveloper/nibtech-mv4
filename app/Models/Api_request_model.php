@@ -207,18 +207,27 @@ class Api_request_model extends Model
                 }
                 $variation = Variation_model::firstOrNew($new_variation);
                 if($stock->status != 2 || $stock->last_item()->order->customer_id == 3955){
-                    $url = "https://egpos.nibritaintech.com/api/testing";
-                    $apidata = $datas;
-                    $curl = curl_init();
-                    curl_setopt($curl, CURLOPT_URL, $url);
-                    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-                    curl_setopt($curl, CURLOPT_POST, true);
-                    curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($apidata));
-                    curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-                    $response = curl_exec($curl);
-                    $response = json_decode($response);
-                    curl_close($curl);
 
+                    if($stock->last_item()->order->customer_id == 3955){
+
+                        $url = "https://egpos.nibritaintech.com/api/testing";
+                        $apidata = $datas;
+                        $curl = curl_init();
+                        curl_setopt($curl, CURLOPT_URL, $url);
+                        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+                        curl_setopt($curl, CURLOPT_POST, true);
+                        curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($apidata));
+                        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+                        $response = curl_exec($curl);
+                        $response = json_decode($response);
+                        curl_close($curl);
+                        if($response){
+                            echo "<pre>";
+                            print_r($response);
+                            echo "</pre>";
+                        }
+
+                    }
 
 
                     if(isset($message)){
