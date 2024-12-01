@@ -73,6 +73,8 @@ class Api_request_model extends Model
 
             if(in_array($datas->Memory, $storages)){
                 $storage = array_search($datas->Memory,$storages);
+            }elseif(in_array(substr($datas->Memory, 0, -2), $storages)){
+                $storage = array_search(substr($datas->Memory, 0, -2),$storages);
             }else{
                 $storage = 0;
             }
