@@ -35,7 +35,7 @@ class Change extends Component
                 session()->save();
                 $body = "OTP for changr your password.". session('code');
                 $mailData = [
-                    'title' => 'Mail from {{ env('APP_NAME') }}',
+                    'title' => 'Mail from '.env('APP_NAME'),
                     'body' => $body
                 ];
                 // Mail::to($request->email)->send(new ResetMail($mailData));
