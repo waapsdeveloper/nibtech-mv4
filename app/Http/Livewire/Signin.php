@@ -6,6 +6,7 @@ use App\Models\Admin_model;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Livewire\Component;
 use PragmaRX\Google2FA\Google2FA;
 
