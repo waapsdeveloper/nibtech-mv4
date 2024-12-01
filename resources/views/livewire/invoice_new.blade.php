@@ -308,7 +308,10 @@ canvas {
                 <img src="{{ asset('assets/img/brand').'/'.session('app_logo') }}" alt="Company Logo" height="100">
                 <br>
                 <br>
-                <h3><strong>(NI) Britain Tech Ltd</strong></h3>
+                @if (env('APP_NAME') != null)
+                    <h3><strong>{{ env('APP_NAME') }}</strong></h3>
+                @endif
+                {{-- <h3><strong>(NI) Britain Tech Ltd</strong></h3> --}}
                 <p>Cromac Square, Forsyth House, Belfast, BT2 8LA</p>
             </div>
             <div class="invoice-logo">
