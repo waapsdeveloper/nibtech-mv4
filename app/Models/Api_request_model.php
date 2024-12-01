@@ -210,11 +210,11 @@ class Api_request_model extends Model
                     $url = "https://egpos.nibritaintech.com/api/testing";
                     $apidata = $datas;
                     $curl = curl_init();
-                    $curl->setopt($curl, CURLOPT_URL, $url);
-                    $curl->setopt($curl, CURLOPT_RETURNTRANSFER, true);
-                    $curl->setopt($curl, CURLOPT_POST, true);
-                    $curl->setopt($curl, CURLOPT_POSTFIELDS, $apidata);
-                    $curl->setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+                    curl_setopt($curl, CURLOPT_URL, $url);
+                    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($curl, CURLOPT_POST, true);
+                    curl_setopt($curl, CURLOPT_POSTFIELDS, $apidata);
+                    curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
                     $response = curl_exec($curl);
                     $response = json_decode($response);
                     curl_close($curl);
