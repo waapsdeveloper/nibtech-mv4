@@ -210,6 +210,31 @@ class Api_request_model extends Model
 
                     if($stock->last_item()->order->customer_id == 3955){
 
+
+                        $curl = curl_init();
+
+                        curl_setopt_array($curl, array(
+                          CURLOPT_URL => 'https://egpos.nibritaintech.com/api/request',
+                          CURLOPT_RETURNTRANSFER => true,
+                          CURLOPT_ENCODING => '',
+                          CURLOPT_MAXREDIRS => 10,
+                          CURLOPT_TIMEOUT => 0,
+                          CURLOPT_FOLLOWLOCATION => true,
+                          CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                          CURLOPT_CUSTOMREQUEST => 'POST',
+                          CURLOPT_POSTFIELDS => json_encode($datas),
+                          CURLOPT_HTTPHEADER => array(
+                            'Accept: application/json',
+                            'Content-Type: application/json',
+                            'Authorization: Bearer 2|otpLfHymDGDscNuKjk9CQMx620avGG0aWgMpuPAp5d1d27d2'
+                          ),
+                        ));
+
+                        $response = curl_exec($curl);
+
+                        curl_close($curl);
+                        echo $response;
+
                         $curl = curl_init();
 
                         curl_setopt_array($curl, array(
