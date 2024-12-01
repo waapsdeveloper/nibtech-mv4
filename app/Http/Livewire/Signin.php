@@ -29,16 +29,6 @@ class Signin extends Component
             'password' => 'required',
             'g-recaptcha-response' => 'required|captcha',
         ]);
-        $response = Http::post('https://www.google.com/recaptcha/api/siteverify', [
-            'secret' => env('NOCAPTCHA_SECRET'),
-            'response' => $request->input('g-recaptcha-response'),
-        ]);
-
-        $recaptcha = json_decode($response->body());
-
-        if (!$recaptcha->success || $recaptcha->score < 0.5) {
-            return back()->withErrors(['captcha' => 'Captcha verification failed.']);
-        }
 
         $login_detail = Admin_model::where('username',trim($request['username']))->first();
         if($login_detail == null){
