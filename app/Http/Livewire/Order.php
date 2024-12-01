@@ -1888,11 +1888,13 @@ class Order extends Component
                 $order_item->linked_id = $stock[0]->last_item()->id;
 
                 $order_item->save();
+                if($stock_movement != null){
 
                 $stock_movement->update([
-                        'received_at' => Carbon::now(),
-                    ]);
+                    'received_at' => Carbon::now(),
+                ]);
 
+                }
             }else{
 
                 foreach ($skus as $each) {
