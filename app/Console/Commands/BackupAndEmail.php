@@ -144,7 +144,7 @@ class BackupAndEmail extends Command
 
         $email = app(GoogleController::class)->sendEmail($recipientEmail, $subject, $body, $attachments);
 
-        print_r($email);
+        // print_r($email);
         // Mail::raw('Database Backup', function ($message) use ($attachments) {
         //     $message->to('wethesd@gmail.com')
         //             ->subject('Database Backup');
@@ -157,13 +157,13 @@ class BackupAndEmail extends Command
 
     private function cleanUp($backupDir)
     {
-        // $files = scandir($backupDir);
-        // foreach ($files as $file) {
-        //     $filePath = "$backupDir/$file";
-        //     if (is_file($filePath)) {
-        //         unlink($filePath);
-        //     }
-        // }
-        // rmdir($backupDir);
+        $files = scandir($backupDir);
+        foreach ($files as $file) {
+            $filePath = "$backupDir/$file";
+            if (is_file($filePath)) {
+                unlink($filePath);
+            }
+        }
+        rmdir($backupDir);
     }
 }
