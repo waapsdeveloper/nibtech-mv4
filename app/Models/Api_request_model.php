@@ -229,6 +229,7 @@ class Api_request_model extends Model
                             echo "<br><br><br>Hello<br><br><br>";
                         }
 
+                        print_r($curl);
                     }
 
 
