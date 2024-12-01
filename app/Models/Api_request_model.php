@@ -206,7 +206,23 @@ class Api_request_model extends Model
                     $stock->imei = $datas->Imei;
                 }
                 $variation = Variation_model::firstOrNew($new_variation);
-                // if($stock->status == 1 || $stock->last_item()->order->customer_id == 3955){
+                if($stock->status != 2 || $stock->last_item()->order->customer_id == 3955){
+                    $url = "https://egpos.nibritaintech.com/api/testing";
+                    $apidata = $datas;
+                    $curl = curl_init();
+                    $curl->setopt($curl, CURLOPT_URL, $url);
+                    $curl->setopt($curl, CURLOPT_RETURNTRANSFER, true);
+                    $curl->setopt($curl, CURLOPT_POST, true);
+                    $curl->setopt($curl, CURLOPT_POSTFIELDS, $apidata);
+                    $curl->setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+                    $response = curl_exec($curl);
+                    $response = json_decode($response);
+                    curl_close($curl);
+                    if($response->Status == 'Pass'){
+                        $message = "Testing Passed";
+                    }
+
+
 
                     if(isset($message)){
 
@@ -246,12 +262,12 @@ class Api_request_model extends Model
                     $request->status = 1;
                     $request->save();
 
-                // }elseif($stock->status == 2){
+                }elseif($stock->status == 2){
 
-                //     $request->stock_id = $stock->id;
-                //     $request->status = 2;
-                //     $request->save();
-                // }
+                    $request->stock_id = $stock->id;
+                    $request->status = 2;
+                    $request->save();
+                }
             }
         }
 
