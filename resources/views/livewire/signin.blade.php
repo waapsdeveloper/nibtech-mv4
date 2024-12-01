@@ -2,6 +2,7 @@
 
     @section('styles')
 
+        {!! NoCaptcha::renderJs() !!}
     @endsection
 
     @section('class')
@@ -28,7 +29,6 @@
                                                 <div class="panel-body tabs-menu-body border-0 p-3">
                                                     <div class="tab-content">
                                                         <div class="tab-pane active" id="tab5">
-                                                            {!! NoCaptcha::renderJs() !!}
                                                             <form action="{{url('/login')}}" method="POST">
                                                                 @csrf
                                                                 <div class="form-group">
