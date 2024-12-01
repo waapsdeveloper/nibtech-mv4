@@ -225,7 +225,7 @@ class Api_request_model extends Model
                           CURLOPT_HTTPHEADER => array(
                             'Accept: application/json',
                             'Content-Type: application/json',
-                            'Authorization: da20609ccd813fa6e279495fc74981bdc788546b539ae236dd966e4b395d0af1'
+                            'Authorization: 32ba140e3260848a75db19c1e877b94d6887c6207cc24c1627f99bc8e9503928'
                           ),
                         ));
 
