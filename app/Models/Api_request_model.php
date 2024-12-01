@@ -218,9 +218,6 @@ class Api_request_model extends Model
                     $response = curl_exec($curl);
                     $response = json_decode($response);
                     curl_close($curl);
-                    if($response->Status == 'Pass'){
-                        $message = "Testing Passed";
-                    }
 
 
 
