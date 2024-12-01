@@ -379,13 +379,18 @@
                                 <label for="">Reason</label>
                                 <textarea class="form-control" id="reason" name="return[description]"></textarea>
                             </div>
-                            <div id="fraud_options">
-                            </div>
+                            {{-- <div id="fraud_options">
+                                <div class="form-group">
+                                    <label for="">Product</label>
+                                    <input class="form-control" name="return[product]" type="text" id="product" readonly>
+                                </div>
+
+                            </div> --}}
                             <input type="hidden" id="product" name="return[product]">
                             <input type="hidden" id="storage" name="return[storage]">
                             <input type="hidden" id="color" name="return[color]">
                             <input type="hidden" id="grade" name="return[grade]">
-                            <input type="hidden" id="order_id" name="return[order_id]" value="{{$return_order->id}}">
+                            <input type="hidden" id="order_id" name="return[order_id]" value="{{$return_order->id ?? null}}">
                             <input type="hidden" id="reference_id" name="return[reference_id]">
                             <input type="hidden" id="stock_id" name="return[stock_id]">
                             <input type="hidden" id="price" name="return[price]">
