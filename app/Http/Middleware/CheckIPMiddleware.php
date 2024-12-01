@@ -34,7 +34,7 @@ class CheckIPMiddleware
             // dd($ip_address);
             if($ip_address == null){
                 // dd($ip);
-                abort(403, 'Quote of the day: '.Inspiring::quote());
+                abort(403, 'Quote of the day: '.Inspiring::just_quote());
             }
         }else{
             if($ip_address != null && $ip_address->updated_at->diffInDays(now()) > 2){
