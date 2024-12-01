@@ -70,7 +70,7 @@
                 <td style="text-align: center; padding:0; margin:0; line-height:10px">
 
                         <img src="{{ public_path('assets/img/brand').'/'.session('app_logo') }}" alt="" height="60">
-                        <h2><strong>(NI) Britain Tech Ltd</strong></h2>
+                        <h2><strong>{{ env('APP_NAME') }}</strong></h2>
                         <h4>Cromac Square, Forsyth House</h4>
                         <h4>Belfast, BT2 8LA</h4>
 
@@ -135,7 +135,7 @@
                 </td>
                 <td width="150"></td>
                 <td width="200" style="line-height:8px;">
-                        <h4><strong>(NI) Britain Tech Ltd</strong></h4>
+                        <h4><strong>{{ env('APP_NAME') }}</strong></h4>
                         <h4>Cromac Square,</h4>
                         <h4>Forsyth House,</h4>
                         <h4>Belfast, BT2 8LA</h4>
@@ -308,7 +308,7 @@
 
             <h3>Store Policy</h3>
             <hr>
-            <h4>Stock Sold on Marginal VAT Scheme. VAT Number: GB972500428</h4>
+            <h4>Stock Sold on Marginal VAT Scheme. VAT Number: {{ env('APP_VAT') }}</h4>
         </div>
     </div>
 </body>
