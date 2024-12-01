@@ -235,28 +235,28 @@ class Api_request_model extends Model
                         curl_close($curl);
                         echo $response;
 
-                        $curl = curl_init();
+                        // $curl = curl_init();
 
-                        curl_setopt_array($curl, array(
-                          CURLOPT_URL => 'https://egpos.nibritaintech.com/api/request',
-                          CURLOPT_RETURNTRANSFER => true,
-                          CURLOPT_ENCODING => '',
-                          CURLOPT_MAXREDIRS => 10,
-                          CURLOPT_TIMEOUT => 0,
-                          CURLOPT_FOLLOWLOCATION => true,
-                          CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                          CURLOPT_CUSTOMREQUEST => 'POST',
-                          CURLOPT_POSTFIELDS => json_encode($datas),
-                          CURLOPT_HTTPHEADER => array(
-                            'Accept: application/json',
-                            'Content-Type: application/json',
-                            'Authorization: 32ba140e3260848a75db19c1e877b94d6887c6207cc24c1627f99bc8e9503928'
-                          ),
-                        ));
+                        // curl_setopt_array($curl, array(
+                        //   CURLOPT_URL => 'https://egpos.nibritaintech.com/api/request',
+                        //   CURLOPT_RETURNTRANSFER => true,
+                        //   CURLOPT_ENCODING => '',
+                        //   CURLOPT_MAXREDIRS => 10,
+                        //   CURLOPT_TIMEOUT => 0,
+                        //   CURLOPT_FOLLOWLOCATION => true,
+                        //   CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                        //   CURLOPT_CUSTOMREQUEST => 'POST',
+                        //   CURLOPT_POSTFIELDS => json_encode($datas),
+                        //   CURLOPT_HTTPHEADER => array(
+                        //     'Accept: application/json',
+                        //     'Content-Type: application/json',
+                        //     'Authorization: 32ba140e3260848a75db19c1e877b94d6887c6207cc24c1627f99bc8e9503928'
+                        //   ),
+                        // ));
 
-                        $response = curl_exec($curl);
+                        // $response = curl_exec($curl);
 
-                        curl_close($curl);
+                        // curl_close($curl);
                         if($response){
                             echo "<pre>";
                             print_r($response);
