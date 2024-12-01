@@ -1783,7 +1783,8 @@ class Order extends Component
                 }
                 $stock_movement = Stock_movement_model::where(['stock_id'=>$stock[$i]->id, 'received_at'=>null])->first();
                 // , 'admin_id' => session('user_id')
-                if($stock_movement == null){
+
+                if($stock_movement == null && !session('user')->hasPermission('skip_stock_exit')){
                     session()->put('error', "Missing Exit Entry");
                     return redirect()->back();
                 }
