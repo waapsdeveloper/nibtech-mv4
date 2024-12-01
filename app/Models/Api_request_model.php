@@ -210,17 +210,27 @@ class Api_request_model extends Model
 
                     if($stock->last_item()->order->customer_id == 3955){
 
-                        echo "<br><br><br>Hello<br><br><br>";
-                        $url = "https://egpos.nibritaintech.com/api/request";
-                        $apidata = $datas;
                         $curl = curl_init();
-                        curl_setopt($curl, CURLOPT_URL, $url);
-                        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-                        curl_setopt($curl, CURLOPT_POST, true);
-                        curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($apidata));
-                        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+
+                        curl_setopt_array($curl, array(
+                          CURLOPT_URL => 'https://egpos.nibritaintech.com/api/request',
+                          CURLOPT_RETURNTRANSFER => true,
+                          CURLOPT_ENCODING => '',
+                          CURLOPT_MAXREDIRS => 10,
+                          CURLOPT_TIMEOUT => 0,
+                          CURLOPT_FOLLOWLOCATION => true,
+                          CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                          CURLOPT_CUSTOMREQUEST => 'POST',
+                          CURLOPT_POSTFIELDS => json_encode($datas),
+                          CURLOPT_HTTPHEADER => array(
+                            'Accept: application/json',
+                            'Content-Type: application/json',
+                            'Authorization: 2|otpLfHymDGDscNuKjk9CQMx620avGG0aWgMpuPAp5d1d27d2'
+                          ),
+                        ));
+
                         $response = curl_exec($curl);
-                        $response = json_decode($response);
+
                         curl_close($curl);
                         if($response){
                             echo "<pre>";
