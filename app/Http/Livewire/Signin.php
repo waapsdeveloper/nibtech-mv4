@@ -25,7 +25,7 @@ class Signin extends Component
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
+            'username' => 'required',
             'password' => 'required',
             'g-recaptcha-response' => 'required|captcha',
         ]);
