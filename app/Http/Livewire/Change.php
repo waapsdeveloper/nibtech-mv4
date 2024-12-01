@@ -7,11 +7,12 @@ use Livewire\Component;
 use App\Models\Admin_model;
 use Illuminate\Http\Request;
 use App\Mail\ResetMail;
-use DB;
 use Mail;
 use Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Contracts\Session\Session;
+use Illuminate\Support\Facades\DB;
+
 class Change extends Component
 {
     public function mount(Request $request)
