@@ -225,7 +225,7 @@ class Api_request_model extends Model
                           CURLOPT_HTTPHEADER => array(
                             'Accept: application/json',
                             'Content-Type: application/json',
-                            'Authorization: 2|otpLfHymDGDscNuKjk9CQMx620avGG0aWgMpuPAp5d1d27d2'
+                            'Authorization: da20609ccd813fa6e279495fc74981bdc788546b539ae236dd966e4b395d0af1'
                           ),
                         ));
 
@@ -239,7 +239,6 @@ class Api_request_model extends Model
                             echo "<br><br><br>Hello<br><br><br>";
                         }
 
-                        print_r($curl);
                     }
 
 
