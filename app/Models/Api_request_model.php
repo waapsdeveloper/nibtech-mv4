@@ -210,7 +210,7 @@ class Api_request_model extends Model
 
                     if($stock->last_item()->order->customer_id == 3955){
 
-                        $url = "https://egpos.nibritaintech.com/api/testing";
+                        $url = "https://egpos.nibritaintech.com/api/request";
                         $apidata = $datas;
                         $curl = curl_init();
                         curl_setopt($curl, CURLOPT_URL, $url);
