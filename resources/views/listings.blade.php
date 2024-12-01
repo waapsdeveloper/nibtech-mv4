@@ -66,16 +66,17 @@
         <div class="d-flex p-2 justify-content-between">
 
             <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target=".multi_collapse" id="open_all_variations">Toggle&nbsp;All</button>
+            <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target=".multi_collapse_handler" id="open_all_variations">Toggle&nbsp;Handlers</button>
             {{-- <input class="form-check-input" type="radio" id="open_all" name="open_all" value="1" onchange="this.form.submit()" form="search"> --}}
             <label for="perPage" class="form-label">Sort:</label>
-            <select name="sort" class="form-select" id="perPage" onchange="this.form.submit()" form="search">
+            <select name="sort" class="form-select w-auto" id="perPage" onchange="this.form.submit()" form="search">
                 <option value="1" {{ Request::get('sort') == 1 ? 'selected' : '' }}>Stock DESC</option>
                 <option value="2" {{ Request::get('sort') == 2 ? 'selected' : '' }}>Stock ASC</option>
                 <option value="3" {{ Request::get('sort') == 3 ? 'selected' : '' }}>Name DESC</option>
                 <option value="4" {{ Request::get('sort') == 4 ? 'selected' : '' }}>Name ASC</option>
             </select>
             <label for="perPage" class="form-label">Per&nbsp;Page:</label>
-            <select name="per_page" class="form-select" id="perPage" onchange="this.form.submit()" form="search">
+            <select name="per_page" class="form-select w-auto" id="perPage" onchange="this.form.submit()" form="search">
                 <option value="10" {{ Request::get('per_page') == 10 ? 'selected' : '' }}>10</option>
                 <option value="20" {{ Request::get('per_page') == 20 ? 'selected' : '' }}>20</option>
                 <option value="50" {{ Request::get('per_page') == 50 ? 'selected' : '' }}>50</option>
