@@ -363,7 +363,7 @@ class RMA extends Component
             }
 
             if(request('bypass_check') == 1){
-                $this->add_rma_item($order_id);
+                $this->add_rma_item($order_id, $imei, $back);
                 session()->put('bypass_check', 1);
                 request()->merge(['bypass_check'=> 1]);
                 if(!isset($back)){
