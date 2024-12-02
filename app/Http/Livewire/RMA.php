@@ -433,7 +433,7 @@ class RMA extends Component
         return redirect()->back();
     }
     public function add_rma_item($order_id, $imei = null, $back = null){
-        if($imei != null){
+        if($imei == null){
             $imei = request('imei');
         }
         if(!request('bypass_check')){
