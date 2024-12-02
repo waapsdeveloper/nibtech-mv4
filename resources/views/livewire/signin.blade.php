@@ -28,6 +28,7 @@
                                                 <div class="panel-body tabs-menu-body border-0 p-3">
                                                     <div class="tab-content">
                                                         <div class="tab-pane active" id="tab5">
+                                                            {!! NoCaptcha::renderJs() !!}
                                                             <form action="{{url('/login')}}" method="POST">
                                                                 @csrf
                                                                 <div class="form-group">
@@ -36,6 +37,12 @@
                                                                 <div class="form-group">
                                                                     <label>Password</label> <input class="form-control" placeholder="Enter your password" name="password" type="password">
                                                                 </div>
+                                                                <div class="mt-3">
+                                                                    {!! NoCaptcha::display() !!}
+                                                                </div>
+                                                                @if ($errors->has('g-recaptcha-response'))
+                                                                    <span class="text-danger">{{ $errors->first('g-recaptcha-response') }}</span>
+                                                                @endif
                                                                 @if(isset($error))
                                                                     <div class="alert alert-danger alert-dismissible fade show mb-0" role="alert">
                                                                         <span class="alert-inner--icon"><i class="fe fe-slash"></i></span>
@@ -45,6 +52,13 @@
                                                                 @endif
                                                                 <button type="submit" class="btn btn-primary btn-block">Sign In</button>
                                                                 </form>
+                                                                <script>
+                                                                    grecaptcha.ready(function () {
+                                                                        grecaptcha.execute('{{ env('NOCAPTCHA_SITEKEY') }}', { action: 'login' }).then(function (token) {
+                                                                            document.getElementById('g-recaptcha-response').value = token;
+                                                                        });
+                                                                    });
+                                                                </script>
                                                         </div>
                                                     </div>
                                                 </div>
