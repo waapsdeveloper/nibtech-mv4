@@ -442,12 +442,12 @@ class RMA extends Component
         if(!request('rma_reason')){
             session()->forget('rma_reason');
         }
-        if(ctype_digit(request('imei'))){
-            $i = request('imei');
+        if(ctype_digit($imei)){
+            $i = $imei;
             $s = null;
         }else{
             $i = null;
-            $s = request('imei');
+            $s = $imei;
         }
 
         $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
