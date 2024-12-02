@@ -120,7 +120,7 @@ canvas {
                 <td style="text-align: left; padding:0; margin:0; line-height:10px">
 
                         <br><br>
-                        <img src="{{ public_path('assets/img/brand').'/'.session('app_logo') }}" alt="" height="50">
+                        <img src="{{ public_path('assets/img/brand').'/'.env('APP_LOGO') }}" alt="" height="50">
                 </td>
                 <td width="150"></td>
                 <td width="200" style="line-height:8px;">
@@ -305,7 +305,7 @@ canvas {
 
         <div class="invoice-headers">
             <div class="company-info">
-                <img src="{{ asset('assets/img/brand').'/'.session('app_logo') }}" alt="Company Logo" height="100">
+                <img src="{{ asset('assets/img/brand').'/'.env('APP_LOGO') }}" alt="Company Logo" height="100">
                 <br>
                 <br>
                 @if (env('APP_NAME') != null)

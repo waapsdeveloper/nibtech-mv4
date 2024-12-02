@@ -69,7 +69,7 @@
             <tr style="text-align: center;">
                 <td style="text-align: center; padding:0; margin:0; line-height:10px">
 
-                        <img src="{{ public_path('assets/img/brand').'/'.session('app_logo') }}" alt="" height="60">
+                        <img src="{{ public_path('assets/img/brand').'/'.env('APP_LOGO') }}" alt="" height="60">
                         <h2><strong>{{ env('APP_NAME') }}</strong></h2>
                         <h4>Cromac Square, Forsyth House</h4>
                         <h4>Belfast, BT2 8LA</h4>
@@ -128,7 +128,7 @@
 
                     {{-- <div class="company-info"> --}}
                         <br><br>
-                        <img src="{{ public_path('assets/img/brand').'/'.session('app_logo') }}" alt="" height="50">
+                        <img src="{{ public_path('assets/img/brand').'/'.env('APP_LOGO') }}" alt="" height="50">
                     {{-- </div> --}}
                         {{-- <br> --}}
                         {{-- <br> --}}

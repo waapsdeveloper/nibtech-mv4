@@ -52,6 +52,33 @@ class Signin extends Component
             return redirect()->back();
         }
     }
+    public function show2FAForm()
+    {
+        return view('admin.2fa_verify');
+    }
+
+    public function verify2FA(Request $request)
+    {
+        $request->validate([
+            'otp' => 'required',
+        ]);
+
+        $admin = Admin_model::find(session('user_id'));
+        $google2fa = new Google2FA();
+
+        // Verify OTP
+        $valid = $google2fa->verifyKey($admin->google2fa_secret, $request->otp);
+
+        if ($valid) {
+            $admin->is_2fa_enabled = true;
+            $admin->save();
+            session()->put('2fa_verified', true);
+            return redirect('/')->with('success', '2FA Verified Successfully.');
+        }
+
+        return back()->withErrors(['otp' => 'Invalid OTP']);
+    }
+
 
     public function authenticated(Request $request, $user)
     {

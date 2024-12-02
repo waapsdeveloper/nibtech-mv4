@@ -8,7 +8,7 @@
         <div class="main-header-left ">
             <div class="responsive-logo">
                 <a href="{{url('index')}}" class="header-logo">
-                    <img src="{{asset('assets/img/brand').'/'.session('app_logo')}}" class="mobile-logo logo-1" alt="logo" height="45">
+                    <img src="{{asset('assets/img/brand').'/'.env('APP_LOGO')}}" class="mobile-logo logo-1" alt="logo" height="45">
                     <img src="{{asset('assets/img/brand/logo-white1.png')}}" class="mobile-logo dark-logo-1" alt="logo" height="45">
                 </a>
             </div>
@@ -18,7 +18,7 @@
             </div>
             <div class="logo-horizontal">
                 <a href="{{url('index')}}" class="header-logo">
-                    <img src="{{asset('assets/img/brand').'/'.session('app_logo')}}" class="mobile-logo logo-1" alt="logo"  >
+                    <img src="{{asset('assets/img/brand').'/'.env('APP_LOGO')}}" class="mobile-logo logo-1" alt="logo"  >
                     <img src="{{asset('assets/img/brand/logo-white1.png')}}" class="mobile-logo dark-logo-1" alt="logo"  >
                 </a>
             </div>
