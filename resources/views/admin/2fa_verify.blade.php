@@ -22,14 +22,35 @@
                             <div class="wd-100p"><div class="d-flex mb-4"><img src="{{asset('assets/img/brand').'/'.env('APP_ICON')}}" class="sign-favicon ht-40" alt="logo"></div>
                                 <div class="">
                                     <div class="main-signup-header">
-                                        <h2>Welcome back!</h2>
-                                        <h6 class="font-weight-semibold mb-4">Please sign in to continue.</h6>
+                                        {{-- <h2>Welcome back!</h2>
+                                        <h6 class="font-weight-semibold mb-4">Please sign in to continue.</h6> --}}
+                                        <h2>Two-Factor Authentication</h2>
+                                        <p>Please enter the code from your authenticator app to verify your login.</p>
+
                                         <div class="panel panel-primary">
                                         <div class="panel-body tabs-menu-body border-0 p-3">
                                             <div class="tab-content">
                                                 <div class="tab-pane active" id="tab5">
-                                                    {!! NoCaptcha::renderJs() !!}
-                                                    <form action="{{url('/login')}}" method="POST">
+                                                    <form method="POST" action="{{ route('admin.2fa') }}">
+                                                        @csrf
+                                                        <div class="mb-3">
+                                                            <label for="otp" class="form-label">Authentication Code</label>
+                                                            <input
+                                                                type="text"
+                                                                class="form-control"
+                                                                id="otp"
+                                                                name="otp"
+                                                                placeholder="Enter code"
+                                                                required>
+                                                        </div>
+                                                        @if ($errors->has('otp'))
+                                                            <div class="text-danger">
+                                                                {{ $errors->first('otp') }}
+                                                            </div>
+                                                        @endif
+                                                        <button type="submit" class="btn btn-primary">Verify</button>
+                                                    </form>
+                                                    {{-- <form action="{{url('/login')}}" method="POST">
                                                         @csrf
                                                         <div class="form-group">
                                                             <label>Username</label> <input class="form-control" placeholder="Enter your username" name="username" type="text">
@@ -58,7 +79,7 @@
                                                                     document.getElementById('g-recaptcha-response').value = token;
                                                                 });
                                                             });
-                                                        </script>
+                                                        </script> --}}
                                                 </div>
                                             </div>
                                         </div>

@@ -31,7 +31,7 @@
                                 <div class="card">
                                     <div class="card-body">
                                         <div class="main-content-label mg-b-5">
-                                           <img src="{{asset('assets/img/brand').'/'.session('app_icon')}}" height="50" width="50" alt="">
+                                           <img src="{{asset('assets/img/brand').'/'.env('APP_ICON')}}" height="50" width="50" alt="">
                                         </div>
                                         <p class="mg-b-20">Edit a member of your team.</p>
                                         <div class="pd-30 pd-sm-20">

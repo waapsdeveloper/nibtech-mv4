@@ -31,7 +31,7 @@
                             <div class="card-sigin mt-5 mt-md-0">
                                 <!-- Demo content-->
                                 <div class="main-card-signin d-md-flex">
-                                    <div class="wd-100p"><div class="d-flex mb-4"><a href="{{url('index')}}"><img src="{{asset('assets/img/brand').'/'.session('app_icon')}}" class="sign-favicon ht-40" alt="logo"></a></div>
+                                    <div class="wd-100p"><div class="d-flex mb-4"><a href="{{url('index')}}"><img src="{{asset('assets/img/brand').'/'.env('APP_ICON')}}" class="sign-favicon ht-40" alt="logo"></a></div>
                                         <div class="">
                                             <div class="main-signup-header">
                                                 <h2 class="text text-capitalize text-success">Reset {{$title}}!</h2>

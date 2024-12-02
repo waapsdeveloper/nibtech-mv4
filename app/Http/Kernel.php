@@ -59,6 +59,7 @@ class Kernel extends HttpKernel
      */
     protected $routeMiddleware = [
         // '2fa' => \App\Http\Middleware\TwoFactorAuthentication::class,
+        '2fa' => \App\Http\Middleware\Ensure2FAIsVerified::class,
         'auth' => \App\Http\Middleware\Authenticate::class,
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
         'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
@@ -68,6 +69,5 @@ class Kernel extends HttpKernel
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        'internal.only' => \App\Http\Middleware\InternalOnly::class,
     ];
 }

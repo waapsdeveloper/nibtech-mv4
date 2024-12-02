@@ -22,7 +22,7 @@ class Admin_model extends Model
         'email',
         'password',
         'google2fa_secret',
-        'google2fa_enabled',
+        'is_2fa_enabled',
     ];
 
     public function role()
