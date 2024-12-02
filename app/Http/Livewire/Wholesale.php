@@ -878,7 +878,7 @@ class Wholesale extends Component
         $data['colors'] = Color_model::pluck('name','id');
 
 
-        Mail::to($order->customer->email)->send(new BulksaleInvoiceMail($data));
+        Mail::to('accounts@nibritaintech.com')->send(new BulksaleInvoiceMail($data));
     }
 
     public function pos(){
