@@ -54,6 +54,14 @@ use App\Http\Livewire\Wholesale_return;
 Route::get('/admin/2fa', [Signin::class, 'show2FAForm'])->name('admin.2fa');
 Route::post('/admin/2fa', [Signin::class, 'verify2FA'])->name('admin.2fa');
 
+Route::get('signin', Signin::class)->name('login');
+Route::post('login', [Signin::class,'login'])->name('signin');
+Route::get('logout', Logout::class)->name('signin');
+
+Route::get('error404', Error404::class)->name('error');
+Route::get('error500', Error500::class)->name('error');
+Route::get('error501', Error501::class)->name('error');
+
 Route::middleware(['2fa'])->group(function () {
     Route::get('/', Index::class)->name('index');
     Route::get('index', Index::class)->name('index');
@@ -69,15 +77,8 @@ Route::get('index/refresh_7_days_chart', [Index::class,'refresh_7_days_chart'])-
 Route::get('index/refresh_7_days_progressive_chart', [Index::class,'refresh_7_days_progressive_chart'])->name('7_day_progressive_sales_chart');
 Route::get('index/required_restock', [Index::class,'required_restock'])->name('required_restock');
 // Route::post('change', Change::class);
-Route::get('error404', Error404::class)->name('error');
-Route::get('error500', Error500::class)->name('error');
-Route::get('error501', Error501::class)->name('error');
 Route::get('profile', Profile::class)->name('profile');
 Route::post('profile', Profile::class)->name('profile');
-Route::get('signin', Signin::class)->name('login');
-Route::post('login', [Signin::class,'login'])->name('signin');
-Route::get('logout', Logout::class)->name('signin');
-
 // Route::middleware('auth')->group(function () {
 //     Route::get('/2fa', [TwoFactorController::class, 'show2faForm'])->name('2fa.form');
 //     Route::post('/2fa/setup', [TwoFactorController::class, 'setup2fa'])->name('2fa.setup');
