@@ -20,7 +20,7 @@ class BackMarketAPIController extends Controller
 
     public function __construct() {
         // self::$YOUR_ACCESS_TOKEN = "NzZhMGVhNTZlNmNjNGI1MTgzNzJjMzpCTVQtMmRhMTk3MWM1ZmVkNzJlMzRjMGZiYmFiMTdjYzkxZDEwMTM3MDU2Nw==";
-        self::$YOUR_ACCESS_TOKEN = config('backmarket.api_key_1');
+        self::$YOUR_ACCESS_TOKEN = env('BM_API1');
         self::$YOUR_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36";
     }
     public function requestGet($end_point, $retryCount = 0){
