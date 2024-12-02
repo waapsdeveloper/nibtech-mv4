@@ -449,7 +449,7 @@ class RMA extends Component
             $i = null;
             $s = $imei;
         }
-
+        dd($imei);
         $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
         $variation = Variation_model::where(['id' => $stock->variation_id])->first();
 
