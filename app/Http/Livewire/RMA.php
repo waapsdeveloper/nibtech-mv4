@@ -313,7 +313,7 @@ class RMA extends Component
 
         return redirect()->back();
     }
-    public function check_rma_item($order_id){
+    public function check_rma_item($order_id, $back = null){
         $issue = [];
         if(request('imei')){
             $imei = request('imei');
@@ -379,7 +379,7 @@ class RMA extends Component
                     echo "<form id='continueForm' action='" . url('add_rma_item') . "/" . $order_id . "' method='POST'>";
                     echo "<input type='hidden' name='_token' value='" . csrf_token() . "'>";
                     echo "<input type='hidden' name='order_id' value='" . $order_id . "'>";
-                    echo "<input type='hidden' name='imei' value='" . request('imei') . "'>";
+                    echo "<input type='hidden' name='imei' value='" . $imei . "'>";
                     echo "<input type='hidden' name='rma_reason' value='" . request('rma_reason') . "'>";
                     echo "</form>";
                     echo "<a href='javascript:history.back()'>Cancel</a> ";
@@ -391,7 +391,7 @@ class RMA extends Component
                     </script>";
                     exit;
                 }else{
-                    $this->add_rma_item($order_id);
+                    $this->add_rma_item($order_id, $imei, $back);
                     if(!isset($back)){
                         return redirect()->back();
                     }else{
@@ -432,8 +432,10 @@ class RMA extends Component
         }
         return redirect()->back();
     }
-    public function add_rma_item($order_id){
-
+    public function add_rma_item($order_id, $imei = null, $back = null){
+        if(request('imei')){
+            $imei = request('imei');
+        }
         if(!request('bypass_check')){
             session()->forget('bypass_check');
         }
@@ -492,8 +494,11 @@ class RMA extends Component
 
         session()->put('success', 'Stock added successfully');
 
-
-        return redirect(url('rma/detail').'/'.$order_id);
+        if($back != 1){
+            return redirect(url('rma/detail').'/'.$order_id);
+        }else{
+            return 1;
+        }
     }
 
 
