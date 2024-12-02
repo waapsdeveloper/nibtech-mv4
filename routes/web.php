@@ -51,8 +51,16 @@ use App\Http\Livewire\Wholesale_return;
 // Route::get('/', function () {
 //     return view('livewire.index');
 // });
-Route::get('/', Index::class)->name('index');
-Route::get('index', Index::class)->name('index');
+Route::get('/admin/2fa', [Signin::class, 'show2FAForm'])->name('admin.2fa');
+Route::post('/admin/2fa', [Signin::class, 'verify2FA'])->name('admin.2fa');
+
+Route::middleware(['2fa'])->group(function () {
+    Route::get('/', Index::class)->name('index');
+    Route::get('index', Index::class)->name('index');
+    Route::get('enable_2fa', [Profile::class, 'enable2FA'])->name('enable2fa');
+    Route::get('disable_2fa', [Profile::class, 'disable2FA'])->name('disable2fa');
+});
+
 Route::get('index/toggle_amount_view', [Index::class,'toggle_amount_view'])->name('index');
 Route::get('index/add_ip', [Index::class,'add_ip'])->name('add_ip');
 Route::get('index/stock_cost_summery', [Index::class,'stock_cost_summery'])->name('available_stock_cost_summery');

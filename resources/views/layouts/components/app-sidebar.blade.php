@@ -3,9 +3,9 @@
 					<aside class="app-sidebar">
 						<div class="main-sidebar-header active">
 							<a class="header-logo active" href="{{url('index')}}">
-								<img src="{{asset('assets/img/brand').'/'.session('app_logo')}}" class="main-logo  desktop-logo" alt="logo" height="150" width="150">
+								<img src="{{asset('assets/img/brand').'/'.env('APP_LOGO')}}" class="main-logo  desktop-logo" alt="logo" height="150" width="150">
 								<img src="{{asset('assets/img/brand/logo-white1.png')}}" class="main-logo  desktop-dark" alt="logo" height="150" width="150">
-								<img src="{{asset('assets/img/brand').'/'.session('app_icon')}}" class="main-logo  mobile-logo" alt="logo">
+								<img src="{{asset('assets/img/brand').'/'.env('APP_ICON')}}" class="main-logo  mobile-logo" alt="logo">
 								<img src="{{asset('assets/img/brand/favicon-white1.png')}}" class="main-logo  mobile-dark" alt="logo">
 							</a>
 						</div>

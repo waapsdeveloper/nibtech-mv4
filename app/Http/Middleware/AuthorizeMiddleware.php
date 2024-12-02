@@ -25,7 +25,7 @@ class AuthorizeMiddleware
             session()->put('all_grades',$all_grades);
         }
         // If the current route is the login route or sign-in route, bypass the middleware
-        if ($currentRoute == 'login' || $currentRoute == 'signin' || $currentRoute == 'index' || $currentRoute == 'profile' || $currentRoute == 'error') {
+        if ($currentRoute == 'login' || $currentRoute == 'signin' || $currentRoute == 'admin.2fa' || $currentRoute == 'admin.2fa2' || $currentRoute == 'index' || $currentRoute == 'profile' || $currentRoute == 'error') {
             // Redirect to the sign-in page if user ID is null
             if ($userId == null && $currentRoute == 'index') {
                 return redirect('signin');
