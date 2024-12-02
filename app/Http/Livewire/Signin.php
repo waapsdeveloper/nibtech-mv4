@@ -5,7 +5,8 @@ namespace App\Http\Livewire;
 use App\Models\Admin_model;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Support\Facades\Hash;
-use Symfony\Component\HttpFoundation\Request;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Livewire\Component;
 use PragmaRX\Google2FA\Google2FA;
 
@@ -23,6 +24,12 @@ class Signin extends Component
     }
     public function login(Request $request)
     {
+        $request->validate([
+            'username' => 'required',
+            'password' => 'required',
+            'g-recaptcha-response' => 'required|captcha',
+        ]);
+
         $login_detail = Admin_model::where('username',trim($request['username']))->first();
         if($login_detail == null){
 
@@ -45,26 +52,26 @@ class Signin extends Component
             return redirect()->back();
         }
     }
-    
+
     public function authenticated(Request $request, $user)
     {
         if ($user->uses_two_factor_auth) {
             $google2fa = new Google2FA();
-    
+
             if ($request->session()->has('2fa_passed')) {
                 $request->session()->forget('2fa_passed');
             }
-    
+
             $request->session()->put('2fa:user:id', $user->id);
             $request->session()->put('2fa:auth:attempt', true);
             $request->session()->put('2fa:auth:remember', $request->has('remember'));
-    
+
             $otp_secret = $user->google2fa_secret;
             $one_time_password = $google2fa->getCurrentOtp($otp_secret);
-    
+
             return redirect()->route('2fa')->with('one_time_password', $one_time_password);
         }
-    
+
         return redirect()->intended($this->redirectPath());
     }
 }
