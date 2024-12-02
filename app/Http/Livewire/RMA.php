@@ -314,59 +314,91 @@ class RMA extends Component
         return redirect()->back();
     }
     public function check_rma_item($order_id){
-        if(ctype_digit(request('imei'))){
-            $i = request('imei');
-            $s = null;
-        }else{
-            $i = null;
-            $s = request('imei');
+        $issue = [];
+        if(request('imei')){
+            $imei = request('imei');
         }
 
-        $purchase_order = Order_model::find($order_id);
-        $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
-        if(request('imei') == '' || !$stock || $stock->status == null){
-            session()->put('error', 'IMEI Invalid / Not Found');
-            return redirect()->back();
-
+        $imeis = explode(" ",$imei);
+        if(count($imeis) > 1){
+            $back = 2;
         }
-
-        if($stock->order->customer_id == $purchase_order->customer_id || ($stock->order_id == 8441) || ($purchase_order->customer_id == 8 && $stock->order->customer_id == 13562)){}else{
-            session()->put('error', 'Stock belong to different Vendor');
-            return redirect()->back();
-        }
-        $variation = Variation_model::where(['id' => $stock->variation_id])->first();
-        if($stock->status != 1){
-            session()->put('error', 'Stock already sold');
-            return redirect()->back();
-        }
-
-        if(request('bypass_check') == 1){
-            $this->add_rma_item($order_id);
-            session()->put('bypass_check', 1);
-            request()->merge(['bypass_check'=> 1]);
-            return redirect()->back();
-        }else{
-            session()->forget('bypass_check');
-            // request()->merge(['bypass_check' => null]);
-            if($variation->grade != 10){
-                echo "<p>This IMEI does not belong to RMA. Do you want to continue?</p>";
-                echo "<form id='continueForm' action='" . url('add_rma_item') . "/" . $order_id . "' method='POST'>";
-                echo "<input type='hidden' name='_token' value='" . csrf_token() . "'>";
-                echo "<input type='hidden' name='order_id' value='" . $order_id . "'>";
-                echo "<input type='hidden' name='imei' value='" . request('imei') . "'>";
-                echo "<input type='hidden' name='rma_reason' value='" . request('rma_reason') . "'>";
-                echo "</form>";
-                echo "<a href='javascript:history.back()'>Cancel</a> ";
-                echo "<button onclick='submitForm()'>Continue</button>";
-                echo "<script>
-                    function submitForm() {
-                        document.getElementById('continueForm').submit();
-                    }
-                </script>";
-                exit;
+        foreach($imeis as $imei){
+            if(ctype_digit($imei)){
+                $i = $imei;
+                $s = null;
             }else{
+                $i = null;
+                $s = $imei;
+            }
+
+            $purchase_order = Order_model::find($order_id);
+            $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
+            if($imei == '' || !$stock || $stock->status == null){
+                session()->put('error', 'IMEI Invalid / Not Found');
+                if($back != 2){
+                    return redirect()->back();
+                }else{
+                    continue;
+                }
+
+            }
+
+            if($stock->order->customer_id == $purchase_order->customer_id || ($stock->order_id == 8441) || ($purchase_order->customer_id == 8 && $stock->order->customer_id == 13562)){}else{
+                session()->put('error', 'Stock belong to different Vendor');
+                if($back != 2){
+                    return redirect()->back();
+                }else{
+                    continue;
+                }
+            }
+            $variation = Variation_model::where(['id' => $stock->variation_id])->first();
+            if($stock->status != 1){
+                session()->put('error', 'Stock already sold');
+                if($back != 2){
+                    return redirect()->back();
+                }else{
+                    continue;
+                }
+            }
+
+            if(request('bypass_check') == 1){
                 $this->add_rma_item($order_id);
-                return redirect()->back();
+                session()->put('bypass_check', 1);
+                request()->merge(['bypass_check'=> 1]);
+                if($back != 2){
+                    return redirect()->back();
+                }else{
+                    continue;
+                }
+            }else{
+                session()->forget('bypass_check');
+                // request()->merge(['bypass_check' => null]);
+                if($variation->grade != 10){
+                    echo "<p>This IMEI does not belong to RMA. Do you want to continue?</p>";
+                    echo "<form id='continueForm' action='" . url('add_rma_item') . "/" . $order_id . "' method='POST'>";
+                    echo "<input type='hidden' name='_token' value='" . csrf_token() . "'>";
+                    echo "<input type='hidden' name='order_id' value='" . $order_id . "'>";
+                    echo "<input type='hidden' name='imei' value='" . request('imei') . "'>";
+                    echo "<input type='hidden' name='rma_reason' value='" . request('rma_reason') . "'>";
+                    echo "</form>";
+                    echo "<a href='javascript:history.back()'>Cancel</a> ";
+                    echo "<button onclick='submitForm()'>Continue</button>";
+                    echo "<script>
+                        function submitForm() {
+                            document.getElementById('continueForm').submit();
+                        }
+                    </script>";
+                    exit;
+                }else{
+                    $this->add_rma_item($order_id);
+                    if($back != 2){
+                        return redirect()->back();
+                    }else{
+                        continue;
+                    }
+
+                }
 
             }
         }
