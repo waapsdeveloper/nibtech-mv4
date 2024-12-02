@@ -59,7 +59,6 @@ Route::middleware(['2fa'])->group(function () {
     Route::get('index', Index::class)->name('index');
     Route::get('enable_2fa', [Profile::class, 'enable2FA'])->name('enable2fa');
     Route::get('disable_2fa', [Profile::class, 'disable2FA'])->name('disable2fa');
-});
 
 Route::get('index/toggle_amount_view', [Index::class,'toggle_amount_view'])->name('index');
 Route::get('index/add_ip', [Index::class,'add_ip'])->name('add_ip');
@@ -338,4 +337,5 @@ Route::get('oauth2/callback', [GoogleController::class, 'handleGoogleCallback'])
 
 Route::get('/exchange-rates', [ExchangeRateController::class, 'index']);
 
+});
 // });
