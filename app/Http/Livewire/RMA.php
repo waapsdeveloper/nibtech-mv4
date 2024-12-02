@@ -336,7 +336,7 @@ class RMA extends Component
             $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
             if($imei == '' || !$stock || $stock->status == null){
                 session()->put('error', 'IMEI Invalid / Not Found');
-                if($back != 2){
+                if(!isset($back)){
                     return redirect()->back();
                 }else{
                     continue;
@@ -346,7 +346,7 @@ class RMA extends Component
 
             if($stock->order->customer_id == $purchase_order->customer_id || ($stock->order_id == 8441) || ($purchase_order->customer_id == 8 && $stock->order->customer_id == 13562)){}else{
                 session()->put('error', 'Stock belong to different Vendor');
-                if($back != 2){
+                if(!isset($back)){
                     return redirect()->back();
                 }else{
                     continue;
@@ -355,7 +355,7 @@ class RMA extends Component
             $variation = Variation_model::where(['id' => $stock->variation_id])->first();
             if($stock->status != 1){
                 session()->put('error', 'Stock already sold');
-                if($back != 2){
+                if(!isset($back)){
                     return redirect()->back();
                 }else{
                     continue;
@@ -366,7 +366,7 @@ class RMA extends Component
                 $this->add_rma_item($order_id);
                 session()->put('bypass_check', 1);
                 request()->merge(['bypass_check'=> 1]);
-                if($back != 2){
+                if(!isset($back)){
                     return redirect()->back();
                 }else{
                     continue;
@@ -392,7 +392,7 @@ class RMA extends Component
                     exit;
                 }else{
                     $this->add_rma_item($order_id);
-                    if($back != 2){
+                    if(!isset($back)){
                         return redirect()->back();
                     }else{
                         continue;
