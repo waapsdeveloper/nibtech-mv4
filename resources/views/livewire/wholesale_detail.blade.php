@@ -205,11 +205,11 @@
                     <button type="submit" class="btn btn-sm btn-primary">Upload Sheet</button>
                 </form>
                 @endif
-                @if ($order->customer->email == null)
+                {{-- @if ($order->customer->email == null)
                     Customer Email Not Added
-                @else
-                <a href="{{url('bulksale_email')}}/{{ $order->id }}" target="_blank"><button class="btn-sm btn-secondary">Send Email</button></a>
-                @endif
+                @else --}}
+                <a href="{{url('bulksale_email')}}/{{ $order->id }}" target="_blank"><button class="btn-sm btn-secondary">Send Email to Accounts</button></a>
+                {{-- @endif --}}
                 <a href="{{url('export_bulksale_invoice')}}/{{ $order->id }}" target="_blank"><button class="btn-sm btn-secondary">Invoice</button></a>
                 @if ($order->exchange_rate != null)
                 <a href="{{url('export_bulksale_invoice')}}/{{ $order->id }}/1" target="_blank"><button class="btn-sm btn-secondary">{{$order->currency_id->sign}} Invoice</button></a>
