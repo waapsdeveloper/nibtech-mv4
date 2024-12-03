@@ -231,8 +231,8 @@
     <script src="{{ asset('assets/DataTables/datatables.min.js') }}"></script>
     <script>
         $(document).ready(function() {
-            let start_date = {{ request('start_date') ? request('start_date') : 'null' }};
-            let end_date = {{ request('end_date') ? request('end_date') : 'null' }};
+            let start_date = "{{ request('start_date') ? request('start_date') : '' }}";
+            let end_date = "{{ request('end_date') ? request('end_date') : '' }}";
 
             $('#purchase_report').DataTable({
                 ajax: {
