@@ -227,6 +227,8 @@
     @endsection
 
     @section('scripts')
+    <script src="{{ asset('assets/plugins/datatables/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('assets/plugins/datatables/dataTables.bootstrap5.min.js') }}"></script>
     <script>
         $(document).ready(function() {
             let start_date = {{ request('start_date') ? request('start_date') : 'null' }};
