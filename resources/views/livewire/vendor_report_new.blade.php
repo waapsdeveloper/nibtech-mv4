@@ -1,7 +1,7 @@
 @extends('layouts.new')
 
 @section('styles')
-    <link rel="stylesheet" href="{{ asset('DataTables/datatables.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/DataTables/datatables.min.css') }}">
 <style type="text/css" media="print">
     @page { size: landscape; }
   </style>
@@ -228,7 +228,7 @@
     @endsection
 
     @section('scripts')
-    <script src="{{ asset('DataTables/datatables.min.js') }}"></script>
+    <script src="{{ asset('assets/DataTables/datatables.min.js') }}"></script>
     <script>
         $(document).ready(function() {
             let start_date = {{ request('start_date') ? request('start_date') : 'null' }};
