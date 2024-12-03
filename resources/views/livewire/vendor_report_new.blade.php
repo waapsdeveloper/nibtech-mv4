@@ -250,7 +250,8 @@
 
             $('#rma_report').DataTable({
                 ajax: {
-                    url: "{{ url('vendor_rma_report').'/'.$vendor->id }}?start_date="+start_date+"&end_date="+end_date
+                    url: "{{ url('vendor_rma_report').'/'.$vendor->id }}?start_date="+start_date+"&end_date="+end_date,
+                    dataSrc: ''
                 },
                 columns: [
 
