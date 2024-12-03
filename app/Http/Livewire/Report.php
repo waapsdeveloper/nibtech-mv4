@@ -1188,6 +1188,16 @@ class Report extends Component
         $data['sold_stock_cost'] = $sold_stock_price;
 
 
+        // dd($repair_report);
+        return view('livewire.vendor_report_new')->with($data);
+    }
+
+    public function vendor_purchase_report($vendor_id){
+
+        $order_ids = Order_model::where('customer_id', $vendor_id)
+        ->when(request('start_date') != NULL && request('end_date') != NULL, function ($q) {
+            $q->whereBetween('created_at', [request('start_date'), request('end_date')]);
+        })->pluck('id');
 
         $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function ($q) use ($order_ids){
             $q->whereIn('order_id', $order_ids);
@@ -1207,42 +1217,56 @@ class Report extends Component
 
             $result[] = $datas;
         }
-        $data['purchase_report'] = $result;
+        $purchase_report = $result;
 
+        return response()->json($purchase_report);
+    }
+
+    public function vendor_rma_report($vendor_id){
 
         $rma_report = Stock_model::whereHas('order',function ($q) use ($vendor_id){
-                $q->where('customer_id', $vendor_id);
-            })->whereHas('variation', function ($q){
-                $q->where('grade', 10);
-            })->with('latest_operation')
-            ->get()
-            ->groupBy('latest_operation.description');
+            $q->where('customer_id', $vendor_id)
+            ->when(request('start_date') != NULL && request('end_date') != NULL, function ($q) {
+                $q->whereBetween('created_at', [request('start_date'), request('end_date')]);
+            });
+        })->whereHas('variation', function ($q){
+            $q->where('grade', 10);
+        })->with('latest_operation')
+        ->get()
+        ->groupBy('latest_operation.description');
 
-        $data['rma_report'] = $rma_report;
+        $rma_report = $rma_report;
+
+        return response()->json($rma_report);
+    }
+
+    public function vendor_repair_report($vendor_id){
+
+
         $repair_report = Stock_model::whereHas('order',function ($q) use ($vendor_id){
-                $q->where('customer_id', $vendor_id);
-            })->whereHas('stock_operations.new_variation', function ($q){
-                $q->where('grade', 8);
-            // })->whereHas('stock_operations', function ($q){
-            //     $q->whereNotNull('description');
-            })->with(['stock_operations'=> function ($q) {
-                $q->whereHas('new_variation', function ($qq) {
-                    $qq->where('grade',8);
-                });
-            }])
-            ->get();
+            $q->where('customer_id', $vendor_id)
+            ->when(request('start_date') != NULL && request('end_date') != NULL, function ($q) {
+                $q->whereBetween('created_at', [request('start_date'), request('end_date')]);
+            });
+        })->whereHas('stock_operations.new_variation', function ($q){
+            $q->where('grade', 8);
+        // })->whereHas('stock_operations', function ($q){
+        //     $q->whereNotNull('description');
+        })->with(['stock_operations'=> function ($q) {
+            $q->whereHas('new_variation', function ($qq) {
+                $qq->where('grade',8);
+            });
+        }])
+        ->get();
 
-            // ->groupBy('stock_operations.description');
+        // ->groupBy('stock_operations.description');
 
         // Group the results by the 'description' field of the first related stock_operation
         $repair_report = $repair_report->groupBy(function($stock) {
             return $stock->stock_operations->first()->description ?? 'no_description';
         });
-        $data['repair_report'] = $repair_report;
 
-
-        // dd($repair_report);
-        return view('livewire.vendor_report_new')->with($data);
+        return response()->json($repair_report);
     }
 
     public function export_report()
