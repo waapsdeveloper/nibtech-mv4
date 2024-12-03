@@ -269,7 +269,7 @@
                     { data: 'count' },
                     { data: 'actions' },
                 ],
-
+                paging: false,
             });
 
             $('#repair_report').DataTable({
