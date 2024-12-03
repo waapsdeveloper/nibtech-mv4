@@ -232,17 +232,18 @@
             let start_date = {{ request('start_date') ? request('start_date') : 'null' }};
             let end_date = {{ request('end_date') ? request('end_date') : 'null' }};
 
-            $('#purchase_report').DataTable(
+            $('#purchase_report').DataTable({
                 ajax: {
                     url: "{{ url('vendor_purchase_report').'/'.$vendor->id }}?start_date="+start_date+"&end_date="+end_date,
-                }
+                },
                 columns: [
                     { data: 'id' },
                     { data: 'model' },
                     { data: 'stock_count' },
                     { data: 'stock_cost' },
                 ]
+            });
 
-            );
+
         });
     @endsection
