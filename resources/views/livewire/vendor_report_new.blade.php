@@ -272,19 +272,19 @@
                 paging: false,
             });
 
-            $('#repair_report').DataTable({
-                ajax: {
-                    url: "{{ url('vendor_repair_report').'/'.$vendor->id }}?start_date="+start_date+"&end_date="+end_date,
-                    dataSrc: ''
-                },
-                columns: [
+            // $('#repair_report').DataTable({
+            //     ajax: {
+            //         url: "{{ url('vendor_repair_report').'/'.$vendor->id }}?start_date="+start_date+"&end_date="+end_date,
+            //         dataSrc: ''
+            //     },
+            //     columns: [
 
-                    { data: 'message' },
-                    { data: 'count' },
-                    { data: 'action' },
-                ],
-                paging: false,
-            });
+            //         { data: 'message' },
+            //         { data: 'count' },
+            //         { data: 'action' },
+            //     ],
+            //     paging: false,
+            // });
 
 
 
