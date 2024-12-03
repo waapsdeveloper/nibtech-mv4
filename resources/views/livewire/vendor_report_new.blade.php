@@ -230,6 +230,14 @@
     @section('scripts')
     <script src="{{ asset('assets/DataTables/datatables.min.js') }}"></script>
     <script>
+        function open_all(imeis){
+            imei_list = imeis.split(" ");
+            imei_list.forEach(imei => {
+                window.open("{{ url('imei') }}?imei="+imei, '_blank');
+            });
+        }
+
+
         $(document).ready(function() {
             let start_date = "{{ request('start_date') ? request('start_date') : '' }}";
             let end_date = "{{ request('end_date') ? request('end_date') : '' }}";
@@ -254,18 +262,18 @@
                     dataSrc: ''
                 },
                 columns: [
-
-                    { data: 'message' },
+                    { data: 'sr_no' },
+                    { data: 'description' },
                     { data: 'count' },
                     { data: 'action' },
                 ],
-                paging: false,
 
             });
 
             $('#repair_report').DataTable({
                 ajax: {
-                    url: "{{ url('vendor_repair_report').'/'.$vendor->id }}?start_date="+start_date+"&end_date="+end_date
+                    url: "{{ url('vendor_repair_report').'/'.$vendor->id }}?start_date="+start_date+"&end_date="+end_date,
+                    dataSrc: ''
                 },
                 columns: [
 

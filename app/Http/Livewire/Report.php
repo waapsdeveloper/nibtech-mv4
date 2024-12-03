@@ -1239,9 +1239,29 @@ class Report extends Component
         ->get()
         ->groupBy('latest_operation.description');
 
-        $rma_report = $rma_report->toArray();
+            $i = 0;
+            $j = 0;
+        $data = [];
+        foreach ($rma_report as $key => $value){
+            $datas = [];
+            $j++;
 
-        return response()->json($rma_report);
+            $imeis = implode(" ", [implode(" ",$value->pluck('imei')->unique()->toArray()), implode(" ",$value->pluck('serial_number')->unique()->toArray())]);
+            $datas['sr_no'] = ++$i;
+            $datas['description'] = $key;
+            $datas['count'] = count($value);
+            $datas['imeis'] = $imeis;
+            $datas['actions'] = '<a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more" style="font-size: 20px;"></i></a>
+            <div class="dropdown-menu">
+                <a class="dropdown-item" id="test'.$j.'" href="#" onClick="open_all('.$imeis.')">Open All</a>
+                <a class="dropdown-item" id="change_entry_message_'.$j.'" href="#" onclick="var newMessage = prompt(\'Please enter new message\'); if(newMessage != null){window.location.href = \''.url('move_inventory/change_grade/1').'\?imei='.$imeis.'&description=\'+newMessage}"
+                >Change All</a>
+            </div>';
+
+            $data[] = $datas;
+        }
+
+        return response()->json($data);
     }
 
     public function vendor_repair_report($vendor_id){
