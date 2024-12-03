@@ -618,7 +618,9 @@
                                                         <td>{{ $currency}}{{$purchase_item->price ?? "Error in Purchase Entry" }}</td>
                                                         @endif
                                                         @if (session('user')->hasPermission('delete_purchase_item'))
-                                                        <td><a href="{{ url('delete_order_item').'/'}}{{$purchase_item->id ?? null }}" onclick="if (confirm('Remove IMEI from Order')){return true;}else{event.stopPropagation(); event.preventDefault();};"><i class="fa fa-trash"></i></a></td>
+                                                        <td><a href="{{ url('delete_order_item').'/'}}{{$purchase_item->id ?? null }}"
+                                                            {{-- onclick="if (confirm('Remove IMEI from Order')){return true;}else{event.stopPropagation(); event.preventDefault();};" --}}
+                                                            ><i class="fa fa-trash"></i></a></td>
                                                         @endif
                                                     </tr>
                                                     {{-- @endif --}}
