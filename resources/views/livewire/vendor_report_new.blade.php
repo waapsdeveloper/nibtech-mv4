@@ -102,14 +102,14 @@
 
     <div class="row p-3">
 
-        {{-- <div class="card col-6">
+        <div class="card col-6">
             <div class="card-header m-0">
                 <h4 class="card-title mb-0">RMA Report</h4>
 
             </div>
             <div class="card-body p-2">
                 <div class="table-responsive">
-                    <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                    <table class="table table-bordered table-hover mb-0 text-md-nowrap" id="rma_report">
                         <thead>
                             <tr>
                                 <th><small><b>No</b></small></th>
@@ -118,7 +118,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @php
+                            {{-- @php
                                 $i = 0;
                                 $j = 0;
                             @endphp
@@ -155,7 +155,7 @@
                                         }
                                     </script>
                                 </tr>
-                            @endforeach
+                            @endforeach --}}
                         </tbody>
                     </table>
                     <br>
@@ -172,7 +172,7 @@
             </div>
             <div class="card-body p-2">
                 <div class="table-responsive">
-                    <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                    <table class="table table-bordered table-hover mb-0 text-md-nowrap" id="repair_report">
                         <thead>
                             <tr>
                                 <th><small><b>No</b></small></th>
@@ -181,7 +181,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @php
+                            {{-- @php
                                 $i = 0;
                                 $k = 10000;
                             @endphp
@@ -214,7 +214,7 @@
                                         }
                                     </script>
                                 </tr>
-                            @endforeach
+                            @endforeach --}}
                         </tbody>
                     </table>
                     <br>
@@ -222,7 +222,7 @@
 
 
             </div>
-        </div> --}}
+        </div>
     </div>
 
     @endsection
@@ -247,6 +247,33 @@
                 ],
                 paging: false,
             });
+
+            $('#rma_report').DataTable({
+                ajax: {
+                    url: "{{ url('vendor_rma_report').'/'.$vendor->id }}?start_date="+start_date+"&end_date="+end_date
+                },
+                columns: [
+
+                    { data: 'message' },
+                    { data: 'count' },
+                    { data: 'action' },
+                ],
+                paging: false,
+            });
+
+            $('#repair_report').DataTable({
+                ajax: {
+                    url: "{{ url('vendor_repair_report').'/'.$vendor->id }}?start_date="+start_date+"&end_date="+end_date
+                },
+                columns: [
+
+                    { data: 'message' },
+                    { data: 'count' },
+                    { data: 'action' },
+                ],
+                paging: false,
+            });
+
 
 
         });
