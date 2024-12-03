@@ -177,7 +177,8 @@
                             <tr>
                                 <th><small><b>No</b></small></th>
                                 <th><small><b>Message</b></small></th>
-                                <th colspan="2"><small><b>Count</b></small></th>
+                                <th><small><b>Count</b></small></th>
+                                <th><small><b>Action</b></small></th>
                             </tr>
                         </thead>
                         <tbody>
