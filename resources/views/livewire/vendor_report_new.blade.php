@@ -240,7 +240,9 @@
                     dataSrc: ''
                 },
                 columns: [
-                    { data: 'id' },
+                    ( data, type, row, meta ) => {
+                        return meta.row + 1;
+                    },
                     { data: 'model' },
                     { data: 'count' },
                     { data: 'stock_cost' },
