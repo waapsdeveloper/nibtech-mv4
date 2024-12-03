@@ -71,9 +71,9 @@
         <div class="card-header pb-0">
             Purchse Report
         </div>
-        <div class="card-body" id="purchase_report">
+        <div class="card-body">
             <div class="table-responsive">
-            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+            <table class="table table-bordered table-hover mb-0 text-md-nowrap" id="purchase_report">
                 <thead>
                     <tr>
                         <th><small><b>No</b></small></th>
