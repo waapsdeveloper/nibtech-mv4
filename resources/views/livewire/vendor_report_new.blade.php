@@ -126,7 +126,7 @@
                                 @php
                                     $j++;
 
-                                    $stock_ids = implode(",",$value->pluck('id')->toArray());
+                                    $imeis = implode(" ", [implode(" ",$value->pluck('imei')->unique()->toArray()), implode(" ",$value->pluck('serial_number')->unique()->toArray())]);
                                 @endphp
                                 <tr class="">
                                     <td>{{ ++$i }}</td>
@@ -137,7 +137,7 @@
                                         <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                         <div class="dropdown-menu">
                                             <a class="dropdown-item" id="test{{$j}}" href="#">Open All</a>
-                                            <a class="dropdown-item" id="change_entry_message_{{$j}}" href="#" onclick="if(prompt('Please enter new message') != null){window.location.href = '{{ url('change_entry_message') }}?stock_ids={{ $stock_ids }}&message='+prompt('Please enter new message')}"
+                                            <a class="dropdown-item" id="change_entry_message_{{$j}}" href="#" onclick="var newMessage = prompt('Please enter new message'); if(newMessage != null){window.location.href = '{{ url('move_inventory/change_grade/1') }}?imei={{ $imeis }}&description='+newMessage}"
                                             >Change All</a>
                                         </div>
                                     </td>
