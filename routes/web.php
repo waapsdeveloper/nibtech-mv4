@@ -113,6 +113,7 @@ Route::post('report/stock_report', [Report::class,'stock_report'])->name('stock_
 Route::get('report/ecommerce_report', [Report::class,'ecommerce_report'])->name('ecommerce_report');
 Route::post('report/pnl', [Report::class,'pnl'])->name('pnl');
 Route::get('report/vendor_report/{vendor_id}', [Report::class,'vendor_report'])->name('vendor_report');
+Route::get('vendor_purchase_report/{vendor_id}', [Report::class,'vendor_purchase_report'])->name('vendor_purchase_report');
 
 Route::get('return', SalesReturn::class)->name('view_return');
 Route::get('add_return', [SalesReturn::class,'add_return'])->name('add_return');
