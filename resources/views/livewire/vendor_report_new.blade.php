@@ -260,6 +260,7 @@
                     { data: 'action' },
                 ],
                 paging: false,
+
             });
 
             $('#repair_report').DataTable({
