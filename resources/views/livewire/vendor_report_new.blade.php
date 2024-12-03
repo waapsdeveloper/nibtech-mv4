@@ -245,6 +245,7 @@
                     { data: 'count' },
                     { data: 'stock_cost' },
                 ],
+                paging: false,
             });
 
 
