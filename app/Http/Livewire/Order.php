@@ -577,6 +577,10 @@ class Order extends Component
 
         $orderItem = Order_item_model::find($item_id);
 
+        if($orderItem == null){
+            session()->put('error', "Order Item not found");
+            return redirect()->back();
+        }
         if($orderItem->stock->status == 2){
             session()->put('error', "Order Item cannot be deleted");
             return redirect()->back();
