@@ -285,7 +285,7 @@ class SalesReturn extends Component
     public function add_return(){
         $last_order = Order_model::where('order_type_id',4)->orderBy('id','desc')->first();
         if($last_order == null){
-            $ref = 3001;
+            $ref = 2998;
         }else{
             $ref = $last_order->reference_id+1;
             if($last_order->order_items->count() == 0){

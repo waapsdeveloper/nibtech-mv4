@@ -419,7 +419,7 @@ class Order extends Component
     {
 
         $data['title_page'] = "Purchases";
-        $data['latest_reference'] = Order_model::where('order_type_id',1)->orderBy('reference_id','DESC')->first()->reference_id ?? 10000;
+        $data['latest_reference'] = Order_model::where('order_type_id',1)->orderBy('reference_id','DESC')->first()->reference_id ?? 9998;
         $data['vendors'] = Customer_model::where('is_vendor',1)->pluck('first_name','id');
         $data['order_statuses'] = Order_status_model::get();
         if(request('per_page') != null){
