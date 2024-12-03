@@ -234,6 +234,7 @@
     <script>
         function open_all(imeis){
             imei_list = $(imeis).text().trim().split(/\s+/);
+            console.log(imei_list);
             imei_list.forEach(imei => {
                 window.open("{{ url('imei') }}?imei="+imei, '_blank');
             });
