@@ -245,12 +245,6 @@
                     { data: 'count' },
                     { data: 'stock_cost' },
                 ],
-                "order": [[ 0, "desc" ]],
-                "pageLength": "All",
-                "language": {
-                    "emptyTable": "No data available in table"
-                }
-
             });
 
 
