@@ -70,7 +70,8 @@
         <div class="card-header pb-0">
             Purchse Report
         </div>
-        <div class="card-body"><div class="table-responsive">
+        <div class="card-body" id="purchase_report">
+            <div class="table-responsive">
             <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                 <thead>
                     <tr>
@@ -84,16 +85,14 @@
                     @php
                         $i = 0;
                     @endphp
-                    @foreach ($purchase_report as $summery)
+                    {{-- @foreach ($purchase_report as $summery)
                         <tr>
                             <td>{{ $i++ }}</td>
-                            {{-- <td>{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</td> --}}
                             <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#graded_count_modal">{{ $summery['model'] }}</a></td>
                             <td>{{ $summery['sold_stock_count'] ." + ". $summery['available_stock_count'] ." = ". $summery['sold_stock_count'] + $summery['available_stock_count'] }}</td>
                             <td>€ {{ amount_formatter($summery['stock_cost']) }}</td>
                         </tr>
-                        {{-- @endif --}}
-                    @endforeach
+                    @endforeach --}}
                 </tbody>
 
             </table>
@@ -102,7 +101,7 @@
 
     <div class="row p-3">
 
-        <div class="card col-6">
+        {{-- <div class="card col-6">
             <div class="card-header m-0">
                 <h4 class="card-title mb-0">RMA Report</h4>
 
@@ -222,11 +221,28 @@
 
 
             </div>
-        </div>
+        </div> --}}
     </div>
 
     @endsection
 
     @section('scripts')
+    <script>
+        $(document).ready(function() {
+            let start_date = {{ request('start_date') ? request('start_date') : 'null' }};
+            let end_date = {{ request('end_date') ? request('end_date') : 'null' }};
 
+            $('#purchase_report').DataTable(
+                ajax: {
+                    url: "{{ route('vendor_purchase_report').'/'.$vendor->id }}?start_date="+start_date+"&end_date="+end_date,
+                }
+                columns: [
+                    { data: 'id' },
+                    { data: 'model' },
+                    { data: 'stock_count' },
+                    { data: 'stock_cost' },
+                ]
+
+            );
+        });
     @endsection
