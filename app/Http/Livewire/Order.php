@@ -2498,6 +2498,10 @@ class Order extends Component
 
                 $return_order = Order_model::where(['order_type_id'=>4,'status'=>1])->first();
             }
+            if(!$return_order){
+                $return_order = Order_model::where(['order_type_id'=>4,'status'=>1])->first();
+            }
+
             $check_return = Order_item_model::where(['linked_id'=>$item->id, 'reference_id'=>$item->order->reference_id])->first();
             if($check_return != null){
                 $return_order = $check_return->order;
