@@ -233,8 +233,9 @@
     <script src="{{ asset('assets/DataTables/datatables.min.js') }}"></script>
     <script>
         function open_all(imeis){
-            imei_list = $(imeis).text().trim().split(/\s+/);
+            let imei_list = imeis.split(" ");
             console.log(imei_list);
+            console.log(imeis);
             imei_list.forEach(imei => {
                 window.open("{{ url('imei') }}?imei="+imei, '_blank');
             });
