@@ -218,7 +218,7 @@ class Repair extends Component
 
         $data['all_variations'] = Variation_model::where('grade',9)->get();
         $data['process'] = Order_model::find($process_id);
-        $data['currency'] = $data['process']->currency_id->sign;
+        $data['currency'] = $data['process']->currency_id->sign ?? 4;
 
         $data['previous_repairs'] = Process_model::where('id','!=',$process_id)->where('process_type_id',9)->orderBy('id','desc')->pluck('id');
         // $data['imei'] = request('imei');
