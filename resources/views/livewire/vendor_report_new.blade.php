@@ -246,4 +246,5 @@
 
 
         });
+    </script>
     @endsection
