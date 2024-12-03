@@ -1239,7 +1239,7 @@ class Report extends Component
         ->get()
         ->groupBy('latest_operation.description');
 
-        $rma_report = $rma_report;
+        $rma_report = $rma_report->toArray();
 
         return response()->json($rma_report);
     }
