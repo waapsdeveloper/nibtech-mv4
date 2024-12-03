@@ -237,13 +237,8 @@
             $('#purchase_report').DataTable({
                 ajax: {
                     url: "{{ url('vendor_purchase_report').'/'.$vendor->id }}?start_date="+start_date+"&end_date="+end_date,
+                    dataSrc: ''
                 },
-                columns: [
-                    { data: 'id' },
-                    { data: 'model' },
-                    { data: 'stock_count' },
-                    { data: 'stock_cost' },
-                ]
             });
 
 
