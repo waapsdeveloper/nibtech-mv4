@@ -1204,17 +1204,19 @@ class Report extends Component
         })->orderBy('product_id')->orderBy('storage')->get();
 
         $result = [];
+        $i = 0;
         foreach($product_storage_sort as $pss){
             $product = $pss->product;
             $storage = $pss->storage_id->name ?? null;
 
             $datas = [];
+            $datas['sr_no'] = ++$i;
             $datas['pss_id'] = $pss->id;
             $datas['model'] = $product->model.' '.$storage;
             $datas['available_stock_count'] = $pss->stocks->whereIn('order_id',$order_ids)->where('status',1)->count();
             $datas['sold_stock_count'] = $pss->stocks->whereIn('order_id',$order_ids)->where('status',2)->count();
             $datas['count'] = $datas['available_stock_count'] . ' + ' . $datas['sold_stock_count'] . ' = ' . ($datas['available_stock_count'] + $datas['sold_stock_count']);
-            $datas['stock_cost'] = $pss->stocks->whereIn('order_id',$order_ids)->sum('purchase_item.price');
+            $datas['stock_cost'] = amount_formatter($pss->stocks->whereIn('order_id',$order_ids)->sum('purchase_item.price'));
 
             $result[] = $datas;
         }
