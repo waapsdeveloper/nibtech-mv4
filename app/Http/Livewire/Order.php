@@ -2493,7 +2493,7 @@ class Order extends Component
             }
 
             if($london == 1){
-                $return_order = Order_model::find(8827);
+                $return_order = Order_model::where(['reference_id'=>2999,'order_type_id'=>4])->first();
             }else{
 
                 $return_order = Order_model::where(['order_type_id'=>4,'status'=>1])->first();
@@ -2585,7 +2585,7 @@ class Order extends Component
             $stock->save();
 
             $order_item = new Order_item_model();
-            $order_item->order_id = 8974;
+            $order_item->order_id = Order_model::where(['reference_id'=>999,'order_type_id'=>5])->first()->id;
             $order_item->reference_id = $item->order->reference_id;
             $order_item->care_id = $item->id;
             if($allowed == 0){
