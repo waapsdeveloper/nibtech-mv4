@@ -267,7 +267,7 @@
                     { data: 'sr_no' },
                     { data: 'description' },
                     { data: 'count' },
-                    { data: 'action' },
+                    { data: 'actions' },
                 ],
 
             });
