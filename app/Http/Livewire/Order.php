@@ -943,15 +943,15 @@ class Order extends Component
         $arrayLower = array_map('strtolower', $dh);
         // Search for the lowercase version of the search value in the lowercase array
         $name = array_search('name', $arrayLower);
-        if(!$name){
-            print_r($dh);
-            session()->put('error', "Heading not Found(name, imei, cost)");
-            return redirect()->back();
-        }
         // echo $name;
         $imei = array_search('imei', $arrayLower);
         // echo $imei;
         $cost = array_search('cost', $arrayLower);
+        if(!$name || !$imei || !$cost){
+            print_r($dh);
+            session()->put('error', "Heading not Found(name, imei, cost)");
+            return redirect()->back();
+        }
         if(!is_numeric($data[1][$cost])){
             session()->put('error', "Formula in Cost is not Allowed");
             return redirect()->back();
