@@ -233,11 +233,11 @@
     <script src="{{ asset('assets/DataTables/datatables.min.js') }}"></script>
     <script>
         function open_all(imeis){
-            // let imei_list = imeis.split(" ");
             // console.log(imei_list);
             console.log(imeis);
+            let imei_list = imeis.split(" ");
             imei_list.forEach(imei => {
-                window.open("{{ url('imei') }}?imei="+imei, '_blank');
+                window.open("{{ url('imei') }}?imei=" + imei, '_blank');
             });
         }
 
