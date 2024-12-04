@@ -234,19 +234,21 @@
                 <div class="card">
                     <div class="card-header pb-0">
                         <div class="d-flex justify-content-between">
-                            {{-- <h4 class="card-title mg-b-0">
+                            <h4 class="card-title mg-b-0">
+                                @if (session('user')->hasPermission('delete_multiple_moves'))
 
-                                <form id="pdf" method="POST" action="{{url('move_inventory/delete_multiple_moves')}}">
-                                    @csrf
-                                    <input type="hidden" name="grade" value="{{ session('grade') }}">
-                                    <input type="hidden" name="description" value="{{ session('description') }}">
-                                    <label>
-                                        <input type="checkbox" id="checkAll" onclick="checkAlls()"> Check All
-                                    </label>
-                                    <input class="btn btn-sm btn-secondary" type="submit" value="Delete Selected">
+                                    <form id="pdf" method="POST" action="{{url('move_inventory/delete_multiple_moves')}}">
+                                        @csrf
+                                        <input type="hidden" name="grade" value="{{ session('grade') }}">
+                                        <input type="hidden" name="description" value="{{ session('description') }}">
+                                        <label>
+                                            <input type="checkbox" id="checkAll" onclick="checkAlls()"> Check All
+                                        </label>
+                                        <input class="btn btn-sm btn-secondary" type="submit" value="Delete Selected">
 
-                                </form>
-                            </h4> --}}
+                                    </form>
+                                @endif
+                            </h4>
 
                             <h5 class="card-title mg-b-0">
                                 @if (request('search') == '')
@@ -292,7 +294,9 @@
                             <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                                 <thead>
                                     <tr>
-                                        {{-- <th><small><b></b></small></th> --}}
+                                        @if (session('user')->hasPermission('delete_multiple_moves'))
+                                        <th><small><b></b></small></th>
+                                        @endif
                                         <th><small><b>No</b></small></th>
                                         <th><small><b>Old Variation</b></small></th>
                                         <th><small><b>New Variation</b></small></th>
@@ -326,7 +330,10 @@
                                             @endif
                                         @endif
                                             <tr>
-                                                {{-- <td><input type="checkbox" name="ids[]" value="{{ $operation->id }}" form="pdf"></td> --}}
+
+                                                @if (session('user')->hasPermission('delete_multiple_moves'))
+                                                <td><input type="checkbox" name="ids[]" value="{{ $operation->id }}" form="pdf"></td>
+                                                @endif
                                                 <td title="{{ $operation->id }}">{{ $i + 1 }}</td>
                                                 <td>
                                                     @if ($operation->old_variation ?? false)
