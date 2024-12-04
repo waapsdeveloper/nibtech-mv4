@@ -232,14 +232,20 @@
     @section('scripts')
     <script src="{{ asset('assets/DataTables/datatables.min.js') }}"></script>
     <script>
-        function open_all(imeis){
-            // console.log(imei_list);
-            console.log(imeis);
+        function open_all(imeis) {
+            console.log("IMEIs:", imeis);
+
+            if (typeof imeis !== "string") {
+                console.error("Invalid imeis: Expected a string, got", typeof imeis);
+                return;
+            }
+
             let imei_list = imeis.split(" ");
             imei_list.forEach(imei => {
                 window.open("{{ url('imei') }}?imei=" + imei, '_blank');
             });
         }
+
 
 
         $(document).ready(function() {
