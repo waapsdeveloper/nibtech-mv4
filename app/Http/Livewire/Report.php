@@ -1310,7 +1310,7 @@ class Report extends Component
 
 
 
-        return response()->json($repair_report);
+        return response()->json($data);
     }
 
     public function export_report()
