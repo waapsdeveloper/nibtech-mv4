@@ -290,9 +290,9 @@
                 },
                 columns: [
                     { data: 'sr_no' },
-                    { data: 'message' },
+                    { data: 'description' },
                     { data: 'count' },
-                    { data: 'action' },
+                    { data: 'actions' },
                 ],
                 paging: false,
             });
