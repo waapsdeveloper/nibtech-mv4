@@ -237,7 +237,7 @@
             console.log(imeis);
             let imei_list = imeis.split(" ");
             imei_list.forEach(imei => {
-                window.open("{{ url('imei') }}?imei="+imei, '_blank');
+                window.open("{{ url('imei') }}?imei=" + imei, '_blank');
             });
         }
 
