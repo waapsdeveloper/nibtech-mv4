@@ -233,7 +233,7 @@
     <script src="{{ asset('assets/DataTables/datatables.min.js') }}"></script>
     <script>
         function open_all(imeis = []) {
-            console.log("IMEIs:", imeis);
+            // console.log("IMEIs:", imeis);
 
             imeis.forEach(imei => {
                 window.open("{{ url('imei') }}?imei=" + imei, '_blank');
