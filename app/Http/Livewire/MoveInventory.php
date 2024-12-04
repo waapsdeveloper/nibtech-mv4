@@ -249,8 +249,27 @@ class MoveInventory extends Component
         return redirect()->back();
 
     }
-    public function delete_move(){
-        $id = request('id');
+    public function edit_description($id = null){
+        if(session('user')->hasPermission('edit_stock_operation_description')){
+            if($id == null){
+                $id = request('id');
+            }
+            $ids = explode(' ',$id);
+            foreach($ids as $id){
+                $stock_operation = Stock_operations_model::find($id);
+                $stock_operation->description = request('description');
+                $stock_operation->save();
+            }
+            session()->put('success', 'Description Updated Successfully');
+        }else{
+            session()->put('error', 'Permission Denied');
+        }
+        return redirect()->back();
+    }
+    public function delete_move($id = null){
+        if($id == null){
+            $id = request('id');
+        }
         if(request('grade')){
             session()->put('grade',request('grade'));
         }
@@ -278,28 +297,37 @@ class MoveInventory extends Component
 
     }
     public function delete_multiple_moves(){
-
-        $operations = Stock_operations_model::where('description','LIKE','%Storage changed%')->pluck('stock_id')->unique();
-
-        $stocks = Stock_model::whereIn('id',$operations)->get();
-
-        foreach($stocks as $stock){
-            $new_variation_ids = $stock->stock_operations->pluck('new_variation_id')->unique()->toArray();
-            $old_variation_ids = $stock->stock_operations->pluck('old_variation_id')->unique()->toArray();
-
-            $array = $new_variation_ids + $old_variation_ids;
-            $array = array_unique($array);
-
-            print_r($array);
-            echo "<br>";
-            print_r($new_variation_ids);
-            echo "<br>";
-            print_r($old_variation_ids);
-            echo "<br>";
-            echo "<br>";
-
-
+        if(session('user')->hasPermission('delete_multiple_moves')){
+            $ids = request('ids');
+            foreach($ids as $id){
+                $this->delete_move($id);
+            }
+            session()->put('success', 'Stock Sent Back Successfully');
+        }else{
+            session()->put('error', 'Permission Denied');
         }
+
+        // $operations = Stock_operations_model::where('description','LIKE','%Storage changed%')->pluck('stock_id')->unique();
+
+        // $stocks = Stock_model::whereIn('id',$operations)->get();
+
+        // foreach($stocks as $stock){
+        //     $new_variation_ids = $stock->stock_operations->pluck('new_variation_id')->unique()->toArray();
+        //     $old_variation_ids = $stock->stock_operations->pluck('old_variation_id')->unique()->toArray();
+
+        //     $array = $new_variation_ids + $old_variation_ids;
+        //     $array = array_unique($array);
+
+        //     print_r($array);
+        //     echo "<br>";
+        //     print_r($new_variation_ids);
+        //     echo "<br>";
+        //     print_r($old_variation_ids);
+        //     echo "<br>";
+        //     echo "<br>";
+
+
+        // }
         // $ids = request('ids');
         // if(request('grade')){
         //     session()->put('grade',request('grade'));
@@ -319,9 +347,7 @@ class MoveInventory extends Component
         //     }
         // }
 
-
-        // session()->put('success', 'Stock Sent Back Successfully');
-        // return redirect()->back();
+        return redirect()->back();
 
     }
 
