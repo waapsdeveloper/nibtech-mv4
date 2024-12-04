@@ -1246,7 +1246,7 @@ class Report extends Component
             $datas = [];
             $j++;
 
-            $imeis = implode(",", [implode(",",$value->pluck('imei')->unique()->toArray()), implode(",",$value->pluck('serial_number')->unique()->toArray())]);
+            $imeis = implode(" ", [implode(" ",$value->pluck('imei')->unique()->toArray()), implode(" ",$value->pluck('serial_number')->unique()->toArray())]);
             $imeis2 = $value->pluck('imei')->unique()->toArray()+$value->pluck('serial_number')->unique()->toArray();
             $datas['sr_no'] = ++$i;
             $datas['description'] = $key;
