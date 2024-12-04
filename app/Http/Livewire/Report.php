@@ -1239,8 +1239,8 @@ class Report extends Component
         ->get()
         ->groupBy('latest_operation.description');
 
-            $i = 0;
-            $j = 0;
+        $i = 0;
+        $j = 0;
         $data = [];
         foreach ($rma_report as $key => $value){
             $datas = [];
@@ -1275,21 +1275,40 @@ class Report extends Component
             });
         })->whereHas('stock_operations.new_variation', function ($q){
             $q->where('grade', 8);
-        // })->whereHas('stock_operations', function ($q){
-        //     $q->whereNotNull('description');
         })->with(['stock_operations'=> function ($q) {
             $q->whereHas('new_variation', function ($qq) {
                 $qq->where('grade',8);
             });
         }])
         ->get();
-
-        // ->groupBy('stock_operations.description');
-
-        // Group the results by the 'description' field of the first related stock_operation
         $repair_report = $repair_report->groupBy(function($stock) {
             return $stock->stock_operations->first()->description ?? 'no_description';
         });
+
+        $i = 0;
+        $j = 0;
+        $data = [];
+        foreach ($repair_report as $key => $value){
+            $datas = [];
+            $j++;
+
+            $imeis = implode(" ", [implode(" ",$value->pluck('imei')->unique()->toArray()), implode(" ",$value->pluck('serial_number')->unique()->toArray())]);
+            $imeis2 = $value->pluck('imei')->unique()->toArray()+$value->pluck('serial_number')->unique()->toArray();
+            $datas['sr_no'] = ++$i;
+            $datas['description'] = $key;
+            $datas['count'] = count($value);
+            $datas['imeis'] = $imeis;
+            $datas['actions'] = '<a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18" style="font-size: 20px;"></i></a>
+            <div class="dropdown-menu">
+                <a class="dropdown-item" id="test'.$j.'" href="#" onClick="open_all('.json_encode($imeis2).')">Open All</a>
+                <a class="dropdown-item" id="change_entry_message_'.$j.'" href="#" onclick="var newMessage = prompt(\'Please enter new message\'); if(newMessage != null){window.location.href = \''.url('move_inventory/change_grade/1').'\?imei='.$imeis.'&description=\'+newMessage}"
+                >Change All</a>
+            </div>';
+
+            $data[] = $datas;
+        }
+
+
 
         return response()->json($repair_report);
     }
