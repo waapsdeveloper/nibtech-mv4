@@ -200,7 +200,8 @@ class Order_item_model extends Model
             // Example:
             // print_r($orderObj);
             // echo "<br>";
-            $orderItem = Order_item_model::firstOrNew(['reference_id' => $itemObj->id]);
+            $order_id = Order_model::where(['reference_id' => $orderObj->order_id])->first()->id;
+            $orderItem = Order_item_model::firstOrNew(['reference_id' => $itemObj->id, 'order_id' => $order_id]);
             $variation = Variation_model::where(['reference_id' => $itemObj->listing_id])->first();
             if($variation == null){
                 // $this->updateBMOrdersAll();
