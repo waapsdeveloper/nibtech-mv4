@@ -12,6 +12,7 @@ use App\Models\Stock_model;
 use App\Models\Storage_model;
 use App\Models\Variation_model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ListingController extends Controller
 {
@@ -218,6 +219,11 @@ class ListingController extends Controller
 
             $bm = new BackMarketAPIController();
             $responses = $bm->getListingCompetitors($variation->reference_uuid);
+            if(is_string($responses) || is_int($responses)){
+                $error = $responses;
+                $error .= " - ".$variation->reference_uuid;
+                Log::error($error);
+            }
             foreach($responses as $list){
                 if(is_string($list) || is_int($list)){
                     $error .= $list;
