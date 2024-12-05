@@ -479,7 +479,7 @@ class IMEI extends Component
         ]);
 
         $order_item = new Order_item_model();
-        $order_item->order_id = 8827;
+        $order_item->order_id = Order_model::where(['reference_id'=> 2999, 'order_type_id'=>4])->first()->id;
         $order_item->reference_id = $item->order->reference_id;
         $order_item->variation_id = $item->variation_id;
         $order_item->stock_id = $stock->id;
