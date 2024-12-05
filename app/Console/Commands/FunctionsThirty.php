@@ -51,7 +51,8 @@ class FunctionsThirty extends Command
                 $variation = Variation_model::where(['reference_id'=>trim($list->listing_id), 'sku' => trim($list->sku)])->first();
                 if($variation == null){
                     // $list = $bm->getOneListing($list->listing_id);
-                    $variation = Variation_model::firstOrNew(['reference_id' => trim($list->listing_id), 'sku' => trim($list->sku)]);
+                    $variation = Variation_model::firstOrNew(['reference_id' => trim($list->listing_id)]);
+                    $variation->sku = trim($list->sku);
                     $variation->name = $list->title;
                     $variation->reference_uuid = $list->id;
                     $variation->grade = (int)$list->state + 1;
