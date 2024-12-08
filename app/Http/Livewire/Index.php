@@ -298,6 +298,144 @@ class Index extends Component
         $data['end_date'] = date("Y-m-d", strtotime($end_date));
         return view('livewire.index')->with($data);
     }
+    public function orders_data(){
+
+        $start_date = Carbon::now()->startOfDay();
+        $end_date = date('Y-m-d 23:59:59');
+        if (request('start_date') != NULL && request('end_date') != NULL) {
+            $start_date = request('start_date') . " 00:00:00";
+            $end_date = request('end_date') . " 23:59:59";
+        }
+        // $products = Products_model::get()->toArray();
+        // Retrieve the top 10 selling products from the order_items table
+        $variation_ids = [];
+        if(request('data') == 1){
+
+            $variation_ids = Variation_model::withoutGlobalScope('Status_not_3_scope')->select('id')
+            ->when(request('product') != '', function ($q) {
+                return $q->where('product_id', '=', request('product'));
+            })
+            ->when(request('sku') != '', function ($q) {
+                return $q->where('sku', 'LIKE', '%'.request('sku').'%');
+            })
+            ->when(request('category') != '', function ($q) {
+                return $q->whereHas('product', function ($qu) {
+                    $qu->where('category', '=', request('category'));
+                });
+            })
+            ->when(request('brand') != '', function ($q) {
+                return $q->whereHas('product', function ($qu) {
+                    $qu->where('brand', '=', request('brand'));
+                });
+            })
+            ->when(request('storage') != '', function ($q) {
+                return $q->where('variation.storage', 'LIKE', request('storage') . '%');
+            })
+            ->when(request('color') != '', function ($q) {
+                return $q->where('variation.color', 'LIKE', request('color') . '%');
+            })
+            ->when(request('grade') != '', function ($q) {
+                return $q->where('variation.grade', 'LIKE', request('grade') . '%');
+            })->pluck('id')->toArray();
+
+        }
+
+        if(session('user')->hasPermission('dashboard_view_total_orders')){
+            $data['total_orders'] = Order_model::whereBetween('created_at', [$start_date, $end_date])->where('order_type_id',3)
+            ->whereHas('order_items', function ($q) use ($variation_ids) {
+                $q->when(request('data') == 1, function($q) use ($variation_ids){
+                    return $q->whereIn('variation_id', $variation_ids);
+                });
+            })
+            ->count();
+
+            $data['pending_orders'] = Order_model::whereBetween('created_at', [$start_date, $end_date])->where('order_type_id',3)->where('status','<',3)
+            ->whereHas('order_items', function ($q) use ($variation_ids) {
+                $q->when(request('data') == 1, function($q) use ($variation_ids){
+                    return $q->whereIn('variation_id', $variation_ids);
+                });
+            })
+            ->count();
+            $data['invoiced_orders'] = Order_model::where('processed_at', '>=', $start_date)->where('processed_at', '<=', $end_date)->where('order_type_id',3)
+            ->whereHas('order_items', function ($q) use ($variation_ids) {
+                $q->when(request('data') == 1, function($q) use ($variation_ids){
+                    return $q->whereIn('variation_id', $variation_ids);
+                });
+            })
+            ->count();
+
+            // Get Invoiced Orders By Hour With Hour Label
+            $data['invoiced_orders_by_hour'] = Order_model::where('processed_at', '>=', $start_date)->where('processed_at', '<=', $end_date)->where('order_type_id',3)
+            ->whereHas('order_items', function ($q) use ($variation_ids) {
+                $q->when(request('data') == 1, function($q) use ($variation_ids){
+                    return $q->whereIn('variation_id', $variation_ids);
+                });
+            })
+            ->selectRaw('HOUR(processed_at) as hour, COUNT(id) as total, processed_by')
+            ->groupBy('hour', 'processed_by')
+            ->get();
+
+            // if(session('user_id') == 1){
+            //     dd($data['invoiced_orders_by_hour']);
+            // }
+            // Get Invoiced Orders By Hour
+
+            $data['invoiced_items'] = Order_item_model::whereHas('order', function ($q) use ($start_date, $end_date) {
+                $q->where('processed_at', '>=', $start_date)->where('processed_at', '<=', $end_date)->where('order_type_id',3);
+            })->where('stock_id','!=',null)
+            ->when(request('data') == 1, function($q) use ($variation_ids){
+                    return $q->whereIn('variation_id', $variation_ids);
+                })
+            ->count();
+            $data['missing_imei'] = Order_item_model::whereHas('order', function ($q) use ($start_date, $end_date) {
+                $q->where('processed_at', '>=', $start_date)->where('processed_at', '<=', $end_date)->where('order_type_id',3);
+            })->where('stock_id',0)->count();
+
+            $data['total_conversations'] = Order_item_model::whereBetween('created_at', [$start_date, $end_date])->where('care_id','!=',null)
+            ->when(request('data') == 1, function($q) use ($variation_ids){
+                return $q->whereIn('variation_id', $variation_ids);
+            })->whereHas('sale_order')->count();
+
+            $data['total_order_items'] = Order_item_model::whereBetween('order_items.created_at', [$start_date, $end_date])
+                ->when(request('data') == 1, function($q) use ($variation_ids){
+                    return $q->whereIn('variation_id', $variation_ids);
+                })
+
+                ->selectRaw('AVG(CASE WHEN orders.currency = 4 THEN order_items.price END) as average_eur')
+                ->selectRaw('SUM(CASE WHEN orders.currency = 4 THEN order_items.price END) as total_eur')
+                ->selectRaw('SUM(CASE WHEN orders.currency = 5 THEN order_items.price END) as total_gbp')
+                ->join('orders', 'order_items.order_id', '=', 'orders.id')
+                ->where('orders.order_type_id',3)
+                ->Where('orders.deleted_at',null)
+                ->Where('order_items.deleted_at',null)
+                ->first();
+
+            $data['ttl_average'] = $data['total_order_items']->average_eur;
+            $data['ttl_eur'] = $data['total_order_items']->total_eur;
+            $data['ttl_gbp'] = $data['total_order_items']->total_gbp;
+
+
+            $data['order_items'] = Order_item_model::whereBetween('orders.processed_at', [$start_date, $end_date])
+                ->when(request('data') == 1, function($q) use ($variation_ids){
+                    return $q->whereIn('variation_id', $variation_ids);
+                })
+
+                ->selectRaw('AVG(CASE WHEN orders.currency = 4 THEN order_items.price END) as average_eur')
+                ->selectRaw('SUM(CASE WHEN orders.currency = 4 THEN order_items.price END) as total_eur')
+                ->selectRaw('SUM(CASE WHEN orders.currency = 5 THEN order_items.price END) as total_gbp')
+                ->join('orders', 'order_items.order_id', '=', 'orders.id')
+                ->where('orders.order_type_id',3)
+                ->Where('orders.deleted_at',null)
+                ->Where('order_items.deleted_at',null)
+                ->first();
+
+            $data['average'] = $data['order_items']->average_eur;
+            $data['total_eur'] = $data['order_items']->total_eur;
+            $data['total_gbp'] = $data['order_items']->total_gbp;
+        }
+
+        return response()->json($data);
+    }
     public function required_restock(){
 
         if(session('user')->hasPermission('dashboard_required_restock')){
