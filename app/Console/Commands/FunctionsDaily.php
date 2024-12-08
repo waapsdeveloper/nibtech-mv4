@@ -51,7 +51,8 @@ class FunctionsDaily extends Command
         foreach($stocks as $stock){
 
             $last_item = $stock->last_item();
-            if(in_array($last_item->order->order_type_id, [3,5])){
+
+            if($last_item->order != null && in_array($last_item->order->order_type_id, [3,5])){
                 $stock->sale_order_id = $last_item->order_id;
                 $stock->save();
             }
