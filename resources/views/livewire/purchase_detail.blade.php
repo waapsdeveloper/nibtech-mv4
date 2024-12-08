@@ -78,7 +78,7 @@
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
-                        <li class="breadcrumb-item tx-15"><a href="{{ url()->previous() }}">Purchase</a></li>
+                        <li class="breadcrumb-item tx-15"><a href="{{ session('previous') }}">Purchase</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Purchase Detail</li>
                     </ol>
                 </div>
