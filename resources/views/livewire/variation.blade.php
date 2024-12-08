@@ -198,7 +198,7 @@
                                   <form class="form-inline" method="POST" action="{{ url('variation/merge').'/'.$product->id }}" id="merge_{{$product->id}}">
                                       @csrf
                                   </form>
-                                  <form method="post" action="javascript:void(0)" data-action="{{url('variation/update_product')}}/{{ $product->id }}" class="row form-inline" onsubmit="updateVariation({{ $product->id }})">
+                                  <form method="post" action="javascript:void(0)" class="row form-inline" onsubmit="updateVariation({{ $product->id }})">
                                       @csrf
                                   <tr>
                                       <td title="{{ $product->id }}">{{ $i + 1 }}</td>
