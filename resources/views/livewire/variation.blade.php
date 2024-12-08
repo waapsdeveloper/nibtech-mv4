@@ -62,8 +62,8 @@
               </div>
           </div>
           <div class="col-md col-sm-6">
-              <select name="color" class="form-control form-select select2" data-bs-placeholder="Select Status">
-                  <option value="">Color</option>
+              <select name="color" class="select2" data-bs-placeholder="Select Status">
+                  {{-- <option value="">Color</option> --}}
                   @foreach ($colors as $color)
                       <option value="{{$color->id}}" @if(isset($_GET['color']) && $color->id == $_GET['color']) {{'selected'}}@endif>{{$color->name}}</option>
                   @endforeach
