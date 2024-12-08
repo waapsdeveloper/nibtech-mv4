@@ -433,7 +433,7 @@
                                                             <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url('order')}}/dispatch_allowed/{{ $order->id }}">
                                                                 @csrf
                                                                 <div class="input-group">
-                                                                    <input type="text" name="tester[]" placeholder="Tester" class="form-control form-control-sm" style="max-width: 50px">
+                                                                    <input type="text" name="tester[]" placeholder="Tester" list="tester_list" class="form-control form-control-sm" style="max-width: 50px">
                                                                     <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm">
 
                                                                     <input type="hidden" name="sku[]" value="{{ $item->variation->sku }}">
@@ -451,7 +451,7 @@
                                                                 @for ($in = 1; $in <= $item->quantity; $in ++)
 
                                                                     <div class="input-group">
-                                                                        <input type="text" name="tester[]" placeholder="Tester" class="form-control form-control-sm" style="max-width: 50px">
+                                                                        <input type="text" name="tester[]" list="tester_list" placeholder="Tester" class="form-control form-control-sm" style="max-width: 50px">
                                                                         <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm" required>
                                                                     </div>
                                                                 <input type="hidden" name="sku[]" value="{{ $item->variation->sku }}">
@@ -466,7 +466,7 @@
                                                                 @for ($in = 1; $in <= count($items); $in ++)
 
                                                                     <div class="input-group">
-                                                                        <input type="text" name="tester[]" placeholder="Tester" class="form-control form-control-sm" style="max-width: 50px">
+                                                                        <input type="text" name="tester[]" list="tester_list" placeholder="Tester" class="form-control form-control-sm" style="max-width: 50px">
                                                                         <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm" required title="for SKU:{{ $items[$in-1]->variation->sku }}">
                                                                     </div>
                                                                 <input type="hidden" name="sku[]" value="{{ $items[$in-1]->variation->sku }}">
@@ -474,6 +474,12 @@
                                                                 <div class="w-100">
                                                                     <input type="submit" name="imei_send" value="Submit IMEIs" class="form-control form-control-sm w-100" form="dispatch_{{ $i."_".$j }}">
                                                                 </div>
+
+                                                                <datalist id="tester_list">
+                                                                    @foreach ($testers as $tester)
+                                                                        <option value="{{ $tester }}">
+                                                                    @endforeach
+                                                                </datalist>
                                                             </form>
                                                         @endif
                                                     @endif
