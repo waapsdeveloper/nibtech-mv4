@@ -198,7 +198,7 @@
                                   <form class="form-inline" method="POST" action="{{ url('variation/merge').'/'.$product->id }}" id="merge_{{$product->id}}">
                                       @csrf
                                   </form>
-                                  <form method="post" action="{{url('variation/update_product')}}/{{ $product->id }}" class="row form-inline" id="update_variation_form">
+                                  <form method="post" action="{{url('variation/update_product')}}/{{ $product->id }}" class="row form-inline" onsubmit="updateVariation()">
                                       @csrf
                                   <tr>
                                       <td title="{{ $product->id }}">{{ $i + 1 }}</td>
@@ -299,29 +299,29 @@
 
 @section('scripts')
   <script>
+    function updateVariation(){
+        var form = $(this);
+        var url = form.attr('action');
+        var data = form.serialize();
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: data,
+            success: function(response){
+                if(response.status == 'success'){
+                    alert('Updated');
+                }else{
+                    alert('Failed');
+                }
+            }
+        });
+    }
+
       $(document).ready(function(){
         $('.select2').each(function () {
             $(this).select2({
                 theme: 'bootstrap-5',
                 dropdownParent: $(this).parent(),
-            });
-        });
-        $('#update_variation_form').on('submit', function(e){
-            e.preventDefault();
-            var form = $(this);
-            var url = form.attr('action');
-            var data = form.serialize();
-            $.ajax({
-                url: url,
-                type: 'POST',
-                data: data,
-                success: function(response){
-                    if(response.status == 'success'){
-                        alert('Updated');
-                    }else{
-                        alert('Failed');
-                    }
-                }
             });
         });
       });
