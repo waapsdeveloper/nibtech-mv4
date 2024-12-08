@@ -57,8 +57,8 @@
           </div>
           <div class="col-md col-sm-6">
               <div class="form-floating">
-                  <input type="text" class="form-control" name="sku" id="sku" placeholder="Enter IMEI" value="@isset($_GET['sku']){{$_GET['sku']}}@endisset">
-                  <label for="sku">SKU</label>
+                  <input type="text" class="form-control" name="sku" placeholder="Enter IMEI" value="@isset($_GET['sku']){{$_GET['sku']}}@endisset">
+                  <label for="">SKU</label>
               </div>
           </div>
           <div class="col-md col-sm-6">
@@ -198,14 +198,13 @@
                                   <form class="form-inline" method="POST" action="{{ url('variation/merge').'/'.$product->id }}" id="merge_{{$product->id}}">
                                       @csrf
                                   </form>
-                                  <form method="post" action="javascript:void(0);" class="row form-inline" onsubmit="updateVariation({{ $product->id }});" id="update_variation_{{ $product->id }}">
-                                    <input type="submit" style="display: none;" form="update_variation_{{ $product->id }}">
+                                  <form method="post" action="{{url('variation/update_product')}}/{{ $product->id }}" class="row form-inline">
                                       @csrf
                                   <tr>
                                       <td title="{{ $product->id }}">{{ $i + 1 }}</td>
                                       <td>{{ $product->reference_id }}</td>
                                       <td>
-                                          <select name="update[product_id]" class="form-select form-select-sm" id="perPage" form="update_variation_{{ $product->id }}" onchange="this.form.submit()">
+                                          <select name="update[product_id]" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
                                               <option value="">None</option>
                                               @foreach ($products as $prod)
                                                   <option value="{{ $prod->id }}" {{ $product->product_id == $prod->id ? 'selected' : '' }}>{{ $prod->series." ".$prod->model }}</option>
@@ -232,7 +231,7 @@
                                           @endif
                                       </td>
                                       <td>
-                                          <select name="update[color]" class="form-select form-select-sm" form="update_variation_{{ $product->id }}" onchange="this.form.submit()">
+                                          <select name="update[color]" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
                                               <option value="">None</option>
                                               @foreach ($colors as $color)
                                                 @if ($model_colors->contains($color->id))
@@ -249,7 +248,7 @@
                                           </select>
                                       </td>
                                       <td>
-                                          <select name="update[storage]" class="form-select form-select-sm" form="update_variation_{{ $product->id }}" onchange="this.form.submit()">
+                                          <select name="update[storage]" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
                                               <option value="">None</option>
                                               @foreach ($storages as $storage)
                                                   <option value="{{ $storage->id }}" {{ $product->storage == $storage->id ? 'selected' : '' }}>{{ $storage->name }}</option>
@@ -257,7 +256,7 @@
                                           </select>
                                       </td>
                                       <td>
-                                        <select name="update[grade]" class="form-select form-select-sm" form="update_variation_{{ $product->id }}" onchange="this.form.submit()">
+                                        <select name="update[grade]" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
                                           <option value="">None</option>
                                           @foreach ($grades as $grade)
                                             <option value="{{ $grade->id }}" {{ $product->grade == $grade->id ? 'selected' : '' }}>{{ $grade->name }}</option>
@@ -265,7 +264,7 @@
                                         </select>
                                       </td>
                                       <td>
-                                          <select name="update[sub_grade]" class="form-select form-select-sm" form="update_variation_{{ $product->id }}" onchange="this.form.submit()">
+                                          <select name="update[sub_grade]" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
                                               <option value="">None</option>
                                               @foreach ($grades as $grade)
                                                   <option value="{{ $grade->id }}" {{ $product->sub_grade == $grade->id ? 'selected' : '' }}>{{ $grade->name }}</option>
@@ -300,23 +299,14 @@
 
 @section('scripts')
   <script>
-    function updateVariation(id){
-        var form = $('#update_variation_'+id);
-        var url = "{{url('variation/update_product')}}/"+id;
-        var data = form.serialize();
-        $.ajax({
-            url: url,
-            type: 'POST',
-            data: data,
-            success: function(response){
-                if(response.status == 'success'){
-                    alert('Updated');
-                }else{
-                    alert('Failed');
-                }
-            }
+      $(document).ready(function(){
+        $('.select2').each(function () {
+            $(this).select2({
+                theme: 'bootstrap-5',
+                dropdownParent: $(this).parent(),
+            });
         });
-    }
+      });
   </script>
   <!--Internal Sparkline js -->
   <script src="{{asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js')}}"></script>
