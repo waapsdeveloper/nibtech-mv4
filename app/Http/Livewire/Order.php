@@ -620,7 +620,7 @@ class Order extends Component
         if(url()->previous() == url('purchase')){
             session()->put('previous', url()->previous());
         }
-        var_dump(session('previous'));
+        print_r(session('previous'));
 
         DB::statement("SET SESSION group_concat_max_len = 1000000;");
         $data['title_page'] = "Purchase Detail";
