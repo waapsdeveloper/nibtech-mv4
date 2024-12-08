@@ -618,9 +618,9 @@ class Order extends Component
     }
     public function purchase_detail($order_id){
         if(url()->previous() == url('purchase')){
-            session()->put('back', url()->previous());
+            session()->put('previous', url()->previous());
         }
-        var_dump(session('back'));
+        var_dump(session('previous'));
 
         DB::statement("SET SESSION group_concat_max_len = 1000000;");
         $data['title_page'] = "Purchase Detail";
