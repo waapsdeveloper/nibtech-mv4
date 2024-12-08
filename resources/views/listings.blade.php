@@ -413,7 +413,8 @@
             let grades = {!! json_encode($grades) !!};
             let eurToGbp = {!! json_encode($eur_gbp) !!};
 
-            fetchVariations(); // Fetch variations on page load
+            let page = new URL(window.location.href).searchParams.get('page') || 1;
+            fetchVariations(page); // Fetch variations on page load
 
             function fetchVariations(page = 1) {
                 // Collect form data or input values to create query parameters
