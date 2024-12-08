@@ -301,7 +301,7 @@
   <script>
     function updateVariation(id){
         var form = $(this);
-        var url = "{{url('variation/update_product')}}"+'/'+id;
+        var url = "{{url('variation/update_product')}}/"+id;
         var data = form.serialize();
         $.ajax({
             url: url,
