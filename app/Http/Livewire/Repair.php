@@ -175,6 +175,9 @@ class Repair extends Component
     public function repair_detail($process_id){
 
 
+        if(str_contains(url()->previous(),url('repair'))){
+            session()->put('previous', url()->previous());
+        }
         $data['title_page'] = "Repair Detail";
         // $data['imeis'] = Stock_model::whereIn('status',[1,3])->orderBy('serial_number','asc')->orderBy('imei','asc')->get();
         if(request('per_page') != null){

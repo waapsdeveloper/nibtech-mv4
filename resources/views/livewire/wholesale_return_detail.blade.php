@@ -65,6 +65,7 @@
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
+                        <li class="breadcrumb-item tx-15"><a href="{{ session('previous')}}">BulkSale Return</a></li>
                         <li class="breadcrumb-item active" aria-current="page">BulkSale Return Detail</li>
                     </ol>
                 </div>
