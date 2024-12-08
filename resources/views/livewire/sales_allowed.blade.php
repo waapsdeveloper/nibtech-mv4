@@ -439,6 +439,11 @@
                                                                     <input type="hidden" name="sku[]" value="{{ $item->variation->sku }}">
 
                                                                     <div class="input-group-append">
+                                                                        <datalist id="tester_list">
+                                                                            @foreach ($testers as $tester)
+                                                                                <option value="{{ $tester }}">
+                                                                            @endforeach
+                                                                        </datalist>
                                                                         <input type="submit" name="imei_send" value=">" class="form-control form-control-sm" form="dispatch_{{ $i."_".$j }}">
                                                                     </div>
 
@@ -457,6 +462,11 @@
                                                                 <input type="hidden" name="sku[]" value="{{ $item->variation->sku }}">
                                                                 @endfor
                                                                 <div class="w-100">
+                                                                    <datalist id="tester_list">
+                                                                        @foreach ($testers as $tester)
+                                                                            <option value="{{ $tester }}">
+                                                                        @endforeach
+                                                                    </datalist>
                                                                     <input type="submit" name="imei_send" value="Submit IMEIs" class="form-control form-control-sm w-100" form="dispatch_{{ $i."_".$j }}">
                                                                 </div>
                                                             </form>
@@ -472,14 +482,14 @@
                                                                 <input type="hidden" name="sku[]" value="{{ $items[$in-1]->variation->sku }}">
                                                                 @endfor
                                                                 <div class="w-100">
+                                                                    <datalist id="tester_list">
+                                                                        @foreach ($testers as $tester)
+                                                                            <option value="{{ $tester }}">
+                                                                        @endforeach
+                                                                    </datalist>
                                                                     <input type="submit" name="imei_send" value="Submit IMEIs" class="form-control form-control-sm w-100" form="dispatch_{{ $i."_".$j }}">
                                                                 </div>
 
-                                                                <datalist id="tester_list">
-                                                                    @foreach ($testers as $tester)
-                                                                        <option value="{{ $tester }}">
-                                                                    @endforeach
-                                                                </datalist>
                                                             </form>
                                                         @endif
                                                     @endif
