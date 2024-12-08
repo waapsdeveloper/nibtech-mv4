@@ -173,6 +173,9 @@ class Wholesale_return extends Component
     }
     public function wholesale_return_detail($order_id){
 
+        if(str_contains(url()->previous(),url('wholesale_return'))){
+            session()->put('previous', url()->previous());
+        }
         $data['title_page'] = "Return Detail";
 
         $data['vendors'] = Customer_model::where('is_vendor',2)->pluck('company','id');
