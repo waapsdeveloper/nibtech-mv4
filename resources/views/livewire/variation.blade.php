@@ -192,6 +192,9 @@
                                   $i = $variations->firstItem() - 1;
                               @endphp
                               @foreach ($variations as $index => $product)
+                                @php
+                                    $model_colors = $product->same_products->pluck('color')->unique();
+                                @endphp
                                   <form class="form-inline" method="POST" action="{{ url('variation/merge').'/'.$product->id }}" id="merge_{{$product->id}}">
                                       @csrf
                                   </form>
@@ -231,6 +234,16 @@
                                           <select name="update[color]" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
                                               <option value="">None</option>
                                               @foreach ($colors as $color)
+                                                @if ($model_colors->contains($color->id))
+                                                  @continue
+                                                  <option value="{{ $color->id }}" {{ $product->color == $color->id ? 'selected' : '' }}>{{ $color->name }}</option>
+
+                                                @endif
+                                              @endforeach
+                                              @foreach ($colors as $color)
+                                                @if ($model_colors->contains($color->id))
+                                                  @continue
+                                                @endif
                                                   <option value="{{ $color->id }}" {{ $product->color == $color->id ? 'selected' : '' }}>{{ $color->name }}</option>
                                               @endforeach
                                           </select>
