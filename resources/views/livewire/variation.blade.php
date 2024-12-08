@@ -198,7 +198,7 @@
                                   <form class="form-inline" method="POST" action="javascript:void(0)" data-action="{{ url('variation/merge').'/'.$product->id }}" id="merge_{{$product->id}}">
                                       @csrf
                                   </form>
-                                  <form method="post" action="{{url('variation/update_product')}}/{{ $product->id }}" class="row form-inline" onsubmit="updateVariation()">
+                                  <form method="post" action="javascript:void(0)" data-action="{{url('variation/update_product')}}/{{ $product->id }}" class="row form-inline" onsubmit="updateVariation()">
                                       @csrf
                                   <tr>
                                       <td title="{{ $product->id }}">{{ $i + 1 }}</td>
@@ -316,15 +316,6 @@
             }
         });
     }
-
-      $(document).ready(function(){
-        $('.select2').each(function () {
-            $(this).select2({
-                theme: 'bootstrap-5',
-                dropdownParent: $(this).parent(),
-            });
-        });
-      });
   </script>
   <!--Internal Sparkline js -->
   <script src="{{asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js')}}"></script>
