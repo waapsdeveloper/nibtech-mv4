@@ -195,7 +195,7 @@
                                 @php
                                     $model_colors = $product->same_products->pluck('color')->unique();
                                 @endphp
-                                  <form class="form-inline" method="POST" action="{{ url('variation/merge').'/'.$product->id }}" id="merge_{{$product->id}}">
+                                  <form class="form-inline" method="POST" action="javascript:void(0)" data-action="{{ url('variation/merge').'/'.$product->id }}" id="merge_{{$product->id}}">
                                       @csrf
                                   </form>
                                   <form method="post" action="{{url('variation/update_product')}}/{{ $product->id }}" class="row form-inline" onsubmit="updateVariation()">
@@ -301,9 +301,8 @@
   <script>
     function updateVariation(){
         var form = $(this);
-        var url = form.attr('action');
+        var url = form.data('action');
         var data = form.serialize();
-        form.preventDefault();
         $.ajax({
             url: url,
             type: 'POST',
