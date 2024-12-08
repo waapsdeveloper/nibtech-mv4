@@ -200,6 +200,7 @@
                                   </form>
                                   <form method="post" action="javascript:void(0)" class="row form-inline" onsubmit="updateVariation({{ $product->id }})">
                                       @csrf
+                                      <input type="submit" hidden>
                                   <tr>
                                       <td title="{{ $product->id }}">{{ $i + 1 }}</td>
                                       <td>{{ $product->reference_id }}</td>
