@@ -685,7 +685,7 @@
     @section('scripts')
         <script>
             function PrintElem(elem)
-{
+            {
                 var mywindow = window.open('', 'PRINT', 'height=400,width=600');
 
                 mywindow.document.write('<html><head>');
