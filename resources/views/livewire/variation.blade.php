@@ -235,7 +235,6 @@
                                               <option value="">None</option>
                                               @foreach ($colors as $color)
                                                 @if ($model_colors->contains($color->id))
-                                                  @continue
                                                   <option value="{{ $color->id }}" {{ $product->color == $color->id ? 'selected' : '' }}>{{ $color->name }}</option>
 
                                                 @endif
