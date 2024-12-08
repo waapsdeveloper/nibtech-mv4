@@ -57,8 +57,8 @@
           </div>
           <div class="col-md col-sm-6">
               <div class="form-floating">
-                  <input type="text" class="form-control" name="sku" placeholder="Enter IMEI" value="@isset($_GET['sku']){{$_GET['sku']}}@endisset">
-                  <label for="">SKU</label>
+                  <input type="text" class="form-control" name="sku" id="sku" placeholder="Enter IMEI" value="@isset($_GET['sku']){{$_GET['sku']}}@endisset">
+                  <label for="sku">SKU</label>
               </div>
           </div>
           <div class="col-md col-sm-6">
