@@ -248,6 +248,10 @@ class RMA extends Component
     public function rma_detail($order_id){
 
 
+        if(str_contains(url()->previous(),url('rma'))){
+            session()->put('previous', url()->previous());
+        }
+
         $data['title_page'] = "RMA Detail";
         // $data['imeis'] = Stock_model::whereIn('status',[1,3])->orderBy('serial_number','asc')->orderBy('imei','asc')->get();
         $data['exchange_rates'] = ExchangeRate::pluck('rate','target_currency');

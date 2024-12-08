@@ -164,6 +164,9 @@ class Wholesale extends Component
     }
     public function wholesale_detail($order_id){
 
+        if(str_contains(url()->previous(),url('wholesale'))){
+            session()->put('previous', url()->previous());
+        }
         $data['title_page'] = "BulkSale Detail";
 
         DB::statement("SET SESSION group_concat_max_len = 1000000;");

@@ -103,6 +103,7 @@
                 <div class="">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
+                        <li class="breadcrumb-item tx-15"><a href="{{ session('previous')}}">BulkSale</a></li>
                         <li class="breadcrumb-item active" aria-current="page">BulkSale Detail</li>
                     </ol>
                     <br>
