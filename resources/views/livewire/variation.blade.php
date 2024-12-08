@@ -300,7 +300,7 @@
 @section('scripts')
   <script>
     function updateVariation(id){
-        var form = $(this);
+        var form = $('#update_variation_'+id);
         var url = "{{url('variation/update_product')}}/"+id;
         var data = form.serialize();
         $.ajax({
