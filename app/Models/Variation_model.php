@@ -53,7 +53,10 @@ class Variation_model extends Model
     {
         $query->whereHas('duplicates');
     }
-
+    public function same_product()
+    {
+        return $this->hasMany(Variation_model::class, 'product_id', 'product_id');
+    }
     public function product(){
         return $this->hasOne(Products_model::class, 'id', 'product_id');
     }
