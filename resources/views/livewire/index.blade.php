@@ -442,7 +442,7 @@
                                             <div class="card-header">
                                                 <h4 class="card-title mb-1">Orders</h4>
                                             </div>
-                                            <div class="card-body py-2">
+                                            <div class="card-body py-2" id="orders_data">
                                                 <table class="w-100">
                                                     <tr>
                                                         <td>Total:</td>

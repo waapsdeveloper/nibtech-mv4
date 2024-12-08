@@ -55,6 +55,7 @@ class Order extends Component
         $data['currencies'] = Currency_model::pluck('sign', 'id');
         $data['last_hour'] = Carbon::now()->subHour(2);
         $data['admins'] = Admin_model::pluck('first_name','id');
+        $data['testers'] = Admin_model::where('role_id',7)->pluck('last_name');
         $user_id = session('user_id');
         $data['user_id'] = $user_id;
         $data['pending_orders_count'] = Order_model::where('order_type_id',3)->where('status',2)->count();
@@ -299,6 +300,7 @@ class Order extends Component
         $data['grades'] = Grade_model::all();
         $data['last_hour'] = Carbon::now()->subHour(72);
         $data['admins'] = Admin_model::where('id','!=',1)->get();
+        $data['testers'] = Admin_model::where('role_id',7)->pluck('last_name');
         $user_id = session('user_id');
         $data['user_id'] = $user_id;
         $data['pending_orders_count'] = Order_model::where('order_type_id',3)->where('status',2)->count();
