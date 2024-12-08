@@ -198,7 +198,7 @@
                                   <form class="form-inline" method="POST" action="{{ url('variation/merge').'/'.$product->id }}" id="merge_{{$product->id}}">
                                       @csrf
                                   </form>
-                                  <form method="post" action="javascript:void(0)" data-action="{{url('variation/update_product')}}/{{ $product->id }}" class="row form-inline" onsubmit="updateVariation()">
+                                  <form method="post" action="javascript:void(0)" data-action="{{url('variation/update_product')}}/{{ $product->id }}" class="row form-inline" onsubmit="updateVariation({{ $product->id }})">
                                       @csrf
                                   <tr>
                                       <td title="{{ $product->id }}">{{ $i + 1 }}</td>
@@ -299,9 +299,9 @@
 
 @section('scripts')
   <script>
-    function updateVariation(){
+    function updateVariation(id){
         var form = $(this);
-        var url = form.data('action');
+        var url = {{url('variation/update_product')}}+'/'+id;
         var data = form.serialize();
         $.ajax({
             url: url,
