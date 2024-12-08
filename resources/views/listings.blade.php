@@ -66,7 +66,7 @@
         <div class="d-flex p-2 justify-content-between">
 
             <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target=".multi_collapse" id="open_all_variations">Toggle&nbsp;All</button>
-            <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target=".multi_collapse_handler" id="open_all_variations">Toggle&nbsp;Handlers</button>
+            <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target=".multi_collapse_handler" id="open_all_handlers">Toggle&nbsp;Handlers</button>
             {{-- <input class="form-check-input" type="radio" id="open_all" name="open_all" value="1" onchange="this.form.submit()" form="search"> --}}
             <label for="perPage" class="form-label">Sort:</label>
             <select name="sort" class="form-select w-auto" id="perPage" onchange="this.form.submit()" form="search">
@@ -503,6 +503,10 @@
 
                 const page = $(this).data('page'); // Get the page number from the clicked link
                 fetchVariations(page); // Call the function to fetch variations with the selected page
+                // change the URL to reflect the current page
+                window.history.pushState("", "", `?page=${page}`);
+                // Move to top of page
+                window.scrollTo(0, 0);
             });
 
 
