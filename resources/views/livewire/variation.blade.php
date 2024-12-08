@@ -303,6 +303,7 @@
         var form = $(this);
         var url = form.attr('action');
         var data = form.serialize();
+        form.preventDefault();
         $.ajax({
             url: url,
             type: 'POST',
