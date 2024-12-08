@@ -61,7 +61,7 @@
               </div>
           </div>
           <div class="col-md col-sm-6">
-              <select name="color" class="form-control form-select" data-bs-placeholder="Select Status">
+              <select name="color" class="form-control form-select select2" data-bs-placeholder="Select Status">
                   <option value="">Color</option>
                   @foreach ($colors as $color)
                       <option value="{{$color->id}}" @if(isset($_GET['color']) && $color->id == $_GET['color']) {{'selected'}}@endif>{{$color->name}}</option>
@@ -285,6 +285,11 @@
 @endsection
 
 @section('scripts')
+  <script>
+      $(document).ready(function(){
+          $('.select2').select2();
+      });
+  </script>
   <!--Internal Sparkline js -->
   <script src="{{asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js')}}"></script>
 
