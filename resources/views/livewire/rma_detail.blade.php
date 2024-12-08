@@ -96,6 +96,7 @@
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
+                        <li class="breadcrumb-item tx-15"><a href="{{url('rma').'?status'.$order->status}}">RMA</a></li>
                         <li class="breadcrumb-item active" aria-current="page">RMA Detail</li>
                     </ol>
                 </div>
