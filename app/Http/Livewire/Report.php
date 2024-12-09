@@ -1205,6 +1205,9 @@ class Report extends Component
 
         $result = [];
         $i = 0;
+        $available = 0;
+        $sold = 0;
+        $cost = 0;
         foreach($product_storage_sort as $pss){
             $product = $pss->product;
             $storage = $pss->storage_id->name ?? null;
@@ -1214,14 +1217,25 @@ class Report extends Component
             $datas['pss_id'] = $pss->id;
             $datas['model'] = $product->model.' '.$storage;
             $datas['available_stock_count'] = $pss->stocks->whereIn('order_id',$order_ids)->where('status',1)->count();
+            $available += $datas['available_stock_count'];
             $datas['sold_stock_count'] = $pss->stocks->whereIn('order_id',$order_ids)->where('status',2)->count();
+            $sold += $datas['sold_stock_count'];
             $datas['count'] = $datas['available_stock_count'] . ' + ' . $datas['sold_stock_count'] . ' = ' . ($datas['available_stock_count'] + $datas['sold_stock_count']);
             $datas['stock_cost'] = amount_formatter($pss->stocks->whereIn('order_id',$order_ids)->sum('purchase_item.price'));
+            $cost += $datas['stock_cost'];
 
             $result[] = $datas;
         }
         $purchase_report = $result;
 
+        $purchase_report[] = [
+            'sr_no' => '',
+            'model' => 'Total',
+            'available_stock_count' => $available,
+            'sold_stock_count' => $sold,
+            'count' => $available + $sold,
+            'stock_cost' => amount_formatter($cost),
+        ];
 
         return response()->json($purchase_report);
     }
