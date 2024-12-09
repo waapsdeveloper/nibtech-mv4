@@ -31,6 +31,7 @@ class Stock_room extends Component
     {
 
         $data['title_page'] = "Stock Room";
+        session()->put('page_title', $data['title_page']);
         $data['admins'] = Admin_model::where('id', '!=', 1)->get();
         $data['colors'] = Color_model::pluck('name','id');
         $data['storages'] = Storage_model::pluck('name','id');

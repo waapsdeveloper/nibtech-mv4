@@ -19,8 +19,8 @@ class Charge extends Component
     public function render()
     {
 
-
         $data['title_page'] = "Charge";
+        session()->put('page_title', $data['title_page']);
         $data['charge_frequencies'] = Charge_frequency_model::pluck('name','id');
         $data['order_types'] = Multi_type_model::where('table_name','orders')->pluck('name','id');
         $data['payment_methods'] = Payment_method_model::pluck('name','id');
@@ -70,6 +70,7 @@ class Charge extends Component
     {
 
         $data['title_page'] = "Edit Charge";
+        session()->put('page_title', $data['title_page']);
         $data['charge_frequencies'] = Charge_frequency_model::pluck('name','id');
         $data['order_types'] = Multi_type_model::where('table_name','orders')->pluck('name','id');
         $data['payment_methods'] = Payment_method_model::pluck('name','id');

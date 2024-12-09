@@ -44,6 +44,7 @@ class Product extends Component
         // die;
 
         $data['title_page'] = "Products";
+        session()->put('page_title', $data['title_page']);
 
         $user_id = session('user_id');
         $data['order_statuses'] = Order_status_model::get();

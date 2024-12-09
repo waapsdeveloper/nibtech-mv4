@@ -30,6 +30,7 @@ class Wholesale_return extends Component
     {
 
         $data['title_page'] = "Bulksale Returns";
+        session()->put('page_title', $data['title_page']);
 
         $data['vendors'] = Customer_model::where('is_vendor','!=',null)->pluck('company','id');
 
@@ -177,6 +178,7 @@ class Wholesale_return extends Component
             session()->put('previous', url()->previous());
         }
         $data['title_page'] = "Return Detail";
+        session()->put('page_title', $data['title_page']);
 
         $data['vendors'] = Customer_model::where('is_vendor',2)->pluck('company','id');
         $data['storages'] = Storage_model::pluck('name','id');

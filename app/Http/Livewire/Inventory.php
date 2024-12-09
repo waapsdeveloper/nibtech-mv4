@@ -30,6 +30,7 @@ class Inventory extends Component
     {
 
         $data['title_page'] = "Inventory";
+        session()->put('page_title', $data['title_page']);
         $all_verified_stocks = [];
         if(request('per_page') != null){
             $per_page = request('per_page');
@@ -1118,6 +1119,7 @@ class Inventory extends Component
 
 
         $data['title_page'] = "Belfast Inventory";
+        session()->put('page_title', $data['title_page']);
         if(request('per_page') != null){
             $per_page = request('per_page');
         }else{

@@ -35,6 +35,7 @@ class IMEI extends Component
     {
 
         $data['title_page'] = "Search Serial";
+        session()->put('page_title', $data['title_page']);
         $data['last_hour'] = Carbon::now()->subHour(1);
         $data['admins'] = Admin_model::where('id', '!=', 1)->get();
         $user_id = session('user_id');
