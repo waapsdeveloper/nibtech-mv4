@@ -1221,7 +1221,7 @@ class Report extends Component
             $available += $datas['available_stock_count'];
             $datas['sold_stock_count'] = $pss->stocks->whereIn('order_id',$order_ids)->where('status',2)->count();
             $sold += $datas['sold_stock_count'];
-            $datas['count'] = $datas['available_stock_count'] . ' + ' . $datas['sold_stock_count'] . ' = ' . ($datas['available_stock_count'] + $datas['sold_stock_count']);
+            $datas['count'] = $datas['sold_stock_count'] .' + ' . $datas['available_stock_count'] .  ' = ' . ($datas['available_stock_count'] + $datas['sold_stock_count']);
             $datas['stock_cost'] = amount_formatter($pss->stocks->whereIn('order_id',$order_ids)->sum('purchase_item.price'));
             $cost += $pss->stocks->whereIn('order_id',$order_ids)->sum('purchase_item.price');
 
@@ -1234,7 +1234,7 @@ class Report extends Component
             'model' => 'Total',
             'available_stock_count' => $available,
             'sold_stock_count' => $sold,
-            'count' => $available + $sold,
+            'count' => $available . ' + ' . $sold . ' = ' .  $available + $sold,
             'stock_cost' => amount_formatter($cost),
         ];
 
