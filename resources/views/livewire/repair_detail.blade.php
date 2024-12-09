@@ -347,7 +347,7 @@
                                         @if($item->process_stock($process_id)->process_id == $process_id)
                                         @php
                                             $i ++;
-                                            $total += $item->purchase_item->price;
+                                            $total += $item->purchase_item->price ?? 0;
 
                                             if(!in_array($item->imei.$item->serial_number,$imei_list)){
                                                 array_push($imei_list,$item->imei.$item->serial_number);
