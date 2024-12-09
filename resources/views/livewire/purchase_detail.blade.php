@@ -511,6 +511,7 @@
                                                             @else
                                                                 {{ $row->message }}
                                                             @endif
+                                                                <input type="hidden" name="id" value="{{$row->id}}">
                                                                 <button class="btn btn-danger m-0" name="remove_entry" value="1" form="order_issues_{{$row->id}}">Remove Entry</button>
                                                             </form>
                                                         </td>
