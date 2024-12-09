@@ -1234,7 +1234,7 @@ class Report extends Component
             'model' => 'Total',
             'available_stock_count' => $available,
             'sold_stock_count' => $sold,
-            'count' => $available + $sold,
+            'count' => $available . ' + ' . $sold . ' = ' .  $available + $sold,
             'stock_cost' => amount_formatter($cost),
         ];
 
