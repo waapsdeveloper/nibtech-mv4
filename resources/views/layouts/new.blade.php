@@ -15,7 +15,7 @@
         @php
             $session_url = session('url');
         @endphp
-		<title> {{ session('page_title') ?? null }} {{ env('APP_NAME') }} – Admin Panel </title>
+		<title> {{ session('page_title') ?? null }} - {{ env('APP_NAME') }} </title>
 
         @include('layouts.components.styles')
         <style>
