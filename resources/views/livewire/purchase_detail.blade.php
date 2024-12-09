@@ -438,9 +438,9 @@
                                                             @endif
                                                         @endforeach
                                                         <td>
+                                                            <form id="order_issues_{{$row->id}}" method="POST" action="{{ url('purchase/remove_issues') }}" class="form-inline" onsubmit="if (confirm('Confirm Action')){return true;}else{event.stopPropagation(); event.preventDefault();};">
+                                                                @csrf
                                                             @if ($row->message == "IMEI not Provided" || $row->message == "IMEI/Serial Not Found")
-                                                            <form id="order_issues_{{$row->id}}" method="POST" action="{{ url('purchase/remove_issues') }}" class="form-inline">
-                                                                @csrf
                                                                 <input type="hidden" name="id" value="{{$row->id}}">
                                                                 <div class="form-floating">
                                                                     <input type="text" class="form-control" id="imei" name="imei" placeholder="Enter IMEI" required>
@@ -470,10 +470,7 @@
                                                                 </div>
                                                                 <button class="btn btn-primary m-0" name="add_imei" value="1">Insert</button>
 
-                                                            </form>
                                                             @elseif ($row->message == "Item already added in this order" || str_contains($row->message, "Item already available") || str_contains($row->message, "Item previously purchased"))
-                                                            <form id="order_issues_{{$row->id}}" method="POST" action="{{ url('purchase/remove_issues') }}" class="form-inline">
-                                                                @csrf
                                                                 <input type="hidden" name="id" value="{{$row->id}}">
                                                                 <div class="form-floating">
                                                                     <input type="text" class="form-control" id="imei" name="imei" placeholder="Enter IMEI" required>
@@ -503,10 +500,7 @@
                                                                 </div>
                                                                 <button class="btn btn-primary m-0" name="add_imei" value="1">Insert</button>
 
-                                                            </form>
                                                             @elseif ($row->message == "Additional Item")
-                                                            <form id="order_issues_{{$row->id}}" method="POST" action="{{ url('purchase/remove_issues') }}" class="form-inline" onsubmit="if (confirm('Remove IMEI from Order')){return true;}else{event.stopPropagation(); event.preventDefault();};">
-                                                                @csrf
                                                                 <input type="hidden" name="id" value="{{$row->id}}">
                                                                 <div class="form-floating">
                                                                     <input type="text" class="form-control" id="imei" name="imei" placeholder="Enter IMEI">
@@ -514,9 +508,9 @@
                                                                 </div>
                                                                 <button class="btn btn-primary m-0" name="change_imei" value="1">Insert</button>
 
-                                                                @else
-                                                                    {{ $row->message }}
-                                                                @endif
+                                                            @else
+                                                                {{ $row->message }}
+                                                            @endif
                                                                 <button class="btn btn-danger m-0" name="remove_entry" value="1" form="order_issues_{{$row->id}}">Remove Entry</button>
                                                             </form>
                                                         </td>
