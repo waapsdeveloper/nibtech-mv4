@@ -1222,7 +1222,7 @@ class Report extends Component
             $sold += $datas['sold_stock_count'];
             $datas['count'] = $datas['available_stock_count'] . ' + ' . $datas['sold_stock_count'] . ' = ' . ($datas['available_stock_count'] + $datas['sold_stock_count']);
             $datas['stock_cost'] = amount_formatter($pss->stocks->whereIn('order_id',$order_ids)->sum('purchase_item.price'));
-            $cost += $datas['stock_cost'];
+            $cost += $pss->stocks->whereIn('order_id',$order_ids)->sum('purchase_item.price');
 
             $result[] = $datas;
         }
