@@ -32,6 +32,7 @@ class SalesReturn extends Component
     {
 
         $data['title_page'] = "Returns";
+        session()->put('page_title', $data['title_page']);
 
         // $data['latest_reference'] = Order_model::where('order_type_id',4)->orderBy('reference_id','DESC')->first()->reference_id;
         $data['vendors'] = Customer_model::where('is_vendor',1)->pluck('first_name','id');
@@ -153,6 +154,7 @@ class SalesReturn extends Component
     public function return_detail($order_id){
 
         $data['title_page'] = "Return Detail";
+        session()->put('page_title', $data['title_page']);
 
         $data['storages'] = Storage_model::pluck('name','id');
         $data['products'] = Products_model::pluck('model','id');

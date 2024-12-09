@@ -35,6 +35,7 @@ class RMA extends Component
     {
 
         $data['title_page'] = "RMA";
+        session()->put('page_title', $data['title_page']);
 
         $user_id = session('user_id');
         $data['vendors'] = Customer_model::where('is_vendor','!=',null)->pluck('first_name','id');
@@ -253,6 +254,7 @@ class RMA extends Component
         }
 
         $data['title_page'] = "RMA Detail";
+        session()->put('page_title', $data['title_page']);
         // $data['imeis'] = Stock_model::whereIn('status',[1,3])->orderBy('serial_number','asc')->orderBy('imei','asc')->get();
         $data['exchange_rates'] = ExchangeRate::pluck('rate','target_currency');
         $data['storages'] = Storage_model::pluck('name','id');

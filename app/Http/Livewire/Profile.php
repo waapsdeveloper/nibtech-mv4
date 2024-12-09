@@ -36,6 +36,8 @@ class Profile extends Component
 
     public function render()
     {
+
+        session()->put('page_title', "Profile");
         $admin = Admin_model::find(session('user_id'));
         return view('livewire.profile')->with('admin', $admin);
     }

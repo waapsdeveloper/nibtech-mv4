@@ -48,6 +48,7 @@ class Order extends Component
     {
         // ini_set('memory_limit', '2560M');
         $data['title_page'] = "Sales";
+        session()->put('page_title', $data['title_page']);
         $data['storages'] = Storage_model::pluck('name','id');
         $data['colors'] = Color_model::pluck('name','id');
         $data['grades'] = Grade_model::pluck('name','id');
@@ -296,6 +297,7 @@ class Order extends Component
     public function sales_allowed()
     {
         $data['title_page'] = "Sales (Admin)";
+        session()->put('page_title', $data['title_page']);
 
         $data['grades'] = Grade_model::all();
         $data['last_hour'] = Carbon::now()->subHour(72);
@@ -421,6 +423,7 @@ class Order extends Component
     {
 
         $data['title_page'] = "Purchases";
+        session()->put('page_title', $data['title_page']);
         $data['latest_reference'] = Order_model::where('order_type_id',1)->orderBy('reference_id','DESC')->first()->reference_id ?? 9998;
         $data['vendors'] = Customer_model::where('is_vendor',1)->pluck('first_name','id');
         $data['order_statuses'] = Order_status_model::get();
@@ -627,6 +630,7 @@ class Order extends Component
 
         DB::statement("SET SESSION group_concat_max_len = 1000000;");
         $data['title_page'] = "Purchase Detail";
+        session()->put('page_title', $data['title_page']);
         $data['products'] = Products_model::pluck('model','id');
         $data['storages'] = Storage_model::pluck('name','id');
         $data['colors'] = Color_model::pluck('name','id');

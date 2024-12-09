@@ -33,6 +33,7 @@ class Index extends Component
     {
         session()->forget('rep');
         $data['title_page'] = "Dashboard";
+        session()->put('page_title', $data['title_page']);
         // dd('Hello2');
         $user_id = session('user_id');
 

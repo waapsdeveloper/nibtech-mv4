@@ -31,6 +31,7 @@ class Listing extends Component
     {
 
         $data['title_page'] = "Listings";
+        session()->put('page_title', $data['title_page']);
         // $this->refresh_stock();
         $user_id = session('user_id');
         $data['order_statuses'] = Order_status_model::get();

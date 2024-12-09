@@ -30,6 +30,7 @@ class MoveInventory extends Component
     {
 
         $data['title_page'] = "Move Inventory";
+        session()->put('page_title', $data['title_page']);
 
         $data['admins'] = Admin_model::where('id','!=',1)->get();
         $data['products'] = Products_model::orderBy('model','asc')->get();
