@@ -46,6 +46,7 @@ class Wholesale extends Component
 
 
         $data['title_page'] = "BulkSales";
+        session()->put('page_title', $data['title_page']);
         $data['latest_reference'] = Order_model::where('order_type_id',5)->orderBy('reference_id','DESC')->first()->reference_id ?? 998;
         $data['order_statuses'] = Order_status_model::get();
             if(request('per_page') != null){
@@ -168,6 +169,7 @@ class Wholesale extends Component
             session()->put('previous', url()->previous());
         }
         $data['title_page'] = "BulkSale Detail";
+        session()->put('page_title', $data['title_page']);
 
         DB::statement("SET SESSION group_concat_max_len = 1000000;");
         $data['vendors1'] = Customer_model::where('is_vendor',1)->pluck('company','id');

@@ -57,6 +57,7 @@ class Customer extends Component
     {
 
         $data['title_page'] = "Customers";
+        session()->put('page_title', $data['title_page']);
         $data['customers'] = $this->customers;
         // foreach($data['customers'] as $customer){
         //     if($customer->orders->count() == 0){

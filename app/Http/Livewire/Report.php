@@ -43,6 +43,7 @@ class Report extends Component
 
 
         $data['title_page'] = "Reports";
+        session()->put('page_title', $data['title_page']);
         // dd('Hello2');
         $user_id = session('user_id');
 

@@ -16,6 +16,7 @@ class Team extends Component
     {
 
         $data['title_page'] = "Team";
+        session()->put('page_title', $data['title_page']);
         $data['admin_team'] = Admin_model::where('parent_id','>=',session('user_id'))->Paginate(50);
         return view('livewire.team')->with($data);
     }
@@ -23,6 +24,7 @@ class Team extends Component
     {
 
         $data['title_page'] = "Add Member";
+        session()->put('page_title', $data['title_page']);
         $data['parents'] = Admin_model::where('id','>=',Admin_model::find(session('user_id'))->role_id)->get();
         $data['roles'] = Role_model::where('id','>=',Admin_model::find(session('user_id'))->role_id)->get();
         $data['parents'] = Admin_model::whereIn('role_id',$data['roles']->pluck('id')->toArray())->get();
@@ -81,6 +83,7 @@ class Team extends Component
     {
 
         $data['title_page'] = "Edit Member";
+        session()->put('page_title', $data['title_page']);
         $data['user'] = session('user');
         $data['roles'] = Role_model::where('id','>=',$data['user']->role_id)->get();
         $data['parents'] = Admin_model::where('role_id','>=',$data['user']->role_id)->get();

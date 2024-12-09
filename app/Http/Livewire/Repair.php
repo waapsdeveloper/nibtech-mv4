@@ -49,6 +49,7 @@ class Repair extends Component
     {
 
         $data['title_page'] = "Repairs";
+        session()->put('page_title', $data['title_page']);
 
         $data['latest_reference'] = Process_model::where('process_type_id',9)->orderBy('reference_id','DESC')->first()->reference_id ?? 5998;
         $data['repairers'] = Customer_model::whereIn('type',  [2,3])->pluck('company','id');
@@ -179,6 +180,7 @@ class Repair extends Component
             session()->put('previous', url()->previous());
         }
         $data['title_page'] = "Repair Detail";
+        session()->put('page_title', $data['title_page']);
         // $data['imeis'] = Stock_model::whereIn('status',[1,3])->orderBy('serial_number','asc')->orderBy('imei','asc')->get();
         if(request('per_page') != null){
             $per_page = request('per_page');
