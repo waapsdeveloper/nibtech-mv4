@@ -267,7 +267,7 @@
                     { data: 'stock_cost' },
                 ],
                 paging: false,
-                // Total Row at the bottom
+                // Row where Column 2 = Total at the end
                 "footerCallback": function ( row, data, start, end, display ) {
                     var api = this.api(), data;
 
@@ -289,7 +289,7 @@
 
                     // Update footer
                     $( api.column( 3 ).footer() ).html(
-                        '€'+ total
+                        '€'+total
                     );
                 }
             });
