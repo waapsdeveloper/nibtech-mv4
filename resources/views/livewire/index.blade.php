@@ -636,8 +636,8 @@
             function get_testing_batches(){
                 let testing_batches = $('#testing_batches');
                 let params = {
-                    start_date: $('#start').val(),
-                    end_date: $('#end').val(),
+                    start_date: {{ $start_date }},
+                    end_date: {{ $end_date }},
                 }
                 let queryString = $.param(params);
                 let data = load_data("{{ url('index/get_testing_batches') }}?${queryString}");
