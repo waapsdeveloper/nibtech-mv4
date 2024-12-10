@@ -316,6 +316,7 @@
 
                             const colorAnchor = document.createElement('a');
                             colorAnchor.href = `{{ url('variation') }}?product=${productId}&color=${color.id}`;
+                            colorAnchor.target = '_blank';
                             colorAnchor.innerHTML = color.name;
                             colorLink.appendChild(colorAnchor);
 
