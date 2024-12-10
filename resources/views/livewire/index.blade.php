@@ -437,7 +437,7 @@
                             @if (session('user')->hasPermission('dashboard_view_testing_batches'))
 
                                 <h5>Testing Batches:
-                                    <h6 id="testing_batches">
+                                    <h6 id="testing_batches" class="d-inline">
 
                                     </h6>
                                 </h5>
