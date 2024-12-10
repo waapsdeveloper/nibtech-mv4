@@ -437,10 +437,11 @@
                             @if (session('user')->hasPermission('dashboard_view_testing_batches'))
 
                                 <div class="d-flex justify-content">
-                                    <h5>Testing Batches: </h5>
-                                    <h6 id="testing_batches">
+                                    <h5>Testing Batches:
+                                        <small id="testing_batches">
 
-                                    </h6>
+                                        </small>
+                                    </h5>
                                 </div>
 
                             @endif
