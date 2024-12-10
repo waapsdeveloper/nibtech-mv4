@@ -295,7 +295,7 @@
                 fetch(`{{ url('product') }}/get_colors/${productId}`)
                     .then(response => response.json())
                     .then(colors => {
-                        console.log(colors);
+                        // console.log(colors);
                         // Render the product details
 
                         const mergeColors = document.createElement('select');
