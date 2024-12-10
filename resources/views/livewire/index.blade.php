@@ -434,6 +434,18 @@
                             @endif
 						</div>
 						<div class="col-xl-7 col-lg-12 col-md-12 col-sm-12">
+                            @if (session('user')->hasPermission('dashboard_view_testing_batches'))
+
+                                <div class="card d-flex">
+                                    <div>
+                                        <h5>Testing Batches:</h5>
+                                    </div>
+                                    <div id="testing_batches">
+
+                                    </div>
+                                </div>
+
+                            @endif
                             <div class="row">
                                 @if (session('user')->hasPermission('dashboard_view_total_orders'))
 
@@ -608,7 +620,6 @@
 
     @section('scripts')
 		<!-- Internal Chart.Bundle js-->
-        @if (session('user')->hasPermission('dashboard_required_restock'))
 
         <script>
             function load_data(url){
@@ -623,6 +634,21 @@
                 });
                 return data;
             }
+
+        @if (session('user')->hasPermission('dashboard_view_testing_batches'))
+            $(document).ready(function(){
+                let testing_batches = $('#testing_batches');
+                let params = {
+                    start_date: {{ $start_date }},
+                    end_date: {{ $end_date }},
+                }
+                let queryString = $.param(params);
+                let data = load_data("{{ url('index/get_testing_batches') }}?"+queryString);
+                testing_batches.html(data);
+            });
+
+        @endif
+        @if (session('user')->hasPermission('dashboard_required_restock'))
             function get_restock_data(){
                 let params = {
                     days: $('#days').val(),
@@ -647,41 +673,24 @@
                 data.sort((a, b) => a.total_quantity_stocked - b.total_quantity_stocked || b.total_quantity_sold - a.total_quantity_sold);
                 data.forEach(element => {
                     new_data += `
-                                        <tr>
-                                            <td>${i += 1}</td>
-                                            <td><a href="{{url('listing')}}?product=${element.product_id}&storage=${element.storage}&color=${element.color}&grade[]=${element.grade}" target="_blank">${element.variation}</a></td>
-                                            <td><a href="{{url('order')}}?sku=${element.sku}&start_date=${element.start_date}" target="_blank">${element.total_quantity_sold}</a></td>
-                                            <td>${element.average_price}</td>
-                                            <td><a href="{{url('inventory')}}?product=${element.product_id}&storage=${element.storage}&color=${element.color}&grade[]=${element.grade}" target="_blank">${element.total_quantity_stocked}</a></td>
-                                        </tr>
+                        <tr>
+                            <td>${i += 1}</td>
+                            <td><a href="{{url('listing')}}?product=${element.product_id}&storage=${element.storage}&color=${element.color}&grade[]=${element.grade}" target="_blank">${element.variation}</a></td>
+                            <td><a href="{{url('order')}}?sku=${element.sku}&start_date=${element.start_date}" target="_blank">${element.total_quantity_sold}</a></td>
+                            <td>${element.average_price}</td>
+                            <td><a href="{{url('inventory')}}?product=${element.product_id}&storage=${element.storage}&color=${element.color}&grade[]=${element.grade}" target="_blank">${element.total_quantity_stocked}</a></td>
+                        </tr>
                     `;
                 });
                 restock.html(new_data);
             }
-
             $(document).ready(function(){
-                    // let restock = $('#required_restock');
-                    // let i = 0;
-                    // let new_data = ``;
-                    // let data = load_data("{{ url('index/required_restock') }}");
-                    // data.sort((a, b) => a.total_quantity_stocked - b.total_quantity_stocked || b.total_quantity_sold - a.total_quantity_sold);
-                    // data.forEach(element => {
-                    //     new_data += `
-                    //                         <tr>
-                    //                             <td>${i += 1}</td>
-                    //                             <td><a href="{{url('listing')}}?product=${element.product_id}&storage=${element.storage}&color=${element.color}&grade[]=${element.grade}" target="_blank">${element.variation}</a></td>
-                    //                             <td><a href="{{url('order')}}?sku=${element.sku}&start_date=${element.start_date}" target="_blank">${element.total_quantity_sold}</a></td>
-                    //                             <td>${element.average_price}</td>
-                    //                             <td><a href="{{url('inventory')}}?product=${element.product_id}&storage=${element.storage}&color=${element.color}&grade[]=${element.grade}" target="_blank">${element.total_quantity_stocked}</a></td>
-                    //                         </tr>
-                    //     `;
-                    // });
-                    // restock.html(new_data);
                 get_restock_data();
             });
+        @endif
+
 
         </script>
-        @endif
 		<script src="{{asset('assets/plugins/chartjs/Chart.bundle.min.js')}}"></script>
 
 		<!-- Moment js -->

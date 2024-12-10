@@ -68,6 +68,7 @@ Route::middleware(['2fa'])->group(function () {
     Route::get('enable_2fa', [Profile::class, 'enable2FA'])->name('enable2fa');
     Route::get('disable_2fa', [Profile::class, 'disable2FA'])->name('disable2fa');
 
+Route::get('index/get_testing_batches', [Index::class,'get_testing_batches'])->name('dashboard_view_testing_batches');
 Route::get('index/toggle_amount_view', [Index::class,'toggle_amount_view'])->name('index');
 Route::get('index/add_ip', [Index::class,'add_ip'])->name('add_ip');
 Route::get('index/stock_cost_summery', [Index::class,'stock_cost_summery'])->name('available_stock_cost_summery');

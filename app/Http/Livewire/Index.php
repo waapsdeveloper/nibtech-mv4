@@ -15,6 +15,7 @@ use App\Models\Order_model;
 use App\Models\Order_item_model;
 use App\Models\Products_model;
 use App\Models\Color_model;
+use App\Models\Customer_model;
 use App\Models\Storage_model;
 use App\Models\Grade_model;
 use App\Models\Ip_address_model;
@@ -22,6 +23,7 @@ use App\Models\Order_charge_model;
 use App\Models\Product_storage_sort_model;
 use App\Models\Variation_model;
 use App\Models\Stock_model;
+use App\Models\Stock_operations_model;
 
 class Index extends Component
 {
@@ -437,6 +439,23 @@ class Index extends Component
 
         return response()->json($data);
     }
+    public function get_testing_batches(){
+        if(session('user')->hasPermission('dashboard_view_testing_batches')){
+
+            $start_date = request('start_date');
+            $end_date = request('end_date');
+            $operations = Stock_operations_model::where('description','LIKE','%DrPhone')->whereBetween('created_at', [$start_date, $end_date])->pluck('stock_id')->toArray();
+            $stock = Stock_model::whereIn('id', $operations)->pluck('order_id')->toArray();
+            $orders = Order_model::whereIn('id', $stock)->pluck('customer_id','reference_id')->toArray();
+            $vendor_names = Customer_model::whereIn('id', $orders)->pluck('last_name','id')->toArray();
+            $data = [];
+            foreach($orders as $key => $order){
+                $data[] = $vendor_names[$order]. ' - ' . $key . ' | ';
+            }
+            return response()->json($data);
+        }
+    }
+
     public function required_restock(){
 
         if(session('user')->hasPermission('dashboard_required_restock')){
