@@ -294,30 +294,38 @@
 
                 fetch(`{{ url('product') }}/get_colors/${productId}`)
                     .then(response => response.json())
-                    .then(products => {
-                        console.log(products);
+                    .then(colors => {
+                        console.log(colors);
                         // Render the product details
 
-                        const productMenu = document.getElementById('count_data');
-                        productMenu.innerHTML = ''; // Clear existing products
+                        const mergeColors = document.createElement('select');
+                        mergeColors.className = 'form-select form-select-sm';
+                        mergeColors.innerHTML = `<option value="">Select Color</option>`;
+                        for (const [key, color2] of Object.entries(colors)) {
+                            mergeColors.innerHTML += `<option value="${color2.id}">${color2.name}</option>`;
+                        }
 
-                        // Iterate through the products and create menu items
-                        for (const [key, product] of Object.entries(products)) {
-                            const productDiv = document.createElement('tr');
+                        const colorMenu = document.getElementById('count_data');
+                        colorMenu.innerHTML = ''; // Clear existing colors
 
-                            const productLink = document.createElement('td');
-                            productLink.innerHTML = `${product.grade}`;
+                        // Iterate through the colors and create menu items
+                        for (const [key, color] of Object.entries(colors)) {
+                            const colorDiv = document.createElement('tr');
 
-                            productDiv.appendChild(productLink);
-                            const productLink2 = document.createElement('td');
-                            productLink2.innerHTML = `${product.quantity}`;
+                            const colorLink = document.createElement('td');
+                            colorLink.innerHTML = `${color.name}`;
 
-                            productDiv.appendChild(productLink2);
 
-                            productMenu.appendChild(productDiv);
+                            colorDiv.appendChild(colorLink);
+                            const colorLink2 = document.createElement('td');
+                            colorLink2.appendChild(mergeColors);
+
+                            colorDiv.appendChild(colorLink2);
+
+                            colorMenu.appendChild(colorDiv);
                         };
                     })
-                .catch(error => console.error('Error fetching product colors:', error));
+                .catch(error => console.error('Error fetching color colors:', error));
             }
         </script>
 
