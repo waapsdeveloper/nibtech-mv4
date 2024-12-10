@@ -313,7 +313,11 @@
                             const colorDiv = document.createElement('tr');
 
                             const colorLink = document.createElement('td');
-                            colorLink.innerHTML = `${color.name}`;
+
+                            const colorAnchor = document.createElement('a');
+                            colorAnchor.href = `{{ url('variation') }}?product=${productId}&color=${color.id}`;
+                            colorAnchor.innerHTML = color.name;
+                            colorLink.appendChild(colorAnchor);
 
 
                             colorDiv.appendChild(colorLink);
