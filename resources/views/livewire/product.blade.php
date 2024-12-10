@@ -190,7 +190,7 @@
                                                 <td><a href="javascript:void(0);"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#product_color_modal"
-                                                    onclick="loadProductColors({{$product->id}}, {{ $product->model }})">Colors</a></td>
+                                                    onclick="loadProductColors({{$product->id}}, '{{ $product->model }}')">Colors</a></td>
 
                                             @endif
                                         </tr>
