@@ -320,6 +320,7 @@ class Inventory extends Component
                 });
             })
             // ->orderBy('product_id','ASC')
+            ->orderByDesc('id')
             ->paginate($per_page)
             ->onEachSide(5)
             ->appends(request()->except('page'));
