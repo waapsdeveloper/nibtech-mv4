@@ -24,7 +24,8 @@ namespace App\Http\Livewire;
     use App\Exports\PickListExport;
     use App\Exports\LabelsExport;
     use App\Exports\DeliveryNotesExport;
-    use Illuminate\Support\Facades\DB;
+use App\Models\Product_color_merge_model;
+use Illuminate\Support\Facades\DB;
     use Maatwebsite\Excel\Facades\Excel;
 
 
@@ -108,6 +109,26 @@ class Product extends Component
         return response()->json($colors);
     }
 
+    public function merge_colors(){
+        $product_id = request('product_id');
+        $color_from = request('merge_from');
+        $color_to = request('merge_to');
+
+        $variations = Variation_model::where('product_id', $product_id)->where('color', $color_from)->get();
+        foreach($variations as $variation){
+            $variation->color = $color_to;
+            $variation->save();
+        }
+
+        $product_color_merge = new Product_color_merge_model();
+        $product_color_merge->product_id = $product_id;
+        $product_color_merge->color_from = $color_from;
+        $product_color_merge->color_to = $color_to;
+        $product_color_merge->save();
+
+        session()->put('success', 'Colors have been merged successfully');
+        return redirect()->back();
+    }
 
     public function import_product(){
 
