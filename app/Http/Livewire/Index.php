@@ -453,6 +453,8 @@ class Index extends Component
                 $data[] = $vendor_names[$order]. ' - ' . $key . ' | ';
             }
             return response()->json($orders);
+        }else{
+            return response()->json('No Permission');
         }
     }
 
