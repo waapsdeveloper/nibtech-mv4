@@ -452,7 +452,7 @@ class Index extends Component
             foreach($orders as $key => $order){
                 $data[] = $vendor_names[$order]. ' - ' . $key . ' | ';
             }
-            return response()->json($data);
+            return response()->json($orders);
         }
     }
 
