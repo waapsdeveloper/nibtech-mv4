@@ -100,6 +100,15 @@ class Product extends Component
         return redirect()->back();
     }
 
+    public function get_colors($id){
+        $colors = Variation_model::where('product_id', $id)->pluck('color')->toArray();
+        $colors = array_unique($colors);
+        $colors = Color_model::whereIn('id', $colors)->get();
+
+        return response()->json($colors);
+    }
+
+
     public function import_product(){
 
         $excelFilePath = storage_path('app/listing.xlsx');

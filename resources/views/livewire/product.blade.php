@@ -186,6 +186,10 @@
                                             </td>
                                             <td><input type="text" value="{{ $product->model }}" name="update[model]" class="form-control form-control-sm"></td>
                                             <td>{{ $product->updated_at }}</td>
+                                            @if (session('user')->hasPermission('merge_product_colors'))
+                                                <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#product_color_modal" onclick="loadProductColors({{$product->id}})">Colors</a></td>
+
+                                            @endif
                                         </tr>
                                         </form>
 
@@ -248,16 +252,76 @@
                 </div>
             </div>
         </div>
+
+
+        <div class="modal" id="product_color_modal">
+            <div class="modal-dialog wd-xl-400" role="document">
+                <div class="modal-content">
+                    <div class="modal-body pd-sm-40">
+                        <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
+                            type="button"><span aria-hidden="true">&times;</span></button>
+                        <h5 class="modal-title mg-b-5">Product Colors</h5>
+                        <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                            <thead>
+                                <tr>
+                                    {{-- <th><small><b>No</b></small></th> --}}
+                                    <th><small><b>Color</b></small></th>
+                                    <th><small><b>Merge With</b></small></th>
+                                </tr>
+                            </thead>
+                            <tbody id="count_data">
+                            </tbody>
+
+                            <tfoot>
+                                <tr>
+                                    {{-- <th><small><b>No</b></small></th> --}}
+                                    {{-- <th><b>Total</b></th>
+                                    <th><b>{{ $total }}</b></th> --}}
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     @endsection
 
     @section('scripts')
-		<!--Internal Sparkline js -->
-		<script src="{{asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js')}}"></script>
 
-		<!-- Internal Piety js -->
-		<script src="{{asset('assets/plugins/peity/jquery.peity.min.js')}}"></script>
+        <script>
+            $(document).ready(function(){
+                $('.select2').select2();
+            });
 
-		<!-- Internal Chart js -->
-		<script src="{{asset('assets/plugins/chartjs/Chart.bundle.min.js')}}"></script>
+            function loadProductColors(productId) {
+
+                fetch(`{{ url('product') }}/get_colors/${productId}`)
+                    .then(response => response.json())
+                    .then(products => {
+                        // console.log(products);
+                        // Render the product details
+
+                        const productMenu = document.getElementById('count_data');
+                        productMenu.innerHTML = ''; // Clear existing products
+
+                        // Iterate through the products and create menu items
+                        for (const [key, product] of Object.entries(products)) {
+                            const productDiv = document.createElement('tr');
+
+                            const productLink = document.createElement('td');
+                            productLink.innerHTML = `${product.grade}`;
+
+                            productDiv.appendChild(productLink);
+                            const productLink2 = document.createElement('td');
+                            productLink2.innerHTML = `${product.quantity}`;
+
+                            productDiv.appendChild(productLink2);
+
+                            productMenu.appendChild(productDiv);
+                        };
+                    })
+                .catch(error => console.error('Error fetching product colors:', error));
+            }
+        </script>
 
     @endsection
