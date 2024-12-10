@@ -436,13 +436,11 @@
 						<div class="col-xl-7 col-lg-12 col-md-12 col-sm-12">
                             @if (session('user')->hasPermission('dashboard_view_testing_batches'))
 
-                                <div class="d-flex justify-content">
-                                    <h5>Testing Batches:
-                                        <strong id="testing_batches">
+                                <h5>Testing Batches:
+                                    <span id="testing_batches">
 
-                                        </strong>
-                                    </h5>
-                                </div>
+                                    </span>
+                                </h5>
 
                             @endif
                             <div class="row">
