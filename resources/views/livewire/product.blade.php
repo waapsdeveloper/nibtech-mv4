@@ -187,7 +187,10 @@
                                             <td><input type="text" value="{{ $product->model }}" name="update[model]" class="form-control form-control-sm"></td>
                                             <td>{{ $product->updated_at }}</td>
                                             @if (session('user')->hasPermission('merge_product_colors'))
-                                                <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#product_color_modal" onclick="loadProductColors({{$product->id}}, {{ $product->model }})">Colors</a></td>
+                                                <td><a href="javascript:void(0);"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#product_color_modal"
+                                                    onclick="loadProductColors({{$product->id}}, {{ $product->model }})">Colors</a></td>
 
                                             @endif
                                         </tr>
