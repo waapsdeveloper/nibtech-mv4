@@ -47,20 +47,3 @@
 
         <!-- DataTables JS -->
 		{{-- <script src="{{asset('assets/DataTables/datatables.min.js')}}"></script> --}}
-
-        <script>
-
-if (document.querySelector('#statistics1') !== null) {
-              setTimeout(function () {
-                statistics1();
-              }, 1000);
-            }
-
-            if (document.querySelector('#statistics2') !== null) {
-              setTimeout(function () {
-                statistics2();
-              }, 1000);
-            }
-
-
-                      </script>
