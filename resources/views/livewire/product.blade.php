@@ -318,8 +318,10 @@
 
                             colorDiv.appendChild(colorLink);
                             const colorLink2 = document.createElement('td');
-                            mergeColors.name = `color_${productId}_${color.id}`;
-                            colorLink2.appendChild(mergeColors);
+                            const colorList = mergeColors.cloneNode(true);
+
+                            colorList.name = `color_${productId}_${color.id}`;
+                            colorLink2.appendChild(colorList);
 
                             colorDiv.appendChild(colorLink2);
 
