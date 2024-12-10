@@ -187,7 +187,7 @@
                                             <td><input type="text" value="{{ $product->model }}" name="update[model]" class="form-control form-control-sm"></td>
                                             <td>{{ $product->updated_at }}</td>
                                             @if (session('user')->hasPermission('merge_product_colors'))
-                                                <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#product_color_modal" onclick="loadProductColors({{$product->id}})">Colors</a></td>
+                                                <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#product_color_modal" data-bs-heading="{{ $product->model }}" onclick="loadProductColors({{$product->id}})">Colors</a></td>
 
                                             @endif
                                         </tr>
@@ -261,6 +261,7 @@
                         <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
                             type="button"><span aria-hidden="true">&times;</span></button>
                         <h5 class="modal-title mg-b-5">Merge Product Colors</h5>
+                        <h6 id="product_color_heading"></h6>
                         <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                             <thead>
                                 <tr>
@@ -291,6 +292,7 @@
         <script>
 
             function loadProductColors(productId) {
+                document.getElementById('product_color_heading').innerHTML = 'Colors for ' + productId;
 
                 fetch(`{{ url('product') }}/get_colors/${productId}`)
                     .then(response => response.json())
