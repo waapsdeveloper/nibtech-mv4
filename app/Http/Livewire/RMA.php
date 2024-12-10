@@ -249,7 +249,7 @@ class RMA extends Component
     public function rma_detail($order_id){
 
 
-        if(str_contains(url()->previous(),url('rma'))){
+        if(str_contains(url()->previous(),url('rma')) && !str_contains(url()->previous(),'detail')){
             session()->put('previous', url()->previous());
         }
 

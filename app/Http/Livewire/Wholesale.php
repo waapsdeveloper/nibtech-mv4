@@ -165,7 +165,7 @@ class Wholesale extends Component
     }
     public function wholesale_detail($order_id){
 
-        if(str_contains(url()->previous(),url('wholesale'))){
+        if(str_contains(url()->previous(),url('wholesale')) && !str_contains(url()->previous(),'detail')){
             session()->put('previous', url()->previous());
         }
         $data['title_page'] = "BulkSale Detail";
