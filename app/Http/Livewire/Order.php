@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Color_model;
 use App\Models\Grade_model;
 use App\Models\Order_issue_model;
+use App\Models\Product_color_merge_model;
 use App\Models\Product_storage_sort_model;
 use App\Models\Stock_operations_model;
 use App\Models\Stock_movement_model;
@@ -1117,6 +1118,10 @@ class Order extends Component
                         $lowercaseColors = array_map('strtolower', $colors);
                         // Retrieve the ID of the newly created color
                         $clr = $newColor->id;
+                    }
+                    $check_merge_color = Product_color_merge_model::where(['product_id' => $product, 'color_from' => $clr])->first();
+                    if($check_merge_color != null){
+                        $clr = $check_merge_color->color_to;
                     }
                     $variation = Variation_model::firstOrNew(['product_id' => $product, 'grade' => $grade, 'storage' => $storage, 'color' => $clr]);
 
