@@ -318,6 +318,7 @@
 
                             colorDiv.appendChild(colorLink);
                             const colorLink2 = document.createElement('td');
+                            mergeColors.name = `color_${productId}_${color.id}`;
                             colorLink2.appendChild(mergeColors);
 
                             colorDiv.appendChild(colorLink2);
