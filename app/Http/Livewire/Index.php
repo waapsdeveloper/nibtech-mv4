@@ -459,7 +459,7 @@ class Index extends Component
             $vendor_names = Customer_model::whereIn('id', $orders)->pluck('last_name','id')->toArray();
             $data = [];
             foreach($orders as $key => $order){
-                $data[] = $key . ' (' . $vendor_names[$order] .') | ';
+                $data[] = $key . '(' . $vendor_names[$order] .') ';
             }
             return response()->json($data);
         }else{
