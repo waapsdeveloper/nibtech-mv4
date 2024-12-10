@@ -437,9 +437,9 @@
                             @if (session('user')->hasPermission('dashboard_view_testing_batches'))
 
                                 <h5>Testing Batches:
-                                    <span id="testing_batches">
+                                    <h6 id="testing_batches">
 
-                                    </span>
+                                    </h6>
                                 </h5>
 
                             @endif
