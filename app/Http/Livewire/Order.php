@@ -624,7 +624,7 @@ class Order extends Component
     }
     public function purchase_detail($order_id){
         // if previous url contains url('purchase') then set session previous to url()->previous()
-        if(str_contains(url()->previous(),url('purchase'))){
+        if(str_contains(url()->previous(),url('purchase')) && !str_contains(url()->previous(),'detail')){
             session()->put('previous', url()->previous());
         }
 
