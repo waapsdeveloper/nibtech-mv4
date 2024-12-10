@@ -636,15 +636,19 @@
             }
 
         @if (session('user')->hasPermission('dashboard_view_testing_batches'))
-            $(document).ready(function(){
+            function get_testing_batches(){
                 let testing_batches = $('#testing_batches');
                 let params = {
-                    start_date: {{ $start_date }},
-                    end_date: {{ $end_date }},
+                    start_date: $('#start').val(),
+                    end_date: $('#end').val(),
                 }
                 let queryString = $.param(params);
                 let data = load_data("{{ url('index/get_testing_batches') }}?"+queryString);
                 testing_batches.html(data);
+            }
+
+            $(document).ready(function(){
+                get_testing_batches();
             });
 
         @endif
