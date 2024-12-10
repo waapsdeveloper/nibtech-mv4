@@ -260,7 +260,7 @@
                     <div class="modal-body pd-sm-40">
                         <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
                             type="button"><span aria-hidden="true">&times;</span></button>
-                        <h5 class="modal-title mg-b-5">Product Colors</h5>
+                        <h5 class="modal-title mg-b-5">Merge Product Colors</h5>
                         <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                             <thead>
                                 <tr>
@@ -323,6 +323,11 @@
                             colorList.name = `color_${productId}_${color.id}`;
                             colorLink2.appendChild(colorList);
 
+                            const colorButton = document.createElement('button');
+                            colorButton.className = 'btn btn-primary btn-sm';
+                            colorButton.innerHTML = 'Merge';
+
+                            colorLink2.appendChild(colorButton);
                             colorDiv.appendChild(colorLink2);
 
                             colorMenu.appendChild(colorDiv);
