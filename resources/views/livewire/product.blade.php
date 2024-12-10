@@ -326,6 +326,12 @@
                             mergeForm.className = 'row form-inline';
                             colorLink2.appendChild(mergeForm);
 
+                            const csrf = document.createElement('input');
+                            csrf.type = 'hidden';
+                            csrf.name = '_token';
+                            csrf.value = '{{ csrf_token() }}';
+                            mergeForm.appendChild(csrf);
+
                             const mergeProduct = document.createElement('input');
                             mergeProduct.type = 'hidden';
                             mergeProduct.name = `product_id`;
