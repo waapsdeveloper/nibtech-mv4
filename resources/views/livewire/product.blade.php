@@ -269,7 +269,7 @@
                                     <th><small><b>Merge With</b></small></th>
                                 </tr>
                             </thead>
-                            <tbody id="count_data">
+                            <tbody id="color_data">
                             </tbody>
 
                             <tfoot>
@@ -305,7 +305,7 @@
                             mergeColors.innerHTML += `<option value="${color2.id}">${color2.name}</option>`;
                         }
 
-                        const colorMenu = document.getElementById('count_data');
+                        const colorMenu = document.getElementById('color_data');
                         colorMenu.innerHTML = ''; // Clear existing colors
 
                         // Iterate through the colors and create menu items
@@ -317,17 +317,39 @@
 
 
                             colorDiv.appendChild(colorLink);
-                            const colorLink2 = document.createElement('td');
-                            const colorList = mergeColors.cloneNode(true);
 
-                            colorList.name = `color_${productId}_${color.id}`;
-                            colorLink2.appendChild(colorList);
+                            const colorLink2 = document.createElement('td');
+
+                            const mergeForm = document.createElement('form');
+                            mergeForm.method = 'post';
+                            mergeForm.action = `{{ url('product') }}/merge_colors`;
+                            mergeForm.className = 'row form-inline';
+                            colorLink2.appendChild(mergeForm);
+
+                            const mergeProduct = document.createElement('input');
+                            mergeProduct.type = 'hidden';
+                            mergeProduct.name = `product_id`;
+                            mergeProduct.value = productId;
+                            mergeForm.appendChild(mergeProduct);
+
+
+                            const mergeFrom = document.createElement('input');
+                            mergeFrom.type = 'hidden';
+                            mergeFrom.name = `merge_from`;
+                            mergeFrom.value = color.id;
+                            mergeForm.appendChild(mergeFrom);
+
+                            const colorList = mergeColors.cloneNode(true);
+                            colorList.name = `merge_to`;
+                            mergeForm.appendChild(colorList);
 
                             const colorButton = document.createElement('button');
                             colorButton.className = 'btn btn-primary btn-sm';
                             colorButton.innerHTML = 'Merge';
 
-                            colorLink2.appendChild(colorButton);
+                            mergeForm.appendChild(colorButton);
+
+
                             colorDiv.appendChild(colorLink2);
 
                             colorMenu.appendChild(colorDiv);
