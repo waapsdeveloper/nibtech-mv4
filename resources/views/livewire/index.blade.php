@@ -438,9 +438,9 @@
 
                                 <div class="d-flex justify-content">
                                     <h5>Testing Batches:
-                                        <small id="testing_batches">
+                                        <strong id="testing_batches">
 
-                                        </small>
+                                        </strong>
                                     </h5>
                                 </div>
 
