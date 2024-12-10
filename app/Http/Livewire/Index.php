@@ -442,8 +442,17 @@ class Index extends Component
     public function get_testing_batches(){
         if(session('user')->hasPermission('dashboard_view_testing_batches')){
 
-            $start_date = request('start_date').' 00:00:00';
-            $end_date = request('end_date'). ' 23:59:59';
+            if(request('start_date') == null){
+                $start_date = now()->startOfDay()->format('Y-m-d H:i:s');
+            }else{
+                $start_date = request('start_date').' 00:00:00';
+            }
+            if(request('end_date') == null){
+                $end_date = now()->endOfDay()->format('Y-m-d H:i:s');
+            }else{
+                $end_date = request('end_date'). ' 23:59:59';
+            }
+
             $operations = Stock_operations_model::where('description','LIKE','%DrPhone')->whereBetween('created_at', [$start_date, $end_date])->pluck('stock_id')->toArray();
             $stock = Stock_model::whereIn('id', $operations)->pluck('order_id')->toArray();
             $orders = Order_model::whereIn('id', $stock)->pluck('customer_id','reference_id')->toArray();
