@@ -436,13 +436,11 @@
 						<div class="col-xl-7 col-lg-12 col-md-12 col-sm-12">
                             @if (session('user')->hasPermission('dashboard_view_testing_batches'))
 
-                                <div class="card d-flex">
-                                    <div>
-                                        <h5>Testing Batches:</h5>
-                                    </div>
-                                    <div id="testing_batches">
+                                <div class="d-flex">
+                                    <h5>Testing Batches: </h5>
+                                    <h6 id="testing_batches">
 
-                                    </div>
+                                    </h6>
                                 </div>
 
                             @endif
