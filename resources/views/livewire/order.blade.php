@@ -363,6 +363,12 @@
 
                         </div>
                     </div>
+
+                    <datalist id="tester_list">
+                        @foreach ($testers as $tester)
+                            <option value="{{ $tester }}">
+                        @endforeach
+                    </datalist>
                     <div class="card-body"><div class="table-responsive">
                         <form id="pdf" method="POST" target="_blank" action="{{url('export_label')}}">
                             @csrf
@@ -546,7 +552,7 @@
                                                             @csrf
                                                             <input type="hidden" name="sort" value="{{request('sort')}}">
                                                             <div class="input-group">
-                                                                <input type="text" name="tester[]" placeholder="Tester" class="form-control form-control-sm" style="max-width: 50px">
+                                                                <input type="text" name="tester[]" placeholder="Tester" list="tester_list" class="form-control form-control-sm" style="max-width: 50px">
                                                                 <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm">
 
                                                                 <input type="hidden" name="sku[]" value="{{ $variation->sku ?? "Variation Issue" }}">
@@ -567,7 +573,7 @@
                                                             @for ($in = 1; $in <= $item->quantity; $in ++)
 
                                                                 <div class="input-group">
-                                                                    <input type="text" name="tester[]" placeholder="Tester" class="form-control form-control-sm" style="max-width: 50px">
+                                                                    <input type="text" name="tester[]" placeholder="Tester" list="tester_list" class="form-control form-control-sm" style="max-width: 50px">
                                                                     <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm" required>
                                                                 </div>
                                                             <input type="hidden" name="sku[]" value="{{ $variation->sku }}">
@@ -587,7 +593,7 @@
                                                                 @for ($in = 1; $in <= $itm->quantity; $in++)
 
                                                                     <div class="input-group">
-                                                                        <input type="text" name="tester[]" placeholder="Tester" class="form-control form-control-sm" style="max-width: 50px">
+                                                                        <input type="text" name="tester[]" list="tester_list" placeholder="Tester" class="form-control form-control-sm" style="max-width: 50px">
                                                                         <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm" required title="for SKU:{{ $itm->variation->sku }}">
                                                                     </div>
                                                                     <input type="hidden" name="sku[]" value="{{ $itm->variation->sku }}">
@@ -947,7 +953,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="">Tester</label>
-                                <input class="form-control" placeholder="input Tester Initial" name="correction[tester]" type="text">
+                                <input class="form-control" placeholder="input Tester Initial" name="correction[tester]" type="text" list="tester_list">
                             </div>
                             <div class="form-group">
                                 <label for="">IMEI / Serial Number</label>
@@ -1003,7 +1009,7 @@
                             <h4>With</h4>
                             <div class="form-group">
                                 <label for="">Tester</label>
-                                <input class="form-control" placeholder="input Tester Initial" name="replacement[tester]" type="text">
+                                <input class="form-control" placeholder="input Tester Initial" name="replacement[tester]" list="tester_list" type="text">
                             </div>
                             <div class="form-group">
                                 <label for="">IMEI / Serial Number</label>
