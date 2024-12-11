@@ -433,8 +433,8 @@
 
     var options1 = {
       series: [{
-        // name: 'Orders',
-        // data: datas.split(',')
+        name: 'Orders',
+        data: datas.split(',')
       }, {
         name: 'EUR',
         data: data1.split(',')
