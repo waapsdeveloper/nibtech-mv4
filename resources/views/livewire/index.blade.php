@@ -641,8 +641,6 @@
                 }
                 let queryString = $.param(params);
                 let data = load_data("{{ url('index/get_testing_batches') }}"+'?'+queryString);
-                console.log(data);
-                console.log("{{ url('index/get_testing_batches') }}"+'?'+queryString);
                 testing_batches.html(data);
             }
 
