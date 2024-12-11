@@ -404,34 +404,6 @@
                                     </div>
                                 </div>
                             @endif
-                            @if (session('user')->hasPermission('10_day_sales_chart'))
-
-							<div class="card custom-card overflow-hidden">
-								<div class="card-header border-bottom-0">
-									<div class="d-flex justify-content-between">
-										<h3 class="card-title mb-2 ">Sales for 7 Days</h3>
-                                        <a href="{{url('index/refresh_7_days_chart')}}">Refresh</a>
-									</div>
-								</div>
-								<div class="card-body">
-									<div id="statistics4"></div>
-								</div>
-							</div>
-                            @endif
-                            @if (session('user')->hasPermission('7_day_progressive_sales_chart'))
-
-							<div class="card custom-card overflow-hidden">
-								<div class="card-header border-bottom-0">
-									<div class="d-flex justify-content-between">
-										<h3 class="card-title mb-2 ">Sales for 7 Days Progress</h3>
-                                        <a href="{{url('index/refresh_7_days_progressive_chart')}}">Refresh</a>
-									</div>
-								</div>
-								<div class="card-body">
-									<div id="statistics5"></div>
-								</div>
-							</div>
-                            @endif
 						</div>
 						<div class="col-xl-7 col-lg-12 col-md-12 col-sm-12">
                             @if (session('user')->hasPermission('dashboard_view_testing_batches'))
@@ -606,6 +578,34 @@
 								</div>
 								<div class="card-body">
 									<div id="statistics1"></div>
+								</div>
+							</div>
+                            @endif
+                            @if (session('user')->hasPermission('10_day_sales_chart'))
+
+							<div class="card custom-card overflow-hidden">
+								<div class="card-header border-bottom-0">
+									<div class="d-flex justify-content-between">
+										<h3 class="card-title mb-2 ">Sales for 7 Days</h3>
+                                        <a href="{{url('index/refresh_7_days_chart')}}">Refresh</a>
+									</div>
+								</div>
+								<div class="card-body">
+									<div id="statistics4"></div>
+								</div>
+							</div>
+                            @endif
+                            @if (session('user')->hasPermission('7_day_progressive_sales_chart'))
+
+							<div class="card custom-card overflow-hidden">
+								<div class="card-header border-bottom-0">
+									<div class="d-flex justify-content-between">
+										<h3 class="card-title mb-2 ">Sales for 7 Days Progress</h3>
+                                        <a href="{{url('index/refresh_7_days_progressive_chart')}}">Refresh</a>
+									</div>
+								</div>
+								<div class="card-body">
+									<div id="statistics5"></div>
 								</div>
 							</div>
                             @endif
