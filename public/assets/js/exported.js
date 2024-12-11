@@ -433,14 +433,14 @@
 
     var options1 = {
       series: [{
-        name: 'Orders',
-        data: datas.split(',') ?? []
+        // name: 'Orders',
+        // data: datas.split(',')
       }, {
         name: 'EUR',
-        data: data1.split(',') ?? []
+        data: data1.split(',')
       }, {
         name: 'GBP',
-        data: data2.split(',') ?? []
+        data: data2.split(',')
       }],
       chart: {
         type: 'line',
