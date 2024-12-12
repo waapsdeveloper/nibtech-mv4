@@ -600,8 +600,12 @@
                                                     if($variation->grade == 9){
                                                         if($item->stock_operations->count() == 0){
                                                             $class = "text-danger";
-                                                        }else {
-                                                            $class = "";
+                                                        } else {
+                                                            if($item->stock_operations->count() == 1 && str_contains($item->stock_operations[0]->description, 'Cost Adjusted')){
+                                                                $class = "text-warning";
+                                                            } else {
+                                                                $class = "";
+                                                            }
                                                         }
                                                     }else {
                                                         $class = "";
