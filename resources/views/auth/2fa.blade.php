@@ -28,14 +28,10 @@
                             </div>
 
                             <div class="form-group row mb-0">
-                                <div class="col-md-8">
+                                <div class="col-md-8 offset-md-4">
                                     <button type="submit" class="btn btn-primary">
                                         {{ __('Verify') }}
                                     </button>
-                                </div>
-                                <div class="col-md-4">
-
-                                    <a class="dropdown-item" href="{{url('logout')}}"><i class="far fa-arrow-alt-circle-left"></i> {{ __('locale.Sign Out') }}</a>
                                 </div>
                             </div>
                         </form>
