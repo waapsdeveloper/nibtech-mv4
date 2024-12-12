@@ -146,7 +146,14 @@
                             <label for="include_vendor" class="form-label">Include Vendor</label>
                             <select name="include_vendor[]" id="include_vendor" class="select2 form-control" multiple>
                                 @foreach ($vendors as $vendor)
-                                    <option value="{{$vendor->id}}">{{$vendor->first_name}}</option>
+                                    <option value="{{$vendor->id}}"
+                                        @if (request('include_vendor') != null)
+                                            @if (in_array($vendor->id,request('include_vendor')))
+                                                selected
+                                            @endif
+
+                                        @endif
+                                        >{{$vendor->first_name}}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -154,7 +161,7 @@
                             <label for="exclude_product" class="form-label">Exclude Product</label>
                             <select name="exclude_product[]" id="exclude_product" class="select2 form-control" multiple>
                                 @foreach ($products as $id => $product)
-                                    <option value="{{$id}}">{{$product}}</option>
+                                    <option value="{{$id}}" @if (request('exclude_product') != null) @if (in_array($id,request('exclude_product'))) selected @endif @endif>{{$product}}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -162,7 +169,7 @@
                             <label for="include_product" class="form-label">Include Product</label>
                             <select name="include_product[]" id="include_product" class="select2 form-control" multiple>
                                 @foreach ($products as $id => $product)
-                                    <option value="{{$id}}">{{$product}}</option>
+                                    <option value="{{$id}}" @if (request('include_product') != null) @if (in_array($id,request('include_product'))) selected @endif @endif>{{$product}}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -170,7 +177,7 @@
                             <label for="exclude_grade" class="form-label">Exclude Grade</label>
                             <select name="exclude_grade[]" id="exclude_grade" class="select2 form-control" multiple>
                                 @foreach ($grades as $id => $grade)
-                                    <option value="{{$id}}">{{$grade}}</option>
+                                    <option value="{{$id}}" @if (request('exclude_grade') != null) @if (in_array($id,request('exclude_grade'))) selected @endif @endif>{{$grade}}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -178,7 +185,7 @@
                             <label for="include_grade" class="form-label">Include Grade</label>
                             <select name="include_grade[]" id="include_grade" class="select2 form-control" multiple>
                                 @foreach ($grades as $id => $grade)
-                                    <option value="{{$id}}">{{$grade}}</option>
+                                    <option value="{{$id}}" @if (request('include_grade') != null) @if (in_array($id,request('include_grade'))) selected @endif @endif>{{$grade}}</option>
                                 @endforeach
                             </select>
                         </div>
