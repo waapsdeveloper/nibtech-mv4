@@ -104,8 +104,9 @@
                 <form class="form-inline" action="{{ url('delete_repair_item') }}" method="POST" id="repair_item">
                     @csrf
                     <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
-                    <input type="text" class="form-control form-control-sm" name="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
+                    <input type="text" class="form-control form-control-sm" name="imei" @if (request('remove') == 1) id="imei" @endif placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
                     <input type="hidden" name="process_id" value="{{$process->id}}">
+                    <input type="hidden" name="remove" value="1">
                     <button class="btn-sm btn-secondary pd-x-20" type="submit">Remove</button>
 
                 </form>
@@ -119,13 +120,21 @@
 
             @if ($process->status == 1)
             <div class="p-2">
-                <h4>Add External Repair Item</h4>
+                <h4>Add External Repair Item
+                    {{-- Option to show advance options --}}
+                    <a href="{{ url('repair').'/'.$process->id.'?show_advance=1' }}" class="btn btn-sm btn-link">Show Advance Options</a>
+                </h4>
+
+                <div>
+
+                </div>
+
             </div>
             <div class="p-1">
                 <form class="form-inline" action="{{ url('check_repair_item').'/'.$process_id }}" method="POST" id="repair_item">
                     @csrf
                     <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
-                    <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
+                    <input type="text" class="form-control form-control-sm" name="imei"  @if (request('remove') != 1) id="imei" @endif id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
                     <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
 
                 </form>
