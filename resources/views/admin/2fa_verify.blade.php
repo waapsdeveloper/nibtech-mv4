@@ -49,6 +49,8 @@
                                                             </div>
                                                         @endif
                                                         <button type="submit" class="btn btn-primary">Verify</button>
+
+                                                        <a class="dropdown-item" href="{{url('logout')}}"><i class="far fa-arrow-alt-circle-left"></i> {{ __('locale.Sign Out') }}</a>
                                                     </form>
                                                     {{-- <form action="{{url('/login')}}" method="POST">
                                                         @csrf
