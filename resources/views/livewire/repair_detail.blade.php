@@ -122,11 +122,68 @@
             <div class="p-2">
                 <h4>Add External Repair Item
                     {{-- Option to show advance options --}}
-                    <a href="{{ url('repair').'/'.$process->id.'?show_advance=1' }}" class="btn btn-sm btn-link">Show Advance Options</a>
+                    <a href="{{ url('repair').'/'.$process->id.'?show_advance=1' }}" class="btn btn-sm btn-link" data-bs-toggle="collapse" data-bs-target="#advance_options" aria-expanded="false" aria-controls="advance_options" id="advance_options_button" >Show Advance Options</a>
                 </h4>
 
-                <div>
-
+                <div class="collapse" id="advance_options">
+                    <form method="GET">
+                        <div class="input-group">
+                            <label for="exclude_vendor" class="form-label">Exclude Vendor</label>
+                            <select name="exclude_vendor" id="exclude_vendor" class="select2 form-control" multiple>
+                                @foreach ($vendors as $vendor)
+                                    <option value="{{$vendor->id}}">{{$vendor->first_name}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="include_vendor" class="form-label">Include Vendor</label>
+                            <select name="include_vendor" id="include_vendor" class="select2 form-control" multiple>
+                                @foreach ($vendors as $vendor)
+                                    <option value="{{$vendor->id}}">{{$vendor->first_name}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="exclude_product" class="form-label">Exclude Product</label>
+                            <select name="exclude_product" id="exclude_product" class="select2 form-control" multiple>
+                                @foreach ($products as $product)
+                                    <option value="{{$product->id}}">{{$product->model}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="include_product" class="form-label">Include Product</label>
+                            <select name="include_product" id="include_product" class="select2 form-control" multiple>
+                                @foreach ($products as $product)
+                                    <option value="{{$product->id}}">{{$product->model}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="exclude_grade" class="form-label">Exclude Grade</label>
+                            <select name="exclude_grade" id="exclude_grade" class="select2 form-control" multiple>
+                                @foreach ($grades as $grade)
+                                    <option value="{{$grade->id}}">{{$grade->name}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="include_grade" class="form-label">Include Grade</label>
+                            <select name="include_grade" id="include_grade" class="select2 form-control" multiple>
+                                @foreach ($grades as $grade)
+                                    <option value="{{$grade->id}}">{{$grade->name}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="apply_filter" class="form-label">Apply Filter</label>
+                            <button type="submit" class="btn btn-primary">Apply Filter</button>
+                        </div>
+                        <input type="hidden" name="show_advance" value="1">
+                        @if (request('hide') == 'all')
+                        <input type="hidden" name="hide" value="all">
+                        @endif
+                    </form>
                 </div>
 
             </div>
