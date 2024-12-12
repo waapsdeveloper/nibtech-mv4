@@ -463,6 +463,83 @@ class Repair extends Component
             }
         }
 
+        if(request('apply_filter')){
+            if(request('exclude_vendor')){
+                if(in_array($stock->order->customer_id,request('exclude_vendor'))){
+                    session()->put('error', 'Stock belongs to excluded vendor');
+                    if($back != 1 && $back != 2){
+                        return redirect()->back();
+                    }elseif($back == 2){
+                        continue;
+                    }else{
+                        return 1;
+                    }
+                }
+            }
+            if(request('include_vendor')){
+                if(!in_array($stock->order->customer_id,request('include_vendor'))){
+                    session()->put('error', 'Stock does not belong to included vendor');
+                    if($back != 1 && $back != 2){
+                        return redirect()->back();
+                    }elseif($back == 2){
+                        continue;
+                    }else{
+                        return 1;
+                    }
+                }
+            }
+            if(request('exclude_product')){
+                if(in_array($stock->variation->product_id,request('exclude_product'))){
+                    session()->put('error', 'Stock belongs to excluded product');
+                    if($back != 1 && $back != 2){
+                        return redirect()->back();
+                    }elseif($back == 2){
+                        continue;
+                    }else{
+                        return 1;
+                    }
+                }
+            }
+            if(request('include_product')){
+                if(!in_array($stock->variation->product_id,request('include_product'))){
+                    session()->put('error', 'Stock does not belong to included product');
+                    if($back != 1 && $back != 2){
+                        return redirect()->back();
+                    }elseif($back == 2){
+                        continue;
+                    }else{
+                        return 1;
+                    }
+                }
+            }
+            if(request('exclude_grade')){
+                if(in_array($stock->variation->grade,request('exclude_grade'))){
+                    session()->put('error', 'Stock belongs to excluded grade');
+                    if($back != 1 && $back != 2){
+                        return redirect()->back();
+                    }elseif($back == 2){
+                        continue;
+                    }else{
+                        return 1;
+                    }
+                }
+            }
+            if(request('include_grade')){
+                if(!in_array($stock->variation->grade,request('include_grade'))){
+                    session()->put('error', 'Stock does not belong to included grade');
+                    if($back != 1 && $back != 2){
+                        return redirect()->back();
+                    }elseif($back == 2){
+                        continue;
+                    }else{
+                        return 1;
+                    }
+                }
+            }
+        }
+
+
+
         // if($stock->variation->grade != 8){
         //     session()->put('error', 'Stock not in Repair');
         //     if($back != 1){
