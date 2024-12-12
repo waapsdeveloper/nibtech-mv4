@@ -463,7 +463,7 @@ class Repair extends Component
             }
         }
 
-        if(request('apply_filter')){
+        if(request('apply_filter') == 1){
             if(request('exclude_vendor')){
                 if(in_array($stock->order->customer_id,request('exclude_vendor'))){
                     session()->put('error', 'Stock belongs to excluded vendor');
