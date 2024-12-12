@@ -43,6 +43,11 @@ class PacksheetExport implements FromCollection, WithHeadings
                 //  ->whereNot('stock_operations.description', 'LIKE', '%Cost Adjusted %')
                  ->whereRaw('stock_operations.id = (SELECT id FROM stock_operations WHERE stock_operations.stock_id = stock.id AND stock_operations.description NOT LIKE "%Cost Adjusted %" ORDER BY id DESC LIMIT 1)');
         })
+        ->leftJoin('stock_operations as old_operations', function ($join) {
+            $join->on('stock.id', '=', 'old_operations.stock_id')
+                //  ->whereNot('old_operations.description', 'LIKE', '%Cost Adjusted %')
+                 ->whereRaw('old_operations.id = (SELECT id FROM old_operations WHERE old_operations.stock_id = stock.id AND old_operations.description NOT LIKE "%Cost Adjusted %" AND old_operations.description NOT LIKE "%Grade changed for Bulksale%" ORDER BY id DESC LIMIT 1)');
+        })
         ->leftJoin('admin', 'stock_operations.admin_id', '=', 'admin.id')
 
 
@@ -58,6 +63,7 @@ class PacksheetExport implements FromCollection, WithHeadings
             'customer.first_name as vendor',
             'vendor_grade.name as vendor_grade',
             'stock_operations.description as issue',
+            'old_operations.description as old_issue',
             'admin.first_name as admin',
             // 'order_items.price as price'
             // Conditional price based on invoice flag
@@ -89,6 +95,7 @@ class PacksheetExport implements FromCollection, WithHeadings
             'Vendor',
             'Vendor Grade',
             'Issue',
+            'Old Issue',
             'Admin',
             // 'Price'
             $this->invoice == 1 ? 'Price (Multiplied by Exchange Rate)' : 'Price'
