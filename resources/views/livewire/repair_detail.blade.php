@@ -126,8 +126,8 @@
                 </h4>
 
                 <div class="collapse" id="advance_options">
-                    <form method="GET" class="form-inline">
-                        <div class="input-group">
+                    <form method="GET" class="row">
+                        <div class="input-group col-md-6">
                             <label for="exclude_vendor" class="form-label">Exclude Vendor</label>
                             <select name="exclude_vendor" id="exclude_vendor" class="select2 form-control" multiple>
                                 @foreach ($vendors as $vendor)
@@ -135,7 +135,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="input-group">
+                        <div class="input-group col-md-6">
                             <label for="include_vendor" class="form-label">Include Vendor</label>
                             <select name="include_vendor" id="include_vendor" class="select2 form-control" multiple>
                                 @foreach ($vendors as $vendor)
@@ -143,7 +143,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="input-group">
+                        <div class="input-group col-md-6">
                             <label for="exclude_product" class="form-label">Exclude Product</label>
                             <select name="exclude_product" id="exclude_product" class="select2 form-control" multiple>
                                 @foreach ($products as $id => $product)
@@ -151,7 +151,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="input-group">
+                        <div class="input-group col-md-6">
                             <label for="include_product" class="form-label">Include Product</label>
                             <select name="include_product" id="include_product" class="select2 form-control" multiple>
                                 @foreach ($products as $id => $product)
@@ -159,7 +159,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="input-group">
+                        <div class="input-group col-md-6">
                             <label for="exclude_grade" class="form-label">Exclude Grade</label>
                             <select name="exclude_grade" id="exclude_grade" class="select2 form-control" multiple>
                                 @foreach ($grades as $id => $grade)
@@ -167,7 +167,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="input-group">
+                        <div class="input-group col-md-6">
                             <label for="include_grade" class="form-label">Include Grade</label>
                             <select name="include_grade" id="include_grade" class="select2 form-control" multiple>
                                 @foreach ($grades as $id => $grade)
@@ -175,7 +175,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="input-group">
+                        <div class="input-group col-md-6">
                             <label for="apply_filter" class="form-label">Apply Filter</label>
                             <button type="submit" class="btn btn-primary">Apply Filter</button>
                         </div>
