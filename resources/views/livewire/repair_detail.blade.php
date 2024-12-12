@@ -592,7 +592,7 @@
                 allowClear: true
             });
 
-            $('#advance_options').collapse({{ request('show_advance') == 1 ? 'show' : 'hide' }});
+            $('#advance_options').collapse("{{ request('show_advance') == 1 ? 'show' : 'hide' }}");
         });
 
 
