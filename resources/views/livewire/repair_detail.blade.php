@@ -126,7 +126,7 @@
                 </h4>
 
                 <div class="collapse" id="advance_options">
-                    <form method="GET">
+                    <form method="GET" class="form-inline">
                         <div class="input-group">
                             <label for="exclude_vendor" class="form-label">Exclude Vendor</label>
                             <select name="exclude_vendor" id="exclude_vendor" class="select2 form-control" multiple>
