@@ -146,32 +146,32 @@
                         <div class="input-group">
                             <label for="exclude_product" class="form-label">Exclude Product</label>
                             <select name="exclude_product" id="exclude_product" class="select2 form-control" multiple>
-                                @foreach ($products as $product)
-                                    <option value="{{$product->id}}">{{$product->model}}</option>
+                                @foreach ($products as $id => $product)
+                                    <option value="{{$id}}">{{$product}}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="input-group">
                             <label for="include_product" class="form-label">Include Product</label>
                             <select name="include_product" id="include_product" class="select2 form-control" multiple>
-                                @foreach ($products as $product)
-                                    <option value="{{$product->id}}">{{$product->model}}</option>
+                                @foreach ($products as $id => $product)
+                                    <option value="{{$id}}">{{$product}}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="input-group">
                             <label for="exclude_grade" class="form-label">Exclude Grade</label>
                             <select name="exclude_grade" id="exclude_grade" class="select2 form-control" multiple>
-                                @foreach ($grades as $grade)
-                                    <option value="{{$grade->id}}">{{$grade->name}}</option>
+                                @foreach ($grades as $id => $grade)
+                                    <option value="{{$id}}">{{$grade}}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="input-group">
                             <label for="include_grade" class="form-label">Include Grade</label>
                             <select name="include_grade" id="include_grade" class="select2 form-control" multiple>
-                                @foreach ($grades as $grade)
-                                    <option value="{{$grade->id}}">{{$grade->name}}</option>
+                                @foreach ($grades as $id => $grade)
+                                    <option value="{{$id}}">{{$grade}}</option>
                                 @endforeach
                             </select>
                         </div>
