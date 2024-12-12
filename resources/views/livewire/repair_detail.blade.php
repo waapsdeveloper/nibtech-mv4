@@ -207,7 +207,42 @@
                     <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
                     <input type="text" class="form-control form-control-sm" name="imei"  @if (request('remove') != 1) id="imei" @endif id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
                     <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
-
+                    @if (request('exclude_vendor') == 1)
+                        @foreach (request('exclude_vendor') as $vendor)
+                            <input type="hidden" name="exclude_vendor[]" value="{{$vendor}}">
+                        @endforeach
+                        <input type="hidden" name="apply_filter" value="1">
+                    @endif
+                    @if (request('include_vendor') == 1)
+                        @foreach (request('include_vendor') as $vendor)
+                            <input type="hidden" name="include_vendor[]" value="{{$vendor}}">
+                        @endforeach
+                        <input type="hidden" name="apply_filter" value="1">
+                    @endif
+                    @if (request('exclude_product') == 1)
+                        @foreach (request('exclude_product') as $product)
+                            <input type="hidden" name="exclude_product[]" value="{{$product}}">
+                        @endforeach
+                        <input type="hidden" name="apply_filter" value="1">
+                    @endif
+                    @if (request('include_product') == 1)
+                        @foreach (request('include_product') as $product)
+                            <input type="hidden" name="include_product[]" value="{{$product}}">
+                        @endforeach
+                        <input type="hidden" name="apply_filter" value="1">
+                    @endif
+                    @if (request('exclude_grade') == 1)
+                        @foreach (request('exclude_grade') as $grade)
+                            <input type="hidden" name="exclude_grade[]" value="{{$grade}}">
+                        @endforeach
+                        <input type="hidden" name="apply_filter" value="1">
+                    @endif
+                    @if (request('include_grade') == 1)
+                        @foreach (request('include_grade') as $grade)
+                            <input type="hidden" name="include_grade[]" value="{{$grade}}">
+                        @endforeach
+                        <input type="hidden" name="apply_filter" value="1">
+                    @endif
                 </form>
             </div>
             <div class="p-2 tx-right">
