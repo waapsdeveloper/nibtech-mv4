@@ -572,6 +572,19 @@
                     $('#rate').val(''); // Clear the rate field if the currency is not in the list
                 }
             });
+
+            $('.select2').select2({
+                placeholder: 'Select an option',
+                allowClear: true
+            });
+
+            $('#exclude_vendor').val({{ json_encode(request('exclude_vendor')) }});
+            $('#include_vendor').val({{ json_encode(request('include_vendor')) }});
+            $('#exclude_product').val({{ json_encode(request('exclude_product')) }});
+            $('#include_product').val({{ json_encode(request('include_product')) }});
+            $('#exclude_grade').val({{ json_encode(request('exclude_grade')) }});
+            $('#include_grade').val({{ json_encode(request('include_grade')) }});
+            $('#advance_options').collapse({{ request('show_advance') == 1 ? 'show' : 'hide' }});
         });
 
 
