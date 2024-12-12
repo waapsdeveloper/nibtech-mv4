@@ -592,12 +592,6 @@
                 allowClear: true
             });
 
-            $('#exclude_vendor').val({{ json_encode(request('exclude_vendor')) }});
-            $('#include_vendor').val({{ json_encode(request('include_vendor')) }});
-            $('#exclude_product').val({{ json_encode(request('exclude_product')) }});
-            $('#include_product').val({{ json_encode(request('include_product')) }});
-            $('#exclude_grade').val({{ json_encode(request('exclude_grade')) }});
-            $('#include_grade').val({{ json_encode(request('include_grade')) }});
             $('#advance_options').collapse({{ request('show_advance') == 1 ? 'show' : 'hide' }});
         });
 
@@ -605,8 +599,7 @@
         document.getElementById("open_all_imei").onclick = function(){
             @php
                 foreach ($imei_list as $imei) {
-                    echo "window.open('".url("imei")."?imei=".$imei."','_blank');
-                    ";
+                    echo "window.open('".url("imei")."?imei=".$imei."','_blank');";
                 }
 
             @endphp
