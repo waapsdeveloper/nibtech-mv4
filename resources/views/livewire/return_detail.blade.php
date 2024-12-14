@@ -838,7 +838,7 @@
 
                                                 isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
                                                 isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
-                                                isset($variation->grade_id)?$grade = $variation->grade_id->name:$grade = null;
+                                                isset($variation->grade_id)?$grade = $variation->grade_id->name:$grade = "Grade Issue";
 
                                             @endphp
                                             <tr>
