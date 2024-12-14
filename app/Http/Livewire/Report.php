@@ -104,48 +104,6 @@ class Report extends Component
             })
             ->pluck('id')->toArray();
 
-        // }
-        // $aggregates = DB::table('category')
-        // ->join('products', 'category.id', '=', 'products.category')
-        // ->join('variation', 'products.id', '=', 'variation.product_id')
-
-        // ->join('order_items', 'variation.id', '=', 'order_items.variation_id')
-        // // Filtered Orders Subquery
-        // ->join(DB::raw('(
-        //     SELECT orders.id, orders.currency, orders.order_type_id, orders.processed_at, orders.created_at
-        //     FROM orders
-        //     WHERE (
-        //         (orders.order_type_id = 3 AND orders.processed_at BETWEEN "' . $start_date . '" AND "' . $end_date . '")
-        //         OR (orders.order_type_id != 3 AND orders.created_at BETWEEN "' . $start_date . '" AND "' . $end_date . '")
-        //     )
-        //     AND orders.deleted_at IS NULL
-        //     AND orders.status IN (3, 6)
-        // ) as filtered_orders'), 'order_items.order_id', '=', 'filtered_orders.id')
-
-        // // Continue with the joins after filtering orders
-        // ->leftJoin('stock', 'order_items.stock_id', '=', 'stock.id')
-        // ->leftJoin('process_stock', 'stock.id', '=', 'process_stock.stock_id')
-        // ->leftJoin('process', 'process_stock.process_id', '=', 'process.id')
-
-        // // Select fields with aggregations
-        // ->select(
-        //     'category.id as category_id',
-        //     DB::raw('COUNT(filtered_orders.id) as orders_qty'),
-        //     DB::raw('SUM(CASE WHEN (filtered_orders.currency = 4 OR filtered_orders.order_type_id = 5) THEN order_items.price ELSE 0 END) as eur_items_sum'),
-        //     DB::raw('SUM(CASE WHEN filtered_orders.currency = 5 AND filtered_orders.order_type_id = 3 THEN order_items.price ELSE 0 END) as gbp_items_sum'),
-        //     DB::raw('GROUP_CONCAT(stock.id) as stock_ids'),
-        //     DB::raw('SUM(CASE WHEN process.process_type_id = 9 THEN process_stock.price ELSE 0 END) as items_repair_sum')
-        // )
-
-        // // Additional filtering
-        // ->whereIn('variation.id', $variation_ids)
-        // ->whereIn('filtered_orders.order_type_id', [2, 3, 5])
-        // ->whereNull('order_items.deleted_at')
-        // ->whereNull('stock.deleted_at')
-        // ->whereNull('process_stock.deleted_at')
-        // ->whereIn('order_items.status', [3, 6])
-        // ->groupBy('category.id')
-        // ->get();
 
         $aggregates = DB::table('category')
             ->join('products', 'category.id', '=', 'products.category')
