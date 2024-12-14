@@ -74,14 +74,20 @@ class Report extends Component
         // if(request('data') == 1){
 
         $variation_ids = Variation_model::select('id')
-            ->when(request('category') != '', function ($q) {
-                return $q->whereHas('product', function ($qu) {
-                    $qu->where('category', '=', request('category'));
+            ->whereHas('product', function ($q) {
+                $q->when(request('category') != '', function ($qu) {
+                    return $qu->where('category', '=', request('category'));
+                })
+                ->when(request('brand') != '', function ($qu) {
+                    return $qu->where('brand', '=', request('brand'));
                 });
             })
-            ->when(request('brand') != '', function ($q) {
-                return $q->whereHas('product', function ($qu) {
-                    $qu->where('brand', '=', request('brand'));
+            ->whereHas('stocks.order', function ($q) {
+                $q->when(request('vendor') != '', function ($qu) {
+                    return $qu->where('customer_id', '=', request('vendor'));
+                })
+                ->when(request('batch') != '', function ($qu) {
+                    return $qu->where('reference_id', '=', request('batch'));
                 });
             })
             ->when(request('product') != '', function ($q) {
@@ -95,16 +101,6 @@ class Report extends Component
             })
             ->when(request('grade') != '', function ($q) {
                 return $q->where('grade', request('grade'));
-            })
-            ->when(request('vendor') != '', function ($q) {
-                return $q->whereHas('stocks.order', function ($q) {
-                    $q->where('customer_id', request('vendor'));
-                });
-            })
-            ->when(request('batch') != '', function ($q) {
-                return $q->whereHas('stocks.order', function ($q) {
-                    $q->where('reference_id', request('batch'));
-                });
             })
             ->pluck('id')->toArray();
 
