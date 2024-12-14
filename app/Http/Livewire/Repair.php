@@ -404,6 +404,9 @@ class Repair extends Component
         if(request('imei')){
             $imei = request('imei');
         }
+        if(session('user_id') == 1){
+            dd(request()->all());
+        }
 
         $imeis = explode(" ",$imei);
         if(count($imeis) > 1){
