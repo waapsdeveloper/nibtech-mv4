@@ -178,7 +178,7 @@
                                                 <td>{{ $i + 1 }}</td>
                                                 <td><a href="{{url('wholesale_return/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
 
-                                                <td>{{ $vendors[$order->customer_id] }}</td>
+                                                <td>{{ $vendors[$order->customer_id] ?? "Not Set" }}</td>
                                                 @if (session('user')->hasPermission('view_price'))
                                                 <td>€{{ amount_formatter($price,2) }}</td>
                                                 @endif
