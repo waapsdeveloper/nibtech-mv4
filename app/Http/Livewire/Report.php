@@ -61,11 +61,6 @@ class Report extends Component
         $data['colors'] = Color_model::pluck('name','id');
         $data['storages'] = Storage_model::pluck('name','id');
         $data['grades'] = Grade_model::pluck('name','id');
-        $data['variations'] = Variation_model::where('product_id',null)
-        ->orderBy('name','desc')
-        ->paginate($per_page)
-        ->onEachSide(5)
-        ->appends(request()->except('page'));
 
         $start_date = Carbon::now()->startOfMonth();
         // $start_date = date('Y-m-d 00:00:00',);
@@ -78,7 +73,7 @@ class Report extends Component
         $variation_ids = [];
         // if(request('data') == 1){
 
-        $variation_ids = Variation_model::withoutGlobalScope('Status_not_3_scope')->select('id')
+        $variation_ids = Variation_model::select('id')
             ->when(request('category') != '', function ($q) {
                 return $q->whereHas('product', function ($qu) {
                     $qu->where('category', '=', request('category'));
