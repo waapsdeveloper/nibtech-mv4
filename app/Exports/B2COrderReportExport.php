@@ -42,9 +42,9 @@ class B2COrderReportExport implements FromCollection, WithHeadings
             'stock.tester as tester',
             'admin.first_name as invoice',
             'orders.processed_at as date',
-            'orders.charges as fee',
             'order_items.price as price',
             'purchase_item.price as cost',
+            'orders.charges as fee',
             'currency.code as currency'
         )
         ->whereIn('orders.status', [3,6])
