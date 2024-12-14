@@ -838,6 +838,7 @@
 
                                                 isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
                                                 isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
+                                                isset($variation->grade_id)?$grade = $variation->grade_id->name:$grade = null;
 
                                             @endphp
                                             <tr>
@@ -845,7 +846,7 @@
                                                 {{-- <td>{{ $stock->order->customer->first_name }}</td> --}}
                                                 <td>{{ $stock->imei.$stock->serial_number }}</td>
                                                 <td>
-                                                    {{ $variation->product->model." ".$storage." ".$color." ".$variation->grade_id->name }}
+                                                    {{ $variation->product->model." ".$storage." ".$color." ".$grade }}
                                                 </td>
 
                                                 @if (session('user')->hasPermission('delete_return_item'))
