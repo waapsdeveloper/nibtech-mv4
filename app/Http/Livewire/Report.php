@@ -277,13 +277,15 @@ class Report extends Component
                 })
                 ->orWhere(function ($subQuery) use ($start_date, $end_date) {
                     // For other order_type_ids, filter by created_at
-                    $subQuery->where('orders.order_type_id', '!=', 3)
-                             ->whereBetween('orders.created_at', [$start_date, $end_date]);
+                    $subQuery->where('orders.order_type_id', 5)
+                             ->where('orders.reference_id', 999)
+                             ->whereBetween('order_items.created_at', [$start_date, $end_date]);
                 });
             })
             // ->whereBetween('orders.processed_at', [$start_date, $end_date])
             // ->whereIn('variation.id', $variation_ids)
-            ->where('orders.order_type_id', 3)
+            // ->whereIn('orders.order_type_id', [3,5])
+
             ->Where('orders.deleted_at',null)
             ->Where('order_items.deleted_at',null)
             ->Where('stock.deleted_at',null)
