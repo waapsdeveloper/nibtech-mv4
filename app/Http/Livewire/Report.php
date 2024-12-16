@@ -359,7 +359,7 @@ class Report extends Component
 
         $orders_5 = Order_model::where('order_type_id',3)
             ->whereBetween('processed_at', [$start_date, $end_date])
-            ->whereIn('status', [3,6])
+            ->where('status', 5)
             ->get();
 
         $sales_count_5 = $orders_5->count();
