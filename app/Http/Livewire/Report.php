@@ -282,6 +282,7 @@ class Report extends Component
         $data['sales_gbp'] = $sales_gbp;
         $data['sales_charge'] = $sales_charge;
         $data['items_count'] = $items_count;
+        $data['stock_count'] = $stock_count;
         $data['purchase_cost'] = $purchase_cost;
         $data['purchase_count'] = $purchase_count;
 
