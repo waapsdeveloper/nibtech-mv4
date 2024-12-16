@@ -41,8 +41,8 @@ class Variation extends Component
             }
 
 
-        $data['products'] = Products_model::all();
-        $data['colors'] = Color_model::all();
+        $data['products'] = Products_model::orderBy('model')->all();
+        $data['colors'] = Color_model::orderBy('name')->all();
         $data['storages'] = Storage_model::all();
         $data['grades'] = Grade_model::all();
         // $array = [];
