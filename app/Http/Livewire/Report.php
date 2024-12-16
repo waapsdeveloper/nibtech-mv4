@@ -271,6 +271,7 @@ class Report extends Component
         $order_items = Order_item_model::whereIn('order_id',$order_ids)->get();
         $items_count = $order_items->count();
         $stock_ids = $order_items->pluck('stock_id')->toArray();
+        $stock_count = $order_items->pluck('stock_id')->unique()->count();
         $purchase_items = Order_item_model::whereIn('stock_id',$stock_ids)->whereIn('order_id',$purchase_order_ids)->get();
         $purchase_cost = $purchase_items->sum('price');
         $purchase_count = $purchase_items->count();
