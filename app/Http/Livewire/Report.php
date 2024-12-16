@@ -314,6 +314,7 @@ class Report extends Component
         $items_count_3 = $order_items_3->count();
         $stock_ids_3 = $order_items_3->pluck('stock_id')->toArray();
         $stock_count_3 = $order_items_3->pluck('stock_id')->unique()->count();
+        $stock_duplicate_ids = $order_items_3->pluck('stock_id')->duplicates()->toArray();
         $purchase_items_3 = Order_item_model::whereIn('stock_id',$stock_ids_3)->whereIn('order_id',$purchase_order_ids)->get();
         $purchase_cost_3 = $purchase_items_3->sum('price');
         $purchase_count_3 = $purchase_items_3->count();
@@ -325,6 +326,7 @@ class Report extends Component
         $data['sales_charge_3'] = $sales_charge_3;
         $data['items_count_3'] = $items_count_3;
         $data['stock_count_3'] = $stock_count_3;
+        $data['stock_duplicate_ids'] = $stock_duplicate_ids;
         $data['purchase_cost_3'] = $purchase_cost_3;
         $data['purchase_count_3'] = $purchase_count_3;
 
