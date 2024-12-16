@@ -786,7 +786,6 @@ class Wholesale extends Component
 
         // Set document information
         $pdf->SetCreator(PDF_CREATOR);
-        // $pdf->SetTitle('Invoice');
         // $pdf->SetHeaderData('', 0, 'Invoice', '');
 
         // Add a page
@@ -797,12 +796,14 @@ class Wholesale extends Component
 
         // Additional content from your view
         if(request('packlist') == 1){
+            $pdf->SetTitle('Bulksale_Packlist_'.$order->reference_id.'_'.$order->customer->company);
 
             $html = view('export.bulksale_packlist', $data)->render();
         }elseif(request('packlist') == 2){
 
-            return Excel::download(new PacksheetExport, 'BulkSale_'.$order->reference_id.'.xlsx');
+            return Excel::download(new PacksheetExport, 'BulkSale_Packsheet_'.$order->reference_id.'_'.$order->customer->company.'.xlsx');
         }else{
+            $pdf->SetTitle('Bulksale_Invoice_'.$order->reference_id.'_'.$order->customer->company);
             $html = view('export.bulksale_invoice', $data)->render();
         }
 
