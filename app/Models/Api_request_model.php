@@ -106,7 +106,7 @@ class Api_request_model extends Model
             }
 
 
-            $gradeName = strtolower($datas->Grade); // Convert grade name to lowercase
+            $gradeName = strtolower(trim($datas->Grade)); // Convert grade name to lowercase
 
             if (in_array($gradeName, $lowercaseGrades)) {
                 // If the grade exists in the predefined grades array,
