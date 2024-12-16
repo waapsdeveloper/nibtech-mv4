@@ -269,6 +269,7 @@ class Report extends Component
         $order_ids = $orders->pluck('id')->toArray();
 
         $order_items = Order_item_model::whereIn('order_id',$order_ids)->get();
+        $items_count = $order_items->count();
         $stock_ids = $order_items->pluck('stock_id')->toArray();
         $purchase_items = Order_item_model::whereIn('stock_id',$stock_ids)->whereIn('order_id',$purchase_order_ids)->get();
         $purchase_cost = $purchase_items->sum('price');
@@ -279,6 +280,7 @@ class Report extends Component
         $data['sales_eur'] = $sales_eur;
         $data['sales_gbp'] = $sales_gbp;
         $data['sales_charge'] = $sales_charge;
+        $data['items_count'] = $items_count;
         $data['purchase_cost'] = $purchase_cost;
         $data['purchase_count'] = $purchase_count;
 
