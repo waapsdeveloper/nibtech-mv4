@@ -797,13 +797,17 @@ class Wholesale extends Component
         // Additional content from your view
         if(request('packlist') == 1){
             $pdf->SetTitle('Bulksale Packlist '.$order->reference_id.' '.$order->customer->company.' '.$order_items_2->sum('total_quantity').' pcs');
+            $filename = 'Bulksale Packlist '.$order->reference_id.' '.$order->customer->company.' '.$order_items_2->sum('total_quantity').' pcs.pdf';
 
             $html = view('export.bulksale_packlist', $data)->render();
         }elseif(request('packlist') == 2){
 
             return Excel::download(new PacksheetExport, 'BulkSale Packsheet '.$order->reference_id.' '.$order->customer->company.' '.$order_items_2->sum('total_quantity').' pcs.xlsx');
+
+
         }else{
             $pdf->SetTitle('Bulksale Invoice '.$order->reference_id.' '.$order->customer->company.' '.$order_items_2->sum('total_quantity').' pcs');
+            $filename = 'Bulksale Invoice '.$order->reference_id.' '.$order->customer->company.' '.$order_items_2->sum('total_quantity').' pcs.pdf';
             $html = view('export.bulksale_invoice', $data)->render();
         }
 
@@ -817,7 +821,7 @@ class Wholesale extends Component
         // file_put_contents('invoice.pdf', $pdfContent);
 
         // Get the PDF content
-        $pdf->Output('', 'I');
+        $pdf->Output($filename, 'I');
 
         // $pdfContent = $pdf->Output('', 'S');
         // Return a response or redirect
