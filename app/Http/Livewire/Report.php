@@ -238,6 +238,46 @@ class Report extends Component
         $pdf->generatePdf();
     }
 
+    public function b2c_orders_report()
+    {
+        $purchase_order_ids = Order_model::where('order_type_id',1)->pluck('id')->toArray();
+
+        $start_date = request('start_date') . " 23:00:00" ?? Carbon::now()->startOfMonth();
+        $end_date = request('end_date') . " 22:59:59" ?? date('Y-m-d 23:59:59');
+        $data['start_date'] = date('Y-m-d', strtotime($start_date));
+        $data['end_date'] = date("Y-m-d", strtotime($end_date));
+
+        $orders = Order_model::where('order_type_id',3)
+            ->whereBetween('processed_at', [$start_date, $end_date])
+            ->whereIn('status', [3,6])
+            ->get();
+
+        $sales_count = $orders->count();
+        $sales_eur = $orders->where('currency',4)->sum('price');
+        $sales_gbp = $orders->where('currency',5)->sum('price');
+        $sales_charge = $orders->sum('charges');
+        $order_ids = $orders->pluck('id')->toArray();
+
+        $order_items = Order_item_model::whereIn('order_id',$order_ids)->get();
+        $stock_ids = $order_items->pluck('stock_id')->toArray();
+        $purchase_items = Order_item_model::whereIn('stock_id',$stock_ids)->whereIn('order_id',$purchase_order_ids)->get();
+        $purchase_cost = $purchase_items->sum('price');
+        $purchase_count = $purchase_items->count();
+
+
+        $data['sales_count'] = $sales_count;
+        $data['sales_eur'] = $sales_eur;
+        $data['sales_gbp'] = $sales_gbp;
+        $data['sales_charge'] = $sales_charge;
+        $data['purchase_cost'] = $purchase_cost;
+        $data['purchase_count'] = $purchase_count;
+
+
+        dd($data);
+
+    }
+
+
     public function ecommerce_report()
     {
         $data['categories'] = Category_model::pluck('name','id');
