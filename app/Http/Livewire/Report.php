@@ -244,6 +244,9 @@ class Report extends Component
 
         $start_date = request('start_date') . " 23:00:00" ?? Carbon::now()->startOfMonth();
         $end_date = request('end_date') . " 22:59:59" ?? date('Y-m-d 23:59:59');
+
+        dd($start_date, $end_date);
+
         $data['start_date'] = date('Y-m-d', strtotime($start_date));
         $data['end_date'] = date("Y-m-d", strtotime($end_date));
 
