@@ -744,7 +744,6 @@
                                     isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
                                     isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
                                 @endphp
-
                                             @foreach ($variation->stocks->sortByDesc('stocks.updated_at') as $stock)
                                                 @php
                                                 $order_item = $stock->sale_item($order_id);
