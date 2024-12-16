@@ -257,34 +257,165 @@ class Report extends Component
         $data['start_date'] = date('Y-m-d', strtotime($start_date));
         $data['end_date'] = date("Y-m-d", strtotime($end_date));
 
-        $orders = Order_model::where('order_type_id',3)
+        $orders_1 = Order_model::where('order_type_id',3)
+            ->whereBetween('processed_at', [$start_date, $end_date])
+            ->where('status', 1)
+            ->get();
+
+        $sales_count_1 = $orders_1->count();
+        $sales_eur_1 = $orders_1->where('currency',4)->sum('price');
+        $sales_gbp_1 = $orders_1->where('currency',5)->sum('price');
+        $sales_charge_1 = $orders_1->sum('charges');
+        $order_ids_1 = $orders_1->pluck('id')->toArray();
+
+        $order_items_1 = Order_item_model::whereIn('order_id',$order_ids_1)->get();
+        $items_count_1 = $order_items_1->count();
+
+
+        $data['sales_count_1'] = $sales_count_1;
+        $data['sales_eur_1'] = $sales_eur_1;
+        $data['sales_gbp_1'] = $sales_gbp_1;
+        $data['sales_charge_1'] = $sales_charge_1;
+        $data['items_count_1'] = $items_count_1;
+
+        $orders_2 = Order_model::where('order_type_id',3)
+            ->whereBetween('processed_at', [$start_date, $end_date])
+            ->where('status', 2)
+            ->get();
+
+        $sales_count_2 = $orders_2->count();
+        $sales_eur_2 = $orders_2->where('currency',4)->sum('price');
+        $sales_gbp_2 = $orders_2->where('currency',5)->sum('price');
+        $sales_charge_2 = $orders_2->sum('charges');
+        $order_ids_2 = $orders_2->pluck('id')->toArray();
+
+        $order_items_2 = Order_item_model::whereIn('order_id',$order_ids_2)->get();
+        $items_count_2 = $order_items_2->count();
+
+
+        $data['sales_count_2'] = $sales_count_2;
+        $data['sales_eur_2'] = $sales_eur_2;
+        $data['sales_gbp_2'] = $sales_gbp_2;
+        $data['sales_charge_2'] = $sales_charge_2;
+        $data['items_count_2'] = $items_count_2;
+
+        $orders_3 = Order_model::where('order_type_id',3)
+            ->whereBetween('processed_at', [$start_date, $end_date])
+            ->where('status', 3)
+            ->get();
+
+        $sales_count_3 = $orders_3->count();
+        $sales_eur_3 = $orders_3->where('currency',4)->sum('price');
+        $sales_gbp_3 = $orders_3->where('currency',5)->sum('price');
+        $sales_charge_3 = $orders_3->sum('charges');
+        $order_ids_3 = $orders_3->pluck('id')->toArray();
+
+        $order_items_3 = Order_item_model::whereIn('order_id',$order_ids_3)->get();
+        $items_count_3 = $order_items_3->count();
+        $stock_ids_3 = $order_items_3->pluck('stock_id')->toArray();
+        $stock_count_3 = $order_items_3->pluck('stock_id')->unique()->count();
+        $purchase_items_3 = Order_item_model::whereIn('stock_id',$stock_ids_3)->whereIn('order_id',$purchase_order_ids)->get();
+        $purchase_cost_3 = $purchase_items_3->sum('price');
+        $purchase_count_3 = $purchase_items_3->count();
+
+
+        $data['sales_count_3'] = $sales_count_3;
+        $data['sales_eur_3'] = $sales_eur_3;
+        $data['sales_gbp_3'] = $sales_gbp_3;
+        $data['sales_charge_3'] = $sales_charge_3;
+        $data['items_count_3'] = $items_count_3;
+        $data['stock_count_3'] = $stock_count_3;
+        $data['purchase_cost_3'] = $purchase_cost_3;
+        $data['purchase_count_3'] = $purchase_count_3;
+
+        $orders_4 = Order_model::where('order_type_id',3)
+            ->whereBetween('processed_at', [$start_date, $end_date])
+            ->where('status', 4)
+            ->get();
+
+        $sales_count_4 = $orders_4->count();
+        $sales_eur_4 = $orders_4->where('currency',4)->sum('price');
+        $sales_gbp_4 = $orders_4->where('currency',5)->sum('price');
+        $sales_charge_4 = $orders_4->sum('charges');
+        $order_ids_4 = $orders_4->pluck('id')->toArray();
+
+        $order_items_4 = Order_item_model::whereIn('order_id',$order_ids_4)->get();
+        $items_count_4 = $order_items_4->count();
+        $stock_ids_4 = $order_items_4->pluck('stock_id')->toArray();
+        $stock_count_4 = $order_items_4->pluck('stock_id')->unique()->count();
+        $purchase_items_4 = Order_item_model::whereIn('stock_id',$stock_ids_4)->whereIn('order_id',$purchase_order_ids)->get();
+        $purchase_cost_4 = $purchase_items_4->sum('price');
+        $purchase_count_4 = $purchase_items_4->count();
+
+
+        $data['sales_count_4'] = $sales_count_4;
+        $data['sales_eur_4'] = $sales_eur_4;
+        $data['sales_gbp_4'] = $sales_gbp_4;
+        $data['sales_charge_4'] = $sales_charge_4;
+        $data['items_count'] = $items_count_4;
+        $data['stock_count_4'] = $stock_count_4;
+        $data['purchase_cost_4'] = $purchase_cost_4;
+        $data['purchase_count_4'] = $purchase_count_4;
+
+        $orders_5 = Order_model::where('order_type_id',3)
             ->whereBetween('processed_at', [$start_date, $end_date])
             ->whereIn('status', [3,6])
             ->get();
 
-        $sales_count = $orders->count();
-        $sales_eur = $orders->where('currency',4)->sum('price');
-        $sales_gbp = $orders->where('currency',5)->sum('price');
-        $sales_charge = $orders->sum('charges');
-        $order_ids = $orders->pluck('id')->toArray();
+        $sales_count_5 = $orders_5->count();
+        $sales_eur_5 = $orders_5->where('currency',4)->sum('price');
+        $sales_gbp_5 = $orders_5->where('currency',5)->sum('price');
+        $sales_charge_5 = $orders_5->sum('charges');
+        $order_ids_5 = $orders_5->pluck('id')->toArray();
 
-        $order_items = Order_item_model::whereIn('order_id',$order_ids)->get();
-        $items_count = $order_items->count();
-        $stock_ids = $order_items->pluck('stock_id')->toArray();
-        $stock_count = $order_items->pluck('stock_id')->unique()->count();
-        $purchase_items = Order_item_model::whereIn('stock_id',$stock_ids)->whereIn('order_id',$purchase_order_ids)->get();
-        $purchase_cost = $purchase_items->sum('price');
-        $purchase_count = $purchase_items->count();
+        $order_items_5 = Order_item_model::whereIn('order_id',$order_ids_5)->get();
+        $items_count_5 = $order_items_5->count();
+        $stock_ids_5 = $order_items_5->pluck('stock_id')->toArray();
+        $stock_count_5 = $order_items_5->pluck('stock_id')->unique()->count();
+        $purchase_items_5 = Order_item_model::whereIn('stock_id',$stock_ids_5)->whereIn('order_id',$purchase_order_ids)->get();
+        $purchase_cost_5 = $purchase_items_5->sum('price');
+        $purchase_count_5 = $purchase_items_5->count();
 
 
-        $data['sales_count'] = $sales_count;
-        $data['sales_eur'] = $sales_eur;
-        $data['sales_gbp'] = $sales_gbp;
-        $data['sales_charge'] = $sales_charge;
-        $data['items_count'] = $items_count;
-        $data['stock_count'] = $stock_count;
-        $data['purchase_cost'] = $purchase_cost;
-        $data['purchase_count'] = $purchase_count;
+        $data['sales_count_5'] = $sales_count_5;
+        $data['sales_eur_5'] = $sales_eur_5;
+        $data['sales_gbp_5'] = $sales_gbp_5;
+        $data['sales_charge_5'] = $sales_charge_5;
+        $data['items_count_5'] = $items_count_5;
+        $data['stock_count_5'] = $stock_count_5;
+        $data['purchase_cost_5'] = $purchase_cost_5;
+        $data['purchase_count_5'] = $purchase_count_5;
+
+        $orders_6 = Order_model::where('order_type_id',3)
+            ->whereBetween('processed_at', [$start_date, $end_date])
+            ->where('status', 6)
+            ->get();
+
+        $sales_count_6 = $orders_6->count();
+        $sales_eur_6 = $orders_6->where('currency',4)->sum('price');
+        $sales_gbp_6 = $orders_6->where('currency',5)->sum('price');
+        $sales_charge_6 = $orders_6->sum('charges');
+        $order_ids_6 = $orders_6->pluck('id')->toArray();
+
+        $order_items_6 = Order_item_model::whereIn('order_id',$order_ids_6)->get();
+        $items_count_6 = $order_items_6->count();
+        $stock_ids_6 = $order_items_6->pluck('stock_id')->toArray();
+        $stock_count_6 = $order_items_6->pluck('stock_id')->unique()->count();
+        $purchase_items_6 = Order_item_model::whereIn('stock_id',$stock_ids_6)->whereIn('order_id',$purchase_order_ids)->get();
+        $purchase_cost_6 = $purchase_items_6->sum('price');
+        $purchase_count_6 = $purchase_items_6->count();
+
+
+        $data['sales_count_6'] = $sales_count_6;
+        $data['sales_eur_6'] = $sales_eur_6;
+        $data['sales_gbp_6'] = $sales_gbp_6;
+        $data['sales_charge_6'] = $sales_charge_6;
+        $data['items_count_6'] = $items_count_6;
+        $data['stock_count_6'] = $stock_count_6;
+        $data['purchase_cost_6'] = $purchase_cost_6;
+        $data['purchase_count_6'] = $purchase_count_6;
+
+
 
 
         dd($data);
