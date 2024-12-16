@@ -242,6 +242,7 @@ class Report extends Component
     {
         $data['categories'] = Category_model::pluck('name','id');
 
+        DB::statement("SET SESSION group_concat_max_len = 1500000;");
         $start_date = Carbon::now()->startOfMonth();
         // $start_date = date('Y-m-d 00:00:00',);
         $end_date = date('Y-m-d 23:59:59');
