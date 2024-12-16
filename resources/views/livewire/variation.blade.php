@@ -213,7 +213,7 @@
                                       </td>
                                       <td>{{ $product->name }}</td>
                                       <td>{{ $product->sku }}
-                                          @if ($product->sku == null && $product->grade < 6)
+                                          @if ($product->grade < 6)
                                               @if ($product->duplicates->count() > 0)
                                               Merge With Available SKUs:
                                                   <div class="input-group">
