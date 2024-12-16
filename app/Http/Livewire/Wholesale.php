@@ -796,14 +796,14 @@ class Wholesale extends Component
 
         // Additional content from your view
         if(request('packlist') == 1){
-            $pdf->SetTitle('Bulksale Packlist '.$order->reference_id.' '.$order->customer->company.' '.$order_items_2->count().' items');
+            $pdf->SetTitle('Bulksale Packlist '.$order->reference_id.' '.$order->customer->company.' '.$order_items_2->sum('total_quantity').' items');
 
             $html = view('export.bulksale_packlist', $data)->render();
         }elseif(request('packlist') == 2){
 
             return Excel::download(new PacksheetExport, 'BulkSale Packsheet '.$order->reference_id.' '.$order->customer->company.'.xlsx');
         }else{
-            $pdf->SetTitle('Bulksale Invoice '.$order->reference_id.' '.$order->customer->company.' '.$order_items_2->count().' items');
+            $pdf->SetTitle('Bulksale Invoice '.$order->reference_id.' '.$order->customer->company.' '.$order_items_2->sum('total_quantity').' items');
             $html = view('export.bulksale_invoice', $data)->render();
         }
 
