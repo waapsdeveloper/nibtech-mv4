@@ -174,7 +174,7 @@
                               <tr>
                                   <th><small><b>No</b></small></th>
                                   <th><small><b>Reference ID</b></small></th>
-                                  <th class="wd-250"><small><b>Product</b></small></th>
+                                  <th class=""><small><b>Product</b></small></th>
                                   <th><small><b>Name</b></small></th>
                                   <th><small><b>SKU</b></small></th>
                                   <th><small><b>Color</b></small></th>
