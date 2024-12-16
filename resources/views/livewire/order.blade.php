@@ -552,7 +552,7 @@
                                                             @csrf
                                                             <input type="hidden" name="sort" value="{{request('sort')}}">
                                                             <div class="input-group">
-                                                                <input type="text" name="tester[]" placeholder="Tester" list="tester_list" class="form-control form-control-sm" style="max-width: 50px">
+                                                                <input type="text" name="tester[]" placeholder="Tester" list="tester_list" class="form-control form-control-sm" style="max-width: 55px">
                                                                 <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm">
 
                                                                 <input type="hidden" name="sku[]" value="{{ $variation->sku ?? "Variation Issue" }}">
@@ -573,7 +573,7 @@
                                                             @for ($in = 1; $in <= $item->quantity; $in ++)
 
                                                                 <div class="input-group">
-                                                                    <input type="text" name="tester[]" placeholder="Tester" list="tester_list" class="form-control form-control-sm" style="max-width: 50px">
+                                                                    <input type="text" name="tester[]" placeholder="Tester" list="tester_list" class="form-control form-control-sm" style="max-width: 55px">
                                                                     <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm" required>
                                                                 </div>
                                                             <input type="hidden" name="sku[]" value="{{ $variation->sku }}">
@@ -593,7 +593,7 @@
                                                                 @for ($in = 1; $in <= $itm->quantity; $in++)
 
                                                                     <div class="input-group">
-                                                                        <input type="text" name="tester[]" list="tester_list" placeholder="Tester" class="form-control form-control-sm" style="max-width: 50px">
+                                                                        <input type="text" name="tester[]" list="tester_list" placeholder="Tester" class="form-control form-control-sm" style="max-width: 55px">
                                                                         <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm" required title="for SKU:{{ $itm->variation->sku }}">
                                                                     </div>
                                                                     <input type="hidden" name="sku[]" value="{{ $itm->variation->sku }}">
