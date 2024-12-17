@@ -71,6 +71,7 @@ class Signin extends Component
 
         if ($valid) {
             $admin->is_2fa_enabled = true;
+            $admin->two_factor_confirmed_at = now();
             $admin->save();
             session()->put('2fa_verified', true);
             return redirect('/')->with('success', '2FA Verified Successfully.');
