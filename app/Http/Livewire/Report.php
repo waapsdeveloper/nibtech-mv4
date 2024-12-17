@@ -315,6 +315,7 @@ class Report extends Component
         $stock_ids_3 = $order_items_3->pluck('stock_id')->toArray();
         $stock_count_3 = $order_items_3->pluck('stock_id')->unique()->count();
         $stock_duplicate_ids = $order_items_3->pluck('stock_id')->duplicates()->toArray();
+        $stock_duplicate_ids = Stock_model::whereIn('id',$stock_duplicate_ids)->pluck('imei', 'id')->toArray();
         $purchase_items_3 = Order_item_model::whereIn('stock_id',$stock_ids_3)->whereIn('order_id',$purchase_order_ids)->get();
         $purchase_cost_3 = $purchase_items_3->sum('price');
         $purchase_count_3 = $purchase_items_3->count();
