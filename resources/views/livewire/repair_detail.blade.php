@@ -86,7 +86,6 @@
 
 
                 @if (session('user')->hasPermission('repair_revert_status'))
-                @if ($process->status >= 2)
                     <br>
                     <a href="{{url('repair/revert_status').'/'.$process->id}}">Revert Back to Pending</a>
                 @endif
