@@ -1266,18 +1266,29 @@ class Report extends Component
             $q->where('process_type_id', 9);
         })->pluck('stock_id');
 
-        $total_repair = Stock_model::whereNotIn('id', $total_external_repair)
-        ->whereHas('order',function ($q) use ($vendor_id){
+        $total_2x = Stock_model::whereHas('order',function ($q) use ($vendor_id){
             $q->where('customer_id', $vendor_id);
         })->whereHas('stock_operations.new_variation', function ($q){
-            $q->where('grade', 8);
+            $q->where('grade', 6);
+        })->whereNotIn('id', $total_external_repair)->pluck('id');
+
+        $total_unknown_part = Stock_model::whereHas('order',function ($q) use ($vendor_id){
+            $q->where('customer_id', $vendor_id);
+        })->whereHas('stock_operations.new_variation', function ($q){
+            $q->where('grade', 20);
+        })->whereNotIn('id', $total_external_repair)->whereNotIn('id', $total_2x)->pluck('id');
+
+        $total_repair = Stock_model::whereNotIn('id', $total_external_repair)->whereNotIn('id', $total_2x)->whereNotIn('id', $total_unknown_part)->whereHas('order',function ($q) use ($vendor_id){
+            $q->where('customer_id', $vendor_id);
+        })->whereHas('stock_operations.new_variation', function ($q){
+            $q->where('grade', 7);
         })->pluck('id');
 
         $total_battery = Stock_model::whereHas('order',function ($q) use ($vendor_id){
             $q->where('customer_id', $vendor_id);
         })->whereHas('stock_operations.new_variation', function ($q){
             $q->where('grade', 21);
-        })->whereNotIn('id', $total_repair)->whereNotIn('id', $total_external_repair)->pluck('id');
+        })->whereNotIn('id', $total_external_repair)->whereNotIn('id', $total_2x)->whereNotIn('id', $total_unknown_part)->whereNotIn('id', $total_repair)->pluck('id');
 
         $total_external_repair_cost = Process_stock_model::whereIn('stock_id', $total_external_repair)->sum('price');
 
@@ -1286,6 +1297,8 @@ class Report extends Component
         $data['total_external_repair'] = $total_external_repair->count();
         $data['total_battery'] = $total_battery->count();
         $data['total_external_repair_cost'] = $total_external_repair_cost;
+        $data['total_2x'] = $total_2x->count();
+        $data['total_unknown_part'] = $total_unknown_part->count();
 
 
 
