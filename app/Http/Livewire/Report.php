@@ -1326,6 +1326,7 @@ class Report extends Component
 
         $i = 0;
         $j = 0;
+        $count = 0;
         $data = [];
         foreach ($rma_report as $key => $value){
             $datas = [];
@@ -1336,6 +1337,7 @@ class Report extends Component
             $datas['sr_no'] = ++$i;
             $datas['description'] = $key;
             $datas['count'] = count($value);
+            $count += count($value);
             $datas['imeis'] = $imeis;
             $datas['actions'] = '<a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18" style="font-size: 20px;"></i></a>
             <div class="dropdown-menu">
@@ -1346,6 +1348,15 @@ class Report extends Component
 
             $data[] = $datas;
         }
+
+        $data[] = [
+            'sr_no' => '',
+            'description' => 'Total',
+            'count' => $count,
+            'imeis' => '',
+            'actions' => ''
+        ];
+
 
         return response()->json($data);
     }
@@ -1373,6 +1384,7 @@ class Report extends Component
         $i = 0;
         $j = 0;
         $data = [];
+        $count = 0;
         foreach ($repair_report as $key => $value){
             $datas = [];
             $j++;
@@ -1382,6 +1394,7 @@ class Report extends Component
             $datas['sr_no'] = ++$i;
             $datas['description'] = $key;
             $datas['count'] = count($value);
+            $count += count($value);
             $datas['imeis'] = $imeis;
             $datas['actions'] = '<a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18" style="font-size: 20px;"></i></a>
             <div class="dropdown-menu">
@@ -1392,6 +1405,14 @@ class Report extends Component
 
             $data[] = $datas;
         }
+
+        $data[] = [
+            'sr_no' => '',
+            'description' => 'Total',
+            'count' => $count,
+            'imeis' => '',
+            'actions' => ''
+        ];
 
 
 
