@@ -19,6 +19,8 @@ class Ensure2FAIsVerified
             $ip_address = Ip_address_model::where('ip',$ip)->where('status',1)->first();
             if($ip_address == null || $admin->two_factor_confirmed_at < now()->startOfDay()){
                 return redirect()->route('admin.2fa');
+            }else{
+                $request->session()->put('2fa_verified', true);
             }
         }
 
