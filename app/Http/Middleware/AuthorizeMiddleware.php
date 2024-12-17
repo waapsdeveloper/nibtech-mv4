@@ -8,6 +8,7 @@ use App\Models\Admin_model;
 use App\Models\Grade_model;
 use App\Models\Ip_address_model;
 use Illuminate\Foundation\Inspiring;
+use Illuminate\Support\Facades\Log;
 
 class AuthorizeMiddleware
 {
@@ -45,6 +46,8 @@ class AuthorizeMiddleware
         session()->put('user',$user);
         // Check if the user has the required permission for the current page
         if (!$user->hasPermission($currentRoute)) {
+            // Log the unauthorized access attempt
+            Log::info('Unauthorized access attempt by user '.$user->first_name.' to '.$currentRoute);
             abort(403, 'Quote of the day: '.Inspiring::just_quote());
         }
         // Remove the 'page' session variable
