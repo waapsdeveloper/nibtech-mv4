@@ -198,7 +198,8 @@ class Repair extends Component
         }else{
             $per_page = 20;
         }
-        $data['vendors'] = Customer_model::where('is_vendor',3)->pluck('company','id');
+        $data['repairers'] = Customer_model::where('type',3)->pluck('company','id');
+        $data['vendors'] = Customer_model::whereIn('type',  [1,2])->get();
         $data['exchange_rates'] = ExchangeRate::pluck('rate','target_currency');
         $data['storages'] = Storage_model::pluck('name','id');
         $data['products'] = Products_model::pluck('model','id');

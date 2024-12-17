@@ -32,8 +32,8 @@
                     @csrf
                     <div class="">
                         <select name="customer_id" class="form-select">
-                            <option value="" disabled selected>Select Vendor</option>
-                            @foreach ($vendors as $id=>$vendor)
+                            <option value="" disabled selected>Select Repairer</option>
+                            @foreach ($repairers as $id=>$vendor)
                                 <option value="{{ $id }}" {{ $process->customer_id == $id ? 'selected' : '' }}>{{ $vendor }}</option>
 
                             @endforeach
