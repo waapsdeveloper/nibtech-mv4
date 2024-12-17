@@ -157,19 +157,19 @@ class Api_request_model extends Model
                 // retrieve its index
                 $admin = array_search($adminName, $lowercaseAdmins);
             }else{
-                if($adminName == 'paras khan'){
-                    $admin = 6;
-                }elseif(trim($adminName) == 'sangeeta punia'){
-                    $admin = 8;
-                }elseif($adminName == 'owais'){
-                    $admin = 2;
+                // if($adminName == 'paras khan'){
+                //     $admin = 6;
+                // }elseif(trim($adminName) == 'sangeeta punia'){
+                //     $admin = 8;
+                // }elseif($adminName == 'owais'){
+                //     $admin = 2;
                 // }elseif($adminName == '' && $datas->PCName == 'PC6'){
                 //     $admin = 16;
-                }else{
+                // }else{
 
                     echo "Please create/change Team Member First Name to: ".$adminName;
                     continue;
-                }
+                // }
             }
 
             if($stock != null){
@@ -208,7 +208,7 @@ class Api_request_model extends Model
                 $variation = Variation_model::firstOrNew($new_variation);
                 if($stock->status != 2 || $stock->last_item()->order->customer_id == 3955){
 
-                    if($stock->last_item()->order->customer_id == 3955){
+                    if($stock->last_item()->order->customer_id == 3955 && $stock->status == 2){
 
 
                         $curl = curl_init();
