@@ -35,7 +35,7 @@ class CheckIPMiddleware
             // dd($ip_address);
             if($ip_address == null){
                 // dd($ip);
-                Log::info('New IP detected  for user '.$user->name.' with IP '.$ip);
+                Log::info('New IP detected  for user '.$user->first_name.' with IP '.$ip);
                 abort(403, 'Quote of the day: '.Inspiring::just_quote());
             }
         }else{
