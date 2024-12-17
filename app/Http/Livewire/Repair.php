@@ -84,11 +84,16 @@ class Repair extends Component
     public function repair_ship($repair_id){
         $repair = Process_model::find($repair_id);
         $currency = Currency_model::where('code',request('currency'))->first();
+
         if($currency != null && $currency->id != 4){
             $repair->currency = $currency->id;
             $repair->exchange_rate = request('rate');
         }
         $repair->description = request('tracking_number');
+
+        if(request('customer_id') != $repair->customer_id && request('customer_id') != null){
+            $repair->customer_id = request('customer_id');
+        }
 
         if(request('approve') == 1){
             $repair->status = 2;
@@ -115,6 +120,12 @@ class Repair extends Component
         $repair->status = 3;
         $repair->save();
 
+        return redirect()->back();
+    }
+    public function repair_revert_status($repair_id){
+        $repair = Process_model::find($repair_id);
+        $repair->status -= 1;
+        $repair->save();
         return redirect()->back();
     }
     public function delete_repair($process_id){
