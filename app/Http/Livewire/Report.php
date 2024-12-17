@@ -21,6 +21,7 @@ use App\Models\Customer_model;
 use App\Models\Storage_model;
 use App\Models\Grade_model;
 use App\Models\Multi_type_model;
+use App\Models\Process_stock_model;
 use App\Models\Product_storage_sort_model;
 use App\Models\Variation_model;
 use App\Models\Stock_model;
@@ -1257,6 +1258,36 @@ class Report extends Component
         $data['sold_stock_count'] = $sold_stock_count;
         $data['available_stock_cost'] = $available_stock_cost;
         $data['sold_stock_cost'] = $sold_stock_price;
+
+
+        $total_repair = Stock_model::whereHas('order',function ($q) use ($vendor_id){
+            $q->where('customer_id', $vendor_id);
+        })->whereHas('stock_operations.new_variation', function ($q){
+            $q->where('grade', 8);
+        })->pluck('id');
+
+        $total_external_repair = Process_stock_model::whereNotIn('stock_id', $total_repair)->whereHas('stock.order',function ($q) use ($vendor_id){
+            $q->where('customer_id', $vendor_id);
+        })->whereHas('process', function ($q){
+            $q->where('process_type_id', 9);
+        })->pluck('stock_id');
+
+        $total_battery = Stock_model::whereHas('order',function ($q) use ($vendor_id){
+            $q->where('customer_id', $vendor_id);
+        })->whereHas('stock_operations.new_variation', function ($q){
+            $q->where('grade', 21);
+        })->whereNotIn('id', $total_repair)->whereNotIn('id', $total_external_repair)->pluck('id');
+
+        $total_external_repair_cost = Process_stock_model::whereIn('stock_id', $total_repair)->sum('price');
+
+
+        $data['total_repair'] = $total_repair->count();
+        $data['total_external_repair'] = $total_external_repair->count();
+        $data['total_battery'] = $total_battery->count();
+        $data['total_external_repair_cost'] = $total_external_repair_cost;
+
+
+
 
 
         // dd($repair_report);
