@@ -1260,17 +1260,18 @@ class Report extends Component
         $data['sold_stock_cost'] = $sold_stock_price;
 
 
-        $total_repair = Stock_model::whereHas('order',function ($q) use ($vendor_id){
-            $q->where('customer_id', $vendor_id);
-        })->whereHas('stock_operations.new_variation', function ($q){
-            $q->where('grade', 8);
-        })->pluck('id');
-
-        $total_external_repair = Process_stock_model::whereNotIn('stock_id', $total_repair)->whereHas('stock.order',function ($q) use ($vendor_id){
+        $total_external_repair = Process_stock_model::whereHas('stock.order',function ($q) use ($vendor_id){
             $q->where('customer_id', $vendor_id);
         })->whereHas('process', function ($q){
             $q->where('process_type_id', 9);
         })->pluck('stock_id');
+
+        $total_repair = Stock_model::whereNotIn('id', $total_external_repair)
+        ->whereHas('order',function ($q) use ($vendor_id){
+            $q->where('customer_id', $vendor_id);
+        })->whereHas('stock_operations.new_variation', function ($q){
+            $q->where('grade', 8);
+        })->pluck('id');
 
         $total_battery = Stock_model::whereHas('order',function ($q) use ($vendor_id){
             $q->where('customer_id', $vendor_id);
@@ -1278,7 +1279,7 @@ class Report extends Component
             $q->where('grade', 21);
         })->whereNotIn('id', $total_repair)->whereNotIn('id', $total_external_repair)->pluck('id');
 
-        $total_external_repair_cost = Process_stock_model::whereIn('stock_id', $total_repair)->sum('price');
+        $total_external_repair_cost = Process_stock_model::whereIn('stock_id', $total_external_repair)->sum('price');
 
 
         $data['total_repair'] = $total_repair->count();
