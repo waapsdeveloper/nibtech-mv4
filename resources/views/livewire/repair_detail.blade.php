@@ -34,7 +34,7 @@
                         <select name="customer_id" class="form-select">
                             <option value="" disabled selected>Select Vendor</option>
                             @foreach ($vendors as $id=>$vendor)
-                                <option value="{{ $id }}" {{ $order->customer_id == $id ? 'selected' : '' }}>{{ $vendor }}</option>
+                                <option value="{{ $id }}" {{ $process->customer_id == $id ? 'selected' : '' }}>{{ $vendor }}</option>
 
                             @endforeach
                         </select>
