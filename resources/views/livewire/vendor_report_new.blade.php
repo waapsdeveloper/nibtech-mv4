@@ -69,6 +69,8 @@
                 <div class="col-6"><h6>Total External Repair Cost:</h6></div><div class="col-6"><h6>€{{ amount_formatter($total_external_repair_cost) }}</h6></div>
                 <div class="col-6"><h6>Total Repair:</h6></div><div class="col-6"><h6>{{ $total_repair }}</h6></div>
                 <div class="col-6"><h6>Total Battery:</h6></div><div class="col-6"><h6>{{ $total_battery }}</h6></div>
+                <div class="col-6"><h6>Total 2X Stallone:</h6></div><div class="col-6"><h6>{{ $total_2x }}</h6></div>
+                <div class="col-6"><h6>Total Unknown Parts:</h6></div><div class="col-6"><h6>{{ $total_unknown_part }}</h6></div>
             </div>
 
         </div>
