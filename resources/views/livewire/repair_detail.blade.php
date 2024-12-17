@@ -30,6 +30,15 @@
                 @if ($process->status == 1)
                 <form class="form-inline" id="approveform" method="POST" action="{{url('repair/ship').'/'.$process->id}}">
                     @csrf
+                    <div class="">
+                        <select name="customer_id" class="form-select">
+                            <option value="" disabled selected>Select Vendor</option>
+                            @foreach ($vendors as $id=>$vendor)
+                                <option value="{{ $id }}" {{ $order->customer_id == $id ? 'selected' : '' }}>{{ $vendor }}</option>
+
+                            @endforeach
+                        </select>
+                    </div>
                     <div class="form-floating">
                         <input type="text" list="currencies" id="currency" name="currency" class="form-control" value="{{$process->currency_id->code}}">
                         <datalist id="currencies">
@@ -73,6 +82,12 @@
                 @else
                 <br>
                 Tracking Number: <a href="https://www.dhl.com/gb-en/home/tracking/tracking-express.html?submit=1&tracking-id={{$process->description}}" target="_blank"> {{$process->description}}</a>
+
+
+
+                @if (session('user')->hasPermission('repair_revert_status'))
+                    <a href="{{url('repair/revert_status').'/'.$process->id}}">Revert Back to Pending</a>
+                @endif
 
                 @endif
                     @if ($process->status == 2 && $variations->count() == 0)
