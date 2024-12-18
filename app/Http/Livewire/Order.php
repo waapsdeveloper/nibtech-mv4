@@ -1428,7 +1428,7 @@ class Order extends Component
                 $product = Products_model::where('model',$n)->first();
                 if($product == null){
                     session()->put('error', 'Product Not Found');
-                    return redirect()->back();
+                    // return redirect()->back();
                 }
                 $variation = Variation_model::firstOrNew(['product_id' => $product->id, 'grade' => 9, 'storage' => $gb, 'color' => null]);
                 $variation->save();
@@ -1436,17 +1436,19 @@ class Order extends Component
                 $variation = $variation->id;
             }
 
+            if(ctype_digit($variation)){
 
-            foreach($issues as $issue){
-                $data = json_decode($issue->data);
-                // echo $variation." ".$data->imei." ".$data->cost;
+                foreach($issues as $issue){
+                    $data = json_decode($issue->data);
+                    // echo $variation." ".$data->imei." ".$data->cost;
 
 
 
-                if($this->add_purchase_item($issue->order_id, $data->imei, $variation, $data->cost, 1) == 1){
-                    $issue->delete();
+                    if($this->add_purchase_item($issue->order_id, $data->imei, $variation, $data->cost, 1) == 1){
+                        $issue->delete();
+                    }
+
                 }
-
             }
         }
         if(request('add_imei') == 1){
