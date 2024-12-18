@@ -1356,19 +1356,19 @@ class Report extends Component
             $q->where('process_type_id', 9);
         })->pluck('stock_id');
 
-        $total_2x_time = Stock_model::whereIn('order',$purchase_order_ids_time)->whereHas('stock_operations.new_variation', function ($q){
+        $total_2x_time = Stock_model::whereIn('order_id',$purchase_order_ids_time)->whereHas('stock_operations.new_variation', function ($q){
             $q->where('grade', 6);
         })->whereNotIn('id', $total_external_repair_time)->pluck('id');
 
-        $total_unknown_part_time = Stock_model::whereIn('order',$purchase_order_ids_time)->whereHas('stock_operations.new_variation', function ($q){
+        $total_unknown_part_time = Stock_model::whereIn('order_id',$purchase_order_ids_time)->whereHas('stock_operations.new_variation', function ($q){
             $q->where('grade', 20);
         })->whereNotIn('id', $total_external_repair_time)->whereNotIn('id', $total_2x_time)->pluck('id');
 
-        $total_repair_time = Stock_model::whereNotIn('id', $total_external_repair_time)->whereNotIn('id', $total_2x_time)->whereNotIn('id', $total_unknown_part_time)->wherein('order',$purchase_order_ids_time)->whereHas('stock_operations.new_variation', function ($q){
+        $total_repair_time = Stock_model::whereNotIn('id', $total_external_repair_time)->whereNotIn('id', $total_2x_time)->whereNotIn('id', $total_unknown_part_time)->wherein('order_id',$purchase_order_ids_time)->whereHas('stock_operations.new_variation', function ($q){
             $q->where('grade', 7);
         })->pluck('id');
 
-        $total_battery_time = Stock_model::whereIn('order',$purchase_order_ids_time)->whereHas('stock_operations.new_variation', function ($q){
+        $total_battery_time = Stock_model::whereIn('order_id',$purchase_order_ids_time)->whereHas('stock_operations.new_variation', function ($q){
             $q->where('grade', 21);
         })->whereNotIn('id', $total_external_repair_time)->whereNotIn('id', $total_2x_time)->whereNotIn('id', $total_unknown_part_time)->whereNotIn('id', $total_repair_time)->pluck('id');
 
