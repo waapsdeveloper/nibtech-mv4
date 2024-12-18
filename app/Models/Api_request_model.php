@@ -180,6 +180,7 @@ class Api_request_model extends Model
                     if(!$product->id){
                         $product->category = $p->category;
                         $product->brand = $p->brand;
+                        $product->model = $p->model.' Dual eSIM';
                         $product->save();
                     }
 
