@@ -172,7 +172,50 @@ class Api_request_model extends Model
                 // }
             }
 
+
             if($stock != null){
+                if(str_contains(strToLower($datas->Comments), 'dual-esim')){
+                    $p = $stock->variation->product;
+                    $product = Products_model::firstOrNew(['model'=>$p->model.' Dual eSIM']);
+                    if(!$product->id){
+                        $product->category = $p->category;
+                        $product->brand = $p->brand;
+                        $product->save();
+                    }
+
+
+                    $new_variation = [
+                        'product_id' => $product->id,
+                        'storage' => $stock->variation->storage,
+                        'color' => $stock->variation->color,
+                        'grade' => $stock->variation->grade,
+                    ];
+                    if(isset($sub_grade)){
+                        $new_variation['sub_grade'] = $sub_grade;
+                    }
+
+                    $variation = Variation_model::firstOrNew($new_variation);
+                    if($variation->id == null){
+                        $variation->status = 1;
+                        $variation->save();
+                    }
+                    $stock_operation = Stock_operations_model::create([
+                        'stock_id' => $stock->id,
+                        'api_request_id' => $request->id,
+                        'old_variation_id' => $stock->variation_id,
+                        'new_variation_id' => $variation->id,
+                        'description' => "Dual-eSim Declared by tester | DrPhone",
+                        'admin_id' => $admin,
+                        'created_at' => Carbon::parse($datas->Time)->format('Y-m-d H:i:s'),
+                    ]);
+
+                    $stock->variation_id = $variation->id;
+                    $stock->save();
+
+
+                }
+
+
                 $new_variation = [
                     'product_id' => $stock->variation->product_id,
                     'storage' => $stock->variation->storage,
@@ -235,28 +278,7 @@ class Api_request_model extends Model
                         curl_close($curl);
                         echo $response;
 
-                        // $curl = curl_init();
 
-                        // curl_setopt_array($curl, array(
-                        //   CURLOPT_URL => 'https://egpos.nibritaintech.com/api/request',
-                        //   CURLOPT_RETURNTRANSFER => true,
-                        //   CURLOPT_ENCODING => '',
-                        //   CURLOPT_MAXREDIRS => 10,
-                        //   CURLOPT_TIMEOUT => 0,
-                        //   CURLOPT_FOLLOWLOCATION => true,
-                        //   CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                        //   CURLOPT_CUSTOMREQUEST => 'POST',
-                        //   CURLOPT_POSTFIELDS => json_encode($datas),
-                        //   CURLOPT_HTTPHEADER => array(
-                        //     'Accept: application/json',
-                        //     'Content-Type: application/json',
-                        //     'Authorization: 32ba140e3260848a75db19c1e877b94d6887c6207cc24c1627f99bc8e9503928'
-                        //   ),
-                        // ));
-
-                        // $response = curl_exec($curl);
-
-                        // curl_close($curl);
                         if($response){
                             echo "<pre>";
                             print_r($response);
@@ -307,9 +329,9 @@ class Api_request_model extends Model
 
                 }elseif($stock->status == 2){
 
-                    $request->stock_id = $stock->id;
-                    $request->status = 2;
-                    $request->save();
+                    // $request->stock_id = $stock->id;
+                    // $request->status = 2;
+                    // $request->save();
                 }
             }
         }
