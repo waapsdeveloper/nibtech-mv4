@@ -1434,7 +1434,7 @@ class Order extends Component
                 $variation->save();
 
                 $variation = $variation->id;
-                dd($variation);
+                // dd($variation);
             }
 
             if(ctype_digit($variation)){
@@ -1445,7 +1445,10 @@ class Order extends Component
 
 
 
-                    if($this->add_purchase_item($issue->order_id, $data->imei, $variation, $data->cost, 1) == 1){
+                    if($this->add_purchase_item($issue->order_id,
+                    $data->imei,
+                    $variation,
+                    $data->cost, 1) == 1){
                         $issue->delete();
                     }
 
