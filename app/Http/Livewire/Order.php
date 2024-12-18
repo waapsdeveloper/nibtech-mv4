@@ -1434,6 +1434,7 @@ class Order extends Component
                 $variation->save();
 
                 $variation = $variation->id;
+                dd($variation);
             }
 
             if(ctype_digit($variation)){
