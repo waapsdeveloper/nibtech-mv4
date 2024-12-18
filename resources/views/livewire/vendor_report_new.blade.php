@@ -76,8 +76,50 @@
         </div>
     </div>
     <div class="card">
+        <div class="card-header m-0">
+            <h4 class="card-title mb-0">Vendor Stats for this Period</h4>
+
+        </div>
+        <div class="card-body m-2 p-2 d-flex justify-content-between">
+
+            <div class="text-center row">
+                <div class="col-6"><h6>Total Purchased:</h6></div><div class="col-6"><h6>{{ $vendor_time->purchase_qty }}</h6></div>
+                <div class="col-6"><h6>Total Purchase Cost:</h6></div><div class="col-6"><h6>€ {{ amount_formatter($vendor_time->purchase_cost,2) }}</h6></div>
+                <div class="col-6"><h6>Total RMA:</h6></div><div class="col-6"><h6>{{ $vendor_time->rma_qty }}</h6></div>
+                <div class="col-6"><h6>Total RMA Cost:</h6></div><div class="col-6"><h6>€ {{ amount_formatter($vendor_time->rma_price,2) }}</h6></div>
+
+            </div>
+
+            <div class="text-center row">
+                <div class="col-6"><h6>Total Items Sold:</h6></div><div class="col-6"><h6>{{ $sold_stock_count_time }}</h6></div>
+                <div class="col-6"><h6>Total Sale Price:</h6></div><div class="col-6"><h6>€{{ amount_formatter($sold_stock_cost_time) }}</h6></div>
+                <div class="col-6"><h6>Total Item Remaining:</h6></div><div class="col-6"><h6>{{ $available_stock_count_time }}</h6></div>
+                <div class="col-6"><h6>Total Remaining Cost:</h6></div><div class="col-6"><h6>€{{ amount_formatter($available_stock_cost_time) }}</h6></div>
+
+            </div>
+
+            {{-- <div class="text-center row">
+                <div class="col-6"><h6>Total Profit:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+                <div class="col-6"><h6>Total Repaired:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+                <div class="col-6"><h6>Total RMA:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+                <div class="col-6"><h6>Total RMA Cost:</h6></div><div class="col-6"><h6>{{ $vendor->company }}</h6></div>
+
+            </div> --}}
+
+            <div class="text-center row">
+                <div class="col-6"><h6>Total External Repair:</h6></div><div class="col-6"><h6>{{ $total_external_repair_time }}</h6></div>
+                <div class="col-6"><h6>Total External Repair Cost:</h6></div><div class="col-6"><h6>€{{ amount_formatter($total_external_repair_cost_time) }}</h6></div>
+                <div class="col-6"><h6>Total Repair:</h6></div><div class="col-6"><h6>{{ $total_repair_time }}</h6></div>
+                <div class="col-6"><h6>Total Battery:</h6></div><div class="col-6"><h6>{{ $total_battery_time }}</h6></div>
+                <div class="col-6"><h6>Total 2X Stallone:</h6></div><div class="col-6"><h6>{{ $total_2x_time }}</h6></div>
+                <div class="col-6"><h6>Total Unknown Parts:</h6></div><div class="col-6"><h6>{{ $total_unknown_part_time }}</h6></div>
+            </div>
+
+        </div>
+    </div>
+    <div class="card">
         <div class="card-header pb-0">
-            Purchse Report
+            Purchase Report
         </div>
         <div class="card-body">
             <div class="table-responsive">
