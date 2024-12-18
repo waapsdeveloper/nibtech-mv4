@@ -1301,6 +1301,88 @@ class Report extends Component
         $data['total_unknown_part'] = $total_unknown_part->count();
 
 
+        $vendor_time = Customer_model::withCount([
+
+            'orders as purchase_qty' => function ($query) use ($start_date, $end_date) {
+                $query->where('orders.order_type_id', 1)->join('order_items', 'orders.id', '=', 'order_items.order_id')
+                    ->whereBetween('orders.created_at', [$start_date, $end_date])
+                    ->select(DB::raw('SUM(order_items.quantity)'));
+            },
+            'orders as purchase_cost' => function ($query) use ($start_date, $end_date) {
+                $query->where('orders.order_type_id', 1)->join('order_items', 'orders.id', '=', 'order_items.order_id')
+                    ->whereBetween('orders.created_at', [$start_date, $end_date])
+                    ->select(DB::raw('SUM(order_items.price)'));
+            },
+            'orders as rma_qty' => function ($query) use ($start_date, $end_date) {
+                $query->where('orders.order_type_id', 2)->join('order_items', 'orders.id', '=', 'order_items.order_id')
+                    ->whereBetween('orders.created_at', [$start_date, $end_date])
+                    ->select(DB::raw('SUM(order_items.quantity)'));
+            },
+            'orders as rma_price' => function ($query) use ($start_date, $end_date) {
+                $query->where('orders.order_type_id', 2)->join('order_items', 'orders.id', '=', 'order_items.order_id')
+                    ->whereBetween('orders.created_at', [$start_date, $end_date])
+                    ->select(DB::raw('SUM(order_items.price)'));
+            },
+
+        ])
+        ->find($vendor_id);
+        $data['vendor_time'] = $vendor_time;
+
+
+        $order_ids_time = Order_model::where('customer_id', $vendor_id)->whereBetween('created_at', [$start_date, $end_date])->pluck('id');
+        $purchase_order_ids_time = Order_model::where('customer_id', $vendor_id)->where('order_type_id', 1)
+        ->whereBetween('created_at', [$start_date, $end_date])->pluck('id');
+
+
+        $available_stock_ids_time = Stock_model::whereIn('order_id', $purchase_order_ids_time)->where('status',1)->pluck('id');
+        $sold_stock_ids_time = Stock_model::whereIn('order_id', $order_ids_time)->where('status',2)->pluck('id');
+
+        $available_stock_count_time = $available_stock_ids_time->count();
+        $sold_stock_count_time = $sold_stock_ids_time->count();
+
+        $available_stock_cost_time = Order_item_model::whereIn('stock_id', $available_stock_ids_time)->whereIn('order_id', $purchase_order_ids_time)->sum('price');
+        $sold_stock_price_time = Order_item_model::whereIn('stock_id', $sold_stock_ids_time)->whereNotIn('order_id', $order_ids_time)->orderBy('id')->pluck('price','stock_id')->sum();
+
+
+        $data['available_stock_count_time'] = $available_stock_count_time;
+        $data['sold_stock_count_time'] = $sold_stock_count_time;
+        $data['available_stock_cost_time'] = $available_stock_cost_time;
+        $data['sold_stock_cost_time'] = $sold_stock_price_time;
+
+
+        $total_external_repair_time = Process_stock_model::whereHas('stock',function ($q) use ($purchase_order_ids_time){
+            $q->whereIn('order_id', $purchase_order_ids_time);
+        })->whereHas('process', function ($q){
+            $q->where('process_type_id', 9);
+        })->pluck('stock_id');
+
+        $total_2x_time = Stock_model::whereIn('order',$purchase_order_ids_time)->whereHas('stock_operations.new_variation', function ($q){
+            $q->where('grade', 6);
+        })->whereNotIn('id', $total_external_repair_time)->pluck('id');
+
+        $total_unknown_part_time = Stock_model::whereIn('order',$purchase_order_ids_time)->whereHas('stock_operations.new_variation', function ($q){
+            $q->where('grade', 20);
+        })->whereNotIn('id', $total_external_repair_time)->whereNotIn('id', $total_2x_time)->pluck('id');
+
+        $total_repair_time = Stock_model::whereNotIn('id', $total_external_repair_time)->whereNotIn('id', $total_2x_time)->whereNotIn('id', $total_unknown_part_time)->wherein('order',$purchase_order_ids_time)->whereHas('stock_operations.new_variation', function ($q){
+            $q->where('grade', 7);
+        })->pluck('id');
+
+        $total_battery_time = Stock_model::whereIn('order',$purchase_order_ids_time)->whereHas('stock_operations.new_variation', function ($q){
+            $q->where('grade', 21);
+        })->whereNotIn('id', $total_external_repair_time)->whereNotIn('id', $total_2x_time)->whereNotIn('id', $total_unknown_part_time)->whereNotIn('id', $total_repair_time)->pluck('id');
+
+        $total_external_repair_cost_time = Process_stock_model::whereIn('stock_id', $total_external_repair_time)->sum('price');
+
+
+        $data['total_repair_time'] = $total_repair_time->count();
+        $data['total_external_repair_time'] = $total_external_repair_time->count();
+        $data['total_battery_time'] = $total_battery_time->count();
+        $data['total_external_repair_cost_time'] = $total_external_repair_cost_time;
+        $data['total_2x_time'] = $total_2x_time->count();
+        $data['total_unknown_part_time'] = $total_unknown_part_time->count();
+
+
 
 
 
