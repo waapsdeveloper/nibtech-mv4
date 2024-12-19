@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Color_model;
 use App\Models\Grade_model;
 use App\Models\Order_issue_model;
+use App\Models\Process_stock_model;
 use App\Models\Product_color_merge_model;
 use App\Models\Product_storage_sort_model;
 use App\Models\Stock_operations_model;
@@ -1504,6 +1505,11 @@ class Order extends Component
 
             $stock_operation = new Stock_operations_model();
             $stock_operation->new_operation($new_stock->id, $new_item->id, null, null, $old_stock->variation_id, $new_stock->variation_id, "IMEI Changed from ".$old_stock->imei.$old_stock->serial_number);
+
+            Order_item_model::where('stock_id',$old_stock->id)->update(['stock_id' => $new_stock->id]);
+            Process_stock_model::where('stock_id',$old_stock->id)->update(['stock_id' => $new_stock->id]);
+            Stock_operations_model::where('stock_id',$old_stock->id)->update(['stock_id' => $new_stock->id]);
+
             // $stock_operation = Stock_operations_model::create([
             //     'stock_id' => $new_stock->id,
             //     'old_variation_id' => $old_stock->variation_id,
