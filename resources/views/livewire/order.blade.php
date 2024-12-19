@@ -424,6 +424,16 @@
                                                 }
                                                 $imei_list[] = $stock->imei . $stock->serial_number;
                                             }
+                                            if (request('missing_reimburse') && $item->replacement) {
+                                                $replacement = $item->replacement;
+                                                while ($replacement != null) {
+                                                    # code...
+                                                    $replacement = $replacement->replacement;
+                                                }
+                                                if ($replacement->stock->status == 2) {
+                                                    continue;
+                                                }
+                                            }
                                         @endphp
                                         <tr @if ($customer->orders->count() > 1) class="bg-light" @endif>
                                             @if ($itemIndex == 0)
