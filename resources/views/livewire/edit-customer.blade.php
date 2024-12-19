@@ -312,7 +312,7 @@
                                         <th><small><b>Cost</b></small></th>
                                         @endif
                                         <th><small><b>Remaining Qty</b></small></th>
-                                        <th><small><b>Creation Date</b></small></th>
+                                        <th class="wd-200"><small><b>Creation Date</b></small></th>
                                     </tr>
                                 </thead>
                                 <tbody>
