@@ -434,6 +434,7 @@
                                                     continue;
                                                     echo "Hewwo";
                                                 }
+                                                echo "Replacement: " . $replacement->stock->imei . $replacement->stock->serial_number;
                                             }
                                         @endphp
                                         <tr @if ($customer->orders->count() > 1) class="bg-light" @endif>
