@@ -294,6 +294,80 @@
             </div>
         </div>
 
+        @if ($repairs->count() > 0)
+
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-header pb-0">
+                        <h5 class="card-title mg-b-0"> Customer Repairs </h5>
+                    </div>
+                    <div class="card-body"><div class="table-responsive">
+                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th><small><b>No</b></small></th>
+                                        <th><small><b>Order ID</b></small></th>
+                                        @if (session('user')->hasPermission('view_cost'))
+                                        <th><small><b>Cost</b></small></th>
+                                        @endif
+                                        <th><small><b>Remaining Qty</b></small></th>
+                                        <th><small><b>Creation Date</b></small></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @php
+                                        $id = [];
+                                    @endphp
+                                    @foreach ($repairs as $index => $order)
+                                        @php
+                                            if(in_array($order->id,$id)){
+                                                continue;
+                                            }else {
+                                                $id[] = $order->id;
+                                            }
+                                            $items = $order->process_stocks;
+                                            $j = 0;
+                                            // print_r($order);
+                                        @endphp
+
+                                        {{-- @foreach ($items as $itemIndex => $item) --}}
+                                            <tr>
+                                                <td>{{ $i + 1 }}</td>
+                                                <td><a href="{{url('repair/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                @if ((!request('status') || request('status') == 3) && session('user')->hasPermission('view_cost'))
+                                                <td>Є{{ amount_formatter($order->process_stocks->sum('price'),2) }}</td>
+                                                @endif
+                                                <td>{{ $items->where('status',1)->count()."/".$items->count() }}@if ($order->status == 2)
+                                                    (Pending)
+                                                @endif</td>
+                                                <td style="width:220px">{{ $order->created_at." ".$order->updated_at }}</td>
+                                                <td>
+                                                    <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
+                                                    <div class="dropdown-menu">
+                                                        <a class="dropdown-item" href="{{url('delete_repair') . "/" . $order->id }}"><i class="fe fe-arrows-rotate me-2 "></i>Delete</a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {{-- @php
+                                                $j++;
+                                            @endphp
+                                        @endforeach --}}
+                                        @php
+                                            $i ++;
+                                        @endphp
+                                    @endforeach
+                                </tbody>
+                            </table>
+
+                    </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @endif
         @endsection
     @section('scripts')
 

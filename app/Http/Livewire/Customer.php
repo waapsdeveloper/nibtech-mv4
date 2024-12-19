@@ -7,7 +7,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Customer_model;
 use App\Models\Order_model;
-
+use App\Models\Process_model;
 
 class Customer extends Component
 {
@@ -121,7 +121,6 @@ class Customer extends Component
         // ->join('products', 'variation.product_id', '=', 'products.id')
         // ->
         ->where('orders.customer_id',$id)
-
         ->orderBy('orders.created_at', 'desc')
         // ->select('orders.*')
         // ->paginate(10)
@@ -130,6 +129,11 @@ class Customer extends Component
         ->get();
         $data['orders'] = $orders;
         // dd($orders);
+
+
+        $data['repairs'] = Process_model::where('process_type_id', 9)
+        ->where('customer_id', $id)
+        ->get();
 
         return view('livewire.edit-customer')->with($data);
     }
