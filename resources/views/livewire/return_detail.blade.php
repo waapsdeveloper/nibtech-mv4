@@ -208,6 +208,9 @@
                 <span class="alert-inner--text"><strong>{{session('error')}}</strong></span>
                 <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
             </div>
+            <script>
+                alert("{{session('error')}}");
+            </script>
 
 
         @php
