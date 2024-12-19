@@ -430,9 +430,9 @@
                                                     # code...
                                                     $replacement = $replacement->replacement;
                                                 }
-                                                // if ($replacement->stock->status == 2) {
-                                                //     continue;
-                                                // }
+                                                if ($replacement && $replacement->stock->status == 2) {
+                                                    continue;
+                                                }
                                             }
                                         @endphp
                                         <tr @if ($customer->orders->count() > 1) class="bg-light" @endif>
