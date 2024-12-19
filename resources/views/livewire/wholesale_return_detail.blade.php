@@ -108,6 +108,13 @@
                         <label for="">Reason</label>
                     </div>
                     <button class="btn-sm btn-primary pd-x-20" type="submit">Receive</button>
+                    @if (session('user')->hasPermission('bulksale_return_bypass_60_days_limit'))
+
+                        <div class="form-check form-switch ms-4">
+                            <input type="checkbox" value="1" name="bypass_60_days_limit" class="form-check-input">
+                            <label class="form-check-label" for="bypass_60_days_limit">Bypass 60 Days Limit</label>
+                        </div>
+                    @endif
 
                 </form>
                 <script>
