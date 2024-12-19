@@ -417,15 +417,15 @@
                                             $stock = $item->stock;
                                             $variation = $item->variation;
 
-                                            if($stock != null && (request('missing_refund') || request('missing_reimburse') || request('items'))){
+                                            if($stock != null && (request('missing_refund') || request('missing') || request('items'))){
                                                 if (in_array($stock->imei . $stock->serial_number, $imei_list)) {
                                                     echo "Duplicate IMEI: " . $stock->imei . $stock->serial_number;
                                                     # code...
                                                 }
                                                 $imei_list[] = $stock->imei . $stock->serial_number;
                                             }
-                                            if (request('missing_reimburse') && $item->replacement) {
-                                                $replacement = $item->replacement;
+                                            if (request('missing') == 'reimburse' && $item->replacement) {
+                                                $replacement = $item->repmissing_reimburselacement;
                                                 while ($replacement != null) {
                                                     # code...
                                                     $replacement = $replacement->replacement;
