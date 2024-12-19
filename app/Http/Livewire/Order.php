@@ -141,7 +141,7 @@ class Order extends Component
                 $qu->whereHas('order', function ($q) {
                     $q->where('status', '!=', 1);
                 });
-            })->where('status', 3);
+            })->where('status', 3)->whereDoesntHave('order_items.replacement');
         })
         ->when(request('missing') == 'refund', function ($q) {
             return $q->whereDoesntHave('order_items.linked_child')->wherehas('order_items.stock', function ($q) {
