@@ -432,6 +432,7 @@
                                                 }
                                                 if ($replacement->stock->status == 2) {
                                                     continue;
+                                                    echo "Hewwo";
                                                 }
                                             }
                                         @endphp
