@@ -155,6 +155,11 @@ class Order extends Component
         ->when(request('missing') == 'scan', function ($q) {
             return $q->whereIn('status', [3,6])->whereNull('scanned')->where('processed_at', '<=', now()->subHours(48));
         })
+        ->when(request('missing') == 'purchase', function ($q) {
+            return $q->whereHas('order_items.stock', function ($q) {
+                $q->whereNull('status');
+            });
+        })
         ->when(request('missing') == 'processed_at', function ($q) {
             return $q->whereIn('status', [3,6])->whereNull('processed_at');
         })
