@@ -430,7 +430,7 @@
                                                     # code...
                                                     $replacement = $replacement->replacement;
                                                 }
-                                                if ($replacement && $replacement->stock->status == 2) {
+                                                if ($replacement != null && $replacement->stock->status == 2) {
                                                     continue;
                                                 }
                                             }
