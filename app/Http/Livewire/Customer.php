@@ -133,6 +133,7 @@ class Customer extends Component
 
         $data['repairs'] = Process_model::where('process_type_id', 9)
         ->where('customer_id', $id)
+        ->orderBy('id', 'desc')
         ->get();
 
         return view('livewire.edit-customer')->with($data);
