@@ -312,7 +312,8 @@
                                         <th><small><b>Cost</b></small></th>
                                         @endif
                                         <th><small><b>Remaining Qty</b></small></th>
-                                        <th class="wd-150"><small><b>Creation Date</b></small></th>
+                                        <th><small><b>Creation Date</b></small></th>
+                                        <th><small><b>Last Update</b></small></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -342,7 +343,8 @@
                                                 <td>{{ $items->where('status',1)->count()."/".$items->count() }}@if ($order->status == 2)
                                                     (Pending)
                                                 @endif</td>
-                                                <td >{{ $order->created_at." ".$order->updated_at }}</td>
+                                                <td >{{ $order->created_at }}</td>
+                                                <td >{{ $order->updated_at }}</td>
                                                 <td>
                                                     <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                                     <div class="dropdown-menu">
