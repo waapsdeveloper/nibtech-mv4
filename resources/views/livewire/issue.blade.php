@@ -26,6 +26,9 @@
                 </div>
                 <div class="toast-body">{{ session('error') }}</div>
             </div>
+            <script>
+                alert("{{session('error')}}");
+            </script>
         @php
         session()->forget('error');
         @endphp
