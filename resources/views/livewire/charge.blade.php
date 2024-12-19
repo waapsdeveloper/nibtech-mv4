@@ -55,6 +55,12 @@
                 <span class="alert-inner--text"><strong>{{session('error')}}</strong></span>
                 <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
             </div>
+            {{-- Show Alert with Error --}}
+            <script>
+                alert("{{session('error')}}");
+            </script>
+
+
         <br>
         @php
         session()->forget('error');
