@@ -317,6 +317,7 @@
                                 </thead>
                                 <tbody>
                                     @php
+                                        $i = 0;
                                         $id = [];
                                     @endphp
                                     @foreach ($repairs as $index => $order)
