@@ -252,7 +252,7 @@ class Api_request_model extends Model
                 $variation = Variation_model::firstOrNew($new_variation);
                 if($stock->status != 2 || $stock->last_item()->order->customer_id == 3955){
 
-                    if($stock->last_item()->order->customer_id == 3955 && $stock->status == 2){
+                    if($stock->last_item() != null && $stock->last_item()->order->customer_id == 3955 && $stock->status == 2){
 
 
                         $curl = curl_init();
