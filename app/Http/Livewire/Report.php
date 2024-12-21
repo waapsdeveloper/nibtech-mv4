@@ -1210,6 +1210,9 @@ class Report extends Component
 
     public function vendor_report($vendor_id){
 
+        $data['title_page'] = 'Vendor Report';
+        session()->put('page_title', $data['title_page']);
+
         ini_set('memory_limit', '2560M');
 
         $start_date = request('start_date') ?? Carbon::now()->startOfMonth();
@@ -1495,9 +1498,10 @@ class Report extends Component
         $start_date = (request('start_date') ?? Carbon::now()->startOfMonth()).' 00:00:00';
         $end_date = (request('end_date') ?? Carbon::now()->endOfMonth()).' 23:59:59';
 
-        $repair_report = Stock_model::whereHas('order',function ($q) use ($vendor_id, $start_date, $end_date){
-            $q->where('customer_id', $vendor_id)->whereBetween('created_at', [$start_date, $end_date]);
-        })->whereHas('stock_operations.new_variation', function ($q){
+        $purchase_order_ids = Order_model::where('customer_id', $vendor_id)->where('order_type_id', 1)->whereBetween('created_at', [$start_date, $end_date])->pluck('id');
+
+        $repair_report = Stock_model::whereIn('order_id',$purchase_order_ids)
+        ->whereHas('stock_operations.new_variation', function ($q){
             $q->where('grade', 8);
         })->with(['stock_operations'=> function ($q) {
             $q->whereHas('new_variation', function ($qq) {
@@ -1505,6 +1509,7 @@ class Report extends Component
             });
         }])
         ->get();
+        dd($repair_report);
         $repair_report = $repair_report->groupBy(function($stock) {
             return $stock->stock_operations->first()->description ?? 'no_description';
         });
