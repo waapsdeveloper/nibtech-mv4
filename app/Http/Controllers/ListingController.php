@@ -20,7 +20,8 @@ class ListingController extends Controller
     public function index()
     {
 
-        session(['page' => 'listings']);
+        $data['title_page'] = "Listings";
+        session()->put('page_title', $data['title_page']);
         $data['bm'] = new BackMarketAPIController();
         $data['storages'] = Storage_model::pluck('name','id');
         $data['colors'] = Color_model::pluck('name','id');
