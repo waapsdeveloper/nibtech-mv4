@@ -1512,7 +1512,7 @@ class Report extends Component
             });
         }])
         ->get();
-        dd($repair_report);
+        // dd($repair_report);
         $repair_report = $repair_report->groupBy(function($stock) {
             return $stock->stock_operations->first()->description ?? 'no_description';
         });
