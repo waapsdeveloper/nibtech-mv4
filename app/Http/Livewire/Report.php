@@ -1494,8 +1494,12 @@ class Report extends Component
 
         ini_set('memory_limit', '2560M');
 
-        $start_date = (request('start_date') ?? Carbon::now()->startOfMonth()).' 00:00:00';
-        $end_date = (request('end_date') ?? Carbon::now()->endOfMonth()).' 23:59:59';
+        $start_date = request('start_date') ?? Carbon::now()->startOfMonth();
+        $end_date = request('end_date') ?? Carbon::now()->endOfMonth();
+        // ini_set('memory_limit', '2560M');
+
+        // $start_date = (request('start_date') ?? Carbon::now()->startOfMonth()).' 00:00:00';
+        // $end_date = (request('end_date') ?? Carbon::now()->endOfMonth()).' 23:59:59';
 
         $purchase_order_ids = Order_model::where('customer_id', $vendor_id)->where('order_type_id', 1)->whereBetween('created_at', [$start_date, $end_date])->pluck('id');
 
