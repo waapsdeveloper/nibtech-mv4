@@ -618,7 +618,7 @@
                                                         <td>{{ $i }}</td>
                                                         <td data-stock="{{ $item->id }}" class="{{$class}}">{{ $item->imei.$item->serial_number }}</td>
                                                         @if (session('user')->hasPermission('view_cost'))
-                                                        <td>{{ $currency}}{{$purchase_item->price ?? "Error in Purchase Entry" }}</td>
+                                                        <td>{{ $currency}}{{amount_formatter($purchase_item->price) ?? "Error in Purchase Entry" }}</td>
                                                         @endif
                                                         @if (session('user')->hasPermission('delete_purchase_item'))
                                                         <td><a href="{{ url('delete_order_item').'/'}}{{$purchase_item->id ?? null }}" onclick="if (confirm('Remove IMEI from Order')){return true;}else{event.stopPropagation(); event.preventDefault();};"><i class="fa fa-trash"></i></a></td>
