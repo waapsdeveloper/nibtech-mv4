@@ -305,7 +305,7 @@
                                 @if(request('missing') == 'scan')
                                     <input type="hidden" name="missing" value="scan" form="pdf">
                                 @endif
-                                <input class="btn btn-sm btn-secondary" type="submit" value="Print Labels" form="pdf">
+                                <input class="btn btn-sm btn-secondary" type="submit" value="Print Labels" form="pdf" onclick="if($('.table-hover :checkbox:checked').length == 0){alert('Hello'); e.preventDefault();}">
                             </h4>
                             <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$orders->firstItem()}} {{ __('locale.To') }} {{$orders->lastItem()}} {{ __('locale.Out Of') }} {{$orders->total()}} </h5>
 
@@ -374,7 +374,7 @@
                         @endforeach
                     </datalist>
                     <div class="card-body"><div class="table-responsive">
-                        <form id="pdf" method="POST" target="_blank" action="{{url('export_label')}}" onsubmit="if($('.table-hover :checkbox:checked').length == 0){alert('Hello'); e.preventDefault();}">
+                        <form id="pdf" method="POST" target="_blank" action="{{url('export_label')}}">
                             @csrf
                             <input type="hidden" name="sort" value="{{ Request::get('sort') }}">
 
