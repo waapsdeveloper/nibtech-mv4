@@ -215,7 +215,7 @@ class Api_request_model extends Model
 
 
                 }
-
+                $stock = Stock_model::find($stock->id);
 
                 $new_variation = [
                     'product_id' => $stock->variation->product_id,
