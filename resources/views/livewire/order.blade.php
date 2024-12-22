@@ -374,7 +374,7 @@
                         @endforeach
                     </datalist>
                     <div class="card-body"><div class="table-responsive">
-                        <form id="pdf" method="POST" target="_blank" action="{{url('export_label')}}">
+                        <form id="pdf" method="POST" target="_blank" action="{{url('export_label')}}" onsubmit="if($('.table-hover :checkbox:checked').length == 0){alert('Hello'); e.preventDefault();}">
                             @csrf
                             <input type="hidden" name="sort" value="{{ Request::get('sort') }}">
 
