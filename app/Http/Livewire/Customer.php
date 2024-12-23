@@ -12,11 +12,14 @@ use App\Models\Process_model;
 class Customer extends Component
 {
     use WithPagination;
-    protected $customers;
 
     public function mount()
     {
-        $this->customers = Customer_model::with('country_id')->withCount('orders')
+
+    }
+    public function render()
+    {
+        $customers = Customer_model::with('country_id')->withCount('orders')
         ->when(request('type') && request('type') != 0, function($q){
             if(request('type') == 4){
                 return $q->where('is_vendor',null);
@@ -49,16 +52,13 @@ class Customer extends Component
         ->appends(request()->except('page'));
 
         // Redirect if only one customer is found and order_id is present
-        if ($this->customers->count() == 1 && request('order_id') != '') {
-            return redirect()->to(url('edit-customer') . '/' . $this->customers->first()->id);
+        if ($customers->count() == 1 && request('order_id') != '') {
+            return redirect()->to(url('edit-customer') . '/' . $customers->first()->id);
         }
-    }
-    public function render()
-    {
 
         $data['title_page'] = "Customers";
         session()->put('page_title', $data['title_page']);
-        $data['customers'] = $this->customers;
+        $data['customers'] = $customers;
         // foreach($data['customers'] as $customer){
         //     if($customer->orders->count() == 0){
         //         $customer->delete();
@@ -116,16 +116,8 @@ class Customer extends Component
 
         $orders = Order_model::with(['order_items.variation', 'order_items.variation.grade_id', 'order_items.stock'])
         ->withCount('order_items')->withSum('order_items','price')
-        // join('order_items', 'orders.id', '=', 'order_items.order_id')
-        // ->join('variation', 'order_items.variation_id', '=', 'variation.id')
-        // ->join('products', 'variation.product_id', '=', 'products.id')
-        // ->
         ->where('orders.customer_id',$id)
         ->orderBy('orders.created_at', 'desc')
-        // ->select('orders.*')
-        // ->paginate(10)
-        // ->onEachSide(5)
-        // ->appends(request()->except('page'));
         ->get();
         $data['orders'] = $orders;
         // dd($orders);
