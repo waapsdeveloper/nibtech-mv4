@@ -1309,21 +1309,29 @@ class Report extends Component
             'orders as purchase_qty' => function ($query) use ($start_date, $end_date) {
                 $query->where('orders.order_type_id', 1)->join('order_items', 'orders.id', '=', 'order_items.order_id')
                     ->whereBetween('orders.created_at', [$start_date, $end_date])
+                    ->whereNull('orders.deleted_at')
+                    ->whereNull('order_items.deleted_at')
                     ->select(DB::raw('SUM(order_items.quantity)'));
             },
             'orders as purchase_cost' => function ($query) use ($start_date, $end_date) {
                 $query->where('orders.order_type_id', 1)->join('order_items', 'orders.id', '=', 'order_items.order_id')
                     ->whereBetween('orders.created_at', [$start_date, $end_date])
+                    ->whereNull('orders.deleted_at')
+                    ->whereNull('order_items.deleted_at')
                     ->select(DB::raw('SUM(order_items.price)'));
             },
             'orders as rma_qty' => function ($query) use ($start_date, $end_date) {
                 $query->where('orders.order_type_id', 2)->join('order_items', 'orders.id', '=', 'order_items.order_id')
                     ->whereBetween('orders.created_at', [$start_date, $end_date])
+                    ->whereNull('orders.deleted_at')
+                    ->whereNull('order_items.deleted_at')
                     ->select(DB::raw('SUM(order_items.quantity)'));
             },
             'orders as rma_price' => function ($query) use ($start_date, $end_date) {
                 $query->where('orders.order_type_id', 2)->join('order_items', 'orders.id', '=', 'order_items.order_id')
                     ->whereBetween('orders.created_at', [$start_date, $end_date])
+                    ->whereNull('orders.deleted_at')
+                    ->whereNull('order_items.deleted_at')
                     ->select(DB::raw('SUM(order_items.price)'));
             },
 
