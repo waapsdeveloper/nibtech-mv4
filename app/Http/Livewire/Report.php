@@ -1347,11 +1347,12 @@ class Report extends Component
         $repair_report = Stock_model::whereIn('order_id',$purchase_order_ids_time)
         ->whereHas('stock_operations.new_variation', function ($q){
             $q->where('grade', 8);
-        })->with(['stock_operations'=> function ($q) {
-            $q->whereHas('new_variation', function ($qq) {
-                $qq->where('grade',8);
-            });
-        }])
+        })
+        // ->with(['stock_operations'=> function ($q) {
+        //     $q->whereHas('new_variation', function ($qq) {
+        //         $qq->where('grade',8);
+        //     });
+        // }])
         ->get();
         dd($repair_report);
         $available_stock_ids_time = Stock_model::whereIn('order_id', $purchase_order_ids_time)->where('status',1)->pluck('id');
