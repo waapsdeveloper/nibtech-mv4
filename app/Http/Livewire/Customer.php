@@ -48,7 +48,7 @@ class Customer extends Component
             return $q->where('email', 'LIKE', '%' . request('email') . '%');
         })
         ->paginate(50)
-        ->onEachSide(5)
+        // ->onEachSide(5)
         ->appends(request()->except('page'));
 
         // Redirect if only one customer is found and order_id is present
