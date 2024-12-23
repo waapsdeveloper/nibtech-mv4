@@ -1344,17 +1344,17 @@ class Report extends Component
         $purchase_order_ids_time = Order_model::where('customer_id', $vendor_id)->where('order_type_id', 1)
         ->whereBetween('created_at', [$start_date, $end_date])->pluck('id');
 
-        $repair_report = Stock_model::whereIn('order_id',$purchase_order_ids_time)
-        ->whereHas('stock_operations.new_variation', function ($q){
-            $q->where('grade', 8);
-        })
-        // ->with(['stock_operations'=> function ($q) {
-        //     $q->whereHas('new_variation', function ($qq) {
-        //         $qq->where('grade',8);
-        //     });
-        // }])
-        ->get();
-        dd($repair_report);
+        // $repair_report = Stock_model::whereIn('order_id',$purchase_order_ids_time)
+        // ->whereHas('stock_operations.new_variation', function ($q){
+        //     $q->where('grade', 8);
+        // })
+        // // ->with(['stock_operations'=> function ($q) {
+        // //     $q->whereHas('new_variation', function ($qq) {
+        // //         $qq->where('grade',8);
+        // //     });
+        // // }])
+        // ->get();
+        // dd($repair_report);
         $available_stock_ids_time = Stock_model::whereIn('order_id', $purchase_order_ids_time)->where('status',1)->pluck('id');
         $sold_stock_ids_time = Stock_model::whereIn('order_id', $order_ids_time)->where('status',2)->pluck('id');
 
