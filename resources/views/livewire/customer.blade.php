@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
     @section('styles')
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .rows{
             border: 1px solid #016a5949;
@@ -166,7 +167,7 @@
                                 </tbody>
                             </table>
                             <br>
-                            {{$customers->onEachSide(1)->links()}} {{ __('locale.From') }} {{$customers->firstItem()}} {{ __('locale.To') }} {{$customers->lastItem()}} {{ __('locale.Out Of') }} {{$customers->total()}}
+                        {{$customers->onEachSide(1)->links()}} {{ __('locale.From') }} {{$customers->firstItem()}} {{ __('locale.To') }} {{$customers->lastItem()}} {{ __('locale.Out Of') }} {{$customers->total()}}
                         </div>
                     </div>
                 </div>
