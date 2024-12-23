@@ -1344,7 +1344,7 @@ class Report extends Component
         $purchase_order_ids_time = Order_model::where('customer_id', $vendor_id)->where('order_type_id', 1)
         ->whereBetween('created_at', [$start_date, $end_date])->pluck('id');
 
-        $repair_report = Stock_model::whereIn('order_id',$purchase_order_ids)
+        $repair_report = Stock_model::whereIn('order_id',$purchase_order_ids_time)
         ->whereHas('stock_operations.new_variation', function ($q){
             $q->where('grade', 8);
         })->with(['stock_operations'=> function ($q) {
