@@ -277,6 +277,11 @@
                         <div class="d-flex justify-content-between">
                             <h4 class="card-title mg-b-0">Latest Added Items</h4>
                             <div class=" mg-b-0">
+                                @if (request('hide') == 'all')
+                                    <a href="{{ url('rma/detail').'/'.$order_id }}" class="btn btn-sm btn-link">Show All</a>
+                                @else
+                                    <a href="{{ url('rma/detail').'/'.$order_id.'?hide=all' }}" class="btn btn-sm btn-link">Hide All</a>
+                                @endif
                                 <form method="get" action="" class="row form-inline">
                                     <label for="perPage" class="card-title inline">per page:</label>
                                     <select name="per_page" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
@@ -342,6 +347,7 @@
         </div>
         <br>
 
+        @if (request('hide') != 'all')
         <div class="row">
 
             {{-- @foreach ($variations as $variation) --}}
@@ -442,6 +448,7 @@
             </div>
             @endforeach
         </div>
+        @endif
 
     @endsection
 
