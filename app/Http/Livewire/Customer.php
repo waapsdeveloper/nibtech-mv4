@@ -12,14 +12,11 @@ use App\Models\Process_model;
 class Customer extends Component
 {
     use WithPagination;
+    protected $customers;
 
     public function mount()
     {
-
-    }
-    public function render()
-    {
-        $customers = Customer_model::with('country_id')->withCount('orders')
+        $this->customers = Customer_model::with('country_id')->withCount('orders')
         ->when(request('type') && request('type') != 0, function($q){
             if(request('type') == 4){
                 return $q->where('is_vendor',null);
@@ -48,17 +45,20 @@ class Customer extends Component
             return $q->where('email', 'LIKE', '%' . request('email') . '%');
         })
         ->paginate(50)
-        // ->onEachSide(5)
+        ->onEachSide(5)
         ->appends(request()->except('page'));
 
         // Redirect if only one customer is found and order_id is present
-        if ($customers->count() == 1 && request('order_id') != '') {
-            return redirect()->to(url('edit-customer') . '/' . $customers->first()->id);
+        if ($this->customers->count() == 1 && request('order_id') != '') {
+            return redirect()->to(url('edit-customer') . '/' . $this->customers->first()->id);
         }
+    }
+    public function render()
+    {
 
         $data['title_page'] = "Customers";
         session()->put('page_title', $data['title_page']);
-        $data['customers'] = $customers;
+        $data['customers'] = $this->customers;
         // foreach($data['customers'] as $customer){
         //     if($customer->orders->count() == 0){
         //         $customer->delete();
