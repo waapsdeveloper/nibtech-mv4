@@ -19,7 +19,7 @@ class IMEILabelExport
         // Fetch the product variation, order, and stock movements
         $variation = Variation_model::with(['product', 'storage_id', 'color_id', 'grade_id', 'sub_grade_id'])
                 ->find($stock->variation_id);
-        $vendor = $stock->order->customer->first_name ?? 'Unknown';
+        $vendor = $stock->order->customer->last_name ?? 'Unknown';
         // $orders = Order_item_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
 
         $last_sale_order = Order_item_model::where('stock_id', $stock_id)->whereHas('order', function($q){
