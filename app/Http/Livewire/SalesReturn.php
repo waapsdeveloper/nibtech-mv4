@@ -270,7 +270,13 @@ class SalesReturn extends Component
 
             $data['received_items'] = [];
         if($data['order']->status == 2){
-            $received_items = Order_item_model::where('order_id', $order_id)->where('status',2)->orderByDesc('updated_at')->get();
+            $received_items = Order_item_model::where('order_id', $order_id)->where('status',2)
+            ->when(request('status') == 2, function ($q) {
+                return $q->whereHas('stock', function ($q) {
+                    $q->where('status', 2);
+                });
+            })
+            ->orderByDesc('updated_at')->get();
             $data['received_items'] = $received_items;
 
             $last_ten = Order_item_model::where('order_id',$order_id)->where('status',2)->orderBy('updated_at','desc')->limit(10)->get();
