@@ -89,7 +89,8 @@ class Repair extends Component
             $repair->currency = $currency->id;
             $repair->exchange_rate = request('rate');
         }
-        $repair->description = request('tracking_number');
+        $repair->tracking_number = request('tracking_number');
+        $repair->description = request('description');
 
         if(request('customer_id') != $repair->customer_id && request('customer_id') != null){
             $repair->customer_id = request('customer_id');

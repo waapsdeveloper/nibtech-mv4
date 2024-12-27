@@ -53,8 +53,12 @@
                         <label for="rate">Exchange Rate</label>
                     </div>
                     <div class="form-floating">
-                        <input type="text" class="form-control" id="tracking_number" name="tracking_number" placeholder="Enter Tracking Number" value="{{$process->description}}" onchange="submitForm()" required>
+                        <input type="text" class="form-control" id="tracking_number" name="tracking_number" placeholder="Enter Tracking Number" value="{{$process->tracking_number}}" onchange="submitForm()" required>
                         <label for="tracking_number">Tracking Number</label>
+                    </div>
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="description" name="description" placeholder="Enter Description" value="{{$process->description}}" required>
+                        <label for="description">Description</label>
                     </div>
                     <button type="submit" class="btn btn-success" name="approve" value="1">Ship</button>
                     <a class="btn btn-danger" href="{{url('delete_repair') . "/" . $process->id }}">Delete</a>
@@ -81,7 +85,9 @@
                 </script>
                 @else
                 <br>
-                Tracking Number: <a href="https://www.dhl.com/gb-en/home/tracking/tracking-express.html?submit=1&tracking-id={{$process->description}}" target="_blank"> {{$process->description}}</a>
+                Tracking Number: <a href="https://www.dhl.com/gb-en/home/tracking/tracking-express.html?submit=1&tracking-id={{$process->tracking_number}}" target="_blank"> {{$process->tracking_number}}</a>
+                <br>
+                {{ $process->description }}
 
 
 
