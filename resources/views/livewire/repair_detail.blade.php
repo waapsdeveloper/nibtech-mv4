@@ -389,6 +389,7 @@
                                         <th><small><b>Variation</b></small></th>
                                         <th><small><b>IMEI | Serial Number</b></small></th>
                                         <th><small><b>Vendor</b></small></th>
+                                        <th><small><b>Reason</b></small></th>
                                         @if (session('user')->hasPermission('view_cost'))
                                         <th><small><b>Cost</b></small></th>
                                         @endif
@@ -409,6 +410,7 @@
                                             <td>{{ $products[$item->variation->product_id]}} {{$storages[$item->variation->storage] ?? null}} {{$colors[$item->variation->color] ?? null}} {{$grades[$item->variation->grade] ?? "Grade not added" }} {{$grades[$item->variation->sub_grade] ?? '' }}</td>
                                             <td>{{ $item->imei.$item->serial_number }}</td>
                                             <td>{{ $item->order->customer->first_name }}</td>
+                                            <td>{{ $item->latest_operation->description }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
                                             <td>{{ $currency.amount_formatter($item->purchase_item->price,2) }}</td>
                                             @endif
