@@ -26,6 +26,7 @@ class Process_model extends Model
         'process_type_id',
         // 'grade',
         'description',
+        'tracking_number',
         'status',
     ];
 
