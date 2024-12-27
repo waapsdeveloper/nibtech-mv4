@@ -323,7 +323,7 @@
                                         @endphp
                                         <tr>
                                             <td>{{ $i }}</td>
-                                            <td>{{ $products[$variation->product_id]}} {{$storages[$variation->storage] ?? null}} {{$colors[$variation->color] ?? null}} {{$grades[$variation->grade] }}</td>
+                                            <td>{{ $products[$variation->product_id]}} {{$storages[$variation->storage] ?? null}} {{$colors[$variation->color] ?? null}} {{$grades[$variation->grade] ?? "Grade not added" }}</td>
                                             <td>{{ $stock->imei.$stock->serial_number }}</td>
                                             <td>{{ $customer->first_name }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
