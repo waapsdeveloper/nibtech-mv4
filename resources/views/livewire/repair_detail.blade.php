@@ -389,6 +389,7 @@
                                         <th><small><b>Variation</b></small></th>
                                         <th><small><b>IMEI | Serial Number</b></small></th>
                                         <th><small><b>Vendor</b></small></th>
+                                        <th><small><b>Reason</b></small></th>
                                         @if (session('user')->hasPermission('view_cost'))
                                         <th><small><b>Cost</b></small></th>
                                         @endif
@@ -406,9 +407,10 @@
 
                                         <tr>
                                             <td>{{ $i + 1 }}</td>
-                                            <td>{{ $products[$item->variation->product_id]}} {{$storages[$item->variation->storage] ?? null}} {{$colors[$item->variation->color] ?? null}} {{$grades[$item->variation->grade] }} {{$grades[$item->variation->sub_grade] ?? '' }}</td>
+                                            <td>{{ $products[$item->variation->product_id]}} {{$storages[$item->variation->storage] ?? null}} {{$colors[$item->variation->color] ?? null}} {{$grades[$item->variation->grade] ?? "Grade not added" }} {{$grades[$item->variation->sub_grade] ?? '' }}</td>
                                             <td>{{ $item->imei.$item->serial_number }}</td>
                                             <td>{{ $item->order->customer->first_name }}</td>
+                                            <td>{{ $item->latest_operation->description }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
                                             <td>{{ $currency.amount_formatter($item->purchase_item->price,2) }}</td>
                                             @endif
@@ -442,7 +444,7 @@
                             isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
                             isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
                         @endphp
-                        {{ $variation->product->model." ".$storage." ".$color." ".$variation->grade_id->name }} {{ $variation->sub_grade_id->name ?? '' }}
+                        {{ $variation->product->model." ".$storage." ".$color }} {{ $variation->grade_id->name ?? "Grade not added" }} {{ $variation->sub_grade_id->name ?? '' }}
                     </div>
                             {{-- {{ $variation }} --}}
                     <div class="card-body"><div class="table-responsive" style="max-height: 400px">
