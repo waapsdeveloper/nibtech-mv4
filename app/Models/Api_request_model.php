@@ -235,7 +235,7 @@ class Api_request_model extends Model
                 }
                 if($stock->variation->storage != null && $stock->variation->storage != 0 && $stock->variation->storage != $storage && $storage != 0){
                     $message = "Storage changed from: ".$stock->variation->storage_id->name." to: ".$storages[$storage];
-                    dd($message, $stock, $datas);
+                    // dd($message, $stock, $datas);
                 }
                 if($stock->variation->color == null || $stock->variation->color == $color){
                     $new_variation['color'] = $color;
