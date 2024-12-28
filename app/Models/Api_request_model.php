@@ -180,17 +180,19 @@ class Api_request_model extends Model
             if($stock != null){
                 if(str_contains(strToLower($datas->Comments), 'dual-esim')){
                     $p = $stock->variation->product;
-                    $product = Products_model::firstOrNew(['model'=>$p->model.' Dual eSIM']);
-                    if(!$product->id){
-                        $product->category = $p->category;
-                        $product->brand = $p->brand;
-                        $product->model = $p->model.' Dual eSIM';
-                        $product->save();
+                    if(!str_contains($p->model, 'Dual eSIM')){
+                        $product = Products_model::firstOrNew(['model'=>$p->model.' Dual eSIM']);
+                        if(!$product->id){
+                            $product->category = $p->category;
+                            $product->brand = $p->brand;
+                            $product->model = $p->model.' Dual eSIM';
+                            $product->save();
+                        }
+                        $p = $product;
                     }
 
-
                     $new_variation = [
-                        'product_id' => $product->id,
+                        'product_id' => $p->id,
                         'storage' => $stock->variation->storage,
                         'color' => $stock->variation->color,
                         'grade' => $stock->variation->grade,
