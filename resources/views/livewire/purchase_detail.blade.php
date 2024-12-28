@@ -687,7 +687,7 @@
                                                             {{ $product." ".$storage." ".$color}} {{$grade }} {{$sub_grade}}
                                                         </td>
                                                         <td title="Double click to change" data-stock="{{ $stock->id }}">{{ $stock->imei.$stock->serial_number }}</td>
-                                                        <td>{{ $item->order->customer->first_name }}</td>
+                                                        <td>{{ $stock->order->customer->first_name }}</td>
                                                         @if (session('user')->hasPermission('view_cost'))
                                                         <td>{{ $currency.amount_formatter($stock->purchase_item->price,2) }}</td>
                                                         @endif
