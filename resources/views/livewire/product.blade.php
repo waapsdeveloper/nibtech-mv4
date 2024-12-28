@@ -170,7 +170,7 @@
                                         <form method="post" action="{{url('product/update_product')}}/{{ $product->id }}" class="row form-inline">
                                             @csrf
                                         <tr>
-                                            <td>{{ $i + 1 }}</td>
+                                            <td title="{{ $product->id }}">{{ $i + 1 }}</td>
                                             <td>
                                                 <select name="update[category]" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
                                                     <option value="">None</option>
