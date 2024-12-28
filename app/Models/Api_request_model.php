@@ -213,9 +213,9 @@ class Api_request_model extends Model
                     $stock->variation_id = $variation->id;
                     $stock->save();
 
+                    $stock = Stock_model::find($stock->id);
 
                 }
-                $stock = Stock_model::find($stock->id);
 
                 $new_variation = [
                     'product_id' => $stock->variation->product_id,
@@ -230,6 +230,7 @@ class Api_request_model extends Model
                     $new_variation['storage'] = $storage;
                 if($stock->variation->storage != null && $stock->variation->storage != 0 && $stock->variation->storage != $storage){
                     $message = "Storage changed from: ".$stock->variation->storage_id->name." to: ".$storages[$storage];
+                    dd($message, $stock, $datas);
                 }
                 if($stock->variation->color == null || $stock->variation->color == $color){
                     $new_variation['color'] = $color;
