@@ -331,7 +331,7 @@
                                                     <a href="{{url('repair/detail/'.$stock->latest_repair->proces_id)}}">{{ $stock->latest_repair->process->reference_id }}</a>
                                                 @endif
                                             </td>
-                                            <td>{{ $stock->latest_operation->description }}</td>
+                                            <td>{{ $stock->latest_operation->description ?? null }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
                                             <td>€{{ amount_formatter($item->price,2) }}</td>
                                             @endif
