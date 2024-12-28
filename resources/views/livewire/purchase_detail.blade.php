@@ -672,6 +672,7 @@
                                                 @foreach ($sold_stocks as $stock)
                                                     @php
                                                         $stock->availability();
+                                                        $item = $stock->last_item();
                                                     @endphp
                                                     <tr>
                                                         <td>{{ $i + 1 }}</td>
@@ -687,7 +688,7 @@
                                                             {{ $product." ".$storage." ".$color}} {{$grade }} {{$sub_grade}}
                                                         </td>
                                                         <td title="Double click to change" data-stock="{{ $stock->id }}">{{ $stock->imei.$stock->serial_number }}</td>
-                                                        <td>{{ $stock->order->customer->first_name }}</td>
+                                                        <td>{{ $item->order->customer->first_name }}</td>
                                                         @if (session('user')->hasPermission('view_cost'))
                                                         <td>{{ $currency.amount_formatter($stock->purchase_item->price,2) }}</td>
                                                         @endif
