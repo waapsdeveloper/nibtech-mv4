@@ -672,6 +672,7 @@
                                                 @foreach ($sold_stocks as $stock)
                                                     @php
                                                         $stock->availability();
+                                                        $item = $stock->last_item();
                                                     @endphp
                                                     <tr>
                                                         <td>{{ $i + 1 }}</td>
