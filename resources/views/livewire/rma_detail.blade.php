@@ -303,6 +303,7 @@
                                         <th><small><b>Variation</b></small></th>
                                         <th><small><b>IMEI | Serial Number</b></small></th>
                                         <th><small><b>Vendor</b></small></th>
+                                        <th><small><b>Comment</b></small></th>
                                         @if (session('user')->hasPermission('view_cost'))
                                         <th><small><b>Cost</b></small></th>
                                         @endif
@@ -325,7 +326,12 @@
                                             <td>{{ $i }}</td>
                                             <td>{{ $products[$variation->product_id]}} {{$storages[$variation->storage] ?? null}} {{$colors[$variation->color] ?? null}} {{$grades[$variation->grade] ?? "Grade not added" }}</td>
                                             <td>{{ $stock->imei.$stock->serial_number }}</td>
-                                            <td>{{ $customer->first_name }}</td>
+                                            <td>{{ $customer->first_name }}
+                                                @if ($stock->latest_repair != null)
+                                                    <a href="{{url('repair/detail/'.$stock->latest_repair->proces_id)}}">{{ $stock->latest_repair->process->reference_id }}</a>
+                                                @endif
+                                            </td>
+                                            <td>{{ $stock->latest_operation->description }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
                                             <td>€{{ amount_formatter($item->price,2) }}</td>
                                             @endif
