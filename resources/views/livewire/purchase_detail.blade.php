@@ -673,6 +673,7 @@
                                                     @php
                                                         $stock->availability();
                                                         $item = $stock->last_item();
+                                                        $variation = $item->variation;
                                                     @endphp
                                                     <tr>
                                                         <td>{{ $i + 1 }}</td>
