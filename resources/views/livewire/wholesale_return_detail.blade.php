@@ -247,6 +247,7 @@
                                         <th><small><b>Variation</b></small></th>
                                         <th><small><b>IMEI | Serial Number</b></small></th>
                                         <th><small><b>Vendor</b></small></th>
+                                        <th><small><b>Comment</b></small></th>
                                         @if (session('user')->hasPermission('view_price'))
                                         <th><small><b>Price</b></small></th>
                                         @endif
@@ -269,7 +270,12 @@
                                             <td>{{ $i + 1 }}</td>
                                             <td>{{ $products[$item->variation->product_id] ?? "Variation Model Not added"}} {{$storages[$item->variation->storage] ?? null}} {{$colors[$item->variation->color] ?? null}} {{$grades[$item->variation->grade] ?? "Variation Grade Not added Reference: ".$item->variation->reference_id }}</td>
                                             <td>{{ $item->stock->imei.$item->stock->serial_number }}</td>
-                                            <td>{{ $item->stock->order->customer->first_name }}</td>
+                                            <td>{{ $item->stock->order->customer->first_name }}
+                                                @if ($item->stock->latest_repair != null)
+                                                    <a href="{{url('repair/detail/'.$item->stock->latest_repair->proces_id)}}">{{ $item->stock->latest_repair->process->reference_id }}</a>
+                                                @endif
+                                            </td>
+                                            <td>{{ $item->stock->latest_operation->description ?? null }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
                                             <td>{{ $currency.amount_formatter($item->price,2) }}</td>
                                             @endif
