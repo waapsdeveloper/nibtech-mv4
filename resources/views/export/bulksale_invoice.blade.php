@@ -268,7 +268,10 @@
         </div>
         <!-- Total Amount -->
         <div class="total-amount" style="padding:0; margin:0; line-height:6px">
-
+            @if ($order->reference)
+            <h5>Ref: {{ $order->reference }}</h5>
+            <br>
+            @endif
             <h3>Store Policy</h3>
             <hr>
             <h4>Stock Sold on Marginal VAT Scheme.</h4>
