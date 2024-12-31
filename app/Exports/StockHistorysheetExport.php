@@ -81,7 +81,7 @@ class StockHistorysheetExport implements FromCollection, WithHeadings, WithMappi
         $rows = [];
 
         // External Movements
-        foreach ($stock->order_items as $item) {
+        foreach ($stock['order_items'] as $item) {
             $order = $item->order;
             $rows[] = [
                 $stock->id,
@@ -96,7 +96,7 @@ class StockHistorysheetExport implements FromCollection, WithHeadings, WithMappi
         }
 
         // Internal Movements
-        foreach ($stock->stock_operations as $operation) {
+        foreach ($stock['stock_operations'] as $operation) {
             $rows[] = [
                 $stock->id,
                 'Internal Movement',
