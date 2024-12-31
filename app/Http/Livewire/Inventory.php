@@ -601,6 +601,12 @@ class Inventory extends Component
 
     public function verification(){
 
+        if(request('per_page') != null){
+            $per_page = request('per_page');
+        }else{
+            $per_page = 10;
+        }
+
         $data['colors'] = Color_model::pluck('name','id');
         $data['storages'] = Storage_model::pluck('name','id');
         $data['products'] = Products_model::pluck('model','id');
@@ -608,7 +614,7 @@ class Inventory extends Component
         $active_inventory_verification = Process_model::where(['process_type_id'=>20,'status'=>1])->first();
 
         $data['active_inventory_verification'] = $active_inventory_verification;
-        $last_ten = Process_stock_model::where('process_id', $active_inventory_verification->id)->where('admin_id',session('user_id'))->orderBy('id','desc')->limit(10)->get();
+        $last_ten = Process_stock_model::where('process_id', $active_inventory_verification->id)->where('admin_id',session('user_id'))->orderBy('id','desc')->limit($per_page)->get();
         $data['last_ten'] = $last_ten;
         $scanned_total = Process_stock_model::where('process_id', $active_inventory_verification->id)->where('admin_id',session('user_id'))->orderBy('id','desc')->count();
         $data['scanned_total'] = $scanned_total;
