@@ -446,6 +446,9 @@
                                                 @isset($process->processed_by) | {{ $process->admin->first_name }} | @endisset
                                                 @endisset
                                             </td>
+                                            <td>
+                                                {{ $p_stock->description }}
+                                            </td>
                                             {{-- <td>@if ($p_stock->status == 1)
                                                 Sent
                                                 @else
