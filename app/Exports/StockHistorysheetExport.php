@@ -34,7 +34,7 @@ class StockHistorysheetExport implements FromCollection, WithHeadings, WithMappi
                     'stock_id' => $stock->id,
                     'movement_type' => 'External Movement',
                     'order_id_or_old_variation' => $order->reference_id,
-                    'customer_or_new_variation' => $order->customer->first_name . ' ' . $order->customer->last_name ?? 'N/A',
+                    'customer_or_new_variation' => ($order->customer->first_name ?? null) . ' ' . ($order->customer->last_name ?? 'N/A'),
                     'type_or_reason' => $order->order_type->name ?? 'N/A',
                     'quantity' => $order->quantity ?? 'N/A',
                     'added_by' => $order->admin->first_name ?? 'N/A',
