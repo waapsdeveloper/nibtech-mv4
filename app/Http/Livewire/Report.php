@@ -7,6 +7,7 @@ use App\Exports\BatchInitialReportExport;
 use App\Exports\BatchReportExport;
 use App\Exports\OrderReportExport;
 use App\Exports\ProjectedSalesExport;
+use App\Exports\StockHistorysheetExport;
 use App\Models\Brand_model;
 use App\Models\Category_model;
 use Carbon\Carbon;
@@ -721,6 +722,7 @@ class Report extends Component
         // $data['aggregated_returns'] = $aggregate_returns;
         // $data['aggregated_return_cost'] = $aggregated_return_cost;
 
+        return Excel::download(new StockHistorysheetExport, 'Stock_History_Report.xlsx');
         return view('livewire.stock_report_new')->with($data);
     }
     public function pnl(){
@@ -1574,6 +1576,10 @@ class Report extends Component
         return response()->json($data);
     }
 
+    public function export_stock_history_report()
+    {
+        return Excel::download(new StockHistorysheetExport, 'Stock_History_Report.xlsx');
+    }
     public function export_report()
     {
         ini_set('memory_limit', '2560M');
