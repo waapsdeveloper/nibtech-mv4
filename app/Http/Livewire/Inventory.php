@@ -885,6 +885,14 @@ class Inventory extends Component
 
         }
 
+        if($stock->status == 2){
+            session()->put('error', 'Stock Marked Sold');
+        }
+        if($stock->status == null){
+            session()->put('error', 'Stock Purchase Missing');
+        }
+
+
         if(request('copy') == 1){
             $variation = $stock->variation;
             if(request('product_id') != null){
