@@ -23,41 +23,41 @@ class StockHistorysheetExport implements FromCollection, WithHeadings, WithMappi
     {
         $stock_ids = explode(',', $this->stock_ids);
         $stocks = Stock_model::whereIn('id',$stock_ids)->with(['order_items','stock_operations'])->get();
+        return $stocks;
+        // $rows = [];
 
-        $rows = [];
+        // foreach ($stocks as $stock) {
+        //     // External Movements
+        //     foreach ($stock->order_items as $item) {
+        //         $order = $item->order;
+        //         $rows[] = [
+        //             'stock_id' => $stock->id,
+        //             'movement_type' => 'External Movement',
+        //             'order_id_or_old_variation' => $order->reference_id,
+        //             'customer_or_new_variation' => ($order->customer->first_name ?? null) . ' ' . ($order->customer->last_name ?? 'N/A'),
+        //             'type_or_reason' => $order->order_type->name ?? 'N/A',
+        //             'quantity' => $order->quantity ?? 'N/A',
+        //             'added_by' => $order->admin->first_name ?? 'N/A',
+        //             'datetime' => $order->created_at,
+        //         ];
+        //     }
 
-        foreach ($stocks as $stock) {
-            // External Movements
-            foreach ($stock->order_items as $item) {
-                $order = $item->order;
-                $rows[] = [
-                    'stock_id' => $stock->id,
-                    'movement_type' => 'External Movement',
-                    'order_id_or_old_variation' => $order->reference_id,
-                    'customer_or_new_variation' => ($order->customer->first_name ?? null) . ' ' . ($order->customer->last_name ?? 'N/A'),
-                    'type_or_reason' => $order->order_type->name ?? 'N/A',
-                    'quantity' => $order->quantity ?? 'N/A',
-                    'added_by' => $order->admin->first_name ?? 'N/A',
-                    'datetime' => $order->created_at,
-                ];
-            }
+        //     // Internal Movements
+        //     foreach ($stock->stock_operations as $operation) {
+        //         $rows[] = [
+        //             'stock_id' => $stock->id,
+        //             'movement_type' => 'Internal Movement',
+        //             'order_id_or_old_variation' => $operation->old_variation->sku ?? 'N/A',
+        //             'customer_or_new_variation' => $operation->new_variation->sku ?? 'N/A',
+        //             'type_or_reason' => $operation->description ?? 'N/A',
+        //             'quantity' => 'N/A',
+        //             'added_by' => $operation->admin->first_name ?? 'N/A',
+        //             'datetime' => $operation->created_at,
+        //         ];
+        //     }
+        // }
 
-            // Internal Movements
-            foreach ($stock->stock_operations as $operation) {
-                $rows[] = [
-                    'stock_id' => $stock->id,
-                    'movement_type' => 'Internal Movement',
-                    'order_id_or_old_variation' => $operation->old_variation->sku ?? 'N/A',
-                    'customer_or_new_variation' => $operation->new_variation->sku ?? 'N/A',
-                    'type_or_reason' => $operation->description ?? 'N/A',
-                    'quantity' => 'N/A',
-                    'added_by' => $operation->admin->first_name ?? 'N/A',
-                    'datetime' => $operation->created_at,
-                ];
-            }
-        }
-
-        return collect($rows);
+        // return collect($rows);
     }
 
     // Define the headings for the Excel file
