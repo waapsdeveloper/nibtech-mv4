@@ -878,6 +878,13 @@ class Inventory extends Component
     }
 
     public function add_verification_imei($process_id) {
+        if(request('reference') != null){
+            session()->put('reference', request('reference'));
+            $reference = request('reference');
+        }else{
+            $reference = null;
+        }
+
         $imei = request('imei');
         if (ctype_digit($imei)) {
             $i = $imei;
@@ -961,6 +968,7 @@ class Inventory extends Component
 
         $process_stock = Process_stock_model::firstOrNew(['process_id'=>$process_id, 'stock_id'=>$stock->id]);
         $process_stock->admin_id = session('user_id');
+        $process_stock->description = $reference;
         $process_stock->status = 1;
         if($process_stock->id == null){
             $process_stock->save();
