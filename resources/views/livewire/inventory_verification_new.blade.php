@@ -17,7 +17,7 @@
             @csrf
             <div class="input-group">
                 <label for="reference" class="">Reference: &nbsp;</label>
-                <input type="text" class="form-control form-control-sm" name="reference" id="reference" placeholder="Enter Reference" value="{{ session('reference') }}" required>
+                <input type="text" class="form-control form-control-sm" name="reference" id="reference" placeholder="Enter Reference" value="{{ session('reference') }}">
             </div>
                 <div class="input-group">
                     <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
