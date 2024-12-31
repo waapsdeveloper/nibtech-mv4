@@ -292,6 +292,7 @@ class Stock_model extends Model
 
             if(in_array($last_item->order->order_type_id,[1,4,6])){
                 $message = 'IMEI is Available';
+                $type = 'success';
                 // if($stock->status == 2){
                     if($process_stocks->where('status',1)->count() == 0){
                         $stock->status = 1;
@@ -301,18 +302,24 @@ class Stock_model extends Model
                         $stock->save();
 
                         $message = "IMEI sent for repair";
+                        $type = 'warning';
                     }
                 // }else{
 
                 // }
             }else{
                 $message = "IMEI Sold";
+                $type = 'error';
                 if($stock->status == 1){
                     $stock->status = 2;
                     $stock->save();
                 }
             }
-                session()->put('success', $message);
+            if($stock->status == null){
+                $message = "IMEI missing status";
+                $type = 'error';
+            }
+                session()->put($type, $message);
         }
     }
 
