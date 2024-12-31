@@ -452,6 +452,9 @@
                                                 Received
                                             @endif</td> --}}
                                             <td style="width:220px">{{ $p_stock->created_at}} <br> {{ $process->tracking_number }}</td>
+                                            <td>
+                                                <a href="{{ url('inventory/delete_verification_item').'/'.$p_stock->id }}" class="btn btn-link"><i class="fa fa-trash"></i></a>
+                                            </td>
                                         </tr>
                                     @php
                                         $i ++;

@@ -860,6 +860,16 @@ class Inventory extends Component
         session()->put('success', 'Inventory Verification ended');
         return redirect()->back();
     }
+    public function delete_verification_item($id) {
+        if(session('user')->hasPermission('delete_verification_item')){}else{
+            session()->put('error', 'Permission Denied');
+            return redirect()->back();
+        }
+        $verification = Process_stock_model::find($id);
+        $verification->delete();
+        session()->put('success', 'Verification Item deleted');
+        return redirect()->back();
+    }
 
     public function add_verification_imei($process_id) {
         $imei = request('imei');
