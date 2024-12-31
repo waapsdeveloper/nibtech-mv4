@@ -21,7 +21,8 @@ class StockHistorysheetExport implements FromCollection, WithHeadings, WithMappi
 
     public function collection()
     {
-        $stocks = Stock_model::whereIn('id',$this->stock_ids)->with(['order_items','stock_operations'])->get();
+        $stock_ids = explode(',', $this->stock_ids);
+        $stocks = Stock_model::whereIn('id',$stock_ids)->with(['order_items','stock_operations'])->get();
 
         $rows = [];
 
