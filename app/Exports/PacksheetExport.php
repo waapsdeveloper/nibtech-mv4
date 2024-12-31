@@ -46,7 +46,7 @@ class PacksheetExport implements FromCollection, WithHeadings
         ->leftJoin('stock_operations as old_operations', function ($join) {
             $join->on('stock.id', '=', 'old_operations.stock_id')
                 //  ->whereNot('old_operations.description', 'LIKE', '%Cost Adjusted %')
-                 ->whereRaw('old_operations.id = (SELECT id FROM stock_operations WHERE stock_operations.stock_id = stock.id AND stock_operations.description NOT LIKE "%Cost Adjusted %" AND stock_operations.description NOT LIKE "%Grade changed for Bulksale%" AND stock_operations.description NOT LIKE " | | DrPhone" AND stock_operations.description NOT LIKE "Battery | | DrPhone" ORDER BY id DESC LIMIT 1)');
+                 ->whereRaw('old_operations.id = (SELECT id FROM stock_operations WHERE stock_operations.stock_id = stock.id AND stock_operations.description NOT LIKE "%Cost Adjusted %" AND stock_operations.description NOT LIKE "%Grade changed for Bulksale%" AND stock_operations.description NOT LIKE "% |  | DrPhone%" AND stock_operations.description NOT LIKE "Battery | | DrPhone" ORDER BY id DESC LIMIT 1)');
         })
         ->leftJoin('admin', 'stock_operations.admin_id', '=', 'admin.id')
 
