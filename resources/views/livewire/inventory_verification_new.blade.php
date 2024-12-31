@@ -86,6 +86,7 @@ session()->forget('error');
     <div class="card">
         <div class="card-header pb-0">
             <div class="d-flex justify-content-between">
+                <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$last_ten->firstItem()}} {{ __('locale.To') }} {{$last_ten->lastItem()}} {{ __('locale.Out Of') }} {{$last_ten->total()}} </h5>
                 <h4 class="card-title mg-b-0">Latest Scanned</h4>
                 <h4 class="card-title mg-b-0">Counter: {{ session('counter') }} <a href="{{ url('inventory/resume_verification?reset_counter=1') }}">Reset</a></h4>
 
@@ -114,7 +115,7 @@ session()->forget('error');
                     </thead>
                     <tbody>
                         @php
-                            $i = 0;
+                            $i = $last_ten->firstItem() - 1;
                         @endphp
                         @foreach ($last_ten as $item)
                             <tr>
