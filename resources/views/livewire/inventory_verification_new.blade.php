@@ -109,6 +109,7 @@ session()->forget('error');
                             <th><small><b>No</b></small></th>
                             <th><small><b>Variation</b></small></th>
                             <th><small><b>IMEI | Serial Number</b></small></th>
+                            <th><small><b>Reference</b></small></th>
                             <th><small><b>Vendor</b></small></th>
                             <th><small><b>Creation Date</b></small></th>
                         </tr>
@@ -126,6 +127,7 @@ session()->forget('error');
                                 <td>{{ $i + 1 }}</td>
                                 <td>{{ $item->stock->variation->product->model ?? "Variation Model Not added"}} {{$storages[$item->stock->variation->storage] ?? null}} {{$colors[$item->stock->variation->color] ?? null}} {{$grades[$item->stock->variation->grade] ?? "Variation Grade Not added Reference: ".$item->stock->variation->reference_id }}</td>
                                 <td>{{ $item->stock->imei.$item->stock->serial_number }}</td>
+                                <td>{{ $item->description }}</td>
                                 <td>{{ $item->stock->order->customer->first_name ?? "Purchase Entry Error" }}</td>
                                 <td style="width:220px">{{ $item->created_at }}</td>
                             </tr>
