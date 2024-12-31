@@ -566,7 +566,7 @@ class Report extends Component
         // return Excel::download(new BatchInitialReportExport($orderId), $order->reference_id.'_batch_report.xlsx');
     }
     public function stock_report(){
-        ini_set('memory_limit', '256M');
+        ini_set('memory_limit', '2560M');
         ini_set('max_execution_time', '1200s');
         // DB::statement("SET SESSION group_concat_max_len = 1500000;");
 
