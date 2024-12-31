@@ -269,6 +269,7 @@ Route::get('inventory/verification', [Inventory::class,'verification'])->name('i
 Route::get('inventory/resume_verification', [Inventory::class,'resume_verification'])->name('inventory_verification');
 Route::post('inventory/end_verification', [Inventory::class,'end_verification'])->name('inventory_verification');
 Route::post('inventory/add_verification_imei/{id}', [Inventory::class,'add_verification_imei'])->name('inventory_verification');
+Route::get('inventory/delete_verification_item/{id}', [Inventory::class,'delete_verification_item'])->name('inventory_verification');
 
 Route::get('belfast_inventory', [Inventory::class,'belfast_inventory'])->name('view_belfast_inventory');
 Route::post('belfast_inventory/aftersale_action/{id}/{action}', [Inventory::class,'aftersale_action'])->name('add_return_item');
