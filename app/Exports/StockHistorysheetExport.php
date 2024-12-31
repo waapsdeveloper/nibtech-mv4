@@ -28,7 +28,8 @@ class StockHistorysheetExport implements FromCollection, WithHeadings, WithMappi
 
         foreach ($stocks as $stock) {
             // External Movements
-            foreach ($stock->order_items as $order) {
+            foreach ($stock->order_items as $item) {
+                $order = $item->order;
                 $rows[] = [
                     'stock_id' => $stock->id,
                     'movement_type' => 'External Movement',
