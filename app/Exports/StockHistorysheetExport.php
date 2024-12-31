@@ -87,10 +87,10 @@ class StockHistorysheetExport implements FromCollection, WithHeadings, WithMappi
                 $stock->id,
                 'External Movement',
                 $order->reference_id,
-                ($order->customer->first_name ?? null) . ' ' . ($order->customer->last_name ?? 'N/A'),
-                $order->order_type->name ?? 'N/A',
-                $order->quantity ?? 'N/A',
-                $order->admin->first_name ?? 'N/A',
+                ($order->customer->first_name ?? null) . ' ' . ($order->customer->last_name ?? ''),
+                $order->order_type->name ?? '',
+                $order->quantity ?? '',
+                $order->admin->first_name ?? '',
                 $order->created_at,
             ];
         }
@@ -100,11 +100,11 @@ class StockHistorysheetExport implements FromCollection, WithHeadings, WithMappi
             $rows[] = [
                 $stock->id,
                 'Internal Movement',
-                $operation->old_variation->sku ?? 'N/A',
-                $operation->new_variation->sku ?? 'N/A',
-                $operation->description ?? 'N/A',
-                'N/A', // Quantity is not applicable for internal movement
-                $operation->admin->first_name ?? 'N/A',
+                $operation->old_variation->sku ?? '',
+                $operation->new_variation->sku ?? '',
+                $operation->description ?? '',
+                '', // Quantity is not applicable for internal movement
+                $operation->admin->first_name ?? '',
                 $operation->created_at,
             ];
         }
