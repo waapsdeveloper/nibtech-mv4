@@ -614,7 +614,11 @@ class Inventory extends Component
         $active_inventory_verification = Process_model::where(['process_type_id'=>20,'status'=>1])->first();
 
         $data['active_inventory_verification'] = $active_inventory_verification;
-        $last_ten = Process_stock_model::where('process_id', $active_inventory_verification->id)->where('admin_id',session('user_id'))->orderBy('id','desc')->limit($per_page)->get();
+        $last_ten = Process_stock_model::where('process_id', $active_inventory_verification->id)->where('admin_id',session('user_id'))->orderBy('id','desc')
+        ->paginate($per_page)
+        ->onEachSide(5)
+        ->appends(request()->except('page'));
+
         $data['last_ten'] = $last_ten;
         $scanned_total = Process_stock_model::where('process_id', $active_inventory_verification->id)->where('admin_id',session('user_id'))->orderBy('id','desc')->count();
         $data['scanned_total'] = $scanned_total;

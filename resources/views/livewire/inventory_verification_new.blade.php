@@ -134,7 +134,8 @@ session()->forget('error');
                         @endforeach
                     </tbody>
                 </table>
-            <br>
+                <br>
+                {{ $last_ten->onEachSide(5)->links() }} {{ __('locale.From') }} {{$last_ten->firstItem()}} {{ __('locale.To') }} {{$last_ten->lastItem()}} {{ __('locale.Out Of') }} {{$last_ten->total()}}
         </div>
 
         </div>
