@@ -88,7 +88,7 @@ session()->forget('error');
                 <h4 class="card-title mg-b-0">Total Scanned: {{$scanned_total}}</h4>
             </div>
         </div>
-        <div class="card-body"><div class="table-responsive" style="max-height: 250px">
+        <div class="card-body"><div class="table-responsive">
                 <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                     <thead>
                         <tr>
