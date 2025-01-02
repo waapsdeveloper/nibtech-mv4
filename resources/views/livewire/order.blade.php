@@ -436,6 +436,7 @@
                                                 }
                                                 if ($replacement != null && $replacement->stock->status == 2) {
                                                     continue;
+                                                    echo "<script> alert('Reimburse Missing')</script>";
                                                 }
                                             }
                                         @endphp
