@@ -430,13 +430,14 @@
                                             }
                                             if (request('missing') == 'reimburse' && $item->replacement) {
                                                 $replacement = $item->replacement;
+                                                $itm = $replacement;
                                                 while ($replacement != null) {
                                                     # code...
+                                                    $itm = $replacement;
                                                     $replacement = $replacement->replacement;
                                                 }
-                                                if ($replacement != null && $replacement->stock->status == 2) {
+                                                if ($itm != null && $itm->stock->status == 2) {
                                                     continue;
-                                                    echo "<script> alert('Reimburse Missing')</script>";
                                                 }
                                             }
                                         @endphp
