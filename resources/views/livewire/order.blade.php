@@ -420,6 +420,7 @@
                                         @php
                                             $stock = $item->stock;
                                             $variation = $item->variation;
+                                            $hide = false;
 
                                             if($stock != null && (request('missing_refund') || request('missing') || request('items'))){
                                                 if (in_array($stock->imei . $stock->serial_number, $imei_list)) {
@@ -437,6 +438,7 @@
                                                     $replacement = $replacement->replacement;
                                                 }
                                                 if ($itm != null && $itm->stock->status == 2) {
+                                                    $hide = true;
                                                     continue;
                                                 }
                                             }
@@ -668,6 +670,8 @@
                                             $j++;
                                         @endphp
                                     @endforeach
+                                    @if (!$hide)
+
                                     @foreach ($items as $itemIndex => $item)
                                         @if ($item->replacement)
                                             @php
@@ -878,6 +882,7 @@
                                     @php
                                         $i ++;
                                     @endphp
+                                    @endif
                                 @endforeach
                             </tbody>
                             <tfoot>
