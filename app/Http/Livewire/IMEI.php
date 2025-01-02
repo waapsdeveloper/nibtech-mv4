@@ -332,7 +332,13 @@ class IMEI extends Component
 
         // Fetch all order items for the specific stock, ordered by 'id' ascending
         $order_items = Order_item_model::where('stock_id', $stock_id)->orderBy('id', 'asc')->get();
-
+        if($order_items->count() == 0){
+            $stock->order_id = null;
+            $stock->status = null;
+            $stock->save();
+            session()->put('error', 'No Order Items found');
+            return redirect()->back();
+        }
         // First, find the initial Purchase (`order_type_id = 1`)
         foreach ($order_items as $item) {
             $item->linked_id = null; // Reset linked_id
