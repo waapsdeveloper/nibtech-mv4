@@ -1008,6 +1008,10 @@ class Inventory extends Component
             $per_page = 10;
         }
         $data['return_order'] = Order_model::where(['order_type_id'=>4,'status'=>1])->first();
+        if($data['return_order'] == null){
+            session()->put('error', 'No Open Sales Return Order found');
+            return redirect()->back();
+        }
         $data['vendors'] = Customer_model::where('is_vendor',1)->pluck('first_name','id');
         $data['products'] = Products_model::pluck('model','id');
         $data['colors'] = Color_model::pluck('name','id');
