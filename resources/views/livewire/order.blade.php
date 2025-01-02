@@ -454,22 +454,9 @@
                                                 if($exchange->count() > 0){
                                                     foreach ($exchange as $ex) {
                                                         $itm = $ex;
-                                                        while ($ex != null) {
-                                                            # code...
-                                                            $itm = $ex;
-                                                            $ex = $ex->replacement;
-                                                        }
                                                         if ($itm != null && $itm->stock->status == 2) {
                                                             $hide = true;
                                                             continue;
-                                                        }elseif ($itm != null && $itm->stock->status != 2) {
-                                                            echo "
-                                                                <tr>
-                                                                    <td>
-                                                            Exchange not in stock: " . $itm->stock->imei . $itm->stock->serial_number. " - " . $itm->stock->status. "
-                                                                    </td>
-                                                                </tr>";
-                                                            # code...
                                                         }
                                                     }
                                                 }
