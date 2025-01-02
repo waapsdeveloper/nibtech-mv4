@@ -456,6 +456,12 @@
                                                         $itm = $ex;
                                                         if ($itm != null && $itm->stock->status == 2) {
                                                             $hide = true;
+                                                    echo "
+                                                        <tr>
+                                                            <td>
+                                                    Reimburse not in stock: " . $itm->stock->imei . $itm->stock->serial_number. " - " . $itm->stock->status. "
+                                                            </td>
+                                                        </tr>";
                                                             continue;
                                                         }
                                                     }
