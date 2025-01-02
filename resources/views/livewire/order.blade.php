@@ -441,7 +441,7 @@
                                                     $hide = true;
                                                     continue;
                                                 }elseif ($itm != null && $itm->stock->status != 2) {
-                                                    echo "Reimburse not in stock: " . $itm->stock->imei . $itm->stock->serial_number;
+                                                    echo "Reimburse not in stock: " . $itm->stock->imei . $itm->stock->serial_number. " - " . $itm->stock->status;
                                                     # code...
                                                 }
                                             }
