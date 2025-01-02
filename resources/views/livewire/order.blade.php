@@ -460,6 +460,10 @@
                                                         }
                                                     }
                                                 }
+                                                if ($hide) {
+                                                    continue;
+                                                    # code...
+                                                }
                                             }
                                         @endphp
                                         <tr @if ($customer->orders->count() > 1) class="bg-light" @endif>
