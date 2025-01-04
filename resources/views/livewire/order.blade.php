@@ -465,6 +465,9 @@
                                                     # code...
                                                 }
                                             }
+                                            if(request('missing') == 'reimburse'){
+                                                $stock->availability();
+                                            }
                                         @endphp
                                         <tr @if ($customer->orders->count() > 1) class="bg-light" @endif>
                                             @if ($itemIndex == 0)
