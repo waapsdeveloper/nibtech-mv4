@@ -8,16 +8,14 @@
         </div>
         <div class="col-md col-sm-6">
             <div class="form-floating">
-                {{-- <input type="text" id="product" name="product" list="products" class="form-control" data-bs-placeholder="Select Status" value="@isset($_GET['product']){{$_GET['product']}}@endisset"> --}}
-                {{-- <datalist id="products"> --}}
-                <select id="product" name="product" list="products" class="form-control" data-bs-placeholder="Select Status" value="@isset($_GET['product']){{$_GET['product']}}@endisset">
+                <input type="text" id="product" name="product" list="products" class="form-control" data-bs-placeholder="Select Status" value="@isset($_GET['product']){{$_GET['product']}}@endisset">
+                <label for="product">Product</label>
+            </div>
+                <datalist id="products">
                     @foreach ($products as $product)
                         <option value="{{$product->id}}" @if(isset($_GET['product']) && $product->id == $_GET['product']) {{'selected'}}@endif>{{$product->model}}</option>
                     @endforeach
-                </select>
-                <label for="product">Product</label>
-            </div>
-                {{-- </datalist> --}}
+                </datalist>
         </div>
         <div class="col-md-2 col-sm-6">
             <div class="form-floating">
