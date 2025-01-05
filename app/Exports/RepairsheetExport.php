@@ -38,7 +38,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
                     ->whereIn('process_stock.process_id', array_keys($repair_batches))
                     ->whereRaw('process_stock.id = (SELECT id FROM process_stock WHERE process_stock.stock_id = stock.id ORDER BY id DESC LIMIT 1)');
             })
-            ->leftJoin('process', 'process_stock.process_id', '=', 'process.id')
+            ->leftJoin('process as pr', 'process_stock.process_id', '=', 'pr.id')
             ->leftJoin('storage', 'variation.storage', '=', 'storage.id')
             ->leftJoin('grade', 'variation.grade', '=', 'grade.id')
             ->leftJoin('order_items', function ($join) {
@@ -58,7 +58,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
                 'grade.name as grade_name',
                 'orders.reference_id as po',
                 'customer.company as customer',
-                'process.reference_id as process_id',
+                'pr.reference_id as process_id',
                 'stock.imei as imei',
                 'stock.serial_number as serial_number',
                 'stock_operations.description as issue', // Corrected duplicated issue field
