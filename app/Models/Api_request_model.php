@@ -337,7 +337,7 @@ class Api_request_model extends Model
                     $request->save();
 
                 }elseif($stock->status == 2){
-
+                    echo " Stock is already sold";
                     // $request->stock_id = $stock->id;
                     // $request->status = 2;
                     // $request->save();
