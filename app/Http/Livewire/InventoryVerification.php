@@ -175,6 +175,9 @@ class InventoryVerification extends Component
     }
     public function verification_detail($process_id){
 
+        ini_set('memory_limit', '2048M');
+        ini_set('max_execution_time', 300);
+        ini_set('pdo_mysql.max_input_vars', '10000');
 
         if(str_contains(url()->previous(),url('inventory_verification')) && !str_contains(url()->previous(),'detail')){
             session()->put('previous', url()->previous());
@@ -234,15 +237,11 @@ class InventoryVerification extends Component
 
         $data['process_id'] = $process_id;
 
-        // $stock_ids = Process_stock_model::where('process_id',$process_id)->pluck('stock_id');
-        ini_set('memory_limit', '2048M');
-        ini_set('max_execution_time', 300);
-        ini_set('pdo_mysql.max_input_vars', '10000');
+        $stock_ids = Process_stock_model::where('process_id',$process_id)->pluck('stock_id');
 
 
-
-        $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q) use ($process_id){
-            $q->whereIn('stock.process_stocks.process_id', $process_id)->where('stock.deleted_at',null);
+        $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q) use ($stock_ids){
+            $q->whereIn('stock.id', $stock_ids)->where('stock.deleted_at',null);
         })->orderBy('product_id')->orderBy('storage')->get();
 
         $result = [];
