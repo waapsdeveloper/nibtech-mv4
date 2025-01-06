@@ -20,6 +20,7 @@ use App\Models\Grade_model;
 use App\Models\Order_issue_model;
 use App\Models\Process_model;
 use App\Models\Process_stock_model;
+use App\Models\Product_storage_sort_model;
 use App\Models\Stock_operations_model;
 use Illuminate\Support\Facades\DB;
 
@@ -233,6 +234,50 @@ class InventoryVerification extends Component
 
         $data['process_id'] = $process_id;
 
+        // $stock_ids = Process_stock_model::where('process_id',$process_id)->pluck('stock_id');
+        ini_set('memory_limit', '2048M');
+        ini_set('max_execution_time', 300);
+        ini_set('pdo_mysql.max_input_vars', '10000');
+
+
+        $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q) use ($process_id){
+            $q->whereIn('stock.process_stocks.process_id', $process_id)->where('stock.deleted_at',null);
+        })->orderBy('product_id')->orderBy('storage')->get();
+
+        $result = [];
+        foreach($product_storage_sort as $pss){
+            $product = $pss->product;
+            $storage = $pss->storage_id->name ?? null;
+
+            $stocks = $pss->stocks->where('deleted_at',null);
+            $stock_ids = $stocks->pluck('id');
+            $stock_imeis = $stocks->whereNotNull('imei')->pluck('imei');
+            $stock_serials = $stocks->whereNotNull('serial_number')->pluck('serial_number');
+
+
+            $purchase_items = Order_item_model::whereIn('stock_id', $stock_ids)->whereHas('order', function ($q) {
+                $q->where('order_type_id', 1);
+            })->sum('price');
+
+            if(count($stock_ids) == 0){
+                continue;
+            }
+            $datas = [];
+            $datas['pss_id'] = $pss->id;
+            $datas['product_id'] = $pss->product_id;
+            $datas['storage'] = $pss->storage;
+            $datas['model'] = $product->model.' '.$storage;
+            $datas['quantity'] = count($stock_ids);
+            $datas['stock_ids'] = $stock_ids->toArray();
+            $datas['stock_imeis'] = $stock_imeis->toArray();
+            $datas['stock_serials'] = $stock_serials->toArray();
+            // $datas['average_cost'] = $purchase_items->avg('price');
+            $datas['total_cost'] = $purchase_items;
+
+            $result[] = $datas;
+        }
+
+        $data['available_stock_summery'] = $result;
 
         return view('livewire.repair_detail')->with($data);
 
