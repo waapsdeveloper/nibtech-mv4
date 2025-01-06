@@ -59,20 +59,18 @@
                 </script>
                 @else
                 <br>
-                Tracking Number: <a href="https://www.dhl.com/gb-en/home/tracking/tracking-express.html?submit=1&tracking-id={{$process->tracking_number}}" target="_blank"> {{$process->tracking_number}}</a>
-                <br>
                 {{ $process->description }}
 
 
 
-                @if (session('user')->hasPermission('repair_revert_status'))
+                @if (session('user')->hasPermission('verification_revert_status'))
                     <br>
-                    <a href="{{url('repair/revert_status').'/'.$process->id}}">Revert Back to Pending</a>
+                    <a href="{{url('inventory_verification/revert_status').'/'.$process->id}}">Revert Back to Pending</a>
                 @endif
 
                 @endif
                     @if ($process->status == 2 && $variations->count() == 0)
-                    <form class="form-inline" method="POST" action="{{url('repair/approve').'/'.$process->id}}">
+                    <form class="form-inline" method="POST" action="{{url('inventory_verification/approve').'/'.$process->id}}">
                         @csrf
                         <div class="form-floating">
                             <input type="text" class="form-control" id="cost" name="cost" placeholder="Enter Total Cost" required>
@@ -86,15 +84,15 @@
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
-                        <li class="breadcrumb-item tx-15"><a href="{{ session('previous')}}">External Repair</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">External Repair Detail</li>
+                        <li class="breadcrumb-item tx-15"><a href="{{ session('previous')}}">Inventory Verification</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Inventory Verification Detail</li>
                     </ol>
                 </div>
             </div>
         <!-- /breadcrumb -->
         <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
                 {{-- <center><h4>Inventory Verification Batch Detail</h4></center> --}}
-            <h5>Reference: {{ $process->reference_id }} | Repairer: {{ $process->customer->first_name }} | Total Items: {{ $process->process_stocks->count() }} | Total Price: {{ $currency.amount_formatter($process->process_stocks->sum('price'),2) }}</h5>
+            <h5>Reference: {{ $process->reference_id }} | Total Items: {{ $process->process_stocks->count() }} | Total Price: {{ $currency.amount_formatter($process->process_stocks->sum('price'),2) }}</h5>
             @if ($process->status == 1)
             <div class="p-1">
                 <form class="form-inline" action="{{ url('delete_repair_item') }}" method="POST" id="repair_item">
@@ -114,173 +112,10 @@
 
         <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
 
-            @if ($process->status == 1)
-            <div class="p-2">
-                <h4>Add External Repair Item
-                    {{-- Option to show advance options --}}
-                    <a href="{{ url('repair').'/'.$process->id.'?show_advance=1' }}" class="btn btn-sm btn-link" data-bs-toggle="collapse" data-bs-target="#advance_options" aria-expanded="false" aria-controls="advance_options" id="advance_options_button" >Show Advance Options</a>
-                </h4>
-
-                <div class="collapse" id="advance_options">
-                    <form method="GET" class="row">
-                        <div class="input-group col-md-6">
-                            <label for="exclude_vendor" class="form-label">Exclude Vendor</label>
-                            <select name="exclude_vendor[]" id="exclude_vendor" class="select2 form-control" multiple>
-                                @foreach ($vendors as $vendor)
-                                    <option value="{{$vendor->id}}"
-                                        @if (request('exclude_vendor') != null)
-                                            @if (in_array($vendor->id,request('exclude_vendor')))
-                                                selected
-                                            @endif
-
-                                        @endif
-                                        >{{$vendor->first_name}}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="input-group col-md-6">
-                            <label for="include_vendor" class="form-label">Include Vendor</label>
-                            <select name="include_vendor[]" id="include_vendor" class="select2 form-control" multiple>
-                                @foreach ($vendors as $vendor)
-                                    <option value="{{$vendor->id}}"
-                                        @if (request('include_vendor') != null)
-                                            @if (in_array($vendor->id,request('include_vendor')))
-                                                selected
-                                            @endif
-
-                                        @endif
-                                        >{{$vendor->first_name}}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="input-group col-md-6">
-                            <label for="exclude_product" class="form-label">Exclude Product</label>
-                            <select name="exclude_product[]" id="exclude_product" class="select2 form-control" multiple>
-                                @foreach ($products as $id => $product)
-                                    <option value="{{$id}}" @if (request('exclude_product') != null) @if (in_array($id,request('exclude_product'))) selected @endif @endif>{{$product}}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="input-group col-md-6">
-                            <label for="include_product" class="form-label">Include Product</label>
-                            <select name="include_product[]" id="include_product" class="select2 form-control" multiple>
-                                @foreach ($products as $id => $product)
-                                    <option value="{{$id}}" @if (request('include_product') != null) @if (in_array($id,request('include_product'))) selected @endif @endif>{{$product}}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="input-group col-md-6">
-                            <label for="exclude_grade" class="form-label">Exclude Grade</label>
-                            <select name="exclude_grade[]" id="exclude_grade" class="select2 form-control" multiple>
-                                @foreach ($grades as $id => $grade)
-                                    <option value="{{$id}}" @if (request('exclude_grade') != null) @if (in_array($id,request('exclude_grade'))) selected @endif @endif>{{$grade}}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="input-group col-md-6">
-                            <label for="include_grade" class="form-label">Include Grade</label>
-                            <select name="include_grade[]" id="include_grade" class="select2 form-control" multiple>
-                                @foreach ($grades as $id => $grade)
-                                    <option value="{{$id}}" @if (request('include_grade') != null) @if (in_array($id,request('include_grade'))) selected @endif @endif>{{$grade}}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="input-group col-md-6">
-                            <label for="apply_filter" class="form-label">Apply Filter</label>
-                            <button type="submit" class="btn btn-primary">Apply Filter</button>
-                        </div>
-                        <input type="hidden" name="show_advance" value="1">
-                        @if (request('hide') == 'all')
-                        <input type="hidden" name="hide" value="all">
-                        @endif
-                    </form>
-                </div>
-
-            </div>
-            <div class="p-1">
-                <form class="form-inline" action="{{ url('check_repair_item').'/'.$process_id }}" method="POST" id="repair_item">
-                    @csrf
-                    <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
-                    <input type="text" class="form-control form-control-sm" name="imei"  @if (request('remove') != 1) id="imei" @endif id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
-                    <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
-                    @if (request('exclude_vendor'))
-                        @foreach (request('exclude_vendor') as $vendor)
-                            <input type="hidden" name="exclude_vendor[]" value="{{$vendor}}">
-                        @endforeach
-                        <input type="hidden" name="apply_filter" value="1">
-                    @endif
-                    @if (request('include_vendor'))
-                        @foreach (request('include_vendor') as $vendor)
-                            <input type="hidden" name="include_vendor[]" value="{{$vendor}}">
-                        @endforeach
-                        <input type="hidden" name="apply_filter" value="1">
-                    @endif
-                    @if (request('exclude_product'))
-                        @foreach (request('exclude_product') as $product)
-                            <input type="hidden" name="exclude_product[]" value="{{$product}}">
-                        @endforeach
-                        <input type="hidden" name="apply_filter" value="1">
-                    @endif
-                    @if (request('include_product'))
-                        @foreach (request('include_product') as $product)
-                            <input type="hidden" name="include_product[]" value="{{$product}}">
-                        @endforeach
-                        <input type="hidden" name="apply_filter" value="1">
-                    @endif
-                    @if (request('exclude_grade'))
-                        @foreach (request('exclude_grade') as $grade)
-                            <input type="hidden" name="exclude_grade[]" value="{{$grade}}">
-                        @endforeach
-                        <input type="hidden" name="apply_filter" value="1">
-                    @endif
-                    @if (request('include_grade'))
-                        @foreach (request('include_grade') as $grade)
-                            <input type="hidden" name="include_grade[]" value="{{$grade}}">
-                        @endforeach
-                        <input type="hidden" name="apply_filter" value="1">
-                    @endif
-                </form>
-            </div>
-            <div class="p-2 tx-right">
-                <form method="POST" enctype="multipart/form-data" action="{{ url('repair/add_repair_sheet').'/'.$process_id}}" class="form-inline p-1">
-                    @csrf
-                    <input type="file" class="form-control form-control-sm" name="sheet">
-                    <button type="submit" class="btn btn-sm btn-primary">Upload Sheet</button>
-                </form>
-
-                <a href="{{url('repair_email')}}/{{ $process->id }}" target="_blank"><button class="btn-sm btn-secondary">Send Email</button></a>
-                <a href="{{url('export_repair_invoice')}}/{{ $process->id }}" target="_blank"><button class="btn-sm btn-secondary">Invoice</button></a>
-                @if ($process->exchange_rate != null)
-                <a href="{{url('export_repair_invoice')}}/{{ $process->id }}/1" target="_blank"><button class="btn-sm btn-secondary">{{$process->currency_id->sign}} Invoice</button></a>
-
-                @endif
-                <div class="btn-group p-1" role="group">
-                    <button type="button" class="btn-sm btn-secondary dropdown-toggle" id="pack_sheet" data-bs-toggle="dropdown" aria-expanded="false">
-                    Pack Sheet
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="pack_sheet">
-                        <li><a class="dropdown-item" href="{{url('export_repair_invoice')}}/{{ $process->id }}?packlist=2&id={{ $process->id }}">.xlsx</a></li>
-                        <li><a class="dropdown-item" href="{{url('export_repair_invoice')}}/{{ $process->id }}?packlist=1" target="_blank">.pdf</a></li>
-                    </ul>
-                </div>
-            </div>
-
-            @elseif ($process->status == 2)
 
             <div class="p-2">
                 <h4>Receive External Repair Item</h4>
 
-            </div>
-            <div class="p-1">
-                <form class="form-inline" action="{{ url('receive_repair_item').'/'.$process_id }}" method="POST" id="repair_item">
-                    @csrf
-                    <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
-                    <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
-                    <label for="">Tested __ Days Ago</label>
-                    <input type="number" class="form-control form-control-sm" name="check_testing_days" placeholder="Days" value="{{session('check_testing_days')}}">
-                    <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
-
-                </form>
             </div>
 
             <div class="btn-group p-1" role="group">
@@ -298,9 +133,6 @@
                     <li><a class="dropdown-item" href="{{url('export_repair_invoice')}}/{{ $process->id }}?packlist=1" target="_blank">.pdf</a></li>
                 </ul>
             </div>
-
-            @endif
-
         </div>
             <script>
                 window.onload = function() {
@@ -354,11 +186,6 @@
                     <div class="card-header pb-0">
                         <div class="d-flex justify-content-between">
                             <h4 class="card-title mg-b-0">Latest Added Items</h4>
-                            @if (request('hide') == 'all')
-                                <a href="{{ url('repair/detail').'/'.$process_id }}" class="btn btn-sm btn-link">Show All</a>
-                            @else
-                                <a href="{{ url('repair/detail').'/'.$process_id.'?hide=all' }}" class="btn btn-sm btn-link">Hide All</a>
-                            @endif
                         </div>
                     </div>
                     <div class="card-body"><div class="table-responsive" style="max-height: 250px">
@@ -416,200 +243,101 @@
         <br>
         @endif
 
-        @if (request('hide') != 'all')
-        <div @if ($process->status != 1)  class="row" @endif>
-            <div @if ($process->status != 1) class="col-md-7 row" @else class="row" @endif>
+        <div class="card" id="print_inv">
+            <div class="card-header pb-0 d-flex justify-content-between">
+                <h4 class="card-title">Inventory Verification Summery</h4>
+            </div>
+            <div class="card-body"><div class="table-responsive">
+                <form method="GET" action="" target="_blank" id="search_summery">
+                    <input type="hidden" name="category" value="{{ Request::get('category') }}">
+                    <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
+                    <input type="hidden" name="color" value="{{ Request::get('color') }}">
+                    @if (Request::get('grade'))
 
-            @foreach ($variations as $variation)
-            <div @if ($process->status == 1) class="col-md-4" @else class="col-md-6" @endif>
-                <div class="card">
-                    <div class="card-header pb-0">
+                    @foreach (Request::get('grade') as $grd)
+
+                        <input type="hidden" name="grade[]" value="{{ $grd }}">
+                    @endforeach
+                    @endif
+                    <input type="hidden" name="replacement" value="{{ Request::get('replacement') }}">
+                    <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
+                    <input type="hidden" name="status" value="{{ Request::get('status') }}">
+                    <input type="hidden" name="vendor" value="{{ Request::get('vendor') }}">
+                </form>
+                <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                    <thead>
+                        <tr>
+                            <th><small><b>No</b></small></th>
+                            <th><small><b>Model</b></small></th>
+                            <th><small><b>Quantity</b></small></th>
+                            <th><small><b>Cost</b></small></th>
+                        </tr>
+                    </thead>
+                    <tbody>
                         @php
-                            isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
-                            isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
+                            $i = 0;
+                            $total_quantity = 0;
+                            $total_cost = 0;
                         @endphp
-                        {{ $variation->product->model." ".$storage." ".$color }} {{ $variation->grade_id->name ?? "Grade not added" }} {{ $variation->sub_grade_id->name ?? '' }}
-                    </div>
-                            {{-- {{ $variation }} --}}
-                    <div class="card-body"><div class="table-responsive" style="max-height: 400px">
+                        @foreach ($available_stock_summery as $summery)
 
-                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
-                                <thead>
-                                    <tr>
-                                        <th><small><b>#</b></small></th>
-                                        {{-- <th><small><b>Vendor</b></small></th> --}}
-                                        <th><small><b>IMEI/Serial</b></small></th>
-                                        {{-- @if (session('user')->hasPermission('view_cost')) --}}
-                                        <th><small><b>Vendor Price</b></small></th>
-                                        {{-- @endif --}}
-                                        @if (session('user')->hasPermission('delete_repair_item'))
-                                        <th></th>
-                                        @endif
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <form method="POST" action="{{url('repair')}}/update_prices" id="update_prices_{{ $variation->id }}">
-                                        @csrf
+                        @php
+                            // print_r($summery);
+                            // continue;
+                            // if($summery['storage'] > 0){
+                            //     $storage = $storages[$summery['storage']];
+                            // }else{
+                            //     $storage = null;
+                            // }
+                            $total_quantity += $summery['quantity'];
+                            $total_cost += $summery['total_cost'];
+                            $stock_imeis = array_merge($summery['stock_imeis'],$summery['stock_serials']);
+                            $temp_array = array_unique($stock_imeis);
+                            $duplicates = sizeof($temp_array) != sizeof($stock_imeis);
+                            $duplicate_count = sizeof($stock_imeis) - sizeof($temp_array);
+
+                        @endphp
+                            <tr>
+                                <td>{{ ++$i }}</td>
+                                {{-- <td>{{ $products[$summery['product_id']]." ".$storage }}</td> --}}
+                                <td><button class="btn py-0 btn-link" type="submit" form="search_summery" name="pss" value="{{$summery['pss_id']}}">{{ $summery['model'] }}</button></td>
+                                <td title="{{json_encode($summery['stock_ids'])}}"><a id="test{{$i}}" href="javascript:void(0)">{{ $summery['quantity'] }}</a>
+                                @if ($duplicates)
+                                    <span class="badge badge-danger">{{ $duplicate_count }} Duplicate</span>
+                                @endif
+                                <td
+                                title="{{ amount_formatter($summery['total_cost']/$summery['quantity']) }}"
+                                >{{ amount_formatter($summery['total_cost'],2) }}</td>
+                            </tr>
+
+                            <script type="text/javascript">
+
+
+                                document.getElementById("test{{$i}}").onclick = function(){
                                     @php
-                                        $i = 0;
-                                        $id = [];
+                                        foreach ($stock_imeis as $val) {
+
+                                            echo "window.open('".url("imei")."?imei=".$val."','_blank');
+                                            ";
+                                        }
+
                                     @endphp
-                                    @php
-                                        $stocks = $variation->stocks;
-                                        // $items = $stocks->order_item;
-                                        $j = 0;
-                                        $total = 0;
-                                        // print_r($variation);
-                                    @endphp
+                                }
+                            </script>
+                            {{-- @endif --}}
+                        @endforeach
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="2"><b>Total</b></td>
+                            <td><b>{{ $total_quantity }}</b></td>
+                            <td title="{{ amount_formatter($total_cost/$total_quantity,2) }}"><b>{{ amount_formatter($total_cost,2) }}</b></td>
+                        </tr>
+                    </tfoot>
 
-                                    @foreach ($stocks as $item)
-                                        {{-- @dd($item->sale_item) --}}
-                                        @if($item->process_stock($process_id)->process_id == $process_id)
-                                        @php
-                                            $i ++;
-                                            $total += $item->purchase_item->price ?? 0;
-
-                                            if(!in_array($item->imei.$item->serial_number,$imei_list)){
-                                                array_push($imei_list,$item->imei.$item->serial_number);
-                                            }
-                                        @endphp
-                                        @if ($process->tracking_number != null)
-                                            @if ($item->multi_process_stocks($previous_repairs)->count() > 0 || $item->order->customer_id != 7110)
-                                                @php
-                                                    $danger = "bg-danger";
-                                                @endphp
-                                            @else
-                                                @php
-                                                    $danger = "";
-                                                @endphp
-                                            @endif
-                                        @else
-                                            @php
-                                                $danger = "";
-                                            @endphp
-                                        @endif
-                                        <tr class="{{ $danger }}">
-                                            <td>{{ $i }}</td>
-                                            {{-- <td>{{ $item->order->customer->first_name }}</td> --}}
-                                            <td><a title="Search Serial" href="{{url('imei')."?imei=".$item->imei.$item->serial_number}}" target="_blank"> {{ $item->imei.$item->serial_number }} </a></td>
-                                            <td @if (session('user')->hasPermission('view_cost')) title="Cost Price: {{ $currency.amount_formatter($item->purchase_item->price ?? "0") }}" @endif>
-                                                {{ $item->order->customer->first_name }} {{ $currency.amount_formatter($item->purchase_item->price ?? "0") }}
-                                            </td>
-
-                                            @if (session('user')->hasPermission('delete_repair_item'))
-                                            <td><a href="{{ url('delete_repair_item').'/'.$item->process_stock($process_id)->id }}"><i class="fa fa-trash"></i></a></td>
-                                            @endif
-                                            <input type="hidden" name="item_ids[]" value="{{ $item->process_stock($process_id)->id }}">
-                                        </tr>
-                                        @endif
-                                    @endforeach
-                                    </form>
-                                </tbody>
-                            </table>
-                        <br>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <div>Total: {{$i }}</div>
-                    </div>
-                </div>
+                </table>
             </div>
-            </div>
-            @endforeach
-
-            </div>
-            @if ($process->status != 1)
-
-            <div class="col-md-5">
-                <div class="card">
-                    <div class="card-header pb-0">
-                        Received Items
-                    </div>
-                            {{-- {{ $variation }} --}}
-                    <div class="card-body"><div class="table-responsive" style="max-height: 400px">
-
-                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
-                                <thead>
-                                    <tr>
-                                        <th><small><b>#</b></small></th>
-                                        {{-- <th><small><b>Vendor</b></small></th> --}}
-                                        <th><small><b>IMEI/Serial</b></small></th>
-                                        {{-- @if (session('user')->hasPermission('view_cost')) --}}
-                                        <th><small><b>Name</b></small></th>
-                                        {{-- @endif --}}
-                                        @if ($process->status == 3 && session('user')->hasPermission('view_cost'))
-                                        <th><small><b>Cost</b></small></th>
-                                        @endif
-                                        <th><small><b>Last Updated</b></small></th>
-
-                                        @if (session('user')->hasPermission('delete_repair_item'))
-                                        {{-- <th></th> --}}
-                                        @endif
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {{-- <form method="POST" action="{{url('repair')}}/update_prices" id="update_prices_{{ $variation->id }}"> --}}
-                                        @csrf
-                                    @php
-                                        $i = 0;
-                                        $id = [];
-                                    @endphp
-                                    @php
-                                        // $items = $stocks->order_item;
-                                        $j = 0;
-                                        $total = 0;
-                                        // print_r($variation);
-                                    @endphp
-
-                                    @foreach ($processed_stocks as $processed_stock)
-                                        {{-- @dd($item->sale_item) --}}
-                                        @php
-                                            $item = $processed_stock->stock;
-                                            $variation = $item->variation;
-                                            $i ++;
-
-                                            isset($variation->product)?$product = $products[$variation->product_id]:$product = null;
-                                            isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
-                                            isset($variation->color)?$color = $colors[$variation->color]:$color = null;
-                                            isset($variation->grade)?$grade = $grades[$variation->grade]:$grade = null;
-                                            isset($variation->sub_grade)?$sub_grade = $grades[$variation->sub_grade]:$sub_grade = null;
-
-                                        @endphp
-                                        <tr>
-                                            <td>{{ $i }}</td>
-                                            {{-- <td>{{ $item->order->customer->first_name }}</td> --}}
-                                            <td>{{ $item->imei.$item->serial_number }}</td>
-                                            <td>
-                                                {{ $product." ".$storage." ".$color." ".$grade." ".$sub_grade }}
-                                            </td>
-
-                                            @if ($process->status == 3 && session('user')->hasPermission('view_cost'))
-                                            <td>{{ amount_formatter($processed_stock->price,2) }}</td>
-                                            @endif
-                                            <td>{{$processed_stock->updated_at}}</td>
-                                            @if (session('user')->hasPermission('delete_repair_item'))
-                                            {{-- <td><a href="{{ url('delete_repair_item').'/'.$item->process_stock($process_id)->id }}"><i class="fa fa-trash"></i></a></td> --}}
-                                            @endif
-                                            <input type="hidden" name="item_ids[]" value="{{ $item->process_stock($process_id)->id }}">
-                                        </tr>
-                                    @endforeach
-                                    </form>
-                                </tbody>
-                            </table>
-                        <br>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <div>Total: {{$i }}</div>
-                    </div>
-                </div>
-            </div>
-
-            @endif
-
-
-            <button class="btn btn-link" id="open_all_imei">Open All IMEIs</button>
         </div>
-        @endif
-
     @endsection
 
     @section('scripts')
