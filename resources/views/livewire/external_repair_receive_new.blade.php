@@ -14,6 +14,13 @@
         <form action="{{ url('receive_repair_items')}}" method="POST" id="search" class="form-inline">
             @csrf
 
+            <select name="repairer_id" class="form-control form-select" style="width: 150px;">
+                <option value="">Repairer</option>
+                @foreach ($repairers as $id => $repairer)
+                    <option value="{{ $id }}" @if ($id == session('repairer_id')) selected @endif>{{ $repairer }}</option>
+                @endforeach
+            </select>
+
             <div class="form-floating">
                 <input type="text" class="form-control" name="imei" id="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" id="imeiInput" onload="this.focus()" autofocus>
                 <label for="">IMEI</label>
