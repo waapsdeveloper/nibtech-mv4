@@ -281,6 +281,13 @@ class Repair extends Component
         return view('livewire.external_repair_receive_new')->with($data);
     }
     public function receive_repair_items(){
+        if(request('repairer_id') != null){
+            $repairer_id = request('repairer_id');
+            session()->put('repairer_id', $repairer_id);
+        }else{
+            $repairer_id = session('repairer_id');
+        }
+
         $error = "";
         if(session('process_stock_ids') == null){
             $process_stock_ids = [];
@@ -296,8 +303,12 @@ class Repair extends Component
                 $error .= "IMEI ".$imei." not found<br>";
                 continue;
             }
-            $process_stock = Process_stock_model::whereHas('process', function ($q) {
-                $q->where('process_type_id', 9);
+            $process_stock = Process_stock_model::whereHas('process', function ($q) use ($repairer_id) {
+                $q->where('process_type_id', 9)
+                ->when($repairer_id, function ($q) use ($repairer_id) {
+                    $q->where('customer_id', $repairer_id);
+                });
+
             })->where('stock_id',$stock->id)->where('status',1)->orderBy('id','desc')->first();
             if($process_stock == null){
                 $error .= "IMEI ".$imei." not found in any list<br>";
