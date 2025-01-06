@@ -217,8 +217,8 @@ class InventoryVerification extends Component
             $q->where('status', 3);
         })->whereNotIn('id', $aftersale)->whereNotIn('id', Process_stock_model::where('process_id', $process_id)->pluck('stock_id')->toArray())->get();
 
-        $remaining_stock_ids = $remaining_stocks->pluck('id');
-        $all_stock_ids = Process_stock_model::where('process_id',$process_id)->pluck('stock_id');
+        $remaining_stock_ids = $remaining_stocks->pluck('id')->toArray();
+        $all_stock_ids = Process_stock_model::where('process_id',$process_id)->pluck('stock_id')->toArray();
 
 
         $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q) use ($all_stock_ids , $remaining_stock_ids){
