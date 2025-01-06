@@ -2372,7 +2372,7 @@ class Order extends Component
 
             if(request('correction')['imei'] != ''){
                 $stock = Stock_model::where(['imei'=>$imei, 'serial_number'=>$serial_number])->first();
-                if(!$stock){
+                if(!$stock || $stock->status == null){
                     session()->put('error', 'Stock not found');
                     return redirect()->back();
                 }
