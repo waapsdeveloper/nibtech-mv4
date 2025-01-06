@@ -291,7 +291,7 @@
                             $total_cost += $summery['total_cost'];
                             $remaining_quantity += $summery['remaining_quantity'];
                             $remaining_total_cost += $summery['remaining_total_cost'];
-                            $stock_imeis = array_merge($summery['stock_imeis'],$summery['stock_serials']);
+                            $stock_imeis = $summery['stock_imeis'];
                             $temp_array = array_unique($stock_imeis);
                             $duplicates = sizeof($temp_array) != sizeof($stock_imeis);
                             $duplicate_count = sizeof($stock_imeis) - sizeof($temp_array);
