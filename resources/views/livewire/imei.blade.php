@@ -71,7 +71,7 @@
                 @if (session('user')->hasPermission('rearrange_imei_order'))
                     <a href="{{ url('imei/rearrange').'/'.$stock->id}}" class="btn btn-secondary mx-1">Rearrange</a>
                 @endif
-                @if (session('user')->hasPermission('refund_imei') && isset($stock) && $stock->status == 2 && $stock->last_item()->order->order_type_id != 2)
+                @if (session('user')->hasPermission('refund_imei') && isset($stock) && $stock->status == 2 && $stock->last_item() && $stock->last_item()->order->order_type_id != 2)
                     <form action="{{ url('imei/refund').'/'.$stock->id}}" method="POST" id="refund" class="form-inline">
                         @csrf
                         <div class="form-floating">
