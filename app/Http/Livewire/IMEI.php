@@ -67,7 +67,10 @@ class IMEI extends Component
                     'received_at' => Carbon::now(),
                 ]);
             }
-
+            if($stock->status != null && $stock->order_id == null){
+                $stock->status = null;
+                $stock->save();
+            }
             $last_item = $stock->last_item();
 
             $items2 = Order_item_model::where(['stock_id'=>$stock->id,'linked_id'=>null])->whereHas('order', function ($query) {
