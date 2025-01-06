@@ -114,7 +114,7 @@ class MoveInventory extends Component
         return view('livewire.move_inventory', $data); // Return the Blade view instance with data
     }
 
-    public function change_grade($allow_same = false){
+    public function change_grade($allow_same = false, $imei_list = null){
 
         if(request('grade')){
             session()->put('grade',request('grade'));
@@ -123,8 +123,11 @@ class MoveInventory extends Component
             session()->put('description',request('description'));
         }
 
-
         if (request('imei')) {
+            $imei_list = request('imei');
+        }
+
+        if ($imei_list != null) {
             $imeis = explode(' ',request('imei'));
             $imei_count = count($imeis);
             if(request('price')){
