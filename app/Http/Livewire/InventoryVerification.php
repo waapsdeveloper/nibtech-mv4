@@ -259,7 +259,7 @@ class InventoryVerification extends Component
                 $q->where('order_type_id', 1);
             })->sum('price');
 
-            if(count($stock_ids) == 0 || $stock_ids != []){
+            if(count($stock_ids) == 0 || is_string($stock_ids)){
                 continue;
             }
             $datas = [];
@@ -279,7 +279,7 @@ class InventoryVerification extends Component
 
         $data['available_stock_summery'] = $result;
 
-        return view('livewire.repair_detail')->with($data);
+        return view('livewire.verification_detail')->with($data);
 
     }
     public function add_repair(){
