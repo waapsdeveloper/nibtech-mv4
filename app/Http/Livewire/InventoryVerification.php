@@ -248,9 +248,9 @@ class InventoryVerification extends Component
                 $q->where('order_type_id', 1);
             })->sum('price');
 
-            if(count($stock_ids) == 0 || is_string($stock_ids)){
-                continue;
-            }
+            // if(count($stock_ids) == 0 || is_string($stock_ids)){
+            //     continue;
+            // }
             $datas = [];
             $datas['pss_id'] = $pss->id;
             $datas['product_id'] = $pss->product_id;
