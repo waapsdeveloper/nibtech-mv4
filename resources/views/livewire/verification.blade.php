@@ -137,15 +137,10 @@
                                         <th><small><b>No</b></small></th>
                                         <th><small><b>Batch ID</b></small></th>
                                         <th><small><b>Qty Scanned</b></small></th>
-                                        @if (session('user')->hasPermission('view_cost'))
-                                        <th><small><b>Value</b></small></th>
-                                        @endif
                                         <th><small><b>Qty Missed</b></small></th>
-                                        @if (session('user')->hasPermission('view_cost'))
-                                        <th><small><b>Value</b></small></th>
-                                        @endif
                                         <th><small><b>Start Date</b></small></th>
                                         <th><small><b>End Date</b></small></th>
+                                        <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -162,7 +157,6 @@
                                             }
                                             $j = 0;
 
-                                            $price = $batch->order_items_sum_price;
                                             $items = $batch->process_stocks;
 
                                             // if($order->exchange_rate != null){
@@ -176,16 +170,13 @@
                                                 <td>{{ $i + 1 }}</td>
                                                 <td><a href="{{url('wholesale/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a></td>
                                                 <td>{{ $items->count() }}</td>
-                                                @if (session('user')->hasPermission('view_price'))
-                                                <td>€{{ amount_formatter($price,2) }}</td>
-                                                @endif
-                                                <td>{{ $batch->order_items_count }}</td>
+                                                <td></td>
                                                 <td style="width:220px">{{ $batch->created_at }}</td>
                                                 <td style="width:220px">{{ $batch->updated_at }}</td>
                                                 <td>
                                                     <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                                     <div class="dropdown-menu">
-                                                        <a class="dropdown-item" href="{{url('delete_verification') . "/" . $batch->id }}"><i class="fe fe-arrows-rotate me-2 "></i>Delete</a>
+                                                        {{-- <a class="dropdown-item" href="{{url('delete_verification') . "/" . $batch->id }}"><i class="fe fe-arrows-rotate me-2 "></i>Delete</a> --}}
                                                         {{-- <a class="dropdown-item" href="{{ $order->delivery_note_url }}" target="_blank"><i class="fe fe-arrows-rotate me-2 "></i>Delivery Note</a>
                                                         <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a> --}}
                                                         {{-- <a class="dropdown-item" href="javascript:void(0);"><i class="fe fe-trash-2 me-2"></i>Delete</a> --}}
