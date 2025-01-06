@@ -465,7 +465,7 @@
                                                     # code...
                                                 }
                                             }
-                                            if(request('missing') == 'reimburse'){
+                                            if(request('missing') == 'reimburse' && $stock != null){
                                                 $stock->availability();
                                             }
                                         @endphp
