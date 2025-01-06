@@ -271,6 +271,8 @@
                             <th><small><b>Model</b></small></th>
                             <th><small><b>Quantity</b></small></th>
                             <th><small><b>Cost</b></small></th>
+                            <th><small><b>Remaining</b></small></th>
+                            <th><small><b>Cost</b></small></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -278,6 +280,8 @@
                             $i = 0;
                             $total_quantity = 0;
                             $total_cost = 0;
+                            $remaining_quantity = 0;
+                            $remaining_total_cost = 0;
                         @endphp
                         @foreach ($available_stock_summery as $summery)
 
@@ -291,6 +295,8 @@
                             // }
                             $total_quantity += $summery['quantity'];
                             $total_cost += $summery['total_cost'];
+                            $remaining_quantity += $summery['remaining_quantity'];
+                            $remaining_total_cost += $summery['remaining_total_cost'];
                             $stock_imeis = array_merge($summery['stock_imeis'],$summery['stock_serials']);
                             $temp_array = array_unique($stock_imeis);
                             $duplicates = sizeof($temp_array) != sizeof($stock_imeis);
@@ -308,6 +314,9 @@
                                 <td
                                 title="{{ amount_formatter($summery['total_cost']/$summery['quantity']) }}"
                                 >{{ amount_formatter($summery['total_cost'],2) }}</td>
+                                <td>{{ $summery['remaining_quantity'] }}</td>
+                                <td>{{ amount_formatter($summery['remaining_total_cost'],2) }}</td>
+
                             </tr>
 
                             <script type="text/javascript">
