@@ -20,6 +20,7 @@ use App\Models\Stock_model;
 use App\Models\Products_model;
 use App\Models\Stock_operations_model;
 use App\Models\Variation_model;
+use GuzzleHttp\Client;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -268,65 +269,65 @@ class Inventory extends Component
         }else{
 
 
-        $active_inventory_verification = Process_model::where(['process_type_id'=>20,'status'=>1])->first();
-        if($active_inventory_verification != null){
-            $all_verified_stocks = Process_stock_model::where('process_id', $active_inventory_verification->id)->pluck('stock_id')->toArray();
-            $verified_stocks = Process_stock_model::where('process_id', $active_inventory_verification->id)
-            ->when(request('vendor') != '', function ($q) {
-                return $q->whereHas('stock.order', function ($q) {
-                    $q->where('customer_id', request('vendor'));
-                });
-            })
-            ->when(request('status') != '', function ($q) {
-                return $q->whereHas('stock.order', function ($q) {
-                    $q->where('status', request('status'));
-                });
-            })
-            ->when(request('storage') != '', function ($q) {
-                return $q->whereHas('stock.variation', function ($q) {
-                    $q->where('storage', request('storage'));
-                });
-            })
-            ->when(request('color') != '', function ($q) {
-                return $q->whereHas('stock.variation', function ($q) {
-                    $q->where('color', request('color'));
-                });
-            })
-            ->when(request('category') != '', function ($q) {
-                return $q->whereHas('stock.variation.product', function ($q) {
-                    $q->where('category', request('category'));
-                });
-            })
-            ->when(request('brand') != '', function ($q) {
-                return $q->whereHas('stock.variation.product', function ($q) {
-                    $q->where('brand', request('brand'));
-                });
-            })
-            ->when(request('product') != '', function ($q) {
-                return $q->whereHas('stock.variation', function ($q) {
-                    $q->where('product_id', request('product'));
-                });
-            })
-            ->when(request('grade') != [], function ($q) {
-                return $q->whereHas('stock.variation', function ($q) {
-                    // print_r(request('grade'));
-                    $q->whereIn('grade', request('grade'));
-                });
-            })
-            ->when(request('sub_grade') != [], function ($q) {
-                return $q->whereHas('stock.variation', function ($q) {
-                    // print_r(request('sub_grade'));
-                    $q->whereIn('sub_grade', request('sub_grade'));
-                });
-            })
-            // ->orderBy('product_id','ASC')
-            ->orderByDesc('id')
-            ->paginate($per_page)
-            ->onEachSide(5)
-            ->appends(request()->except('page'));
-            $data['verified_stocks'] = $verified_stocks;
-        }
-        $data['active_inventory_verification'] = $active_inventory_verification;
+        // $active_inventory_verification = Process_model::where(['process_type_id'=>20,'status'=>1])->first();
+        // if($active_inventory_verification != null){
+        //     $all_verified_stocks = Process_stock_model::where('process_id', $active_inventory_verification->id)->pluck('stock_id')->toArray();
+        //     $verified_stocks = Process_stock_model::where('process_id', $active_inventory_verification->id)
+        //     ->when(request('vendor') != '', function ($q) {
+        //         return $q->whereHas('stock.order', function ($q) {
+        //             $q->where('customer_id', request('vendor'));
+        //         });
+        //     })
+        //     ->when(request('status') != '', function ($q) {
+        //         return $q->whereHas('stock.order', function ($q) {
+        //             $q->where('status', request('status'));
+        //         });
+        //     })
+        //     ->when(request('storage') != '', function ($q) {
+        //         return $q->whereHas('stock.variation', function ($q) {
+        //             $q->where('storage', request('storage'));
+        //         });
+        //     })
+        //     ->when(request('color') != '', function ($q) {
+        //         return $q->whereHas('stock.variation', function ($q) {
+        //             $q->where('color', request('color'));
+        //         });
+        //     })
+        //     ->when(request('category') != '', function ($q) {
+        //         return $q->whereHas('stock.variation.product', function ($q) {
+        //             $q->where('category', request('category'));
+        //         });
+        //     })
+        //     ->when(request('brand') != '', function ($q) {
+        //         return $q->whereHas('stock.variation.product', function ($q) {
+        //             $q->where('brand', request('brand'));
+        //         });
+        //     })
+        //     ->when(request('product') != '', function ($q) {
+        //         return $q->whereHas('stock.variation', function ($q) {
+        //             $q->where('product_id', request('product'));
+        //         });
+        //     })
+        //     ->when(request('grade') != [], function ($q) {
+        //         return $q->whereHas('stock.variation', function ($q) {
+        //             // print_r(request('grade'));
+        //             $q->whereIn('grade', request('grade'));
+        //         });
+        //     })
+        //     ->when(request('sub_grade') != [], function ($q) {
+        //         return $q->whereHas('stock.variation', function ($q) {
+        //             // print_r(request('sub_grade'));
+        //             $q->whereIn('sub_grade', request('sub_grade'));
+        //         });
+        //     })
+        //     // ->orderBy('product_id','ASC')
+        //     ->orderByDesc('id')
+        //     ->paginate($per_page)
+        //     ->onEachSide(5)
+        //     ->appends(request()->except('page'));
+        //     $data['verified_stocks'] = $verified_stocks;
+        // }
+        // $data['active_inventory_verification'] = $active_inventory_verification;
 
 
 
@@ -866,6 +867,44 @@ class Inventory extends Component
     }
 
     public function end_verification() {
+
+
+        $aftersale = Order_item_model::whereHas('order', function ($q) {
+            $q->where('order_type_id',4)->where('status','<',3);
+        })->pluck('stock_id')->toArray();
+
+        $verification = Process_model::where(['process_type_id'=>20, 'status'=>1])->first();
+
+        $remaining_stocks = Stock_model::where('status', 1)->whereHas('order', function ($q) {
+            $q->where('status', 3);
+        })->whereNotIn('id', $aftersale)->whereNotIn('id', Process_stock_model::where('process_id', $verification->id)->pluck('stock_id')->toArray())->get();
+
+        $client = new Client();
+
+
+        foreach($remaining_stocks as $stock){
+            $process_stock = Process_stock_model::firstOrNew(['process_id'=>$verification->id, 'stock_id'=>$stock->id]);
+            if($process_stock->id == null){
+
+                $client->request('POST', url('move_inventory/change_grade'), [
+                    'form_params' => [
+                        'imei' => $stock->imei.$stock->serial_number,
+                        'grade' => 17,
+                        'description' => 'Missing Stock',
+                    ]
+                ]);
+
+                $process_stock->variation_id = $stock->variation_id;
+                $process_stock->admin_id = session('user_id');
+                $process_stock->status = 2;
+                $process_stock->description = 'Missing Stock';
+                $process_stock->save();
+
+
+            }
+        }
+
+
         $verification = Process_model::where(['process_type_id'=>20, 'status'=>1])->update(['status'=>2,'description'=>request('description')]);
         session()->put('success', 'Inventory Verification ended');
         return redirect()->back();

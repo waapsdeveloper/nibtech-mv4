@@ -1818,7 +1818,8 @@ class Order extends Component
 
                     $last_item = $stock[$i]->last_item();
                     if($last_item == null){
-                        IMEI::rearrange($stock[$i]->id);
+                        $imei = new IMEI();
+                        $imei->rearrange($stock[$i]->id);
                         $last_item = $stock[$i]->last_item();
                     }
 
