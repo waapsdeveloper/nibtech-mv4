@@ -358,16 +358,16 @@ class Inventory extends Component
             ->appends(request()->except('page'));
         }else{
 
-            $repaired = Process_stock_model::whereHas('process', function ($q) {
-                $q->where('process_type_id', 9);
-            })->where('status',2)->where('updated_at','>=',date('Y-m-01 00:00:00'))->pluck('stock_id')->toArray();
-            $recent_operations = Stock_operations_model::where('created_at','>=',date('Y-m-01 00:00:00'))->pluck('stock_id')->toArray();
+            // $repaired = Process_stock_model::whereHas('process', function ($q) {
+            //     $q->where('process_type_id', 9);
+            // })->where('status',2)->where('updated_at','>=',date('Y-m-01 00:00:00'))->pluck('stock_id')->toArray();
+            // $recent_operations = Stock_operations_model::where('created_at','>=',date('Y-m-01 00:00:00'))->pluck('stock_id')->toArray();
             $data['stocks'] = Stock_model::
             with(['variation','variation.product','order','latest_operation','latest_return','admin'])
             ->
             whereNotIn('stock.id',$all_verified_stocks)
-            ->whereNotIn('stock.id',$repaired)
-            ->whereNotIn('stock.id',$recent_operations)
+            // ->whereNotIn('stock.id',$repaired)
+            // ->whereNotIn('stock.id',$recent_operations)
             ->where('stock.status', 1)
 
             ->when(request('aftersale') != 1, function ($q) use ($aftersale) {
@@ -895,30 +895,36 @@ class Inventory extends Component
         ->whereNotIn('id', $recent_operations)
         ->whereNotIn('id', Process_stock_model::where('process_id', $verification->id)->pluck('stock_id')->toArray())->get();
         dd($remaining_stocks);
-        // $client = new Client();
+
+        $client = new Client();
+
+        $stock_imeis = $remaining_stocks->whereNotNull('imei')->pluck('imei')->toArray();
+        $stock_imeis += $remaining_stocks->whereNotNull('serial_number')->pluck('serial_number')->toArray();
+
+        $imeis = implode(" ",$stock_imeis);
+        $client->request('POST', url('move_inventory/change_grade'), [
+            'form_params' => [
+                'imei' => $imeis,
+                'grade' => 17,
+                'description' => 'Missing Stock',
+            ]
+        ]);
+
+        $remaining_stocks = Stock_model::whereIn('id', $remaining_stocks->pluck('id'))->get();
+
+        foreach($remaining_stocks as $stock){
+            $process_stock = Process_stock_model::firstOrNew(['process_id'=>$id, 'stock_id'=>$stock->id]);
+            if($process_stock->id == null){
+                $process_stock->variation_id = $stock->variation_id;
+                $process_stock->admin_id = session('user_id');
+                $process_stock->status = 2;
+                $process_stock->description = 'Missing Stock';
+                $process_stock->save();
 
 
-        // foreach($remaining_stocks as $stock){
-        //     $process_stock = Process_stock_model::firstOrNew(['process_id'=>$verification->id, 'stock_id'=>$stock->id]);
-        //     if($process_stock->id == null){
+            }
+        }
 
-        //         $client->request('POST', url('move_inventory/change_grade'), [
-        //             'form_params' => [
-        //                 'imei' => $stock->imei.$stock->serial_number,
-        //                 'grade' => 17,
-        //                 'description' => 'Missing Stock',
-        //             ]
-        //         ]);
-
-        //         $process_stock->variation_id = $stock->variation_id;
-        //         $process_stock->admin_id = session('user_id');
-        //         $process_stock->status = 2;
-        //         $process_stock->description = 'Missing Stock';
-        //         $process_stock->save();
-
-
-        //     }
-        // }
 
 
         $verification = Process_model::where(['process_type_id'=>20, 'status'=>1])->update(['status'=>2,'description'=>request('description')]);
