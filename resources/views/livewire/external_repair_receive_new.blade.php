@@ -14,7 +14,7 @@
         <form action="{{ url('receive_repair_items')}}" method="POST" id="search" class="form-inline">
             @csrf
 
-            <select name="repairer_id" class="form-control form-select" style="width: 150px;">
+            <select name="repairer_id" class="form-control form-select" required>
                 <option value="">Repairer</option>
                 @foreach ($repairers as $id => $repairer)
                     <option value="{{ $id }}" @if ($id == session('repairer_id')) selected @endif>{{ $repairer }}</option>
