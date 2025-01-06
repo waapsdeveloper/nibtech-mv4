@@ -168,7 +168,7 @@
                                         {{-- @foreach ($items as $itemIndex => $item) --}}
                                             <tr>
                                                 <td>{{ $i + 1 }}</td>
-                                                <td><a href="{{url('wholesale/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a></td>
+                                                <td><a href="{{url('inventory_verification/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a></td>
                                                 <td>{{ $items->count() }}</td>
                                                 <td></td>
                                                 <td style="width:220px">{{ $batch->created_at }}</td>

@@ -172,13 +172,13 @@ class InventoryVerification extends Component
         return redirect()->back();
 
     }
-    public function repair_detail($process_id){
+    public function verification_detail($process_id){
 
 
-        if(str_contains(url()->previous(),url('repair')) && !str_contains(url()->previous(),'detail')){
+        if(str_contains(url()->previous(),url('inventory_verification')) && !str_contains(url()->previous(),'detail')){
             session()->put('previous', url()->previous());
         }
-        $data['title_page'] = "Repair Detail";
+        $data['title_page'] = "Inventory Verification Detail";
         session()->put('page_title', $data['title_page']);
         // $data['imeis'] = Stock_model::whereIn('status',[1,3])->orderBy('serial_number','asc')->orderBy('imei','asc')->get();
         if(request('per_page') != null){
@@ -186,7 +186,6 @@ class InventoryVerification extends Component
         }else{
             $per_page = 20;
         }
-        $data['repairers'] = Customer_model::where('type',3)->pluck('company','id');
         $data['vendors'] = Customer_model::whereIn('type',  [1,2])->get();
         $data['exchange_rates'] = ExchangeRate::pluck('rate','target_currency');
         $data['storages'] = Storage_model::pluck('name','id');
