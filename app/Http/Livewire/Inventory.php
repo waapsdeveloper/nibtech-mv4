@@ -896,19 +896,16 @@ class Inventory extends Component
         ->whereNotIn('id', Process_stock_model::where('process_id', $verification->id)->pluck('stock_id')->toArray())->get();
         // dd($remaining_stocks);
 
-        $client = new Client();
 
         $stock_imeis = $remaining_stocks->whereNotNull('imei')->pluck('imei')->toArray();
         $stock_imeis += $remaining_stocks->whereNotNull('serial_number')->pluck('serial_number')->toArray();
 
         $imeis = implode(" ",$stock_imeis);
-        $client->request('POST', url('move_inventory/change_grade'), [
-            'form_params' => [
-                'imei' => $imeis,
-                'grade' => 17,
-                'description' => 'Missing Stock',
-            ]
-        ]);
+
+        $move = new MoveInventory();
+
+        $move->change_grade(false, $imeis);
+
 
         $remaining_stocks = Stock_model::whereIn('id', $remaining_stocks->pluck('id'))->get();
 
