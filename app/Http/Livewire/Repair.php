@@ -268,6 +268,7 @@ class Repair extends Component
     }
 
     public function external_repair_receive(){
+        $data['repairers'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
         $data['storages'] = Storage_model::pluck('name','id');
         $data['products'] = Products_model::pluck('model','id');
         $data['grades'] = Grade_model::pluck('name','id');
