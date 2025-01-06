@@ -910,7 +910,7 @@ class Inventory extends Component
         $remaining_stocks = Stock_model::whereIn('id', $remaining_stocks->pluck('id'))->get();
 
         foreach($remaining_stocks as $stock){
-            $process_stock = Process_stock_model::firstOrNew(['process_id'=>$id, 'stock_id'=>$stock->id]);
+            $process_stock = Process_stock_model::firstOrNew(['process_id'=>$verification->id, 'stock_id'=>$stock->id]);
             if($process_stock->id == null){
                 $process_stock->variation_id = $stock->variation_id;
                 $process_stock->admin_id = session('user_id');
