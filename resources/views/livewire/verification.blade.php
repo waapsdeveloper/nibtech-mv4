@@ -174,12 +174,12 @@
                                             <tr>
                                                     <td>{{ $i + 1 }}</td>
                                                     <td><a href="{{url('wholesale/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a></td>
-                                                <td>{{ $vendors[$batch->customer_id] }}</td>
                                                 @if (session('user')->hasPermission('view_price'))
                                                 <td>€{{ amount_formatter($price,2) }}</td>
                                                 @endif
                                                 <td>{{ $batch->order_items_count }}</td>
                                                 <td style="width:220px">{{ $batch->created_at }}</td>
+                                                <td style="width:220px">{{ $batch->updated_at }}</td>
                                                 <td>
                                                     <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                                     <div class="dropdown-menu">
