@@ -197,9 +197,6 @@
                                         <th><small><b>IMEI | Serial Number</b></small></th>
                                         <th><small><b>Vendor</b></small></th>
                                         <th><small><b>Reason</b></small></th>
-                                        @if (session('user')->hasPermission('view_cost'))
-                                        <th><small><b>Cost</b></small></th>
-                                        @endif
                                         <th><small><b>Creation Date</b></small></th>
                                     </tr>
                                 </thead>
@@ -222,9 +219,6 @@
                                                 @endif
                                             </td>
                                             <td>{{ $item->latest_operation->description ?? null }}</td>
-                                            @if (session('user')->hasPermission('view_cost'))
-                                            <td>{{ $currency.amount_formatter($item->purchase_item->price,2) }}</td>
-                                            @endif
                                             <td style="width:220px">{{ $item->created_at }}</td>
                                         </tr>
                                         @php
