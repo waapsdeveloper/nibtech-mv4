@@ -23,7 +23,7 @@
                 {{-- <a href="{{url('add_repair')}}" class="btn btn-success float-right"><i class="mdi mdi-plus"></i> Add Repair </a> --}}
                 <a href="javascript:void(0);" class="btn btn-success float-right" data-bs-target="#modaldemo"
                 data-bs-toggle="modal"><i class="mdi mdi-plus"></i> Add Repair </a>
-                <a href="" onclick="window.open('{{ url('external_repair_receive') }}','print_popup','width=800,height=800');" class="btn btn-link"><i class="mdi mdi-minus"></i> Receive Item</a>
+                <a href="" onclick="window.open('{{ url('external_repair_receive') }}','print_popup','width=800,height=800');" class="btn btn-secondary"><i class="mdi mdi-minus"></i> Receive Item</a>
                 </div>
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
