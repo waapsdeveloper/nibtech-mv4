@@ -209,7 +209,7 @@ class InventoryVerification extends Component
 
         $data['process_id'] = $process_id;
 
-        $all_stock_ids = Process_stock_model::where('process_id',$process_id)->pluck('stock_id')->toArray();
+        $all_stock_ids = Process_stock_model::where('process_id',$process_id)->pluck('stock_id')->unique()->toArray();
 
 
         $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q) use ($all_stock_ids){
@@ -221,13 +221,15 @@ class InventoryVerification extends Component
             $product = $pss->product;
             $storage = $pss->storage_id->name ?? null;
 
-            $stocks = $pss->stocks->where('deleted_at',null);
-            $stock_ids = $stocks->whereIn('id',$all_stock_ids)->pluck('id');
-            $scanned_stock_ids = $stocks->whereIn('id',$stock_ids)->where('status',1)->pluck('id');
+            $stocks = $pss->stocks->whereIn('id',$all_stock_ids)->where('deleted_at',null);
+            $stock_ids = $stocks->pluck('id');
+
+
+            $scanned_stock_ids = Process_stock_model::where('process_id',$process_id)->where('status',1)->whereIn('stock_id',$stock_ids)->pluck('stock_id');
             $stock_imeis = $stocks->whereIn('id',$scanned_stock_ids)->whereNotNull('imei')->pluck('imei');
             $stock_serials = $stocks->whereIn('id',$scanned_stock_ids)->whereNotNull('serial_number')->pluck('serial_number');
 
-            $remaining_stock_ids = $stocks->whereIn('id',$stock_ids)->where('status',2)->pluck('id');
+            $remaining_stock_ids = Process_stock_model::where('process_id',$process_id)->where('status',2)->whereIn('stock_id',$stock_ids)->pluck('stock_id');
             $remaining_stock_imeis = $stocks->whereIn('id',$remaining_stock_ids)->whereNotNull('imei')->pluck('imei');
             $remaining_stock_serials = $stocks->whereIn('id',$remaining_stock_ids)->whereNotNull('serial_number')->pluck('serial_number');
 
@@ -249,7 +251,7 @@ class InventoryVerification extends Component
             $datas['storage'] = $pss->storage;
             $datas['model'] = $product->model.' '.$storage;
             $datas['quantity'] = count($stock_ids);
-            $datas['stock_ids'] = $stock_ids->toArray();
+            $datas['stock_ids'] = $scanned_stock_ids->toArray();
             $datas['stock_imeis'] = $stock_imeis->toArray() + $stock_serials->toArray();
             // $datas['average_cost'] = $purchase_items->avg('price');
             $datas['total_cost'] = $purchase_items;
