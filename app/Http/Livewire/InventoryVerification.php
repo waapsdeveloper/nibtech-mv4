@@ -22,6 +22,7 @@ use App\Models\Process_model;
 use App\Models\Process_stock_model;
 use App\Models\Product_storage_sort_model;
 use App\Models\Stock_operations_model;
+use GuzzleHttp\Client;
 use Illuminate\Support\Facades\DB;
 
 
@@ -196,52 +197,32 @@ class InventoryVerification extends Component
         $data['products'] = Products_model::pluck('model','id');
         $data['grades'] = Grade_model::pluck('name','id');
         $data['colors'] = Color_model::pluck('name','id');
-        $variations = Variation_model::with([
-            'stocks' => function ($query) use ($process_id) {
-                $query->whereHas('process_stocks', function ($query) use ($process_id) {
-                    $query->where(['process_id'=> $process_id,'status'=>1]);
-                });
-            },
-            'stocks.process_stocks'
-        ])
-        ->whereHas('stocks', function ($query) use ($process_id) {
-            $query->whereHas('process_stocks', function ($query) use ($process_id) {
-                $query->where(['process_id'=> $process_id,'status'=>1]);
-            });
-        })
-        ->orderBy('grade', 'desc')
-        ->get();
 
-        // Remove variations with no associated stocks
-        if(request('hide') != 'all'){
-            $variations = $variations->filter(function ($variation) {
-                return $variation->stocks->isNotEmpty();
-            });
-
-            $data['variations'] = $variations;
-        }
         $last_ten = Process_stock_model::where('process_id',$process_id)->orderBy('id','desc')->limit($per_page)->get();
         $data['last_ten'] = $last_ten;
+
         $processed_stocks = Process_stock_model::where(['process_id'=>$process_id,'status'=>2])->orderByDesc('updated_at')->get();
         $data['processed_stocks'] = $processed_stocks;
 
         $data['all_variations'] = Variation_model::where('grade',9)->get();
-        $data['process'] = Order_model::find($process_id);
-        $data['currency'] = $data['process']->currency_id->sign ?? 4;
-
-        $data['previous_repairs'] = Process_model::where('id','!=',$process_id)->where('process_type_id',9)->orderBy('id','desc')->pluck('id');
-        // $data['imei'] = request('imei');
-
-        // $data['grades'] = Grade_model::all();
         $data['process'] = Process_model::find($process_id);
 
         $data['process_id'] = $process_id;
 
+        $aftersale = Order_item_model::whereHas('order', function ($q) {
+            $q->where('order_type_id',4)->where('status','<',3);
+        })->pluck('stock_id')->toArray();
+
+        $remaining_stocks = Stock_model::where('status', 1)->whereHas('order', function ($q) {
+            $q->where('status', 3);
+        })->whereNotIn('id', $aftersale)->whereNotIn('id', Process_stock_model::where('process_id', $process_id)->pluck('stock_id')->toArray())->get();
+
+        $remaining_stock_ids = $remaining_stocks->pluck('id');
         $all_stock_ids = Process_stock_model::where('process_id',$process_id)->pluck('stock_id');
 
 
-        $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q) use ($all_stock_ids){
-            $q->whereIn('stock.id', $all_stock_ids)->where('stock.deleted_at',null);
+        $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q) use ($all_stock_ids , $remaining_stock_ids){
+            $q->whereIn('stock.id', $all_stock_ids + $remaining_stock_ids)->where('stock.deleted_at',null);
         })->orderBy('product_id')->orderBy('storage')->get();
 
         $result = [];
@@ -254,8 +235,16 @@ class InventoryVerification extends Component
             $stock_imeis = $stocks->whereNotNull('imei')->pluck('imei');
             $stock_serials = $stocks->whereNotNull('serial_number')->pluck('serial_number');
 
+            $remaining_stock_ids = $stocks->whereIn('id',$remaining_stock_ids)->pluck('id');
+            $remaining_stock_imeis = $stocks->whereIn('id',$remaining_stock_ids)->whereNotNull('imei')->pluck('imei');
+            $remaining_stock_serials = $stocks->whereIn('id',$remaining_stock_ids)->whereNotNull('serial_number')->pluck('serial_number');
+
 
             $purchase_items = Order_item_model::whereIn('stock_id', $stock_ids)->whereHas('order', function ($q) {
+                $q->where('order_type_id', 1);
+            })->sum('price');
+
+            $remaining_purchase_items = Order_item_model::whereIn('stock_id', $remaining_stock_ids)->whereHas('order', function ($q) {
                 $q->where('order_type_id', 1);
             })->sum('price');
 
@@ -269,10 +258,13 @@ class InventoryVerification extends Component
             $datas['model'] = $product->model.' '.$storage;
             $datas['quantity'] = count($stock_ids);
             $datas['stock_ids'] = $stock_ids->toArray();
-            $datas['stock_imeis'] = $stock_imeis->toArray();
-            $datas['stock_serials'] = $stock_serials->toArray();
+            $datas['stock_imeis'] = $stock_imeis->toArray() + $stock_serials->toArray();
             // $datas['average_cost'] = $purchase_items->avg('price');
             $datas['total_cost'] = $purchase_items;
+            $datas['remaining_quantity'] = count($remaining_stock_ids);
+            $datas['remaining_stock_ids'] = $remaining_stock_ids->toArray();
+            $datas['remaining_stock_imeis'] = $remaining_stock_imeis->toArray() + $remaining_stock_serials->toArray();
+            $datas['remaining_total_cost'] = $remaining_purchase_items;
 
             $result[] = $datas;
         }
@@ -281,6 +273,56 @@ class InventoryVerification extends Component
 
         return view('livewire.verification_detail')->with($data);
 
+    }
+
+
+    public function end_verification($id) {
+
+
+        $aftersale = Order_item_model::whereHas('order', function ($q) {
+            $q->where('order_type_id',4)->where('status','<',3);
+        })->pluck('stock_id')->toArray();
+
+        $remaining_stocks = Stock_model::where('status', 1)->whereHas('order', function ($q) {
+            $q->where('status', 3);
+        })->whereNotIn('id', $aftersale)->whereNotIn('id', Process_stock_model::where('process_id', $id)->pluck('stock_id')->toArray())->get();
+
+        $client = new Client();
+
+        $stock_imeis = $remaining_stocks->whereNotNull('imei')->pluck('imei')->toArray();
+        $stock_imeis += $remaining_stocks->whereNotNull('serial_number')->pluck('serial_number')->toArray();
+
+        $imeis = implode(" ",$stock_imeis);
+        $client->request('POST', url('move_inventory/change_grade'), [
+            'form_params' => [
+                'imei' => $imeis,
+                'grade' => 17,
+                'description' => 'Missing Stock',
+            ]
+        ]);
+
+        $remaining_stocks = Stock_model::where('status', 1)->whereHas('order', function ($q) {
+            $q->where('status', 3);
+        })->whereNotIn('id', $aftersale)->whereNotIn('id', Process_stock_model::where('process_id', $id)->pluck('stock_id')->toArray())->get();
+
+        foreach($remaining_stocks as $stock){
+            $process_stock = Process_stock_model::firstOrNew(['process_id'=>$id, 'stock_id'=>$stock->id]);
+            if($process_stock->id == null){
+                $process_stock->variation_id = $stock->variation_id;
+                $process_stock->admin_id = session('user_id');
+                $process_stock->status = 2;
+                $process_stock->description = 'Missing Stock';
+                $process_stock->save();
+
+
+            }
+        }
+
+
+        $verification = Process_model::find($id)->update(['status'=>2,'description'=>request('description')]);
+
+        session()->put('success', 'Inventory Verification ended');
+        return redirect()->back();
     }
     public function add_repair(){
 

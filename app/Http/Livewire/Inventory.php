@@ -879,7 +879,7 @@ class Inventory extends Component
             $q->where('status', 3);
         })->whereNotIn('id', $aftersale)->whereNotIn('id', Process_stock_model::where('process_id', $verification->id)->pluck('stock_id')->toArray())->get();
 
-        $client = new Client();
+        // $client = new Client();
 
 
         // foreach($remaining_stocks as $stock){
