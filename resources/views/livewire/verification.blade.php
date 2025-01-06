@@ -163,6 +163,7 @@
                                             $j = 0;
 
                                             $price = $batch->order_items_sum_price;
+                                            $items = $batch->process_stocks;
 
                                             // if($order->exchange_rate != null){
                                             //     $price = $price * $order->exchange_rate;
@@ -172,8 +173,9 @@
 
                                         {{-- @foreach ($items as $itemIndex => $item) --}}
                                             <tr>
-                                                    <td>{{ $i + 1 }}</td>
-                                                    <td><a href="{{url('wholesale/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a></td>
+                                                <td>{{ $i + 1 }}</td>
+                                                <td><a href="{{url('wholesale/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a></td>
+                                                <td>{{ $items->count() }}</td>
                                                 @if (session('user')->hasPermission('view_price'))
                                                 <td>€{{ amount_formatter($price,2) }}</td>
                                                 @endif
