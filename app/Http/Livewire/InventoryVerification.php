@@ -240,6 +240,7 @@ class InventoryVerification extends Component
         ini_set('pdo_mysql.max_input_vars', '10000');
 
 
+
         $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q) use ($process_id){
             $q->whereIn('stock.process_stocks.process_id', $process_id)->where('stock.deleted_at',null);
         })->orderBy('product_id')->orderBy('storage')->get();
