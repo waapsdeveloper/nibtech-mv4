@@ -882,27 +882,27 @@ class Inventory extends Component
         $client = new Client();
 
 
-        foreach($remaining_stocks as $stock){
-            $process_stock = Process_stock_model::firstOrNew(['process_id'=>$verification->id, 'stock_id'=>$stock->id]);
-            if($process_stock->id == null){
+        // foreach($remaining_stocks as $stock){
+        //     $process_stock = Process_stock_model::firstOrNew(['process_id'=>$verification->id, 'stock_id'=>$stock->id]);
+        //     if($process_stock->id == null){
 
-                $client->request('POST', url('move_inventory/change_grade'), [
-                    'form_params' => [
-                        'imei' => $stock->imei.$stock->serial_number,
-                        'grade' => 17,
-                        'description' => 'Missing Stock',
-                    ]
-                ]);
+        //         $client->request('POST', url('move_inventory/change_grade'), [
+        //             'form_params' => [
+        //                 'imei' => $stock->imei.$stock->serial_number,
+        //                 'grade' => 17,
+        //                 'description' => 'Missing Stock',
+        //             ]
+        //         ]);
 
-                $process_stock->variation_id = $stock->variation_id;
-                $process_stock->admin_id = session('user_id');
-                $process_stock->status = 2;
-                $process_stock->description = 'Missing Stock';
-                $process_stock->save();
+        //         $process_stock->variation_id = $stock->variation_id;
+        //         $process_stock->admin_id = session('user_id');
+        //         $process_stock->status = 2;
+        //         $process_stock->description = 'Missing Stock';
+        //         $process_stock->save();
 
 
-            }
-        }
+        //     }
+        // }
 
 
         $verification = Process_model::where(['process_type_id'=>20, 'status'=>1])->update(['status'=>2,'description'=>request('description')]);
