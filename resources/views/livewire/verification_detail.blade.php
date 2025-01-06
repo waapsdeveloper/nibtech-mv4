@@ -92,7 +92,7 @@
         <!-- /breadcrumb -->
         <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
                 {{-- <center><h4>Inventory Verification Batch Detail</h4></center> --}}
-            <h5>Reference: {{ $process->reference_id }} | Total Items: {{ $process->process_stocks->count() }} | Total Price: {{ $currency.amount_formatter($process->process_stocks->sum('price'),2) }}</h5>
+            <h5>Reference: {{ $process->reference_id }} | Total Items: {{ $process->process_stocks->count() }}</h5>
             @if ($process->status == 1)
             <div class="p-1">
                 <form class="form-inline" action="{{ url('delete_repair_item') }}" method="POST" id="repair_item">
