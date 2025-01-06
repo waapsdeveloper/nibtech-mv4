@@ -234,6 +234,7 @@ class InventoryVerification extends Component
 
         $data['process_id'] = $process_id;
 
+        // $stock_ids = Process_stock_model::where('process_id',$process_id)->pluck('stock_id');
         ini_set('memory_limit', '2048M');
         ini_set('max_execution_time', 300);
         ini_set('pdo_mysql.max_input_vars', '10000');
@@ -254,7 +255,7 @@ class InventoryVerification extends Component
             $stock_serials = $stocks->whereNotNull('serial_number')->pluck('serial_number');
 
 
-            $purchase_items = Order_item_model::whereIn('stock_id', $stock_ids)->whereIn('order_id', $order_ids)->whereHas('order', function ($q) {
+            $purchase_items = Order_item_model::whereIn('stock_id', $stock_ids)->whereHas('order', function ($q) {
                 $q->where('order_type_id', 1);
             })->sum('price');
 
