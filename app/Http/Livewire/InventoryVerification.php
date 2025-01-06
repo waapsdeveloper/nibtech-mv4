@@ -209,20 +209,11 @@ class InventoryVerification extends Component
 
         $data['process_id'] = $process_id;
 
-        $aftersale = Order_item_model::whereHas('order', function ($q) {
-            $q->where('order_type_id',4)->where('status','<',3);
-        })->pluck('stock_id')->toArray();
-
-        $remaining_stocks = Stock_model::where('status', 1)->whereHas('order', function ($q) {
-            $q->where('status', 3);
-        })->whereNotIn('id', $aftersale)->whereNotIn('id', Process_stock_model::where('process_id', $process_id)->pluck('stock_id')->toArray())->get();
-
-        $remaining_stock_ids = $remaining_stocks->pluck('id')->toArray();
         $all_stock_ids = Process_stock_model::where('process_id',$process_id)->pluck('stock_id')->toArray();
 
 
-        $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q) use ($all_stock_ids , $remaining_stock_ids){
-            $q->whereIn('stock.id', $all_stock_ids + $remaining_stock_ids)->where('stock.deleted_at',null);
+        $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q) use ($all_stock_ids){
+            $q->whereIn('stock.id', $all_stock_ids)->where('stock.deleted_at',null);
         })->orderBy('product_id')->orderBy('storage')->get();
 
         $result = [];
@@ -232,10 +223,11 @@ class InventoryVerification extends Component
 
             $stocks = $pss->stocks->where('deleted_at',null);
             $stock_ids = $stocks->whereIn('id',$all_stock_ids)->pluck('id');
-            $stock_imeis = $stocks->whereNotNull('imei')->pluck('imei');
-            $stock_serials = $stocks->whereNotNull('serial_number')->pluck('serial_number');
+            $scanned_stock_ids = $stocks->whereIn('id',$stock_ids)->where('status',1)->pluck('id');
+            $stock_imeis = $stocks->whereIn('id',$scanned_stock_ids)->whereNotNull('imei')->pluck('imei');
+            $stock_serials = $stocks->whereIn('id',$scanned_stock_ids)->whereNotNull('serial_number')->pluck('serial_number');
 
-            $remaining_stock_ids = $stocks->whereIn('id',$remaining_stock_ids)->pluck('id');
+            $remaining_stock_ids = $stocks->whereIn('id',$stock_ids)->where('status',1)->pluck('id');
             $remaining_stock_imeis = $stocks->whereIn('id',$remaining_stock_ids)->whereNotNull('imei')->pluck('imei');
             $remaining_stock_serials = $stocks->whereIn('id',$remaining_stock_ids)->whereNotNull('serial_number')->pluck('serial_number');
 
