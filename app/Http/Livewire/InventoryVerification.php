@@ -227,7 +227,7 @@ class InventoryVerification extends Component
             $stock_imeis = $stocks->whereIn('id',$scanned_stock_ids)->whereNotNull('imei')->pluck('imei');
             $stock_serials = $stocks->whereIn('id',$scanned_stock_ids)->whereNotNull('serial_number')->pluck('serial_number');
 
-            $remaining_stock_ids = $stocks->whereIn('id',$stock_ids)->where('status',1)->pluck('id');
+            $remaining_stock_ids = $stocks->whereIn('id',$stock_ids)->where('status',2)->pluck('id');
             $remaining_stock_imeis = $stocks->whereIn('id',$remaining_stock_ids)->whereNotNull('imei')->pluck('imei');
             $remaining_stock_serials = $stocks->whereIn('id',$remaining_stock_ids)->whereNotNull('serial_number')->pluck('serial_number');
 
