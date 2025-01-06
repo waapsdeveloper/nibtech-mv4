@@ -882,10 +882,19 @@ class Inventory extends Component
 
         $verification = Process_model::where(['process_type_id'=>20, 'status'=>1])->first();
 
+
+        $repaired = Process_stock_model::whereHas('process', function ($q) {
+            $q->where('process_type_id', 9);
+        })->where('status',2)->where('updated_at','>=',date('Y-m-01 00:00:00'))->pluck('stock_id')->toArray();
+        $recent_operations = Stock_operations_model::where('created_at','>=',date('Y-m-01 00:00:00'))->pluck('stock_id')->toArray();
+
         $remaining_stocks = Stock_model::where('status', 1)->whereHas('order', function ($q) {
             $q->where('status', 3);
-        })->whereNotIn('id', $aftersale)->whereNotIn('id', Process_stock_model::where('process_id', $verification->id)->pluck('stock_id')->toArray())->get();
-
+        })->whereNotIn('id', $aftersale)
+        ->whereNotIn('id', $repaired)
+        ->whereNotIn('id', $recent_operations)
+        ->whereNotIn('id', Process_stock_model::where('process_id', $verification->id)->pluck('stock_id')->toArray())->get();
+        dd($remaining_stocks);
         // $client = new Client();
 
 
