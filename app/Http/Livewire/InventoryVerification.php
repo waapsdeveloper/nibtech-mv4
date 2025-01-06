@@ -237,11 +237,11 @@ class InventoryVerification extends Component
 
         $data['process_id'] = $process_id;
 
-        $stock_ids = Process_stock_model::where('process_id',$process_id)->pluck('stock_id');
+        $all_stock_ids = Process_stock_model::where('process_id',$process_id)->pluck('stock_id');
 
 
-        $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q) use ($stock_ids){
-            $q->whereIn('stock.id', $stock_ids)->where('stock.deleted_at',null);
+        $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q) use ($all_stock_ids){
+            $q->whereIn('stock.id', $all_stock_ids)->where('stock.deleted_at',null);
         })->orderBy('product_id')->orderBy('storage')->get();
 
         $result = [];
@@ -250,7 +250,7 @@ class InventoryVerification extends Component
             $storage = $pss->storage_id->name ?? null;
 
             $stocks = $pss->stocks->where('deleted_at',null);
-            $stock_ids = $stocks->pluck('id');
+            $stock_ids = $stocks->whereIn('id',$all_stock_ids)->pluck('id');
             $stock_imeis = $stocks->whereNotNull('imei')->pluck('imei');
             $stock_serials = $stocks->whereNotNull('serial_number')->pluck('serial_number');
 
