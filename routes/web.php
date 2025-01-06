@@ -275,7 +275,7 @@ Route::get('inventory/delete_verification_item/{id}', [Inventory::class,'delete_
 Route::get('belfast_inventory', [Inventory::class,'belfast_inventory'])->name('view_belfast_inventory');
 Route::post('belfast_inventory/aftersale_action/{id}/{action}', [Inventory::class,'aftersale_action'])->name('add_return_item');
 
-Route::get('inventory_verification', [InventoryVerification::class,'index'])->name('view_inventory_verifications');
+Route::get('inventory_verification', InventoryVerification::class)->name('view_inventory_verifications');
 
 Route::get('product', Product::class)->name('view_product');
 Route::post('add_product', [Product::class,'add_product'])->name('add_product');
