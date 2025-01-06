@@ -837,7 +837,7 @@ class Order extends Component
                 ->whereHas('stocks', function ($query) use ($order_id) {
                     $query->where(['order_id'=> $order_id, 'status'=>1]);
                 })
-                ->orderBy('grade', 'desc')
+                ->orderBy('grade', 'asc')
                 ->get();
 
             }
