@@ -421,6 +421,10 @@ class RMA extends Component
         //     $customer->is_vendor = 1;
         // }
         // $customer->save();
+        if($customer == null){
+            session()->put('error', 'Vendor not found');
+            return redirect()->back();
+        }
 
         $order = Order_model::firstOrNew(['reference_id' => $rma->reference_id, 'order_type_id' => 2 ]);
         $order->customer_id = $customer->id;
