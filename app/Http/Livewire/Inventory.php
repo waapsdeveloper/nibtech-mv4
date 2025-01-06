@@ -361,12 +361,13 @@ class Inventory extends Component
             $repaired = Process_stock_model::whereHas('process', function ($q) {
                 $q->where('process_type_id', 9);
             })->where('status',2)->where('updated_at','>=',date('Y-m-01 00:00:00'))->pluck('stock_id')->toArray();
-
+            $recent_operations = Stock_operations_model::where('created_at','>=',date('Y-m-01 00:00:00'))->pluck('stock_id')->toArray();
             $data['stocks'] = Stock_model::
             with(['variation','variation.product','order','latest_operation','latest_return','admin'])
             ->
             whereNotIn('stock.id',$all_verified_stocks)
             ->whereNotIn('stock.id',$repaired)
+            ->whereNotIn('stock.id',$recent_operations)
             ->where('stock.status', 1)
 
             ->when(request('aftersale') != 1, function ($q) use ($aftersale) {
