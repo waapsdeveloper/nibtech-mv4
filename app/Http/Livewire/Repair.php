@@ -120,7 +120,7 @@ class Repair extends Component
                 $result[] = $datas;
             }
 
-            $data['available_stock_summery'] = $result;
+            $data['sent_stock_summery'] = $result;
         }
 
         // dd($data['orders']);
