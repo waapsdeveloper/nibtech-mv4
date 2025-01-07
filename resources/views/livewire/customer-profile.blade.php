@@ -20,7 +20,7 @@
 
 
         <!-- breadcrumb -->
-        <div class="breadcrumb-header justify-content-between">
+        <div class="breadcrumb-header justify-content-between mb-0">
             <div class="left-content">
                 <span class="main-content-title mg-b-0 mg-b-lg-1">Customer Profile</span>
                 <h5>{{ $customer->company }}</h5>
