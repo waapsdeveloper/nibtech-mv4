@@ -23,6 +23,13 @@
         <div class="breadcrumb-header justify-content-between">
             <div class="left-content">
                 <span class="main-content-title mg-b-0 mg-b-lg-1">Customer Profile</span>
+                <h5>{{ $customer->company }}</h5>
+                <h5>{{ $customer->first_name." ".$customer->last_name }}</h5>
+                <h5>{{ $customer->email }}</h5>
+                <h5>{{ $customer->phone }}</h5>
+                <h5>{{ $customer->street }} {{ $customer->street2 }}, {{ $customer->city }}</h5>
+                <h5>{{ $customer->postal_code }} {{ $customer->country_id->title ?? null }}</h5>
+                <h5>{{ $customer->vat }}</h5>
             </div>
             <div class="justify-content-center mt-2">
                 <ol class="breadcrumb">
