@@ -80,7 +80,7 @@ class Repair extends Component
 
         if (session('user')->hasPermission('view_repair_summery') && request('summery') == 1) {
 
-            $processes = Process_model::where('process_type_id',9)->get();
+            $processes = Process_model::where('process_type_id',9)->where('status',2)->get();
             $process_ids = $processes->pluck('id');
             $all_stock_ids = Process_stock_model::whereIn('process_id',$process_ids)->where('status',1)->pluck('stock_id')->unique()->toArray();
 
