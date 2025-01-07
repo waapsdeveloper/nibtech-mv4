@@ -37,6 +37,12 @@
                     <li class="breadcrumb-item tx-15"><a href="{{ session('previous')}}">Customers</a></li>
                     <li class="breadcrumb-item active" aria-current="page">{{ $customer->company }}</li>
                 </ol>
+
+
+                <div>
+
+                    <a href="{{url('customer/profile').'/'.$customer->id}}?page=sent_repair_summery" class="btn btn-link @if (request('page') == 'sent_repair_summery') bg-white @endif ">Summery</a>
+                </div>
             </div>
         </div>
         <!-- /breadcrumb -->
@@ -67,6 +73,103 @@
         @endphp
         @endif
 
+        @if (session('user')->hasPermission('view_customer_repairs') && request('page') == 'sent_repair_summery')
+            <div class="card" id="print_inv">
+                <div class="card-header pb-0 d-flex justify-content-between">
+                    <h4 class="card-title">Repair Sent Stock Summery</h4>
+                </div>
+                <div class="card-body"><div class="table-responsive">
+                    <form method="GET" action="" target="_blank" id="search_summery">
+                        <input type="hidden" name="category" value="{{ Request::get('category') }}">
+                        <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
+                        <input type="hidden" name="color" value="{{ Request::get('color') }}">
+                        @if (Request::get('grade'))
+
+                        @foreach (Request::get('grade') as $grd)
+
+                            <input type="hidden" name="grade[]" value="{{ $grd }}">
+                        @endforeach
+                        @endif
+                        <input type="hidden" name="replacement" value="{{ Request::get('replacement') }}">
+                        <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
+                        <input type="hidden" name="status" value="{{ Request::get('status') }}">
+                        <input type="hidden" name="vendor" value="{{ Request::get('vendor') }}">
+                    </form>
+                    <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                        <thead>
+                            <tr>
+                                <th><small><b>No</b></small></th>
+                                <th><small><b>Model</b></small></th>
+                                <th><small><b>Quantity</b></small></th>
+                                <th><small><b>Cost</b></small></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                                $i = 0;
+                                $total_quantity = 0;
+                                $total_cost = 0;
+                            @endphp
+                            @foreach ($sent_stock_summery as $summery)
+
+                            @php
+                                // print_r($summery);
+                                // continue;
+                                // if($summery['storage'] > 0){
+                                //     $storage = $storages[$summery['storage']];
+                                // }else{
+                                //     $storage = null;
+                                // }
+                                $total_quantity += $summery['quantity'];
+                                $total_cost += $summery['total_cost'];
+                                $stock_imeis = $summery['stock_imeis'];
+                                $temp_array = array_unique($stock_imeis);
+                                $duplicates = sizeof($temp_array) != sizeof($stock_imeis);
+                                $duplicate_count = sizeof($stock_imeis) - sizeof($temp_array);
+
+                            @endphp
+                                <tr>
+                                    <td>{{ ++$i }}</td>
+                                    {{-- <td>{{ $products[$summery['product_id']]." ".$storage }}</td> --}}
+                                    <td><button class="btn py-0 btn-link" type="submit" form="search_summery" name="pss" value="{{$summery['pss_id']}}">{{ $summery['model'] }}</button></td>
+                                    <td title="{{json_encode($summery['stock_ids'])}}"><a id="test{{$i}}" href="javascript:void(0)">{{ $summery['quantity'] }}</a>
+                                    @if ($duplicates)
+                                        <span class="badge badge-danger">{{ $duplicate_count }} Duplicate</span>
+                                    @endif
+                                    <td
+                                    title="{{ amount_formatter($summery['total_cost']/$summery['quantity']) }}"
+                                    >{{ amount_formatter($summery['total_cost'],2) }}</td>
+                                </tr>
+
+                                <script type="text/javascript">
+
+
+                                    document.getElementById("test{{$i}}").onclick = function(){
+                                        @php
+                                            foreach ($stock_imeis as $val) {
+
+                                                echo "window.open('".url("imei")."?imei=".$val."','_blank');
+                                                ";
+                                            }
+
+                                        @endphp
+                                    }
+                                </script>
+                                {{-- @endif --}}
+                            @endforeach
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="2"><b>Total</b></td>
+                                <td><b>{{ $total_quantity }}</b></td>
+                                <td title="{{ amount_formatter($total_cost/$total_quantity,2) }}"><b>{{ amount_formatter($total_cost,2) }}</b></td>
+                            </tr>
+                        </tfoot>
+
+                    </table>
+                </div>
+            </div>
+        @endif
         <div class="row">
             <div class="col-xl-12">
                 <div class="card">
