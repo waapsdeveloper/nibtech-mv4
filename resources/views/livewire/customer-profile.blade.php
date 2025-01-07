@@ -285,7 +285,11 @@
                                             {{-- @foreach ($items as $itemIndex => $item) --}}
                                                 <tr>
                                                     <td>{{ $i + 1 }}</td>
-                                                    <td><a href="{{url('repair/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                                    <td><a href="{{url('repair/detail/'.$order->id)}}">{{ $order->reference_id }}</a>
+                                                        @if ($order->status == 1)
+                                                            <span class="badge badge-success">Pending</span>
+                                                        @endif
+                                                    </td>
                                                     @if ((!request('status') || request('status') == 3) && session('user')->hasPermission('view_cost'))
                                                     <td>Є{{ amount_formatter($order->process_stocks->sum('price'),2) }}</td>
                                                     @endif
