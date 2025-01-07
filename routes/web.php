@@ -34,6 +34,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\ListingController;
 use App\Http\Controllers\ReportController;
+use App\Http\Livewire\B2BCustomer;
 use App\Http\Livewire\InventoryVerification;
 use App\Http\Livewire\Stock_room;
 use App\Http\Livewire\Wholesale_return;
@@ -324,6 +325,8 @@ Route::post('insert-customer', [Customer::class,'insert_customer'])->name('add_c
 Route::get('edit-customer/{id}', [Customer::class,'edit_customer'])->name('edit_customer');
 Route::post('update-customer/{id}', [Customer::class,'update_customer'])->name('edit_customer');
 Route::get('customer/delete/{id}', [Customer::class,'delete_customer'])->name('delete_customer');
+
+Route::get('b2b_customer', B2BCustomer::class)->name('view_b2b_customer');
 
 Route::get('grade', Grade::class)->name('view_grade');
 Route::get('add-grade', [Grade::class,'add_grade'])->name('add_grade');
