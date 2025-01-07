@@ -44,7 +44,7 @@ class Inventory extends Component
             request()->merge(['storage' => $pss->storage, 'product' => $pss->product_id]);
 
         }
-        $data['vendors'] = Customer_model::where('is_vendor',1)->pluck('first_name','id');
+        $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('first_name','id');
         $data['colors'] = Color_model::pluck('name','id');
         $data['storages'] = Storage_model::pluck('name','id');
         $data['products'] = Products_model::pluck('model','id');
@@ -1072,7 +1072,7 @@ class Inventory extends Component
             session()->put('error', 'No Open Sales Return Order found');
             return redirect()->back();
         }
-        $data['vendors'] = Customer_model::where('is_vendor',1)->pluck('first_name','id');
+        $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('first_name','id');
         $data['products'] = Products_model::pluck('model','id');
         $data['colors'] = Color_model::pluck('name','id');
         $data['storages'] = Storage_model::pluck('name','id');

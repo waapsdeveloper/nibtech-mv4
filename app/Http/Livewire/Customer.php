@@ -18,10 +18,10 @@ class Customer extends Component
     {
         $this->customers = Customer_model::with('country_id')->withCount('orders')
         ->when(request('type') && request('type') != 0, function($q){
-            if(request('type') == 4){
+            if(request('type') == 1){
                 return $q->where('is_vendor',null);
             }else{
-                return $q->where('is_vendor',request('type'));
+                return $q->whereNotNull('is_vendor');
             }
         })
         ->when(request('order_id') != '', function ($q) {

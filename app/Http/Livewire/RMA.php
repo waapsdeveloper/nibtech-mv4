@@ -38,7 +38,7 @@ class RMA extends Component
         session()->put('page_title', $data['title_page']);
 
         $user_id = session('user_id');
-        $data['vendors'] = Customer_model::where('is_vendor','!=',null)->pluck('first_name','id');
+        $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('first_name','id');
         $data['latest_reference'] = Order_model::where('order_type_id',2)->orderBy('reference_id','DESC')->first()->reference_id ?? 2000;
         $data['currencies'] = Currency_model::pluck('sign','id');
         $data['order_statuses'] = Order_status_model::get();

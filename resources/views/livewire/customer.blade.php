@@ -40,10 +40,8 @@
 
                 <select name="type" class="form-select" onchange="this.form.submit()">
                     <option value="0">All Types</option>
-                    <option value="1" {{ Request::get('type') == 1 ? 'selected' : '' }}>Vendors</option>
-                    <option value="2" {{ Request::get('type') == 2 ? 'selected' : '' }}>BulkSale Purchasers</option>
-                    <option value="3" {{ Request::get('type') == 3 ? 'selected' : '' }}>Repairer</option>
-                    <option value="4" {{ Request::get('type') == 4 ? 'selected' : '' }}>Customers</option>
+                    <option value="1" {{ Request::get('type') == 1 ? 'selected' : '' }}>BM</option>
+                    <option value="2" {{ Request::get('type') == 2 ? 'selected' : '' }}>Others</option>
                 </select>
             </div>
             <div class="col-md col-sm-6">

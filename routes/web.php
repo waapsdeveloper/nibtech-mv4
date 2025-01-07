@@ -326,8 +326,6 @@ Route::get('edit-customer/{id}', [Customer::class,'edit_customer'])->name('edit_
 Route::post('update-customer/{id}', [Customer::class,'update_customer'])->name('edit_customer');
 Route::get('customer/delete/{id}', [Customer::class,'delete_customer'])->name('delete_customer');
 
-Route::get('b2b_customer', B2BCustomer::class)->name('view_b2b_customer');
-
 Route::get('grade', Grade::class)->name('view_grade');
 Route::get('add-grade', [Grade::class,'add_grade'])->name('add_grade');
 Route::post('insert-grade', [Grade::class,'insert_grade'])->name('add_grade');

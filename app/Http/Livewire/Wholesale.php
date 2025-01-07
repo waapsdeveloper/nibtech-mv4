@@ -42,7 +42,7 @@ class Wholesale extends Component
     {
 
         $user_id = session('user_id');
-        $data['vendors'] = Customer_model::where('is_vendor','!=',null)->pluck('company','id');
+        $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
 
 
         $data['title_page'] = "BulkSales";
@@ -172,8 +172,8 @@ class Wholesale extends Component
         session()->put('page_title', $data['title_page']);
 
         DB::statement("SET SESSION group_concat_max_len = 1000000;");
-        $data['vendors1'] = Customer_model::where('is_vendor',1)->pluck('company','id');
-        $data['vendors'] = Customer_model::where('is_vendor',2)->pluck('company','id');
+        $data['vendors1'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
+        $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
         // $data['imeis'] = Stock_model::whereIn('status',[1,3])->orderBy('serial_number','asc')->orderBy('imei','asc')->get();
         $data['exchange_rates'] = ExchangeRate::pluck('rate','target_currency');
         $data['storages'] = Storage_model::pluck('name','id');
