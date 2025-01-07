@@ -168,7 +168,8 @@
                     </table>
                 </div>
             </div>
-        @elseif (session('user')->hasPermission('view_customer_orders') && request('page') == 'orders')
+        {{-- @elseif (session('user')->hasPermission('view_customer_orders') && request('page') == 'orders') --}}
+        @else
             <div class="row">
                 <div class="col-xl-12">
                     <div class="card">
