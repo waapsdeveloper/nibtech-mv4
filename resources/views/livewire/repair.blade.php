@@ -242,6 +242,7 @@
         <div class="card" id="print_inv">
             <div class="card-header pb-0 d-flex justify-content-between">
                 <h4 class="card-title">Repair Received Stock History</h4>
+                <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$received_stocks->firstItem()}} {{ __('locale.To') }} {{$received_stocks->lastItem()}} {{ __('locale.Out Of') }} {{$received_stocks->total()}} </h5>
             </div>
             <div class="card-body"><div class="table-responsive">
                 <table class="table table-bordered table-hover mb-0 text-md-nowrap">
@@ -283,6 +284,9 @@
                         @endforeach
                     </tbody>
                 </table>
+                <br>
+                {{ $received_stocks->onEachSide(1)->links() }} {{ __('locale.From') }} {{$received_stocks->firstItem()}} {{ __('locale.To') }} {{$received_stocks->lastItem()}} {{ __('locale.Out Of') }} {{$received_stocks->total()}}
+
             </div>
         </div>
 
