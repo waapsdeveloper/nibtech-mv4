@@ -98,7 +98,7 @@ class Customer extends Component
         if(session('user')->hasPermission('view_customer_repairs') && request('page') == 'sent_repair_summery'){
 
 
-            $processes = $repairs;
+            $processes = $repairs->where('status',2);
             $process_ids = $processes->pluck('id');
             $all_stock_ids = Process_stock_model::whereIn('process_id',$process_ids)->where('status',1)->pluck('stock_id')->unique()->toArray();
 
