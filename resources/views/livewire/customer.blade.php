@@ -153,7 +153,13 @@
                                     @endphp
                                         <tr>
                                             <td>{{$i}}</td>
-                                            <td>{{$customer->company}}</td>
+                                            <td>
+                                                @if ($customer->is_vendor != null)
+                                                    <a href="{{url('customer/profile/'.$customer->id)}}">{{$customer->company}}</a>
+                                                @else
+                                                    {{$customer->company}}
+                                                @endif
+                                            </td>
                                             <td>{{$customer->first_name}}</td>
                                             <td>{{$customer->last_name}}</td>
                                             <td>{{$customer->phone}}</td>

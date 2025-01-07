@@ -34,7 +34,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\ListingController;
 use App\Http\Controllers\ReportController;
-use App\Http\Livewire\B2BCustomer;
 use App\Http\Livewire\InventoryVerification;
 use App\Http\Livewire\Stock_room;
 use App\Http\Livewire\Wholesale_return;
@@ -320,6 +319,7 @@ Route::get('edit-member/{id}', [Team::class,'edit_member'])->name('edit_member')
 Route::post('update-member/{id}', [Team::class,'update_member'])->name('edit_member');
 
 Route::get('customer', Customer::class)->name('view_customer');
+Route::get('customer/profile/{id}', [Customer::class,'profile'])->name('view_customer_profile');
 Route::get('add-customer', [Customer::class,'add_customer'])->name('add_customer');
 Route::post('insert-customer', [Customer::class,'insert_customer'])->name('add_customer');
 Route::get('edit-customer/{id}', [Customer::class,'edit_customer'])->name('edit_customer');
