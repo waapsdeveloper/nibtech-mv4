@@ -46,7 +46,6 @@
             </div>
         </div>
         <!-- /breadcrumb -->
-        <br>
         @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <span class="alert-inner--icon"><i class="fe fe-thumbs-up"></i></span>
