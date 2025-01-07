@@ -274,7 +274,7 @@
                                 <td>{{ $product." ".$storage." ".$color." ".$grade }}</td>
                                 <td>{{ $stock->imei.$stock->serial_number }}</td>
                                 <td>{{ amount_formatter($p_stock->price,2) }}</td>
-                                <td>{{ $repairers[$p_stock->customer_id] ?? null }}</td>
+                                <td>{{ $repairers[$p_stock->process->customer_id] ?? null }}</td>
                                 <td>{{ $p_stock->created_at }}</td>
                                 <td>{{ $p_stock->updated_at }}</td>
                             </tr>
