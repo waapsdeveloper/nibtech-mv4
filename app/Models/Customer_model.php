@@ -60,7 +60,13 @@ class Customer_model extends Model
         $customer->country = $country_codes[$customerObj->country];
         $customer->city = $customerObj->city;
         $customer->phone =  $phone;
-        $customer->email = $customerObj->email;
+        if(str_contains($customerObj->email, 'testinvoice')){
+            $email = str_replace('testinvoice', 'invoice', $customerObj->email);
+            $customer->email = $email;
+        }else{
+            $customer->email = $customerObj->email;
+        }
+        // $customer->email = $customerObj->email;
         if($is_vendor == true){
             $customer->is_vendor = 1;
             $customer->type = 1;
