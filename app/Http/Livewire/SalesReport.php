@@ -41,7 +41,7 @@ class SalesReport extends Component
 
         // $data['purchase_status'] = [2 => '(Pending)', 3 => ''];
         // $data['purchase_orders'] = Order_model::where('order_type_id',1)->pluck('reference_id','id');
-        // $data['vendors'] = Customer_model::where('is_vendor',1)->pluck('first_name','id');
+        // $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('first_name','id');
         $data['categories'] = Category_model::pluck('name','id');
         // $data['brands'] = Brand_model::pluck('name','id');
         // $data['products'] = Products_model::orderBy('model','asc')->get();

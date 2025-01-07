@@ -35,7 +35,7 @@ class SalesReturn extends Component
         session()->put('page_title', $data['title_page']);
 
         // $data['latest_reference'] = Order_model::where('order_type_id',4)->orderBy('reference_id','DESC')->first()->reference_id;
-        $data['vendors'] = Customer_model::where('is_vendor',1)->pluck('first_name','id');
+        $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('first_name','id');
         $data['order_statuses'] = Order_status_model::get();
         if(request('per_page') != null){
             $per_page = request('per_page');

@@ -28,7 +28,7 @@ class Issue extends Component
             $per_page = 10;
         }
 
-        $data['vendors'] = Customer_model::where('is_vendor',1)->pluck('first_name','id');
+        $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('first_name','id');
         $data['colors'] = Color_model::pluck('name','id');
         $data['storages'] = Storage_model::pluck('name','id');
         $data['grades'] = Grade_model::pluck('name','id');
