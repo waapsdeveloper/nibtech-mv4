@@ -23,7 +23,7 @@
         <div class="breadcrumb-header justify-content-between">
             <div class="left-content">
                 <span class="main-content-title mg-b-0 mg-b-lg-1">Customer Profile</span>
-                <h6>{{ $customer->company }}</h6>
+                <h5>{{ $customer->company }}</h5>
                 <h6>{{ $customer->first_name." ".$customer->last_name }}</h6>
                 <h6>{{ $customer->email }}</h6>
                 <h6>{{ $customer->phone }}</h6>
