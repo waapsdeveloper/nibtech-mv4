@@ -191,7 +191,7 @@ class InventoryVerification extends Component
         }else{
             $per_page = 20;
         }
-        $data['vendors'] = Customer_model::whereIn('type',  [1,2])->get();
+        $data['vendors'] = Customer_model::whereNotNull('is_vendor')->get();
         $data['exchange_rates'] = ExchangeRate::pluck('rate','target_currency');
         $data['storages'] = Storage_model::pluck('name','id');
         $data['products'] = Products_model::pluck('model','id');
