@@ -68,6 +68,9 @@
                         <li class="breadcrumb-item tx-15"><a href="{{ session('previous')}}">BulkSale Return</a></li>
                         <li class="breadcrumb-item active" aria-current="page">BulkSale Return Detail</li>
                     </ol>
+                    <br>
+                    Creation Date: {{ $order->created_at }}<br>
+                    Approval Date: {{ $order->processed_at }}
                 </div>
             </div>
         <!-- /breadcrumb -->
