@@ -74,7 +74,7 @@
         <div class="row">
             <div class="col-md-12 tx-center" style="border-bottom: 1px solid rgb(216, 212, 212);">
                 <center><h4>@if ($order->status == 1)<small>(Pending)</small>@endif @if ($order->status == 2)<small>(Awaiting Approval)</small>@endif BulkSale Return Order Detail</h4></center>
-                <h5>Customer: {{ $vendors[$order->customer_id] ?? null }} | Reference: {{ $order->reference_id }} | Total Items: {{ $order->order_items->count() }}</h5>
+                <h5>Customer: {{ $vendors[$order->customer_id] ?? null }} | Reference: {{ $order->reference_id }} | Total Items: {{ $order->order_items->count() }} @if (session('user')->hasPermission('view_price')) | Total Price: {{ $order->currency_id->sign.amount_formatter($order->order_items->sum('price'),2) }} @endif</h5>
             </div>
         </div>
         <br>
