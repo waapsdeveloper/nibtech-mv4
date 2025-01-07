@@ -31,7 +31,7 @@
                 <h6>{{ $customer->postal_code }} {{ $customer->country_id->title ?? null }}</h6>
                 <h6>{{ $customer->vat }}</h6>
             </div>
-            <div class="justify-content-center mt-2">
+            <div class="justify-content-center mt-2 position-relative">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
                     <li class="breadcrumb-item tx-15"><a href="{{ session('previous')}}">Customers</a></li>
@@ -39,7 +39,7 @@
                 </ol>
 
 
-                <div>
+                <div class="btn-group position-absolute bottom-0 end-0" role="group" aria-label="Basic example">
 
                     <a href="{{url('customer/profile').'/'.$customer->id}}?page=sent_repair_summery" class="btn btn-link @if (request('page') == 'sent_repair_summery') bg-white @endif ">Summery</a>
                 </div>
