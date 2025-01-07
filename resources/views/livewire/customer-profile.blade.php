@@ -207,18 +207,23 @@
 
                                                 <tr>
                                                     <td>{{ $i += 1 }}</td>
+                                                    <td>
+                                                        @if ($order->order_type_id == 1)
+                                                            <a href="{{url('purchase/detail/'.$order->id)}}?status=1">{{ $order->reference_id }}</a>
+                                                        @elseif ($order->order_type_id == 2)
+                                                            <a href="{{url('rma/detail/'.$order->id)}}">{{ $order->reference_id }}</a>
+                                                        @elseif ($order->order_type_id == 4)
+                                                            <a href="{{url('return/detail/'.$order->id)}}">{{ $order->reference_id }}</a>
+                                                        @elseif ($order->order_type_id == 5)
+                                                            <a href="{{url('wholesale/detail/'.$order->id)}}">{{ $order->reference_id }}</a>
+                                                        @elseif ($order->order_type_id == 6)
+                                                            <a href="{{url('wholesale_return/detail/'.$order->id)}}">{{ $order->reference_id }}</a>
+                                                        @endif
+                                                        @if ($order->status == 2)
+                                                            <span class="badge badge-warning">Pending</span>
 
-                                                    @if ($order->order_type_id == 1)
-                                                        <td><a href="{{url('purchase/detail/'.$order->id)}}?status=1">{{ $order->reference_id }}</a></td>
-                                                    @elseif ($order->order_type_id == 2)
-                                                        <td><a href="{{url('rma/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
-                                                    @elseif ($order->order_type_id == 4)
-                                                        <td><a href="{{url('return/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
-                                                    @elseif ($order->order_type_id == 5)
-                                                        <td><a href="{{url('wholesale/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
-                                                    @elseif ($order->order_type_id == 6)
-                                                        <td><a href="{{url('wholesale_return/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
-                                                    @endif
+                                                        @endif
+                                                    </td>
                                                     <td>{{ $order->order_type->name }}</td>
                                                     <td>{{ $order->order_items_count }}</td>
                                                     @if (session('user')->hasPermission('view_price'))
