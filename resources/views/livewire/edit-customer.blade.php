@@ -205,15 +205,6 @@
                                                 <td>€{{ amount_formatter($price,2) }}</td>
                                                 @endif
                                                 <td style="width:220px">{{ $order->created_at }}</td>
-                                                <td>
-                                                    <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
-                                                    <div class="dropdown-menu">
-                                                        <a class="dropdown-item" href="{{url('delete_wholesale') . "/" . $order->id }}"><i class="fe fe-arrows-rotate me-2 "></i>Delete</a>
-                                                        {{-- <a class="dropdown-item" href="{{ $order->delivery_note_url }}" target="_blank"><i class="fe fe-arrows-rotate me-2 "></i>Delivery Note</a>
-                                                        <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a> --}}
-                                                        {{-- <a class="dropdown-item" href="javascript:void(0);"><i class="fe fe-trash-2 me-2"></i>Delete</a> --}}
-                                                    </div>
-                                                </td>
                                             </tr>
                                         @else
                                         @foreach ($items as $itemIndex => $item)
