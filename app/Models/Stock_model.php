@@ -96,7 +96,7 @@ class Stock_model extends Model
     {
         return $this->hasOne(Process_stock_model::class, 'stock_id', 'id')->whereHas('process', function ($q) {
             $q->where('process_type_id', 20);
-        })->orderByDesc('id');
+        })->where('status',1)->orderByDesc('id');
     }
     public function process_stock($process_id)
     {
