@@ -242,7 +242,7 @@
                 <h4 class="card-title">Inventory Verification Summery</h4>
             </div>
             <div class="card-body"><div class="table-responsive">
-                <form method="GET" action="" target="_blank" id="search_summery">
+                <form method="GET" action="{{url('inventory')}}" target="_blank" id="search_summery">
                     <input type="hidden" name="category" value="{{ Request::get('category') }}">
                     <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
                     <input type="hidden" name="color" value="{{ Request::get('color') }}">
@@ -292,6 +292,7 @@
                             $remaining_quantity += $summery['remaining_quantity'];
                             $remaining_total_cost += $summery['remaining_total_cost'];
                             $stock_imeis = $summery['stock_imeis'];
+                            $remaining_stock_imeis = $summery['remaining_stock_imeis'];
                             $temp_array = array_unique($stock_imeis);
                             $duplicates = sizeof($temp_array) != sizeof($stock_imeis);
                             $duplicate_count = sizeof($stock_imeis) - sizeof($temp_array);
@@ -305,11 +306,14 @@
                                 @if ($duplicates)
                                     <span class="badge badge-danger">{{ $duplicate_count }} Duplicate</span>
                                 @endif
+                                </td>
                                 <td
                                 title="{{ amount_formatter($summery['total_cost']/$summery['quantity']) }}"
                                 >{{ amount_formatter($summery['total_cost'],2) }}</td>
-                                <td>{{ $summery['remaining_quantity'] }}</td>
-                                <td>{{ amount_formatter($summery['remaining_total_cost'],2) }}</td>
+                                <td title="{{json_encode($summery['remaining_stock_ids'])}}">
+                                    <a id="test2{{$i}}" href="javascript:void(0)">{{ $summery['remaining_quantity'] }}</a>
+                                </td>
+                                <td title="{{ amount_formatter($summery['remaining_total_cost']/$summery['remaining_quantity']) }}">{{ amount_formatter($summery['remaining_total_cost'],2) }}</td>
 
                             </tr>
 
@@ -319,6 +323,16 @@
                                 document.getElementById("test{{$i}}").onclick = function(){
                                     @php
                                         foreach ($stock_imeis as $val) {
+
+                                            echo "window.open('".url("imei")."?imei=".$val."','_blank');
+                                            ";
+                                        }
+
+                                    @endphp
+                                }
+                                document.getElementById("test2{{$i}}").onclick = function(){
+                                    @php
+                                        foreach ($remaining_stock_imeis as $val) {
 
                                             echo "window.open('".url("imei")."?imei=".$val."','_blank');
                                             ";
