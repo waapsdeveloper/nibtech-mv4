@@ -40,10 +40,10 @@
 
 
                 <div class="btn-group position-absolute bottom-0 end-0" role="group" aria-label="Basic example">
-                    <a href="{{url('customer/profile').'/'.$customer->id}}?page=orders" class="btn btn-link @if (request('page') == 'orders') bg-white @endif ">All Orders</a>
+                    <a href="{{url('customer/profile').'/'.$customer->id}}?page=orders" class="btn btn-link @if (request('page') == 'orders') bg-white @endif ">All&nbsp;Orders</a>
                     @if (session('user')->hasPermission('view_customer_repairs') && $repairs->count() > 0)
 
-                        <a href="{{url('customer/profile').'/'.$customer->id}}?page=sent_repair_summery" class="btn btn-link @if (request('page') == 'sent_repair_summery') bg-white @endif ">Sent Repair Summery</a>
+                        <a href="{{url('customer/profile').'/'.$customer->id}}?page=sent_repair_summery" class="btn btn-link @if (request('page') == 'sent_repair_summery') bg-white @endif ">Sent&nbsp;Repair&nbsp;Summery</a>
                     @endif
                 </div>
             </div>
