@@ -30,6 +30,7 @@ use App\Models\Grade_model;
 use App\Models\Order_issue_model;
 use App\Models\Process_model;
 use App\Models\Process_stock_model;
+use App\Models\Product_storage_sort_model;
 use App\Models\Stock_operations_model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -77,6 +78,50 @@ class Repair extends Component
         ->onEachSide(5)
         ->appends(request()->except('page'));
 
+        if (session('user')->hasPermission('view_repair_summery') && request('summery') == 1) {
+
+            $processes = Process_model::where('process_type_id',9)->get();
+            $process_ids = $processes->pluck('id');
+            $all_stock_ids = Process_stock_model::whereIn('process_id',$process_ids)->where('status',1)->pluck('stock_id')->unique()->toArray();
+
+
+            $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q) use ($all_stock_ids){
+                $q->whereIn('stock.id', $all_stock_ids)->where('stock.deleted_at',null);
+            })->orderBy('product_id')->orderBy('storage')->get();
+
+            $result = [];
+            foreach($product_storage_sort as $pss){
+                $product = $pss->product;
+                $storage = $pss->storage_id->name ?? null;
+
+                $stocks = $pss->stocks->whereIn('id',$all_stock_ids)->where('deleted_at',null);
+                $stock_ids = $stocks->pluck('id');
+
+
+                // $scanned_stock_ids = Process_stock_model::where('process_id',$process_id)->where('status',1)->whereIn('stock_id',$stock_ids)->pluck('stock_id');
+                $stock_imeis = $stocks->whereIn('id',$stock_ids)->whereNotNull('imei')->pluck('imei');
+                $stock_serials = $stocks->whereIn('id',$stock_ids)->whereNotNull('serial_number')->pluck('serial_number');
+
+                $purchase_items = Order_item_model::whereIn('stock_id', $stock_ids)->whereHas('order', function ($q) {
+                    $q->where('order_type_id', 1);
+                })->sum('price');
+
+                $datas = [];
+                $datas['pss_id'] = $pss->id;
+                $datas['product_id'] = $pss->product_id;
+                $datas['storage'] = $pss->storage;
+                $datas['model'] = $product->model.' '.$storage;
+                $datas['quantity'] = count($stock_ids);
+                $datas['stock_ids'] = $stock_ids->toArray();
+                $datas['stock_imeis'] = $stock_imeis->toArray() + $stock_serials->toArray();
+                // $datas['average_cost'] = $purchase_items->avg('price');
+                $datas['total_cost'] = $purchase_items;
+
+                $result[] = $datas;
+            }
+
+            $data['available_stock_summery'] = $result;
+        }
 
         // dd($data['orders']);
         return view('livewire.repair')->with($data);

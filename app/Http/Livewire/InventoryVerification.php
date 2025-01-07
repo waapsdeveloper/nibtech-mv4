@@ -234,7 +234,7 @@ class InventoryVerification extends Component
             $remaining_stock_serials = $stocks->whereIn('id',$remaining_stock_ids)->whereNotNull('serial_number')->pluck('serial_number');
 
 
-            $purchase_items = Order_item_model::whereIn('stock_id', $stock_ids)->whereHas('order', function ($q) {
+            $purchase_items = Order_item_model::whereIn('stock_id', $scanned_stock_ids)->whereHas('order', function ($q) {
                 $q->where('order_type_id', 1);
             })->sum('price');
 
