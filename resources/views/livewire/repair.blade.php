@@ -51,7 +51,7 @@
                     <div class="card-header">
                         <h4 class="card-title mb-1">Repairer</h4>
                     </div>
-                    <select name="repairer_id" class="form-control form-select" required>
+                    <select name="repairer_id" class="form-control form-select">
                         <option value="">Repairer</option>
                         @foreach ($repairers as $id => $repairer)
                             <option value="{{ $id }}" @if ($id == request('repairer_id')) selected @endif>{{ $repairer }}</option>
