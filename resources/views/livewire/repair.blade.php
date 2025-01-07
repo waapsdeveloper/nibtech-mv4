@@ -41,13 +41,13 @@
         <br>
         <form action="" method="GET" id="search">
             <div class="row">
-                <div class="col-lg-4 col-xl-4 col-md-4 col-sm-6">
+                <div class="col-lg-3 col-xl-3 col-md-3 col-sm-6">
                     <div class="card-header">
                         <h4 class="card-title mb-1">Reference ID</h4>
                     </div>
                     <input type="text" class="form-control" name="reference_id" placeholder="Enter Reference ID" value="@isset($_GET['reference_id']){{$_GET['reference_id']}}@endisset">
                 </div>
-                <div class="col-lg-4 col-xl-4 col-md-4 col-sm-6">
+                <div class="col-lg-3 col-xl-3 col-md-3 col-sm-6">
                     <div class="card-header">
                         <h4 class="card-title mb-1">Repairer</h4>
                     </div>
@@ -58,13 +58,13 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-lg-4 col-xl-4 col-md-4 col-sm-6">
+                <div class="col-lg-3 col-xl-3 col-md-3 col-sm-6">
                     <div class="card-header">
                         <h4 class="card-title mb-1">{{ __('locale.Start Date') }}</h4>
                     </div>
                     <input class="form-control" name="start_date" id="datetimepicker" type="date" value="@isset($_GET['start_date']){{$_GET['start_date']}}@endisset">
                 </div>
-                <div class="col-lg-4 col-xl-4 col-md-4 col-sm-6">
+                <div class="col-lg-3 col-xl-3 col-md-3 col-sm-6">
                     <div class="card-header">
                         <h4 class="card-title mb-1">{{ __('locale.End Date') }}</h4>
                     </div>
