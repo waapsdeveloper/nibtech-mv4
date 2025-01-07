@@ -128,7 +128,13 @@ class ListingController extends Controller
         ->appends(request()->except('page'));
     }
     public function get_variation_available_stocks($id){
-        $stocks = Stock_model::where('variation_id',$id)->where('status',1)->get();
+        $variation = Variation_model::find($id);
+        if ($variation->product->brand == 2) {
+            $variation_ids = Variation_model::where('product_storage_sort_id', $variation->product_storage_sort_id)->pluck('id');
+            $stocks = Stock_model::whereIn('variation_id', $variation_ids)->where('status', 1)->whereHas('active_order')->get();
+        } else {
+            $stocks = Stock_model::where('variation_id', $id)->where('status', 1)->get();
+        }
 
         $stock_costs = Order_item_model::whereHas('order', function($q){
             $q->where('order_type_id',1);
