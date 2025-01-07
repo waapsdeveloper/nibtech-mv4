@@ -79,6 +79,8 @@
             <input type="hidden" name="page" value="{{ Request::get('page') }}">
             <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
             <input type="hidden" name="sort" value="{{ Request::get('sort') }}">
+            <input type="hidden" name="summery" value="{{ Request::get('summery') }}">
+            <input type="hidden" name="history" value="{{ Request::get('history') }}">
         </form>
         <br>
         <div class="row">
