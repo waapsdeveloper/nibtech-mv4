@@ -287,7 +287,7 @@
                                                     <td>{{ $i + 1 }}</td>
                                                     <td><a href="{{url('repair/detail/'.$order->id)}}">{{ $order->reference_id }}</a>
                                                         @if ($order->status == 1)
-                                                            <span class="badge badge-success">Pending</span>
+                                                            <span class="badge badge-warning">Pending</span>
                                                         @endif
                                                     </td>
                                                     @if ((!request('status') || request('status') == 3) && session('user')->hasPermission('view_cost'))
