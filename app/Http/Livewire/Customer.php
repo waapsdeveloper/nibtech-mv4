@@ -67,6 +67,28 @@ class Customer extends Component
         // }
         return view('livewire.customer')->with($data);
     }
+
+    public function profile($id)
+    {
+        $customer = Customer_model::find($id);
+        $orders = Order_model::with(['order_items.variation', 'order_items.variation.grade_id', 'order_items.stock'])
+        ->withCount('order_items')->withSum('order_items','price')
+        ->where('orders.customer_id',$id)
+        ->orderBy('orders.created_at', 'desc')
+        ->get();
+
+        $repairs = Process_model::where('process_type_id', 9)
+        ->where('customer_id', $id)
+        ->orderBy('id', 'desc')
+        ->get();
+
+        $data['customer'] = $customer;
+        $data['orders'] = $orders;
+        $data['repairs'] = $repairs;
+
+        return view('livewire.customer-profile')->with($data);
+    }
+
     public function add_customer()
     {
 

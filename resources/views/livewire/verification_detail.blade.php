@@ -69,7 +69,7 @@
                 @endif
 
                 @endif
-                    @if ($process->status == 2)
+                    {{-- @if ($process->status == 2)
                     <form class="form-inline" method="POST" action="{{url('inventory_verification/approve').'/'.$process->id}}">
                         @csrf
                         <div class="form-floating">
@@ -79,7 +79,7 @@
                         <button type="submit" class="btn btn-success">Close</button>
                     </form>
 
-                    @endif
+                    @endif --}}
                 </div>
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
@@ -110,7 +110,7 @@
 
         <br>
 
-        <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
+        {{-- <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
 
 
             <div class="p-2">
@@ -133,7 +133,7 @@
                     <li><a class="dropdown-item" href="{{url('export_repair_invoice')}}/{{ $process->id }}?packlist=1" target="_blank">.pdf</a></li>
                 </ul>
             </div>
-        </div>
+        </div> --}}
             <script>
                 window.onload = function() {
                     document.getElementById('imei').focus();
