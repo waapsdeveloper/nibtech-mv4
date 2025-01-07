@@ -27,7 +27,7 @@
                 <h6>{{ $customer->first_name." ".$customer->last_name }}</h6>
                 <h6>{{ $customer->email }}</h6>
                 <h6>{{ $customer->phone }}</h6>
-                <h6>{{ $customer->street }} {{ $customer->street2 }}, {{ $customer->city }}</h6>
+                <h6>{{ $customer->street }} {{ $customer->street2 }} {{ $customer->city }}</h6>
                 <h6>{{ $customer->postal_code }} {{ $customer->country_id->title ?? null }}</h6>
                 <h6>{{ $customer->vat }}</h6>
             </div>
