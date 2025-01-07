@@ -49,6 +49,17 @@
                 </div>
                 <div class="col-lg-4 col-xl-4 col-md-4 col-sm-6">
                     <div class="card-header">
+                        <h4 class="card-title mb-1">Repairer</h4>
+                    </div>
+                    <select name="repairer_id" class="form-control form-select" required>
+                        <option value="">Repairer</option>
+                        @foreach ($repairers as $id => $repairer)
+                            <option value="{{ $id }}" @if ($id == request('repairer_id')) selected @endif>{{ $repairer }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-lg-4 col-xl-4 col-md-4 col-sm-6">
+                    <div class="card-header">
                         <h4 class="card-title mb-1">{{ __('locale.Start Date') }}</h4>
                     </div>
                     <input class="form-control" name="start_date" id="datetimepicker" type="date" value="@isset($_GET['start_date']){{$_GET['start_date']}}@endisset">
@@ -88,7 +99,14 @@
                 <a href="{{url('repair')}}?summery=1" class="btn btn-link @if (request('summery') == 1) bg-white @endif ">Summery</a>
                 @endif
                 @if (session('user')->hasPermission('view_repair_history'))
-                <a href="{{url('repair')}}?history=1" class="btn btn-link @if (request('history') == 1) bg-white @endif ">History</a>
+                {{-- <a href="{{url('repair')}}?history=1" class="btn btn-link @if (request('history') == 1) bg-white @endif ">History</a> --}}
+                <button class="btn btn-link  @if (request('history') == 1) bg-white @endif" type="submit" form="history">History</button>
+                <form method="GET" action="" id="history">
+                    <input type="hidden" name="history" value="1">
+                    <input type="hidden" name="repairer_id" value="{{ Request::get('repairer_id') }}">
+                    <input type="hidden" name="start_date" value="{{ Request::get('start_date') }}">
+                    <input type="hidden" name="end_date" value="{{ Request::get('end_date') }}">
+                </form>
                 @endif
             </div>
             <div class="">

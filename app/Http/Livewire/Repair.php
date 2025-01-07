@@ -53,7 +53,7 @@ class Repair extends Component
         session()->put('page_title', $data['title_page']);
 
         $data['latest_reference'] = Process_model::where('process_type_id',9)->orderBy('reference_id','DESC')->first()->reference_id ?? 5998;
-        $data['repairers'] = Customer_model::whereIn('type',  [2,3])->pluck('company','id');
+        $data['repairers'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
         if(request('per_page') != null){
             $per_page = request('per_page');
         }else{
@@ -265,7 +265,7 @@ class Repair extends Component
             $per_page = 20;
         }
         $data['repairers'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
-        $data['vendors'] = Customer_model::whereIn('type',  [1,2])->get();
+        $data['vendors'] = Customer_model::whereNotNull('is_vendor')->get();
         $data['exchange_rates'] = ExchangeRate::pluck('rate','target_currency');
         $data['storages'] = Storage_model::pluck('name','id');
         $data['products'] = Products_model::pluck('model','id');
