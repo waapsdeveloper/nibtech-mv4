@@ -70,6 +70,9 @@ class Repair extends Component
         ->when(request('reference_id'), function ($q) {
             return $q->where('reference_id', 'LIKE', request('reference_id') . '%');
         })
+        ->when(request('repairer_id'), function ($q) {
+            return $q->where('customer_id', request('repairer_id'));
+        })
         ->when(request('status'), function ($q) {
             return $q->where('status', request('status'));
         })
