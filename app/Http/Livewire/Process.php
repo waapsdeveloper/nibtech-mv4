@@ -25,7 +25,7 @@ class Process extends Component
 
         $user_id = session('user_id');
         $data['process_types'] = Multi_type_model::where('table_name','process')->get();
-        $data['vendors'] = Customer_model::where('is_vendor',1)->pluck('first_name','id');
+        $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('first_name','id');
         $data['currencies'] = Currency_model::pluck('sign','id');
         $data['order_statuses'] = Order_status_model::get();
         if(request('per_page') != null){

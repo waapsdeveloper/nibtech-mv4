@@ -32,7 +32,7 @@ class Wholesale_return extends Component
         $data['title_page'] = "Bulksale Returns";
         session()->put('page_title', $data['title_page']);
 
-        $data['vendors'] = Customer_model::where('is_vendor','!=',null)->pluck('company','id');
+        $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
 
         $data['latest_reference'] = Order_model::where('order_type_id',4)->orderBy('reference_id','DESC')->first()->reference_id;
         $data['order_statuses'] = Order_status_model::get();
@@ -180,7 +180,7 @@ class Wholesale_return extends Component
         $data['title_page'] = "Return Detail";
         session()->put('page_title', $data['title_page']);
 
-        $data['vendors'] = Customer_model::where('is_vendor',2)->pluck('company','id');
+        $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
         $data['storages'] = Storage_model::pluck('name','id');
         $data['products'] = Products_model::pluck('model','id');
         $data['grades'] = Grade_model::pluck('name','id');

@@ -56,7 +56,7 @@ class Report extends Component
         }
         $data['purchase_status'] = [2 => '(Pending)', 3 => ''];
         $data['purchase_orders'] = Order_model::where('order_type_id',1)->pluck('reference_id','id');
-        $data['vendors'] = Customer_model::where('is_vendor',1)->pluck('first_name','id');
+        $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('first_name','id');
         $data['categories'] = Category_model::pluck('name','id');
         $data['brands'] = Brand_model::pluck('name','id');
         $data['products'] = Products_model::orderBy('model','asc')->get();
@@ -575,7 +575,7 @@ class Report extends Component
         $data['colors'] = Color_model::pluck('name','id');
         $data['grades'] = Grade_model::pluck('name','id');
 
-        $data['vendors'] = Customer_model::where('type',1)->pluck('company','id');
+        $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
         $data['currencies'] = Currency_model::pluck('sign','id');
         $data['order_types'] = Multi_type_model::where('table_name','orders')->pluck('name','id');
 
@@ -889,7 +889,7 @@ class Report extends Component
     private function pnl_by_customer(){
         DB::statement("SET SESSION group_concat_max_len = 1500000;");
 
-        $data['customers'] = Customer_model::where('type',2)->pluck('company','id');
+        $data['customers'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
         $start_date = Carbon::now()->startOfMonth();
         // $start_date = date('Y-m-d 00:00:00',);
         $end_date = date('Y-m-d 23:59:59');
@@ -1034,7 +1034,7 @@ class Report extends Component
     private function pnl_by_vendor(){
         DB::statement("SET SESSION group_concat_max_len = 1500000;");
 
-        $data['vendors'] = Customer_model::where('type',1)->pluck('company','id');
+        $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
         $start_date = Carbon::now()->startOfMonth();
         // $start_date = date('Y-m-d 00:00:00',);
         $end_date = date('Y-m-d 23:59:59');
