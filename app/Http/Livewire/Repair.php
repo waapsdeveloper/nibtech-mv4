@@ -123,6 +123,26 @@ class Repair extends Component
             $data['sent_stock_summery'] = $result;
         }
 
+        if (session('user')->hasPermission('view_repair_history') && request('history') == 1) {
+            $process_stocks = Process_stock_model::where('status',2)->whereHas('process', function($q){
+                $q->where('process_type_id',9)
+                ->when(request('repairer_id'), function ($q) {
+                    return $q->where('customer_id', request('repairer_id'));
+                })
+                ->when(request('start_date'), function ($q) {
+                    return $q->where('updated_at', '>=', request('start_date'));
+                })
+                ->when(request('end_date'), function ($q) {
+                    return $q->where('updated_at', '<=', request('end_date') . " 23:59:59");
+                });
+            })->orderBy('updated_at','desc')->paginate($per_page)->onEachSide(5)->appends(request()->except('page'));
+
+            $data['received_stocks'] = $process_stocks;
+
+        }
+
+
+
         // dd($data['orders']);
         return view('livewire.repair')->with($data);
     }

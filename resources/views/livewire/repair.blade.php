@@ -83,7 +83,13 @@
                 <a href="{{url('repair')}}?status=2" class="btn btn-link @if (request('status') == 2) bg-white @endif ">Shipped</a>
                 <a href="{{url('repair')}}?status=3" class="btn btn-link @if (request('status') == 3) bg-white @endif ">Closed</a>
                 <a href="{{url('repair')}}" class="btn btn-link @if (!request('status')) bg-white @endif ">All</a>
+
+                @if (session('user')->hasPermission('view_repair_summery'))
                 <a href="{{url('repair')}}?summery=1" class="btn btn-link @if (request('summery') == 1) bg-white @endif ">Summery</a>
+                @endif
+                @if (session('user')->hasPermission('view_repair_history'))
+                <a href="{{url('repair')}}?history=1" class="btn btn-link @if (request('history') == 1) bg-white @endif ">History</a>
+                @endif
             </div>
             <div class="">
             </div>
@@ -212,6 +218,55 @@
                 </table>
             </div>
         </div>
+        @elseif (session('user')->hasPermission('view_repair_history') && request('history') && request('history') == 1)
+        <div class="card" id="print_inv">
+            <div class="card-header pb-0 d-flex justify-content-between">
+                <h4 class="card-title">Repair Received Stock History</h4>
+            </div>
+            <div class="card-body"><div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                    <thead>
+                        <tr>
+                            <th><small><b>No</b></small></th>
+                            <th><small><b>Model</b></small></th>
+                            <th><small><b>IMEI</b></small></th>
+                            <th><small><b>Charge</b></small></th>
+                            <th><small><b>Repairer</b></small></th>
+                            <th><small><b>Creation Date</b></small></th>
+                            <th><small><b>Update Date</b></small></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                            $i = 0;
+                        @endphp
+                        @foreach ($received_stocks as $p_stock)
+                            @php
+                                $stock = $p_stock->stock;
+                                $variation = $stock->variation;
+                                $product = $variation->product->model ?? null;
+                                $storage = $variation->storage_id->name ?? null;
+                                $color = $variation->color_id->name ?? null;
+                                $grade = $variation->grade_id->name ?? null;
+
+                            @endphp
+
+                            <tr>
+                                <td>{{ ++$i }}</td>
+                                <td>{{ $product." ".$storage." ".$color." ".$grade }}</td>
+                                <td>{{ $stock->imei.$stock->serial_number }}</td>
+                                <td>{{ amount_formatter($p_stock->price,2) }}</td>
+                                <td>{{ $repairers[$p_stock->customer_id] ?? null }}</td>
+                                <td>{{ $p_stock->created_at }}</td>
+                                <td>{{ $p_stock->updated_at }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
         @else
                 <div class="card">
                     <div class="card-header pb-0">
