@@ -70,6 +70,11 @@ class Customer extends Component
 
     public function profile($id)
     {
+        if(str_contains(url()->previous(),url('customer')) && !str_contains(url()->previous(),'profile')){
+            session()->put('previous', url()->previous());
+        }
+        $data['title_page'] = "Customer Profile";
+        session()->put('page_title', $data['title_page']);
         $customer = Customer_model::find($id);
         $orders = Order_model::with(['order_items.variation', 'order_items.variation.grade_id', 'order_items.stock'])
         ->withCount('order_items')->withSum('order_items','price')
