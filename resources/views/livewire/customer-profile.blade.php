@@ -45,7 +45,7 @@
                     <li class="breadcrumb-item tx-15"><a href="{{ session('previous')}}">Customers</a></li>
                     <li class="breadcrumb-item active" aria-current="page">{{ $customer->company }}</li>
                 </ol>
-                <form method="GET" action="" class="form-inline">
+                <form method="GET" action="" class="form-inline align-self-center">
                     <div class="form-floating">
                         <input type="date" class="form-control" name="start_date" value="{{ request('start_date') }}">
                         <label for="start_date">Start Date</label>
