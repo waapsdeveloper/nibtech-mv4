@@ -39,10 +39,9 @@
                 </ol>
 
                 <div>
-                    <h5> Total Orders: {{ $orders->count() }} </h5>
-                    <h5> Total Repairs: {{ $repairs->count() }} </h5>
-                    <h5> Total Items: {{ $orders->sum('order_items_count') }} </h5>
-                    <h5> Total Price: {{ $orders->sum('order_items_sum_price') }} </h5>
+                    <h6> Total Orders: {{ $orders->count() }} </h6>
+                    <h6> Total Repairs: {{ $repairs->count() }} </h6>
+
                 </div>
                 <div class="btn-group position-absolute bottom-0 end-0" role="group" aria-label="Basic example">
                     <a href="{{url('customer/profile').'/'.$customer->id}}?page=orders" class="btn btn-link @if (request('page') == 'orders') bg-white @endif ">All&nbsp;Orders</a>
@@ -192,6 +191,7 @@
                                             <th><small><b>No</b></small></th>
                                             <th><small><b>Batch ID</b></small></th>
                                             <th><small><b>Type</b></small></th>
+                                            <th><small><b>Reference</b></small></th>
                                             <th><small><b>Qty</b></small></th>
                                             <th><small><b>Value</b></small></th>
                                             <th><small><b>Creation Date</b></small></th>
@@ -233,6 +233,7 @@
                                                         @endif
                                                     </td>
                                                     <td>{{ $order->order_type->name }}</td>
+                                                    <td>{{ $order->reference }}</td>
                                                     <td>{{ $order->order_items_count }}</td>
                                                     @if (session('user')->hasPermission('view_price'))
                                                     <td>€{{ amount_formatter($price,2) }}</td>
