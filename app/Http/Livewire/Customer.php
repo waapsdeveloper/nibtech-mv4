@@ -127,7 +127,7 @@ class Customer extends Component
         }
         if($total_ws_orders > 0){
             $data['totals'][] = [
-                'type' => 'WS',
+                'type' => 'Sale',
                 'total_price' => $total_ws,
                 'total_items' => $total_ws_items,
                 'total_orders' => $total_ws_orders,
@@ -135,7 +135,7 @@ class Customer extends Component
         }
         if($total_ws_return_orders > 0){
             $data['totals'][] = [
-                'type' => 'WS Return',
+                'type' => 'Return',
                 'total_price' => $total_ws_return,
                 'total_items' => $total_ws_return_items,
                 'total_orders' => $total_ws_return_orders,
