@@ -54,7 +54,7 @@
                         <input type="date" class="form-control" name="end_date" value="{{ request('end_date') }}">
                         <label for="end_date">End Date</label>
                     </div>
-                    <button type="submit" class="btn btn-primary">Search</button>
+                    <button type="submit" class="btn btn-primary">Filter</button>
                 </form>
 
                 <div class="btn-group position-absolute bottom-0 end-0" role="group" aria-label="Basic example">
