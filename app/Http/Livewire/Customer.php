@@ -112,40 +112,40 @@ class Customer extends Component
         if($total_purchase_orders > 0){
             $data['totals'][] = [
                 'type' => 'Purchase',
-                'price' => $total_purchase,
-                'items' => $total_purchase_items,
-                'orders' => $total_purchase_orders,
+                'total_price' => $total_purchase,
+                'total_items' => $total_purchase_items,
+                'total_orders' => $total_purchase_orders,
             ];
         }
         if($total_rma_orders > 0){
             $data['totals'][] = [
                 'type' => 'RMA',
-                'price' => $total_rma,
-                'items' => $total_rma_items,
-                'orders' => $total_rma_orders,
+                'total_price' => $total_rma,
+                'total_items' => $total_rma_items,
+                'total_orders' => $total_rma_orders,
             ];
         }
         if($total_ws_orders > 0){
             $data['totals'][] = [
                 'type' => 'WS',
-                'price' => $total_ws,
-                'items' => $total_ws_items,
-                'orders' => $total_ws_orders,
+                'total_price' => $total_ws,
+                'total_items' => $total_ws_items,
+                'total_orders' => $total_ws_orders,
             ];
         }
         if($total_ws_return_orders > 0){
             $data['totals'][] = [
                 'type' => 'WS Return',
-                'price' => $total_ws_return,
-                'items' => $total_ws_return_items,
-                'orders' => $total_ws_return_orders,
+                'total_price' => $total_ws_return,
+                'total_items' => $total_ws_return_items,
+                'total_orders' => $total_ws_return_orders,
             ];
         }
         $data['totals'][] = [
             'type' => 'Total',
-            'price' => - $total_purchase + $total_rma + $total_ws - $total_ws_return,
-            'items' => - $total_purchase_items + $total_rma_items + $total_ws_items - $total_ws_return_items,
-            'orders' => $total_purchase_orders + $total_rma_orders + $total_ws_orders + $total_ws_return_orders,
+            'total_price' => - $total_purchase + $total_rma + $total_ws - $total_ws_return,
+            'total_items' => - $total_purchase_items + $total_rma_items + $total_ws_items - $total_ws_return_items,
+            'total_orders' => $total_purchase_orders + $total_rma_orders + $total_ws_orders + $total_ws_return_orders,
         ];
         // $total_order_price = $orders->sum('order_items_sum_price');
         // $total_order_items = $orders->sum('order_items');
