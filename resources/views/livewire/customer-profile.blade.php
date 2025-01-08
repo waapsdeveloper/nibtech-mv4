@@ -31,8 +31,12 @@
                 <h6>{{ $customer->vat }}</h6>
             </div>
             <div>
-                @foreach($totals as $key => $value)
-                    <div>{{ $key }}: {{ $value }}</div>
+                @foreach($totals as $total)
+                    <div>{{ $total['type'] }}:
+                        Total Price: {{ $total['total_price'] }},
+                        Total Items: {{ $total['total_items'] }},
+                        Total Orders: {{ $total['total_orders'] }}
+                    </div>
                 @endforeach
             </div>
             <div class="justify-content-center mt-2 position-relative">
