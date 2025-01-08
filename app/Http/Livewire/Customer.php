@@ -81,11 +81,23 @@ class Customer extends Component
         $customer = Customer_model::find($id);
         $orders = Order_model::with(['order_items.variation', 'order_items.variation.grade_id', 'order_items.stock'])
         ->withCount('order_items')->withSum('order_items','price')
+        ->when(request('start_date') != '', function ($q) {
+            return $q->whereDate('created_at', '>=', request('start_date'));
+        })
+        ->when(request('end_date') != '', function ($q) {
+            return $q->whereDate('created_at', '<=', request('end_date') . ' 23:59:59');
+        })
         ->where('orders.customer_id',$id)
         ->orderBy('orders.created_at', 'desc')
         ->get();
 
         $repairs = Process_model::where('process_type_id', 9)
+        ->when(request('start_date') != '', function ($q) {
+            return $q->whereDate('created_at', '>=', request('start_date'));
+        })
+        ->when(request('end_date') != '', function ($q) {
+            return $q->whereDate('created_at', '<=', request('end_date') . ' 23:59:59');
+        })
         ->where('customer_id', $id)
         ->orderBy('id', 'desc')
         ->get();
