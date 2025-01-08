@@ -31,7 +31,9 @@
                 <h6>{{ $customer->vat }}</h6>
             </div>
             <div>
-                {{ print_r($totals) }}
+                @foreach($totals as $key => $value)
+                    <div>{{ $key }}: {{ $value }}</div>
+                @endforeach
             </div>
             <div class="justify-content-center mt-2 position-relative">
                 <ol class="breadcrumb">
