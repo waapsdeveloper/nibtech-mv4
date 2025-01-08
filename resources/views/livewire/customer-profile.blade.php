@@ -32,11 +32,11 @@
             </div>
             <div>
                 @foreach($totals as $total)
-                    <div>{{ $total['type'] }}:
+                    <h6>{{ $total['type'] }}:
                         Price: {{ amount_formatter($total['total_price']) }},
                         Items: {{ $total['total_items'] }},
                         Orders: {{ $total['total_orders'] }}
-                    </div>
+                    </h6>
                 @endforeach
             </div>
             <div class="justify-content-center mt-2 position-relative">
