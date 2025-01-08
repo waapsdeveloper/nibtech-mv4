@@ -30,10 +30,10 @@
                 <h6>{{ $customer->postal_code }} {{ $customer->country_id->title ?? null }}</h6>
                 <h6>{{ $customer->vat }}</h6>
             </div>
-            <div class="align-items-center">
+            <div class="align-self-center">
                 @foreach($totals as $total)
                     <h6 class="text-center">{{ $total['type'] }}:
-                        Price: €{{ amount_formatter($total['total_price']) }},
+                        €{{ amount_formatter($total['total_price']) }},
                         Items: {{ $total['total_items'] }},
                         Orders: {{ $total['total_orders'] }}
                     </h6>
@@ -45,6 +45,7 @@
                     <li class="breadcrumb-item tx-15"><a href="{{ session('previous')}}">Customers</a></li>
                     <li class="breadcrumb-item active" aria-current="page">{{ $customer->company }}</li>
                 </ol>
+
 
                 <div class="btn-group position-absolute bottom-0 end-0" role="group" aria-label="Basic example">
                     <a href="{{url('customer/profile').'/'.$customer->id}}?page=orders" class="btn btn-link @if (request('page') == 'orders') bg-white @endif ">All&nbsp;Orders</a>
