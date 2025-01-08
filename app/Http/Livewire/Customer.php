@@ -94,8 +94,8 @@ class Customer extends Component
         $data['orders'] = $orders;
         $data['repairs'] = $repairs;
 
-        $total_order_price = $orders->sum('total_price');
-        $total_order_items = $orders->sum('order_items_count');
+        $total_order_price = $orders->sum('order_items_sum_price');
+        $total_order_items = $orders->sum('order_items');
 
         $data['total_order_price'] = $total_order_price;
         $data['total_order_items'] = $total_order_items;
