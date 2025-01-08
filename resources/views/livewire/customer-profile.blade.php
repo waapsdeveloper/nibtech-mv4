@@ -31,7 +31,7 @@
                 <h6>{{ $customer->vat }}</h6>
             </div>
             <div>
-                {{ $totals }}
+                {{ print_r($totals) }}
             </div>
             <div class="justify-content-center mt-2 position-relative">
                 <ol class="breadcrumb">
