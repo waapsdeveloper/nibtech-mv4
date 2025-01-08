@@ -30,7 +30,7 @@
                 <h6>{{ $customer->postal_code }} {{ $customer->country_id->title ?? null }}</h6>
                 <h6>{{ $customer->vat }}</h6>
             </div>
-            <div>
+            <div class="center-content">
                 @foreach($totals as $total)
                     <h6 class="text-center">{{ $total['type'] }}:
                         Price: €{{ amount_formatter($total['total_price']) }},
