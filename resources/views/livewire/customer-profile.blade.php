@@ -233,7 +233,7 @@
                                                         @endif
                                                     </td>
                                                     <td>{{ $order->order_type->name }}</td>
-                                                    <td title="{{ $order->reference }}">{{ Str::limit($order->reference, 20) }}</td>
+                                                    <td title="{{ $order->reference }}">{{ Str::limit($order->reference, 30) }}</td>
                                                     <td>{{ $order->order_items_count }}</td>
                                                     @if (session('user')->hasPermission('view_price'))
                                                     <td>€{{ amount_formatter($price,2) }}</td>
