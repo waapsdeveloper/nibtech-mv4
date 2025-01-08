@@ -45,7 +45,17 @@
                     <li class="breadcrumb-item tx-15"><a href="{{ session('previous')}}">Customers</a></li>
                     <li class="breadcrumb-item active" aria-current="page">{{ $customer->company }}</li>
                 </ol>
-
+                <form method="GET" action="" class="form-inline">
+                    <div class="form-floating">
+                        <input type="date" class="form-control" name="start_date" value="{{ request('start_date') }}">
+                        <label for="start_date">Start Date</label>
+                    </div>
+                    <div class="form-floating">
+                        <input type="date" class="form-control" name="end_date" value="{{ request('end_date') }}">
+                        <label for="end_date">End Date</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </form>
 
                 <div class="btn-group position-absolute bottom-0 end-0" role="group" aria-label="Basic example">
                     <a href="{{url('customer/profile').'/'.$customer->id}}?page=orders" class="btn btn-link @if (request('page') == 'orders') bg-white @endif ">All&nbsp;Orders</a>
