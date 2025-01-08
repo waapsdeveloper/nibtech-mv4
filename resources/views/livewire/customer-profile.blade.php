@@ -25,11 +25,13 @@
                 <span class="main-content-title mg-b-0 mg-b-lg-1">Customer Profile</span>
                 <h5>{{ $customer->company }}</h5>
                 <h6>{{ $customer->first_name." ".$customer->last_name }}</h6>
-                <h6>{{ $customer->email }}</h6>
-                <h6>{{ $customer->phone }}</h6>
+                <h6>{{ $customer->email }} {{ $customer->phone }}</h6>
                 <h6>{{ $customer->street }} {{ $customer->street2 }} {{ $customer->city }}</h6>
                 <h6>{{ $customer->postal_code }} {{ $customer->country_id->title ?? null }}</h6>
                 <h6>{{ $customer->vat }}</h6>
+            </div>
+            <div>
+                {{ $totals }}
             </div>
             <div class="justify-content-center mt-2 position-relative">
                 <ol class="breadcrumb">
@@ -38,11 +40,6 @@
                     <li class="breadcrumb-item active" aria-current="page">{{ $customer->company }}</li>
                 </ol>
 
-                <div>
-                    <h6> Total Orders: {{ $orders->count() }} </h6>
-                    <h6> Total Repairs: {{ $repairs->count() }} </h6>
-
-                </div>
                 <div class="btn-group position-absolute bottom-0 end-0" role="group" aria-label="Basic example">
                     <a href="{{url('customer/profile').'/'.$customer->id}}?page=orders" class="btn btn-link @if (request('page') == 'orders') bg-white @endif ">All&nbsp;Orders</a>
                     @if (session('user')->hasPermission('view_customer_repairs') && $repairs->count() > 0)

@@ -94,6 +94,59 @@ class Customer extends Component
         $data['orders'] = $orders;
         $data['repairs'] = $repairs;
 
+        $total_purchase = $orders->where('order_type_id', 1)->sum('order_items_sum_price');
+        $total_rma = $orders->where('order_type_id', 2)->sum('order_items_sum_price');
+        $total_ws = $orders->where('order_type_id', 5)->sum('order_items_sum_price');
+        $total_ws_return = $orders->where('order_type_id', 6)->sum('order_items_sum_price');
+
+        $total_purchase_items = $orders->where('order_type_id', 1)->sum('order_items_count');
+        $total_rma_items = $orders->where('order_type_id', 2)->sum('order_items_count');
+        $total_ws_items = $orders->where('order_type_id', 5)->sum('order_items_count');
+        $total_ws_return_items = $orders->where('order_type_id', 6)->sum('order_items_count');
+
+        $total_purchase_orders = $orders->where('order_type_id', 1)->count();
+        $total_rma_orders = $orders->where('order_type_id', 2)->count();
+        $total_ws_orders = $orders->where('order_type_id', 5)->count();
+        $total_ws_return_orders = $orders->where('order_type_id', 6)->count();
+
+        if($total_purchase_orders > 0){
+            $data['totals'][] = [
+                'type' => 'Purchase',
+                'total_price' => $total_purchase,
+                'total_items' => $total_purchase_items,
+                'total_orders' => $total_purchase_orders,
+            ];
+        }
+        if($total_rma_orders > 0){
+            $data['totals'][] = [
+                'type' => 'RMA',
+                'total_price' => $total_rma,
+                'total_items' => $total_rma_items,
+                'total_orders' => $total_rma_orders,
+            ];
+        }
+        if($total_ws_orders > 0){
+            $data['totals'][] = [
+                'type' => 'WS',
+                'total_price' => $total_ws,
+                'total_items' => $total_ws_items,
+                'total_orders' => $total_ws_orders,
+            ];
+        }
+        if($total_ws_return_orders > 0){
+            $data['totals'][] = [
+                'type' => 'WS Return',
+                'total_price' => $total_ws_return,
+                'total_items' => $total_ws_return_items,
+                'total_orders' => $total_ws_return_orders,
+            ];
+        }
+        $data['totals'][] = [
+            'type' => 'Total',
+            'total_price' => $total_purchase + $total_rma + $total_ws + $total_ws_return,
+            'total_items' => $total_purchase_items + $total_rma_items + $total_ws_items + $total_ws_return_items,
+            'total_orders' => $total_purchase_orders + $total_rma_orders + $total_ws_orders + $total_ws_return_orders,
+        ];
         // $total_order_price = $orders->sum('order_items_sum_price');
         // $total_order_items = $orders->sum('order_items');
 
