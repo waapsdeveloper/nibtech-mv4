@@ -41,7 +41,7 @@
                 <div>
                     <h5> Total Orders: {{ $orders->count() }} </h5>
                     <h5> Total Repairs: {{ $repairs->count() }} </h5>
-                    <h5> Total Items: {{ sum($orders->order_items) }} </h5>
+                    <h5> Total Items: {{ $orders->sum('order_items_count') }} </h5>
                     {{-- <h5> Total Price: {{ $total_order_price }} </h5> --}}
                 </div>
                 <div class="btn-group position-absolute bottom-0 end-0" role="group" aria-label="Basic example">
