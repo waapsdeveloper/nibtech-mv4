@@ -33,7 +33,7 @@
             <div>
                 @foreach($totals as $total)
                     <div>{{ $total['type'] }}:
-                        Price: {{ $total['total_price'] }},
+                        Price: {{ amount_formatter($total['total_price']) }},
                         Items: {{ $total['total_items'] }},
                         Orders: {{ $total['total_orders'] }}
                     </div>
