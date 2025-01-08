@@ -297,6 +297,10 @@
                             $duplicates = sizeof($temp_array) != sizeof($stock_imeis);
                             $duplicate_count = sizeof($stock_imeis) - sizeof($temp_array);
 
+                            $total_avg = 0;
+                            if($summery['quantity'] > 0){
+                                $total_avg = $summery['total_cost']/$summery['quantity'];
+                            }
                             $remaining_avg = 0;
                             if($summery['remaining_quantity'] > 0){
                                 $remaining_avg = $summery['remaining_total_cost']/$summery['remaining_quantity'];
@@ -312,7 +316,7 @@
                                 @endif
                                 </td>
                                 <td
-                                title="{{ amount_formatter($summery['total_cost']/$summery['quantity']) }}"
+                                title="{{ amount_formatter($total_avg) }}"
                                 >{{ amount_formatter($summery['total_cost'],2) }}</td>
                                 <td title="{{json_encode($summery['remaining_stock_ids'])}}">
                                     <a id="test2{{$i}}" href="javascript:void(0)">{{ $summery['remaining_quantity'] }}</a>
