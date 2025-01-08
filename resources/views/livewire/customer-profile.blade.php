@@ -42,7 +42,7 @@
                     <h5> Total Orders: {{ $orders->count() }} </h5>
                     <h5> Total Repairs: {{ $repairs->count() }} </h5>
                     <h5> Total Items: {{ $orders->sum('order_items_count') }} </h5>
-                    {{-- <h5> Total Price: {{ $total_order_price }} </h5> --}}
+                    <h5> Total Price: {{ $orders->sum('order_items_sum_price') }} </h5>
                 </div>
                 <div class="btn-group position-absolute bottom-0 end-0" role="group" aria-label="Basic example">
                     <a href="{{url('customer/profile').'/'.$customer->id}}?page=orders" class="btn btn-link @if (request('page') == 'orders') bg-white @endif ">All&nbsp;Orders</a>
