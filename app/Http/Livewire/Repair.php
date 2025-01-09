@@ -83,7 +83,19 @@ class Repair extends Component
 
         if (session('user')->hasPermission('view_repair_summery') && request('summery') == 1) {
 
-            $processes = Process_model::where('process_type_id',9)->where('status',2)->get();
+            $processes = Process_model::where('process_type_id',9)
+            ->when(request('start_date'), function ($q) {
+                return $q->where('created_at', '>=', request('start_date'));
+            })
+            ->when(request('end_date'), function ($q) {
+                return $q->where('created_at', '<=', request('end_date') . " 23:59:59");
+            })
+            ->when(request('reference_id'), function ($q) {
+                return $q->where('reference_id', 'LIKE', request('reference_id') . '%');
+            })
+            ->when(request('repairer_id'), function ($q) {
+                return $q->where('customer_id', request('repairer_id'));
+            })->where('status',2)->get();
             $process_ids = $processes->pluck('id');
             $all_stock_ids = Process_stock_model::whereIn('process_id',$process_ids)->where('status',1)->pluck('stock_id')->unique()->toArray();
             if(request('end_date') != null){
