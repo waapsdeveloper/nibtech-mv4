@@ -251,6 +251,7 @@
                             <th><small><b>No</b></small></th>
                             <th><small><b>Model</b></small></th>
                             <th><small><b>IMEI</b></small></th>
+                            <th><small><b>Cost</b></small></th>
                             <th><small><b>Charge</b></small></th>
                             <th><small><b>Repairer</b></small></th>
                             <th><small><b>Creation Date</b></small></th>
@@ -270,12 +271,14 @@
                                 $color = $variation->color_id->name ?? null;
                                 $grade = $variation->grade_id->name ?? null;
 
+                                $cost = $stock->purchase_item->price ?? null;
                             @endphp
 
                             <tr>
                                 <td>{{ ++$i }}</td>
                                 <td>{{ $product." ".$storage." ".$color." ".$grade }}</td>
                                 <td>{{ $stock->imei.$stock->serial_number }}</td>
+                                <td>{{ amount_formatter($cost,2) }}</td>
                                 <td>{{ amount_formatter($p_stock->price,2) }}</td>
                                 <td>{{ $repairers[$p_stock->process->customer_id] ?? null }}</td>
                                 <td>{{ $p_stock->created_at }}</td>
