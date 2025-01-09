@@ -86,7 +86,10 @@ class Repair extends Component
             $processes = Process_model::where('process_type_id',9)->where('status',2)->get();
             $process_ids = $processes->pluck('id');
             $all_stock_ids = Process_stock_model::whereIn('process_id',$process_ids)->where('status',1)->pluck('stock_id')->unique()->toArray();
-
+            if(request('end_date') != null){
+                $repaired_stock_ids = Process_stock_model::whereIn('process_id',$process_ids)->where('status',2)->where('updated_at','>=',request('end_date'))->pluck('stock_id')->unique()->toArray();
+                $all_stock_ids += $repaired_stock_ids;
+            }
 
             $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q) use ($all_stock_ids){
                 $q->whereIn('stock.id', $all_stock_ids)->where('stock.deleted_at',null);
