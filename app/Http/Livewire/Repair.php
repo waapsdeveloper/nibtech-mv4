@@ -100,6 +100,7 @@ class Repair extends Component
             $all_stock_ids = Process_stock_model::whereIn('process_id',$process_ids)->where('status',1)->pluck('stock_id')->unique()->toArray();
             if(request('end_date') != null){
                 $repaired_stock_ids = Process_stock_model::whereIn('process_id',$process_ids)->where('status',2)->where('updated_at','>',request('end_date'))->pluck('stock_id')->unique()->toArray();
+                dd($repaired_stock_ids);
                 $all_stock_ids += $repaired_stock_ids;
             }
 
