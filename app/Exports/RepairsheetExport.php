@@ -63,7 +63,8 @@ class RepairsheetExport implements FromCollection, WithHeadings
                 'stock.serial_number as serial_number',
                 'stock_operations.description as issue', // Corrected duplicated issue field
                 'admin2.first_name as admin_name',
-                'order_items.price as price'
+                'order_items.price as price',
+                DB::raw('order_items.price * orders.exchange_rate as ex_price'),
             )
             ->where('process.id', request('id'))
             ->where('p_stock.status', 1)
@@ -91,6 +92,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
             'Issue',
             'Admin',
             'Price',
+            'Exchange Price',
         ];
     }
 }
