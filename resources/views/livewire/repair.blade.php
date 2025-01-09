@@ -261,6 +261,7 @@
                     <tbody>
                         @php
                             $i = 0;
+                            $total_cost = 0;
                         @endphp
                         @foreach ($received_stocks as $p_stock)
                             @php
@@ -272,6 +273,7 @@
                                 $grade = $variation->grade_id->name ?? null;
 
                                 $cost = $stock->purchase_item->price ?? null;
+                                $total_cost += $cost;
                             @endphp
 
                             <tr>
@@ -286,6 +288,15 @@
                             </tr>
                         @endforeach
                     </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3"><b>Total</b></td>
+                            <td><b>{{ amount_formatter($total_cost,2) }}</b></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
                 </table>
                 <br>
                 {{ $received_stocks->onEachSide(1)->links() }} {{ __('locale.From') }} {{$received_stocks->firstItem()}} {{ __('locale.To') }} {{$received_stocks->lastItem()}} {{ __('locale.Out Of') }} {{$received_stocks->total()}}
