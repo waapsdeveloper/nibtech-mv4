@@ -964,6 +964,19 @@ class Order extends Component
         $imei = array_search('imei', $arrayLower);
         // echo $imei;
         $cost = array_search('cost', $arrayLower);
+        if(!$name){
+            session()->put('error', "Heading not Found(name)");
+            return redirect()->back();
+        }
+        if(!$imei){
+            session()->put('error', "Heading not Found(imei)");
+            return redirect()->back();
+        }
+        if(!$cost){
+            session()->put('error', "Heading not Found(cost)");
+            return redirect()->back();
+        }
+
         if(!$name || !$imei || !$cost){
             print_r($dh);
             session()->put('error', "Heading not Found(name, imei, cost)");
