@@ -958,6 +958,7 @@ class Order extends Component
         // print_r($dh);
         unset($data[0]);
         $arrayLower = array_map('strtolower', $dh);
+        $arrayLower = array_map('trim', $arrayLower);
         // Search for the lowercase version of the search value in the lowercase array
         $name = array_search('name', $arrayLower);
         // echo $name;
