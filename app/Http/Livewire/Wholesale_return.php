@@ -1,7 +1,9 @@
 <?php
 
 namespace App\Http\Livewire;
-    use Livewire\Component;
+
+use App\Models\Account_transaction_model;
+use Livewire\Component;
     use App\Models\Variation_model;
     use App\Models\Products_model;
     use App\Models\Stock_model;
@@ -106,6 +108,22 @@ class Wholesale_return extends Component
         $order->tracking_number = request('tracking_number');
         $order->status = 3;
         $order->save();
+
+
+        $transaction = Account_transaction_model::firstOrNew(['order_id'=>$order_id]);
+        if($transaction->id == null && $order->status == 3){
+            $transaction->amount = $order->order_items->sum('price');
+            $transaction->currency = $order->currency;
+            $transaction->exchange_rate = $order->exchange_rate;
+            $transaction->customer_id = $order->customer_id;
+            $transaction->transaction_type_id = 1;
+            $transaction->status = 1;
+            $transaction->description = $order->reference;
+            $transaction->reference_id = $order->reference_id;
+            $transaction->creator_id = session('user_id');
+
+            $transaction->save();
+        }
 
         return redirect()->back();
     }

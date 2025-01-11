@@ -4,6 +4,7 @@ namespace App\Http\Livewire;
 
 use App\Exports\PacksheetExport;
 use App\Mail\BulksaleInvoiceMail;
+use App\Models\Account_transaction_model;
 use App\Models\Api_request_model;
 use Livewire\Component;
 use App\Models\Variation_model;
@@ -237,7 +238,23 @@ class RMA extends Component
         $order->status = 3;
         $order->save();
 
-            return redirect()->back();
+
+        $transaction = Account_transaction_model::firstOrNew(['order_id'=>$order_id]);
+        if($transaction->id == null && $order->status == 3){
+            $transaction->amount = $order->order_items->sum('price');
+            $transaction->currency = $order->currency;
+            $transaction->exchange_rate = $order->exchange_rate;
+            $transaction->customer_id = $order->customer_id;
+            $transaction->transaction_type_id = 1;
+            $transaction->status = 1;
+            $transaction->description = $order->reference;
+            $transaction->reference_id = $order->reference_id;
+            $transaction->creator_id = session('user_id');
+
+            $transaction->save();
+        }
+
+        return redirect()->back();
     }
     public function rma_revert_status($order_id){
         $order = Order_model::find($order_id);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Models\Account_transaction_model;
 use App\Models\Country_model;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -214,7 +215,15 @@ class Customer extends Component
 
         }
 
+        if(session('user')->hasPermission('view_customer_transactions') && request('page') == 'transactions'){
 
+            $transactions = Account_transaction_model::where('customer_id',$id)->orderBy('id','desc')->get();
+            $data['transactions'] = $transactions;
+
+
+
+
+        }
 
 
 

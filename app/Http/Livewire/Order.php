@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\DB;
     use Maatwebsite\Excel\Facades\Excel;
     use TCPDF;
     use App\Mail\InvoiceMail;
+use App\Models\Account_transaction_model;
 use App\Models\Color_model;
 use App\Models\Grade_model;
 use App\Models\Order_issue_model;
@@ -501,6 +502,21 @@ class Order extends Component
             $order->processed_at = now()->format('Y-m-d H:i:s');
         }
         $order->save();
+
+        $transaction = Account_transaction_model::firstOrNew(['order_id'=>$order_id]);
+        if($transaction->id == null && $order->status == 3){
+            $transaction->amount = $order->order_items->sum('price');
+            $transaction->currency = $order->currency;
+            $transaction->exchange_rate = $order->exchange_rate;
+            $transaction->customer_id = $order->customer_id;
+            $transaction->transaction_type_id = 1;
+            $transaction->status = 1;
+            $transaction->description = $order->reference;
+            $transaction->reference_id = $order->reference_id;
+            $transaction->creator_id = session('user_id');
+
+            $transaction->save();
+        }
 
         if(request('approve') == 1){
             return redirect()->back();
