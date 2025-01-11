@@ -214,7 +214,7 @@ class Repair extends Component
             $transaction->currency = $repair->currency;
             $transaction->exchange_rate = $repair->exchange_rate;
             $transaction->customer_id = $repair->customer_id;
-            $transaction->transaction_type_id = 1;
+            $transaction->transaction_type_id = 2;
             $transaction->status = 1;
             $transaction->description = $repair->reference;
             $transaction->reference_id = $repair->reference_id;

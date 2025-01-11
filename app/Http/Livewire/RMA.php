@@ -245,7 +245,7 @@ class RMA extends Component
             $transaction->currency = $order->currency;
             $transaction->exchange_rate = $order->exchange_rate;
             $transaction->customer_id = $order->customer_id;
-            $transaction->transaction_type_id = 1;
+            $transaction->transaction_type_id = 2;
             $transaction->status = 1;
             $transaction->description = $order->reference;
             $transaction->reference_id = $order->reference_id;
