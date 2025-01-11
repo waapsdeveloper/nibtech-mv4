@@ -219,6 +219,7 @@ class Repair extends Component
             $transaction->description = $repair->reference;
             $transaction->reference_id = $repair->reference_id;
             $transaction->created_by = session('user_id');
+            $transaction->created_at = $repair->created_at;
 
             $transaction->save();
         }
