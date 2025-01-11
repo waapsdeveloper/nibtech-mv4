@@ -33,7 +33,9 @@
             <div class="align-self-center">
                 @foreach($totals as $total)
                     <h6 class="text-center">{{ $total['type'] }}:
-                        €{{ amount_formatter($total['total_price']) }},     Items: {{ $total['total_items'] }},     Orders: {{ $total['total_orders'] }}
+                        €{{ amount_formatter($total['total_price']) }},
+                        Items: {{ $total['total_items'] }},
+                        Orders: {{ $total['total_orders'] }}
                     </h6>
                 @endforeach
             </div>
