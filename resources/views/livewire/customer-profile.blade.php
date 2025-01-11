@@ -18,7 +18,6 @@
     @endsection
     @section('content')
 
-
         <!-- breadcrumb -->
         <div class="breadcrumb-header justify-content-between mb-0">
             <div class="left-content">
@@ -104,9 +103,7 @@
                         <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
                         <input type="hidden" name="color" value="{{ Request::get('color') }}">
                         @if (Request::get('grade'))
-
                         @foreach (Request::get('grade') as $grd)
-
                             <input type="hidden" name="grade[]" value="{{ $grd }}">
                         @endforeach
                         @endif
@@ -133,13 +130,6 @@
                             @foreach ($sent_stock_summery as $summery)
 
                             @php
-                                // print_r($summery);
-                                // continue;
-                                // if($summery['storage'] > 0){
-                                //     $storage = $storages[$summery['storage']];
-                                // }else{
-                                //     $storage = null;
-                                // }
                                 $total_quantity += $summery['quantity'];
                                 $total_cost += $summery['total_cost'];
                                 $stock_imeis = $summery['stock_imeis'];
@@ -150,8 +140,6 @@
                             @endphp
                                 <tr>
                                     <td>{{ ++$i }}</td>
-                                    {{-- <td>{{ $products[$summery['product_id']]." ".$storage }}</td> --}}
-                                    {{-- <td><button class="btn py-0 btn-link" type="submit" form="search_summery" name="pss" value="{{$summery['pss_id']}}">{{ $summery['model'] }}</button></td> --}}
                                     <td>{{ $summery['model'] }}</td>
                                     <td title="{{json_encode($summery['stock_ids'])}}"><a id="test{{$i}}" href="javascript:void(0)">{{ $summery['quantity'] }}</a>
                                     @if ($duplicates)
@@ -191,6 +179,35 @@
                 </div>
             </div>
         {{-- @elseif (session('user')->hasPermission('view_customer_orders') && request('page') == 'orders') --}}
+        @elseif (session('user')->hasPermission('view_customer_transactions') && request('page') == 'transactions')
+            <div class="row">
+                <div class="col-xl-12">
+                    <div class="card">
+                        <div class="card-header pb-0">
+                            <h5 class="card-title mg-b-0"> Customer Transactions </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                                    <thead>
+                                        <tr>
+                                            <th><small><b>No</b></small></th>
+                                            <th><small><b>Batch ID</b></small></th>
+                                            <th><small><b>Type</b></small></th>
+                                            <th><small><b>Reference</b></small></th>
+                                            <th><small><b>Qty</b></small></th>
+                                            <th><small><b>Value</b></small></th>
+                                            <th><small><b>Creation Date</b></small></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         @else
             <div class="row">
                 <div class="col-xl-12">
