@@ -1030,12 +1030,12 @@ class Order extends Component
             // print_r($d);
             $n = trim($d[$name]);
             $c = $d[$cost];
-            if(ctype_digit($d[$imei])){
-                $i = $d[$imei];
+            if(ctype_digit(trim($d[$imei]))){
+                $i = trim($d[$imei]);
                 $s = null;
             }else{
                 $i = null;
-                $s = $d[$imei];
+                $s = trim($d[$imei]);
             }
             $names = explode(" ",$n);
             $last = end($names);
