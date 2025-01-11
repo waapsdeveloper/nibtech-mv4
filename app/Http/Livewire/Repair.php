@@ -216,7 +216,7 @@ class Repair extends Component
             $transaction->customer_id = $repair->customer_id;
             $transaction->transaction_type_id = 2;
             $transaction->status = 1;
-            $transaction->description = $repair->reference;
+            $transaction->description = $repair->description;
             $transaction->reference_id = $repair->reference_id;
             $transaction->created_by = session('user_id');
             $transaction->created_at = $repair->created_at;
