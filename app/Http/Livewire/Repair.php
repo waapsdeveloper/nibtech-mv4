@@ -23,6 +23,7 @@ use App\Exports\RepairsheetExport;
 use Maatwebsite\Excel\Facades\Excel;
     use TCPDF;
     use App\Mail\InvoiceMail;
+use App\Models\Account_transaction_model;
 use App\Models\Api_request_model;
 use App\Models\Color_model;
 use App\Models\ExchangeRate;
@@ -205,6 +206,22 @@ class Repair extends Component
         }
         $repair->status = 3;
         $repair->save();
+
+
+        $transaction = Account_transaction_model::firstOrNew(['process_id'=>$repair_id]);
+        if($transaction->id == null && $repair->status == 3){
+            $transaction->amount = $repair->process_stocks->sum('price');
+            $transaction->currency = $repair->currency;
+            $transaction->exchange_rate = $repair->exchange_rate;
+            $transaction->customer_id = $repair->customer_id;
+            $transaction->transaction_type_id = 1;
+            $transaction->status = 1;
+            $transaction->description = $repair->reference;
+            $transaction->reference_id = $repair->reference_id;
+            $transaction->creator_id = session('user_id');
+
+            $transaction->save();
+        }
 
         return redirect()->back();
     }

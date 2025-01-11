@@ -4,6 +4,7 @@ namespace App\Http\Livewire;
 
 use App\Exports\PacksheetExport;
 use App\Mail\BulksaleInvoiceMail;
+use App\Models\Account_transaction_model;
 use App\Models\Brand_model;
 use App\Models\Category_model;
 use Livewire\Component;
@@ -151,11 +152,27 @@ class Wholesale extends Component
         }
         $order->save();
 
+        $transaction = Account_transaction_model::firstOrNew(['order_id'=>$order_id]);
+        if($transaction->id == null && $order->status == 3){
+            $transaction->amount = $order->order_items->sum('price');
+            $transaction->currency = $order->currency;
+            $transaction->exchange_rate = $order->exchange_rate;
+            $transaction->customer_id = $order->customer_id;
+            $transaction->transaction_type_id = 1;
+            $transaction->status = 1;
+            $transaction->description = $order->reference;
+            $transaction->reference_id = $order->reference_id;
+            $transaction->creator_id = session('user_id');
+
+            $transaction->save();
+        }
+
         if(request('approve') == 1){
             return redirect()->back();
         }else{
             return "Updated";
         }
+
     }
     public function wholesale_revert_status($order_id){
         $order = Order_model::find($order_id);
