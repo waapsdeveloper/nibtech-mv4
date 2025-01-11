@@ -101,7 +101,7 @@
                     <form class="form-inline" method="POST" action="{{url('repair/approve').'/'.$process->id}}">
                         @csrf
                         <div class="form-floating">
-                            <input type="text" class="form-control" id="cost" name="cost" placeholder="Enter Total Cost" required>
+                            <input type="text" class="form-control" id="cost" name="cost" value="{{$process->process_stocks->sum('price')}}" placeholder="Enter Total Cost" required>
                             <label for="cost">Total Cost</label>
                         </div>
                         <button type="submit" class="btn btn-success">Close</button>
