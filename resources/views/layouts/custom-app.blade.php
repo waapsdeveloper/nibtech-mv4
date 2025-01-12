@@ -16,7 +16,7 @@
         <style>
 
             :root {
-                    --primary-bg-color: {{ env('PRIMARY_BG_COLOR') ?? '#052468' }};
+                    --primary-bg-color: #{{ env('PRIMARY_BG_COLOR') ?? '052468' }};
             }
 
         </style>
