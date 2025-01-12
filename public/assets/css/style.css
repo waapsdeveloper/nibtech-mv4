@@ -1,5 +1,6 @@
 @import url(https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap);
 @charset "UTF-8";
+
 /*------------------------------------------------------------------
 [Master Stylesheet]
 
@@ -14079,7 +14080,7 @@ a.tag-addon:hover {
 }
 
 :root {
-    --primary-bg-color: #052468;
+    --primary-bg-color: {{ env('APP_BG_COLOR') ?? '#052468' }};
     --primary-bg-hover: #143272;
     --primary-bg-border: #436bc1;
   --primary02: rgba(28, 213, 174, 0.2);
