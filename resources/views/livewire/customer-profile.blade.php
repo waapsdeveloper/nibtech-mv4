@@ -217,7 +217,7 @@
                                                 <td>{{ $i += 1 }}</td>
                                                 <td>{{ $transaction->reference_id }}</td>
                                                 <td>{{ $transaction->transaction_type->name }}</td>
-                                                <td>{{ $transaction->batch_id }}</td>
+                                                <td>{{ $transaction->batch->reference_id }}</td>
                                                 <td>{{ $batch->order_type->name ?? null }}{{$batch->process_type->name ?? null}}</td>
                                                 <td>{{ $transaction->description }}</td>
                                                 <td>€{{ amount_formatter($transaction->amount,2) }}</td>
