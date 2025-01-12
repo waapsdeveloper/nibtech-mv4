@@ -12,11 +12,15 @@
 		<!-- Title -->
 		<title> {{ env('APP_NAME') }} – Admin Penal </title>
 
+        @php
+            $primary_bg_color = env('PRIMARY_BG_COLOR') ?? '#052468';
+        @endphp
+
 		@include('layouts.components.custom-styles')
         <style>
 
             :root {
-                    --primary-bg-color: {{ env('PRIMARY_BG_COLOR') ?? '#052468' }};
+                    --primary-bg-color: {{ $primary_bg_color }};
             }
 
         </style>
