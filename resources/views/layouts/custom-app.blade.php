@@ -12,19 +12,17 @@
 		<!-- Title -->
 		<title> {{ env('APP_NAME') }} – Admin Penal </title>
 
+		@include('layouts.components.custom-styles')
         @php
             $primary_bg_color = env('PRIMARY_BG_COLOR') ?? '#052468';
         @endphp
 
-		@include('layouts.components.custom-styles')
-        <style>
-            $primary-bg-color: {{ $primary_bg_color }};
-
-            :root {
-                    --primary-bg-color: $primary-bg-color;
-            }
-
-        </style>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+            var primaryBgColor = '{{ $primary_bg_color }}';
+            document.documentElement.style.setProperty('--primary-bg-color', primaryBgColor);
+            });
+        </script>
 
     </head>
 	<body class="ltr error-page1">
