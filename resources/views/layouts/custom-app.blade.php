@@ -17,6 +17,8 @@
 
             :root {
                     --primary-bg-color: #{{ env('PRIMARY_BG_COLOR', '052468') }};
+                    --primary-color: #{{ env('PRIMARY_COLOR', '052468') }};
+                    --primary-bg-hover: #{{ env('PRIMARY_BG_HOVER', '143272') }};
             }
 
         </style>
