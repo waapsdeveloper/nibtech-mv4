@@ -13,6 +13,13 @@
 		<title> {{ env('APP_NAME') }} – Admin Penal </title>
 
 		@include('layouts.components.custom-styles')
+        <style>
+
+            :root {
+                    --primary-bg-color: {{ env('PRIMARY_BG_COLOR') ?? '#052468' }};
+            }
+
+        </style>
 
     </head>
 	<body class="ltr error-page1">
