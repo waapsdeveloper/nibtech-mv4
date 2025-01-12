@@ -218,8 +218,11 @@ class Repair extends Component
             $transaction->description = $repair->description;
             $transaction->reference_id = $repair->reference_id;
             $transaction->created_by = session('user_id');
-            $transaction->created_at = $repair->updated_at;
+            // $transaction->created_at = $order->created_at;
 
+            $transaction->save();
+        }elseif($transaction->id != null && $repair->status == 3){
+            $transaction->status = 2;
             $transaction->save();
         }
 
