@@ -19,7 +19,7 @@
 
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-            var primaryBgColor = '{{ $primary_bg_color }}';
+            var primaryBgColor = {{ $primary_bg_color }};
             document.documentElement.style.setProperty('--primary-bg-color', primaryBgColor);
             });
         </script>
