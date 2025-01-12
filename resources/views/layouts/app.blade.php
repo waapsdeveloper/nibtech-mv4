@@ -21,6 +21,9 @@
         @include('layouts.components.styles')
         <style>
 
+            :root {
+                    --primary-bg-color: {{ env('PRIMARY_BG_COLOR') }};
+            }
             .form-floating>.form-control,
             .form-floating>.form-control-plaintext {
             padding: 0rem 0.75rem;
