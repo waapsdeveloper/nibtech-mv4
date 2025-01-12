@@ -207,7 +207,6 @@ class Repair extends Component
         $repair->status = 3;
         $repair->save();
 
-
         $transaction = Account_transaction_model::firstOrNew(['process_id'=>$repair_id]);
         if($transaction->id == null && $repair->status == 3){
             $transaction->amount = $repair->process_stocks->sum('price');
@@ -219,7 +218,7 @@ class Repair extends Component
             $transaction->description = $repair->description;
             $transaction->reference_id = $repair->reference_id;
             $transaction->created_by = session('user_id');
-            $transaction->created_at = $repair->created_at;
+            $transaction->created_at = $repair->updated_at;
 
             $transaction->save();
         }
