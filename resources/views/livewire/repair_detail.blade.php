@@ -422,7 +422,7 @@
                                             </td>
                                             <td>{{ $item->latest_operation->description ?? null }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
-                                            <td>{{ $currency.amount_formatter($item->purchase_item->price,2) }}</td>
+                                            <td>{{ $currency.amount_formatter($item->purchase_item->price,2) ?? "Cost not found" }}</td>
                                             @endif
                                             <td style="width:220px">{{ $item->created_at }}</td>
                                         </tr>
