@@ -22,7 +22,7 @@
         <style>
 
             :root {
-                    --primary-bg-color: {{ env('PRIMARY_BG_COLOR') ?? '#052468' }};
+                    --primary-bg-color: #{{ env('PRIMARY_BG_COLOR', '052468') }};
             }
             .form-floating>.form-control,
             .form-floating>.form-control-plaintext {
