@@ -18,11 +18,9 @@
 
 		@include('layouts.components.custom-styles')
         <style>
-
             :root {
-                    --primary-bg-color: <?php echo $primary_bg_color; ?>;
+                --primary-bg-color: {{ $primary_bg_color }};
             }
-
         </style>
 
     </head>
