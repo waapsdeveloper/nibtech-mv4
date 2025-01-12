@@ -18,9 +18,12 @@
 
 		@include('layouts.components.custom-styles')
         <style>
+            $primary-bg-color: {{ $primary_bg_color }};
+
             :root {
-                --primary-bg-color: {{ $primary_bg_color }};
+                    --primary-bg-color: $primary-bg-color;
             }
+
         </style>
 
     </head>
