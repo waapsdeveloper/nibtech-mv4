@@ -218,7 +218,7 @@
                                                 <td>{{ $transaction->reference_id }}</td>
                                                 <td>{{ $transaction->transaction_type->name }}</td>
                                                 <td>{{ $transaction->batch_id }}</td>
-                                                <td>{{ $batch->order_type->name ?? $batch->process_type->name }}</td>
+                                                <td>{{ $batch->order_type->name ?? null }}{{$batch->process_type->name ?? null}}</td>
                                                 <td>{{ $transaction->description }}</td>
                                                 <td>€{{ amount_formatter($transaction->amount,2) }}</td>
                                                 <td>{{ $transaction->creator->first_name }}</td>
