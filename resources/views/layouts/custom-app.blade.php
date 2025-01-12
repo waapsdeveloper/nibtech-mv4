@@ -15,6 +15,7 @@
 		@include('layouts.components.custom-styles')
         @php
             $primary_bg_color = env('PRIMARY_BG_COLOR', '#052468');
+            echo $primary_bg_color;
         @endphp
 
         <script>
