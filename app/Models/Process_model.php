@@ -55,7 +55,7 @@ class Process_model extends Model
     public function taken_by(){
         return $this->hasOne(Admin_model::class, 'id', 'taken_by_id');
     }
-    public function process_type_id()
+    public function process_type()
     {
         return $this->hasOne(Multi_type_model::class, 'id', 'process_type_id');
     }
