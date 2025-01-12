@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Account_transaction_type_model extends Model
 {
     use HasFactory;
-    protected $table = 'account_transactions';
+    protected $table = 'account_transaction_types';
     protected $primaryKey = 'id';
     protected $fillable = [
         // other fields...
