@@ -16,6 +16,7 @@
         @php
             $primary_bg_color = env('PRIMARY_BG_COLOR');
             echo $primary_bg_color. ' sda ';
+            dd(env());
         @endphp
 
         <script>
