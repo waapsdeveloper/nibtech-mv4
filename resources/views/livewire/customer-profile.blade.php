@@ -221,7 +221,7 @@
                                                 <td>{{ $batch->order_type->name ?? $batch->process_type->name }}</td>
                                                 <td>{{ $transaction->description }}</td>
                                                 <td>€{{ amount_formatter($transaction->amount,2) }}</td>
-                                                <td>{{ $transaction->creater->name }}</td>
+                                                <td>{{ $transaction->creator->first_name }}</td>
                                                 <td>{{ $transaction->created_at }}</td>
                                             </tr>
                                         @endforeach
