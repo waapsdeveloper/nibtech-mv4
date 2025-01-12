@@ -13,18 +13,13 @@
 		<title> {{ env('APP_NAME') }} – Admin Penal </title>
 
 		@include('layouts.components.custom-styles')
-        @php
-            $primary_bg_color = env('PRIMARY_BG_COLOR');
-            echo $primary_bg_color. ' sda ';
-            dd(env('PRIMARY_BG_COLOR'));
-        @endphp
+        <style>
 
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-            var primaryBgColor = {{ $primary_bg_color }};
-            document.documentElement.style.setProperty('--primary-bg-color', primaryBgColor);
-            });
-        </script>
+            :root {
+                    --primary-bg-color: {{ env('PRIMARY_BG_COLOR') ?? '#052468' }};
+            }
+
+        </style>
 
     </head>
 	<body class="ltr error-page1">
