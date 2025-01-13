@@ -57,7 +57,7 @@
                 </form>
                 <br>
                 <br>
-
+                <br>
                 <div class="btn-group position-absolute bottom-0 end-0" role="group" aria-label="Basic example">
                     <a href="{{url('customer/profile').'/'.$customer->id}}?page=orders" class="btn btn-link @if (request('page') == 'orders') bg-white @endif ">All&nbsp;Orders</a>
                     <a href="{{url('customer/profile').'/'.$customer->id}}?page=transactions" class="btn btn-link @if (request('page') == 'transactions') bg-white @endif ">Transactions</a>
