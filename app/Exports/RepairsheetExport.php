@@ -74,8 +74,6 @@ class RepairsheetExport implements FromCollection, WithHeadings
             ->whereNull('stock.deleted_at')
             ->whereNull('p_stock.deleted_at')
             ->whereNull('orders.deleted_at')
-            ->whereNull('customer.deleted_at')
-            ->whereNull('variation.deleted_at')
             ->whereNull('order_items.deleted_at')
             ->whereNull('stock_operations.deleted_at')
             ->orderBy('products.model', 'ASC')
