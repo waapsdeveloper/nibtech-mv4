@@ -933,6 +933,9 @@ class Repair extends Component
             )
             ->where('process_stock.process_id',$process_id)
             ->where('process_stock.deleted_at',null)
+            ->whereNull('purchase_item.deleted_at')
+            ->whereNull('stock.deleted_at')
+            ->whereNull('variation.deleted_at')
             ->groupBy('products.model', 'variation.storage')
             ->orderBy('products.model', 'ASC')
             ->get();
