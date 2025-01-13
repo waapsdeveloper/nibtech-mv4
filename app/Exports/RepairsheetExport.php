@@ -59,7 +59,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
                 'orders.reference_id as po',
                 'customer.company as customer',
                 'pr.reference_id as process_id',
-                'stock.id as stock_id',
+                // 'stock.id as stock_id',
                 'stock.imei as imei',
                 'stock.serial_number as serial_number',
                 'stock_operations.description as issue', // Corrected duplicated issue field
@@ -73,6 +73,15 @@ class RepairsheetExport implements FromCollection, WithHeadings
             ->whereNull('process_stock.deleted_at')
             ->whereNull('stock.deleted_at')
             ->whereNull('p_stock.deleted_at')
+            ->whereNull('orders.deleted_at')
+            ->whereNull('customer.deleted_at')
+            ->whereNull('variation.deleted_at')
+            ->whereNull('products.deleted_at')
+            ->whereNull('color.deleted_at')
+            ->whereNull('storage.deleted_at')
+            ->whereNull('grade.deleted_at')
+            ->whereNull('order_items.deleted_at')
+            ->whereNull('stock_operations.deleted_at')
             ->orderBy('products.model', 'ASC')
             ->get();
 
