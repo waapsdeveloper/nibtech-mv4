@@ -642,9 +642,9 @@
                                         <th><small><b>Price</b></small></th>
                                         @endif
                                         <th><small><b>Creation Date</b></small></th>
-                                            @if (session('user')->hasPermission('delete_return_item'))
+                                            {{-- @if (session('user')->hasPermission('delete_return_item'))
                                         <th></th>
-                                            @endif
+                                            @endif --}}
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -669,7 +669,7 @@
                                             @endif
                                             <td style="width:220px">{{ $item->created_at }}</td>
                                             @if (session('user')->hasPermission('delete_return_item'))
-                                            <td><a href="{{ url('delete_return_item').'/'.$item->id }}"><i class="fa fa-trash"></i></a></td>
+                                            {{-- <td><a href="{{ url('delete_return_item').'/'.$item->id }}"><i class="fa fa-trash"></i></a></td> --}}
                                             @endif
                                         </tr>
                                         @php
