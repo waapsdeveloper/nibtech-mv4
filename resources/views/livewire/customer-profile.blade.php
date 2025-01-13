@@ -222,7 +222,7 @@
                                                 <td>{{ $transaction->transaction_type->name }}</td>
                                                 <td>{{ $batch->reference_id }}</td>
                                                 <td>{{ $batch->order_type->name ?? null }}{{$batch->process_type->name ?? null}}</td>
-                                                <td title="{{ $transaction->description }}" class="wd-250">{{ Str::limit($transaction->description, 25) }}</td>
+                                                <td title="{{ $transaction->description }}" class="wd-250">{{ Str::limit($transaction->description, 27) }}</td>
                                                 <td>€{{ amount_formatter($transaction->amount,2) }}</td>
                                                 <td>{{ $transaction->creator->first_name }}</td>
                                                 <td>{{ $transaction->created_at }}</td>
