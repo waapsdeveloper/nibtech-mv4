@@ -133,6 +133,10 @@ class SalesReturn extends Component
             session()->put('error', "Order Item cannot be deleted");
             return redirect()->back();
         }
+        if ($orderItem->order->order_type_id != 4) {
+            session()->put('error', "Order Item cannot be deleted");
+            return redirect()->back();
+        }
         // Access the variation through orderItem->stock->variation
         $variation = $orderItem->stock->variation;
 
