@@ -56,7 +56,7 @@
                     <button type="submit" class="btn btn-primary">Filter</button>
                 </form>
 
-                <div class="btn-group position-absolute bottom-0 end-0" role="group" aria-label="Basic example">
+                <div class="btn-group position-absolute bottom-0 end-0 mt-2" role="group" aria-label="Basic example">
                     <a href="{{url('customer/profile').'/'.$customer->id}}?page=orders" class="btn btn-link @if (request('page') == 'orders') bg-white @endif ">All&nbsp;Orders</a>
                     <a href="{{url('customer/profile').'/'.$customer->id}}?page=transactions" class="btn btn-link @if (request('page') == 'transactions') bg-white @endif ">Transactions</a>
                     @if (session('user')->hasPermission('view_customer_repairs') && $repairs->count() > 0)
