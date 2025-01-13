@@ -563,7 +563,7 @@
                                                 @endif
                                             </td>
                                             @if (session('user')->hasPermission('view_cost'))
-                                            <td>{{ $stock->order->currency_id->sign ?? null }}{{$stock->purchase_item->price ?? null }}</td>
+                                            <td>{{ $stock->order->currency_id->sign ?? null }}{{amount_formatter($stock->purchase_item->price ?? null) }}</td>
                                             @endif
                                             <td>{{ $stock->updated_at }}</td>
                                             @if ($stock->latest_operation)
