@@ -59,7 +59,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
                 'orders.reference_id as po',
                 'customer.company as customer',
                 'pr.reference_id as process_id',
-                'stock.id as stock_id',
+                // 'stock.id as stock_id',
                 'stock.imei as imei',
                 'stock.serial_number as serial_number',
                 'stock_operations.description as issue', // Corrected duplicated issue field
