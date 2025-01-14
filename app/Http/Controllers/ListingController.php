@@ -52,9 +52,9 @@ class ListingController extends Controller
             $arr = explode(" ", $product_name);
             $last = end($arr);
 
-            $storage_search = Storage_model::where('name', 'like', $last.'%')->first();
+            $storage_search = Storage_model::where('name', 'like', $last.'%')->pluck('id');
 
-            if($storage_search != null){
+            if($storage_search != []){
                 $prr = array_pop($arr);
                 $product_name = implode(" ", $prr);
             }
@@ -62,7 +62,7 @@ class ListingController extends Controller
 
         }else{
             $product_search = [];
-            $storage_search = null;
+            $storage_search = [];
         }
 
         return Variation_model::with('listings', 'listings.country_id', 'listings.currency', 'product', 'available_stocks', 'pending_orders')
@@ -85,8 +85,8 @@ class ListingController extends Controller
         ->when($product_search != [], function ($q) use ($product_search) {
             return $q->whereIn('product_id', $product_search);
         })
-        ->when($storage_search != null, function ($q) use ($storage_search) {
-            return $q->where('storage', $storage_search->id);
+        ->when($storage_search != [], function ($q) use ($storage_search) {
+            return $q->whereIn('storage', $storage_search->id);
         })
         ->when(request('sku') != '', function ($q) {
             return $q->where('sku', request('sku'));
