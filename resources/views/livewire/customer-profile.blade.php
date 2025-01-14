@@ -188,7 +188,7 @@
                     <div class="card">
                         <div class="card-header pb-0 d-flex justify-content-between">
                             <h5 class="card-title mg-b-0"> Customer Transactions </h5>
-                            <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#record_payment">Record Payment</button>
+                            <button class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#record_payment">Record Payment</button>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
