@@ -465,6 +465,14 @@
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                             {{-- Simulate Ctrl + Enter To Submit when in textArea --}}
+                            <script>
+                                document.getElementById('description').addEventListener('keydown', function(event) {
+                                    if (event.ctrlKey && event.key === 'Enter') {
+                                        event.preventDefault();
+                                        document.getElementById('record_payment_form').submit();
+                                    }
+                                });
+                            </script>
                             <button type="submit" class="btn btn-primary">Record Payment</button>
 
                         </div>
