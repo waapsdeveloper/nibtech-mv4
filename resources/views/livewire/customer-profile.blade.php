@@ -419,14 +419,14 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">&times;</button>
                         </div>
                         <div class="modal-body pd-20">
-                            <div class="form-group">
+                            <div class="form-group col-6">
                                 <label for="type">Payment Type</label>
-                                <select class="form-control" name="type" id="type" required>
+                                <select class="form-control form-select" name="type" id="type" required>
                                     <option value="1">Send</option>
                                     <option value="2">Receive</option>
                                 </select>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group col-6">
                                 <label for="amount">Amount</label>
                                 <input type="number" class="form-control" name="amount" id="amount" required>
                             </div>
