@@ -297,7 +297,7 @@
                                         ${item.imei ?? item.serial_number ?? ''}
                                     </a>
                                 </td>
-                                <td id="cost_${item.id}">€${price}</td>
+                                <td id="cost_${item.id}">€${price} (${item.order.customer.last_name})</td>
                             </tr>`;
 
 
