@@ -88,7 +88,7 @@ class ListingController extends Controller
         ->when(request('product') != '', function ($q) {
             return $q->where('product_id', request('product'));
         })
-        ->when($product_search->count() > 0, function ($q) use ($product_search) {
+        ->when(count($product_search) > 0, function ($q) use ($product_search) {
             return $q->whereIn('product_id', $product_search);
         })
         ->when(count($storage_search) > 0, function ($q) use ($storage_search) {
