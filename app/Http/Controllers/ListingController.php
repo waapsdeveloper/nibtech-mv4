@@ -55,8 +55,8 @@ class ListingController extends Controller
             $storage_search = Storage_model::where('name', 'like', $last.'%')->pluck('id');
 
             if($storage_search != []){
-                $prr = array_pop($arr);
-                $product_name = implode(" ", $prr);
+                array_pop($arr);
+                $product_name = implode(" ", $arr);
             }
             $product_search = Products_model::where('model', 'like', '%'.$product_name.'%')->pluck('id');
 
