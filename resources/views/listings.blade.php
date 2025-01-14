@@ -420,6 +420,7 @@
             function fetchVariations(page = 1) {
                 // Collect form data or input values to create query parameters
                 let params = {
+                    product_name: $('#product_name').val(),
                     reference_id: $('#reference_id').val(),
                     product: $('#product').val(),
                     sku: $('input[name="sku"]').val(),
