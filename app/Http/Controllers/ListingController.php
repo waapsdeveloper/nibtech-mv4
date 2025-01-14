@@ -47,7 +47,7 @@ class ListingController extends Controller
         }
 
         if(request('product_name') != null){
-            $product_name = request('product_name');
+            $product_name = trim(request('product_name'));
 
             $arr = explode(" ", $product_name);
             $last = end($arr);
