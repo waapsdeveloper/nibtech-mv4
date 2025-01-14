@@ -91,7 +91,7 @@ class ListingController extends Controller
         ->when($product_search->count() > 0, function ($q) use ($product_search) {
             return $q->whereIn('product_id', $product_search);
         })
-        ->when($storage_search->count() > 0, function ($q) use ($storage_search) {
+        ->when(count($storage_search) > 0, function ($q) use ($storage_search) {
             return $q->whereIn('storage', $storage_search);
         })
         ->when(request('sku') != '', function ($q) {
