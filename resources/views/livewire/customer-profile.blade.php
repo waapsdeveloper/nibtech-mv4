@@ -464,6 +464,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            {{-- Simulate Ctrl + Enter To Submit when in textArea --}}
                             <button type="submit" class="btn btn-primary">Record Payment</button>
 
                         </div>
