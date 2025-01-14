@@ -416,7 +416,7 @@
                         <input type="hidden" name="type" value="1">
                         <div class="modal-header">
                             <h5 class="modal-title" id="exampleModalLabel2">Record Payment</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">x</button>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">&times;</button>
                         </div>
                         <div class="modal-body pd-20">
                             <div class="form-group">
