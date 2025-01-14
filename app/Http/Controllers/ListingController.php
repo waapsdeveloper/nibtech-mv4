@@ -59,6 +59,8 @@ class ListingController extends Controller
                 // dd($storage_search);
                 array_pop($arr);
                 $product_name = implode(" ", $arr);
+            }else{
+                $storage_search = [];
             }
             $product_search = Products_model::where('model', 'like', '%'.$product_name.'%')->pluck('id');
 
