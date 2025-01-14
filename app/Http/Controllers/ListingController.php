@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Color_model;
 use App\Models\Country_model;
+use App\Models\Customer_model;
 use App\Models\ExchangeRate;
 use App\Models\Grade_model;
 use App\Models\Listing_model;
@@ -140,7 +141,11 @@ class ListingController extends Controller
             $q->where('order_type_id',1);
         })->whereIn('stock_id',$stocks->pluck('id'))->pluck('price','stock_id');
 
-        return response()->json(['stocks'=>$stocks, 'stock_costs'=>$stock_costs]);
+        $vendors = Customer_model::whereNotNull('is_vendor')->pluck('last_name','id');
+
+        $po = Order_model::where('order_type_id',1)->pluck('customer_id','id');
+
+        return response()->json(['stocks'=>$stocks, 'stock_costs'=>$stock_costs, 'vendors'=>$vendors, 'po'=>$po]);
 
     }
 
