@@ -410,7 +410,7 @@
         <div class="modal fade" id="record_payment" tabindex="-1" role="dialog" aria-labelledby="record_payment" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">
-                    <form method="POST" action="{{url('transaction')}}" id="record_payment_form">
+                    <form method="POST" action="{{url('customer/add_payment')}}" id="record_payment_form">
                         @csrf
                         <input type="hidden" name="customer_id" value="{{ $customer->id }}">
                         <input type="hidden" name="type" value="1">
@@ -432,7 +432,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="method">Payment Method</label>
-                                        <select class="form-control form-select" name="method" id="method" required>
+                                        <select class="form-control form-select" name="payment_method" id="method" required>
                                             <option value="1">Cash</option>
                                             <option value="2">Bank Transfer</option>
                                             <option value="3">Credit Card</option>
@@ -464,15 +464,6 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            {{-- Simulate Ctrl + Enter To Submit when in textArea --}}
-                            <script>
-                                document.getElementById('description').addEventListener('keydown', function(event) {
-                                    if (event.ctrlKey && event.key === 'Enter') {
-                                        event.preventDefault();
-                                        document.getElementById('record_payment_form').submit();
-                                    }
-                                });
-                            </script>
                             <button type="submit" class="btn btn-primary">Record Payment</button>
 
                         </div>
