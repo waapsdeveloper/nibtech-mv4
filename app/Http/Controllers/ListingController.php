@@ -56,16 +56,18 @@ class ListingController extends Controller
             $storage_search = Storage_model::where('name', 'like', $last.'%')->pluck('id');
 
             if($storage_search->count() > 0){
-                dd($storage_search);
+                // dd($storage_search);
                 array_pop($arr);
                 $product_name = implode(" ", $arr);
             }
             $product_search = Products_model::where('model', 'like', '%'.$product_name.'%')->pluck('id');
 
+
         }else{
             $product_search = [];
             $storage_search = [];
         }
+        dd($product_search, $storage_search);
 
         return Variation_model::with('listings', 'listings.country_id', 'listings.currency', 'product', 'available_stocks', 'pending_orders')
         ->when(request('reference_id') != '', function ($q) {
