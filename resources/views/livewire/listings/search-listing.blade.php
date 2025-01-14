@@ -8,6 +8,12 @@
         </div>
         <div class="col-md col-sm-6">
             <div class="form-floating">
+                <input type="text" class="form-control" id="product_name" name="product_name" placeholder="Enter Product Name" value="@isset($_GET['product_name']){{$_GET['product_name']}}@endisset">
+                <label for="product_name">Product Search</label>
+            </div>
+        </div>
+        <div class="col-md col-sm-6">
+            <div class="form-floating">
                 <input type="text" id="product" name="product" list="products" class="form-control" data-bs-placeholder="Select Status" value="@isset($_GET['product']){{$_GET['product']}}@endisset">
                 <label for="product">Product</label>
             </div>
