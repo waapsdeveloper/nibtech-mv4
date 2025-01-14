@@ -237,6 +237,28 @@ class Customer extends Component
         return view('livewire.customer-profile')->with($data);
     }
 
+    public function add_payment()
+    {
+        $latest_transaction_reference = Account_transaction_model::orderBy('reference_id','desc')->first();
+        $transaction = Account_transaction_model::new();
+        $transaction->reference_id = $latest_transaction_reference->reference_id + 1;
+        $transaction->customer_id = request('customer_id');
+        $transaction->transaction_type_id = request('type');
+        $transaction->payment_method_id = request('payment_method');
+        $transaction->date = request('date');
+        $transaction->description = request('description');
+        $transaction->amount = request('amount');
+        $transaction->currency = request('currency');
+        $transaction->exchange_rate = request('exchange_rate');
+        $transaction->status = 1;
+        $transaction->created_by = session('user_id');
+        $transaction->save();
+
+
+
+
+    }
+
     public function add_customer()
     {
 
