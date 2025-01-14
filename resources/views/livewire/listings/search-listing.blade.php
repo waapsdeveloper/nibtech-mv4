@@ -6,7 +6,7 @@
                 <label for="reference_id">Reference ID</label>
             </div>
         </div>
-        <div class="col-md col-sm-6">
+        <div class="col-md-2 col-sm-6">
             <div class="form-floating">
                 <input type="text" class="form-control" id="product_name" name="product_name" placeholder="Enter Product Name" value="@isset($_GET['product_name']){{$_GET['product_name']}}@endisset">
                 <label for="product_name">Search</label>
@@ -23,7 +23,7 @@
                     @endforeach
                 </datalist>
         </div>
-        <div class="col-md-2 col-sm-6">
+        <div class="col-md col-sm-6">
             <div class="form-floating">
                 <input type="text" class="form-control" name="sku" placeholder="Enter IMEI" value="@isset($_GET['sku']){{$_GET['sku']}}@endisset">
                 <label for="">SKU</label>
@@ -45,7 +45,7 @@
                 @endforeach
             </select>
         </div>
-        <div class="col-md-4 col-sm-6">
+        <div class="col-md-3 col-sm-6">
             <select name="grade[]" class="form-control form-select select2" data-bs-placeholder="Select Status" multiple>
                 <option value="">Grade</option>
                 @foreach ($grades as $id => $grade)
