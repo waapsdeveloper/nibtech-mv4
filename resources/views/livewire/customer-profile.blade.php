@@ -201,7 +201,7 @@
                                             <th><small><b>Batch Type</b></small></th>
                                             <th><small><b>Description</b></small></th>
                                             <th><small><b>Value</b></small></th>
-                                            <th><small><b>Creater</b></small></th>
+                                            <th><small><b>Creator</b></small></th>
                                             <th><small><b>Creation Date</b></small></th>
                                         </tr>
                                     </thead>
@@ -216,7 +216,7 @@
 
                                                 $batch = $order ?? $process;
                                             @endphp
-                                            <tr>
+                                            <tr @if ($transaction->status == 2) class="bg-warning" @endif>
                                                 <td>{{ $i += 1 }}</td>
                                                 <td>{{ $transaction->reference_id }}</td>
                                                 <td>{{ $transaction->transaction_type->name }}</td>
