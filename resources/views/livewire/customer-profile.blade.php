@@ -221,7 +221,7 @@
                                                 <td>{{ $transaction->reference_id }}</td>
                                                 <td>{{ $transaction->transaction_type->name }}</td>
                                                 @if ($batch->order_type_id == 1)
-                                                    <td><a href="{{url('purchase/detail/'.$batch->id)}}?status=1">{{ $batch->reference_id."\n\r".$vendor_grades[$item->reference_id ?? 0] }}</a></td>
+                                                    <td><a href="{{url('purchase/detail/'.$batch->id)}}?status=1">{{ $batch->reference_id }}</a></td>
                                                 @elseif ($batch->order_type_id == 2)
                                                     <td><a href="{{url('rma/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a></td>
                                                 @elseif ($batch->order_type_id == 5 && $batch->reference_id != 999)
