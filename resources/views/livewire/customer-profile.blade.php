@@ -188,6 +188,7 @@
                     <div class="card">
                         <div class="card-header pb-0">
                             <h5 class="card-title mg-b-0"> Customer Transactions </h5>
+                            <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#record_payment">Record Payment</button>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
@@ -405,6 +406,38 @@
 
             @endif
         @endif
+
+        <div class="modal fade" id="record_payment" tabindex="-1" role="dialog" aria-labelledby="record_payment" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <form method="POST" action="{{url('transaction')}}" id="record_payment_form">
+                        @csrf
+                        <input type="hidden" name="customer_id" value="{{ $customer->id }}">
+                        <input type="hidden" name="type" value="1">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel2">Record Payment</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body pd-20">
+                            <div class="form-group">
+                                <label for="amount">Amount</label>
+                                <input type="number" class="form-control" name="amount" id="amount" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="description">Description</label>
+                                <textarea class="form-control" name="description" id="description" required></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Record Payment</button>
+
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
     @endsection
 
     @section('scripts')
