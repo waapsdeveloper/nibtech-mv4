@@ -52,9 +52,11 @@ class ListingController extends Controller
             $arr = explode(" ", $product_name);
             $last = end($arr);
 
+
             $storage_search = Storage_model::where('name', 'like', $last.'%')->pluck('id');
 
             if($storage_search->count() > 0){
+                dd($storage_search);
                 array_pop($arr);
                 $product_name = implode(" ", $arr);
             }
