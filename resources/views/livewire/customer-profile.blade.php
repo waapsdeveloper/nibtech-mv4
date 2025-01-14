@@ -419,16 +419,43 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">&times;</button>
                         </div>
                         <div class="modal-body pd-20">
-                            <div class="form-group">
-                                <label for="type">Payment Type</label>
-                                <select class="form-control form-select" name="type" id="type" required>
-                                    <option value="1">Send</option>
-                                    <option value="2">Receive</option>
-                                </select>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="type">Payment Type</label>
+                                        <select class="form-control form-select" name="type" id="type" required>
+                                            <option value="1">Send</option>
+                                            <option value="2">Receive</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="method">Payment Method</label>
+                                        <select class="form-control form-select" name="method" id="method" required>
+                                            <option value="1">Cash</option>
+                                            <option value="2">Bank Transfer</option>
+                                            <option value="3">Credit Card</option>
+                                            <option value="4">Cheque</option>
+                                            <option value="5">Other</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label for="amount">Amount</label>
-                                <input type="number" class="form-control" name="amount" id="amount" required>
+                            <div class="row">
+                                <div class="col-md-6">
+
+                                    <div class="form-group">
+                                        <label for="amount">Amount</label>
+                                        <input type="number" class="form-control" name="amount" id="amount" step="0.01" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="date">Date</label>
+                                        <input type="date" class="form-control" name="date" id="date" required>
+                                    </div>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label for="description">Description</label>
