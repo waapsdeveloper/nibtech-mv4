@@ -9,6 +9,7 @@ use App\Models\ExchangeRate;
 use App\Models\Grade_model;
 use App\Models\Listing_model;
 use App\Models\Order_item_model;
+use App\Models\Order_model;
 use App\Models\Stock_model;
 use App\Models\Storage_model;
 use App\Models\Variation_model;
