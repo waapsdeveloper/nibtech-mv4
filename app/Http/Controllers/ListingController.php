@@ -67,7 +67,7 @@ class ListingController extends Controller
             $product_search = [];
             $storage_search = [];
         }
-        dd($product_search, $storage_search);
+        // dd($product_search, $storage_search);
 
         return Variation_model::with('listings', 'listings.country_id', 'listings.currency', 'product', 'available_stocks', 'pending_orders')
         ->when(request('reference_id') != '', function ($q) {
