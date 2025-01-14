@@ -420,6 +420,13 @@
                         </div>
                         <div class="modal-body pd-20">
                             <div class="form-group">
+                                <label for="type">Payment Type</label>
+                                <select class="form-control" name="type" id="type" required>
+                                    <option value="1">Send</option>
+                                    <option value="2">Receive</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
                                 <label for="amount">Amount</label>
                                 <input type="number" class="form-control" name="amount" id="amount" required>
                             </div>
