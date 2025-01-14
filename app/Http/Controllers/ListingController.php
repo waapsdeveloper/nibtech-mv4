@@ -86,7 +86,7 @@ class ListingController extends Controller
             return $q->whereIn('product_id', $product_search);
         })
         ->when($storage_search != [], function ($q) use ($storage_search) {
-            return $q->whereIn('storage', $storage_search->id);
+            return $q->whereIn('storage', $storage_search);
         })
         ->when(request('sku') != '', function ($q) {
             return $q->where('sku', request('sku'));
