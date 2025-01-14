@@ -10,6 +10,7 @@ use App\Models\Grade_model;
 use App\Models\Listing_model;
 use App\Models\Order_item_model;
 use App\Models\Order_model;
+use App\Models\Products_model;
 use App\Models\Stock_model;
 use App\Models\Storage_model;
 use App\Models\Variation_model;
@@ -44,6 +45,26 @@ class ListingController extends Controller
         }else{
             $per_page = 10;
         }
+
+        if(request('product_name') != null){
+            $product_name = request('product_name');
+
+            $arr = explode(" ", $product_name);
+            $last = end($arr);
+
+            $storage_search = Storage_model::where('name', 'like', $last.'%')->pluck('id');
+
+            if($storage_search != []){
+                $prr = array_pop($arr);
+                $product_name = implode(" ", $prr);
+            }
+            $product_search = Products_model::where('model', 'like', '%'.$product_name.'%')->pluck('id');
+
+        }else{
+            $product_search = [];
+            $storage_search = [];
+        }
+
         return Variation_model::with('listings', 'listings.country_id', 'listings.currency', 'product', 'available_stocks', 'pending_orders')
         ->when(request('reference_id') != '', function ($q) {
             return $q->where('reference_id', request('reference_id'));
@@ -60,6 +81,12 @@ class ListingController extends Controller
         })
         ->when(request('product') != '', function ($q) {
             return $q->where('product_id', request('product'));
+        })
+        ->when($product_search != [], function ($q) use ($product_search) {
+            return $q->whereIn('product_id', $product_search);
+        })
+        ->when($storage_search != [], function ($q) use ($storage_search) {
+            return $q->whereIn('storage', $storage_search->id);
         })
         ->when(request('sku') != '', function ($q) {
             return $q->where('sku', request('sku'));
