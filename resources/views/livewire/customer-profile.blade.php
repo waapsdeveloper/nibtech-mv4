@@ -220,23 +220,25 @@
                                                 <td>{{ $i += 1 }}</td>
                                                 <td>{{ $transaction->reference_id }}</td>
                                                 <td>{{ $transaction->transaction_type->name }}</td>
-                                                @if ($batch->order_type_id == 1)
-                                                    <td><a href="{{url('purchase/detail/'.$batch->id)}}?status=1">{{ $batch->reference_id }}</a></td>
-                                                @elseif ($batch->order_type_id == 2)
-                                                    <td><a href="{{url('rma/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a></td>
-                                                @elseif ($batch->order_type_id == 5 && $batch->reference_id != 999)
-                                                    <td><a href="{{url('wholesale/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a></td>
-                                                @elseif ($batch->order_type_id == 5 && $batch->reference_id == 999)
-                                                    <td><a href="https://www.backmarket.fr/bo_merchant/orders/all?orderId={{ $item->reference_id }}" target="_blank">Replacement <br> {{ $item->reference_id }}</a></td>
-                                                @elseif ($batch->order_type_id == 4)
-                                                    <td><a href="{{url('return/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a></td>
-                                                @elseif ($batch->order_type_id == 6)
-                                                    <td><a href="{{url('wholesale_return/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a></td>
-                                                @elseif ($batch->order_type_id == 3)
-                                                    <td><a href="https://www.backmarket.fr/bo_merchant/orders/all?orderId={{ $batch->reference_id }}" target="_blank">{{ $batch->reference_id }}</a></td>
-                                                @elseif ($batch->process_type_id == 9)
-                                                    <td><a href="{{url('repair/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a></td>
-                                                @endif
+                                                <td>
+                                                    @if ($batch->order_type_id == 1)
+                                                        <a href="{{url('purchase/detail/'.$batch->id)}}?status=1">{{ $batch->reference_id }}</a>
+                                                    @elseif ($batch->order_type_id == 2)
+                                                        <a href="{{url('rma/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a>
+                                                    @elseif ($batch->order_type_id == 5 && $batch->reference_id != 999)
+                                                        <a href="{{url('wholesale/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a>
+                                                    @elseif ($batch->order_type_id == 5 && $batch->reference_id == 999)
+                                                        <a href="https://www.backmarket.fr/bo_merchant/orders/all?orderId={{ $item->reference_id }}" target="_blank">Replacement <br> {{ $item->reference_id }}</a>
+                                                    @elseif ($batch->order_type_id == 4)
+                                                        <a href="{{url('return/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a>
+                                                    @elseif ($batch->order_type_id == 6)
+                                                        <a href="{{url('wholesale_return/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a>
+                                                    @elseif ($batch->order_type_id == 3)
+                                                        <a href="https://www.backmarket.fr/bo_merchant/orders/all?orderId={{ $batch->reference_id }}" target="_blank">{{ $batch->reference_id }}</a>
+                                                    @elseif ($batch->process_type_id == 9)
+                                                        <a href="{{url('repair/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a>
+                                                    @endif
+                                                </td>
                                                 {{-- <td>{{ $batch->reference_id }}</td> --}}
                                                 <td>{{ $batch->order_type->name ?? null }}{{$batch->process_type->name ?? null}}</td>
                                                 <td title="{{ $transaction->description }}" class="wd-250">{{ Str::limit($transaction->description, 27) }}</td>
