@@ -843,7 +843,7 @@ class Order extends Component
                 $datas['model'] = $product->model.' '.$storage;
                 $datas['available_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',1)->count();
                 $datas['sold_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',2)->whereNotIn('id',$repair_stock_ids)->count();
-                $datas['repair_stock_count'] = $pss->stocks->where('order_id',$repair_stock_ids)->where('status',2)->whereIn('id',$repair_stock_ids)->count();
+                $datas['repair_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',2)->whereIn('id',$repair_stock_ids)->count();
 
 
                 $result[] = $datas;
