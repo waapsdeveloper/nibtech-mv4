@@ -296,7 +296,7 @@
                                     <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#graded_count_modal" onclick="loadProductDetails({{$order_id}},{{$summery['pss_id']}})">{{ $summery['model'] }}</a></td>
                                     <td>{{ $summery['sold_stock_count'] }}</td>
                                     <td>{{ $summery['repair_stock_count'] }}</td>
-                                    <td>{{ $summery['available_stock_count'] }}</td>
+                                    <td title="RTG + Others">{{ $summery['available_stock_count'] }} ({{$summery['rtg_stock_count'].'+'.$summery['other_stock_count']}})</td>
                                 </tr>
                                 {{-- @endif --}}
                             @endforeach
@@ -307,7 +307,7 @@
                                 <td><b>Total</b></td>
                                 <td><b>{{ $total_sold }}</b></td>
                                 <td><b>{{ $total_repair }}</b></td>
-                                <td title="RTG + Others"><b>{{ $total_available }} ({{$summery['rtg_stock_count'].'+'.$summery['other_stock_count']}})</b></td>
+                                <td><b>{{ $total_available }}</b></td>
                             </tr>
 
                     </table>
