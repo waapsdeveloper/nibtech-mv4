@@ -281,11 +281,13 @@
                             @php
                                 $i = 0;
                                 $total_sold = 0;
+                                $total_repair = 0;
                                 $total_available = 0;
                             @endphp
                             @foreach ($stock_summery as $summery)
                                 @php
                                     $total_sold += $summery['sold_stock_count'];
+                                    $total_repair += $summery['repair_stock_count'];
                                     $total_available += $summery['available_stock_count'];
                                 @endphp
                                 <tr>
@@ -304,6 +306,7 @@
                                 <td></td>
                                 <td><b>Total</b></td>
                                 <td><b>{{ $total_sold }}</b></td>
+                                <td><b>{{ $total_repair }}</b></td>
                                 <td><b>{{ $total_available }}</b></td>
                             </tr>
 
