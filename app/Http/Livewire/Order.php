@@ -838,7 +838,13 @@ class Order extends Component
                 $datas['pss_id'] = $pss->id;
                 $datas['model'] = $product->model.' '.$storage;
                 $datas['available_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',1)->count();
-                $datas['sold_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',2)->count();
+                $datas['sold_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',2)->whereDoesntHave('process_stocks',function($q){
+                    $q->where('status',1);
+                })->count();
+                $datas['repair_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',2)->whereHas('process_stocks',function($q){
+                    $q->where('status',1);
+                })->count();
+
 
                 $result[] = $datas;
             }
