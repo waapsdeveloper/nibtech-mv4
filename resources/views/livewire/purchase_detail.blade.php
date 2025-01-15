@@ -273,6 +273,7 @@
                                 <th><small><b>No</b></small></th>
                                 <th><small><b>Model</b></small></th>
                                 <th><small><b>Quantity Sold</b></small></th>
+                                <th><small><b>Sent for Repair</b></small></th>
                                 <th><small><b>Quantity Available</b></small></th>
                             </tr>
                         </thead>
@@ -292,6 +293,7 @@
                                     {{-- <td>{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</td> --}}
                                     <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#graded_count_modal" onclick="loadProductDetails({{$order_id}},{{$summery['pss_id']}})">{{ $summery['model'] }}</a></td>
                                     <td>{{ $summery['sold_stock_count'] }}</td>
+                                    <td>{{ $summery['repair_stock_count'] }}</td>
                                     <td>{{ $summery['available_stock_count'] }}</td>
                                 </tr>
                                 {{-- @endif --}}
