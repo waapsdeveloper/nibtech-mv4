@@ -833,15 +833,24 @@ class Order extends Component
                 $q->where('stock.order_id', $order_id);
             })->orderBy('product_id')->orderBy('storage')->get();
 
+            $variations = Variation_model::whereIn('product_storage_sort_id',$product_storage_sort->pluck('id'))->get();
+            $rtg_variations = $variations->whereIn('grade', [1,2,3,4,5,7,9])->pluck('id');
+            $other_variations = $variations->whereNotIn('id',$rtg_variations)->pluck('id');
+
             $result = [];
             foreach($product_storage_sort as $pss){
                 $product = $pss->product;
                 $storage = $pss->storage_id->name ?? null;
 
+
+
                 $datas = [];
                 $datas['pss_id'] = $pss->id;
                 $datas['model'] = $product->model.' '.$storage;
                 $datas['available_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',1)->count();
+                $datas['rtg_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',1)->whereIn('variation_id',$rtg_variations)->count();
+                $datas['other_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',1)->whereIn('variation_id',$other_variations)->count();
+
                 $datas['sold_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',2)->whereNotIn('id',$repair_stock_ids)->count();
                 $datas['repair_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',2)->whereIn('id',$repair_stock_ids)->count();
 
