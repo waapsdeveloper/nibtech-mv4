@@ -28,6 +28,7 @@ use App\Models\Account_transaction_model;
 use App\Models\Color_model;
 use App\Models\Grade_model;
 use App\Models\Order_issue_model;
+use App\Models\Process_model;
 use App\Models\Process_stock_model;
 use App\Models\Product_color_merge_model;
 use App\Models\Product_storage_sort_model;
@@ -825,6 +826,8 @@ class Order extends Component
 
             ini_set('memory_limit', '2048M');
 
+            $repair_ids = Process_model::where('process_type_id',9)->pluck('id');
+
             $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q) use ($order_id){
                 $q->where('stock.order_id', $order_id);
             })->orderBy('product_id')->orderBy('storage')->get();
@@ -838,7 +841,13 @@ class Order extends Component
                 $datas['pss_id'] = $pss->id;
                 $datas['model'] = $product->model.' '.$storage;
                 $datas['available_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',1)->count();
-                $datas['sold_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',2)->count();
+                $datas['sold_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',2)->whereDoesntHave('process_stocks',function($q) use ($repair_ids){
+                    $q->where('status',1)->whereIn('process_id', $repair_ids);
+                })->count();
+                $datas['repair_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',2)->whereHas('process_stocks',function($q) use ($repair_ids){
+                    $q->where('status',1)->whereIn('process_id', $repair_ids);
+                })->count();
+
 
                 $result[] = $datas;
             }
