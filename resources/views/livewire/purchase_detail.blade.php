@@ -307,7 +307,7 @@
                                 <td><b>Total</b></td>
                                 <td><b>{{ $total_sold }}</b></td>
                                 <td><b>{{ $total_repair }}</b></td>
-                                <td><b>{{ $total_available }}</b></td>
+                                <td title="RTG + Others"><b>{{ $total_available }} ({{$summery['rtg_stock_count'].'+'.$summery['other_stock_count']}})</b></td>
                             </tr>
 
                     </table>
