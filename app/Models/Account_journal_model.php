@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Account_journal_model extends Model
 {
     use HasFactory;
+    use SoftDeletes;
     protected $table = 'account_journals';
     protected $primaryKey = 'id';
     protected $fillable = [
