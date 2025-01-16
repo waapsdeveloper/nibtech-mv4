@@ -222,6 +222,8 @@
                                                 <td>{{ $transaction->reference_id }}</td>
                                                 <td>{{ $transaction->transaction_type->name }}</td>
                                                 <td>
+                                                    @if ($batch)
+
                                                     @if ($batch->order_type_id == 1)
                                                         <a href="{{url('purchase/detail/'.$batch->id)}}?status=1">{{ $batch->reference_id }}</a>
                                                     @elseif ($batch->order_type_id == 2)
@@ -238,6 +240,7 @@
                                                         <a href="https://www.backmarket.fr/bo_merchant/orders/all?orderId={{ $batch->reference_id }}" target="_blank">{{ $batch->reference_id }}</a>
                                                     @elseif ($batch->process_type_id == 9)
                                                         <a href="{{url('repair/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a>
+                                                    @endif
                                                     @endif
                                                 </td>
                                                 {{-- <td>{{ $batch->reference_id }}</td> --}}
