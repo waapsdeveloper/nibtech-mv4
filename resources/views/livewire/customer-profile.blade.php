@@ -455,7 +455,7 @@
                                     </div>
                                     <div class="form-group">
                                         <label for="exchange_rate">Exchange Rate</label>
-                                        <input type="number" class="form-control" name="exchange_rate" id="exchange_rate" step="0.0001" required>
+                                        <input type="number" class="form-control" name="exchange_rate" value="1" id="exchange_rate" step="0.0001" required>
                                     </div>
                             <div class="row">
                                 <div class="col-md-6">
