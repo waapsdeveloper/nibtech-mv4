@@ -20,8 +20,9 @@ class Account_transaction_model extends Model
 
     ];
 
-    public function payments(){
-        return $this->hasMany(Account_payment_model::class, 'transaction_id', 'id');
+
+    public function payment_method(){
+        return $this->hasOne(Payment_method_model::class, 'id', 'payment_method_id');
     }
     public function account_journal(){
         return $this->hasMany(Account_journal_model::class, 'transaction_id', 'id');
