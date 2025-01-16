@@ -4,6 +4,7 @@ namespace App\Http\Livewire;
 
 use App\Models\Account_transaction_model;
 use App\Models\Country_model;
+use App\Models\Currency_model;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Customer_model;
@@ -228,6 +229,7 @@ class Customer extends Component
             $data['transactions'] = $transactions;
 
 
+            $data['currencies'] = Currency_model::all();
 
 
         }
