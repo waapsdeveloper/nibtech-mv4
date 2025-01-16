@@ -15,10 +15,9 @@ class Account_payment_method_model extends Model
         'name',
 
     ];
-    public function payments(){
-        return $this->hasMany(Account_payment_model::class, 'payment_method_id', 'id');
+    public function transactions(){
+        return $this->hasMany(Account_transaction_model::class, 'payment_method_id', 'id');
     }
-
 
 
 }
