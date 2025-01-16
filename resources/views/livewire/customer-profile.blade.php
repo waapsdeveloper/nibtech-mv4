@@ -446,6 +446,21 @@
                                 <div class="col-md-6">
 
                                     <div class="form-group">
+                                        <label for="currency">Currency</label>
+                                        <select class="form-control form-select" name="currency" id="currency" required>
+                                            @foreach ($currencies as $currency)
+                                                <option value="{{ $currency->id }}" @if ($currency->id == 4) selected @endif>{{ $currency->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="exchange_rate">Exchange Rate</label>
+                                        <input type="number" class="form-control" name="exchange_rate" value="1" id="exchange_rate" step="0.0001" required>
+                                    </div>
+                            <div class="row">
+                                <div class="col-md-6">
+
+                                    <div class="form-group">
                                         <label for="amount">Amount</label>
                                         <input type="number" class="form-control" name="amount" id="amount" step="0.01" required>
                                     </div>
