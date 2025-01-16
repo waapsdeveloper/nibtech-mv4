@@ -243,7 +243,7 @@ class Stock_model extends Model
                     $i ++;
                     if($i == 1){
                     }else{
-                        $item3->linked_id = null;
+                    $item3->linked_id = null;
                         $item3->save();
                     }
                 }

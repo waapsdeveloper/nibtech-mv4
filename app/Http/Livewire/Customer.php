@@ -256,7 +256,8 @@ class Customer extends Component
 
 
 
-
+        session()->put('success',"Payment has been added successfully");
+        return redirect()->back();
     }
 
     public function add_customer()

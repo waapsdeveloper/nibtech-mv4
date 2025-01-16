@@ -319,12 +319,14 @@ Route::get('edit-member/{id}', [Team::class,'edit_member'])->name('edit_member')
 Route::post('update-member/{id}', [Team::class,'update_member'])->name('edit_member');
 
 Route::get('customer', Customer::class)->name('view_customer');
-Route::get('customer/profile/{id}', [Customer::class,'profile'])->name('view_customer_profile');
 Route::get('add-customer', [Customer::class,'add_customer'])->name('add_customer');
 Route::post('insert-customer', [Customer::class,'insert_customer'])->name('add_customer');
 Route::get('edit-customer/{id}', [Customer::class,'edit_customer'])->name('edit_customer');
 Route::post('update-customer/{id}', [Customer::class,'update_customer'])->name('edit_customer');
 Route::get('customer/delete/{id}', [Customer::class,'delete_customer'])->name('delete_customer');
+
+Route::get('customer/profile/{id}', [Customer::class,'profile'])->name('view_customer_profile');
+Route::get('customer/add_payment/', [Customer::class,'add_payment'])->name('add_customer_payment');
 
 Route::get('grade', Grade::class)->name('view_grade');
 Route::get('add-grade', [Grade::class,'add_grade'])->name('add_grade');
