@@ -326,7 +326,7 @@ Route::post('update-customer/{id}', [Customer::class,'update_customer'])->name('
 Route::get('customer/delete/{id}', [Customer::class,'delete_customer'])->name('delete_customer');
 
 Route::get('customer/profile/{id}', [Customer::class,'profile'])->name('view_customer_profile');
-Route::get('customer/add_payment/', [Customer::class,'add_payment'])->name('add_customer_payment');
+Route::post('customer/add_payment/', [Customer::class,'add_payment'])->name('add_customer_payment');
 
 Route::get('grade', Grade::class)->name('view_grade');
 Route::get('add-grade', [Grade::class,'add_grade'])->name('add_grade');
