@@ -606,13 +606,13 @@ class RMA extends Component
 
         // Additional content from your view
         if(request('packlist') == 1){
-            $filename = 'RMA_List_'.$order->customer->company.'_'.$order->reference_id.'_'.$order->count('order_items').'pcs.pdf';
+            $filename = 'RMA_List_'.$order->customer->company.'_'.$order->reference_id.'_'.$order->order_items->count().'pcs.pdf';
             $html = view('export.rma_packlist', $data)->render();
         }elseif(request('packlist') == 2){
 
             return Excel::download(new PacksheetExport($invoice), 'RMA_'.$order->reference_id.'.xlsx');
         }else{
-            $filename = 'RMA_'.$order->customer->company.'_'.$order->reference_id.'_'.$order->count('order_items.id').'pcs.pdf';
+            $filename = 'RMA_'.$order->customer->company.'_'.$order->reference_id.'_'.$order->order_items->count().'pcs.pdf';
             $html = view('export.rma_invoice', $data)->render();
         }
 
