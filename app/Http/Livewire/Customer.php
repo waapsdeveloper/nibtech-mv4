@@ -104,6 +104,9 @@ class Customer extends Component
         ->orderBy('id', 'desc')
         ->get();
 
+        $data['currencies'] = Currency_model::all();
+
+
         $data['customer'] = $customer;
         $data['orders'] = $orders;
         $data['repairs'] = $repairs;
@@ -227,9 +230,6 @@ class Customer extends Component
             })
             ->orderBy('id','desc')->get();
             $data['transactions'] = $transactions;
-
-
-            $data['currencies'] = Currency_model::all();
 
 
         }
