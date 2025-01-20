@@ -612,7 +612,7 @@ class RMA extends Component
 
             return Excel::download(new PacksheetExport($invoice), 'RMA_'.$order->reference_id.'.xlsx');
         }else{
-            $filename = 'RMA_'.$order->customer->company.'_'.$order->reference_id.'_'.$order->count('order_items').'pcs.pdf';
+            $filename = 'RMA_'.$order->customer->company.'_'.$order->reference_id.'_'.$order->count('order_items.id').'pcs.pdf';
             $html = view('export.rma_invoice', $data)->render();
         }
 
