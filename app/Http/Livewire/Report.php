@@ -123,6 +123,8 @@ class Report extends Component
             ->leftJoin('stock', 'order_items.stock_id', '=', 'stock.id')
             ->leftJoin('process_stock', 'stock.id', '=', 'process_stock.stock_id')
             ->leftJoin('process', 'process_stock.process_id', '=', 'process.id')
+            // ->whereBetween('orders.processed_at', [$start_date, $end_date])
+            ->whereIn('variation.id', $variation_ids)
             ->whereIn('order_items.id', $sale_items)
             ->whereIn('orders.order_type_id', [2,3,5])
             ->Where('orders.deleted_at',null)
@@ -152,8 +154,6 @@ class Report extends Component
                              ->whereBetween('order_items.created_at', [$start_date, $end_date]);
                 });
             })
-            // ->whereBetween('orders.processed_at', [$start_date, $end_date])
-            // ->whereIn('variation.id', $variation_ids)
             ->groupBy('category.id')
             ->get();
         // $costs = Category_model::select(
