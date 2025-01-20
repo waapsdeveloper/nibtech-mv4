@@ -123,6 +123,14 @@ class Report extends Component
             ->leftJoin('stock', 'order_items.stock_id', '=', 'stock.id')
             ->leftJoin('process_stock', 'stock.id', '=', 'process_stock.stock_id')
             ->leftJoin('process', 'process_stock.process_id', '=', 'process.id')
+            ->whereIn('order_items.id', $sale_items)
+            ->whereIn('orders.order_type_id', [2,3,5])
+            ->Where('orders.deleted_at',null)
+            ->Where('order_items.deleted_at',null)
+            ->Where('stock.deleted_at',null)
+            ->Where('process_stock.deleted_at',null)
+            ->whereIn('orders.status', [3,6])
+            ->whereIn('order_items.status', [3,6])
             ->select(
                 'category.id as category_id',
                 DB::raw('COUNT(orders.id) as orders_qty'),
@@ -146,14 +154,6 @@ class Report extends Component
             })
             // ->whereBetween('orders.processed_at', [$start_date, $end_date])
             // ->whereIn('variation.id', $variation_ids)
-            ->whereIn('order_items.id', $sale_items)
-            ->whereIn('orders.order_type_id', [2,3,5])
-            ->Where('orders.deleted_at',null)
-            ->Where('order_items.deleted_at',null)
-            ->Where('stock.deleted_at',null)
-            ->Where('process_stock.deleted_at',null)
-            ->whereIn('orders.status', [3,6])
-            ->whereIn('order_items.status', [3,6])
             ->groupBy('category.id')
             ->get();
         // $costs = Category_model::select(
