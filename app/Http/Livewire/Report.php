@@ -162,7 +162,7 @@ class Report extends Component
         //     'category.'
         // )
 
-        dd($aggregates, $sale_orders, $sale_items, $variation_ids);
+        // dd($aggregates, $sale_orders, $sale_items, $variation_ids);
         $aggregated_cost = [];
         foreach ($aggregates as $agg) {
 
