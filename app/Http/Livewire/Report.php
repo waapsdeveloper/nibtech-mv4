@@ -106,49 +106,24 @@ class Report extends Component
             })
             ->pluck('id')->toArray();
 
-            // $aggregates = DB::table('category')
-            // ->join('products', 'category.id', '=', 'products.category')
-            // ->join('variation', 'products.id', '=', 'variation.product_id')
-            // ->join('order_items as items', 'variation.id', '=', 'items.variation_id')
-            // ->join('orders', 'items.order_id', '=', 'orders.id')
 
-            // ->join('order_items', function ($join) {
-            //     $join->on('orders.id', '=', 'order_items.order_id')
-            //         ->where('order_items.variation_id', '=', 'variation.id');
-            // })
-            // ->leftJoin('stock', 'order_items.stock_id', '=', 'stock.id')
-            // ->leftJoin('process_stock', 'stock.id', '=', 'process_stock.stock_id')
-            // ->leftJoin('process', 'process_stock.process_id', '=', 'process.id')
-            // ->select(
-            //     'category.id as category_id',
-            //     DB::raw('COUNT(orders.id) as orders_qty'),
-            //     DB::raw('SUM(orders.charges) as charges'),
-            //     DB::raw('SUM(CASE WHEN orders.currency = 4 OR orders.order_type_id = 5 THEN order_items.price ELSE 0 END) as eur_items_sum'),
-            //     DB::raw('SUM(CASE WHEN orders.currency = 5 AND orders.order_type_id = 3 THEN orders.price ELSE 0 END) as gbp_items_sum'),
-            //     DB::raw('GROUP_CONCAT(stock.id) as stock_ids'),
-            //     DB::raw('SUM(CASE WHEN process.process_type_id = 9 THEN process_stock.price ELSE 0 END) as items_repair_sum')
-            // )
-            $aggregates = DB::table('category')
-                ->join('products', 'category.id', '=', 'products.category')
-                ->join('variation', 'products.id', '=', 'variation.product_id')
-                ->join('order_items as items', 'variation.id', '=', 'items.variation_id')
-                ->join('orders', 'items.order_id', '=', 'orders.id')
-                ->join('order_items', function ($join) {
-                    $join->on('orders.id', '=', 'order_items.order_id')
-                        ->where('order_items.variation_id', '=', 'variation.id');
-                })
-                ->leftJoin('stock', 'order_items.stock_id', '=', 'stock.id')
-                ->leftJoin('process_stock', 'stock.id', '=', 'process_stock.stock_id')
-                ->leftJoin('process', 'process_stock.process_id', '=', 'process.id')
-                ->select(
-                    'category.id as category_id',
-                    DB::raw('COUNT(orders.id) as orders_qty'),
-                    DB::raw('SUM(orders.charges) as charges'),
-                    DB::raw('SUM(CASE WHEN orders.currency = 4 OR orders.order_type_id = 5 THEN order_items.price ELSE 0 END) as eur_items_sum'),
-                    DB::raw('SUM(CASE WHEN orders.currency = 5 AND orders.order_type_id = 3 THEN orders.price ELSE 0 END) as gbp_items_sum'),
-                    DB::raw('GROUP_CONCAT(stock.id) as stock_ids'),
-                    DB::raw('SUM(CASE WHEN process.process_type_id = 9 THEN process_stock.price ELSE 0 END) as items_repair_sum')
-                )
+        $aggregates = DB::table('category')
+            ->join('products', 'category.id', '=', 'products.category')
+            ->join('variation', 'products.id', '=', 'variation.product_id')
+            ->join('order_items', 'variation.id', '=', 'order_items.variation_id')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->leftJoin('stock', 'order_items.stock_id', '=', 'stock.id')
+            ->leftJoin('process_stock', 'stock.id', '=', 'process_stock.stock_id')
+            ->leftJoin('process', 'process_stock.process_id', '=', 'process.id')
+            ->select(
+                'category.id as category_id',
+                DB::raw('COUNT(orders.id) as orders_qty'),
+                DB::raw('SUM(orders.charges) as charges'),
+                DB::raw('SUM(CASE WHEN orders.currency = 4 OR orders.order_type_id = 5 THEN order_items.price ELSE 0 END) as eur_items_sum'),
+                DB::raw('SUM(CASE WHEN orders.currency = 5 AND orders.order_type_id = 3 THEN orders.price ELSE 0 END) as gbp_items_sum'),
+                DB::raw('GROUP_CONCAT(stock.id) as stock_ids'),
+                DB::raw('SUM(CASE WHEN process.process_type_id = 9 THEN process_stock.price ELSE 0 END) as items_repair_sum')
+            )
             ->where(function ($query) use ($start_date, $end_date) {
                 $query->where(function ($subQuery) use ($start_date, $end_date) {
                     // Where order_type_id is 3, filter by processed_at
