@@ -106,14 +106,15 @@ class Report extends Component
             })
             ->pluck('id')->toArray();
 
-        $sale_items = Order_item_model::whereIn('variation_id', $variation_ids)
-            ->whereHas('order', function ($q) use ($start_date, $end_date) {
-                $q->whereIn('order_type_id', [2,3,5])
-                    ->whereBetween('processed_at', [$start_date, $end_date])
-                    ->whereIN('status', [3,6]);
-            })
+        $sale_orders = Order_model::whereIn('order_type_id', [2,3,5])
+            ->whereBetween('processed_at', [$start_date, $end_date])
             ->whereIN('status', [3,6])
             ->pluck('id')->toArray();
+        $sale_items = Order_item_model::whereIn('variation_id', $variation_ids)
+            ->whereIn('order_id', $sale_orders)
+            ->whereIN('status', [3,6])
+            ->pluck('id')->toArray();
+
 
         $aggregates = DB::table('category')
             ->join('products', 'category.id', '=', 'products.category')
@@ -125,6 +126,7 @@ class Report extends Component
             ->leftJoin('process', 'process_stock.process_id', '=', 'process.id')
             // ->whereBetween('orders.processed_at', [$start_date, $end_date])
             ->whereIn('variation.id', $variation_ids)
+            ->whereIn('orders.id', $sale_orders)
             ->whereIn('order_items.id', $sale_items)
             ->whereIn('orders.order_type_id', [2,3,5])
             ->Where('orders.deleted_at',null)
