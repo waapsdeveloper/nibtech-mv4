@@ -110,8 +110,13 @@ class Report extends Component
         $aggregates = DB::table('category')
             ->join('products', 'category.id', '=', 'products.category')
             ->join('variation', 'products.id', '=', 'variation.product_id')
-            ->join('order_items', 'variation.id', '=', 'order_items.variation_id')
-            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->join('order_items as items', 'variation.id', '=', 'items.variation_id')
+            ->join('orders', 'items.order_id', '=', 'orders.id')
+
+            ->join('order_items', function ($join) {
+                $join->on('orders.id', '=', 'order_items.order_id')
+                    ->where('order_items.variation_id', '=', 'variation.id');
+            })
             ->leftJoin('stock', 'order_items.stock_id', '=', 'stock.id')
             ->leftJoin('process_stock', 'stock.id', '=', 'process_stock.stock_id')
             ->leftJoin('process', 'process_stock.process_id', '=', 'process.id')
