@@ -148,7 +148,7 @@
                                 <tr>
                                     <td>{{ $s+1 }}</td>
                                     @if (request('bp') == 1)
-                                    <td>{{ $products[$sales->product_id] ." ". $storages[$sales->storage] }}</td>
+                                    <td>{{ ($products[$sales->product_id] ?? null) ." ". ($storages[$sales->storage] ?? null) }}</td>
                                     @endif
                                     @if (request('bc') == 1)
                                     <td>{{ $customers[$sales->customer_id] ?? "Unknown" }}</td>
