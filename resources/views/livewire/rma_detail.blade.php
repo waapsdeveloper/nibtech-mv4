@@ -321,7 +321,9 @@
                                             $i ++;
                                             $variation = $item->variation;
                                             $stock = $item->stock;
-                                            $customer = $item->stock->order->customer;
+                                            $po = $stock->order;
+                                            $customer = $po->customer;
+
                                         @endphp
                                         <tr>
                                             <td>{{ $i }}</td>
@@ -332,7 +334,7 @@
                                                     <a href="{{url('repair/detail/'.$stock->latest_repair->proces_id)}}">{{ $stock->latest_repair->process->reference_id }}</a>
                                                 @endif
                                             </td>
-                                            <td>{{ $stock->order->reference_id }}</td>
+                                            <td title="{{ $po->created_at }}">{{ $po->reference_id }}</td>
                                             <td>{{ $stock->latest_operation->description ?? null }}</td>
                                             @if (session('user')->hasPermission('view_cost'))
                                             <td>€{{ amount_formatter($item->price,2) }}</td>
