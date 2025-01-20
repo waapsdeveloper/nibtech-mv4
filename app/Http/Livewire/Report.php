@@ -632,6 +632,7 @@ class Report extends Component
         $stocks = Stock_model::whereIn('id',explode(',',request('stock_ids')))->with('variation','order_items','order')->get();
         $data['stocks'] = $stocks;
 
+        dd($data['stocks']);
         // $aggregates = DB::table('variation')
         //     ->join('order_items', 'variation.id', '=', 'order_items.variation_id')
         //     ->join('orders', 'order_items.order_id', '=', 'orders.id')
