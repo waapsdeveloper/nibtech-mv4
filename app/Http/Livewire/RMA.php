@@ -599,18 +599,20 @@ class RMA extends Component
 
         // Add a page
         $pdf->AddPage();
+// Set download file name
 
         // Set font
         $pdf->SetFont('times', '', 12);
 
         // Additional content from your view
         if(request('packlist') == 1){
-
+            $filename = 'RMA_List_'.$order->customer->company.'_'.$order->reference_id.'_'.$order->count('order_items').'pcs.pdf';
             $html = view('export.rma_packlist', $data)->render();
         }elseif(request('packlist') == 2){
 
             return Excel::download(new PacksheetExport($invoice), 'RMA_'.$order->reference_id.'.xlsx');
         }else{
+            $filename = 'RMA_'.$order->customer->company.'_'.$order->reference_id.'_'.$order->count('order_items').'pcs.pdf';
             $html = view('export.rma_invoice', $data)->render();
         }
 
@@ -624,7 +626,7 @@ class RMA extends Component
         // file_put_contents('invoice.pdf', $pdfContent);
 
         // Get the PDF content
-        $pdf->Output('', 'I');
+        $pdf->Output($filename, 'I');
 
         // $pdfContent = $pdf->Output('', 'S');
         // Return a response or redirect
