@@ -68,6 +68,10 @@ class Functions extends Command
             }
         }
 
+        $itms = Order_item_model::whereNull('currency')->each(function($item){
+            $item->currency = $item->order->currency;
+            $item->save();
+        });
 
     }
     private function check_linked_orders(){
