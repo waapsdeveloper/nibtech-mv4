@@ -106,6 +106,27 @@ class Report extends Component
             })
             ->pluck('id')->toArray();
 
+
+        if(session('user_id') == 1){
+
+            $all_po = Order_model::where('order_type_id',1)->pluck('id')->toArray();
+
+            $b2c_orders = Order_model::where('order_type_id',3)
+                ->whereBetween('processed_at', [$start_date, $end_date])
+                ->whereIn('status', [3,6])
+                ->get();
+            $b2c_order_ids = $b2c_orders->pluck('id')->toArray();
+            $b2c_order_items = Order_item_model::whereIn('variation_id', $variation_ids)
+                ->whereIn('order_id', $b2c_order_ids)
+                ->whereIn('status', [3,6])
+                ->get();
+            $b2c_stock_ids = $b2c_order_items->pluck('stock_id')->toArray();
+            $b2c_stock_cost = Order_item_model::whereIn('stock_id', $b2c_stock_ids)->whereIn('order_id', $all_po)->sum('price');
+
+            dd($b2c_orders->count(), $b2c_order_items->count(), $b2c_stock_cost);
+
+        }
+
         $sale_orders = Order_model::whereIn('order_type_id', [2,3,5])
             ->whereBetween('processed_at', [$start_date, $end_date])
             ->whereIN('status', [3,6])
