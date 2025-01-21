@@ -171,6 +171,7 @@
 
                 <div class="col-lg-2 col-xl-2 col-md-3 col-sm-6">
                     <select name="with_stock" class="form-control form-select" data-bs-placeholder="Select With Stock">
+                        <option value="">With & Without Stock</option>
                         <option value="1" @if(isset($_GET['with_stock']) && $_GET['with_stock'] == 1) {{'selected'}}@endif>With Stock</option>
                         <option value="2" @if(isset($_GET['with_stock']) && $_GET['with_stock'] == 2) {{'selected'}}@endif>Without Stock</option>
                     </select>
