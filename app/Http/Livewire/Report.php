@@ -120,9 +120,8 @@ class Report extends Component
                 ->whereIn('order_id', $b2c_order_ids)
                 ->whereIn('status', [3,6])
                 ->get();
-            $b2c_prices_by_currency = Order_item_model::whereIn('order_id', $b2c_order_ids)
-                ->whereIn('variation_id', $variation_ids)
-                ->whereIn('status', [3,6])
+            $b2c_order_ids_new = $b2c_order_items->pluck('order_id')->toArray();
+            $b2c_prices_by_currency = Order_model::whereIn('id', $b2c_order_ids_new)
                 ->select('currency', DB::raw('SUM(price) as total_price'))
                 ->groupBy('currency')
                 ->get()
