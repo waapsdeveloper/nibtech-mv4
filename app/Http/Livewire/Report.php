@@ -129,7 +129,7 @@ class Report extends Component
             $b2c_stock_ids = $b2c_order_items->pluck('stock_id')->toArray();
             $b2c_stock_cost = Order_item_model::whereIn('stock_id', $b2c_stock_ids)->whereIn('order_id', $all_po)->sum('price');
 
-            dd($b2c_orders->count(), $b2c_order_items->count(), $b2c_order_items->sum('price'), $b2c_prices_by_currency, $b2c_stock_cost);
+            dd($b2c_orders->count(), $b2c_order_items->count(), $b2c_orders->sum('price'), $b2c_order_items->sum('price'), $b2c_prices_by_currency, $b2c_stock_cost);
 
         }
 
