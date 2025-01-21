@@ -126,10 +126,15 @@ class Report extends Component
                 ->groupBy('currency')
                 ->get()
                 ->pluck('total_price', 'currency');
+            $all_b2c_prices_by_currency = Order_model::whereIn('id', $b2c_order_ids)
+                ->select('currency', DB::raw('SUM(price) as total_price'))
+                ->groupBy('currency')
+                ->get()
+                ->pluck('total_price', 'currency');
             $b2c_stock_ids = $b2c_order_items->pluck('stock_id')->toArray();
             $b2c_stock_cost = Order_item_model::whereIn('stock_id', $b2c_stock_ids)->whereIn('order_id', $all_po)->sum('price');
 
-            dd($b2c_orders->count(), $b2c_order_items->count(), $b2c_orders->sum('price'), $b2c_order_items->sum('price'), $b2c_prices_by_currency, $b2c_stock_cost);
+            dd($b2c_orders->count(), $b2c_order_items->count(), $b2c_orders->sum('price'), $b2c_order_items->sum('price'), $b2c_prices_by_currency, $all_b2c_prices_by_currency, $b2c_stock_cost);
 
         }
 
