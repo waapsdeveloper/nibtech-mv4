@@ -68,8 +68,10 @@ class Functions extends Command
             }
         }
 
-        $itms = Order_item_model::whereNull('currency')->each(function($item){
-            $item->currency = $item->order->currency;
+        $itms = Order_item_model::whereNull('currency')->whereHas('order', function ($q) {
+            $q->where('order_type_id',1);
+        })->each(function($item){
+            $item->currency = 4;
             $item->save();
         });
 

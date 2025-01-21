@@ -200,7 +200,8 @@ class Order_item_model extends Model
             // Example:
             // print_r($orderObj);
             // echo "<br>";
-            $order_id = Order_model::where(['reference_id' => $orderObj->order_id])->first()->id;
+            $order = Order_model::where(['reference_id' => $orderObj->order_id])->first();
+            $order_id = $order->id;
             $orderItem = Order_item_model::firstOrNew(['reference_id' => $itemObj->id, 'order_id' => $order_id]);
             $variation = Variation_model::where(['reference_id' => $itemObj->listing_id])->first();
             if($variation == null){
@@ -266,6 +267,7 @@ class Order_item_model extends Model
                 $orderItem->variation_id = $variation->id;
                 $orderItem->reference_id = $itemObj->id;
                 $orderItem->price = $itemObj->price;
+                $orderItem->currency = $order->currency;
                 $orderItem->quantity = $itemObj->quantity;
             }
 
