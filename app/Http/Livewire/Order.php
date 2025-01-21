@@ -222,6 +222,11 @@ class Order extends Component
                 $q->where('stock_id', 0);
             });
         })
+        ->when(request('with_stock') == 1, function ($q) {
+            return $q->whereHas('order_items', function ($q) {
+                $q->where('stock_id','>', 0);
+            });
+        })
         // ->orderBy($sort, $by) // Order by variation name
         // ->when(request('sort') == 4, function ($q) {
         //     return $q->whereHas('order_items.variation.product', function ($q) {
