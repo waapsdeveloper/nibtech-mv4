@@ -108,6 +108,7 @@ class Report extends Component
 
 
         if(session('user_id') == 1){
+            $sale_data = [];
 
             $all_po = Order_model::where('order_type_id',1)->pluck('id')->toArray();
 
@@ -125,10 +126,36 @@ class Report extends Component
                 ->groupBy('currency')
                 ->get()
                 ->pluck('total_price', 'currency');
-            $b2c_stock_ids = $b2c_order_items->pluck('stock_id')->toArray();
-            $b2c_stock_cost = Order_item_model::whereIn('stock_id', $b2c_stock_ids)->whereIn('order_id', $all_po)->sum('price');
 
+            $b2c_charges_by_currency = Order_model::whereIn('id', $b2c_order_items->pluck('order_id')->toArray())
+                ->select('currency', DB::raw('SUM(charges) as total_charges'))
+                ->groupBy('currency')
+                ->get()
+                ->pluck('total_charges', 'currency');
+
+            $b2c_stock_ids = $b2c_order_items->pluck('stock_id')->toArray();
+            $b2c_stock_cost = Order_item_model::whereIn('stock_id', $b2c_stock_ids)
+                ->whereIn('order_id', $all_po)
+                ->whereIn('id', function ($query) {
+                    $query->select(DB::raw('MAX(id)'))
+                          ->from('order_items')
+                          ->groupBy('stock_id');
+                })
+                ->sum('price');
+
+            $b2c_stock_repair_cost = Process_stock_model::whereIn('stock_id', $b2c_stock_ids)
+                ->where('process_id', 9)
+                ->sum('price');
+
+            $sale_data['b2c_orders'] = $b2c_orders->count();
+            $sale_data['b2c_order_items'] = $b2c_order_items->count();
+            $sale_data['b2c_orders_sum'] = $b2c_prices_by_currency;
+            $sale_data['b2c_charges_sum'] = $b2c_charges_by_currency;
+            $sale_data['b2c_stock_repair_cost'] = $b2c_stock_repair_cost;
+            $sale_data['b2c_stock_cost'] = $b2c_stock_cost;
             // dd($b2c_orders->count(), $b2c_order_items->count(), $b2c_orders->sum('price'), $b2c_order_items->sum('price'), $b2c_prices_by_currency, $b2c_stock_cost);
+
+            $data['sale_data'] = $sale_data;
 
         }
 
