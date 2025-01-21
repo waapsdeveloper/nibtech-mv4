@@ -188,7 +188,7 @@
                 </div>
             </div>
             <div class="card-body mt-0 pt-0">
-                {{ $sale_data }}
+                {!! $sale_data !!}
                 <form method="POST" id="stock_report" target="print_popup" action="{{ url('report/stock_report')}}" onsubmit="window.open('about:blank','print_popup','width=1600,height=800');">
                     @csrf
                     <input type="hidden" name="start_date" value="{{$start_date}}">
