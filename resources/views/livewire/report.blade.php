@@ -506,6 +506,8 @@
                     },
                     success: function (data) {
 
+                        b2cSale = data.sale_data;
+
                         console.log(data);
                         let table = `
                             <table class="table table-bordered table-hover text-md-nowrap">
@@ -525,16 +527,16 @@
                                 <tbody>
                                     <tr>
                                         <td>Sales</td>
-                                        <td>${data.b2c_orders}</td>
-                                        <td>${data.b2c_order_items}</td>
-                                        <td>€${data.b2c_stock_cost}</td>
-                                        <td>€${data.b2c_stock_repair_cost}</td>
+                                        <td>${b2cSale.b2c_orders}</td>
+                                        <td>${b2cSale.b2c_order_items}</td>
+                                        <td>€${b2cSale.b2c_stock_cost}</td>
+                                        <td>€${b2cSale.b2c_stock_repair_cost}</td>
                                 `;
-                                data.b2c_orders_sum.forEach((order_sum, key) => {
+                                b2cSale.b2c_orders_sum.forEach((order_sum, key) => {
                                     table += `
                                         <td>
                                             ${currencies[key]}${order_sum}<br>
-                                            ${data.b2c_charges_sum[key] ? `${currencies[key]}${data.b2c_charges_sum[key]}` : ''}
+                                            ${b2cSale.b2c_charges_sum[key] ? `${currencies[key]}${b2cSale.b2c_charges_sum[key]}` : ''}
                                         </td>
                                     `;
                                 });
