@@ -312,13 +312,19 @@ class Report extends Component
             ->select('currency', DB::raw('SUM(price) as total_price'))
             ->groupBy('currency')
             ->get()
-            ->pluck('total_price', 'currency');
+            ->pluck('total_price', 'currency')
+            ->map(function ($price) {
+                return amount_formatter($price);
+            });
 
         $b2c_charges_by_currency = Order_model::whereIn('id', $b2c_order_items->pluck('order_id')->toArray())
             ->select('currency', DB::raw('SUM(charges) as total_charges'))
             ->groupBy('currency')
             ->get()
-            ->pluck('total_charges', 'currency');
+            ->pluck('total_charges', 'currency')
+            ->map(function ($price) {
+                return amount_formatter($price);
+            });
 
         $b2c_stock_ids = $b2c_order_items->pluck('stock_id')->toArray();
         $b2c_stock_cost = Order_item_model::whereIn('stock_id', $b2c_stock_ids)
@@ -338,8 +344,8 @@ class Report extends Component
         $sale_data['b2c_order_items'] = $b2c_order_items->count();
         $sale_data['b2c_orders_sum'] = $b2c_prices_by_currency;
         $sale_data['b2c_charges_sum'] = $b2c_charges_by_currency;
-        $sale_data['b2c_stock_repair_cost'] = $b2c_stock_repair_cost;
-        $sale_data['b2c_stock_cost'] = $b2c_stock_cost;
+        $sale_data['b2c_stock_repair_cost'] = amount_formatter($b2c_stock_repair_cost);
+        $sale_data['b2c_stock_cost'] = amount_formatter($b2c_stock_cost);
 
 
 
@@ -353,7 +359,7 @@ class Report extends Component
 
         $b2c_return_prices_by_currency = $b2c_returns->groupBy('currency')
             ->map(function ($items) {
-                return $items->sum('price');
+                return amount_formatter($items->sum('price'));
             });
 
         $b2c_return_stock_ids = $b2c_returns->pluck('stock_id')->toArray();
@@ -374,8 +380,8 @@ class Report extends Component
         $return_data['b2c_return_items'] = $b2c_returns->count();
         $return_data['b2c_return_sum'] = $b2c_return_prices_by_currency;
         $return_data['b2c_return_charges_sum'] = 0;
-        $return_data['b2c_return_stock_repair_cost'] = $b2c_return_stock_repair_cost;
-        $return_data['b2c_return_stock_cost'] = $b2c_return_stock_cost;
+        $return_data['b2c_return_stock_repair_cost'] = amount_formatter($b2c_return_stock_repair_cost);
+        $return_data['b2c_return_stock_cost'] = amount_formatter($b2c_return_stock_cost);
 
         $b2b_orders = Order_model::where('order_type_id',5)
             ->whereBetween('created_at', [$start_date, $end_date])
@@ -391,13 +397,19 @@ class Report extends Component
             ->select('currency', DB::raw('SUM(price) as total_price'))
             ->groupBy('currency')
             ->get()
-            ->pluck('total_price', 'currency');
+            ->pluck('total_price', 'currency')
+            ->map(function ($price) {
+                return amount_formatter($price);
+            });
 
         $b2b_charges_by_currency = Order_model::whereIn('id', $b2b_order_items->pluck('order_id')->toArray())
             ->select('currency', DB::raw('SUM(charges) as total_charges'))
             ->groupBy('currency')
             ->get()
-            ->pluck('total_charges', 'currency');
+            ->pluck('total_charges', 'currency')
+            ->map(function ($price) {
+                return amount_formatter($price);
+            });
 
         $b2b_stock_ids = $b2b_order_items->pluck('stock_id')->toArray();
 
@@ -418,8 +430,8 @@ class Report extends Component
         $b2b_data['b2b_order_items'] = $b2b_order_items->count();
         $b2b_data['b2b_orders_sum'] = $b2b_prices_by_currency;
         $b2b_data['b2b_charges_sum'] = $b2b_charges_by_currency;
-        $b2b_data['b2b_stock_repair_cost'] = $b2b_stock_repair_cost;
-        $b2b_data['b2b_stock_cost'] = $b2b_stock_cost;
+        $b2b_data['b2b_stock_repair_cost'] = amount_formatter($b2b_stock_repair_cost);
+        $b2b_data['b2b_stock_cost'] = amount_formatter($b2b_stock_cost);
 
 
         $b2b_returns = Order_model::where('order_type_id',6)
@@ -436,13 +448,19 @@ class Report extends Component
             ->select('currency', DB::raw('SUM(price) as total_price'))
             ->groupBy('currency')
             ->get()
-            ->pluck('total_price', 'currency');
+            ->pluck('total_price', 'currency')
+            ->map(function ($price) {
+                return amount_formatter($price);
+            });
 
         $b2b_return_charges_by_currency = Order_model::whereIn('id', $b2b_return_order_items->pluck('order_id')->toArray())
             ->select('currency', DB::raw('SUM(charges) as total_charges'))
             ->groupBy('currency')
             ->get()
-            ->pluck('total_charges', 'currency');
+            ->pluck('total_charges', 'currency')
+            ->map(function ($price) {
+                return amount_formatter($price);
+            });
 
         $b2b_return_stock_ids = $b2b_return_order_items->pluck('stock_id')->toArray();
 
@@ -463,8 +481,8 @@ class Report extends Component
         $b2b_return_data['b2b_return_order_items'] = $b2b_return_order_items->count();
         $b2b_return_data['b2b_return_sum'] = $b2b_return_prices_by_currency;
         $b2b_return_data['b2b_return_charges_sum'] = $b2b_return_charges_by_currency;
-        $b2b_return_data['b2b_return_stock_repair_cost'] = $b2b_return_stock_repair_cost;
-        $b2b_return_data['b2b_return_stock_cost'] = $b2b_return_stock_cost;
+        $b2b_return_data['b2b_return_stock_repair_cost'] = amount_formatter($b2b_return_stock_repair_cost);
+        $b2b_return_data['b2b_return_stock_cost'] = amount_formatter($b2b_return_stock_cost);
 
         $data['sale_data'] = $sale_data;
         $data['return_data'] = $return_data;
