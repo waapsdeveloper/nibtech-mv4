@@ -503,7 +503,7 @@
                     },
                     success: function (data) {
 
-
+                        console.log(data);
 
                         $('#sales_and_returns_total').html(data);
                     }
