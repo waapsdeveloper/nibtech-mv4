@@ -518,9 +518,18 @@
                                         <th><small><b>Items</b></small></th>
                                         <th><small><b>Cost</b></small></th>
                                         <th><small><b>Repair Cost</b></small></th>
-                                        <th><small><b>Charges</b></small></th>
-                                        <th><small><b>EUR Amount</b></small></th>
-                                        <th><small><b>GBP Amount</b></small></th>
+                                `;
+                                if (typeof data.currency_ids === 'object') {
+                                    Object.keys(data.currency_ids).forEach((key) => {
+                                        table += `
+                                            <th>
+                                                <small><b>${currencies[key]}</b></small><br>
+                                                <small><b>Charges</b></small>
+                                            </th>
+                                        `;
+                                    });
+                                }
+                                table += `
                                         <th><small><b>Profit/Loss</b></small></th>
                                     </tr>
                                 </thead>
