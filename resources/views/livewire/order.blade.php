@@ -690,6 +690,10 @@
                                                     @endif
                                                     <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank">View in Backmarket</a>
                                                     <a class="dropdown-item" href="#" onclick="window.open('{{url('order')}}/export_invoice_new/{{$order->id}}','_blank','print_popup');">Invoice 2</a>
+                                                    @if (request('missing') == 'scan' && session('user')->hasPermission('mark_scanned'))
+                                                        <a class="dropdown-item" href="{{url('order')}}/mark_scanned/{{ $order->id }}">Mark Scanned</a>
+
+                                                    @endif
                                                 </div>
                                             </td>
                                         </tr>

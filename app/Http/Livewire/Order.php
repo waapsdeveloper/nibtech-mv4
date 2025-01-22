@@ -308,6 +308,19 @@ class Order extends Component
         // dd($data['orders']);
         return view('livewire.order')->with($data);
     }
+    public function mark_scanned($id)
+    {
+        $order = Order_model::find($id);
+        if($order->scanned == null && ($order->status == 3 || $order->status == 6) && ($order->label_url == null || $order->reference != null)){
+            $order->scanned = 1;
+            $order->save();
+        }
+
+        session()->flash('message', 'Order marked as scanned');
+        session()->put('success', 'Order marked as scanned');
+        return redirect()->back();
+    }
+
     public function sales_allowed()
     {
         $data['title_page'] = "Sales (Admin)";
