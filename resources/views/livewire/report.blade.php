@@ -522,7 +522,7 @@
                                 if (typeof data.currency_ids === 'object') {
                                     Object.values(data.currency_ids).forEach((key) => {
                                         table += `
-                                            <th>
+                                            <th title="Price - Charges">
                                                 <small><b>${currencies[key]}</b></small>
                                             </th>
                                         `;
@@ -540,11 +540,11 @@
                                         <td>€${b2cSale.b2c_stock_cost}</td>
                                         <td>€${b2cSale.b2c_stock_repair_cost}</td>
                                 `;
-                                if (typeof b2cSale.b2c_orders_sum === 'object') {
-                                    Object.keys(b2cSale.b2c_orders_sum).forEach((key) => {
+                                if (typeof data.currency_ids === 'object') {
+                                    Object.values(data.currency_ids).forEach((key) => {
                                         table += `
-                                            <td>
-                                                ${currencies[key]}${b2cSale.b2c_orders_sum[key]}<br>
+                                            <td title="Price - Charges">
+                                                ${b2cSale.b2c_orders_sum[key] ? `${currencies[key]}${b2cSale.b2c_orders_sum[key]}` : ''} -
                                                 ${b2cSale.b2c_charges_sum[key] ? `${currencies[key]}${b2cSale.b2c_charges_sum[key]}` : ''}
                                             </td>
                                         `;
