@@ -2882,6 +2882,7 @@ class Order extends Component
             // dd($datas);
             if($datas == null || $datas->results == []){
                 // print_r($datas);
+                echo 'Hello';
             }elseif($datas->results[0]->hubScanned == true){
                 $order = Order_model::where('reference_id',$order_id)->first();
                 $order->scanned = 1;
