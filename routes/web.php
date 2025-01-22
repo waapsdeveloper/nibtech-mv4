@@ -105,6 +105,7 @@ Route::post('purchase/remove_issues', [Order::class,'remove_issues'])->name('rem
 Route::get('report_new', [ReportController::class, 'index'])->name('view_report');
 
 Route::get('report', Report::class)->name('view_report');
+Route::get('report/sales_and_returns_total', [Report::class,'sales_and_returns_total'])->name('view_report');
 Route::get('report/b2c_orders', [Report::class,'b2c_orders_report'])->name('view_report');
 Route::get('report/projected_sales', [Report::class,'projected_sales'])->name('view_report');
 Route::get('report/pass', [Report::class,'pass'])->name('view_report');

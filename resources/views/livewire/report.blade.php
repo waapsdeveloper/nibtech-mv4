@@ -188,7 +188,6 @@
                 </div>
             </div>
             <div class="card-body mt-0 pt-0">
-                {{ json_encode($sale_data) }}
                 <form method="POST" id="stock_report" target="print_popup" action="{{ url('report/stock_report')}}" onsubmit="window.open('about:blank','print_popup','width=1600,height=800');">
                     @csrf
                     <input type="hidden" name="start_date" value="{{$start_date}}">
@@ -347,6 +346,14 @@
             </div>
         </div>
 
+        <div class="card">
+            <div class="card-header mb-0 d-flex justify-content-between">
+                <div class="mb-0">
+                    <h4 class="card-title mb-0">Sales & Returns by Orders</h4>
+                </div>
+            </div>
+            <div class="card-body mt-0" id="sales_and_returns_total"></div>
+        </div>
 
         <div class="card">
             <div class="card-header mb-0 d-flex justify-content-between">
@@ -484,10 +491,34 @@
         <script>
             $(document).ready(function(){
                 $('.select2').select2();
+
+
             })
             $('.select2').select2({
             placeholder: 'Select an option'
             });
+
+
+            function view_sales_and_returns_total () {
+                var start_date = $('#start_date').val();
+                var end_date = $('#end_date').val();
+
+                $.ajax({
+                    url: "{{ url('report/sales_and_returns_total') }}",
+                    type: 'GET',
+                    data: {
+                        start_date: start_date,
+                        end_date: end_date
+                    },
+                    success: function (data) {
+
+
+
+                        $('#sales_and_returns_total').html(data);
+                    }
+                });
+            }
+
         </script>
 		<script src="{{asset('assets/plugins/chartjs/Chart.bundle.min.js')}}"></script>
 
