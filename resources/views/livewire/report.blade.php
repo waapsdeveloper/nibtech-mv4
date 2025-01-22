@@ -489,15 +489,6 @@
     @section('scripts')
 		<!-- Internal Chart.Bundle js-->
         <script>
-            $(document).ready(function(){
-                $('.select2').select2();
-
-
-            })
-            $('.select2').select2({
-            placeholder: 'Select an option'
-            });
-
 
             function view_sales_and_returns_total () {
                 var start_date = $('#start_date').val();
@@ -518,6 +509,11 @@
                     }
                 });
             }
+            $(document).ready(function(){
+                view_sales_and_returns_total();
+
+            })
+
 
         </script>
 		<script src="{{asset('assets/plugins/chartjs/Chart.bundle.min.js')}}"></script>
