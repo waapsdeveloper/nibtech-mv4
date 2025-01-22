@@ -532,14 +532,16 @@
                                         <td>€${b2cSale.b2c_stock_cost}</td>
                                         <td>€${b2cSale.b2c_stock_repair_cost}</td>
                                 `;
-                                b2cSale.b2c_orders_sum.forEach((order_sum, key) => {
-                                    table += `
-                                        <td>
-                                            ${currencies[key]}${order_sum}<br>
-                                            ${b2cSale.b2c_charges_sum[key] ? `${currencies[key]}${b2cSale.b2c_charges_sum[key]}` : ''}
-                                        </td>
-                                    `;
-                                });
+                                if (typeof b2cSale.b2c_orders_sum === 'object') {
+                                    Object.keys(b2cSale.b2c_orders_sum).forEach((key) => {
+                                        table += `
+                                            <td>
+                                                ${currencies[key]}${b2cSale.b2c_orders_sum[key]}<br>
+                                                ${b2cSale.b2c_charges_sum[key] ? `${currencies[key]}${b2cSale.b2c_charges_sum[key]}` : ''}
+                                            </td>
+                                        `;
+                                    });
+                                }
                                 table += `
                                     </tr>
                                     <tr>
