@@ -504,61 +504,60 @@
                     success: function (data) {
 
                         console.log(data);
-                        $('#sales_and_returns_total').html(data);
+                        let table = `
+                            <table class="table table-bordered table-hover text-md-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th><small><b>Type</b></small></th>
+                                        <th><small><b>Orders</b></small></th>
+                                        <th><small><b>Items</b></small></th>
+                                        <th><small><b>Cost</b></small></th>
+                                        <th><small><b>Repair Cost</b></small></th>
+                                        <th><small><b>Charges</b></small></th>
+                                        <th><small><b>EUR Amount</b></small></th>
+                                        <th><small><b>GBP Amount</b></small></th>
+                                        <th><small><b>Profit/Loss</b></small></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Sales</td>
+                                        <td>${data.total_sale_orders}</td>
+                                        <td>${data.total_sale_items}</td>
+                                        <td>€${data.total_sale_cost.toFixed(2)}</td>
+                                        <td>€${data.total_repair_cost.toFixed(2)}</td>
+                                        <td>€${data.total_fee.toFixed(2)}</td>
+                                        <td>€${data.total_sale_eur_items.toFixed(2)}</td>
+                                        <td>£${data.total_sale_gbp_items.toFixed(2)}</td>
+                                        <td>€${data.total_eur_profit.toFixed(2)} + £${data.total_sale_gbp_items.toFixed(2)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Returns</td>
+                                        <td>${data.total_return_orders}</td>
+                                        <td>${data.total_return_items}</td>
+                                        <td>€${data.total_return_cost.toFixed(2)}</td>
+                                        <td>€${data.total_repair_return_cost.toFixed(2)}</td>
+                                        <td>€0.00</td>
+                                        <td>€${data.total_return_eur_items.toFixed(2)}</td>
+                                        <td>£${data.total_return_gbp_items.toFixed(2)}</td>
+                                        <td>€${data.total_eur_loss.toFixed(2)} + £${data.total_return_gbp_items.toFixed(2)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Net</td>
+                                        <td>${data.total_sale_orders - data.total_return_orders}</td>
+                                        <td>${data.total_sale_items - data.total_return_items}</td>
+                                        <td>€${(data.total_sale_cost - data.total_return_cost).toFixed(2)}</td>
+                                        <td>€${(data.total_repair_cost - data.total_repair_return_cost).toFixed(2)}</td>
+                                        <td>€${data.total_fee.toFixed(2)}</td>
+                                        <td>€${(data.total_sale_eur_items - data.total_return_eur_items).toFixed(2)}</td>
+                                        <td>£${(data.total_sale_gbp_items - data.total_return_gbp_items).toFixed(2)}</td>
+                                        <td>€${(data.total_eur_profit - data.total_eur_loss).toFixed(2)} + £${(data.total_sale_gbp_items - data.total_return_gbp_items).toFixed(2)}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        `;
+                        $('#sales_and_returns_total').html(table);
                     }
-                let table = `
-                    <table class="table table-bordered table-hover text-md-nowrap">
-                        <thead>
-                            <tr>
-                                <th><small><b>Type</b></small></th>
-                                <th><small><b>Orders</b></small></th>
-                                <th><small><b>Items</b></small></th>
-                                <th><small><b>Cost</b></small></th>
-                                <th><small><b>Repair Cost</b></small></th>
-                                <th><small><b>Charges</b></small></th>
-                                <th><small><b>EUR Amount</b></small></th>
-                                <th><small><b>GBP Amount</b></small></th>
-                                <th><small><b>Profit/Loss</b></small></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Sales</td>
-                                <td>${data.total_sale_orders}</td>
-                                <td>${data.total_sale_items}</td>
-                                <td>€${data.total_sale_cost.toFixed(2)}</td>
-                                <td>€${data.total_repair_cost.toFixed(2)}</td>
-                                <td>€${data.total_fee.toFixed(2)}</td>
-                                <td>€${data.total_sale_eur_items.toFixed(2)}</td>
-                                <td>£${data.total_sale_gbp_items.toFixed(2)}</td>
-                                <td>€${data.total_eur_profit.toFixed(2)} + £${data.total_sale_gbp_items.toFixed(2)}</td>
-                            </tr>
-                            <tr>
-                                <td>Returns</td>
-                                <td>${data.total_return_orders}</td>
-                                <td>${data.total_return_items}</td>
-                                <td>€${data.total_return_cost.toFixed(2)}</td>
-                                <td>€${data.total_repair_return_cost.toFixed(2)}</td>
-                                <td>€0.00</td>
-                                <td>€${data.total_return_eur_items.toFixed(2)}</td>
-                                <td>£${data.total_return_gbp_items.toFixed(2)}</td>
-                                <td>€${data.total_eur_loss.toFixed(2)} + £${data.total_return_gbp_items.toFixed(2)}</td>
-                            </tr>
-                            <tr>
-                                <td>Net</td>
-                                <td>${data.total_sale_orders - data.total_return_orders}</td>
-                                <td>${data.total_sale_items - data.total_return_items}</td>
-                                <td>€${(data.total_sale_cost - data.total_return_cost).toFixed(2)}</td>
-                                <td>€${(data.total_repair_cost - data.total_repair_return_cost).toFixed(2)}</td>
-                                <td>€${data.total_fee.toFixed(2)}</td>
-                                <td>€${(data.total_sale_eur_items - data.total_return_eur_items).toFixed(2)}</td>
-                                <td>£${(data.total_sale_gbp_items - data.total_return_gbp_items).toFixed(2)}</td>
-                                <td>€${(data.total_eur_profit - data.total_eur_loss).toFixed(2)} + £${(data.total_sale_gbp_items - data.total_return_gbp_items).toFixed(2)}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                `;
-                $('#sales_and_returns_total').html(table);
                 });
             }
             $(document).ready(function(){
