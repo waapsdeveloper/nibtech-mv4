@@ -354,7 +354,7 @@ class Report extends Component
                 $q->where('order_type_id',4);
             })
             ->whereBetween('created_at', [$start_date, $end_date])
-            ->whereIn('status', [3,6])
+            // ->whereIn('status', [3,6])
             ->get();
 
         $b2c_return_prices_by_currency = $b2c_returns->groupBy('currency')
