@@ -492,7 +492,7 @@
 
             function view_sales_and_returns_total () {
 
-                let currencies = {{ json_encode($currencies) }};
+                let currencies = {{ json_encode($currencies->toArray()) }};
 
                 var start_date = $('#start_date').val();
                 var end_date = $('#end_date').val();
