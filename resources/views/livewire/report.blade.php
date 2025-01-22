@@ -491,6 +491,9 @@
         <script>
 
             function view_sales_and_returns_total () {
+
+                let currencies = {{ json_encode($currencies) }};
+
                 var start_date = $('#start_date').val();
                 var end_date = $('#end_date').val();
 
@@ -522,36 +525,42 @@
                                 <tbody>
                                     <tr>
                                         <td>Sales</td>
-                                        <td>${data.total_sale_orders}</td>
-                                        <td>${data.total_sale_items}</td>
-                                        <td>€${data.total_sale_cost.toFixed(2)}</td>
-                                        <td>€${data.total_repair_cost.toFixed(2)}</td>
-                                        <td>€${data.total_fee.toFixed(2)}</td>
-                                        <td>€${data.total_sale_eur_items.toFixed(2)}</td>
-                                        <td>£${data.total_sale_gbp_items.toFixed(2)}</td>
-                                        <td>€${data.total_eur_profit.toFixed(2)} + £${data.total_sale_gbp_items.toFixed(2)}</td>
+                                        <td>${data.b2c_orders}</td>
+                                        <td>${data.b2c_order_items}</td>
+                                        <td>€${data.b2c_stock_cost}</td>
+                                        <td>€${data.b2c_stock_repair_cost}</td>
+                                `;
+                                data.b2c_orders_sum.forEach((order_sum, key) => {
+                                    table += `
+                                        <td>
+                                            ${currencies[key]}${order_sum}<br>
+                                            ${data.b2c_charges_sum[key] ? `${currencies[key]}${data.b2c_charges_sum[key]}` : ''}
+                                        </td>
+                                    `;
+                                });
+                                table += `
                                     </tr>
                                     <tr>
                                         <td>Returns</td>
                                         <td>${data.total_return_orders}</td>
                                         <td>${data.total_return_items}</td>
-                                        <td>€${data.total_return_cost.toFixed(2)}</td>
-                                        <td>€${data.total_repair_return_cost.toFixed(2)}</td>
+                                        <td>€${data.total_return_cost}</td>
+                                        <td>€${data.total_repair_return_cost}</td>
                                         <td>€0.00</td>
-                                        <td>€${data.total_return_eur_items.toFixed(2)}</td>
-                                        <td>£${data.total_return_gbp_items.toFixed(2)}</td>
-                                        <td>€${data.total_eur_loss.toFixed(2)} + £${data.total_return_gbp_items.toFixed(2)}</td>
+                                        <td>€${data.total_return_eur_items}</td>
+                                        <td>£${data.total_return_gbp_items}</td>
+                                        <td>€${data.total_eur_loss} + £${data.total_return_gbp_items}</td>
                                     </tr>
                                     <tr>
                                         <td>Net</td>
                                         <td>${data.total_sale_orders - data.total_return_orders}</td>
                                         <td>${data.total_sale_items - data.total_return_items}</td>
-                                        <td>€${(data.total_sale_cost - data.total_return_cost).toFixed(2)}</td>
-                                        <td>€${(data.total_repair_cost - data.total_repair_return_cost).toFixed(2)}</td>
-                                        <td>€${data.total_fee.toFixed(2)}</td>
-                                        <td>€${(data.total_sale_eur_items - data.total_return_eur_items).toFixed(2)}</td>
-                                        <td>£${(data.total_sale_gbp_items - data.total_return_gbp_items).toFixed(2)}</td>
-                                        <td>€${(data.total_eur_profit - data.total_eur_loss).toFixed(2)} + £${(data.total_sale_gbp_items - data.total_return_gbp_items).toFixed(2)}</td>
+                                        <td>€${(data.total_sale_cost - data.total_return_cost)}</td>
+                                        <td>€${(data.total_repair_cost - data.total_repair_return_cost)}</td>
+                                        <td>€${data.total_fee}</td>
+                                        <td>€${(data.total_sale_eur_items - data.total_return_eur_items)}</td>
+                                        <td>£${(data.total_sale_gbp_items - data.total_return_gbp_items)}</td>
+                                        <td>€${(data.total_eur_profit - data.total_eur_loss)} + £${(data.total_sale_gbp_items - data.total_return_gbp_items)}</td>
                                     </tr>
                                 </tbody>
                             </table>
