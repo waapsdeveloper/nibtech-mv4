@@ -107,58 +107,6 @@ class Report extends Component
             ->pluck('id')->toArray();
 
 
-        if(session('user_id') == 1){
-            $sale_data = [];
-
-            $all_po = Order_model::where('order_type_id',1)->pluck('id')->toArray();
-
-            $b2c_orders = Order_model::where('order_type_id',3)
-                ->whereBetween('created_at', [$start_date, $end_date])
-                ->whereIn('status', [3,6])
-                ->get();
-            $b2c_order_ids = $b2c_orders->pluck('id')->toArray();
-            $b2c_order_items = Order_item_model::whereIn('variation_id', $variation_ids)
-                ->whereIn('order_id', $b2c_order_ids)
-                ->whereIn('status', [3,6])
-                ->get();
-            $b2c_prices_by_currency = Order_item_model::whereIn('id', $b2c_order_items->pluck('id')->toArray())
-                ->select('currency', DB::raw('SUM(price) as total_price'))
-                ->groupBy('currency')
-                ->get()
-                ->pluck('total_price', 'currency');
-
-            $b2c_charges_by_currency = Order_model::whereIn('id', $b2c_order_items->pluck('order_id')->toArray())
-                ->select('currency', DB::raw('SUM(charges) as total_charges'))
-                ->groupBy('currency')
-                ->get()
-                ->pluck('total_charges', 'currency');
-
-            $b2c_stock_ids = $b2c_order_items->pluck('stock_id')->toArray();
-            $b2c_stock_cost = Order_item_model::whereIn('stock_id', $b2c_stock_ids)
-                ->whereIn('order_id', $all_po)
-                ->whereIn('id', function ($query) {
-                    $query->select(DB::raw('MAX(id)'))
-                          ->from('order_items')
-                          ->groupBy('stock_id');
-                })
-                ->sum('price');
-
-            $b2c_stock_repair_cost = Process_stock_model::whereIn('stock_id', $b2c_stock_ids)
-                ->where('process_id', 9)
-                ->sum('price');
-
-            $sale_data['b2c_orders'] = $b2c_orders->count();
-            $sale_data['b2c_order_items'] = $b2c_order_items->count();
-            $sale_data['b2c_orders_sum'] = $b2c_prices_by_currency;
-            $sale_data['b2c_charges_sum'] = $b2c_charges_by_currency;
-            $sale_data['b2c_stock_repair_cost'] = $b2c_stock_repair_cost;
-            $sale_data['b2c_stock_cost'] = $b2c_stock_cost;
-            // dd($b2c_orders->count(), $b2c_order_items->count(), $b2c_orders->sum('price'), $b2c_order_items->sum('price'), $b2c_prices_by_currency, $b2c_stock_cost);
-
-            $data['sale_data'] = $sale_data;
-
-        }
-
         $sale_orders = Order_model::whereIn('order_type_id', [2,3,5])
             ->whereBetween('processed_at', [$start_date, $end_date])
             ->whereIN('status', [3,6])
@@ -305,6 +253,226 @@ class Report extends Component
         $pdf->generatePdf();
     }
 
+    public function sales_and_returns_total(){
+
+        $start_date = Carbon::now()->startOfMonth();
+        // $start_date = date('Y-m-d 00:00:00',);
+        $end_date = date('Y-m-d 23:59:59');
+        if (request('start_date') != NULL && request('end_date') != NULL) {
+            $start_date = request('start_date') . " 00:00:00";
+            $end_date = request('end_date') . " 23:59:59";
+        }
+        $variation_ids = Variation_model::select('id')
+            ->whereHas('product', function ($q) {
+                $q->when(request('category') != '', function ($qu) {
+                    return $qu->where('category', '=', request('category'));
+                })
+                ->when(request('brand') != '', function ($qu) {
+                    return $qu->where('brand', '=', request('brand'));
+                });
+            })
+            ->whereHas('stocks.order', function ($q) {
+                $q->when(request('vendor') != '', function ($qu) {
+                    return $qu->where('customer_id', '=', request('vendor'));
+                })
+                ->when(request('batch') != '', function ($qu) {
+                    return $qu->where('reference_id', '=', request('batch'));
+                });
+            })
+            ->when(request('product') != '', function ($q) {
+                return $q->where('product_id', '=', request('product'));
+            })
+            ->when(request('storage') != '', function ($q) {
+                return $q->where('storage', request('storage'));
+            })
+            ->when(request('color') != '', function ($q) {
+                return $q->where('color', request('color'));
+            })
+            ->when(request('grade') != '', function ($q) {
+                return $q->where('grade', request('grade'));
+            })
+            ->pluck('id')->toArray();
+
+
+        $sale_data = [];
+
+        $all_po = Order_model::where('order_type_id',1)->pluck('id')->toArray();
+
+        $b2c_orders = Order_model::where('order_type_id',3)
+            ->whereBetween('created_at', [$start_date, $end_date])
+            ->whereIn('status', [3,6])
+            ->get();
+        $b2c_order_ids = $b2c_orders->pluck('id')->toArray();
+        $b2c_order_items = Order_item_model::whereIn('variation_id', $variation_ids)
+            ->whereIn('order_id', $b2c_order_ids)
+            ->whereIn('status', [3,6])
+            ->get();
+        $b2c_prices_by_currency = Order_item_model::whereIn('id', $b2c_order_items->pluck('id')->toArray())
+            ->select('currency', DB::raw('SUM(price) as total_price'))
+            ->groupBy('currency')
+            ->get()
+            ->pluck('total_price', 'currency');
+
+        $b2c_charges_by_currency = Order_model::whereIn('id', $b2c_order_items->pluck('order_id')->toArray())
+            ->select('currency', DB::raw('SUM(charges) as total_charges'))
+            ->groupBy('currency')
+            ->get()
+            ->pluck('total_charges', 'currency');
+
+        $b2c_stock_ids = $b2c_order_items->pluck('stock_id')->toArray();
+        $b2c_stock_cost = Order_item_model::whereIn('stock_id', $b2c_stock_ids)
+            ->whereIn('order_id', $all_po)
+            ->whereIn('id', function ($query) {
+                $query->select(DB::raw('MAX(id)'))
+                      ->from('order_items')
+                      ->groupBy('stock_id');
+            })
+            ->sum('price');
+
+        $b2c_stock_repair_cost = Process_stock_model::whereIn('stock_id', $b2c_stock_ids)
+            ->where('process_id', 9)
+            ->sum('price');
+
+        $sale_data['b2c_orders'] = $b2c_orders->count();
+        $sale_data['b2c_order_items'] = $b2c_order_items->count();
+        $sale_data['b2c_orders_sum'] = $b2c_prices_by_currency;
+        $sale_data['b2c_charges_sum'] = $b2c_charges_by_currency;
+        $sale_data['b2c_stock_repair_cost'] = $b2c_stock_repair_cost;
+        $sale_data['b2c_stock_cost'] = $b2c_stock_cost;
+
+
+
+        $b2c_returns = Order_item_model::whereIn('variation_id', $variation_ids)
+            ->whereHas('order', function ($q) {
+                $q->where('order_type_id',4);
+            })
+            ->whereBetween('created_at', [$start_date, $end_date])
+            ->whereIn('status', [3,6])
+            ->get();
+
+        $b2c_return_prices_by_currency = $b2c_returns->groupBy('currency')
+            ->map(function ($items) {
+                return $items->sum('price');
+            });
+
+        $b2c_return_stock_ids = $b2c_returns->pluck('stock_id')->toArray();
+        $b2c_return_stock_cost = Order_item_model::whereIn('stock_id', $b2c_return_stock_ids)
+            ->whereIn('order_id', $all_po)
+            ->whereIn('id', function ($query) {
+                $query->select(DB::raw('MAX(id)'))
+                      ->from('order_items')
+                      ->groupBy('stock_id');
+            })
+            ->sum('price');
+
+        $b2c_return_stock_repair_cost = Process_stock_model::whereIn('stock_id', $b2c_return_stock_ids)
+            ->where('process_id', 9)
+            ->sum('price');
+
+        $return_data['b2c_returns'] = $b2c_returns->pluck('order_id')->unique()->count();
+        $return_data['b2c_return_items'] = $b2c_returns->count();
+        $return_data['b2c_return_sum'] = $b2c_return_prices_by_currency;
+        $return_data['b2c_return_charges_sum'] = 0;
+        $return_data['b2c_return_stock_repair_cost'] = $b2c_return_stock_repair_cost;
+        $return_data['b2c_return_stock_cost'] = $b2c_return_stock_cost;
+
+        $b2b_orders = Order_model::where('order_type_id',5)
+            ->whereBetween('created_at', [$start_date, $end_date])
+            ->whereIn('status', [3,6])
+            ->get();
+
+        $b2b_order_ids = $b2b_orders->pluck('id')->toArray();
+        $b2b_order_items = Order_item_model::whereIn('variation_id', $variation_ids)
+            ->whereIn('order_id', $b2b_order_ids)
+            ->whereIn('status', [3,6])
+            ->get();
+        $b2b_prices_by_currency = Order_item_model::whereIn('id', $b2b_order_items->pluck('id')->toArray())
+            ->select('currency', DB::raw('SUM(price) as total_price'))
+            ->groupBy('currency')
+            ->get()
+            ->pluck('total_price', 'currency');
+
+        $b2b_charges_by_currency = Order_model::whereIn('id', $b2b_order_items->pluck('order_id')->toArray())
+            ->select('currency', DB::raw('SUM(charges) as total_charges'))
+            ->groupBy('currency')
+            ->get()
+            ->pluck('total_charges', 'currency');
+
+        $b2b_stock_ids = $b2b_order_items->pluck('stock_id')->toArray();
+
+        $b2b_stock_cost = Order_item_model::whereIn('stock_id', $b2b_stock_ids)
+            ->whereIn('order_id', $all_po)
+            ->whereIn('id', function ($query) {
+                $query->select(DB::raw('MAX(id)'))
+                      ->from('order_items')
+                      ->groupBy('stock_id');
+            })
+            ->sum('price');
+
+        $b2b_stock_repair_cost = Process_stock_model::whereIn('stock_id', $b2b_stock_ids)
+            ->where('process_id', 9)
+            ->sum('price');
+
+        $b2b_data['b2b_orders'] = $b2b_orders->count();
+        $b2b_data['b2b_order_items'] = $b2b_order_items->count();
+        $b2b_data['b2b_orders_sum'] = $b2b_prices_by_currency;
+        $b2b_data['b2b_charges_sum'] = $b2b_charges_by_currency;
+        $b2b_data['b2b_stock_repair_cost'] = $b2b_stock_repair_cost;
+        $b2b_data['b2b_stock_cost'] = $b2b_stock_cost;
+
+
+        $b2b_returns = Order_model::where('order_type_id',6)
+            ->whereBetween('created_at', [$start_date, $end_date])
+            ->whereIn('status', [3,6])
+            ->get();
+
+        $b2b_return_order_ids = $b2b_returns->pluck('id')->toArray();
+        $b2b_return_order_items = Order_item_model::whereIn('variation_id', $variation_ids)
+            ->whereIn('order_id', $b2b_return_order_ids)
+            ->whereIn('status', [3,6])
+            ->get();
+        $b2b_return_prices_by_currency = Order_item_model::whereIn('id', $b2b_return_order_items->pluck('id')->toArray())
+            ->select('currency', DB::raw('SUM(price) as total_price'))
+            ->groupBy('currency')
+            ->get()
+            ->pluck('total_price', 'currency');
+
+        $b2b_return_charges_by_currency = Order_model::whereIn('id', $b2b_return_order_items->pluck('order_id')->toArray())
+            ->select('currency', DB::raw('SUM(charges) as total_charges'))
+            ->groupBy('currency')
+            ->get()
+            ->pluck('total_charges', 'currency');
+
+        $b2b_return_stock_ids = $b2b_return_order_items->pluck('stock_id')->toArray();
+
+        $b2b_return_stock_cost = Order_item_model::whereIn('stock_id', $b2b_return_stock_ids)
+            ->whereIn('order_id', $all_po)
+            ->whereIn('id', function ($query) {
+                $query->select(DB::raw('MAX(id)'))
+                      ->from('order_items')
+                      ->groupBy('stock_id');
+            })
+            ->sum('price');
+
+        $b2b_return_stock_repair_cost = Process_stock_model::whereIn('stock_id', $b2b_return_stock_ids)
+            ->where('process_id', 9)
+            ->sum('price');
+
+        $b2b_return_data['b2b_returns'] = $b2b_returns->count();
+        $b2b_return_data['b2b_return_order_items'] = $b2b_return_order_items->count();
+        $b2b_return_data['b2b_return_sum'] = $b2b_return_prices_by_currency;
+        $b2b_return_data['b2b_return_charges_sum'] = $b2b_return_charges_by_currency;
+        $b2b_return_data['b2b_return_stock_repair_cost'] = $b2b_return_stock_repair_cost;
+        $b2b_return_data['b2b_return_stock_cost'] = $b2b_return_stock_cost;
+
+        $data['sale_data'] = $sale_data;
+        $data['return_data'] = $return_data;
+        $data['b2b_data'] = $b2b_data;
+        $data['b2b_return_data'] = $b2b_return_data;
+
+        return response()->json($data);
+
+    }
     public function b2c_orders_report()
     {
         $purchase_order_ids = Order_model::where('order_type_id',1)->pluck('id')->toArray();
