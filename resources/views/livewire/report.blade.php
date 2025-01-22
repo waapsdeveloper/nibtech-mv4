@@ -523,8 +523,7 @@
                                     Object.values(data.currency_ids).forEach((key) => {
                                         table += `
                                             <th>
-                                                <small><b>${currencies[key]}</b></small><br>
-                                                <small><b>Charges</b></small>
+                                                <small><b>${currencies[key]}</b></small>
                                             </th>
                                         `;
                                     });
