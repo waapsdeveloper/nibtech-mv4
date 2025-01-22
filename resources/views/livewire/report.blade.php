@@ -520,7 +520,7 @@
                                         <th><small><b>Repair Cost</b></small></th>
                                 `;
                                 if (typeof data.currency_ids === 'object') {
-                                    Object.keys(data.currency_ids).forEach((key) => {
+                                    Object.data.currency_ids.forEach((key) => {
                                         table += `
                                             <th>
                                                 <small><b>${currencies[key]}</b></small><br>
