@@ -506,6 +506,9 @@
                     },
                     success: function (data) {
 
+                        b2bSale = data.b2b_data;
+                        b2bReturn = data.b2b_return_data;
+
                         b2cSale = data.sale_data;
                         b2cReturn = data.return_data;
 
@@ -535,18 +538,56 @@
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td>B2C Sales</td>
-                                        <td>${b2cSale.b2c_orders}</td>
-                                        <td>${b2cSale.b2c_order_items}</td>
-                                        <td>€${b2cSale.b2c_stock_cost}</td>
-                                        <td>€${b2cSale.b2c_stock_repair_cost}</td>
+                                        <td>B2B Sales</td>
+                                        <td>${b2bSale.b2b_orders}</td>
+                                        <td>${b2bSale.b2b_order_items}</td>
+                                        <td>€${b2bSale.b2b_stock_cost}</td>
+                                        <td>€${b2bSale.b2b_stock_repair_cost}</td>
                                 `;
                                 if (typeof data.currency_ids === 'object') {
                                     Object.values(data.currency_ids).forEach((key) => {
                                         table += `
                                             <td title="Price - Charges">
-                                                ${b2cSale.b2c_orders_sum[key] ? `${currencies[key]}${b2cSale.b2c_orders_sum[key]}` : ''} -
-                                                ${b2cSale.b2c_charges_sum[key] ? `${currencies[key]}${b2cSale.b2c_charges_sum[key]}` : ''}
+                                                ${b2bSale.b2b_orders_sum[key] ? `${currencies[key]}${b2bSale.b2b_orders_sum[key]}` : ''} -
+                                                ${b2bSale.b2b_charges_sum[key] ? `${currencies[key]}${b2bSale.b2b_charges_sum[key]}` : ''}
+                                            </td>
+                                        `;
+                                    });
+                                }
+                                table += `
+                                    </tr>
+                                    <tr>
+                                        <td>B2C Returns</td>
+                                        <td>${b2cReturn.b2c_returns}</td>
+                                        <td>${b2cReturn.b2c_return_items}</td>
+                                        <td>€${b2cReturn.b2c_return_stock_cost}</td>
+                                        <td>€${b2cReturn.b2c_return_stock_repair_cost}</td>
+                                `;
+                                if (typeof data.currency_ids === 'object') {
+                                    Object.values(data.currency_ids).forEach((key) => {
+
+                                        table += `
+                                            <td title="Price - Charges">
+                                                ${b2cReturn.b2c_return_sum[key] ? `${currencies[key]}${b2cReturn.b2c_return_sum[key]}` : ''}
+                                            </td>
+                                        `;
+                                    });
+                                }
+                                table += `
+                                    </tr>
+                                    <tr>
+                                        <td>B2C Returns</td>
+                                        <td>${b2cReturn.b2c_returns}</td>
+                                        <td>${b2cReturn.b2c_return_items}</td>
+                                        <td>€${b2cReturn.b2c_return_stock_cost}</td>
+                                        <td>€${b2cReturn.b2c_return_stock_repair_cost}</td>
+                                `;
+                                if (typeof data.currency_ids === 'object') {
+                                    Object.values(data.currency_ids).forEach((key) => {
+
+                                        table += `
+                                            <td title="Price - Charges">
+                                                ${b2cReturn.b2c_return_sum[key] ? `${currencies[key]}${b2cReturn.b2c_return_sum[key]}` : ''}
                                             </td>
                                         `;
                                     });
