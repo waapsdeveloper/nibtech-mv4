@@ -696,7 +696,7 @@
             @endphp
             <div class="row">
 
-                <div @if ($order->status != 1) class="col-md-8" @endif>
+                <div @if ($order->status == 2) class="col-md-8" @endif>
                     @foreach ($graded_stocks as $graded_stock)
                     @php
                         if($graded_stock->variations->count() == 0){
@@ -793,7 +793,7 @@
                         </div>
                     @endforeach
                 </div>
-                @if ($order->status != 1)
+                @if ($order->status == 2)
 
                 <div class="col-md-4">
                     <div class="card">
