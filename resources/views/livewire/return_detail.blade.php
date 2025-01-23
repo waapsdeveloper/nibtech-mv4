@@ -691,6 +691,7 @@
         @if (request('status') != null || request('show') == '1')
 
         @if (isset($graded_stocks))
+
             @php
                 $item_ids = [];
             @endphp
@@ -698,6 +699,7 @@
 
                 <div @if ($order->status == 2) class="col-md-8" @endif>
                     @foreach ($graded_stocks as $graded_stock)
+                    HGello
                     @php
                         if($graded_stock->variations->count() == 0){
                             echo "No Variations";
