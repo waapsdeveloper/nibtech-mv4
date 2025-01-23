@@ -684,7 +684,7 @@
                                                     @if ($order->status == 6)
                                                     <a class="dropdown-item" href="{{url('order')}}/export_refund_invoice/{{ $order->id }}" target="_blank">Refund Invoice</a>
                                                     @endif
-                                                    @if ($user_id == 1)
+                                                    @if (session('user')->hasPermission('view_api_data'))
                                                     <a class="dropdown-item" href="{{url('order')}}/recheck/{{ $order->reference_id }}/false/false/null/true/true" target="_blank">Data</a>
                                                     <a class="dropdown-item" href="{{url('order')}}/label/{{ $order->reference_id }}/true/true" target="_blank">Label Data</a>
                                                     @endif
