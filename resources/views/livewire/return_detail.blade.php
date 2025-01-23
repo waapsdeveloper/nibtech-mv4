@@ -622,6 +622,7 @@
                             <h4 class="card-title mg-b-0">Counter: {{ session('counter') }} <a href="{{ url('stock_room/reset_counter') }}">Reset</a></h4>
                             <form method="GET" action="{{url('return/detail')."/".$order_id}}">
                                 <input type="hidden" name="imei" value="{{request('imei')}}">
+                                <input type="hidden" name="status" value="{{request('status')}}">
                                 @if (request('show') == '1')
                                     <button class="btn btn-sm btn-secondary pd-x-20" type="submit" name="show" value="0">Hide All</button>
                                 @else
