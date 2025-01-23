@@ -557,6 +557,25 @@
                                 table += `
                                     </tr>
                                     <tr>
+                                        <td>B2C Sales</td>
+                                        <td>${b2cSale.b2c_orders}</td>
+                                        <td>${b2cSale.b2c_order_items}</td>
+                                        <td>€${b2cSale.b2c_stock_cost}</td>
+                                        <td>€${b2cSale.b2c_stock_repair_cost}</td>
+                                `;
+                                if (typeof data.currency_ids === 'object') {
+                                    Object.values(data.currency_ids).forEach((key) => {
+                                        table += `
+                                            <td title="Price - Charges">
+                                                ${b2cSale.b2c_orders_sum[key] ? `${currencies[key]}${b2cSale.b2c_orders_sum[key]}` : ''} -
+                                                ${b2cSale.b2c_charges_sum[key] ? `${currencies[key]}${b2cSale.b2c_charges_sum[key]}` : ''}
+                                            </td>
+                                        `;
+                                    });
+                                }
+                                table += `
+                                    </tr>
+                                    <tr>
                                         <td>B2C Returns</td>
                                         <td>${b2cReturn.b2c_returns}</td>
                                         <td>${b2cReturn.b2c_return_items}</td>
