@@ -698,11 +698,9 @@
             <div class="row">
 
                 <div @if ($order->status == 2) class="col-md-8" @endif>
-                    @dd($graded_stocks)
                     @foreach ($graded_stocks as $graded_stock)
                     @php
                         if($graded_stock->variations->count() == 0){
-                            echo "No Variations";
                             continue;
                         }
                     @endphp
