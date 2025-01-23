@@ -700,6 +700,7 @@
                     @foreach ($graded_stocks as $graded_stock)
                     @php
                         if($graded_stock->variations->count() == 0){
+                            echo "No Variations";
                             continue;
                         }
                     @endphp
