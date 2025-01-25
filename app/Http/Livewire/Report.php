@@ -316,10 +316,12 @@ class Report extends Component
             ->select('currency', DB::raw('SUM(price) as total_price'))
             ->groupBy('currency')
             ->get()
-            ->pluck('total_price', 'currency')
-            ->map(function ($price) {
-                return amount_formatter($price);
-            });
+            ->pluck('total_price', 'currency');
+        $b2c_total = $b2c_prices_by_currency->toArray();
+
+        $b2c_prices_by_currency->map(function ($price) {
+            return amount_formatter($price);
+        });
 
         $b2c_charges_by_currency = Order_model::whereIn('id', $b2c_order_items->pluck('order_id')->toArray())
             ->select('currency', DB::raw('SUM(charges) as total_charges'))
@@ -329,6 +331,7 @@ class Report extends Component
             ->map(function ($price) {
                 return amount_formatter($price);
             });
+        $b2c_total = $b2c_total - $b2c_charges_by_currency->toArray();
 
         $b2c_stock_ids = $b2c_order_items->pluck('stock_id')->toArray();
         $b2c_stock_cost = Order_item_model::whereIn('stock_id', $b2c_stock_ids)
@@ -337,16 +340,22 @@ class Report extends Component
             ->pluck('price', 'stock_id')
             ->sum();
 
+        $b2c_total[4] = $b2c_total[4] - $b2c_stock_cost;
+
         $b2c_stock_repair_cost = Process_stock_model::whereIn('stock_id', $b2c_stock_ids)
             ->where('process_id', 9)
             ->sum('price');
 
+        $b2c_total[4] = $b2c_total[4] - $b2c_stock_repair_cost;
+
+        dd($b2c_total);
         $sale_data['b2c_orders'] = $b2c_orders->count();
         $sale_data['b2c_order_items'] = $b2c_order_items->count();
         $sale_data['b2c_orders_sum'] = $b2c_prices_by_currency;
         $sale_data['b2c_charges_sum'] = $b2c_charges_by_currency;
         $sale_data['b2c_stock_repair_cost'] = amount_formatter($b2c_stock_repair_cost);
         $sale_data['b2c_stock_cost'] = amount_formatter($b2c_stock_cost);
+        $sale_data['b2c_total'] = $b2c_total;
 
 
 
@@ -478,6 +487,8 @@ class Report extends Component
         $b2b_return_data['b2b_return_charges_sum'] = $b2b_return_charges_by_currency;
         $b2b_return_data['b2b_return_stock_repair_cost'] = amount_formatter($b2b_return_stock_repair_cost);
         $b2b_return_data['b2b_return_stock_cost'] = amount_formatter($b2b_return_stock_cost);
+
+
 
         $data['sale_data'] = $sale_data;
         $data['return_data'] = $return_data;
