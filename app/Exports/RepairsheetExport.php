@@ -45,10 +45,10 @@ class RepairsheetExport implements FromCollection, WithHeadings
                 $join->on('stock.id', '=', 'order_items.stock_id')
                     ->where('order_items.order_id', '=', DB::raw('stock.order_id'));
             })
-            // ->leftJoin('stock_operations', function ($join) {
-            //     $join->on('stock.id', '=', 'stock_operations.stock_id')
-            //         ->whereRaw('stock_operations.id = (SELECT id FROM stock_operations WHERE stock_operations.stock_id = stock.id AND stock_operations.description NOT LIKE "%Cost Adjusted %" AND stock_operations.description NOT LIKE "%Grade changed for Bulksale%" AND stock_operations.description NOT LIKE "% |  | DrPhone%" AND stock_operations.description NOT LIKE "Battery | | DrPhone" ORDER BY id DESC LIMIT 1)');
-            // })
+            ->leftJoin('stock_operations', function ($join) {
+                $join->on('stock.id', '=', 'stock_operations.stock_id')
+                    ->whereRaw('stock_operations.id = (SELECT id FROM stock_operations WHERE stock_operations.stock_id = stock.id AND stock_operations.description NOT LIKE "%Cost Adjusted %" AND stock_operations.description NOT LIKE "%Grade changed for Bulksale%" AND stock_operations.description NOT LIKE "% |  | DrPhone%" AND stock_operations.description NOT LIKE "Battery | | DrPhone" ORDER BY id DESC LIMIT 1)');
+            })
             // ->leftJoin('admin as admin2', 'stock_operations.admin_id', '=', 'admin2.id')
 
             ->select(
@@ -62,7 +62,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
                 // 'stock.id as stock_id',
                 'stock.imei as imei',
                 'stock.serial_number as serial_number',
-                // 'stock_operations.description as issue', // Corrected duplicated issue field
+                'stock_operations.description as issue', // Corrected duplicated issue field
                 // 'admin2.first_name as admin_name',
                 'order_items.price as price',
                 DB::raw('order_items.price * process.exchange_rate as ex_price'),
@@ -75,7 +75,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
             ->whereNull('p_stock.deleted_at')
             ->whereNull('orders.deleted_at')
             ->whereNull('order_items.deleted_at')
-            // ->whereNull('stock_operations.deleted_at')
+            ->whereNull('stock_operations.deleted_at')
             ->orderBy('products.model', 'ASC')
             ->get();
 
