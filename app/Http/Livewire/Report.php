@@ -419,12 +419,8 @@ class Report extends Component
 
         $b2b_stock_cost = Order_item_model::whereIn('stock_id', $b2b_stock_ids)
             ->whereIn('order_id', $all_po)
-            ->whereIn('id', function ($query) {
-                $query->from('order_items')
-                      ->selectRaw('MAX(id) as latest_id')
-                      ->groupBy('stock_id');
-            })
-            ->sum('price');
+            ->pluck('price', 'stock_id')
+            ->sum();
 
         dd($b2b_stock_cost);
         $b2b_stock_repair_cost = Process_stock_model::whereIn('stock_id', $b2b_stock_ids)
