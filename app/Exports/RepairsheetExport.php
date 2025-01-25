@@ -43,6 +43,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
             ->leftJoin('grade', 'variation.grade', '=', 'grade.id')
             ->leftJoin('order_items', function ($join) {
                 $join->on('stock.id', '=', 'order_items.stock_id')
+                    ->whereNull('order_items.deleted_at')
                     ->where('order_items.order_id', '=', DB::raw('stock.order_id'));
             })
             ->leftJoin('stock_operations', function ($join) {
@@ -63,7 +64,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
                 // 'stock.id as stock_id',
                 'stock.imei as imei',
                 'stock.serial_number as serial_number',
-                'stock_operations.description as issue', // Corrected duplicated issue field
+                DB::raw('TRIM(REPLACE(stock_operations.description, " | DrPhone", "")) as issue'),
                 'admin2.first_name as admin_name',
                 'order_items.price as price',
                 DB::raw('order_items.price * process.exchange_rate as ex_price'),
