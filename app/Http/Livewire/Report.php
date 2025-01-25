@@ -397,23 +397,23 @@ class Report extends Component
             ->whereIn('order_id', $b2b_order_ids)
             ->whereIn('status', [3,6])
             ->get();
-        $b2b_prices_by_currency = Order_item_model::whereIn('id', $b2b_order_items->pluck('id')->toArray())
-            ->select('currency', DB::raw('SUM(price) as total_price'))
-            ->groupBy('currency')
-            ->get()
-            ->pluck('total_price', 'currency')
-            ->map(function ($price) {
-                return amount_formatter($price);
-            });
+        $b2b_prices_by_currency = Order_item_model::whereIn('id', $b2b_order_items->pluck('id')->toArray())->sum('price');
+            // ->select('currency', DB::raw('SUM(price) as total_price'))
+            // ->groupBy('currency')
+            // ->get()
+            // ->pluck('total_price', 'currency')
+            // ->map(function ($price) {
+            //     return amount_formatter($price);
+            // });
 
-        $b2b_charges_by_currency = Order_model::whereIn('id', $b2b_order_items->pluck('order_id')->toArray())
-            ->select('currency', DB::raw('SUM(charges) as total_charges'))
-            ->groupBy('currency')
-            ->get()
-            ->pluck('total_charges', 'currency')
-            ->map(function ($price) {
-                return amount_formatter($price);
-            });
+        $b2b_charges_by_currency = Order_model::whereIn('id', $b2b_order_items->pluck('order_id')->toArray())->sum('charges');
+            // ->select('currency', DB::raw('SUM(charges) as total_charges'))
+            // ->groupBy('currency')
+            // ->get()
+            // ->pluck('total_charges', 'currency')
+            // ->map(function ($price) {
+            //     return amount_formatter($price);
+            // });
 
         $b2b_stock_ids = $b2b_order_items->pluck('stock_id')->toArray();
 
@@ -432,8 +432,8 @@ class Report extends Component
 
         $b2b_data['b2b_orders'] = $b2b_orders->count();
         $b2b_data['b2b_order_items'] = $b2b_order_items->count();
-        $b2b_data['b2b_orders_sum'] = $b2b_prices_by_currency;
-        $b2b_data['b2b_charges_sum'] = $b2b_charges_by_currency;
+        $b2b_data['b2b_orders_sum'] = amount_formatter($b2b_prices_by_currency);
+        $b2b_data['b2b_charges_sum'] = amount_formatter($b2b_charges_by_currency);
         $b2b_data['b2b_stock_repair_cost'] = amount_formatter($b2b_stock_repair_cost);
         $b2b_data['b2b_stock_cost'] = amount_formatter($b2b_stock_cost);
 
@@ -485,7 +485,7 @@ class Report extends Component
 
         $b2b_return_data['b2b_returns'] = $b2b_returns->count();
         $b2b_return_data['b2b_return_order_items'] = $b2b_return_order_items->count();
-        $b2b_return_data['b2b_return_sum'] = [4=>amount_formatter($b2b_return_prices_by_currency)];
+        $b2b_return_data['b2b_return_sum'] = amount_formatter($b2b_return_prices_by_currency);
         $b2b_return_data['b2b_return_charges_sum'] = $b2b_return_charges_by_currency;
         $b2b_return_data['b2b_return_stock_repair_cost'] = amount_formatter($b2b_return_stock_repair_cost);
         $b2b_return_data['b2b_return_stock_cost'] = amount_formatter($b2b_return_stock_cost);
