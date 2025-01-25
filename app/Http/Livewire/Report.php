@@ -426,6 +426,7 @@ class Report extends Component
             })
             ->sum('price');
 
+        dd($b2b_stock_ids);
         $b2b_stock_repair_cost = Process_stock_model::whereIn('stock_id', $b2b_stock_ids)
             ->where('process_id', 9)
             ->sum('price');
