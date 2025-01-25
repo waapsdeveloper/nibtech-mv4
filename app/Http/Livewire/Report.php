@@ -495,7 +495,7 @@ class Report extends Component
         $data['b2b_data'] = $b2b_data;
         $data['b2b_return_data'] = $b2b_return_data;
 
-        $data['currency_ids'] = $b2c_prices_by_currency->keys()->merge($b2c_charges_by_currency->keys())->merge($b2b_prices_by_currency->keys())->merge($b2b_charges_by_currency->keys())->merge($b2c_return_prices_by_currency->keys())->merge($b2b_return_prices_by_currency->keys())->unique();
+        $data['currency_ids'] = $b2c_prices_by_currency->keys()->merge($b2c_charges_by_currency->keys())->merge($b2c_return_prices_by_currency->keys())->unique();
 
         return response()->json($data);
 
