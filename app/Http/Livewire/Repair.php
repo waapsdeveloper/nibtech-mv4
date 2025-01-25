@@ -263,6 +263,11 @@ class Repair extends Component
         if(request('imei') != null){
             $imei = trim(request('imei'));
             $stock = Stock_model::where('imei', $imei)->orWhere('serial_number', $imei)->first();
+
+            if($stock == null){
+                session()->put('error', "IMEI Invalid / Not Found");
+                return redirect()->back();
+            }
             $process_stock = Process_stock_model::where('stock_id', $stock->id)->where('process_id', request('process_id'))->first();
         }
 
