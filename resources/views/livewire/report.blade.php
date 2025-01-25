@@ -570,7 +570,7 @@
                                         <td>${b2bReturn.b2b_return_items}</td>
                                         <td>€${b2bReturn.b2b_return_stock_cost}</td>
                                         <td>€${b2bReturn.b2b_return_stock_repair_cost}</td>
-                                        <td>€${b2bReturn.b2b_return_orders_sum}</td>
+                                        <td>€${b2bReturn.b2b_return_sum}</td>
 
                                     </tr>
                                     <tr>
