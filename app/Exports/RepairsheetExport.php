@@ -32,13 +32,13 @@ class RepairsheetExport implements FromCollection, WithHeadings
             ->leftJoin('variation', 'stock.variation_id', '=', 'variation.id')
             ->leftJoin('products', 'variation.product_id', '=', 'products.id')
             ->leftJoin('color', 'variation.color', '=', 'color.id')
-            ->leftJoin('process_stock', function ($join) use ($repair_batches) {
-                $join->on('stock.id', '=', 'process_stock.stock_id')
-                    ->whereNull('process_stock.deleted_at')
-                    ->whereIn('process_stock.process_id', array_keys($repair_batches))
-                    ->whereRaw('process_stock.id = (SELECT id FROM process_stock WHERE process_stock.stock_id = stock.id ORDER BY id DESC LIMIT 1)');
-            })
-            ->leftJoin('process as pr', 'process_stock.process_id', '=', 'pr.id')
+            // ->leftJoin('process_stock', function ($join) use ($repair_batches) {
+            //     $join->on('stock.id', '=', 'process_stock.stock_id')
+            //         ->whereNull('process_stock.deleted_at')
+            //         ->whereIn('process_stock.process_id', array_keys($repair_batches))
+            //         ->whereRaw('process_stock.id = (SELECT id FROM process_stock WHERE process_stock.stock_id = stock.id ORDER BY id DESC LIMIT 1)');
+            // })
+            // ->leftJoin('process as pr', 'process_stock.process_id', '=', 'pr.id')
             ->leftJoin('storage', 'variation.storage', '=', 'storage.id')
             ->leftJoin('grade', 'variation.grade', '=', 'grade.id')
             ->leftJoin('order_items', function ($join) {
@@ -58,7 +58,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
                 'grade.name as grade_name',
                 'orders.reference_id as po',
                 'customer.company as customer',
-                'pr.reference_id as process_id',
+                // 'pr.reference_id as process_id',
                 // 'stock.id as stock_id',
                 'stock.imei as imei',
                 'stock.serial_number as serial_number',
@@ -70,7 +70,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
             ->where('process.id', request('id'))
             // ->where('p_stock.status', 1)
             ->whereNull('process.deleted_at')
-            ->whereNull('process_stock.deleted_at')
+            // ->whereNull('process_stock.deleted_at')
             ->whereNull('stock.deleted_at')
             ->whereNull('p_stock.deleted_at')
             ->whereNull('orders.deleted_at')
