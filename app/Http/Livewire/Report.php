@@ -335,7 +335,7 @@ class Report extends Component
             }
             $b2c_total[$key] -= $value;
         }
-        $b2c_charges_by_currency->map(function ($price) {
+        $b2c_charges_by_currency = $b2c_charges_by_currency->map(function ($price) {
             return amount_formatter($price);
         });
 
