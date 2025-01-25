@@ -47,9 +47,9 @@ class RepairsheetExport implements FromCollection, WithHeadings
             })
             ->leftJoin('stock_operations', function ($join) {
                 $join->on('stock.id', '=', 'stock_operations.stock_id')
-                    ->whereRaw('stock_operations.id = (SELECT id FROM stock_operations WHERE stock_operations.stock_id = stock.id AND stock_operations.description NOT LIKE "%Cost Adjusted %" AND stock_operations.description NOT LIKE "%Grade changed for Bulksale%" AND stock_operations.description NOT LIKE "% |  | DrPhone%" AND stock_operations.description NOT LIKE "Battery | | DrPhone" ORDER BY id DESC LIMIT 1)');
+                    ->whereRaw('stock_operations.id = (SELECT id FROM stock_operations WHERE stock_operations.stock_id = stock.id AND stock_operations.description NOT LIKE "%Cost Adjusted %" AND stock_operations.description NOT LIKE "%Grade changed for Bulksale%" AND stock_operations.description NOT LIKE "% |  | DrPhone%" AND stock_operations.description NOT LIKE "Battery | | DrPhone" ORDER BY stock_operations.id DESC LIMIT 1)');
             })
-            // ->leftJoin('admin as admin2', 'stock_operations.admin_id', '=', 'admin2.id')
+            ->leftJoin('admin as admin2', 'stock_operations.admin_id', '=', 'admin2.id')
 
             ->select(
                 'products.model',
@@ -63,7 +63,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
                 'stock.imei as imei',
                 'stock.serial_number as serial_number',
                 'stock_operations.description as issue', // Corrected duplicated issue field
-                // 'admin2.first_name as admin_name',
+                'admin2.first_name as admin_name',
                 'order_items.price as price',
                 DB::raw('order_items.price * process.exchange_rate as ex_price'),
             )
