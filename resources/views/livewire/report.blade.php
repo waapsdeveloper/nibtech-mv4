@@ -561,6 +561,13 @@
                                             </td>
                                         `;
                                     });
+                                    Object.values(data.currency_ids).forEach((key) => {
+                                        table += `
+                                            <td title="Price - Charges">
+                                                ${b2cSale.b2c_total[key] ? `${currencies[key]}${b2cSale.b2c_total[key]}` : ''}
+                                            </td>
+                                        `;
+                                    });
                                 }
                                 table += `
                                     </tr>
