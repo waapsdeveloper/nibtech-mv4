@@ -272,12 +272,14 @@ class Report extends Component
                     return $qu->where('brand', '=', request('brand'));
                 });
             })
-            ->whereHas('stocks.order', function ($q) {
-                $q->when(request('vendor') != '', function ($qu) {
-                    return $qu->where('customer_id', '=', request('vendor'));
-                })
-                ->when(request('batch') != '', function ($qu) {
-                    return $qu->where('reference_id', '=', request('batch'));
+            ->when(request('vendor') != '' || request('batch') != '', function ($que) {
+                return $que->whereHas('stocks.order', function ($q) {
+                    $q->when(request('vendor') != '', function ($qu) {
+                        return $qu->where('customer_id', '=', request('vendor'));
+                    })
+                    ->when(request('batch') != '', function ($qu) {
+                        return $qu->where('reference_id', '=', request('batch'));
+                    });
                 });
             })
             ->when(request('product') != '', function ($q) {
