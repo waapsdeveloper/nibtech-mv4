@@ -64,7 +64,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
                 // 'stock.id as stock_id',
                 'stock.imei as imei',
                 'stock.serial_number as serial_number',
-                DB::raw('TRIM(BOTH " " FROM UPPER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(stock_operations.description, "TG", ""), "Cover", ""), "5D", ""), "Dual-Esim", ""), " | DrPhone", ""), "Battery | ", ""))) as issue'),
+                DB::raw('TRIM(BOTH " " FROM UPPER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(stock_operations.description, "TG", ""), "Cover", ""), "5D", ""), "Dual-Esim", ""), " | DrPhone", ""), IF(LEFT(stock_operations.description, 10) = "Battery | ", "Battery | ", ""), IF(LEFT(stock_operations.description, 3) = " | ", " | ", "")))) as issue'),
                 'admin2.first_name as admin_name',
                 'order_items.price as price',
                 DB::raw('order_items.price * process.exchange_rate as ex_price'),
