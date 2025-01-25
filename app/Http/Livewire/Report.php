@@ -438,7 +438,7 @@ class Report extends Component
         $b2b_return_order_ids = $b2b_returns->pluck('id')->toArray();
         $b2b_return_order_items = Order_item_model::whereIn('variation_id', $variation_ids)
             ->whereIn('order_id', $b2b_return_order_ids)
-            ->whereIn('status', [3,6])
+            // ->whereIn('status', [3,6])
             ->get();
         $b2b_return_prices_by_currency = Order_item_model::whereIn('id', $b2b_return_order_items->pluck('id')->toArray())
             ->sum('price');
