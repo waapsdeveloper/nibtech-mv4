@@ -327,17 +327,17 @@ class Report extends Component
             ->select('currency', DB::raw('SUM(charges) as total_charges'))
             ->groupBy('currency')
             ->get()
-            ->pluck('total_charges', 'currency')
-            ->map(function ($price) {
-                return amount_formatter($price);
-            });
+            ->pluck('total_charges', 'currency');
 
-        foreach ($b2c_charges_by_currency as $key => $value) {
+        foreach ($b2c_charges_by_currency->toArray() as $key => $value) {
             if (!isset($b2c_total[$key])) {
                 $b2c_total[$key] = 0;
             }
             $b2c_total[$key] -= $value;
         }
+        $b2c_charges_by_currency->map(function ($price) {
+            return amount_formatter($price);
+        });
 
         $b2c_stock_ids = $b2c_order_items->pluck('stock_id')->toArray();
         $b2c_stock_cost = Order_item_model::whereIn('stock_id', $b2c_stock_ids)
