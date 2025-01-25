@@ -31,7 +31,9 @@ class RepairsheetExport implements FromCollection, WithHeadings
             ->leftJoin('customer', 'orders.customer_id', '=', 'customer.id')
             ->leftJoin('variation', 'stock.variation_id', '=', 'variation.id')
             ->leftJoin('products', 'variation.product_id', '=', 'products.id')
+            ->leftJoin('storage', 'variation.storage', '=', 'storage.id')
             ->leftJoin('color', 'variation.color', '=', 'color.id')
+            ->leftJoin('grade', 'variation.grade', '=', 'grade.id')
             ->leftJoin('process_stock', function ($join) use ($repair_batches) {
                 $join->on('stock.id', '=', 'process_stock.stock_id')
                     ->whereNull('process_stock.deleted_at')
@@ -39,8 +41,6 @@ class RepairsheetExport implements FromCollection, WithHeadings
                     ->whereRaw('process_stock.id = (SELECT id FROM process_stock WHERE process_stock.stock_id = stock.id ORDER BY id DESC LIMIT 1)');
             })
             ->leftJoin('process as pr', 'process_stock.process_id', '=', 'pr.id')
-            ->leftJoin('storage', 'variation.storage', '=', 'storage.id')
-            ->leftJoin('grade', 'variation.grade', '=', 'grade.id')
             ->leftJoin('order_items', function ($join) {
                 $join->on('stock.id', '=', 'order_items.stock_id')
                     ->whereNull('order_items.deleted_at')
@@ -64,7 +64,48 @@ class RepairsheetExport implements FromCollection, WithHeadings
                 // 'stock.id as stock_id',
                 'stock.imei as imei',
                 'stock.serial_number as serial_number',
-                DB::raw('TRIM(BOTH " " FROM UPPER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(stock_operations.description, "TG", ""), "Cover", ""), "5D", ""), "Dual-Esim", ""), " | DrPhone", ""), IF(LEFT(stock_operations.description, 10) = "Battery | ", "Battery | ", ""), IF(LEFT(stock_operations.description, 3) = " | ", " | ", "")))) as issue'),
+                // DB::raw('TRIM(BOTH " " FROM UPPER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(stock_operations.description, "TG", ""), "Cover", ""), "5D", ""), "Dual-Esim", ""), " | DrPhone", ""), IF(LEFT(stock_operations.description, 10) = "Battery | ", "Battery | ", ""), IF(LEFT(stock_operations.description, 3) = " | ", " | ", "")))) as issue'),
+                DB::raw("
+                    TRIM(' ' FROM UPPER(
+                        REPLACE(
+                            REPLACE(
+                                REPLACE(
+                                    REPLACE(
+                                        REPLACE(
+                                            REPLACE(
+                                                REPLACE(
+                                                    REPLACE(
+                                                        REPLACE(
+                                                            CASE
+                                                                WHEN LEFT(stock_operations.description, 10) = 'Battery | ' THEN
+                                                                    SUBSTRING(stock_operations.description, 11)
+                                                                WHEN LEFT(stock_operations.description, 3) = ' | ' THEN
+                                                                    SUBSTRING(stock_operations.description, 4)
+                                                                ELSE
+                                                                    stock_operations.description
+                                                            END,
+                                                            'TG',
+                                                            ''
+                                                        ),
+                                                        'Cover',
+                                                        ''
+                                                    ),
+                                                    '5D',
+                                                    ''
+                                                ),
+                                                'Dual-Esim',
+                                                ''
+                                            ),
+                                            ' | DrPhone',
+                                            ''
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )) as issue
+                "),
+
                 'admin2.first_name as admin_name',
                 'order_items.price as price',
                 DB::raw('order_items.price * process.exchange_rate as ex_price'),
