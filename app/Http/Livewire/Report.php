@@ -348,7 +348,7 @@ class Report extends Component
 
         $b2c_total[4] = $b2c_total[4] - $b2c_stock_repair_cost;
 
-        dd($b2c_total);
+        // dd($b2c_total);
         $sale_data['b2c_orders'] = $b2c_orders->count();
         $sale_data['b2c_order_items'] = $b2c_order_items->count();
         $sale_data['b2c_orders_sum'] = $b2c_prices_by_currency;
