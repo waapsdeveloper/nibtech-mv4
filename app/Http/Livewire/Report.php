@@ -328,10 +328,16 @@ class Report extends Component
             ->groupBy('currency')
             ->get()
             ->pluck('total_charges', 'currency')
-            ->map(function ($price, $key) use ($b2c_total) {
-                $b2c_total[$key] = $b2c_total[$key] - $price;
+            ->map(function ($price) {
                 return amount_formatter($price);
             });
+
+        foreach ($b2c_charges_by_currency as $key => $value) {
+            if (!isset($b2c_total[$key])) {
+                $b2c_total[$key] = 0;
+            }
+            $b2c_total[$key] -= $value;
+        }
 
         $b2c_stock_ids = $b2c_order_items->pluck('stock_id')->toArray();
         $b2c_stock_cost = Order_item_model::whereIn('stock_id', $b2c_stock_ids)
