@@ -389,10 +389,8 @@ class Report extends Component
             ->get();
 
         $b2b_order_ids = $b2b_orders->pluck('id')->toArray();
-        $b2b_order_items = Order_item_model::
-        //whereIn('variation_id', $variation_ids)
-            //->
-            whereIn('order_id', $b2b_order_ids)
+        $b2b_order_items = Order_item_model::whereIn('variation_id', $variation_ids)
+            ->whereIn('order_id', $b2b_order_ids)
             ->whereIn('status', [3,6])
             ->get();
         $b2b_prices_by_currency = Order_item_model::whereIn('id', $b2b_order_items->pluck('id')->toArray())
