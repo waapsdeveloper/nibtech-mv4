@@ -329,7 +329,7 @@ class Report extends Component
             ->get()
             ->pluck('total_charges', 'currency')
             ->map(function ($price, $key) use ($b2c_total) {
-                $b2c_total[$key] = $b2c_total[$key] + $price;
+                $b2c_total[$key] = $b2c_total[$key] - $price;
                 return amount_formatter($price);
             });
 
