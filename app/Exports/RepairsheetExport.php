@@ -47,6 +47,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
             })
             ->leftJoin('stock_operations', function ($join) {
                 $join->on('stock.id', '=', 'stock_operations.stock_id')
+                    ->whereNull('stock_operations.deleted_at')
                     ->whereRaw('stock_operations.id = (SELECT id FROM stock_operations WHERE stock_operations.stock_id = stock.id AND stock_operations.description NOT LIKE "%Cost Adjusted %" AND stock_operations.description NOT LIKE "%Grade changed for Bulksale%" AND stock_operations.description NOT LIKE "% |  | DrPhone%" AND stock_operations.description NOT LIKE "Battery | | DrPhone" ORDER BY stock_operations.id DESC LIMIT 1)');
             })
             ->leftJoin('admin as admin2', 'stock_operations.admin_id', '=', 'admin2.id')
