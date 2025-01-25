@@ -473,7 +473,7 @@ class Report extends Component
             ->sum('price');
 
         $b2b_return_data['b2b_returns'] = $b2b_returns->count();
-        $b2b_return_data['b2b_return_order_items'] = $b2b_return_order_items->count();
+        $b2b_return_data['b2b_return_items'] = $b2b_return_order_items->count();
         $b2b_return_data['b2b_return_sum'] = amount_formatter($b2b_return_prices_by_currency);
         $b2b_return_data['b2b_return_charges_sum'] = $b2b_return_charges_by_currency;
         $b2b_return_data['b2b_return_stock_repair_cost'] = amount_formatter($b2b_return_stock_repair_cost);

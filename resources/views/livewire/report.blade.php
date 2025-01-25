@@ -565,7 +565,7 @@
                                 table += `
                                     </tr>
                                     <tr>
-                                        <td>B2C Returns</td>
+                                        <td>B2B Returns</td>
                                         <td>${b2bReturn.b2b_returns}</td>
                                         <td>${b2bReturn.b2b_return_items}</td>
                                         <td>€${b2bReturn.b2b_return_stock_cost}</td>
