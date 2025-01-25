@@ -419,11 +419,11 @@ class Report extends Component
 
         $b2b_stock_cost = Order_item_model::whereIn('stock_id', $b2b_stock_ids)
             ->whereIn('order_id', $all_po)
-            ->whereIn('id', function ($query) {
-                $query->select(DB::raw('MAX(id)'))
-                      ->from('order_items')
-                      ->groupBy('stock_id');
-            })
+            // ->whereIn('id', function ($query) {
+            //     $query->select(DB::raw('MAX(id)'))
+            //           ->from('order_items')
+            //           ->groupBy('stock_id');
+            // })
             ->sum('price');
 
         dd($b2b_stock_cost);
