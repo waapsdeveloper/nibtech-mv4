@@ -333,12 +333,9 @@ class Report extends Component
         $b2c_stock_ids = $b2c_order_items->pluck('stock_id')->toArray();
         $b2c_stock_cost = Order_item_model::whereIn('stock_id', $b2c_stock_ids)
             ->whereIn('order_id', $all_po)
-            ->whereIn('id', function ($query) {
-                $query->select(DB::raw('MAX(id)'))
-                      ->from('order_items')
-                      ->groupBy('stock_id');
-            })
-            ->sum('price');
+            ->orderBy('id')
+            ->pluck('price', 'stock_id')
+            ->sum();
 
         $b2c_stock_repair_cost = Process_stock_model::whereIn('stock_id', $b2c_stock_ids)
             ->where('process_id', 9)
@@ -369,12 +366,9 @@ class Report extends Component
         $b2c_return_stock_ids = $b2c_returns->pluck('stock_id')->toArray();
         $b2c_return_stock_cost = Order_item_model::whereIn('stock_id', $b2c_return_stock_ids)
             ->whereIn('order_id', $all_po)
-            ->whereIn('id', function ($query) {
-                $query->select(DB::raw('MAX(id)'))
-                      ->from('order_items')
-                      ->groupBy('stock_id');
-            })
-            ->sum('price');
+            ->orderBy('id')
+            ->pluck('price', 'stock_id')
+            ->sum();
 
         $b2c_return_stock_repair_cost = Process_stock_model::whereIn('stock_id', $b2c_return_stock_ids)
             ->where('process_id', 9)
@@ -419,10 +413,11 @@ class Report extends Component
 
         $b2b_stock_cost = Order_item_model::whereIn('stock_id', $b2b_stock_ids)
             ->whereIn('order_id', $all_po)
+            ->orderBy('id')
             ->pluck('price', 'stock_id')
             ->sum();
 
-        dd($b2b_stock_cost);
+        // dd($b2b_stock_cost);
         $b2b_stock_repair_cost = Process_stock_model::whereIn('stock_id', $b2b_stock_ids)
             ->where('process_id', 9)
             ->sum('price');
@@ -469,12 +464,9 @@ class Report extends Component
 
         $b2b_return_stock_cost = Order_item_model::whereIn('stock_id', $b2b_return_stock_ids)
             ->whereIn('order_id', $all_po)
-            ->whereIn('id', function ($query) {
-                $query->select(DB::raw('MAX(id)'))
-                      ->from('order_items')
-                      ->groupBy('stock_id');
-            })
-            ->sum('price');
+            ->orderBy('id')
+            ->pluck('price', 'stock_id')
+            ->sum();
 
         $b2b_return_stock_repair_cost = Process_stock_model::whereIn('stock_id', $b2b_return_stock_ids)
             ->where('process_id', 9)
