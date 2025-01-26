@@ -690,7 +690,7 @@
                 }
                 let queryString = $.param(params);
                 let data = load_data("{{ url('index/get_orders_data') }}"+'?'+queryString);
-                orders_data.html(data);
+                // orders_data.html(data);
             }
 
             $(document).ready(function(){
