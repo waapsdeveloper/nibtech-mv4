@@ -26,6 +26,14 @@
                     @if ($order->status == 2)
                     <form class="form-inline" method="POST" id="approveform" action="{{url('purchase/approve').'/'.$order->id}}">
                         @csrf
+                        <div class="">
+                            <select name="customer_id" class="form-select">
+                                @foreach ($vendors as $id=>$vendor)
+                                    <option value="{{ $id }}" {{ $order->customer_id == $id ? 'selected' : '' }}>{{ $vendor }}</option>
+
+                                @endforeach
+                            </select>
+                        </div>
                         <div class="form-floating">
                             <input type="text" class="form-control" id="reference" name="reference" placeholder="Enter Vendor Reference" value="{{$order->reference}}" onchange="submitForm()">
                             <label for="reference">Vendor Reference</label>

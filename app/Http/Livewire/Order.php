@@ -516,6 +516,9 @@ class Order extends Component
         $order = Order_model::find($order_id);
         $order->reference = request('reference');
         $order->tracking_number = request('tracking_number');
+        if(request('customer_id') != null){
+            $order->customer_id = request('customer_id');
+        }
         if(request('approve') == 1){
             $order->status = 3;
             $order->processed_at = now()->format('Y-m-d H:i:s');
@@ -677,6 +680,7 @@ class Order extends Component
         DB::statement("SET SESSION group_concat_max_len = 1000000;");
         $data['title_page'] = "Purchase Detail";
         session()->put('page_title', $data['title_page']);
+        $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
         $data['products'] = Products_model::pluck('model','id');
         $data['storages'] = Storage_model::pluck('name','id');
         $data['colors'] = Color_model::pluck('name','id');
