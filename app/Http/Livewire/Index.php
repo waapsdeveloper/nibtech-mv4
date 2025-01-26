@@ -433,10 +433,10 @@ class Index extends Component
                 $data['currencies'] = Currency_model::whereIn('id', $data['ttl_average']->keys())->pluck('code', 'id');
                 $data['currency_signs'] = Currency_model::whereIn('id', $data['ttl_average']->keys())->pluck('sign', 'id');
 
-                $data['currencies']->map(function($item, $key) use ($data){
-                    $data['ttl']['Average '.$item] = $data['currency_signs'][$key] . number_format($data['ttl_average'][$key], 2);
-                    $data['ttl']['Total '.$item] = $data['currency_signs'][$key] . number_format($data['ttl_total'][$key], 2);
-                });
+                foreach($data['currencies'] as $key => $currency){
+                    $data['ttl']['Average '.$currency] = $data['currency_signs'][$key] . number_format($data['ttl_average'][$key], 2);
+                    $data['ttl']['Total '.$currency] = $data['currency_signs'][$key] . number_format($data['ttl_total'][$key], 2);
+                }
             }
             // $data['currencies'] = Currency_model::whereIn('id', key($data['ttl_average']))->pluck('code', 'id');
             // $data['currency_signs'] = Currency_model::whereIn('id', key($data['ttl_average']))->pluck('sign', 'id');
