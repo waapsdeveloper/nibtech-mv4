@@ -427,7 +427,7 @@
                                                 <h4 class="card-title mb-1">Orders</h4>
                                             </div>
                                             <div class="card-body py-2" id="orders_data">
-                                                <table class="w-100">
+                                                {{-- <table class="w-100">
                                                     <tr>
                                                         <td>Total:</td>
                                                         <td class="tx-right"><a href="{{url('order')}}?start_date={{ $start_date }}&end_date={{ $end_date }}" title="EUR Average: {{ amount_formatter($ttl_average,2) }} | EUR: {{ amount_formatter($ttl_eur,2) }} | GBP: {{ amount_formatter($ttl_gbp,2) }} | Go to orders page">{{ $total_orders }}</a></td>
@@ -441,13 +441,6 @@
                                                         <td class="tx-right"><a href="{{url('order')}}?care=1&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ $total_conversations }}</a></td>
                                                     </tr>
                                                     <tr>
-                                                            {{-- alert(`
-                                                            @foreach ($invoiced_orders_by_hour as $hours)
-                                                                {{ \Carbon\Carbon::createFromFormat('H', $hours->hour)->format('h A') }}: {{ $hours->total }} | {{ $admins[$hours->processed_by] ?? 'Unknown' }}
-                                                            @endforeach
-
-
-                                                             `) --}}
                                                         <td>
                                                             <a href="#" data-bs-toggle="modal" data-bs-target="#invoiceByHour" title="Invoiced Orders by Hour">Invoiced:</a>
                                                         </td>
@@ -467,7 +460,7 @@
                                                         <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ amount_formatter($total_gbp,2) }}</a></td>
                                                     </tr>
                                                     @endif
-                                                </table>
+                                                </table> --}}
 
                                             </div>
                                         </div>
@@ -636,13 +629,13 @@
                                 </tr>
                             </thead>
                             <tbody id="invoiceByHourBody">
-                                @foreach ($invoiced_orders_by_hour as $hours)
+                                {{-- @foreach ($invoiced_orders_by_hour as $hours)
                                     <tr>
                                         <td>{{ \Carbon\Carbon::createFromFormat('H', $hours->hour)->format('h A') }}</td>
                                         <td>{{ $hours->total }}</td>
                                         <td>{{ $admins[$hours->processed_by] ?? 'Unknown' }}</td>
                                     </tr>
-                                @endforeach
+                                @endforeach --}}
                             </tbody>
                         </table>
                     </div>
