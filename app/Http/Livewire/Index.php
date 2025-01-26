@@ -301,7 +301,7 @@ class Index extends Component
         $data['end_date'] = date("Y-m-d", strtotime($end_date));
         return view('livewire.index')->with($data);
     }
-    public function orders_data(){
+    public function get_orders_data(){
 
         $start_date = Carbon::now()->startOfDay();
         $end_date = date('Y-m-d 23:59:59');
@@ -467,7 +467,7 @@ class Index extends Component
         }
     }
 
-    public function required_restock(){
+    public function get_required_restock(){
 
         if(session('user')->hasPermission('dashboard_required_restock')){
 
