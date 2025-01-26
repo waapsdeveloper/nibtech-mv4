@@ -761,7 +761,7 @@
             $(document).ready(function(){
                 setTimeout(() => {
                     get_orders_data();
-                }, 5000);
+                }, 2000);
                 // get_orders_data();
             });
 
