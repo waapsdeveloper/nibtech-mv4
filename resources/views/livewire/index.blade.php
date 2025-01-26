@@ -775,8 +775,16 @@
                     end_date: "{{ $end_date }}",
                 }
                 let queryString = $.param(params);
-                let data = load_data("{{ url('index/get_testing_batches') }}"+'?'+queryString);
-                testing_batches.html(data);
+                // let data = load_data("{{ url('index/get_testing_batches') }}"+'?'+queryString);
+                // testing_batches.html(data);
+
+                $.ajax({
+                    url: "{{url('index/get_testing_batches')}}?"+queryString,
+                    type: 'GET',
+                    success: function(data) {
+                        testing_batches.html(data);
+                    }
+                });
             }
 
             $(document).ready(function(){
@@ -805,20 +813,27 @@
                 let restock = $('#required_restock');
                 let i = 0;
                 let new_data = ``;
-                let data = load_data("{{ url('index/get_required_restock') }}"+ '?' + queryString);
-                data.sort((a, b) => a.total_quantity_stocked - b.total_quantity_stocked || b.total_quantity_sold - a.total_quantity_sold);
-                data.forEach(element => {
-                    new_data += `
-                        <tr>
-                            <td>${i += 1}</td>
-                            <td><a href="{{url('listing')}}?product=${element.product_id}&storage=${element.storage}&color=${element.color}&grade[]=${element.grade}" target="_blank">${element.variation}</a></td>
-                            <td><a href="{{url('order')}}?sku=${element.sku}&start_date=${element.start_date}" target="_blank">${element.total_quantity_sold}</a></td>
-                            <td>${element.average_price}</td>
-                            <td><a href="{{url('inventory')}}?product=${element.product_id}&storage=${element.storage}&color=${element.color}&grade[]=${element.grade}" target="_blank">${element.total_quantity_stocked}</a></td>
-                        </tr>
-                    `;
+                // let data = load_data("{{ url('index/get_required_restock') }}"+ '?' + queryString);
+                $.ajax({
+                    url: "{{url('index/get_required_restock')}}?"+queryString,
+                    type: 'GET',
+                    success: function(data) {
+
+                        data.sort((a, b) => a.total_quantity_stocked - b.total_quantity_stocked || b.total_quantity_sold - a.total_quantity_sold);
+                        data.forEach(element => {
+                            new_data += `
+                                <tr>
+                                    <td>${i += 1}</td>
+                                    <td><a href="{{url('listing')}}?product=${element.product_id}&storage=${element.storage}&color=${element.color}&grade[]=${element.grade}" target="_blank">${element.variation}</a></td>
+                                    <td><a href="{{url('order')}}?sku=${element.sku}&start_date=${element.start_date}" target="_blank">${element.total_quantity_sold}</a></td>
+                                    <td>${element.average_price}</td>
+                                    <td><a href="{{url('inventory')}}?product=${element.product_id}&storage=${element.storage}&color=${element.color}&grade[]=${element.grade}" target="_blank">${element.total_quantity_stocked}</a></td>
+                                </tr>
+                            `;
+                        });
+                        restock.html(new_data);
+                    }
                 });
-                restock.html(new_data);
             }
             $(document).ready(function(){
                 get_restock_data();
