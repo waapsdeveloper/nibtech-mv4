@@ -425,8 +425,8 @@ class Index extends Component
             $data['ttl_average'] = $data['total_order_items']->pluck('average_price', 'currency');
             $data['ttl_total'] = $data['total_order_items']->pluck('total_price', 'currency');
 
+            $data['ttl'] = [];
             if($data['ttl_average']->count() == 0){
-                $data['ttl'] = [];
                 $data['ttl'] = [];
             }else{
 
