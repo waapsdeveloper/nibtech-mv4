@@ -729,6 +729,19 @@
                 `;
                 orders_data.html(new_data);
 
+                let invoiceByHourBody = $('#invoiceByHourBody');
+                let new_invoice_by_hour = ``;
+                data.invoiced_orders_by_hour.forEach(element => {
+                    new_invoice_by_hour += `
+                        <tr>
+                            <td>${element.hour}</td>
+                            <td>${element.total}</td>
+                            <td>${element.processed_by}</td>
+                        </tr>
+                    `;
+                });
+                invoiceByHourBody.html(new_invoice_by_hour);
+
             }
 
             $(document).ready(function(){
