@@ -512,6 +512,9 @@
                         b2cSale = data.sale_data;
                         b2cReturn = data.return_data;
 
+                        total = data.total;
+                        net = data.net;
+
                         console.log(data);
                         let table = `
                             <table class="table table-bordered table-hover text-md-nowrap">
@@ -609,14 +612,29 @@
                                     </tr>
                                     <tr>
                                         <td>Net</td>
-                                        <td>${data.total_sale_orders - data.total_return_orders}</td>
-                                        <td>${data.total_sale_items - data.total_return_items}</td>
-                                        <td>€${(data.total_sale_cost - data.total_return_cost)}</td>
-                                        <td>€${(data.total_repair_cost - data.total_repair_return_cost)}</td>
-                                        <td>€${data.total_fee}</td>
-                                        <td>€${(data.total_sale_eur_items - data.total_return_eur_items)}</td>
-                                        <td>£${(data.total_sale_gbp_items - data.total_return_gbp_items)}</td>
-                                        <td>€${(data.total_eur_profit - data.total_eur_loss)} + £${(data.total_sale_gbp_items - data.total_return_gbp_items)}</td>
+                                        <td title="${total.orders}">${net.orders}</td>
+                                        <td title="${total.order_items}">${net.order_items}</td>
+                                        <td title="€${total.cost}">€${net.cost}</td>
+                                        <td title="€${total.repair_cost}">€${net.repair_cost}</td>
+                                `;
+                                if (typeof data.currency_ids === 'object') {
+                                    Object.values(data.currency_ids).forEach((key) => {
+                                        table += `
+                                            <td title="${total.orders_sum[key]} - ${total.charges_sum[key]}">
+                                                ${net.orders_sum[key] ? `${currencies[key]}${net.orders_sum[key]}` : ''} -
+                                                ${net.charges_sum[key] ? `${currencies[key]}${net.charges_sum[key]}` : ''}
+                                            </td>
+                                        `;
+                                    });
+                                    Object.values(data.currency_ids).forEach((key) => {
+                                        table += `
+                                            <td title="${total.total[key]}">
+                                                ${net.total[key] ? `${currencies[key]}${net.total[key]}` : ''}
+                                            </td>
+                                        `;
+                                    });
+                                }
+                                table += `
                                     </tr>
                                 </tbody>
                             </table>
