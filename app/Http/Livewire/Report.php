@@ -405,7 +405,7 @@ class Report extends Component
         $b2c_return_total[4] = $b2c_return_total[4] - $b2c_return_stock_repair_cost;
 
         $b2c_return_total = collect($b2c_return_total)->map(function ($price) {
-            return amount_formatter($price);
+            return amount_formatter(-$price);
         });
 
         $return_data['b2c_returns'] = $b2c_returns->pluck('order_id')->unique()->count();
@@ -514,7 +514,7 @@ class Report extends Component
         $b2b_return_data['b2b_return_charges_sum'] = amount_formatter($b2b_return_charges_by_currency);
         $b2b_return_data['b2b_return_stock_repair_cost'] = amount_formatter($b2b_return_stock_repair_cost);
         $b2b_return_data['b2b_return_stock_cost'] = amount_formatter($b2b_return_stock_cost);
-        $b2b_return_data['b2b_return_total'] = amount_formatter($b2b_return_prices_by_currency - $b2b_return_charges_by_currency - $b2b_return_stock_cost - $b2b_return_stock_repair_cost);
+        $b2b_return_data['b2b_return_total'] = -amount_formatter($b2b_return_prices_by_currency - $b2b_return_charges_by_currency - $b2b_return_stock_cost - $b2b_return_stock_repair_cost);
 
 
 
