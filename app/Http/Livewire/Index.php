@@ -425,13 +425,25 @@ class Index extends Component
             $data['ttl_average'] = $data['total_order_items']->pluck('average_price', 'currency');
             $data['ttl_total'] = $data['total_order_items']->pluck('total_price', 'currency');
 
-            $data['currencies'] = Currency_model::whereIn('id', key($data['ttl_average']))->pluck('code', 'id');
-            $data['currency_signs'] = Currency_model::whereIn('id', key($data['ttl_average']))->pluck('sign', 'id');
+            if($data['ttl_average']->count() == 0){
+                $data['ttl'] = [];
+                $data['ttl'] = [];
+            }else{
+                $data['currencies'] = Currency_model::whereIn('id', key($data['ttl_average']))->pluck('code', 'id');
+                $data['currency_signs'] = Currency_model::whereIn('id', key($data['ttl_average']))->pluck('sign', 'id');
 
-            $data['currencies']->map(function($item, $key) use ($data){
-                $data['ttl']['Average '.$item] = $data['currency_signs'][$key] . number_format($data['ttl_average'][$key], 2);
-                $data['ttl']['Total '.$item] = $data['currency_signs'][$key] . number_format($data['ttl_total'][$key], 2);
-            });
+                $data['currencies']->map(function($item, $key) use ($data){
+                    $data['ttl']['Average '.$item] = $data['currency_signs'][$key] . number_format($data['ttl_average'][$key], 2);
+                    $data['ttl']['Total '.$item] = $data['currency_signs'][$key] . number_format($data['ttl_total'][$key], 2);
+                });
+            }
+            // $data['currencies'] = Currency_model::whereIn('id', key($data['ttl_average']))->pluck('code', 'id');
+            // $data['currency_signs'] = Currency_model::whereIn('id', key($data['ttl_average']))->pluck('sign', 'id');
+
+            // $data['currencies']->map(function($item, $key) use ($data){
+            //     $data['ttl']['Average '.$item] = $data['currency_signs'][$key] . number_format($data['ttl_average'][$key], 2);
+            //     $data['ttl']['Total '.$item] = $data['currency_signs'][$key] . number_format($data['ttl_total'][$key], 2);
+            // });
 
 
             $data['order_items'] = Order_item_model::whereBetween('orders.processed_at', [$start_date, $end_date])
