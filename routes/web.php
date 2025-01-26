@@ -70,6 +70,7 @@ Route::middleware(['2fa'])->group(function () {
     Route::get('disable_2fa', [Profile::class, 'disable2FA'])->name('disable2fa');
 
 Route::get('index/get_testing_batches', [Index::class,'get_testing_batches'])->name('dashboard_view_testing_batches');
+Route::get('index/get_orders_data', [Index::class,'get_orders_data'])->name('dashboard_view_total_orders');
 Route::get('index/toggle_amount_view', [Index::class,'toggle_amount_view'])->name('index');
 Route::get('index/add_ip', [Index::class,'add_ip'])->name('add_ip');
 Route::get('index/stock_cost_summery', [Index::class,'stock_cost_summery'])->name('available_stock_cost_summery');
@@ -77,7 +78,7 @@ Route::get('index/test', [Index::class,'test'])->name('test');
 Route::get('index/refresh_sales_chart', [Index::class,'refresh_sales_chart'])->name('10_day_sales_chart');
 Route::get('index/refresh_7_days_chart', [Index::class,'refresh_7_days_chart'])->name('10_day_sales_chart');
 Route::get('index/refresh_7_days_progressive_chart', [Index::class,'refresh_7_days_progressive_chart'])->name('7_day_progressive_sales_chart');
-Route::get('index/required_restock', [Index::class,'required_restock'])->name('required_restock');
+Route::get('index/get_required_restock', [Index::class,'get_required_restock'])->name('required_restock');
 // Route::post('change', Change::class);
 Route::get('profile', Profile::class)->name('profile');
 Route::post('profile', Profile::class)->name('profile');

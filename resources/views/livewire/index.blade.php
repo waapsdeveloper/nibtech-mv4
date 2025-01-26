@@ -441,14 +441,15 @@
                                                         <td class="tx-right"><a href="{{url('order')}}?care=1&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ $total_conversations }}</a></td>
                                                     </tr>
                                                     <tr>
-                                                        <td >
-                                                            <a onclick="alert(`
-
+                                                            {{-- alert(`
                                                             @foreach ($invoiced_orders_by_hour as $hours)
                                                                 {{ \Carbon\Carbon::createFromFormat('H', $hours->hour)->format('h A') }}: {{ $hours->total }} | {{ $admins[$hours->processed_by] ?? 'Unknown' }}
                                                             @endforeach
 
-                                                            `)">Invoiced:</a>
+
+                                                             `) --}}
+                                                        <td>
+                                                            <a href="#" data-bs-toggle="modal" data-bs-target="#invoiceByHour" title="Invoiced Orders by Hour">Invoiced:</a>
                                                         </td>
                                                         <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="{{ $invoiced_items }} Total Items | {{ $missing_imei }} Dispatched without Device | Go to orders page">{{ $invoiced_orders }}</a></td>
                                                     </tr>
@@ -616,6 +617,43 @@
 						<!-- </div> -->
 					</div>
 					<!-- row closed -->
+
+
+        <div class="modal fade" id="invoiceByHour" tabindex="-1" aria-labelledby="invoiceByHourLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                    <h5 class="modal-title" id="invoiceByHourLabel">Invoiced Orders by Hour</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table table-bordered table-hover text-md-nowrap">
+                            <thead>
+                                <tr>
+                                    <th>Hour</th>
+                                    <th>Orders</th>
+                                    <th>Processed By</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($invoiced_orders_by_hour as $hours)
+                                    <tr>
+                                        <td>{{ \Carbon\Carbon::createFromFormat('H', $hours->hour)->format('h A') }}</td>
+                                        <td>{{ $hours->total }}</td>
+                                        <td>{{ $admins[$hours->processed_by] ?? 'Unknown' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
     @endsection
 
     @section('scripts')
@@ -634,6 +672,32 @@
                 });
                 return data;
             }
+        @if (session('user')->hasPermission('dashboard_view_total_orders'))
+
+            function get_orders_data(){
+                let orders_data = $('#orders_data');
+                let params = {
+                    start_date: "{{ $start_date }}",
+                    end_date: "{{ $end_date }}",
+                    category: "{{ Request::get('category') }}",
+                    brand: "{{ Request::get('brand') }}",
+                    product: "{{ Request::get('product') }}",
+                    sku: "{{ Request::get('sku') }}",
+                    storage: "{{ Request::get('storage') }}",
+                    color: "{{ Request::get('color') }}",
+                    grade: "{{ Request::get('grade') }}",
+                    data: "{{ Request::get('data') }}",
+                }
+                let queryString = $.param(params);
+                let data = load_data("{{ url('index/get_orders_data') }}"+'?'+queryString);
+                orders_data.html(data);
+            }
+
+            $(document).ready(function(){
+                get_orders_data();
+            });
+
+        @endif
 
         @if (session('user')->hasPermission('dashboard_view_testing_batches'))
             function get_testing_batches(){
@@ -673,7 +737,7 @@
                 let restock = $('#required_restock');
                 let i = 0;
                 let new_data = ``;
-                let data = load_data("{{ url('index/required_restock') }}"+ '?' + queryString);
+                let data = load_data("{{ url('index/get_required_restock') }}"+ '?' + queryString);
                 data.sort((a, b) => a.total_quantity_stocked - b.total_quantity_stocked || b.total_quantity_sold - a.total_quantity_sold);
                 data.forEach(element => {
                     new_data += `
