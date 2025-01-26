@@ -155,6 +155,7 @@ class Index extends Component
                     return $q->whereIn('variation_id', $variation_ids);
                 });
             })
+            ->orderBy('processed_at')
             ->selectRaw('HOUR(processed_at) as hour, COUNT(id) as total, processed_by')
             ->groupBy('hour', 'processed_by')
             ->get();
@@ -374,6 +375,7 @@ class Index extends Component
                     return $q->whereIn('variation_id', $variation_ids);
                 });
             })
+            ->orderBy('processed_at')
             ->selectRaw('HOUR(processed_at) as hour, COUNT(id) as total, processed_by')
             ->groupBy('hour', 'processed_by')
             ->get();
