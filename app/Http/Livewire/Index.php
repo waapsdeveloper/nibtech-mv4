@@ -422,7 +422,7 @@ class Index extends Component
                 ->groupBy('orders.currency')
                 ->get();
 
-            $data['ttl_average'] = $data['total_order_items']->pluck('average_price', 'currency');
+            $data['ttl_average'] = $data['total_order_items']->pluck('average_price', 'currency')->toArray();
             $data['ttl_total'] = $data['total_order_items']->pluck('total_price', 'currency');
 
             if($data['ttl_average']->count() == 0){
