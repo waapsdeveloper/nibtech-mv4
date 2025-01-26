@@ -660,7 +660,7 @@
                 $.ajax({
                     url: url,
                     type: 'GET',
-                    async: true,
+                    // async: true,
 
                     success: function(response){
                         data = response;
