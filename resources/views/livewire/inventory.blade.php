@@ -619,7 +619,7 @@
                                             <tr>
                                                 <td title="{{ $verified_stock->id }}">{{ $i + 1 }}</td>
                                                 <td><a title="Search Serial {{ $stock->variation->product->model . " " . (isset($stock->variation->storage) ? $storages[$stock->variation->storage] . " " : null) . " " .
-                                                    (isset($stock->variation->color) ? $colors[$stock->variation->color] . " " : null) . $stock->variation->grade_id->name . (isset($stock->variation->sub_grade) ? " ".$grades[$stock->variation->sub_grade] : null) }} " href="{{url('imei')."?imei=".$stock->imei.$stock->serial_number}}" target="_blank"> {{$stock->imei.$stock->serial_number }} </a></td>
+                                                    (isset($stock->variation->color) ? $colors[$stock->variation->color] . " " : null) . ($stock->variation->grade_id->name ?? '?') . (isset($stock->variation->sub_grade) ? " ".$grades[$stock->variation->sub_grade] : null) }} " href="{{url('imei')."?imei=".$stock->imei.$stock->serial_number}}" target="_blank"> {{$stock->imei.$stock->serial_number }} </a></td>
                                                 <td>{{ $verified_stock->admin->first_name ?? null }}</td>
                                             </tr>
 
