@@ -429,8 +429,9 @@ class Index extends Component
                 $data['ttl'] = [];
                 $data['ttl'] = [];
             }else{
-                $data['currencies'] = Currency_model::whereIn('id', key($data['ttl_average']))->pluck('code', 'id');
-                $data['currency_signs'] = Currency_model::whereIn('id', key($data['ttl_average']))->pluck('sign', 'id');
+
+                $data['currencies'] = Currency_model::whereIn('id', array_keys($data['ttl_average']))->pluck('code', 'id');
+                $data['currency_signs'] = Currency_model::whereIn('id', array_keys($data['ttl_average']))->pluck('sign', 'id');
 
                 $data['currencies']->map(function($item, $key) use ($data){
                     $data['ttl']['Average '.$item] = $data['currency_signs'][$key] . number_format($data['ttl_average'][$key], 2);
