@@ -708,18 +708,18 @@
                             </td>
                             <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="${data.invoiced_items} Total Items | ${data.missing_imei} Dispatched without Device | Go to orders page">${data.invoiced_orders}</a></td>
                         </tr>
-                        <tr>
-                            <td title="Average Price">Average:</td>
-                            <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">${data.average}</a></td>
-                        </tr>
-                        <tr>
-                            <td title="Total EUR Price">Total EUR:</td>
-                            <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">${data.total_eur}</a></td>
-                        </tr>
-                        <tr>
-                            <td title="Total GBP Price">Total GBP:</td>
-                            <td class="tx-right"><a href="{{url('order')}}?currency=5&status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">${data.total_gbp}</a></td>
-                        </tr>
+                        // <tr>
+                        //     <td title="Average Price">Average:</td>
+                        //     <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">${data.average}</a></td>
+                        // </tr>
+                        // <tr>
+                        //     <td title="Total EUR Price">Total EUR:</td>
+                        //     <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">${data.total_eur}</a></td>
+                        // </tr>
+                        // <tr>
+                        //     <td title="Total GBP Price">Total GBP:</td>
+                        //     <td class="tx-right"><a href="{{url('order')}}?currency=5&status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">${data.total_gbp}</a></td>
+                        // </tr>
                 `;
                 for (const [key, value] of Object.entries(data.ttl)) {
                     new_data += `
