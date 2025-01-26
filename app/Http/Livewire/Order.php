@@ -209,6 +209,9 @@ class Order extends Component
                 });
             }
         })
+        ->when(request('currency') != '', function ($q) {
+            return $q->where('currency', request('currency'));
+        })
         ->when(request('tracking_number') != '', function ($q) {
             if(strlen(request('tracking_number')) == 21){
                 $tracking = substr(request('tracking_number'),1);
