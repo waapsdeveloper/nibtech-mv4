@@ -317,6 +317,9 @@ class Order extends Component
         if($order->scanned == null && ($order->status == 3 || $order->status == 6) && ($order->label_url == null || $order->reference != null)){
             $order->scanned = 1;
             $order->save();
+        }elseif($order->scanned == null && request('force') == 1){
+            $order->scanned = 2;
+            $order->save();
         }
 
         session()->flash('message', 'Order marked as scanned');
