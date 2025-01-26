@@ -613,26 +613,26 @@
                                 </tbody>
                                 <tfoot>
                                     <tr>
-                                        <td>Net</td>
-                                        <td title="${total.orders}">${net.orders}</td>
-                                        <td title="${total.order_items}">${net.order_items}</td>
-                                        <td title="€${total.cost}">€${net.cost}</td>
-                                        <td title="€${total.repair_cost}">€${net.repair_cost}</td>
+                                        <th>Net</th>
+                                        <th title="${total.orders}">${net.orders}</th>
+                                        <th title="${total.order_items}">${net.order_items}</th>
+                                        <th title="€${total.cost}">€${net.cost}</th>
+                                        <th title="€${total.repair_cost}">€${net.repair_cost}</th>
                                 `;
                                 if (typeof data.currency_ids === 'object') {
                                     Object.values(data.currency_ids).forEach((key) => {
                                         table += `
-                                            <td title="${total.orders_sum[key]} - ${total.charges_sum[key]}">
+                                            <th title="${total.orders_sum[key]} - ${total.charges_sum[key]}">
                                                 ${net.orders_sum[key] ? `${currencies[key]}${net.orders_sum[key]}` : ''} -
                                                 ${net.charges_sum[key] ? `${currencies[key]}${net.charges_sum[key]}` : ''}
-                                            </td>
+                                            </th>
                                         `;
                                     });
                                     Object.values(data.currency_ids).forEach((key) => {
                                         table += `
-                                            <td title="${total.total[key]}">
+                                            <th title="${total.total[key]}">
                                                 ${net.total[key] ? `${currencies[key]}${net.total[key]}` : ''}
-                                            </td>
+                                            </th>
                                         `;
                                     });
                                 }
