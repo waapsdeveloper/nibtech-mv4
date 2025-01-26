@@ -384,7 +384,7 @@ class Index extends Component
 
             $data['invoiced_orders_by_hour']->map(function($item) use ($admins){
                 $item->hour = Carbon::createFromFormat('H', $item->hour)->format('h A');
-                $item->processed_by = $admins[$item->processed_by];
+                $item->processed_by = $admins[$item->processed_by] ?? 'Unknown';
                 return $item;
             });
 
