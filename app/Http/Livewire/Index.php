@@ -304,6 +304,7 @@ class Index extends Component
     }
     public function get_orders_data(){
 
+        $admins = Admin_model::pluck('first_name','id');
         $start_date = Carbon::now()->startOfDay();
         $end_date = date('Y-m-d 23:59:59');
         if (request('start_date') != NULL && request('end_date') != NULL) {
@@ -380,9 +381,9 @@ class Index extends Component
             ->groupBy('hour', 'processed_by')
             ->get();
 
-            $data['invoiced_orders_by_hour']->map(function($item) use ($data){
+            $data['invoiced_orders_by_hour']->map(function($item) use ($admins){
                 $item->hour = Carbon::createFromFormat('H', $item->hour)->format('h A');
-                $item->processed_by = $data['admins'][$item->processed_by];
+                $item->processed_by = $admins[$item->processed_by];
                 return $item;
             });
 
