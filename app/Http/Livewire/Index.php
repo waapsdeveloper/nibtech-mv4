@@ -380,8 +380,9 @@ class Index extends Component
             ->groupBy('hour', 'processed_by')
             ->get();
 
-            $data['invoiced_orders_by_hour']->map(function($item){
+            $data['invoiced_orders_by_hour']->map(function($item) use ($data){
                 $item->hour = Carbon::createFromFormat('H', $item->hour)->format('h A');
+                $item->processed_by = $data['admins'][$item->processed_by];
                 return $item;
             });
 

@@ -654,7 +654,6 @@
 
         <script>
 
-            let admins = @json($admins);
 
             function load_data(url){
                 let data = [];
@@ -732,7 +731,7 @@
                         <tr>
                             <td>${element.hour}</td>
                             <td>${element.total}</td>
-                            <td>${admins[element.processed_by] ?? 'Unknown'}</td>
+                            <td>${element.processed_by}</td>
                         </tr>
                     `;
                 });
