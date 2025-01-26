@@ -383,7 +383,7 @@ class Report extends Component
         $b2c_return_total = $b2c_return_prices_by_currency->toArray();
 
         $b2c_return_prices_by_currency =  $b2c_return_prices_by_currency->map(function ($items) {
-                return amount_formatter($items->sum('price'));
+                return amount_formatter($items);
             });
 
         $b2c_return_stock_ids = $b2c_returns->pluck('stock_id')->toArray();
