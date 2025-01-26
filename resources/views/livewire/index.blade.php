@@ -685,69 +685,77 @@
                     data: "{{ Request::get('data') }}",
                 }
                 let queryString = $.param(params);
-                let data = load_data("{{ url('index/get_orders_data') }}"+'?'+queryString);
-                // orders_data.html(data);
-                console.log(data);
 
-                // <tr>
-                //             <td title="Average Price">Average:</td>
-                //             <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">${data.average}</a></td>
-                //         </tr>
-                //         <tr>
-                //             <td title="Total EUR Price">Total EUR:</td>
-                //             <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">${data.total_eur}</a></td>
-                //         </tr>
-                //         <tr>
-                //             <td title="Total GBP Price">Total GBP:</td>
-                //             <td class="tx-right"><a href="{{url('order')}}?currency=5&status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">${data.total_gbp}</a></td>
-                //         </tr>
-                let new_data = `
-                    <table class="w-100">
-                        <tr>
-                            <td>Total:</td>
-                            <td class="tx-right"><a href="{{url('order')}}?start_date={{ $start_date }}&end_date={{ $end_date }}" title="EUR Average ${data.ttl_average} | EUR: ${data.ttl_eur} | GBP: ${data.ttl_gbp} | Go to orders page">${data.total_orders}</a></td>
-                        </tr>
-                        <tr>
-                            <td>Pending:</td>
-                            <td class="tx-right"><a href="{{url('order')}}?status=2&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">${data.pending_orders}</a></td>
-                        </tr>
-                        <tr>
-                            <td>Conversation:</td>
-                            <td class="tx-right"><a href="{{url('order')}}?care=1&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">${data.total_conversations}</a></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <a href="#" data-bs-toggle="modal" data-bs-target="#invoiceByHour" title="Invoiced Orders by Hour">Invoiced:</a>
-                            </td>
-                            <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="${data.invoiced_items} Total Items | ${data.missing_imei} Dispatched without Device | Go to orders page">${data.invoiced_orders}</a></td>
-                        </tr>
-                `;
-                for (const [key, value] of Object.entries(data.ttl)) {
-                    new_data += `
-                        <tr>
-                            <td>${key}:</td>
-                            <td class="tx-right">${value}</td>
-                        </tr>
-                    `;
-                }
+                let queryString = $.param(params);
+                $.ajax({
+                    url: "{{url('index/get_orders_data')}}?"+queryString,
+                    type: 'GET',
+                    success: function(data) {
+                        // let data = load_data("{{ url('index/get_orders_data') }}"+'?'+queryString);
+                        // orders_data.html(data);
+                        console.log(data);
 
-                new_data += `
-                    </table>
-                `;
-                orders_data.html(new_data);
+                        // <tr>
+                        //             <td title="Average Price">Average:</td>
+                        //             <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">${data.average}</a></td>
+                        //         </tr>
+                        //         <tr>
+                        //             <td title="Total EUR Price">Total EUR:</td>
+                        //             <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">${data.total_eur}</a></td>
+                        //         </tr>
+                        //         <tr>
+                        //             <td title="Total GBP Price">Total GBP:</td>
+                        //             <td class="tx-right"><a href="{{url('order')}}?currency=5&status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">${data.total_gbp}</a></td>
+                        //         </tr>
+                        let new_data = `
+                            <table class="w-100">
+                                <tr>
+                                    <td>Total:</td>
+                                    <td class="tx-right"><a href="{{url('order')}}?start_date={{ $start_date }}&end_date={{ $end_date }}" title="EUR Average ${data.ttl_average} | EUR: ${data.ttl_eur} | GBP: ${data.ttl_gbp} | Go to orders page">${data.total_orders}</a></td>
+                                </tr>
+                                <tr>
+                                    <td>Pending:</td>
+                                    <td class="tx-right"><a href="{{url('order')}}?status=2&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">${data.pending_orders}</a></td>
+                                </tr>
+                                <tr>
+                                    <td>Conversation:</td>
+                                    <td class="tx-right"><a href="{{url('order')}}?care=1&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">${data.total_conversations}</a></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <a href="#" data-bs-toggle="modal" data-bs-target="#invoiceByHour" title="Invoiced Orders by Hour">Invoiced:</a>
+                                    </td>
+                                    <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="${data.invoiced_items} Total Items | ${data.missing_imei} Dispatched without Device | Go to orders page">${data.invoiced_orders}</a></td>
+                                </tr>
+                        `;
+                        for (const [key, value] of Object.entries(data.ttl)) {
+                            new_data += `
+                                <tr>
+                                    <td>${key}:</td>
+                                    <td class="tx-right">${value}</td>
+                                </tr>
+                            `;
+                        }
 
-                let invoiceByHourBody = $('#invoiceByHourBody');
-                let new_invoice_by_hour = ``;
-                data.invoiced_orders_by_hour.forEach(element => {
-                    new_invoice_by_hour += `
-                        <tr>
-                            <td>${element.hour}</td>
-                            <td>${element.total}</td>
-                            <td>${element.processed_by}</td>
-                        </tr>
-                    `;
+                        new_data += `
+                            </table>
+                        `;
+                        orders_data.html(new_data);
+
+                        let invoiceByHourBody = $('#invoiceByHourBody');
+                        let new_invoice_by_hour = ``;
+                        data.invoiced_orders_by_hour.forEach(element => {
+                            new_invoice_by_hour += `
+                                <tr>
+                                    <td>${element.hour}</td>
+                                    <td>${element.total}</td>
+                                    <td>${element.processed_by}</td>
+                                </tr>
+                            `;
+                        });
+                        invoiceByHourBody.html(new_invoice_by_hour);
+                    }
                 });
-                invoiceByHourBody.html(new_invoice_by_hour);
 
             }
 
