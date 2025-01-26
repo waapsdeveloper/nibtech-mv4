@@ -721,14 +721,14 @@
                             <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">${data.total_gbp}</a></td>
                         </tr>
                 `;
-                    data.ttl.forEach(element => {
-                        new_data += `
-                            <tr>
-                                <td>${element.name}:</td>
-                                <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">${element.count}</a></td>
-                            </tr>
-                        `;
-                    });
+                for (const [key, value] of Object.entries(data.ttl)) {
+                    new_data += `
+                        <tr>
+                            <td>${key}:</td>
+                            <td class="tx-right">${value}</td>
+                        </tr>
+                    `;
+                }
 
                 new_data += `
                     </table>
