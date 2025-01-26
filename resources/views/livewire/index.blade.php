@@ -660,6 +660,9 @@
 		<!-- Internal Chart.Bundle js-->
 
         <script>
+
+            let admins = @json($admins);
+
             function load_data(url){
                 let data = [];
                 $.ajax({
@@ -736,7 +739,7 @@
                         <tr>
                             <td>${element.hour}</td>
                             <td>${element.total}</td>
-                            <td>${element.processed_by}</td>
+                            <td>${admins[element.processed_by] ?? 'Unknown'}</td>
                         </tr>
                     `;
                 });
