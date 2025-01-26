@@ -271,7 +271,7 @@ class Inventory extends Component
 
         $active_inventory_verification = Process_model::where(['process_type_id'=>20,'status'=>1])->first();
         if($active_inventory_verification != null){
-            $all_verified_stocks = Process_stock_model::where('process_id', $active_inventory_verification->id)->pluck('stock_id')->toArray();
+            $all_verified_stocks = Process_stock_model::where('process_id', $active_inventory_verification->id)->where('status',1)->pluck('stock_id')->toArray();
             $verified_stocks = Process_stock_model::where('process_id', $active_inventory_verification->id)
             ->when(request('vendor') != '', function ($q) {
                 return $q->whereHas('stock.order', function ($q) {
