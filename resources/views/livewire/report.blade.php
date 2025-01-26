@@ -610,6 +610,8 @@
                                 }
                                 table += `
                                     </tr>
+                                </tbody>
+                                <tfoot>
                                     <tr>
                                         <td>Net</td>
                                         <td title="${total.orders}">${net.orders}</td>
@@ -636,7 +638,7 @@
                                 }
                                 table += `
                                     </tr>
-                                </tbody>
+                                </tfoot>
                             </table>
                         `;
                         $('#sales_and_returns_total').html(table);
