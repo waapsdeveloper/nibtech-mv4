@@ -517,13 +517,63 @@ class Report extends Component
         $b2b_return_data['b2b_return_total'] = -amount_formatter($b2b_return_prices_by_currency - $b2b_return_charges_by_currency - $b2b_return_stock_cost - $b2b_return_stock_repair_cost);
 
 
+        $data['currency_ids'] = $b2c_prices_by_currency->keys()->merge($b2c_charges_by_currency->keys())->merge($b2c_return_prices_by_currency->keys())->unique();
+
+        $total['orders'] = $sale_data['b2c_orders'] + $b2b_data['b2b_orders'] . ' - ' . $return_data['b2c_returns'] + $b2b_return_data['b2b_returns'];
+        $net['orders'] = $sale_data['b2c_orders'] + $b2b_data['b2b_orders'] - $return_data['b2c_returns'] - $b2b_return_data['b2b_returns'];
+        $total['order_items'] = $sale_data['b2c_order_items'] + $b2b_data['b2b_order_items'] . ' - ' . $return_data['b2c_return_items'] + $b2b_return_data['b2b_return_items'];
+        $net['order_items'] = $sale_data['b2c_order_items'] + $b2b_data['b2b_order_items'] - $return_data['b2c_return_items'] - $b2b_return_data['b2b_return_items'];
+        $total['cost'] = $sale_data['b2c_stock_cost'] + $b2b_data['b2b_stock_cost'] . ' - ' . $return_data['b2c_return_stock_cost'] + $b2b_return_data['b2b_return_stock_cost'];
+        $net['cost'] = $sale_data['b2c_stock_cost'] + $b2b_data['b2b_stock_cost'] - $return_data['b2c_return_stock_cost'] - $b2b_return_data['b2b_return_stock_cost'];
+        $total['repair'] = $sale_data['b2c_stock_repair_cost'] + $b2b_data['b2b_stock_repair_cost'] . ' - ' . $return_data['b2c_return_stock_repair_cost'] + $b2b_return_data['b2b_return_stock_repair_cost'];
+        $net['repair'] = $sale_data['b2c_stock_repair_cost'] + $b2b_data['b2b_stock_repair_cost'] - $return_data['b2c_return_stock_repair_cost'] - $b2b_return_data['b2b_return_stock_repair_cost'];
+
+        foreach ($data['currency_ids'] as $currency_id) {
+            if (!isset($sale_data['b2c_prices_by_currency'][$currency_id])) {
+                $sale_data['b2c_prices_by_currency'][$currency_id] = 0;
+            }
+            if (!isset($b2b_prices_by_currency[$currency_id])) {
+                $b2b_prices_by_currency[$currency_id] = 0;
+            }
+            if (!isset($return_data['b2c_return_prices_by_currency'][$currency_id])) {
+                $return_data['b2c_return_prices_by_currency'][$currency_id] = 0;
+            }
+            if (!isset($b2b_return_prices_by_currency[$currency_id])) {
+                $b2b_return_prices_by_currency[$currency_id] = 0;
+            }
+            if (!isset($sale_data['b2c_charges_sum'][$currency_id])) {
+                $sale_data['b2c_charges_sum'][$currency_id] = 0;
+            }
+            if (!isset($b2b_charges_by_currency[$currency_id])) {
+                $b2b_charges_by_currency[$currency_id] = 0;
+            }
+            if (!isset($return_data['b2c_return_charges_sum'][$currency_id])) {
+                $return_data['b2c_return_charges_sum'][$currency_id] = 0;
+            }
+            if (!isset($b2b_return_charges_by_currency[$currency_id])) {
+                $b2b_return_charges_by_currency[$currency_id] = 0;
+            }
+
+
+            $total['sum'][$currency_id] = amount_formatter($sale_data['b2c_prices_by_currency'][$currency_id] + $b2b_prices_by_currency[$currency_id] . ' - ' . $return_data['b2c_return_prices_by_currency'][$currency_id] + $b2b_return_prices_by_currency[$currency_id]);
+            $net['sum'][$currency_id] = amount_formatter($sale_data['b2c_prices_by_currency'][$currency_id] + $b2b_prices_by_currency[$currency_id] - $b2c_return_prices_by_currency[$currency_id] - $b2b_return_prices_by_currency[$currency_id]);
+            $total['charges'][$currency_id] = amount_formatter($sale_data['b2c_charges_sum'][$currency_id] + $b2b_data['b2b_charges_sum'][$currency_id] - $return_data['b2c_return_charges_sum'][$currency_id] - $b2b_return_charges_by_currency[$currency_id]);
+            $net['charges'][$currency_id] = amount_formatter($sale_data['b2c_charges_sum'][$currency_id] + $b2b_charges_by_currency[$currency_id] - $b2c_return_prices_by_currency[$currency_id] - $b2b_return_prices_by_currency[$currency_id]);
+
+            $total['total'][$currency_id] = amount_formatter($sale_data['b2c_prices_by_currency'][$currency_id] + $b2b_prices_by_currency[$currency_id] - $sale_data['b2c_charges_sum'][$currency_id] - $b2b_charges_by_currency[$currency_id] - $sale_data['b2c_stock_cost'] - $b2b_data['b2b_stock_cost'] - $sale_data['b2c_stock_repair_cost'] - $b2b_data['b2b_stock_repair_cost'] . ' - ' . $return_data['b2c_return_prices_by_currency'][$currency_id] + $b2b_return_prices_by_currency[$currency_id] - $return_data['b2c_return_charges_sum'][$currency_id] - $b2b_return_charges_by_currency[$currency_id] - $return_data['b2c_return_stock_cost'] - $b2b_return_data['b2b_return_stock_cost'] - $return_data['b2c_return_stock_repair_cost'] - $b2b_return_data['b2b_return_stock_repair_cost']);
+            $net['total'][$currency_id] = amount_formatter($sale_data['b2c_prices_by_currency'][$currency_id] + $b2b_prices_by_currency[$currency_id] - $sale_data['b2c_charges_sum'][$currency_id] - $b2b_charges_by_currency[$currency_id] - $sale_data['b2c_stock_cost'] - $b2b_data['b2b_stock_cost'] - $sale_data['b2c_stock_repair_cost'] - $b2b_data['b2b_stock_repair_cost'] - $return_data['b2c_return_prices_by_currency'][$currency_id] - $b2b_return_prices_by_currency[$currency_id] + $return_data['b2c_return_charges_sum'][$currency_id] + $b2b_return_charges_by_currency[$currency_id] + $return_data['b2c_return_stock_cost'] + $b2b_return_data['b2b_return_stock_cost'] + $return_data['b2c_return_stock_repair_cost'] + $b2b_return_data['b2b_return_stock_repair_cost']);
+        }
+
+
+
+
 
         $data['sale_data'] = $sale_data;
         $data['return_data'] = $return_data;
         $data['b2b_data'] = $b2b_data;
         $data['b2b_return_data'] = $b2b_return_data;
-
-        $data['currency_ids'] = $b2c_prices_by_currency->keys()->merge($b2c_charges_by_currency->keys())->merge($b2c_return_prices_by_currency->keys())->unique();
+        $data['total'] = $total;
+        $data['net'] = $net;
 
         return response()->json($data);
 
