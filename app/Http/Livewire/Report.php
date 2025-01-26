@@ -318,7 +318,7 @@ class Report extends Component
             ->get()
             ->pluck('total_price', 'currency');
         $b2c_total = $b2c_prices_by_currency->toArray();
-
+        $b2c_price = $b2c_prices_by_currency->toArray();
         $b2c_prices_by_currency = $b2c_prices_by_currency->map(function ($price) {
             return amount_formatter($price);
         });
@@ -329,6 +329,7 @@ class Report extends Component
             ->get()
             ->pluck('total_charges', 'currency');
 
+        $b2c_charge = $b2c_charges_by_currency->toArray();
         foreach ($b2c_charges_by_currency->toArray() as $key => $value) {
             if (!isset($b2c_total[$key])) {
                 $b2c_total[$key] = 0;
@@ -353,7 +354,7 @@ class Report extends Component
             ->sum('price');
 
         $b2c_total[4] = $b2c_total[4] - $b2c_stock_repair_cost;
-
+        $b2c_totals = $b2c_total;
         $b2c_total = collect($b2c_total)->map(function ($price) {
             return amount_formatter($price);
         });
@@ -381,10 +382,24 @@ class Report extends Component
             return $items->sum('price');
         });
         $b2c_return_total = $b2c_return_prices_by_currency->toArray();
-
+        $b2c_return_price = $b2c_return_prices_by_currency->toArray();
         $b2c_return_prices_by_currency =  $b2c_return_prices_by_currency->map(function ($items) {
                 return amount_formatter($items);
             });
+
+        $b2c_return_charges_by_currency = $b2c_returns->groupBy('currency')->map(function ($items) {
+            return $items->sum('charges');
+        });
+        $b2c_return_charge = $b2c_return_charges_by_currency->toArray();
+        foreach ($b2c_return_charges_by_currency->toArray() as $key => $value) {
+            if (!isset($b2c_return_total[$key])) {
+                $b2c_return_total[$key] = 0;
+            }
+            $b2c_return_total[$key] -= $value;
+        }
+        $b2c_return_charges_by_currency = $b2c_return_charges_by_currency->map(function ($items) {
+            return amount_formatter($items);
+        });
 
         $b2c_return_stock_ids = $b2c_returns->pluck('stock_id')->toArray();
         $b2c_return_stock_cost = Order_item_model::whereIn('stock_id', $b2c_return_stock_ids)
@@ -404,6 +419,7 @@ class Report extends Component
 
         $b2c_return_total[4] = $b2c_return_total[4] - $b2c_return_stock_repair_cost;
 
+        $b2c_return_totals = $b2c_return_total;
         $b2c_return_total = collect($b2c_return_total)->map(function ($price) {
             return amount_formatter(-$price);
         });
@@ -411,7 +427,7 @@ class Report extends Component
         $return_data['b2c_returns'] = $b2c_returns->pluck('order_id')->unique()->count();
         $return_data['b2c_return_items'] = $b2c_returns->count();
         $return_data['b2c_return_sum'] = $b2c_return_prices_by_currency;
-        $return_data['b2c_return_charges_sum'] = 0;
+        $return_data['b2c_return_charges_sum'] = $b2c_return_charges_by_currency;
         $return_data['b2c_return_stock_repair_cost'] = amount_formatter($b2c_return_stock_repair_cost);
         $return_data['b2c_return_stock_cost'] = amount_formatter($b2c_return_stock_cost);
         $return_data['b2c_return_total'] = $b2c_return_total;
@@ -457,13 +473,15 @@ class Report extends Component
             ->where('process_id', 9)
             ->sum('price');
 
+        $b2b_total = $b2b_prices_by_currency - $b2b_charges_by_currency - $b2b_stock_cost - $b2b_stock_repair_cost;
+
         $b2b_data['b2b_orders'] = $b2b_orders->count();
         $b2b_data['b2b_order_items'] = $b2b_order_items->count();
         $b2b_data['b2b_orders_sum'] = amount_formatter($b2b_prices_by_currency);
         $b2b_data['b2b_charges_sum'] = amount_formatter($b2b_charges_by_currency);
         $b2b_data['b2b_stock_repair_cost'] = amount_formatter($b2b_stock_repair_cost);
         $b2b_data['b2b_stock_cost'] = amount_formatter($b2b_stock_cost);
-        $b2b_data['b2b_total'] = amount_formatter($b2b_prices_by_currency - $b2b_charges_by_currency - $b2b_stock_cost - $b2b_stock_repair_cost);
+        $b2b_data['b2b_total'] = amount_formatter($b2b_total);
 
 
         $b2b_returns = Order_model::where('order_type_id',6)
@@ -508,13 +526,15 @@ class Report extends Component
             ->where('process_id', 9)
             ->sum('price');
 
+        $b2b_return_totals = -($b2b_return_prices_by_currency - $b2b_return_charges_by_currency - $b2b_return_stock_cost - $b2b_return_stock_repair_cost);
+
         $b2b_return_data['b2b_returns'] = $b2b_returns->count();
         $b2b_return_data['b2b_return_items'] = $b2b_return_order_items->count();
         $b2b_return_data['b2b_return_sum'] = amount_formatter($b2b_return_prices_by_currency);
         $b2b_return_data['b2b_return_charges_sum'] = amount_formatter($b2b_return_charges_by_currency);
         $b2b_return_data['b2b_return_stock_repair_cost'] = amount_formatter($b2b_return_stock_repair_cost);
         $b2b_return_data['b2b_return_stock_cost'] = amount_formatter($b2b_return_stock_cost);
-        $b2b_return_data['b2b_return_total'] = -amount_formatter($b2b_return_prices_by_currency - $b2b_return_charges_by_currency - $b2b_return_stock_cost - $b2b_return_stock_repair_cost);
+        $b2b_return_data['b2b_return_total'] = amount_formatter($b2b_return_totals);
 
 
         $data['currency_ids'] = $b2c_prices_by_currency->keys()->merge($b2c_charges_by_currency->keys())->merge($b2c_return_prices_by_currency->keys())->unique();
@@ -523,45 +543,34 @@ class Report extends Component
         $net['orders'] = $sale_data['b2c_orders'] + $b2b_data['b2b_orders'] - $return_data['b2c_returns'] - $b2b_return_data['b2b_returns'];
         $total['order_items'] = $sale_data['b2c_order_items'] + $b2b_data['b2b_order_items'] . ' - ' . $return_data['b2c_return_items'] + $b2b_return_data['b2b_return_items'];
         $net['order_items'] = $sale_data['b2c_order_items'] + $b2b_data['b2b_order_items'] - $return_data['b2c_return_items'] - $b2b_return_data['b2b_return_items'];
-        $total['cost'] = $sale_data['b2c_stock_cost'] + $b2b_data['b2b_stock_cost'] . ' - ' . $return_data['b2c_return_stock_cost'] + $b2b_return_data['b2b_return_stock_cost'];
-        $net['cost'] = $sale_data['b2c_stock_cost'] + $b2b_data['b2b_stock_cost'] - $return_data['b2c_return_stock_cost'] - $b2b_return_data['b2b_return_stock_cost'];
-        $total['repair'] = $sale_data['b2c_stock_repair_cost'] + $b2b_data['b2b_stock_repair_cost'] . ' - ' . $return_data['b2c_return_stock_repair_cost'] + $b2b_return_data['b2b_return_stock_repair_cost'];
-        $net['repair'] = $sale_data['b2c_stock_repair_cost'] + $b2b_data['b2b_stock_repair_cost'] - $return_data['b2c_return_stock_repair_cost'] - $b2b_return_data['b2b_return_stock_repair_cost'];
+        $total['cost'] = amount_formatter($b2c_stock_cost + $b2b_stock_cost . ' - ' . $b2c_return_stock_cost + $b2b_return_stock_cost);
+        $net['cost'] = amount_formatter($b2c_stock_cost + $b2b_stock_cost - $b2c_return_stock_cost - $b2b_return_stock_cost);
+        $total['repair_cost'] = amount_formatter($b2c_stock_repair_cost + $b2b_stock_repair_cost . ' - ' . $b2c_return_stock_repair_cost + $b2b_return_stock_repair_cost);
+        $net['repair_cost'] = amount_formatter($b2c_stock_repair_cost + $b2b_stock_repair_cost - $b2c_return_stock_repair_cost - $b2b_return_stock_repair_cost);
 
         foreach ($data['currency_ids'] as $currency_id) {
-            if (!isset($sale_data['b2c_prices_by_currency'][$currency_id])) {
-                $sale_data['b2c_prices_by_currency'][$currency_id] = 0;
-            }
-            if (!isset($b2b_prices_by_currency[$currency_id])) {
-                $b2b_prices_by_currency[$currency_id] = 0;
-            }
-            if (!isset($return_data['b2c_return_prices_by_currency'][$currency_id])) {
-                $return_data['b2c_return_prices_by_currency'][$currency_id] = 0;
-            }
-            if (!isset($b2b_return_prices_by_currency[$currency_id])) {
-                $b2b_return_prices_by_currency[$currency_id] = 0;
-            }
-            if (!isset($sale_data['b2c_charges_sum'][$currency_id])) {
-                $sale_data['b2c_charges_sum'][$currency_id] = 0;
-            }
-            if (!isset($b2b_charges_by_currency[$currency_id])) {
-                $b2b_charges_by_currency[$currency_id] = 0;
-            }
-            if (!isset($return_data['b2c_return_charges_sum'][$currency_id])) {
-                $return_data['b2c_return_charges_sum'][$currency_id] = 0;
-            }
-            if (!isset($b2b_return_charges_by_currency[$currency_id])) {
-                $b2b_return_charges_by_currency[$currency_id] = 0;
+            if ($currency_id == 4){
+                $total['orders_sum'][$currency_id] = amount_formatter($b2c_price[$currency_id] + $b2b_prices_by_currency . ' - ' . $b2c_return_price[$currency_id] + $b2b_return_prices_by_currency);
+                $net['orders_sum'][$currency_id] = amount_formatter($b2c_price[$currency_id] + $b2b_prices_by_currency - $b2c_return_price[$currency_id] - $b2b_return_prices_by_currency);
+
+                $total['charges_sum'][$currency_id] = amount_formatter($b2c_charge[$currency_id] + $b2b_charges_by_currency . ' - ' . $b2c_return_charges_by_currency[$currency_id] + $b2b_return_charges_by_currency);
+                $net['charges_sum'][$currency_id] = amount_formatter($b2c_charge[$currency_id] + $b2b_charges_by_currency - $b2c_return_charges_by_currency[$currency_id] - $b2b_return_charges_by_currency);
+
+                $total['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id] + $b2b_total . ' - ' . $b2c_return_totals[$currency_id] + $b2b_return_totals);
+                $net['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id] + $b2b_total - $b2c_return_totals[$currency_id] - $b2b_return_totals);
+            }else{
+                $total['orders_sum'][$currency_id] = amount_formatter($b2c_price[$currency_id] . ' - ' . $b2c_return_price[$currency_id]);
+                $net['orders_sum'][$currency_id] = amount_formatter($b2c_price[$currency_id] - $b2c_return_price[$currency_id]);
+
+                $total['charges_sum'][$currency_id] = amount_formatter($b2c_charge[$currency_id] . ' - ' . $b2c_return_charges_by_currency[$currency_id]);
+                $net['charges_sum'][$currency_id] = amount_formatter($b2c_charge[$currency_id] - $b2c_return_charges_by_currency[$currency_id]);
+
+                $total['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id] . ' - ' . $b2c_return_totals[$currency_id]);
+                $net['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id] - $b2c_return_totals[$currency_id]);
+
             }
 
 
-            $total['sum'][$currency_id] = amount_formatter($sale_data['b2c_prices_by_currency'][$currency_id] + $b2b_prices_by_currency[$currency_id] . ' - ' . $return_data['b2c_return_prices_by_currency'][$currency_id] + $b2b_return_prices_by_currency[$currency_id]);
-            $net['sum'][$currency_id] = amount_formatter($sale_data['b2c_prices_by_currency'][$currency_id] + $b2b_prices_by_currency[$currency_id] - $b2c_return_prices_by_currency[$currency_id] - $b2b_return_prices_by_currency[$currency_id]);
-            $total['charges'][$currency_id] = amount_formatter($sale_data['b2c_charges_sum'][$currency_id] + $b2b_data['b2b_charges_sum'][$currency_id] - $return_data['b2c_return_charges_sum'][$currency_id] - $b2b_return_charges_by_currency[$currency_id]);
-            $net['charges'][$currency_id] = amount_formatter($sale_data['b2c_charges_sum'][$currency_id] + $b2b_charges_by_currency[$currency_id] - $b2c_return_prices_by_currency[$currency_id] - $b2b_return_prices_by_currency[$currency_id]);
-
-            $total['total'][$currency_id] = amount_formatter($sale_data['b2c_prices_by_currency'][$currency_id] + $b2b_prices_by_currency[$currency_id] - $sale_data['b2c_charges_sum'][$currency_id] - $b2b_charges_by_currency[$currency_id] - $sale_data['b2c_stock_cost'] - $b2b_data['b2b_stock_cost'] - $sale_data['b2c_stock_repair_cost'] - $b2b_data['b2b_stock_repair_cost'] . ' - ' . $return_data['b2c_return_prices_by_currency'][$currency_id] + $b2b_return_prices_by_currency[$currency_id] - $return_data['b2c_return_charges_sum'][$currency_id] - $b2b_return_charges_by_currency[$currency_id] - $return_data['b2c_return_stock_cost'] - $b2b_return_data['b2b_return_stock_cost'] - $return_data['b2c_return_stock_repair_cost'] - $b2b_return_data['b2b_return_stock_repair_cost']);
-            $net['total'][$currency_id] = amount_formatter($sale_data['b2c_prices_by_currency'][$currency_id] + $b2b_prices_by_currency[$currency_id] - $sale_data['b2c_charges_sum'][$currency_id] - $b2b_charges_by_currency[$currency_id] - $sale_data['b2c_stock_cost'] - $b2b_data['b2b_stock_cost'] - $sale_data['b2c_stock_repair_cost'] - $b2b_data['b2b_stock_repair_cost'] - $return_data['b2c_return_prices_by_currency'][$currency_id] - $b2b_return_prices_by_currency[$currency_id] + $return_data['b2c_return_charges_sum'][$currency_id] + $b2b_return_charges_by_currency[$currency_id] + $return_data['b2c_return_stock_cost'] + $b2b_return_data['b2b_return_stock_cost'] + $return_data['b2c_return_stock_repair_cost'] + $b2b_return_data['b2b_return_stock_repair_cost']);
         }
 
 
