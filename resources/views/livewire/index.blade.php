@@ -686,7 +686,6 @@
                 }
                 let queryString = $.param(params);
 
-                let queryString = $.param(params);
                 $.ajax({
                     url: "{{url('index/get_orders_data')}}?"+queryString,
                     type: 'GET',
