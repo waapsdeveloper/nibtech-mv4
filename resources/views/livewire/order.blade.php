@@ -692,7 +692,7 @@
                                                     <a class="dropdown-item" href="#" onclick="window.open('{{url('order')}}/export_invoice_new/{{$order->id}}','_blank','print_popup');">Invoice 2</a>
                                                     @if (request('missing') == 'scan' && session('user')->hasPermission('mark_scanned'))
                                                         <a class="dropdown-item" href="{{url('order')}}/mark_scanned/{{ $order->id }}">Mark Scanned</a>
-
+                                                        <a class="dropdown-item" href="{{url('order')}}/mark_scanned/{{ $order->id }}?force=1">Mark Scanned (Forced)</a>
                                                     @endif
                                                 </div>
                                             </td>
