@@ -380,6 +380,11 @@ class Index extends Component
             ->groupBy('hour', 'processed_by')
             ->get();
 
+            $data['invoiced_orders_by_hour']->map(function($item){
+                $item->hour = Carbon::createFromFormat('H', $item->hour)->format('h A');
+                return $item;
+            });
+
             // if(session('user_id') == 1){
             //     dd($data['invoiced_orders_by_hour']);
             // }
