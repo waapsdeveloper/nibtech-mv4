@@ -730,7 +730,7 @@
                 data.invoiced_orders_by_hour.forEach(element => {
                     new_invoice_by_hour += `
                         <tr>
-                            <td>${element.hour}</td>
+                            <td>${date_formatter(element.hour, 'H', 'h A')}</td>
                             <td>${element.total}</td>
                             <td>${admins[element.processed_by] ?? 'Unknown'}</td>
                         </tr>
