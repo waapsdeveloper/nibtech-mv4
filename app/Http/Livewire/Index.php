@@ -483,7 +483,7 @@ class Index extends Component
             }
 
             $operations = Stock_operations_model::where('description','LIKE','%DrPhone')->whereBetween('created_at', [$start_date, $end_date])->pluck('stock_id')->toArray();
-            $stock = Stock_model::whereIn('id', $operations)->pluck('order_id')->toArray();
+            $stock = Stock_model::whereIn('id', $operations)->pluck('order_id')->toArray()->unique();
             $orders = Order_model::whereIn('id', $stock)->pluck('customer_id','reference_id')->toArray();
             $vendor_names = Customer_model::whereIn('id', $orders)->pluck('last_name','id')->toArray();
             $data = [];
