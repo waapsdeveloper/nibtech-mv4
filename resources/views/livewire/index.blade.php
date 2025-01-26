@@ -752,7 +752,10 @@
             }
 
             $(document).ready(function(){
-                get_orders_data();
+                setTimeout(() => {
+                    get_orders_data();
+                }, 5000);
+                // get_orders_data();
             });
 
         @endif
