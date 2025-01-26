@@ -543,7 +543,8 @@
                                         <td>${b2bSale.b2b_order_items}</td>
                                         <td>€${b2bSale.b2b_stock_cost}</td>
                                         <td>€${b2bSale.b2b_stock_repair_cost}</td>
-                                        <td>€${b2bSale.b2b_orders_sum}</td>
+                                        <td colspan="${Object.keys(data.currency_ids).length}">€${b2bSale.b2b_orders_sum}</td>
+                                        <td colspan="${Object.keys(data.currency_ids).length}">€${b2bSale.b2b_total}</td>
                                     </tr>
                                     <tr>
                                         <td>B2C Sales</td>
@@ -577,8 +578,8 @@
                                         <td>${b2bReturn.b2b_return_items}</td>
                                         <td>€${b2bReturn.b2b_return_stock_cost}</td>
                                         <td>€${b2bReturn.b2b_return_stock_repair_cost}</td>
-                                        <td>€${b2bReturn.b2b_return_sum}</td>
-
+                                        <td colspan="${Object.keys(data.currency_ids).length}">€${b2bReturn.b2b_return_sum}</td>
+                                        <td colspan="${Object.keys(data.currency_ids).length}">€${b2bReturn.b2b_return_total}</td>
                                     </tr>
                                     <tr>
                                         <td>B2C Returns</td>
@@ -593,6 +594,13 @@
                                         table += `
                                             <td title="Price - Charges">
                                                 ${b2cReturn.b2c_return_sum[key] ? `${currencies[key]}${b2cReturn.b2c_return_sum[key]}` : ''}
+                                            </td>
+                                        `;
+                                    });
+                                    Object.values(data.currency_ids).forEach((key) => {
+                                        table += `
+                                            <td title="Price - Charges">
+                                                ${b2cReturn.b2c_return_total[key] ? `${currencies[key]}${b2cReturn.b2c_return_total[key]}` : ''}
                                             </td>
                                         `;
                                     });
