@@ -471,6 +471,8 @@ class Index extends Component
     public function get_testing_batches(){
         if(session('user')->hasPermission('dashboard_view_testing_batches')){
 
+            ini_set('memory_limit', '1024M');
+
             if(request('start_date') == null){
                 $start_date = now()->startOfDay()->format('Y-m-d H:i:s');
             }else{
