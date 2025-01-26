@@ -391,6 +391,9 @@ class Report extends Component
             ->pluck('price', 'stock_id')
             ->sum();
 
+            if (!isset($b2c_return_total[4])) {
+                $b2c_return_total[4] = 0;
+            }
         $b2c_return_total[4] = $b2c_return_total[4] - $b2c_return_stock_cost;
 
         $b2c_return_stock_repair_cost = Process_stock_model::whereIn('stock_id', $b2c_return_stock_ids)
