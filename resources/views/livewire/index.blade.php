@@ -730,7 +730,7 @@
                 data.invoiced_orders_by_hour.forEach(element => {
                     new_invoice_by_hour += `
                         <tr>
-                            <td>${new Date().setHours(element.hour).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                            <td>${element.hour}</td>
                             <td>${element.total}</td>
                             <td>${admins[element.processed_by] ?? 'Unknown'}</td>
                         </tr>
