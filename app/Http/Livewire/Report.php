@@ -377,8 +377,10 @@ class Report extends Component
             // ->whereIn('status', [3,6])
             ->get();
 
-        $b2c_return_prices_by_currency = $b2c_returns->groupBy('currency');
-        $b2c_return_total = $b2c_return_prices_by_currency->pluck('price', 'currency')->toArray();
+        $b2c_return_prices_by_currency = $b2c_returns->groupBy('currency')->map(function ($items) {
+            return $items->sum('price');
+        });
+        $b2c_return_total = $b2c_return_prices_by_currency->toArray();
 
         $b2c_return_prices_by_currency =  $b2c_return_prices_by_currency->map(function ($items) {
                 return amount_formatter($items->sum('price'));
@@ -512,6 +514,7 @@ class Report extends Component
         $b2b_return_data['b2b_return_charges_sum'] = amount_formatter($b2b_return_charges_by_currency);
         $b2b_return_data['b2b_return_stock_repair_cost'] = amount_formatter($b2b_return_stock_repair_cost);
         $b2b_return_data['b2b_return_stock_cost'] = amount_formatter($b2b_return_stock_cost);
+        $b2b_return_data['b2b_return_total'] = amount_formatter($b2b_return_prices_by_currency - $b2b_return_charges_by_currency - $b2b_return_stock_cost - $b2b_return_stock_repair_cost);
 
 
 
@@ -519,7 +522,6 @@ class Report extends Component
         $data['return_data'] = $return_data;
         $data['b2b_data'] = $b2b_data;
         $data['b2b_return_data'] = $b2b_return_data;
-        $data['b2b_return_total'] = amount_formatter($b2b_return_prices_by_currency - $b2b_return_charges_by_currency - $b2b_return_stock_cost - $b2b_return_stock_repair_cost);
 
         $data['currency_ids'] = $b2c_prices_by_currency->keys()->merge($b2c_charges_by_currency->keys())->merge($b2c_return_prices_by_currency->keys())->unique();
 
