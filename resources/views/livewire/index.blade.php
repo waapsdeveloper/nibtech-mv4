@@ -693,41 +693,41 @@
                 // orders_data.html(data);
                 console.log(data);
 
-                let new_data = `
-                    <table class="w-100">
-                        <tr>
-                            <td>Total:</td>
-                            <td class="tx-right"><a href="{{url('order')}}?start_date={{ $start_date }}&end_date={{ $end_date }}" title="EUR Average: {{ amount_formatter($ttl_average,2) }} | EUR: {{ amount_formatter($ttl_eur,2) }} | GBP: {{ amount_formatter($ttl_gbp,2) }} | Go to orders page">{{ ${data.total_orders} }}</a></td>
-                        </tr>
-                        <tr>
-                            <td>Pending:</td>
-                            <td class="tx-right"><a href="{{url('order')}}?status=2&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ ${data.pending_orders} }}</a></td>
-                        </tr>
-                        <tr>
-                            <td>Conversation:</td>
-                            <td class="tx-right"><a href="{{url('order')}}?care=1&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ ${data.total_conversations} }}</a></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <a href="#" data-bs-toggle="modal" data-bs-target="#invoiceByHour" title="Invoiced Orders by Hour">Invoiced:</a>
-                            </td>
-                            <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="{{ ${data.invoiced_items} }} Total Items | {{ ${data.missing_imei} }} Dispatched without Device | Go to orders page">{{ ${data.invoiced_orders} }}</a></td>
-                        </tr>
-                        <tr>
-                            <td title="Average Price">Average:</td>
-                            <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ amount_formatter(${data.average},2) }}</a></td>
-                        </tr>
-                        <tr>
-                            <td title="Total EUR Price">Total EUR:</td>
-                            <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ amount_formatter(${data.total_eur},2) }}</a></td>
-                        </tr>
-                        <tr>
-                            <td title="Total GBP Price">Total GBP:</td>
-                            <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ amount_formatter(${data.total_gbp},2) }}</a></td>
-                        </tr>
-                    </table>
-                `;
-                orders_data.html(new_data);
+                // let new_data = `
+                //     <table class="w-100">
+                //         <tr>
+                //             <td>Total:</td>
+                //             <td class="tx-right"><a href="{{url('order')}}?start_date={{ $start_date }}&end_date={{ $end_date }}" title="EUR Average: {{ amount_formatter($ttl_average,2) }} | EUR: {{ amount_formatter($ttl_eur,2) }} | GBP: {{ amount_formatter($ttl_gbp,2) }} | Go to orders page">{{ ${data.total_orders} }}</a></td>
+                //         </tr>
+                //         <tr>
+                //             <td>Pending:</td>
+                //             <td class="tx-right"><a href="{{url('order')}}?status=2&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ ${data.pending_orders} }}</a></td>
+                //         </tr>
+                //         <tr>
+                //             <td>Conversation:</td>
+                //             <td class="tx-right"><a href="{{url('order')}}?care=1&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ ${data.total_conversations} }}</a></td>
+                //         </tr>
+                //         <tr>
+                //             <td>
+                //                 <a href="#" data-bs-toggle="modal" data-bs-target="#invoiceByHour" title="Invoiced Orders by Hour">Invoiced:</a>
+                //             </td>
+                //             <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="{{ ${data.invoiced_items} }} Total Items | {{ ${data.missing_imei} }} Dispatched without Device | Go to orders page">{{ ${data.invoiced_orders} }}</a></td>
+                //         </tr>
+                //         <tr>
+                //             <td title="Average Price">Average:</td>
+                //             <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ amount_formatter(${data.average},2) }}</a></td>
+                //         </tr>
+                //         <tr>
+                //             <td title="Total EUR Price">Total EUR:</td>
+                //             <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ amount_formatter(${data.total_eur},2) }}</a></td>
+                //         </tr>
+                //         <tr>
+                //             <td title="Total GBP Price">Total GBP:</td>
+                //             <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ amount_formatter(${data.total_gbp},2) }}</a></td>
+                //         </tr>
+                //     </table>
+                // `;
+                // orders_data.html(new_data);
             }
 
             $(document).ready(function(){
