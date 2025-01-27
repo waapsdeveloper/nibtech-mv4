@@ -1521,7 +1521,6 @@ class Order extends Component
             }else{
                 $variation = $varia;
             }
-            dd($variation);
             if(ctype_digit($variation)){
 
                 foreach($issues as $issue){
@@ -1529,6 +1528,7 @@ class Order extends Component
                     // echo $variation." ".$data->imei." ".$data->cost;
 
 
+                    echo $variation;
 
                     if($this->add_purchase_item($issue->order_id,
                     $data->imei,
