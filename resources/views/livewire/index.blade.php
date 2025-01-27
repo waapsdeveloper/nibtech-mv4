@@ -660,6 +660,7 @@
                     type: 'GET',
                     success: function(data) {
                         let statistics1 = document.getElementById('statistics1');
+                        statistics1.statistics1();
                     }
 
                 })
@@ -720,7 +721,7 @@
                     success: function(data) {
                         // let data = load_data("{{ url('index/get_orders_data') }}"+'?'+queryString);
                         // orders_data.html(data);
-                        console.log(data);
+                        // console.log(data);
 
                         // <tr>
                         //             <td title="Average Price">Average:</td>
