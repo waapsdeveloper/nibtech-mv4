@@ -1056,7 +1056,7 @@ class Inventory extends Component
                 $process_stock->save();
                 session()->put('success', 'Stock ReVerified successfully');
             }else{
-                session()->put('error', 's Stock already verified');
+                session()->put('error', 'Stock already verified'. $process_stock->status);
             }
         }
         return redirect()->back();
