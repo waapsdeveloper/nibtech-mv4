@@ -951,7 +951,7 @@ class Inventory extends Component
 
         $imei = request('imei');
         $imeis = explode("\n", $imei);
-        foreach($imeis as $imei)
+        foreach($imeis as $imei){
             if (ctype_digit($imei)) {
                 $i = $imei;
                 $stock = Stock_model::where(['imei' => $i])->first();
