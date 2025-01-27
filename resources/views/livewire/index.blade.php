@@ -733,7 +733,7 @@
                                 <tr>
                                     <td>${key}:</td>
                                     <td class="tx-right">
-                                        <a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}&currency=${currency_id}" title="Go to orders page">${value}</a>
+                                        <a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}&currency=${currency_id}" title="Go to orders page" target="_blank">${value}</a>
                                     </td>
                                 </tr>
                             `;
