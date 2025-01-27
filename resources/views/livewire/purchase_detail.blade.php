@@ -300,7 +300,7 @@
                                 $total_available = 0;
                                 $total_rtg = 0;
                                 $total_twox = 0;
-                                $total_repair = 0;
+                                $total_rep = 0;
                                 $total_rma = 0;
                                 $total_ws = 0;
                                 $total_bt = 0;
@@ -313,7 +313,7 @@
                                     $total_available += $summery['available_stock_count'];
                                     $total_rtg += $summery['rtg_stock_count'];
                                     $total_twox += $summery['twox_stock_count'];
-                                    $total_repair += $summery['repair_stock_count'];
+                                    $total_rep += $summery['rep_stock_count'];
                                     $total_rma += $summery['rma_stock_count'];
                                     $total_ws += $summery['ws_stock_count'];
                                     $total_bt += $summery['bt_stock_count'];
@@ -346,7 +346,7 @@
                                 <td><b>{{ $total_available }}</b></td>
                                 <td><b>{{ $total_rtg }}</b></td>
                                 <td><b>{{ $total_twox }}</b></td>
-                                <td><b>{{ $total_repair }}</b></td>
+                                <td><b>{{ $total_rep }}</b></td>
                                 <td><b>{{ $total_rma }}</b></td>
                                 <td><b>{{ $total_ws }}</b></td>
                                 <td><b>{{ $total_bt }}</b></td>
