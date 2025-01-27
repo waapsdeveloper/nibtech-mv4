@@ -298,6 +298,13 @@
                                 $total_sold = 0;
                                 $total_repair = 0;
                                 $total_available = 0;
+                                $total_rtg = 0;
+                                $total_twox = 0;
+                                $total_repair = 0;
+                                $total_rma = 0;
+                                $total_ws = 0;
+                                $total_bt = 0;
+                                $total_other = 0;
                             @endphp
                             @foreach ($stock_summery as $summery)
                                 @php
