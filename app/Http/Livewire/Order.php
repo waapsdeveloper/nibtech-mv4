@@ -1529,6 +1529,7 @@ class Order extends Component
 
 
                     echo $variation;
+                    echo $data->cost;
 
                     if($this->add_purchase_item($issue->order_id,
                     $data->imei,
