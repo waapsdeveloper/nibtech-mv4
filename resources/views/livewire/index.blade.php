@@ -662,6 +662,7 @@
                         let statistics1 = document.getElementById('statistics1');
                         // statistics1();
                         console.log(data);
+                        console.log(sessionStorage.getItem('total42'));
                     }
 
                 })
