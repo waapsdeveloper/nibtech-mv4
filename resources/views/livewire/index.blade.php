@@ -728,12 +728,12 @@
                         `;
                         for (const [key, value] of Object.entries(data.ttl)) {
                             currency_code = key.split(' ')[1];
-                            currency_id = data.currencies.key(currency_code);
+                            currency_id = Object.keys(data.currencies).find(key => data.currencies[key] === currency_code);
                             new_data += `
                                 <tr>
                                     <td>${key}:</td>
                                     <td class="tx-right">
-                                        <a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">${value}</a>
+                                        <a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}&currency=${currency_id}" title="Go to orders page">${value}</a>
                                     </td>
                                 </tr>
                             `;
