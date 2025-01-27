@@ -654,6 +654,34 @@
 
         <script>
 
+            $(document).ready(function(){
+                $.ajax({
+                    url: "{{url('index/refresh_sales_chart')}}",
+                    type: 'GET',
+                    success: function(data) {
+                        let statistics1 = document.getElementById('statistics1');
+                    }
+
+                })
+
+                $.ajax({
+                    url: "{{url('index/refresh_7_days_chart')}}",
+                    type: 'GET',
+                    success: function(data) {
+                        let statistics4 = document.getElementById('statistics4');
+                    }
+
+                })
+
+                $.ajax({
+                    url: "{{url('index/refresh_7_days_progressive_chart')}}",
+                    type: 'GET',
+                    success: function(data) {
+                        let statistics5 = document.getElementById('statistics5');
+                    }
+
+                })
+            });
 
             function load_data(url){
                 let data = [];
