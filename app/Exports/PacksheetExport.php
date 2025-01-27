@@ -62,8 +62,34 @@ class PacksheetExport implements FromCollection, WithHeadings
             'p_orders.created_at as po_date',
             'customer.first_name as vendor',
             'vendor_grade.name as vendor_grade',
-            'stock_operations.description as issue',
-            'old_operations.description as old_issue',
+            DB::raw('TRIM(BOTH " " FROM UPPER(
+                TRIM(LEADING "Battery | " FROM TRIM(LEADING " | " FROM REPLACE(
+                    REPLACE(
+                        REPLACE(
+                            REPLACE(
+                                REPLACE(
+                                    REPLACE(stock_operations.description, "TG", ""),
+                                "Cover", ""),
+                            "5D", ""),
+                        "Dual-Esim", ""),
+                    " | DrPhone", ""),
+                "BCC", "Battery Cycle Count")))
+            )) as issue'),
+            DB::raw('TRIM(BOTH " " FROM UPPER(
+                TRIM(LEADING "Battery | " FROM TRIM(LEADING " | " FROM REPLACE(
+                    REPLACE(
+                        REPLACE(
+                            REPLACE(
+                                REPLACE(
+                                    REPLACE(old_operations.description, "TG", ""),
+                                "Cover", ""),
+                            "5D", ""),
+                        "Dual-Esim", ""),
+                    " | DrPhone", ""),
+                "BCC", "Battery Cycle Count")))
+            )) as old_issue'),
+            // 'stock_operations.description as issue',
+            // 'old_operations.description as old_issue',
             'admin.first_name as admin',
             // 'order_items.price as price'
             // Conditional price based on invoice flag
