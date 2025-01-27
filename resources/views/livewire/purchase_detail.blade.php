@@ -326,8 +326,8 @@
                                     <td>{{ $summery['sold_stock_count'] }}</td>
                                     <td>{{ $summery['repair_stock_count'] }}</td>
                                     <td title="RTG + Others">{{ $summery['available_stock_count'] }} </td>
-                                    <td>{{ $summery['rtg_stock_count'] }}</td>
-                                    <td>{{ $summery['twox_stock_count'] ?? '-' }}</td>
+                                    <td>{{ $summery['rtg_stock_count'] > 0 ? $summery['rtg_stock_count'] : '-' }}</td>
+                                    <td>{{ $summery['twox_stock_count'] }}</td>
                                     <td>{{ $summery['repair_stock_count'] }}</td>
                                     <td>{{ $summery['rma_stock_count'] }}</td>
                                     <td>{{ $summery['ws_stock_count'] }}</td>
