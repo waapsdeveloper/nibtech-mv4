@@ -950,113 +950,116 @@ class Inventory extends Component
         }
 
         $imei = request('imei');
-        if (ctype_digit($imei)) {
-            $i = $imei;
-            $stock = Stock_model::where(['imei' => $i])->first();
-        } else {
-            $s = $imei;
-            $t = mb_substr($imei,1);
-            $stock = Stock_model::whereIn('serial_number', [$s, $t])->first();
-        }
-        // if (ctype_digit(request('imei'))) {
-        //     $i = request('imei');
-        //     $s = null;
-        // } else {
-        //     $i = null;
-        //     $s = request('imei');
-        // }
-        // $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
-        if($stock == null){
-            session()->put('error', 'IMIE Invalid / Not Found');
-            return redirect()->back();
-
-        }
-
-        $stock->availability();
-
-
-        if(request('copy') == 1){
-            $variation = $stock->variation;
-            if(request('product_id') != null){
-                $product_id = request('product_id');
-            }else{
-                $product_id = $variation->product_id;
-            }
-            if(request('storage') != null){
-                $storage_id = request('storage');
-            }else{
-                $storage_id = $variation->storage;
-            }
-            if(request('color') != null){
-                $color_id = request('color');
-            }else{
-                $color_id = $variation->color;
-            }
-            if(request('grade') != null){
-                $grade_id = request('grade');
-            }else{
-                $grade_id = $variation->grade;
-            }
-            $new_variation = Variation_model::firstOrNew([
-                'product_id' => $product_id,
-                'storage' => $storage_id,
-                'color' => $color_id,
-                'grade' => $grade_id,
-            ]);
-            // dd($new_variation);
-            if($stock->variation_id != $new_variation->id){
-                $new_variation->status = 1;
-                $new_variation->stock += 1;
-                $new_variation->save();
-                $stock_operation = Stock_operations_model::create([
-                    'stock_id' => $stock->id,
-                    'old_variation_id' => $stock->variation_id,
-                    'new_variation_id' => $new_variation->id,
-                    'description' => 'Variation changed during inventory verification',
-                    'admin_id' => session('user_id'),
-                ]);
-                session()->put('success', 'Stock Variation changed successfully from '.$stock->variation_id.' to '.$new_variation->id);
-                $stock->variation_id = $new_variation->id;
-                $stock->save();
-            }
-                session()->put('copy', 1);
-                session()->put('color', request('color'));
-                session()->put('grade', request('grade'));
-        }else{
-            session()->put('copy', 0);
-            // session()->put('product_id', $stock->variation->product_id);
-            // session()->put('storage', $stock->variation->storage);
-            session()->put('color', $stock->variation->color);
-            session()->put('grade', $stock->variation->grade);
-        }
-
-        $process_stock = Process_stock_model::firstOrNew(['process_id'=>$process_id, 'stock_id'=>$stock->id]);
-        $process_stock->admin_id = session('user_id');
-        $process_stock->description = $reference;
-        if($process_stock->id == null){
-            $process_stock->status = 1;
-            $process_stock->save();
-            // Check if the session variable 'counter' is set
-            if (session()->has('counter')) {
-                // Increment the counter
-                session()->increment('counter');
+        $imeis = explode("\n", $imei);
+        foreach($imeis as $imei)
+            if (ctype_digit($imei)) {
+                $i = $imei;
+                $stock = Stock_model::where(['imei' => $i])->first();
             } else {
-                // Initialize the counter if it doesn't exist
-                session()->put('counter', 1);
+                $s = $imei;
+                $t = mb_substr($imei,1);
+                $stock = Stock_model::whereIn('serial_number', [$s, $t])->first();
             }
-            $model = $stock->variation->product->model ?? '?';
-            $storage = $stock->variation->storage_id->name ?? '?';
-            $color = $stock->variation->color_id->name ?? '?';
-            $grade = $stock->variation->grade_id->name ?? '?';
+            // if (ctype_digit(request('imei'))) {
+            //     $i = request('imei');
+            //     $s = null;
+            // } else {
+            //     $i = null;
+            //     $s = request('imei');
+            // }
+            // $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
+            if($stock == null){
+                session()->put('error', 'IMIE Invalid / Not Found');
+                return redirect()->back();
 
-            session()->put('success', 'Stock Verified successfully: '.$model.' - '.$storage.' - '.$color.' - '.$grade);
-        }else{
-            if($process_stock->status == 2){
+            }
+
+            $stock->availability();
+
+
+            if(request('copy') == 1){
+                $variation = $stock->variation;
+                if(request('product_id') != null){
+                    $product_id = request('product_id');
+                }else{
+                    $product_id = $variation->product_id;
+                }
+                if(request('storage') != null){
+                    $storage_id = request('storage');
+                }else{
+                    $storage_id = $variation->storage;
+                }
+                if(request('color') != null){
+                    $color_id = request('color');
+                }else{
+                    $color_id = $variation->color;
+                }
+                if(request('grade') != null){
+                    $grade_id = request('grade');
+                }else{
+                    $grade_id = $variation->grade;
+                }
+                $new_variation = Variation_model::firstOrNew([
+                    'product_id' => $product_id,
+                    'storage' => $storage_id,
+                    'color' => $color_id,
+                    'grade' => $grade_id,
+                ]);
+                // dd($new_variation);
+                if($stock->variation_id != $new_variation->id){
+                    $new_variation->status = 1;
+                    $new_variation->stock += 1;
+                    $new_variation->save();
+                    $stock_operation = Stock_operations_model::create([
+                        'stock_id' => $stock->id,
+                        'old_variation_id' => $stock->variation_id,
+                        'new_variation_id' => $new_variation->id,
+                        'description' => 'Variation changed during inventory verification',
+                        'admin_id' => session('user_id'),
+                    ]);
+                    session()->put('success', 'Stock Variation changed successfully from '.$stock->variation_id.' to '.$new_variation->id);
+                    $stock->variation_id = $new_variation->id;
+                    $stock->save();
+                }
+                    session()->put('copy', 1);
+                    session()->put('color', request('color'));
+                    session()->put('grade', request('grade'));
+            }else{
+                session()->put('copy', 0);
+                // session()->put('product_id', $stock->variation->product_id);
+                // session()->put('storage', $stock->variation->storage);
+                session()->put('color', $stock->variation->color);
+                session()->put('grade', $stock->variation->grade);
+            }
+
+            $process_stock = Process_stock_model::firstOrNew(['process_id'=>$process_id, 'stock_id'=>$stock->id]);
+            $process_stock->admin_id = session('user_id');
+            $process_stock->description = $reference;
+            if($process_stock->id == null){
                 $process_stock->status = 1;
                 $process_stock->save();
-                session()->put('success', 'Stock ReVerified successfully');
+                // Check if the session variable 'counter' is set
+                if (session()->has('counter')) {
+                    // Increment the counter
+                    session()->increment('counter');
+                } else {
+                    // Initialize the counter if it doesn't exist
+                    session()->put('counter', 1);
+                }
+                $model = $stock->variation->product->model ?? '?';
+                $storage = $stock->variation->storage_id->name ?? '?';
+                $color = $stock->variation->color_id->name ?? '?';
+                $grade = $stock->variation->grade_id->name ?? '?';
+
+                session()->put('success', 'Stock Verified successfully: '.$model.' - '.$storage.' - '.$color.' - '.$grade);
             }else{
-                session()->put('error', 'Stock already verified');
+                if($process_stock->status == 2){
+                    $process_stock->status = 1;
+                    $process_stock->save();
+                    session()->put('success', 'Stock ReVerified successfully');
+                }else{
+                    session()->put('error', 'Stock already verified');
+                }
             }
         }
         return redirect()->back();
