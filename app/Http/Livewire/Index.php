@@ -696,7 +696,7 @@ class Index extends Component
         echo 'sessionStorage.setItem("approved2", "' . implode(',', $eur) . '");';
         echo 'sessionStorage.setItem("failed2", "' . implode(',', $gbp) . '");';
         echo 'sessionStorage.setItem("dates2", "' . implode(',', $dates) . '");';
-        // echo 'window.location.href = document.referrer; </script>';
+        echo 'window.location.href = document.referrer; </script>';
     }
 
     public function refresh_7_days_chart()
@@ -786,7 +786,7 @@ class Index extends Component
         echo '<script>
             sessionStorage.setItem("total32", "' . $order_data2 . '");
             sessionStorage.setItem("dates32", "' . $dates_data2 . '");
-            // window.location.href = document.referrer;
+            window.location.href = document.referrer;
         </script>';
     }
     public function refresh_7_days_progressive_chart()
@@ -896,7 +896,7 @@ class Index extends Component
         echo '<script>
             sessionStorage.setItem("total42", "' . $order_data2 . '");
             sessionStorage.setItem("dates42", "' . $dates_data2 . '");
-            // window.location.href = document.referrer;
+            window.location.href = document.referrer;
         </script>';
     }
 
