@@ -863,7 +863,12 @@ class Order extends Component
 
             $variations = Variation_model::whereIn('product_storage_sort_id',$product_storage_sort->pluck('id'))->get();
             $rtg_variations = $variations->whereIn('grade', [1,2,3,4,5,7,9])->pluck('id');
-            $other_variations = $variations->whereNotIn('id',$rtg_variations)->pluck('id');
+            $twox_variations = $variations->whereIn('grade', [6])->pluck('id');
+            $repair_variations = $variations->whereIn('grade', [8])->pluck('id');
+            $rma_variations = $variations->whereIn('grade', [10])->pluck('id');
+            $ws_variations = $variations->whereIn('grade', [11])->pluck('id');
+            $bt_variations = $variations->whereIn('grade', [21])->pluck('id');
+            $other_variations = $variations->whereNotIn('id',$rtg_variations)->whereNotIn('id',$twox_variations)->whereNotIn('id',$repair_variations)->whereNotIn('id',$rma_variations)->whereNotIn('id',$ws_variations)->whereNotIn('id',$bt_variations)->pluck('id');
 
             $result = [];
             foreach($product_storage_sort as $pss){
@@ -877,6 +882,11 @@ class Order extends Component
                 $datas['model'] = $product->model.' '.$storage;
                 $datas['available_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',1)->count();
                 $datas['rtg_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',1)->whereIn('variation_id',$rtg_variations)->count();
+                $datas['twox_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',1)->whereIn('variation_id',$twox_variations)->count();
+                $datas['repair_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',1)->whereIn('variation_id',$repair_variations)->count();
+                $datas['rma_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',1)->whereIn('variation_id',$rma_variations)->count();
+                $datas['ws_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',1)->whereIn('variation_id',$ws_variations)->count();
+                $datas['bt_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',1)->whereIn('variation_id',$bt_variations)->count();
                 $datas['other_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',1)->whereIn('variation_id',$other_variations)->count();
 
                 $datas['sold_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',2)->whereNotIn('id',$repair_stock_ids)->count();
