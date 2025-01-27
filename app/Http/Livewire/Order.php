@@ -1513,10 +1513,10 @@ class Order extends Component
                     session()->put('error', 'Product Not Found');
                     // return redirect()->back();
                 }
-                $variation = Variation_model::firstOrNew(['product_id' => $product->id, 'grade' => 9, 'storage' => $gb, 'color' => null]);
-                $variation->save();
+                $var = Variation_model::firstOrNew(['product_id' => $product->id, 'grade' => 9, 'storage' => $gb, 'color' => null]);
+                $var->save();
 
-                $variation = $variation->id;
+                $variation = $var->id;
                 // dd($variation);
             }
 
