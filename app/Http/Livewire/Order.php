@@ -883,7 +883,7 @@ class Order extends Component
                 $datas['available_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',1)->count();
                 $datas['rtg_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',1)->whereIn('variation_id',$rtg_variations)->count();
                 $datas['twox_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',1)->whereIn('variation_id',$twox_variations)->count();
-                $datas['repair_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',1)->whereIn('variation_id',$repair_variations)->count();
+                $datas['rep_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',1)->whereIn('variation_id',$repair_variations)->count();
                 $datas['rma_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',1)->whereIn('variation_id',$rma_variations)->count();
                 $datas['ws_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',1)->whereIn('variation_id',$ws_variations)->count();
                 $datas['bt_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',1)->whereIn('variation_id',$bt_variations)->count();
