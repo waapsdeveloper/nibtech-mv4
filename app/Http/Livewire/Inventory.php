@@ -439,7 +439,7 @@ class Inventory extends Component
 
         $active_inventory_verification = Process_model::where(['process_type_id'=>20,'status'=>1])->first();
         if($active_inventory_verification != null){
-            $verified_stocks = Process_stock_model::where('process_id', $active_inventory_verification->id)
+            $verified_stocks = Process_stock_model::where('process_id', $active_inventory_verification->id)->where('status',1)
             ->when(request('vendor') != '', function ($q) {
                 return $q->whereHas('stock.order', function ($q) {
                     $q->where('customer_id', request('vendor'));
@@ -1033,8 +1033,8 @@ class Inventory extends Component
         $process_stock = Process_stock_model::firstOrNew(['process_id'=>$process_id, 'stock_id'=>$stock->id]);
         $process_stock->admin_id = session('user_id');
         $process_stock->description = $reference;
-        $process_stock->status = 1;
         if($process_stock->id == null){
+            $process_stock->status = 1;
             $process_stock->save();
             // Check if the session variable 'counter' is set
             if (session()->has('counter')) {
@@ -1056,7 +1056,7 @@ class Inventory extends Component
                 $process_stock->save();
                 session()->put('success', 'Stock ReVerified successfully');
             }else{
-                session()->put('error', 'Stock already verified'. $process_stock->status);
+                session()->put('error', 'Stock already verified');
             }
         }
         return redirect()->back();
