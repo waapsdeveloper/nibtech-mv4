@@ -304,6 +304,13 @@
                                     $total_sold += $summery['sold_stock_count'];
                                     $total_repair += $summery['repair_stock_count'];
                                     $total_available += $summery['available_stock_count'];
+                                    $total_rtg += $summery['rtg_stock_count'];
+                                    $total_twox += $summery['twox_stock_count'];
+                                    $total_repair += $summery['repair_stock_count'];
+                                    $total_rma += $summery['rma_stock_count'];
+                                    $total_ws += $summery['ws_stock_count'];
+                                    $total_bt += $summery['bt_stock_count'];
+                                    $total_other += $summery['other_stock_count'];
                                 @endphp
                                 <tr>
                                     <td>{{ $i++ }}</td>
@@ -311,7 +318,7 @@
                                     <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#graded_count_modal" onclick="loadProductDetails({{$order_id}},{{$summery['pss_id']}})">{{ $summery['model'] }}</a></td>
                                     <td>{{ $summery['sold_stock_count'] }}</td>
                                     <td>{{ $summery['repair_stock_count'] }}</td>
-                                    <td title="RTG + Others">{{ $summery['available_stock_count'] }} ({{$summery['rtg_stock_count'].'+'.$summery['other_stock_count']}})</td>
+                                    <td title="RTG + Others">{{ $summery['available_stock_count'] }} </td>
                                     <td>{{ $summery['rtg_stock_count'] }}</td>
                                     <td>{{ $summery['twox_stock_count'] }}</td>
                                     <td>{{ $summery['repair_stock_count'] }}</td>
@@ -330,6 +337,13 @@
                                 <td><b>{{ $total_sold }}</b></td>
                                 <td><b>{{ $total_repair }}</b></td>
                                 <td><b>{{ $total_available }}</b></td>
+                                <td><b>{{ $total_rtg }}</b></td>
+                                <td><b>{{ $total_twox }}</b></td>
+                                <td><b>{{ $total_repair }}</b></td>
+                                <td><b>{{ $total_rma }}</b></td>
+                                <td><b>{{ $total_ws }}</b></td>
+                                <td><b>{{ $total_bt }}</b></td>
+                                <td><b>{{ $total_other }}</b></td>
                             </tr>
 
                     </table>
