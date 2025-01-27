@@ -1380,7 +1380,11 @@ class Order extends Component
 
         if($variation == null){
             session()->put('error', 'Variation Not Found');
-            return redirect()->back();
+            if($return == null){
+                return redirect()->back();
+            }else{
+                return $issue;
+            }
         }
 
         $stock = Stock_model::firstOrNew(['imei' => $i, 'serial_number' => $s]);
