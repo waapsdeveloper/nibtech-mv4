@@ -1495,11 +1495,11 @@ class Order extends Component
             // }
         }
         if(request('insert_variation') == 1){
-            $variation = request('variation');
+            $varia = request('variation');
 
-            if(!ctype_digit($variation)){
+            if(!ctype_digit($varia)){
                 $storages = Storage_model::pluck('name','id')->toArray();
-                $names = explode(" ",trim($variation));
+                $names = explode(" ",trim($varia));
                 $last = end($names);
                 if(in_array($last, $storages)){
                     $gb = array_search($last,$storages);
@@ -1518,6 +1518,8 @@ class Order extends Component
 
                 $variation = $var->id;
                 // dd($variation);
+            }else{
+                $variation = $varia;
             }
 
             if(ctype_digit($variation)){
