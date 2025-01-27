@@ -691,7 +691,7 @@
                     success: function(data) {
                         // let data = load_data("{{ url('index/get_orders_data') }}"+'?'+queryString);
                         // orders_data.html(data);
-                        console.log(data);
+                        // console.log(data);
 
                         // <tr>
                         //             <td title="Average Price">Average:</td>
@@ -733,7 +733,7 @@
                                 <tr>
                                     <td>${key}:</td>
                                     <td class="tx-right">
-                                        <a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}&currency=${currency_id}" title="Go to orders page" target="_blank">${value}</a>
+                                        <a href="{{url('order')}}?start_date={{ $start_date }}&end_date={{ $end_date }}&currency=${currency_id}" title="Go to orders page" target="_blank">${value}</a>
                                     </td>
                                 </tr>
                             `;
