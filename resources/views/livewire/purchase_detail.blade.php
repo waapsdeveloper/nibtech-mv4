@@ -323,16 +323,16 @@
                                     <td>{{ $i++ }}</td>
                                     {{-- <td>{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</td> --}}
                                     <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#graded_count_modal" onclick="loadProductDetails({{$order_id}},{{$summery['pss_id']}})">{{ $summery['model'] }}</a></td>
-                                    <td>{{ $summery['sold_stock_count'] }}</td>
-                                    <td>{{ $summery['repair_stock_count'] }}</td>
-                                    <td title="RTG + Others">{{ $summery['available_stock_count'] }} </td>
+                                    <td>{{ $summery['sold_stock_count'] > 0 ? $summery['sold_stock_count'] : '-' }}</td>
+                                    <td>{{ $summery['repair_stock_count'] > 0 ? $summery['repair_stock_count'] : '-' }}</td>
+                                    <td title="RTG + Others">{{ $summery['available_stock_count'] > 0 ? $summery['available_stock_count'] : '-' }} </td>
                                     <td>{{ $summery['rtg_stock_count'] > 0 ? $summery['rtg_stock_count'] : '-' }}</td>
-                                    <td>{{ $summery['twox_stock_count'] }}</td>
-                                    <td>{{ $summery['repair_stock_count'] }}</td>
-                                    <td>{{ $summery['rma_stock_count'] }}</td>
-                                    <td>{{ $summery['ws_stock_count'] }}</td>
-                                    <td>{{ $summery['bt_stock_count'] }}</td>
-                                    <td>{{ $summery['other_stock_count'] }}</td>
+                                    <td>{{ $summery['twox_stock_count'] > 0 ? $summery['twox_stock_count'] : '-' }}</td>
+                                    <td>{{ $summery['repair_stock_count'] > 0 ? $summery['repair_stock_count'] : '-' }}</td>
+                                    <td>{{ $summery['rma_stock_count'] > 0 ? $summery['rma_stock_count'] : '-' }}</td>
+                                    <td>{{ $summery['ws_stock_count'] > 0 ? $summery['ws_stock_count'] : '-' }}</td>
+                                    <td>{{ $summery['bt_stock_count'] > 0 ? $summery['bt_stock_count'] : '-' }}</td>
+                                    <td>{{ $summery['other_stock_count'] > 0 ? $summery['other_stock_count'] : '-' }}</td>
                                 </tr>
                                 {{-- @endif --}}
                             @endforeach
