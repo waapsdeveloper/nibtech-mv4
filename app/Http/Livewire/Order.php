@@ -1521,7 +1521,7 @@ class Order extends Component
             }else{
                 $variation = $varia;
             }
-
+            dd($variation);
             if(ctype_digit($variation)){
 
                 foreach($issues as $issue){
