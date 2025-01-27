@@ -1379,7 +1379,7 @@ class Order extends Component
         }
 
         if($variation == null){
-            session()->put('error', 'Variation Not Found');
+            session()->put('error', 'Variation Not Found'. $variation_id);
             if($return == null){
                 return redirect()->back();
             }else{
@@ -1515,7 +1515,7 @@ class Order extends Component
                 $product = Products_model::where('model',$n)->first();
                 if($product == null){
                     session()->put('error', 'Product Not Found');
-                    // return redirect()->back();
+                    return redirect()->back();
                 }
                 $var = Variation_model::firstOrNew(['product_id' => $product->id, 'grade' => 9, 'storage' => $gb, 'color' => null]);
                 $var->save();
