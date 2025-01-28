@@ -1369,7 +1369,7 @@ class Order extends Component
         if(request('order')){
             $order_id = request('order');
         }
-        if(request('variation')){
+        if(request('variation') && $return == null){
             $variation_id = request('variation');
         }
         $variation = Variation_model::find($variation_id);
