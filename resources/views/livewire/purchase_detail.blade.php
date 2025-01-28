@@ -550,7 +550,9 @@
                                                                     <label for="variation">Variation</label>
                                                                 </div>
                                                                 <button class="btn btn-primary m-0" name="add_imei" value="1">Insert</button>
-
+                                                                @if (str_contains($row->message, "Item previously purchased"))
+                                                                    <button class="btn btn-success m-0" name="repurchase" value="1">Re-Purchase</button>
+                                                                @endif
                                                             @elseif ($row->message == "Additional Item")
                                                                 <input type="hidden" name="id" value="{{$row->id}}">
                                                                 <div class="form-floating">
