@@ -977,7 +977,7 @@ class Repair extends Component
             $html = view('export.repair_packlist', $data)->render();
         }elseif(request('packlist') == 2){
 
-            return Excel::download(new RepairsheetExport, 'repairs_'.$process->reference_id.'.xlsx');
+            return Excel::download(new RepairsheetExport, 'repairs_'.$process->customer->first_name.'_'.$process->reference_id.'_'.$process->count('process_stocks').'.xlsx');
         }else{
             $html = view('export.repair_invoice', $data)->render();
         }
