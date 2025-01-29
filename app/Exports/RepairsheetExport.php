@@ -78,6 +78,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
                     "BCC", "Battery Cycle Count")))
                 )) as issue'),
                 'admin2.first_name as admin_name',
+                'p_stock.status as status',
                 'order_items.price as price',
                 DB::raw('order_items.price * process.exchange_rate as ex_price'),
             )
@@ -110,6 +111,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
             'Serial Number',
             'Issue',
             'Admin',
+            'Status',
             'Price',
             'Exchange Price',
         ];
