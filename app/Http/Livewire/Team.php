@@ -136,26 +136,41 @@ class Team extends Component
     public function toggle_role_permission($roleId, $permissionId, $isChecked)
     {
 
-        // Debugging: Print the value of $isChecked
-        var_dump($isChecked);
+        if (session('user')->hasPermission('change_permission')){
 
-        // Convert string values to boolean
-        $lowercase = strtolower($isChecked);
-        if ($lowercase === 'true') {
-            $check = true;
-        } else {
-            $check = false;
-        }
-        // Create or delete role permission based on $isChecked value
-        if ($check) {
-            echo "Hello";
-            echo Role_permission_model::create(['role_id' => $roleId, 'permission_id' => $permissionId]);
-        } else {
-            echo "Ho";
-            echo Role_permission_model::where('role_id', $roleId)->where('permission_id', $permissionId)->delete();
+            // Debugging: Print the value of $isChecked
+            var_dump($isChecked);
+
+            // Convert string values to boolean
+            $lowercase = strtolower($isChecked);
+            if ($lowercase === 'true') {
+                $check = true;
+            } else {
+                $check = false;
+            }
+            $permission = Permission_model::findOrFail($permissionId);
+
+            if ($permission && session('user')->hasPermission($permission->name)) {
+
+
+                // Create or delete role permission based on $isChecked value
+                if ($check) {
+                    echo "Hello";
+                    echo Role_permission_model::create(['role_id' => $roleId, 'permission_id' => $permissionId]);
+                } else {
+                    echo "Ho";
+                    echo Role_permission_model::where('role_id', $roleId)->where('permission_id', $permissionId)->delete();
+                }
+            }else{
+                // Return response
+                return response()->json(['error' => 'Permission Denied']);
+            }
+        }else{
+
+            return response()->json(['error' => 'Permission Denied']);
         }
 
-        // Return response
-        return response()->json(['success' => true]);
+            // Return response
+            return response()->json(['success' => true]);
     }
 }
