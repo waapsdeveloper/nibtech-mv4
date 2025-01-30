@@ -139,7 +139,8 @@
                             <select name="sub_grade" class="form-control form-select">
                                 <option value="">Sub Grade</option>
                                 @foreach ($grades as $grade)
-                                    <option value="{{ $grade->id }}">{{ $grade->name }}</option>
+                                    <option value="{{ $grade->id }}" @if(session('sub_grade') && $grade->id == session('sub_grade')) {{'selected'}}@endif @if(request('sub_grade') && $grade->id == request('sub_grade')) {{'selected'}}@endif>{{ $grade->name }}</option>
+                                    {{-- <option value="{{ $grade->id }}">{{ $grade->name }}</option> --}}
                                 @endforeach
                             </select>
                         </div>
