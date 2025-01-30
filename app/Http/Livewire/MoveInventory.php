@@ -119,6 +119,9 @@ class MoveInventory extends Component
         if(request('grade')){
             session()->put('grade',request('grade'));
         }
+        if(request('sub_grade')){
+            session()->put('sub_grade',request('sub_grade'));
+        }
         if(request('description')){
             session()->put('description',request('description'));
         }
