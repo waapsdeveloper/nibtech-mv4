@@ -216,7 +216,7 @@
                                       </td>
                                       <td>{{ $product->name }}</td>
                                       <td>{{ $product->sku }}
-                                          @if ($product->grade < 6)
+                                          {{-- @if ($product->grade < 6) --}}
                                               @if ($product->duplicates->count() > 0)
                                               Merge With Available SKUs:
                                                   <div class="input-group">
@@ -231,7 +231,7 @@
                                                       </div>
                                                   </div>
                                               @endif
-                                          @endif
+                                          {{-- @endif --}}
                                       </td>
                                       <td>
                                           <select name="update[color]" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
