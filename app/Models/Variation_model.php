@@ -40,7 +40,7 @@ class Variation_model extends Model
                     ->where('storage', $this->storage)
                     ->where('color', $this->color)
                     ->where('grade', $this->grade)
-                    // ->where('sub_grade', $this->sub_grade)
+                    ->where('sub_grade', $this->sub_grade)
                     // ->whereNotNull('sku')
                     ->where('id', '!=', $this->id);
     }
