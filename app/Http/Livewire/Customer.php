@@ -75,7 +75,7 @@ class Customer extends Component
 
     public function get_b2b_customers_json()
     {
-        $customers = Customer_model::where('company', request('text'))->whereNotNull('is_vendor')->select('company as text', 'id')->get();
+        $customers = Customer_model::where('company', request('q'))->whereNotNull('is_vendor')->select('company as text', 'id')->get();
         return response()->json($customers);
     }
     public function profile($id)
