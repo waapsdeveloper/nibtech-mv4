@@ -910,6 +910,9 @@ class Wholesale extends Component
     }
 
     public function pos(){
+        $data['title_page'] = "Point of Sale";
+        session()->put('page_title', $data['title_page']);
+
         $data['categories'] = Category_model::orderBy('name')->pluck('name','id');
         $data['brands'] = Brand_model::orderBy('name')->pluck('name','id');
         $data['currencies'] = Currency_model::all();
