@@ -137,10 +137,13 @@
                                 <label class="btn btn-outline-dark m-0" for="2option">Sale</label>
                             </div>
                         </div>
-                        <div class="form-floating">
+                        {{-- <div class="form-floating">
                             <input type="text" class="form-control" id="customer_name" placeholder="Customer Name">
                             <label for="customer_name">Customer Name</label>
-                        </div>
+                        </div> --}}
+                            <select class="form-select js-data-example-ajax">
+                                <option value="">Walk-in Customer</option>
+                            </select>
                     </div>
                     <div class="card-body">
                         <h5>Cart</h5>
@@ -236,6 +239,13 @@
         <script>
             $(document).ready(function () {
                 $('#sb_toggle').click();
+                $('.js-data-example-ajax').select2({
+                    ajax: {
+                        url: `{{ url('get_b2b_customers_json') }}`,
+                        dataType: 'json'
+                        // Additional AJAX parameters go here; see the end of this chapter for the full code of this example
+                    }
+                });
 
                 updateCartDisplay({!! json_encode($cart) !!});
             })

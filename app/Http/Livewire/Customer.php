@@ -73,6 +73,11 @@ class Customer extends Component
         return view('livewire.customer')->with($data);
     }
 
+    public function get_b2b_customers_json()
+    {
+        $customers = Customer_model::where('company', request('text'))->whereNotNull('is_vendor')->select('company as text', 'id')->get();
+        return response()->json($customers);
+    }
     public function profile($id)
     {
         if(str_contains(url()->previous(),url('customer')) && !str_contains(url()->previous(),'profile')){
