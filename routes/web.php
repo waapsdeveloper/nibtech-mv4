@@ -328,6 +328,8 @@ Route::get('edit-customer/{id}', [Customer::class,'edit_customer'])->name('edit_
 Route::post('update-customer/{id}', [Customer::class,'update_customer'])->name('edit_customer');
 Route::get('customer/delete/{id}', [Customer::class,'delete_customer'])->name('delete_customer');
 
+Route::get('get_b2b_customers_json', [Customer::class,'get_b2b_customers_json']);
+
 Route::get('customer/profile/{id}', [Customer::class,'profile'])->name('view_customer_profile');
 Route::post('customer/add_payment/', [Customer::class,'add_payment'])->name('add_customer_payment');
 
