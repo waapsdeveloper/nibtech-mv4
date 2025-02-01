@@ -243,7 +243,7 @@
                 $('.js-data-example-ajax').select2({
                     ajax: {
 
-                        placeholder: "Select a state",
+                        placeholder: "Walk-in Customer",
                         allowClear: true,
                         url: `{{ url('get_b2b_customers_json') }}`,
                         dataType: 'json',
