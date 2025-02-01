@@ -2,6 +2,7 @@
 
 @section('title', 'POS')
     @section('styles')
+    <link href="{{asset('assets/plugins/select2/css/select2.min.css')}}" rel="stylesheet" />
     <style>
     /* Chrome, Safari, Edge, Opera */
     input::-webkit-outer-spin-button,
