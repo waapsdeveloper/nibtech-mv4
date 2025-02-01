@@ -1109,9 +1109,11 @@ class Wholesale extends Component
 
         // Process checkout logic here (e.g., create an order)
 
+
+
         // Clear the cart after checkout
         session()->forget('cart');
 
-        return response()->json(['success' => true, 'message' => 'Checkout successful!']);
+        return response()->json(['success' => true, 'message' => 'Checkout successful!', 'cart' => $cart]);
     }
 }
