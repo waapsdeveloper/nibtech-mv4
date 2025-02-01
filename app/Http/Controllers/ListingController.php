@@ -167,6 +167,9 @@ class ListingController extends Controller
         if ($variation->product->brand == 2) {
             $variation_ids = Variation_model::where('product_storage_sort_id', $variation->product_storage_sort_id)->whereIn('grade',[1,2,3,4,5,7,9])->pluck('id');
             $stocks = Stock_model::whereIn('variation_id', $variation_ids)->where('status', 1)->whereHas('active_order')->get();
+        } elseif ($variation->product->category == 6) {
+            $variation_ids = Variation_model::where('product_storage_sort_id', $variation->product_storage_sort_id)->whereIn('grade',[1,2,3,4,5,7,9])->pluck('id');
+            $stocks = Stock_model::whereIn('variation_id', $variation_ids)->where('status', 1)->whereHas('active_order')->get();
         } else {
             $stocks = Stock_model::where('variation_id', $id)->where('status', 1)->get();
         }
