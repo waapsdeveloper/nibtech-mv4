@@ -176,8 +176,8 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <button class="btn btn-lg btn-light w-100" id="hold">Hold</button>
-                                <button class="btn btn-lg btn-secondary w-100" id="checkout">Checkout</button>
+                                <button class="btn btn-lg btn-light w-100" onclick="holdCart()">Hold</button>
+                                <button class="btn btn-lg btn-secondary w-100" onclick="checkoutCart()">Checkout</button>
                             </div>
                         </div>
                     </div>
@@ -689,7 +689,7 @@ function removeFromCart(cartKey) {
 }
 
 // Hold cart
-document.getElementById('hold').addEventListener('click', function() {
+function holdCart() {
     fetch(`{{ url('pos') }}/hold`, {
         method: 'POST',
         headers: {
@@ -705,10 +705,11 @@ document.getElementById('hold').addEventListener('click', function() {
             window.location.reload();
         }
     });
-});
+};
+
 
 // Checkout cart
-document.getElementById('checkout').addEventListener('click', function() {
+function checkoutCart() {
     fetch(`{{ url('pos') }}/checkout`, {
         method: 'POST',
         headers: {
@@ -724,7 +725,7 @@ document.getElementById('checkout').addEventListener('click', function() {
             window.location.reload();
         }
     });
-});
+};
 
 
 
