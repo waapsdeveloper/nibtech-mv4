@@ -729,53 +729,6 @@ function removeFromCart(cartKey) {
     });
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-// Hold cart
-function holdCart() {
-    fetch(`{{ url('pos') }}/hold`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({ cart: {!! json_encode($cart) !!} })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert(data.message);
-            window.location.reload();
-        }
-    });
-};
-
-
-// Checkout cart
-function checkoutCart() {
-    fetch(`{{ url('pos') }}/checkout`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({ cart: {!! json_encode($cart) !!} })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert(data.message);
-            window.location.reload();
-        }
-    });
-};
-
-=======
->>>>>>> a964893625ae142a3c32485d94fd38352d5c0f05
-
-
->>>>>>> 50205b61b987f7a2cc1019def7869479ebcb4479
 
 
                     </script>
