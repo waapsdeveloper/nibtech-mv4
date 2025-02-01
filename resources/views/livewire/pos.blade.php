@@ -246,7 +246,7 @@
                         dataType: 'json',
                         // Additional AJAX parameters go here; see the end of this chapter for the full code of this example
                         placeholder: {
-                            id: '-1', // the value of the option
+                            id: '', // the value of the option
                             text: 'Walk-in Customer' // the text of the option
                         },
                         allowClear: true,
