@@ -174,6 +174,7 @@ Route::get('pos/get_product_variations/{id}', [Wholesale::class,'get_product_var
 Route::post('pos/add', [Wholesale::class,'add'])->name('pos');
 Route::post('pos/update', [Wholesale::class,'update'])->name('pos');
 Route::post('pos/remove', [Wholesale::class,'remove'])->name('pos');
+Route::post('pos/checkout', [Wholesale::class,'checkout'])->name('pos');
 
 Route::get('wholesale_return', Wholesale_return::class)->name('view_wholesale_return');
 Route::get('add_wholesale_return', [Wholesale_return::class,'add_wholesale_return'])->name('add_wholesale_return');
