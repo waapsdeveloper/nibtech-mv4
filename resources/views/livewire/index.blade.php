@@ -332,7 +332,7 @@
                                                     @endphp
                                                     <tr>
                                                         <td>{{ $top+1 }}</td>
-                                                        <td>{{ $products[$variation->product_id] ?? null }} - {{ $storages[$variation->storage] ?? null }} - {{ $colors[$variation->color] ?? null }} - {{ $grades[$variation->grade] ?? null }} - {{ $variation->sku ?? null }}</td>
+                                                        <td>{{ $products[$variation->product_id] ?? null }} {{ $storages[$variation->storage] ?? null }} {{ $colors[$variation->color] ?? null }} {{ $grades[$variation->grade] ?? null }} - {{ $variation->sku ?? null }}</td>
                                                         <td>{{ $product->total_quantity_sold }}</td>
                                                         @if (session('user')->hasPermission('view_price'))
                                                         <td>€{{ amount_formatter($product->average_price,2) }}</td>
