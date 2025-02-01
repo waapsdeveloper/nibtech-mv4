@@ -248,7 +248,7 @@
                         placeholder: {
                             id: '-1', // the value of the option
                             text: 'Walk-in Customer' // the text of the option
-                        }
+                        },
                         allowClear: true,
 
                     }
