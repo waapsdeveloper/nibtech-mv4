@@ -79,8 +79,8 @@ class Customer extends Component
         ->when(request('q') != '', function ($q) {
             return $q->where('company', 'LIKE', '%' . request('q') . '%');
         })
-        ->select('company as text', 'id')->get()->toArray();
-        return response()->json($customers);
+        ->select('id', 'company as text')->get()->toArray();
+        return response()->json(['results'=>$customers]);
     }
     public function profile($id)
     {
