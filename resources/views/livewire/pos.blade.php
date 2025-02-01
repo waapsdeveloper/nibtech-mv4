@@ -250,7 +250,7 @@
                         // Additional AJAX parameters go here; see the end of this chapter for the full code of this example
 
                     }
-                }).defaults.set()
+                });
 
                 updateCartDisplay({!! json_encode($cart) !!});
             })
