@@ -272,7 +272,8 @@
                 .then(data => {
                     if (data.success) {
                         alert(data.message);
-                        window.location.reload();
+                        console.log(data);
+                        // window.location.reload();
                     }
                 });
             };
