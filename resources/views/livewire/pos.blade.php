@@ -177,7 +177,7 @@
                             </div>
                             <div class="col-md-6">
                                 <button class="btn btn-lg btn-light w-100" onclick="holdCart()">Hold</button>
-                                <button class="btn btn-lg btn-secondary w-100" onclick="checkoutCart()">Checkout</button>
+                                <button class="btn btn-lg btn-secondary w-100" id="checkout">Checkout</button>
                             </div>
                         </div>
                     </div>
@@ -238,6 +238,45 @@
 
     @section('scripts')
         <script>
+            // Hold cart
+            function holdCart() {
+                fetch(`{{ url('pos') }}/hold`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({ cart: {!! json_encode($cart) !!} })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        window.location.reload();
+                    }
+                });
+            };
+
+
+            // Checkout cart
+            function checkoutCart() {
+                fetch(`{{ url('pos') }}/checkout`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({ cart: {!! json_encode($cart) !!} })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        window.location.reload();
+                    }
+                });
+            };
+
             $(document).ready(function () {
                 $('#sb_toggle').click();
                 $('.js-data-example-ajax').select2({
@@ -257,44 +296,9 @@
                 updateCartDisplay({!! json_encode($cart) !!});
 
 
-// Hold cart
-function holdCart() {
-    fetch(`{{ url('pos') }}/hold`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({ cart: {!! json_encode($cart) !!} })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert(data.message);
-            window.location.reload();
-        }
-    });
-};
-
-
-// Checkout cart
-function checkoutCart() {
-    fetch(`{{ url('pos') }}/checkout`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({ cart: {!! json_encode($cart) !!} })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert(data.message);
-            window.location.reload();
-        }
-    });
-};
+                $('#checkout').click(function() {
+                    checkoutCart();
+                });
 
             })
                         // Set selected category and brand from the request, if available
