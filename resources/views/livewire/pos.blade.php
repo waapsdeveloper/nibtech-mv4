@@ -527,7 +527,8 @@
                                         gradeOptions.appendChild(gradeLabel);
                                     }
 
-
+                                    const productId = document.getElementById('product_id');
+                                    productId.value = product.id;
 
                                 // <input type="radio" class="btn-check" name="category" id="option{{$id}}" autocomplete="off" onclick="selectCategory({{ $id }})">
                                 // <label class="btn btn-outline-dark m-0" for="option{{$id}}">{!! $name !!}</label>
