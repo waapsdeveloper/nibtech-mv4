@@ -142,8 +142,7 @@
                             <input type="text" class="form-control" id="customer_name" placeholder="Customer Name">
                             <label for="customer_name">Customer Name</label>
                         </div> --}}
-                            <select class="form-select js-data-example-ajax">
-                                <option value="">Walk-in Customer</option>
+                            <select class="form-select js-data-example-ajax form-control">
                             </select>
                     </div>
                     <div class="card-body">
