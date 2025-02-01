@@ -176,8 +176,8 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <button class="btn btn-lg btn-light w-100">Hold</button>
-                                <button class="btn btn-lg btn-secondary w-100">Checkout</button>
+                                <button class="btn btn-lg btn-light w-100" onclick="holdCart()">Hold</button>
+                                <button class="btn btn-lg btn-secondary w-100" onclick="checkoutCart()">Checkout</button>
                             </div>
                         </div>
                     </div>
@@ -688,6 +688,50 @@ function removeFromCart(cartKey) {
     });
 }
 
+<<<<<<< HEAD
+=======
+// Hold cart
+function holdCart() {
+    fetch(`{{ url('pos') }}/hold`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({ cart: {!! json_encode($cart) !!} })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            window.location.reload();
+        }
+    });
+};
+
+
+// Checkout cart
+function checkoutCart() {
+    fetch(`{{ url('pos') }}/checkout`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({ cart: {!! json_encode($cart) !!} })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            window.location.reload();
+        }
+    });
+};
+
+
+
+>>>>>>> 50205b61b987f7a2cc1019def7869479ebcb4479
 
 
                     </script>
