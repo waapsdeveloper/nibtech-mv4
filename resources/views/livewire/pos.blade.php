@@ -582,7 +582,7 @@ function updateCartDisplay(cart) {
                         <button class="counter-minus btn btn-white lh-2 shadow-none" type="button" onclick="decreaseQuantity('quantity${cartKey}')">
                             <i class="fe fe-minus"></i>
                         </button>
-                        <input type="number" class="form-control w-50" name="quantity${cartKey}" id="quantity${cartKey}" value="${item.quantity}" min="1" />
+                        <input type="number" class="form-control w-50 p-0" name="quantity${cartKey}" id="quantity${cartKey}" value="${item.quantity}" min="1" />
                         <button class="counter-plus btn btn-white lh-2 shadow-none" type="button" onclick="increaseQuantity('quantity${cartKey}')">
                             <i class="fe fe-plus"></i>
                         </button>
