@@ -286,7 +286,7 @@
                                                 @endif
                                             </td>
 
-                                            @if (session('user')->hasPermission('imei_delete_order_item'))
+                                            @if (session('user')->hasPermission('imei_delete_order_item') || (session('user')->hasPermission('imei_delete_return_item') && $order->order_type_id == 4))
                                                 <td>
                                                     <a href="{{url('imei/delete_order_item').'/'.$item->id}}" class="btn btn-link"><i class="fa fa-trash"></i></a>
                                                 </td>
