@@ -55,7 +55,7 @@ class MoveInventory extends Component
         if(request('description')){
             session()->put('description',request('description'));
         }
-        $per_page = 50;
+        $per_page = 10;
         if(request('per_page')){
             $per_page = request('per_page');
         }
