@@ -44,7 +44,7 @@
                                                 </div>
                                                 <div class="col-md-8 mg-t-5 mg-md-t-0">
                                                     <select class="form-select" placeholder="Input Status" name="parent" required>
-                                                        <option>Select Team Lead</option>
+                                                        <option value="">Select Team Lead</option>
                                                         @foreach ($parents as $parent)
                                                             <option value="{{ $parent->id }}">{{ $parent->first_name." ".$parent->last_name }}</option>
 
@@ -58,7 +58,7 @@
                                                 </div>
                                                 <div class="col-md-8 mg-t-5 mg-md-t-0">
                                                     <select class="form-select" placeholder="Input Status" name="role" required>
-                                                        <option>Select Role</option>
+                                                        <option value="">Select Role</option>
                                                         @foreach ($roles as $role)
                                                             <option value="{{ $role->id }}">{{ $role->name }}</option>
 
