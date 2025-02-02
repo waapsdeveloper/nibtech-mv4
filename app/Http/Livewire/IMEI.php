@@ -316,9 +316,13 @@ class IMEI extends Component
             session()->put('error', 'Order Item not found');
             return redirect()->back();
         }
-        $item->delete();
+        if (session('user')->hasPermission('imei_delete_order_item') || (session('user')->hasPermission('imei_delete_return_item') && $item->order->order_type_id == 4)) {
+            $item->delete();
 
-        session()->put('success', 'Order Item Deleted Successfully');
+            session()->put('success', 'Order Item Deleted Successfully');
+        }else{
+            session()->put('error', 'You are not authorized to perform this action');
+        }
         return redirect()->back();
     }
     public function rearrange($stock_id)
