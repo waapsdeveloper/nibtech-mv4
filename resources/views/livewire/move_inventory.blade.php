@@ -270,7 +270,7 @@
                             </div>
 
                         </div>
-                        <div class=" mg-b-0">
+                        <div class="right-content">
 
                             <form method="get" action="" class="form-inline" id="search">
 
