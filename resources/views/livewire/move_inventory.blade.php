@@ -260,14 +260,14 @@
                                     {{ __('locale.From') }} {{$stocks->firstItem()}} {{ __('locale.To') }} {{$stocks->lastItem()}} {{ __('locale.Out Of') }} {{$stocks->total()}}
                                 @endif
                             </h5>
-
+                            <div>
                             <select id="per_page" class="form-select form-select-sm" onchange="this.form.submit()" name="per_page" form="search">
                                 <option value="10" @if(isset($_GET['per_page']) && $_GET['per_page'] == 10) {{'selected'}}@endif>10</option>
                                 <option value="25" @if(isset($_GET['per_page']) && $_GET['per_page'] == 25) {{'selected'}}@endif>25</option>
                                 <option value="50" @if(isset($_GET['per_page']) && $_GET['per_page'] == 50) {{'selected'}}@endif>50</option>
                                 <option value="100" @if(isset($_GET['per_page']) && $_GET['per_page'] == 100) {{'selected'}}@endif>100</option>
                             </select>
-
+                            </div>
 
                         </div>
                         <div class=" mg-b-0">
