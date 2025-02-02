@@ -203,7 +203,7 @@ Route::get('rma/revert_status/{id}', [RMA::class,'rma_revert_status'])->name('rm
 
 Route::get('imei', IMEI::class)->name('view_imei');
 Route::get('imei/rearrange/{id}', [IMEI::class,'rearrange'])->name('rearrange_imei_order');
-Route::get('imei/delete_order_item/{id}', [IMEI::class,'delete_order_item'])->name('imei_delete_order_item');
+Route::get('imei/delete_order_item/{id}', [IMEI::class,'delete_order_item'])->name('view_imei');
 Route::post('imei/refund/{id}', [IMEI::class,'refund'])->name('refund_imei');
 Route::post('imei/change_po/{id}', [IMEI::class,'change_po'])->name('change_po_old');
 Route::get('imei/print_label', [IMEI::class,'print_label'])->name('view_imei');
