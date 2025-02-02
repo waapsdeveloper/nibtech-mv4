@@ -270,7 +270,7 @@
                             </div>
 
                         </div>
-                        <div class="right-content">
+                        <div class="d-flex justify-content-center">
 
                             <form method="get" action="" class="form-inline" id="search">
 
