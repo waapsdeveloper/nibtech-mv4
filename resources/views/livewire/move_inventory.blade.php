@@ -70,7 +70,7 @@
         <div class="" style="border-bottom: 1px solid rgb(216, 212, 212);">
 
             <div class="p-2">
-                <form action="{{ url('move_inventory/change_grade') }}" method="POST" id="search" class="">
+                <form action="{{ url('move_inventory/change_grade') }}" method="POST" class="">
                     @csrf
 
                     @if (session('user')->hasPermission('advanced_move_inventory'))
@@ -261,36 +261,43 @@
                                 @endif
                             </h5>
 
-                            <div class=" mg-b-0">
+                            <select id="per_page" class="form-select form-select-sm" onchange="this.form.submit()" name="per_page" form="search">
+                                <option value="10" @if(isset($_GET['per_page']) && $_GET['per_page'] == 10) {{'selected'}}@endif>10</option>
+                                <option value="25" @if(isset($_GET['per_page']) && $_GET['per_page'] == 25) {{'selected'}}@endif>25</option>
+                                <option value="50" @if(isset($_GET['per_page']) && $_GET['per_page'] == 50) {{'selected'}}@endif>50</option>
+                                <option value="100" @if(isset($_GET['per_page']) && $_GET['per_page'] == 100) {{'selected'}}@endif>100</option>
+                            </select>
 
-                                <form method="get" action="" class="form-inline">
 
-                                    <div class="form-floating">
-                                        <input class="form-control" id="start_date_input" name="start_date" id="datetimepicker" type="date" value="@isset($_GET['start_date']){{$_GET['start_date']}}@endisset" oninput="this.form.submit()">
-                                        <label for="start_date_input">{{ __('locale.Start Date') }}</label>
-                                    </div>
-                                    <div class="form-floating">
-                                        <input class="form-control" id="end_date_input" name="end_date" id="datetimepicker" type="date" value="@isset($_GET['end_date']){{$_GET['end_date']}}@endisset" oninput="this.form.submit()">
-                                        <label for="end_date_input">{{ __('locale.End Date') }}</label>
-                                    </div>
-                                    <select id="adm_input" name="adm" class="form-control form-select form-select-sm" data-bs-placeholder="Select Processed By" title="Processed by" onchange="this.form.submit()">
-                                        <option value="">All</option>
-                                        @foreach ($admins as $adm)
-                                            <option value="{{$adm->id}}" @if(isset($_GET['adm']) && $adm->id == $_GET['adm']) {{'selected'}}@endif>{{$adm->first_name." ".$adm->last_name}}</option>
-                                        @endforeach
-                                    </select>
+                        </div>
+                        <div class=" mg-b-0">
 
-                                    <div class="form-floating">
-                                        <input class="form-control" id="search_input" name="search" type="text" value="@isset($_GET['search']){{$_GET['search']}}@endisset" onchange="this.form.submit()" placeholder="Search">
-                                        <label for="search_input"> Search Entry </label>
-                                    </div>
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="imei" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" onchange="this.form.submit()">
-                                        <label for="imei">IMEI</label>
-                                    </div>
-                                </form>
-                            </div>
+                            <form method="get" action="" class="form-inline" id="search">
 
+                                <div class="form-floating">
+                                    <input class="form-control" id="start_date_input" name="start_date" id="datetimepicker" type="date" value="@isset($_GET['start_date']){{$_GET['start_date']}}@endisset" oninput="this.form.submit()">
+                                    <label for="start_date_input">{{ __('locale.Start Date') }}</label>
+                                </div>
+                                <div class="form-floating">
+                                    <input class="form-control" id="end_date_input" name="end_date" id="datetimepicker" type="date" value="@isset($_GET['end_date']){{$_GET['end_date']}}@endisset" oninput="this.form.submit()">
+                                    <label for="end_date_input">{{ __('locale.End Date') }}</label>
+                                </div>
+                                <select id="adm_input" name="adm" class="form-control form-select form-select-sm" data-bs-placeholder="Select Processed By" title="Processed by" onchange="this.form.submit()">
+                                    <option value="">All</option>
+                                    @foreach ($admins as $adm)
+                                        <option value="{{$adm->id}}" @if(isset($_GET['adm']) && $adm->id == $_GET['adm']) {{'selected'}}@endif>{{$adm->first_name." ".$adm->last_name}}</option>
+                                    @endforeach
+                                </select>
+
+                                <div class="form-floating">
+                                    <input class="form-control" id="search_input" name="search" type="text" value="@isset($_GET['search']){{$_GET['search']}}@endisset" onchange="this.form.submit()" placeholder="Search">
+                                    <label for="search_input"> Search Entry </label>
+                                </div>
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="imei" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" onchange="this.form.submit()">
+                                    <label for="imei">IMEI</label>
+                                </div>
+                            </form>
                         </div>
                     </div>
                     <div class="card-body"><div class="table-responsive">
