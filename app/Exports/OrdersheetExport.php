@@ -40,6 +40,8 @@ class OrdersheetExport implements FromCollection, WithHeadings
             'customer.first_name as first_name',
             'customer.last_name as last_name',
             'orders.tracking_number as tracking_number',
+            'orders.currency',
+            'orders.status',
 
         )
         // ->where('orders.status', 3)
@@ -108,6 +110,8 @@ class OrdersheetExport implements FromCollection, WithHeadings
             'First Name',
             'Last Name',
             'Tracking Number',
+            'Currency',
+            'Status',
         ];
     }
 }
