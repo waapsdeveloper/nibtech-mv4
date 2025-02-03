@@ -338,9 +338,9 @@ class Order extends Component
             $orderDetails[$ord->id][$itm->id] = [
                 'sku' => $itm->variation->sku ?? '',
                 'product_model' => $itm->variation->product->model ?? 'Model not defined',
-                'storage' => $storages[$itm->variation->storage] ?? '',
-                'color' => $colors[$itm->variation->color] ?? '',
-                'grade' => $grades[$itm->variation->grade] ?? '',
+                'storage' => $itm->variation->storage_id->name ?? '',
+                'color' => $itm->variation->color_id->name ?? '',
+                'grade' => $itm->variation->grade_id->name ?? '',
                 'care_id' => $itm->care_id,
                 'quantity' => $itm->quantity,
                 'imei' => $itm->stock->imei ?? '',
