@@ -182,7 +182,7 @@ class IMEI extends Component
                     session()->put('success', $message);
             }
             // print_r($last_item);
-            $orders = Order_item_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
+            $orders = Order_item_model::where('stock_id', $stock_id)->with(['order'])->orderBy('id','desc')->get();
             $data['stock'] = $stock;
             $data['orders'] = $orders;
             // dd($orders);
