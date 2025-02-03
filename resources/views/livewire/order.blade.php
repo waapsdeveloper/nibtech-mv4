@@ -851,9 +851,6 @@
 
                                     @endforeach
                                     @if ($customer->orders->count() > 1)
-                                        <script>
-                                                get_customer_previous_orders({{ $customer->id }}, {{ $order->id }});
-                                        </script>
                                         @php
                                             $def = 0;
                                         @endphp
@@ -862,7 +859,7 @@
 
                                                 @foreach ($ord->order_items as $ind => $itm)
 
-                                                    <tr class="bg-secondary text-white">
+                                                    <tr class="bg-secondary text-white" onload="get_customer_previous_orders({{ $customer->id }}, {{ $order->id }})">
                                                         @if (!$def)
                                                             @php
                                                                 $def = 1;
