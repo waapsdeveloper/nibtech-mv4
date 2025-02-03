@@ -851,11 +851,12 @@
 
                                     @endforeach
                                     @if ($customer->orders->count() > 1)
-                                        <script>
+                                        {{-- <script>
                                             $(document).ready(function(){
-                                                get_customer_previous_orders({{ $customer->id }}, {{ $order->id }});
+                                                data = get_customer_previous_orders({{ $customer->id }}, {{ $order->id }});
+
                                             });
-                                        </script>
+                                        </script> --}}
 
                                         @php
                                             $def = 0;
