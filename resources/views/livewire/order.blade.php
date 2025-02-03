@@ -850,7 +850,7 @@
                                         @endif
 
                                     @endforeach
-                                    @if ($customer->orders->count() > 1)
+                                    {{-- @if ($customer->orders->count() > 1) --}}
                                         {{-- <script>
                                             $(document).ready(function(){
                                                 data = get_customer_previous_orders({{ $customer->id }}, {{ $order->id }});
@@ -916,7 +916,7 @@
                                                 @endforeach
                                             @endif
                                         @endforeach --}}
-                                    @endif
+                                    {{-- @endif --}}
                                     @php
                                         $i ++;
                                     @endphp
