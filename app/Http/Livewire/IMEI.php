@@ -49,7 +49,7 @@ class IMEI extends Component
                 $s = request('imei');
             }
 
-            $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
+            $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->with(['variation'])->first();
 
             $data['products'] = Products_model::orderBy('model','asc')->get();
             $data['colors'] = Color_model::pluck('name','id');
