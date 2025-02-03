@@ -851,7 +851,7 @@
 
                                     @endforeach
                                     @if ($customer->orders->count() > 1)
-                                        @if (session('user_id') == 1)
+                                        {{-- @if (session('user_id') == 1)
 
                                         <script>
                                             $(document).ready(function(){
@@ -860,7 +860,7 @@
                                             });
                                         </script>
 
-                                        @endif
+                                        @endif --}}
                                         @php
                                             $def = 0;
                                         @endphp
@@ -1134,17 +1134,17 @@
             })
 
 
-        function get_customer_previous_orders(customer_id, order_id){
-            let url = "{{ url('order/get_b2c_orders_by_customer_json') }}/".concat(customer_id).concat('/').concat(order_id);
-            $.ajax({
-                url: url,
-                type: 'GET',
-                success: function(data){
-                    console.log(data)
-                    return data;
-                }
-            })
-        }
+        // function get_customer_previous_orders(customer_id, order_id){
+        //     let url = "{{ url('order/get_b2c_orders_by_customer_json') }}/".concat(customer_id).concat('/').concat(order_id);
+        //     $.ajax({
+        //         url: url,
+        //         type: 'GET',
+        //         success: function(data){
+        //             console.log(data)
+        //             return data;
+        //         }
+        //     })
+        // }
     </script>
 		<!--Internal Sparkline js -->
 		<script src="{{asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js')}}"></script>
