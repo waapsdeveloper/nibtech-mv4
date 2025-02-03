@@ -35,7 +35,7 @@ class OrdersheetExport implements FromCollection, WithHeadings
             'stock.serial_number as serial_number',
             'stock.tester as tester',
             'admin.first_name as invoice',
-            'orders.created_at as date',
+            'orders.processed_at as date',
             'customer.company as company',
             'customer.first_name as first_name',
             'customer.last_name as last_name',
@@ -46,10 +46,10 @@ class OrdersheetExport implements FromCollection, WithHeadings
         ->where('orders.order_type_id', 3)
         ->where('orders.deleted_at',null)
         ->when(request('start_date') != '', function ($q) {
-            return $q->where('orders.created_at', '>=', request('start_date', 0));
+            return $q->where('orders.processed_at', '>=', request('start_date', 0));
         })
         ->when(request('end_date') != '', function ($q) {
-            return $q->where('orders.created_at', '<=', request('end_date', 0) . " 23:59:59");
+            return $q->where('orders.processed_at', '<=', request('end_date', 0) . " 23:59:59");
         })
         ->when(request('order_id') != '', function ($q) {
             return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
