@@ -42,6 +42,7 @@ class OrdersheetExport implements FromCollection, WithHeadings
             'orders.tracking_number as tracking_number',
             'orders.currency',
             'orders.status',
+            'order_items.price'
 
         )
         // ->where('orders.status', 3)
@@ -112,6 +113,7 @@ class OrdersheetExport implements FromCollection, WithHeadings
             'Tracking Number',
             'Currency',
             'Status',
+            'Price',
         ];
     }
 }
