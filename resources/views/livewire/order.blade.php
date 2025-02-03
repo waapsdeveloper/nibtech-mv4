@@ -861,7 +861,7 @@
                                         @php
                                             $def = 0;
                                         @endphp
-                                        @foreach ($customer->orders as $ins => $ord)
+                                        {{-- @foreach ($customer->orders as $ins => $ord)
                                             @if ($ord->id != $order->id)
 
                                                 @foreach ($ord->order_items as $ind => $itm)
@@ -915,7 +915,7 @@
                                                     </tr>
                                                 @endforeach
                                             @endif
-                                        @endforeach
+                                        @endforeach --}}
                                     @endif
                                     @php
                                         $i ++;
