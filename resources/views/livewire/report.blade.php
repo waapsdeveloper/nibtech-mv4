@@ -170,13 +170,13 @@
                         <div class="row">
                             <div class="col-xl-5 col-lg-5 col-md-5 col-xs-5">
                                 <div class="form-floating">
-                                    <input class="form-control" id="start_date" type="date" id="start" name="start_date" value="{{$start_date}}">
+                                    <input class="form-control" id="start_date" type="datetime" id="start" name="start_date" value="{{$start_date}}">
                                     <label for="start">{{ __('locale.Start Date') }}</label>
                                 </div>
                             </div>
                             <div class="col-xl-5 col-lg-5 col-md-5 col-xs-5">
                                 <div class="form-floating">
-                                    <input class="form-control" id="end_date" type="date" id="end" name="end_date" value="{{$end_date}}">
+                                    <input class="form-control" id="end_date" type="datetime" id="end" name="end_date" value="{{$end_date}}">
                                     <label for="end">{{ __('locale.End Date') }}</label>
                                 </div>
                             </div>
