@@ -850,18 +850,21 @@
                                         @endif
 
                                     @endforeach
-                                    {{-- @if ($customer->orders->count() > 1) --}}
-                                        {{-- <script>
+                                    @if ($customer->orders->count() > 1)
+                                        @if (session('user_id') == 1)
+
+                                        <script>
                                             $(document).ready(function(){
                                                 data = get_customer_previous_orders({{ $customer->id }}, {{ $order->id }});
 
                                             });
-                                        </script> --}}
+                                        </script>
 
+                                        @endif
                                         @php
                                             $def = 0;
                                         @endphp
-                                        {{-- @foreach ($customer->orders as $ins => $ord)
+                                        @foreach ($customer->orders as $ins => $ord)
                                             @if ($ord->id != $order->id)
 
                                                 @foreach ($ord->order_items as $ind => $itm)
@@ -915,8 +918,8 @@
                                                     </tr>
                                                 @endforeach
                                             @endif
-                                        @endforeach --}}
-                                    {{-- @endif --}}
+                                        @endforeach
+                                    @endif
                                     @php
                                         $i ++;
                                     @endphp
