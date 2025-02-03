@@ -17,6 +17,8 @@
         @endphp
 		<title> {{ session('page_title') ?? null }} - {{ env('APP_NAME') }} </title>
 
+		<!-- JQUERY JS -->
+		<script src="{{asset('assets/plugins/jquery/jquery.min.js')}}"></script>
         @include('layouts.components.styles')
         <style>
 

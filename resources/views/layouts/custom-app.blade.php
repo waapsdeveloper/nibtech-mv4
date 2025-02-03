@@ -12,6 +12,8 @@
 		<!-- Title -->
 		<title> {{ env('APP_NAME') }} – Admin Penal </title>
 
+		<!-- JQUERY JS -->
+		<script src="{{asset('assets/plugins/jquery/jquery.min.js')}}"></script>
 		@include('layouts.components.custom-styles')
         <style>
 
