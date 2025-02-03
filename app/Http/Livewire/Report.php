@@ -65,13 +65,46 @@ class Report extends Component
         $data['grades'] = Grade_model::pluck('name','id');
         $data['currencies'] = Currency_model::pluck('sign','id');
 
-        $start_date = Carbon::now()->startOfMonth();
+        $start_date = Carbon::now()->startOfMonth()->format('Y-m-d');
         // $start_date = date('Y-m-d 00:00:00',);
-        $end_date = date('Y-m-d 23:59:59');
-        if (request('start_date') != NULL && request('end_date') != NULL) {
-            $start_date = request('start_date') . " 00:00:00";
-            $end_date = request('end_date') . " 23:59:59";
+        $end_date = date('Y-m-d');
+        $start_time = '00:00:00';
+        $end_time = '23:59:59';
+        // if (request('start_date') != NULL && request('end_date') != NULL) {
+        //     if (request('start_time') != NULL) {
+        //         $start_date = request('start_date') . " " . request('start_time');
+
+        //     } else {
+        //         $start_date = request('start_date') . " 00:00:00";
+        //     }
+        //     if (request('end_time') != NULL) {
+        //         $end_date = request('end_date') . " " . request('end_time');
+        //     } else {
+        //         $end_date = request('end_date') . " 23:59:59";
+        //     }
+        // }
+
+        if (request('start_date') != NULL) {
+            $start_date = request('start_date');
         }
+        if (request('end_date') != NULL) {
+            $end_date = request('end_date');
+        }
+        if (request('start_time') != NULL) {
+            $start_time = request('start_time');
+        }
+        if (request('end_time') != NULL) {
+            $end_time = request('end_time');
+        }
+        $data['start_date'] = $start_date;
+        $data['end_date'] = $end_date;
+        $data['start_time'] = $start_time;
+        $data['end_time'] = $end_time;
+
+        $start_date = $start_date . " " . $start_time;
+        $end_date = $end_date . " " . $end_time;
+
+
 
         $variation_ids = [];
         // if(request('data') == 1){
