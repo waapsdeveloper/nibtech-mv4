@@ -865,7 +865,7 @@
 
                                                 @foreach ($ord->order_items as $ind => $itm)
 
-                                                    <tr class="bg-secondary text-white" onload="get_customer_previous_orders({{ $customer->id }}, {{ $order->id }})">
+                                                    <tr class="bg-secondary text-white">
                                                         @if (!$def)
                                                             @php
                                                                 $def = 1;
