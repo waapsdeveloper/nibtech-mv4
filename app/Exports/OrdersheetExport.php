@@ -42,7 +42,7 @@ class OrdersheetExport implements FromCollection, WithHeadings
             'orders.tracking_number as tracking_number',
 
         )
-        ->where('orders.status', 3)
+        // ->where('orders.status', 3)
         ->where('orders.order_type_id', 3)
         ->where('orders.deleted_at',null)
         ->when(request('start_date') != '', function ($q) {
