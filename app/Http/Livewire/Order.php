@@ -335,7 +335,7 @@ class Order extends Component
                 'updated_at' => $ord->updated_at,
             ];
             foreach ($ord->order_items as $itm) {
-            $orderDetails[$ord->id][$itm->id] = [
+            $orderDetails[$ord->id]['items'][$itm->id] = [
                 'sku' => $itm->variation->sku ?? '',
                 'product_model' => $itm->variation->product->model ?? 'Model not defined',
                 'storage' => $itm->variation->storage_id->name ?? '',
