@@ -188,7 +188,7 @@ class IMEI extends Component
             // dd($orders);
 
 
-            $stocks = Stock_operations_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
+            $stocks = Stock_operations_model::where('stock_id', $stock_id)->with(['old_variation', 'new_variation', 'stock'])->orderBy('id','desc')->get();
             $data['stocks'] = $stocks;
 
             $test_results = Api_request_model::where('stock_id', $stock_id)->orderBy('id','desc')->get();
