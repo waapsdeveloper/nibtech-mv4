@@ -311,6 +311,69 @@ class Order extends Component
         // dd($data['orders']);
         return view('livewire.order')->with($data);
     }
+
+    public function get_b2c_orders_by_customer_json($customer_id, $exclude_order)
+    {
+        $orders = Order_model::where('customer_id', $customer_id)
+        ->where('order_type_id', 3)
+        ->whereNot('id', $exclude_order)
+        ->get();
+
+        $items = Order_item_model::whereIn('order_id', $orders->pluck('id'))->get();
+        $orderDetails = [];
+
+        foreach ($orders as $ord) {
+            $orderDetails[$ord->id] = [
+                'customer' => $ord->customer->first_name . " " . $ord->customer->last_name . " " . $ord->customer->phone,
+                'reference_id' => $ord->reference_id,
+                'status' => $ord->status,
+                'charges' => $ord->charges,
+                'currency' => $ord->currency_id->sign,
+                'price' => $ord->price,
+                'order_status' => $ord->order_status->name,
+                'created_at' => $ord->created_at,
+                'updated_at' => $ord->updated_at,
+            ];
+            foreach ($ord->order_items as $itm) {
+            $orderDetails[$ord->id][$itm->id] = [
+                'sku' => $itm->variation->sku ?? '',
+                'product_model' => $itm->variation->product->model ?? 'Model not defined',
+                'storage' => $storages[$itm->variation->storage] ?? '',
+                'color' => $colors[$itm->variation->color] ?? '',
+                'grade' => $grades[$itm->variation->grade] ?? '',
+                'care_id' => $itm->care_id,
+                'quantity' => $itm->quantity,
+                'imei' => $itm->stock->imei ?? '',
+                'serial_number' => $itm->stock->serial_number ?? '',
+            ];
+            }
+        }
+
+        return response()->json([
+            'orders' => $orders,
+            'items' => $items,
+            'orderDetails' => $orderDetails,
+        ]);
+
+
+
+    }
+
+    public function get_orders_by_customer_json($customer_id, $order_type_id, $exclude_orders = [])
+    {
+        $orders = Order_model::where('customer_id', $customer_id)
+        ->where('order_type_id', $order_type_id)
+        ->whereNotIn('id', $exclude_orders)
+        ->get();
+
+        $items = Order_item_model::whereIn('order_id', $orders->pluck('id'))->get();
+
+        return response()->json([
+            'orders' => $orders,
+            'items' => $items,
+        ]);
+    }
+
     public function mark_scanned($id)
     {
         $order = Order_model::find($id);

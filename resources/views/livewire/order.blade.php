@@ -851,6 +851,11 @@
 
                                     @endforeach
                                     @if ($customer->orders->count() > 1)
+                                        <script>
+                                            $(document).ready(function(){
+                                                get_customer_previous_orders({{ $customer->id }}, {{ $order->id }});
+                                            });
+                                        </script>
                                         @php
                                             $def = 0;
                                         @endphp
@@ -1122,6 +1127,18 @@
             modal.find('.modal-body #order_reference').val(reference)
             modal.find('.modal-body #item_id').val(item)
             })
+
+
+        function get_customer_previous_orders(customer_id, order_id){
+            let url = "{{ url('order/get_b2c_orders_by_customer_json') }}/".concat(customer_id).concat('/').concat(order_id);
+            $.ajax({
+                url: url,
+                type: 'GET',
+                success: function(data){
+                    console.log(data)
+                }
+            })
+        }
     </script>
 		<!--Internal Sparkline js -->
 		<script src="{{asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js')}}"></script>

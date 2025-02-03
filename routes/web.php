@@ -232,6 +232,7 @@ Route::post('testing/upload_excel', [Testing::class, 'upload_excel'])->name('upl
 Route::get('testing/repush/{id}', [Testing::class, 'repush'])->name('repush_testing_api_data');
 
 Route::get('order', Order::class)->name('view_order');
+Route::get('order/get_b2c_orders_by_customer_json/{id}/{order_id}', [Order::class,'get_b2c_orders_by_customer_json'])->name('view_order');
 Route::get('check_new/{return?}', [Order::class,'updateBMOrdersNew'])->name('view_order');
 Route::get('refresh_order', [Order::class,'getapiorders'])->name('view_order');
 Route::get('refresh_order/{id}', [Order::class,'getapiorders'])->name('view_order');
