@@ -113,6 +113,9 @@ class Order_model extends Model
                 $order->customer_id = $customer_model->updateCustomerInDB($orderObj, false, $currency_codes, $country_codes);
             }
             $order->status = $this->mapStateToStatus($orderObj);
+            if($order->status == null){
+                Log::info("Order status is null", $orderObj);
+            }
             $order->currency = $currency_codes[$orderObj->currency];
             $order->order_type_id = 3;
             $order->price = $orderObj->price;
