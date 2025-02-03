@@ -150,6 +150,8 @@
                         @csrf
                         <input type="hidden" name="start_date" value="{{$start_date}}">
                         <input type="hidden" name="end_date" value="{{$end_date}}">
+                        <input type="hidden" name="start_time" value="{{$start_time}}">
+                        <input type="hidden" name="end_time" value="{{$end_time}}">
                         <input type="hidden" name="product" value="{{ Request::get('product') }}">
                         <input type="hidden" name="vendor" value="{{ Request::get('vendor') }}">
                         <input type="hidden" name="batch" value="{{ Request::get('batch') }}">
@@ -170,14 +172,22 @@
                         <div class="row">
                             <div class="col-xl-5 col-lg-5 col-md-5 col-xs-5">
                                 <div class="form-floating">
-                                    <input class="form-control" id="start_date" type="datetime-local" id="start" name="start_date" value="{{$start_date}}">
+                                    <input class="form-control" id="start_date" type="date" name="start_date" value="{{$start_date}}">
                                     <label for="start">{{ __('locale.Start Date') }}</label>
+                                </div>
+                                <div class="form-floating">
+                                    <input class="form-control" id="start_time" type="time" name="start_time" value="{{$start_time}}">
+                                    <label for="start_time">Time</label>
                                 </div>
                             </div>
                             <div class="col-xl-5 col-lg-5 col-md-5 col-xs-5">
                                 <div class="form-floating">
-                                    <input class="form-control" id="end_date" type="datetime-local" id="end" name="end_date" value="{{$end_date}}">
+                                    <input class="form-control" id="end_date" type="date" id="end" name="end_date" value="{{$end_date}}">
                                     <label for="end">{{ __('locale.End Date') }}</label>
+                                </div>
+                                <div class="form-floating">
+                                    <input class="form-control" id="end_time" type="time" name="end_time" value="{{$end_time}}">
+                                    <label for="end_time">Time</label>
                                 </div>
                             </div>
                             <div class="col-xl-2 col-lg-2 col-md-2 col-xs-2">
@@ -192,6 +202,8 @@
                     @csrf
                     <input type="hidden" name="start_date" value="{{$start_date}}">
                     <input type="hidden" name="end_date" value="{{$end_date}}">
+                    <input type="hidden" name="start_time" value="{{$start_time}}">
+                    <input type="hidden" name="end_time" value="{{$end_time}}">
                 </form>
                 <table class="table table-bordered table-hover text-md-nowrap">
                     <thead>
@@ -496,13 +508,18 @@
 
                 var start_date = $('#start_date').val();
                 var end_date = $('#end_date').val();
+                var start_time = $('#start_time').val();
+                var end_time = $('#end_time').val();
+
 
                 $.ajax({
                     url: "{{ url('report/sales_and_returns_total') }}",
                     type: 'GET',
                     data: {
                         start_date: start_date,
-                        end_date: end_date
+                        end_date: end_date,
+                        start_time: start_time,
+                        end_time: end_time
                     },
                     success: function (data) {
 
