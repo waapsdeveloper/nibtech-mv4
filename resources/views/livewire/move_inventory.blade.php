@@ -354,7 +354,7 @@
                                                         <strong>{{ $operation->old_variation->sku }}</strong>{{ " - " . $operation->old_variation->product->model . " - " . (isset($operation->old_variation->storage_id)?$operation->old_variation->storage_id->name . " - " : null) . (isset($operation->old_variation->color_id)?$operation->old_variation->color_id->name. " - ":null)}} <strong><u>{{ (isset($operation->old_variation->grade_id)?$operation->old_variation->grade_id->name:null) . (isset($operation->old_variation->sub_grade_id)?$operation->old_variation->sub_grade_id->name:null)}} </u></strong>
                                                     @endif
                                                 </td>
-                                                <td @if ($stock->variation != $operation->new_variation_id) class="text-danger" @endif>
+                                                <td @if ($stock->variation_id != $operation->new_variation_id) class="text-danger" @endif>
                                                     @if ($operation->new_variation ?? false)
                                                         <strong>{{ $operation->new_variation->sku }}</strong>{{ " - " . $operation->new_variation->product->model . " - " . (isset($operation->new_variation->storage_id)?$operation->new_variation->storage_id->name . " - " : null) . (isset($operation->new_variation->color_id)?$operation->new_variation->color_id->name. " - ":null)}} <strong><u>{{ $operation->new_variation->grade_id->name ?? "Grade Missing" }} {{ $operation->new_variation->sub_grade_id->name ?? "" }}</u></strong>
                                                     @endif
