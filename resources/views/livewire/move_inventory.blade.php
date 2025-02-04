@@ -331,6 +331,9 @@
 
                                     @endphp
                                     @foreach ($stocks as $operation)
+                                        @php
+                                            $stock = $operation->stock;
+                                        @endphp
                                         @if (request('search') != '')
                                             @if (!in_array($operation->stock_id, $list))
                                                 @php
@@ -351,13 +354,13 @@
                                                         <strong>{{ $operation->old_variation->sku }}</strong>{{ " - " . $operation->old_variation->product->model . " - " . (isset($operation->old_variation->storage_id)?$operation->old_variation->storage_id->name . " - " : null) . (isset($operation->old_variation->color_id)?$operation->old_variation->color_id->name. " - ":null)}} <strong><u>{{ (isset($operation->old_variation->grade_id)?$operation->old_variation->grade_id->name:null) . (isset($operation->old_variation->sub_grade_id)?$operation->old_variation->sub_grade_id->name:null)}} </u></strong>
                                                     @endif
                                                 </td>
-                                                <td>
+                                                <td @if ($stock->variation != $operation->new_variation_id) class="text-danger" @endif>
                                                     @if ($operation->new_variation ?? false)
                                                         <strong>{{ $operation->new_variation->sku }}</strong>{{ " - " . $operation->new_variation->product->model . " - " . (isset($operation->new_variation->storage_id)?$operation->new_variation->storage_id->name . " - " : null) . (isset($operation->new_variation->color_id)?$operation->new_variation->color_id->name. " - ":null)}} <strong><u>{{ $operation->new_variation->grade_id->name ?? "Grade Missing" }} {{ $operation->new_variation->sub_grade_id->name ?? "" }}</u></strong>
                                                     @endif
                                                 </td>
-                                                <td><a href="{{url('imei')}}?imei={{ $operation->stock->imei ?? null }}{{ $operation->stock->serial_number ?? null }}"> {{ $operation->stock->imei ?? null }}{{ $operation->stock->serial_number ?? null }}</a></td>
-                                                <td>{{ $operation->stock->order->customer->first_name ?? "Purchase Order Missing"}} | {{$operation->stock->order->reference_id ?? null}}</td>
+                                                <td><a href="{{url('imei')}}?imei={{ $stock->imei ?? null }}{{ $stock->serial_number ?? null }}" @if ($stock->status == 2) class="text-danger" @endif> {{ $stock->imei ?? null }}{{ $stock->serial_number ?? null }}</a></td>
+                                                <td>{{ $stock->order->customer->first_name ?? "Purchase Order Missing"}} | {{$stock->order->reference_id ?? null}}</td>
                                                 <td>{{ $operation->description }}</td>
                                                 <td>{{ $operation->admin->first_name ?? null }}</td>
                                                 <td>{{ $operation->created_at }}</td>
