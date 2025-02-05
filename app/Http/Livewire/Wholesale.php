@@ -376,7 +376,7 @@ class Wholesale extends Component
             }
         }
         if(request('exclude_vendors') != null){
-            if(in_array($stock->order->customer_id, request('exclude_vendor'))){
+            if(in_array($stock->order->customer_id, request('exclude_vendors'))){
                 session()->put('error', 'Stock belongs to the Excluded Vendor');
                 if($back != 1){
                     return redirect()->back();
