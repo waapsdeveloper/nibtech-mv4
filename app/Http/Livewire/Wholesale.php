@@ -385,6 +385,8 @@ class Wholesale extends Component
                 }
             }
             session()->put('exclude_vendors', request('exclude_vendors'));
+        }else{
+            session()->forget('exclude_vendors');
         }
         $variation = Variation_model::where(['id' => $stock->variation_id])->first();
         if($stock->status != 1){
