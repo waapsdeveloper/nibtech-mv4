@@ -233,8 +233,11 @@
                                             @endif
                                             <td>
 
-                                                @if ($order->customer != null)
-                                                <a title="Profile" href="{{url('edit-customer').'/'.$order->customer_id}}" target="_blank">{{ $order->customer->first_name." ".$order->customer->last_name }}</a></td>
+                                                @if ($order->customer != null && $order->order_type_id != 1)
+                                                    <a title="Profile" href="{{url('edit-customer').'/'.$order->customer_id}}" target="_blank">{{ $order->customer->first_name." ".$order->customer->last_name }}</a>
+                                                @elseif ($order->customer != null && $order->order_type_id == 1)
+                                                    <a title="Profile" href="{{url('edit-customer').'/'.$order->customer_id}}" target="_blank">{{ $order->customer->last_name }}</a>
+
                                                 @endif
                                             </td>
                                             <td>
@@ -529,7 +532,7 @@
                                                     @endif
                                                 </td>
                                                 <td>{{ $operation->stock->imei.$operation->stock->serial_number }}</td>
-                                                <td>{{ $operation->stock->order->customer->first_name." | ".$operation->stock->order->reference_id }}</td>
+                                                <td>{{ $operation->stock->order->customer->last_name." | ".$operation->stock->order->reference_id }}</td>
                                                 <td>{{ $operation->description }}</td>
                                                 <td>{{ $operation->admin->first_name ?? null }}</td>
                                                 <td>{{ $operation->created_at }}</td>
