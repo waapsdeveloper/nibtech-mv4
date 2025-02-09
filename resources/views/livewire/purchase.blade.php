@@ -150,6 +150,7 @@
                                         <th><small><b>No</b></small></th>
                                         <th><small><b>Order ID</b></small></th>
                                         <th><small><b>Vendor</b></small></th>
+                                        <th><small><b>Reference</b></small></th>
                                         @if (session('user')->hasPermission('view_cost'))
                                         <th><small><b>Cost</b></small></th>
                                         @endif
@@ -191,6 +192,7 @@
                                                     <td>{{ $i + 1 }}</td>
                                                     <td><a href="{{url('purchase/detail/'.$order->id)}}?status=1">{{ $order->reference_id }}</a></td>
                                                 <td>{{ $vendors[$order->customer_id] }}</td>
+                                                <td>{{ $order->reference }}</td>
                                                 @if (session('user')->hasPermission('view_cost'))
                                                 <td>Є{{ amount_formatter($order->order_items->sum('price'),2) }}</td>
                                                 @endif
