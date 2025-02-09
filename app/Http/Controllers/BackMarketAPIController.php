@@ -384,6 +384,10 @@ class BackMarketAPIController extends Controller
         // if($s == 1){
         //     dd($result);
         // }
+        if(!isset($result->results)){
+            Log::channel('slack')->info("Order API: ".json_encode($result));
+            die();
+        }
         $result_array = $result->results;
 
         $result_next = $result;
