@@ -341,7 +341,7 @@ class Report extends Component
         $all_po = Order_model::where('order_type_id',1)->pluck('id')->toArray();
 
         $b2c_orders = Order_model::where('order_type_id',3)
-            ->whereBetween('created_at', [$start_date, $end_date])
+            ->whereBetween('processed_at', [$start_date, $end_date])
             ->whereIn('status', [3,6])
             ->get();
         $b2c_order_ids = $b2c_orders->pluck('id')->toArray();
