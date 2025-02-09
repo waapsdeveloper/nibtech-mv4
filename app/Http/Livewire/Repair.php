@@ -297,7 +297,6 @@ class Repair extends Component
     }
     public function repair_detail($process_id){
 
-
         if(str_contains(url()->previous(),url('repair')) && !str_contains(url()->previous(),'detail')){
             session()->put('previous', url()->previous());
         }
@@ -355,6 +354,9 @@ class Repair extends Component
         // $data['grades'] = Grade_model::all();
         $data['process'] = Process_model::find($process_id);
 
+        if($data['process']->process_type_id != 9){
+            return redirect('repair');
+        }
         $data['process_id'] = $process_id;
 
 
