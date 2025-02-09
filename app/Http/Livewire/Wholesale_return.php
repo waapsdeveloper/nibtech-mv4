@@ -348,7 +348,7 @@ class Wholesale_return extends Component
                     session()->put('error', 'IMEI Sold to different customer');
                     return redirect()->back();
                 }
-                if($last_item->order->processed_at < now()->subDays(60)){
+                if($last_item->order->created_at < now()->subDays(60)){
                     session()->put('error', 'IMEI Sold more than 60 days ago');
                     if(session('user')->hasPermission('bulksale_return_bypass_60_days_limit') && request('bypass_60_days_limit') == 1){}else{
                         return redirect()->back();
