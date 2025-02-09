@@ -434,9 +434,9 @@ class Report extends Component
             }
             $b2c_return_total[$key] -= $value;
         }
-        $b2c_return_charges_by_currency = $b2c_return_charges_by_currency->map(function ($items) {
-            return amount_formatter($items);
-        });
+        // $b2c_return_charges_by_currency = $b2c_return_charges_by_currency->map(function ($items) {
+        //     return amount_formatter($items);
+        // });
 
         $b2c_return_stock_ids = $b2c_returns->pluck('stock_id')->toArray();
         $b2c_return_stock_cost = Order_item_model::whereIn('stock_id', $b2c_return_stock_ids)
