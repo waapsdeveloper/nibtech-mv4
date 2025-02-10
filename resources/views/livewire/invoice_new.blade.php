@@ -491,7 +491,7 @@ canvas {
             });
         });
         // window.onload = function() { setTimeout(() => {window.print();},4000) }
-        window.onload = function() { window.print(); }
+        // window.onload = function() { window.print(); }
         window.onafterprint = function() { window.close(); }
     </script>
 
