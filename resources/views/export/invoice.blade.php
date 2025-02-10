@@ -311,5 +311,9 @@
             <h4>Stock Sold on Marginal VAT Scheme. VAT Number: {{env('APP_VAT')}}</h4>
         </div>
     </div>
+    <script>
+        // window.print();
+        window.close();
+    </script>
 </body>
 </html>
