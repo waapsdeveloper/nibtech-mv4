@@ -2885,6 +2885,7 @@ class Order extends Component
 
                 newTab2.onload = function() {
                     newTab2.print();
+                    newTab2.close();
                 };
 
                 window.close();
