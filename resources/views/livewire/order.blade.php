@@ -402,6 +402,7 @@
                                     $total_items = 0;
                                     $replacement_items = [];
                                     $imei_list = [];
+                                    $t = 0;
                                 @endphp
                                 @foreach ($orders as $index => $order)
                                     @php
@@ -597,7 +598,7 @@
                                                             @csrf
                                                             <input type="hidden" name="sort" value="{{request('sort')}}">
                                                             <div class="input-group">
-                                                                <input type="text" id="tester" name="tester[]" placeholder="Tester" list="tester_list" class="form-control form-control-sm" style="max-width: 55px" maxlength="3">
+                                                                <input type="text" id="tester{{++$t}}" name="tester[]" placeholder="Tester" list="tester_list" class="form-control form-control-sm" style="max-width: 55px" maxlength="3">
                                                                 <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm">
 
                                                                 <input type="hidden" name="sku[]" value="{{ $variation->sku ?? "Variation Issue" }}">
@@ -618,7 +619,7 @@
                                                             @for ($in = 1; $in <= $item->quantity; $in ++)
 
                                                                 <div class="input-group">
-                                                                    <input type="text" id="tester" name="tester[]" placeholder="Tester" list="tester_list" class="form-control form-control-sm" style="max-width: 55px">
+                                                                    <input type="text" id="tester{{++$t}}" name="tester[]" placeholder="Tester" list="tester_list" class="form-control form-control-sm" style="max-width: 55px">
                                                                     <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm" required>
                                                                 </div>
                                                             <input type="hidden" name="sku[]" value="{{ $variation->sku }}">
@@ -636,9 +637,8 @@
                                                             @foreach ($items as $itm)
 
                                                                 @for ($in = 1; $in <= $itm->quantity; $in++)
-
                                                                     <div class="input-group">
-                                                                        <input type="text" id="tester" name="tester[]" list="tester_list" placeholder="Tester" class="form-control form-control-sm" style="max-width: 55px">
+                                                                        <input type="text" id="tester{{++$t}}" name="tester[]" list="tester_list" placeholder="Tester" class="form-control form-control-sm" style="max-width: 55px">
                                                                         <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm" required title="for SKU:{{ $itm->variation->sku }}">
                                                                     </div>
                                                                     <input type="hidden" name="sku[]" value="{{ $itm->variation->sku }}">
@@ -1091,18 +1091,18 @@
 
     <script>
 
-
+        var id = `tester{{$t}}`;
         window.onload = function() {
-            document.getElementById('tester').focus();
-            document.getElementById('tester').click();
-            setTimeout(function(){ document.getElementById('tester').focus();$('#tester').focus(); }, 500);
+            document.getElementById(id).focus();
+            document.getElementById(id).click();
+            setTimeout(function(){ document.getElementById(id).focus();$('#tester').focus(); }, 500);
         };
         document.addEventListener('DOMContentLoaded', function() {
-            var input = document.getElementById('tester');
+            var input = document.getElementById(id);
             input.focus();
             input.select();
-            document.getElementById('tester').click();
-            setTimeout(function(){ document.getElementById('tester').focus();$('#tester').focus(); }, 500);
+            document.getElementById(id).click();
+            setTimeout(function(){ document.getElementById(id).focus();$('#tester').focus(); }, 500);
         });
 
         $('#tracking_model').on('show.bs.modal', function (event) {
