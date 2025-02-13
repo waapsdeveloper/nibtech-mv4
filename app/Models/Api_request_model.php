@@ -299,7 +299,10 @@ class Api_request_model extends Model
 
 
                     if(isset($message)){
-
+                        if (isset($message)) {
+                            $message = preg_replace('/\s+/', ' ', $message);
+                            $message = htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
+                        }
                         $stock_operation = Stock_operations_model::create([
                             'stock_id' => $stock->id,
                             'api_request_id' => $request->id,
