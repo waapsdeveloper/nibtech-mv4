@@ -299,10 +299,9 @@ class Api_request_model extends Model
 
 
                     if(isset($message)){
-                        if (isset($message)) {
-                            $message = preg_replace('/\s+/', ' ', $message);
-                            $message = htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
-                        }
+                        $message = preg_replace('/\s+/', ' ', $message);
+                        $message = htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
+
                         $stock_operation = Stock_operations_model::create([
                             'stock_id' => $stock->id,
                             'api_request_id' => $request->id,
@@ -318,8 +317,14 @@ class Api_request_model extends Model
                     }else{
                         $fail = $datas->Fail;
                     }
+
+                    $m = $datas->Comments;
+
+                    $m = preg_replace('/\s+/', ' ', $m);
+                    $m = htmlspecialchars($m, ENT_QUOTES, 'UTF-8');
+
                     $stock_operation = new Stock_operations_model();
-                    $stock_operation->new_operation($stock->id, null, 1, $request->id, $stock->variation_id, $variation->id, $fail." | ".$datas->Comments." | DrPhone", $admin, Carbon::parse($datas->Time)->format('Y-m-d H:i:s'));
+                    $stock_operation->new_operation($stock->id, null, 1, $request->id, $stock->variation_id, $variation->id, $fail." | ".$m." | DrPhone", $admin, Carbon::parse($datas->Time)->format('Y-m-d H:i:s'));
                     // $stock_operation = Stock_operations_model::create([
                     //     'stock_id' => $stock->id,
                     //     'api_request_id' => $request->id,
