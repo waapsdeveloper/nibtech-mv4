@@ -1105,6 +1105,7 @@
     @section('scripts')
 
     <script>
+        console.log('{{$orders}}');
         @if (request('invoice'))
 
             var id = `tester{{$t}}`;
