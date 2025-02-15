@@ -72,12 +72,12 @@ class Functions extends Command
         //     $item->currency = Order_model::where('reference_id', $item->reference_id)->first()->currency;
         //     $item->save();
         // });
-        // $itms = Order_item_model::whereNull('currency')->whereHas('order', function ($q) {
-        //     $q->where('order_type_id',3);
-        // })->each(function($item){
-        //     $item->currency = $item->order->currency;
-        //     $item->save();
-        // });
+        $itms = Order_item_model::whereNull('currency')->whereHas('order', function ($q) {
+            $q->where('order_type_id',3);
+        })->each(function($item){
+            $item->currency = $item->order->currency;
+            $item->save();
+        });
 
     }
     private function check_linked_orders(){
