@@ -591,7 +591,7 @@
                                                 @isset($order->processed_by) | {{ $admins[$order->processed_by][0] }} | @endisset
                                                 @isset($stock->tester) ({{ $stock->tester }}) @endisset
 
-                                                @if (request('invoice') && isset($stock) && $item->status == 2 && !isset(session('refresh')))
+                                                @if (request('invoice') && isset($stock) && $item->status == 2 && !session()->has('refresh'))
                                                     @php
                                                         session()->put('refresh', true);
                                                     @endphp
@@ -936,7 +936,7 @@
                                     @endif
                                 @endforeach
                                     @php
-                                    if (isset(session('refresh'))){
+                                    if (session()->has('refresh')){
                                         session()->forget('refresh');
                                     }
                                     @endphp
