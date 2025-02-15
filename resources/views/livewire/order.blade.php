@@ -944,7 +944,7 @@
                             <tfoot>
                                 <tr>
                                     <td colspan="4">
-                                        {{ $orders->onEachSide(1)->links() }} {{ __('locale.From') }} {{$orders->firstItem()}} {{ __('locale.To') }} {{$orders->lastItem()}} {{ __('locale.Out Of') }} {{$orders->total()}}
+                                        {{ $orders->onEachSide(3)->links() }} {{ __('locale.From') }} {{$orders->firstItem()}} {{ __('locale.To') }} {{$orders->lastItem()}} {{ __('locale.Out Of') }} {{$orders->total()}}
 
                                     </td>
                                     @if (request('missing_refund') || request('missing_reimburse'))
@@ -1105,7 +1105,9 @@
     @section('scripts')
 
     <script>
-        console.log('{{$orders}}');
+        $(document).ready(function(){
+            const tester_list = {!! json_encode($orders) !!};
+        });
         @if (request('invoice'))
 
             var id = `tester{{$t}}`;
