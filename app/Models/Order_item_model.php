@@ -267,9 +267,9 @@ class Order_item_model extends Model
                 $orderItem->variation_id = $variation->id;
                 $orderItem->reference_id = $itemObj->id;
                 $orderItem->price = $itemObj->price;
-                $orderItem->currency = $order->currency;
                 $orderItem->quantity = $itemObj->quantity;
             }
+            $orderItem->currency = $order->currency;
 
             switch ($itemObj->state){
                 case 0: $state = 0; break;
