@@ -1100,14 +1100,16 @@
                 </div>
             </div>
         </div>
+        @if (session('user_id') == 1)
+            @dd($orders)
+
+        @endif
     @endsection
 
     @section('scripts')
 
     <script>
-        $(document).ready(function(){
-            const tester_list = {!! json_encode($orders) !!};
-        });
+
         @if (request('invoice'))
 
             var id = `tester{{$t}}`;
