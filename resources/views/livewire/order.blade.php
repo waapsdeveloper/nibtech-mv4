@@ -1125,6 +1125,9 @@
                 document.getElementById(id).click();
                 setTimeout(function(){ document.getElementById(id).focus();$('#tester').focus(); }, 500);
             });
+            if (id == 'tester0') {
+                document.querySelector('[rel="prev"]').click();
+            }
         @endif
 
         $('#tracking_model').on('show.bs.modal', function (event) {
