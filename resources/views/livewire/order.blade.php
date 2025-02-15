@@ -591,6 +591,16 @@
                                                 @isset($order->processed_by) | {{ $admins[$order->processed_by][0] }} | @endisset
                                                 @isset($stock->tester) ({{ $stock->tester }}) @endisset
 
+                                                @if (request('invoice') && isset($stock) && $item->status == 2 && !isset(session('refresh')))
+                                                    @php
+                                                        session()->put('refresh', true);
+                                                    @endphp
+                                                    <script>
+                                                        document.addEventListener('DOMContentLoaded', function() {
+                                                            window.location.href = "{{url('order')}}/refresh/{{ $order->reference_id }}";
+                                                        });
+                                                    </script>
+                                                @endif
 
                                                 @if ($item->status == 2)
                                                     @if (count($items) < 2 && $item->quantity < 2)
@@ -925,6 +935,11 @@
                                     @endphp
                                     @endif
                                 @endforeach
+                                    @php
+                                    if (isset(session('refresh'))){
+                                        session()->forget('refresh');
+                                    }
+                                    @endphp
                             </tbody>
                             <tfoot>
                                 <tr>
@@ -1090,20 +1105,22 @@
     @section('scripts')
 
     <script>
+        @if (request('invoice'))
 
-        var id = `tester{{$t}}`;
-        window.onload = function() {
-            document.getElementById(id).focus();
-            document.getElementById(id).click();
-            setTimeout(function(){ document.getElementById(id).focus();$('#tester').focus(); }, 500);
-        };
-        document.addEventListener('DOMContentLoaded', function() {
-            var input = document.getElementById(id);
-            input.focus();
-            input.select();
-            document.getElementById(id).click();
-            setTimeout(function(){ document.getElementById(id).focus();$('#tester').focus(); }, 500);
-        });
+            var id = `tester{{$t}}`;
+            window.onload = function() {
+                document.getElementById(id).focus();
+                document.getElementById(id).click();
+                setTimeout(function(){ document.getElementById(id).focus();$('#tester').focus(); }, 500);
+            };
+            document.addEventListener('DOMContentLoaded', function() {
+                var input = document.getElementById(id);
+                input.focus();
+                input.select();
+                document.getElementById(id).click();
+                setTimeout(function(){ document.getElementById(id).focus();$('#tester').focus(); }, 500);
+            });
+        @endif
 
         $('#tracking_model').on('show.bs.modal', function (event) {
             var button = $(event.relatedTarget) // Button that triggered the modal
