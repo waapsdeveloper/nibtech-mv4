@@ -1100,10 +1100,10 @@
                 </div>
             </div>
         </div>
-        @if (session('user_id') == 1)
+        {{-- @if (session('user_id') == 1)
             @dd($orders)
 
-        @endif
+        @endif --}}
     @endsection
 
     @section('scripts')
