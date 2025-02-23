@@ -711,7 +711,7 @@
                                             $j++;
                                         @endphp
                                     @endforeach
-                                    @if (!isset($hide))
+                                    @if (!isset($hide) || !$hide)
 
                                     @foreach ($items as $itemIndex => $item)
                                         @if ($item->replacement)
