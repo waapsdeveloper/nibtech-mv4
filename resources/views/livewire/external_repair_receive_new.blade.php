@@ -90,6 +90,15 @@ session()->forget('error');
         <div class="card-header pb-0">
             <div class="d-flex justify-content-between">
                 <h4 class="card-title mg-b-0">Received Today</h4>
+                <form method="GET" action="{{ url('receive_repair_items') }}" class="form-inline">
+                    <label>Per Page</label>
+                    <select name="per_page" class="form-control form-select" onchange="this.form.submit()">
+                        <option value="10" @if (request('per_page') == 10) selected @endif>10</option>
+                        <option value="20" @if (request('per_page') == 20) selected @endif>20</option>
+                        <option value="50" @if (request('per_page') == 50) selected @endif>50</option>
+                        <option value="100" @if (request('per_page') == 100) selected @endif>100</option>
+                    </select>
+                </form>
             </div>
         </div>
         <div class="card-body"><div class="table-responsive">
