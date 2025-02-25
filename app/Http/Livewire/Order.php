@@ -144,12 +144,12 @@ class Order extends Component
                 $qu->whereHas('order', function ($q) {
                     $q->where('status', '!=', 1);
                 });
-            })->where('status', 3);
+            })->where('status', 3)->orderBy('orders.updated_at','desc');
         })
         ->when(request('missing') == 'refund', function ($q) {
             return $q->whereDoesntHave('order_items.linked_child')->wherehas('order_items.stock', function ($q) {
                 $q->where('status', '!=', null);
-            })->where('status', 6);
+            })->where('status', 6)->orderBy('orders.updated_at','desc');
         })
         ->when(request('missing') == 'charge', function ($q) {
             return $q->whereNot('status', 2)->whereNull('charges')->where('processed_at', '<=', now()->subHours(12));
