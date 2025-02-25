@@ -380,13 +380,18 @@ class Repair extends Component
     }
 
     public function external_repair_receive(){
+        if(request('per_page') != null){
+            $per_page = request('per_page');
+        }else{
+            $per_page = 20;
+        }
         $data['repairers'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
         $data['storages'] = Storage_model::pluck('name','id');
         $data['products'] = Products_model::pluck('model','id');
         $data['grades'] = Grade_model::pluck('name','id');
         $data['colors'] = Color_model::pluck('name','id');
         if(session('process_stock_ids') != []){
-            $processed_stocks = Process_stock_model::whereIn('id', session('process_stock_ids'))->orderByDesc('updated_at')->get();
+            $processed_stocks = Process_stock_model::whereIn('id', session('process_stock_ids'))->orderByDesc('updated_at')->limit($per_page)->get();
             $data['processed_stocks'] = $processed_stocks;
 
         }
