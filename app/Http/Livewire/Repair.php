@@ -391,7 +391,7 @@ class Repair extends Component
         $data['grades'] = Grade_model::pluck('name','id');
         $data['colors'] = Color_model::pluck('name','id');
         if(session('process_stock_ids') != []){
-            $processed_stocks = Process_stock_model::whereIn('id', session('process_stock_ids'))->orderByDesc('updated_at')->limit($per_page)->get();
+            $processed_stocks = Process_stock_model::whereIn('id', session('process_stock_ids'))->with(['process','stock'])->orderByDesc('updated_at')->limit($per_page)->get();
             $data['processed_stocks'] = $processed_stocks;
 
         }
