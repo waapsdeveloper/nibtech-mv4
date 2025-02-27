@@ -2591,7 +2591,7 @@ class Order extends Component
                 // $stock->save();
             }
             if($item->stock_id != null){
-                if($item->stock_id != 0 && $item->stock->order_id != null){
+                if($item->stock_id != 0 && $item->stock && $item->stock->order_id != null){
                     if($item->stock->purchase_item){
                         $last_operation = Stock_operations_model::where('stock_id',$item->stock_id)->orderBy('id','desc')->first();
                         if($last_operation != null){
