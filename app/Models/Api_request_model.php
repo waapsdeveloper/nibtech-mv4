@@ -239,7 +239,11 @@ class Api_request_model extends Model
                     $message = "Storage changed from: ".$stock->variation->storage_id->name." to: ".$storages[$storage];
                     // dd($message, $stock, $datas);
                 }
-                if($stock->variation->color == null || $stock->variation->color == $color){
+                if($stock->variation->color == null){
+                    $check_merge_color = Product_color_merge_model::where(['product_id' => $stock->variation->product_id, 'color_from' => $color])->first();
+                    if($check_merge_color != null){
+                        $color = $check_merge_color->color_to;
+                    }
                     $new_variation['color'] = $color;
                 }
 
