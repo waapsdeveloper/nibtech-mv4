@@ -908,6 +908,10 @@ class Index extends Component
     }
 
     public function test(){
+
+        // Merge Colors all
+        // $product_ids = Product_color_merge_model::pluck('product_id')->toArray();
+
         // $variations = Variation_model::where('listed_stock','>',0)->whereNotNull('reference_id')->pluck('reference_id');
 
 
@@ -942,49 +946,51 @@ class Index extends Component
         // echo "Total Payment Charges: ".array_sum($all_charges->toArray())."<br>";
 
         ini_set('max_execution_time', 1200);
-        Variation_model::where('product_storage_sort_id',null)->each(function($variation){
-            $pss = Product_storage_sort_model::firstOrNew(['product_id'=>$variation->product_id,'storage'=>$variation->storage]);
-            if($pss->id == null){
-                $pss->save();
-            }
-            $variation->product_storage_sort_id = $pss->id;
-            $variation->save();
-        });
-        $order_c = new Order();
-        Order_model::where('scanned',null)->where('order_type_id',3)->where('tracking_number', '!=', null)->whereBetween('created_at', ['2024-05-01 00:00:00', now()->subDays(1)->format('Y-m-d H:i:s')])
-        ->orderByDesc('id')->each(function($order) use ($order_c){
-            $order_c->getLabel($order->reference_id, false, true);
-        });
+        // Variation_model::where('product_storage_sort_id',null)->each(function($variation){
+        //     $pss = Product_storage_sort_model::firstOrNew(['product_id'=>$variation->product_id,'storage'=>$variation->storage]);
+        //     if($pss->id == null){
+        //         $pss->save();
+        //     }
+        //     $variation->product_storage_sort_id = $pss->id;
+        //     $variation->save();
+        // });
+        // $order_c = new Order();
+        // Order_model::where('scanned',null)->where('order_type_id',3)->where('tracking_number', '!=', null)->whereBetween('created_at', ['2024-05-01 00:00:00', now()->subDays(1)->format('Y-m-d H:i:s')])
+        // ->orderByDesc('id')->each(function($order) use ($order_c){
+        //     $order_c->getLabel($order->reference_id, false, true);
+        // });
 
-        $bm = new BackMarketAPIController();
-        $resArray = $bm->getlabelData();
+        // $bm = new BackMarketAPIController();
+        // $resArray = $bm->getlabelData();
 
-        $orders = [];
-        $deliveries = [];
-        if ($resArray !== null) {
-            foreach ($resArray as $data) {
-                if (!empty($data) && $data->hubScanned == true && !in_array($data->order, $orders)) {
-                    $orders[] = $data->order;
+        // $orders = [];
+        // $deliveries = [];
+        // if ($resArray !== null) {
+        //     foreach ($resArray as $data) {
+        //         if (!empty($data) && $data->hubScanned == true && !in_array($data->order, $orders)) {
+        //             $orders[] = $data->order;
 
-                }
-                if (!empty($data) && !isset($deliveries[$data->order]) && $data->dateDelivery != null) {
-                    $deliveries[$data->order] = Carbon::parse($data->dateDelivery);
-                }
-            }
-        }
+        //         }
+        //         if (!empty($data) && !isset($deliveries[$data->order]) && $data->dateDelivery != null) {
+        //             $deliveries[$data->order] = Carbon::parse($data->dateDelivery);
+        //         }
+        //     }
+        // }
 
-        if($orders != []){
+        // if($orders != []){
 
-            Order_model::whereIn('reference_id',$orders)->update(['scanned' => 1]);
+        //     Order_model::whereIn('reference_id',$orders)->update(['scanned' => 1]);
 
-        }
-        if($deliveries != []){
+        // }
+        // if($deliveries != []){
 
-            foreach($deliveries as $order => $delivery){
-                Order_model::where('reference_id',$order)->update(['delivered_at' => $delivery]);
-            }
+        //     foreach($deliveries as $order => $delivery){
+        //         Order_model::where('reference_id',$order)->update(['delivered_at' => $delivery]);
+        //     }
 
-        }
+        // }
+
+        // $care_ids = Order_item_model::where('care_id','!=',null)->whereHas()
 
 
     }
