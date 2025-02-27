@@ -922,6 +922,7 @@ class Index extends Component
             if($pcm != null){
                 $variation->color = $pcm->color_to;
                 $variation->save();
+                echo $variation->id . ' - ' . $variation->product_id . ' - ' . $variation->color . '<br>';
             }
         }
 
