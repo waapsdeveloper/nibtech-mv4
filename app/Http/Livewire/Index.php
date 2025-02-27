@@ -25,6 +25,7 @@ use App\Models\Product_storage_sort_model;
 use App\Models\Variation_model;
 use App\Models\Stock_model;
 use App\Models\Stock_operations_model;
+use App\Models\Product_color_merge_model;
 
 class Index extends Component
 {
@@ -910,7 +911,19 @@ class Index extends Component
     public function test(){
 
         // Merge Colors all
-        // $product_ids = Product_color_merge_model::pluck('product_id')->toArray();
+        $product_color_merge = Product_color_merge_model::all();
+
+        $product_ids = $product_color_merge->pluck('product_id')->toArray();
+        $color_ids = $product_color_merge->pluck('color_from')->toArray();
+
+        $variations = Variation_model::whereIn('product_id', $product_ids)->whereIn('color', $color_ids)->get();
+        foreach($variations as $variation){
+            $pcm = $product_color_merge->where('product_id',$variation->product_id)->where('color_from',$variation->color)->first();
+            if($pcm != null){
+                $variation->color = $pcm->color_to;
+                $variation->save();
+            }
+        }
 
         // $variations = Variation_model::where('listed_stock','>',0)->whereNotNull('reference_id')->pluck('reference_id');
 
