@@ -173,7 +173,7 @@ class Api_request_model extends Model
 
                 if($stock->last_item() != null && $stock->last_item()->order->customer_id == 3955 && $stock->status == 2){
 
-                    $admin = 1;
+                    $admin = 11;
                 }else{
                     echo "Please create/change Team Member First Name to: ".$adminName;
                     continue;
