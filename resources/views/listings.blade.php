@@ -125,7 +125,7 @@
                     // alert("Success: Quantity changed to " + data); // show response from the PHP script.
                     $('#send_' + variationId).addClass('d-none'); // hide the button after submission
                     $('quantity_' + variationId).val(data)
-                    $('#success_' + variationId).text("Success: Quantity changed to " + data);
+                    $('#success_' + variationId).text("Quantity changed to " + data);
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert("Error: " + textStatus + " - " + errorThrown);

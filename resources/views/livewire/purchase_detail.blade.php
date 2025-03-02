@@ -421,23 +421,16 @@
                                                                 @break
                                                             @case("Product Name Not Found")
                                                             <div class="form-floating">
-                                                                <input type="text" list="variations" id="variation" name="variation" class="form-control" value="{{ $grouped_issue->name }}" required>
-                                                                <datalist id="variations">
+                                                                <input type="text" list="products" id="product" name="product" class="form-control" value="{{ $grouped_issue->name }}" required>
+                                                                <datalist id="products">
                                                                     <option value="">Select</option>
-                                                                    @foreach ($all_variations as $variation)
-                                                                        @php
-                                                                            if($variation->storage){
-                                                                                $storage = $storages[$variation->storage];
-                                                                            }else{
-                                                                                $storage = null;
-                                                                            }
-                                                                        @endphp
-                                                                        <option value="{{$variation->id}}" @if(isset($_GET['variation']) && $variation->id == $_GET['variation']) {{'selected'}}@endif>{{$variation->product->model." ".$storage}}</option>
+                                                                    @foreach ($products as $id => $product)
+                                                                        <option value="{{$id}}" @if(isset($_GET['product']) && $id == $_GET['product']) {{'selected'}}@endif>{{$product}}</option>
                                                                     @endforeach
                                                                 </datalist>
-                                                                <label for="variation">Variation</label>
+                                                                <label for="product">product</label>
                                                             </div>
-                                                            <button class="btn btn-primary m-0" name="insert_variation" value="1">Insert Variation</button>
+                                                            <button class="btn btn-primary m-0" name="insert_product" value="1">Insert Product</button>
 
                                                                 @break
 
