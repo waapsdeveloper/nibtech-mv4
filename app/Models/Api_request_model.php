@@ -171,7 +171,7 @@ class Api_request_model extends Model
                 //     $admin = 16;
                 // }else{
 
-                if($stock->last_item() != null && $stock->last_item()->order->customer_id == 3955 && $stock->status == 2){
+                if($stock != null && $stock->last_item() != null && $stock->last_item()->order->customer_id == 3955 && $stock->status == 2){
 
                     $admin = 11;
                 }else{
