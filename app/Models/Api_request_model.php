@@ -170,10 +170,16 @@ class Api_request_model extends Model
                 // }elseif($adminName == '' && $datas->PCName == 'PC6'){
                 //     $admin = 16;
                 // }else{
+                if($stock != null){
 
-                if($stock != null && $stock->last_item() != null && $stock->last_item()->order->customer_id == 3955 && $stock->status == 2){
 
-                    $admin = 11;
+                    if($stock != null && $stock->last_item() != null && $stock->last_item()->order->customer_id == 3955 && $stock->status == 2){
+
+                        $admin = 11;
+                    }else{
+                        echo "Please create/change Team Member First Name to: ".$adminName;
+                        continue;
+                    }
                 }else{
                     echo "Please create/change Team Member First Name to: ".$adminName;
                     continue;
