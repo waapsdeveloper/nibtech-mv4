@@ -122,9 +122,10 @@
                 url: actionUrl,
                 data: form.serialize(), // serializes the form's elements.
                 success: function(data) {
-                    alert("Success: Quantity changed to " + data); // show response from the PHP script.
+                    // alert("Success: Quantity changed to " + data); // show response from the PHP script.
                     $('#send_' + variationId).addClass('d-none'); // hide the button after submission
                     $('quantity_' + variationId).val(data)
+                    $('#success_' + variationId).text("Success: Quantity changed to " + data);
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert("Error: " + textStatus + " - " + errorThrown);
@@ -647,6 +648,7 @@
                                             <label for="">Stock</label>
                                         </div>
                                         <button id="send_${variation.id}" class="btn btn-light d-none" onclick="submitForm(event, ${variation.id})">Push</button>
+                                        <span class="text-success" id="success_${variation.id}"></span>
                                     </form>
 
                                     <div class="text-center">
