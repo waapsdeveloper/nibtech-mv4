@@ -181,6 +181,44 @@ class Api_request_model extends Model
                         continue;
                     }
                 }else{
+                    if(str_contains(strtolower($datas->BatchID), 'eg')){
+
+                        $curl = curl_init();
+
+                        curl_setopt_array($curl, array(
+                          CURLOPT_URL => 'https://egpos.nibritaintech.com/api/request',
+                          CURLOPT_RETURNTRANSFER => true,
+                          CURLOPT_ENCODING => '',
+                          CURLOPT_MAXREDIRS => 10,
+                          CURLOPT_TIMEOUT => 0,
+                          CURLOPT_FOLLOWLOCATION => true,
+                          CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                          CURLOPT_CUSTOMREQUEST => 'POST',
+                          CURLOPT_POSTFIELDS => json_encode($datas),
+                          CURLOPT_HTTPHEADER => array(
+                            'Accept: application/json',
+                            'Content-Type: application/json',
+                            'Authorization: Bearer 2|otpLfHymDGDscNuKjk9CQMx620avGG0aWgMpuPAp5d1d27d2'
+                          ),
+                        ));
+
+                        $response = curl_exec($curl);
+
+                        curl_close($curl);
+                        echo $response;
+
+
+                        if($response){
+                            echo "<pre>";
+                            print_r($response);
+                            echo "</pre>";
+                            echo "<br><br><br>Hello<br><br><br>";
+                        }
+
+                        $request->status = 3;
+                        $request->save();
+
+                    }
                     echo "Please create/change Team Member First Name to: ".$adminName;
                     continue;
                 }
@@ -189,7 +227,7 @@ class Api_request_model extends Model
 
 
             if($stock != null){
-                if(str_contains(strToLower($datas->Comments), 'dual-esim')){
+                if(str_contains(strtolower($datas->Comments), 'dual-esim')){
                     $p = $stock->variation->product;
                     if(!str_contains($p->model, 'Dual eSIM')){
                         $product = Products_model::firstOrNew(['model'=>$p->model.' Dual eSIM']);
