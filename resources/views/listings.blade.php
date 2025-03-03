@@ -657,8 +657,8 @@
                                             <label for="">Stock</label>
                                         </div>
                                         <div class="form-floating">
-                                            <input type="number" class="form-control" name="stock" id="quantity_${variation.id}" value="${listedStock || 0}" style="width:80px;" oninput="toggleButtonOnChange(${variation.id}, this)">
-                                            <label for="">Stock</label>
+                                            <input type="number" class="form-control" name="stock" id="add_${variation.id}" value="" style="width:60px;" oninput="toggleButtonOnChange(${variation.id}, this)">
+                                            <label for="">Add</label>
                                         </div>
                                         <button id="send_${variation.id}" class="btn btn-light d-none" onclick="submitForm(event, ${variation.id})">Push</button>
                                         <span class="text-success" id="success_${variation.id}"></span>
