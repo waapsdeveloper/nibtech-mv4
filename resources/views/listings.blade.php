@@ -641,8 +641,21 @@
                                     </div>
 
 
-                                    <form class="form-inline" method="POST" id="change_qty_${variation.id}" action="{{url('listing/update_quantity')}}/${variation.id}">
+                                    // <form class="form-inline" method="POST" id="change_qty_${variation.id}" action="{{url('listing/update_quantity')}}/${variation.id}">
+                                    //     @csrf
+                                    //     <div class="form-floating">
+                                    //         <input type="number" class="form-control" name="stock" id="quantity_${variation.id}" value="${listedStock || 0}" style="width:80px;" oninput="toggleButtonOnChange(${variation.id}, this)">
+                                    //         <label for="">Stock</label>
+                                    //     </div>
+                                    //     <button id="send_${variation.id}" class="btn btn-light d-none" onclick="submitForm(event, ${variation.id})">Push</button>
+                                    //     <span class="text-success" id="success_${variation.id}"></span>
+                                    // </form>
+                                    <form class="form-inline" method="POST" id="change_qty_${variation.id}" action="{{url('listing/add_quantity')}}/${variation.id}">
                                         @csrf
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control" name="stock" id="quantity_${variation.id}" value="${listedStock || 0}" style="width:50px;" disabled>
+                                            <label for="">Stock</label>
+                                        </div>
                                         <div class="form-floating">
                                             <input type="number" class="form-control" name="stock" id="quantity_${variation.id}" value="${listedStock || 0}" style="width:80px;" oninput="toggleButtonOnChange(${variation.id}, this)">
                                             <label for="">Stock</label>
