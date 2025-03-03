@@ -37,6 +37,7 @@ class PacksheetExport implements FromCollection, WithHeadings
         ->leftJoin('color', 'variation.color', '=', 'color.id')
         ->leftJoin('storage', 'variation.storage', '=', 'storage.id')
         ->leftJoin('grade', 'variation.grade', '=', 'grade.id')
+        ->leftJoin('grade as sub', 'variation.sub_grade', '=', 'sub.id')
         ->leftJoin('stock_operations', function ($join) {
             $join->on('stock.id', '=', 'stock_operations.stock_id')
                  ->where('stock_operations.new_variation_id', '=', DB::raw('variation.id'))
@@ -56,6 +57,7 @@ class PacksheetExport implements FromCollection, WithHeadings
             'storage.name as storage',
             'color.name as color',
             'grade.name as grade_name',
+            'sub.name as sub_grade',
             'stock.imei as imei',
             'stock.serial_number as serial_number',
             'p_orders.reference_id as po',
@@ -114,6 +116,7 @@ class PacksheetExport implements FromCollection, WithHeadings
             'Storage',
             'Color',
             'Grade',
+            'Sub Grade',
             'IMEI',
             'Serial Number',
             'PO',
