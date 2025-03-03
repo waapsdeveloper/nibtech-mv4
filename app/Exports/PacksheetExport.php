@@ -32,7 +32,7 @@ class PacksheetExport implements FromCollection, WithHeadings
             $join->on(DB::raw('COALESCE(p_item.reference_id, 0)'), '=', 'vendor_grade.id');
         })
         ->leftJoin('customer', 'p_orders.customer_id', '=', 'customer.id')
-        ->leftJoin('variation', 'stock.variation_id', '=', 'variation.id')
+        ->leftJoin('variation', 'order_items.variation_id', '=', 'variation.id')
         ->leftJoin('products', 'variation.product_id', '=', 'products.id')
         ->leftJoin('color', 'variation.color', '=', 'color.id')
         ->leftJoin('storage', 'variation.storage', '=', 'storage.id')
