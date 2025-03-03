@@ -757,8 +757,8 @@
                                                 <thead>
                                                     <tr>
                                                         <th width="80"><small><b>Country</b></small></th>
-                                                        <th width="100"><small><b>Min Handler</b></small></th>
-                                                        <th width="100"><small><b>Price Handler</b></small></th>
+                                                        <th width="100"><small><b>Min Hndlr</b></small></th>
+                                                        <th width="100"><small><b>Price Hndlr</b></small></th>
                                                         <th width="80"><small><b>BuyBox</b></small></th>
                                                         <th title="Min Price" width="130"><small><b>Min </b>(<b id="best_price_${variation.id}"></b>)</small></th>
                                                         <th width="120"><small><b>Price</b></small></th>
