@@ -248,7 +248,7 @@ class ListingController extends Controller
     public function get_sales($id){
         $week = $this->get_today_average($id);
         $week .= " - Prvs - ".$this->get_yesterday_average($id);
-        $week .= " - ".$this->get_last_week_average($id);
+        $week .= "<br> - ".$this->get_last_week_average($id);
         $week .= " - ".$this->get_2_week_average($id);
         $week .= " - ".$this->get_30_days_average($id);
 
