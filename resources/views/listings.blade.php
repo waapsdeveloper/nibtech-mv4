@@ -371,10 +371,10 @@
                                         @csrf
                                         <input type="submit" hidden>
                                     </form>
-                                    <input type="number" class="form-control" id="min_price_limit_${listing.id}" name="min_price_limit" step="0.01" value="${listing.min_price_limit}" form="change_limit_${listing.id}">
+                                    <input type="number" class="form-control ${listing.handler_status == 2 ? 'text-danger':''}" id="min_price_limit_${listing.id}" name="min_price_limit" step="0.01" value="${listing.min_price_limit}" form="change_limit_${listing.id}">
                                 </td>
                                 <td>
-                                    <input type="number" class="form-control" id="price_limit_${listing.id}" name="price_limit" step="0.01" value="${listing.price_limit}" form="change_limit_${listing.id}" on>
+                                    <input type="number" class="form-control ${listing.handler_status == 2 ? 'text-danger':''}" id="price_limit_${listing.id}" name="price_limit" step="0.01" value="${listing.price_limit}" form="change_limit_${listing.id}" on>
                                 </td>
                                 <td>${listing.buybox_price}
                                     <span class="text-danger" title="Buybox Winner Price">
@@ -603,10 +603,10 @@
                                             @csrf
                                             <input type="submit" hidden>
                                         </form>
-                                        <input type="number" class="form-control" id="min_price_limit_${listing.id}" name="min_price_limit" step="0.01" value="${listing.min_price_limit}" form="change_limit_${listing.id}">
+                                        <input type="number" class="form-control ${listing.handler_status == 2 ? 'text-danger':''}" id="min_price_limit_${listing.id}" name="min_price_limit" step="0.01" value="${listing.min_price_limit}" form="change_limit_${listing.id}">
                                     </td>
                                     <td>
-                                        <input type="number" class="form-control" id="price_limit_${listing.id}" name="price_limit" step="0.01" value="${listing.price_limit}" form="change_limit_${listing.id}">
+                                        <input type="number" class="form-control ${listing.handler_status == 2 ? 'text-danger':''}" id="price_limit_${listing.id}" name="price_limit" step="0.01" value="${listing.price_limit}" form="change_limit_${listing.id}">
                                     </td>
                                     <td>${listing.buybox_price}
                                         <span class="text-danger" title="Buybox Winner Price">
