@@ -376,8 +376,11 @@
                                 <td>
                                     <input type="number" class="form-control" id="price_limit_${listing.id}" name="price_limit" step="0.01" value="${listing.price_limit}" form="change_limit_${listing.id}" on>
                                 </td>
-                                <td>${listing.buybox_price}</td>
-                                <td>${listing.buybox !== 1 ? listing.buybox_winner_price : ''}</td>
+                                <td>${listing.buybox_price}
+                                    <span class="text-danger" title="Buybox Winner Price">
+                                        ${listing.buybox !== 1 ? listing.buybox_winner_price : ''}
+                                    </span>
+                                </td>
                                 <td>
                                     <form class="form-inline" method="POST" id="change_min_price_${listing.id}">
                                         @csrf
