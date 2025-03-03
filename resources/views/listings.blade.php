@@ -124,7 +124,29 @@
                 success: function(data) {
                     // alert("Success: Quantity changed to " + data); // show response from the PHP script.
                     $('#send_' + variationId).addClass('d-none'); // hide the button after submission
-                    $('quantity_' + variationId).val(data)
+                    $('#quantity_' + variationId).val(data)
+                    $('#success_' + variationId).text("Quantity changed to " + data);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert("Error: " + textStatus + " - " + errorThrown);
+                }
+            });
+        }
+
+        function submitForm1(event, variationId) {
+            event.preventDefault(); // avoid executing the actual submit of the form.
+
+            var form = $('#add_qty_' + variationId);
+            var actionUrl = form.attr('action');
+
+            $.ajax({
+                type: "POST",
+                url: actionUrl,
+                data: form.serialize(), // serializes the form's elements.
+                success: function(data) {
+                    // alert("Success: Quantity changed to " + data); // show response from the PHP script.
+                    $('#send_' + variationId).addClass('d-none'); // hide the button after submission
+                    $('#quantity_' + variationId).val(data)
                     $('#success_' + variationId).text("Quantity changed to " + data);
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
@@ -650,7 +672,7 @@
                                     </div>
 
 
-                                    <form class="form-inline" method="POST" id="change_qty_${variation.id}" action="{{url('listing/add_quantity')}}/${variation.id}">
+                                    <form class="form-inline" method="POST" id="add_qty_${variation.id}" action="{{url('listing/add_quantity')}}/${variation.id}">
                                         @csrf
                                         <div class="form-floating">
                                             <input type="text" class="form-control" name="stock" id="quantity_${variation.id}" value="${listedStock || 0}" style="width:50px;" disabled>
@@ -660,7 +682,7 @@
                                             <input type="number" class="form-control" name="stock" id="add_${variation.id}" value="" style="width:60px;" oninput="toggleButtonOnChange(${variation.id}, this)">
                                             <label for="">Add</label>
                                         </div>
-                                        <button id="send_${variation.id}" class="btn btn-light d-none" onclick="submitForm(event, ${variation.id})">Push</button>
+                                        <button id="send_${variation.id}" class="btn btn-light d-none" onclick="submitForm1(event, ${variation.id})">Push</button>
                                         <span class="text-success" id="success_${variation.id}"></span>
                                     </form>
 
