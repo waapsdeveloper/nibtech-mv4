@@ -605,8 +605,11 @@
                                     <td>
                                         <input type="number" class="form-control" id="price_limit_${listing.id}" name="price_limit" step="0.01" value="${listing.price_limit}" form="change_limit_${listing.id}">
                                     </td>
-                                    <td>${listing.buybox_price}</td>
-                                    <td>${listing.buybox !== 1 ? listing.buybox_winner_price : ''}</td>
+                                    <td>${listing.buybox_price}
+                                        <span class="text-success" title="Buybox Winner Price">
+                                            ${listing.buybox !== 1 ? listing.buybox_winner_price : ''}
+                                        </span>
+                                    </td>
                                     <td>
                                         <form class="form-inline" method="POST" id="change_min_price_${listing.id}">
                                             @csrf
@@ -754,7 +757,6 @@
                                                         <th><small><b>Min Handler</b></small></th>
                                                         <th><small><b>Price Handler</b></small></th>
                                                         <th><small><b>BuyBox</b></small></th>
-                                                        <th title="Buybox Winner Price"><small><b>Winner</b></small></th>
                                                         <th title="Min Price" width="150"><small><b>Min </b>(<b id="best_price_${variation.id}"></b>)</small></th>
                                                         <th width="150"><small><b>Price</b></small></th>
                                                         <th><small><b>Date</b></small></th>
@@ -769,6 +771,7 @@
                                 </div>
                             </div>
                         `);
+                                                        // <th title="Buybox Winner Price"><small><b>Winner</b></small></th>
 
                         $("#change_qty_"+variation.id).submit(function(e) {
                             submitForm(e, variation.id);
