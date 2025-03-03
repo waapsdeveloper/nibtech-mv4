@@ -306,11 +306,24 @@ class ListingController extends Controller
     }
     public function update_quantity($id){
         $variation = Variation_model::find($id);
-        $variation->listed_stock = request('stock');
-        $variation->save();
         $bm = new BackMarketAPIController();
+        $updatedQuantity = $variation->update_qty($bm);
         $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>request('stock')]));
-
+        if($response->quantity != null){
+            $variation->listed_stock = $response->quantity;
+            $variation->save();
+        }
+        return $response->quantity;
+    }
+    public function add_quantity($id){
+        $variation = Variation_model::find($id);
+        $bm = new BackMarketAPIController();
+        $updatedQuantity = $variation->update_qty($bm);
+        $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>$updatedQuantity + request('stock')]));
+        if($response->quantity != null){
+            $variation->listed_stock = $response->quantity;
+            $variation->save();
+        }
         return $response->quantity;
     }
     public function update_price($id){
