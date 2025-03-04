@@ -433,6 +433,20 @@
                                                             <button class="btn btn-primary m-0" name="insert_product" value="1">Insert Product</button>
 
                                                                 @break
+                                                            @case("Product Variation Not Found")
+                                                            <div class="form-floating">
+                                                                <input type="text" list="variations" id="variation" name="variation" class="form-control" value="{{ $grouped_issue->name }}" required>
+                                                                <datalist id="variations">
+                                                                    <option value="">Select</option>
+                                                                    @foreach ($all_variations as $id => $variation)
+                                                                        <option value="{{$id}}" @if(isset($_GET['variation']) && $id == $_GET['variation']) {{'selected'}}@endif>{{$variation}}</option>
+                                                                    @endforeach
+                                                                </datalist>
+                                                                <label for="variation">variation</label>
+                                                            </div>
+                                                            <button class="btn btn-primary m-0" name="insert_variation" value="1">Insert variation</button>
+
+                                                                @break
 
                                                             @default
 

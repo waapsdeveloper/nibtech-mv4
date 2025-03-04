@@ -1398,7 +1398,11 @@ class Order extends Component
                     if($i == null && $s == null){
                         $issue[$dr]['message'] = 'IMEI/Serial Not Found';
                     }else{
-                        $issue[$dr]['message'] = 'Product Name Not Found';
+                        if($st == null){
+                            $issue[$dr]['message'] = 'Product Variation Not Found';
+                        }else{
+                            $issue[$dr]['message'] = 'Product Name Not Found';
+                        }
                     }
 
                 }
