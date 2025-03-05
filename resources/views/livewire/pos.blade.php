@@ -126,15 +126,15 @@
                     <div class="card-header">
                         <div class="d-flex justify-content-between">
 
-                            <select class="form-select w-auto" id="currency" aria-label="Default select example">
+                            <select class="form-select w-auto" id="currency" name="currency" aria-label="Default select example">
                                 @foreach ($currencies as $currency)
                                     <option value="{{ $currency->id }}" data-sign="{{ $currency->sign }}" @if ($currency->id == 4) selected @endif>{{ $currency->code }}</option>
                                 @endforeach
                             </select>
                             <div class="d-flex">
-                                <input type="radio" class="btn-check" name="mode" id="3option">
+                                <input type="radio" class="btn-check" name="mode" id="3option" value="1">
                                 <label class="btn btn-outline-dark m-0" for="3option">Purchase</label>
-                                <input type="radio" class="btn-check" name="mode" id="2option" checked>
+                                <input type="radio" class="btn-check" name="mode" id="2option" checked value="5">
                                 <label class="btn btn-outline-dark m-0" for="2option">Sale</label>
                             </div>
                         </div>
@@ -142,7 +142,7 @@
                             <input type="text" class="form-control" id="customer_name" placeholder="Customer Name">
                             <label for="customer_name">Customer Name</label>
                         </div> --}}
-                            <select class="form-select js-data-example-ajax form-control">
+                            <select class="form-select js-data-example-ajax form-control" name="customer_id" id="customer_id" style="width: 100%">
                                 <option value=""></option>
                             </select>
                     </div>
@@ -246,7 +246,12 @@
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     },
-                    body: JSON.stringify({ cart: {!! json_encode($cart) !!} })
+                    body: JSON.stringify({
+                        cart: {!! json_encode($cart) !!},
+                        currency: document.getElementById('currency').value,
+                        mode: document.querySelector('input[name="mode"]:checked').value,
+                        customer_id: document.getElementById('customer_id').value
+                    })
                 })
                 .then(response => response.json())
                 .then(data => {
@@ -266,7 +271,12 @@
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     },
-                    body: JSON.stringify({ cart: {!! json_encode($cart) !!} })
+                    body: JSON.stringify({
+                        cart: {!! json_encode($cart) !!},
+                        currency: document.getElementById('currency').value,
+                        mode: document.querySelector('input[name="mode"]:checked').value,
+                        customer_id: document.getElementById('customer_id').value
+                    })
                 })
                 .then(response => response.json())
                 .then(data => {
