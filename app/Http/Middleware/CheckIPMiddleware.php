@@ -41,6 +41,7 @@ class CheckIPMiddleware
         }else{
             if($ip_address != null && $ip_address->updated_at->diffInDays(now()) > 2){
                 $ip_address->status = 1;
+                $ip_address->updated_at = now();
                 $ip_address->save();
             }
         }
