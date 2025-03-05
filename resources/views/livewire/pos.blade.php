@@ -279,7 +279,8 @@
                         cart: {!! json_encode($cart) !!},
                         currency: document.getElementById('currency').value,
                         mode: document.querySelector('input[name="mode"]:checked').value,
-                        customer_id: document.querySelector('input[name="customer_id"]').value
+                        customer_id: document.querySelector('input[name="customer_id"]').value,
+                        reference_id: document.getElementById('reference_id').value
                     })
                 })
                 .then(response => response.json())
