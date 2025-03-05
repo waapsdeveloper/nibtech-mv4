@@ -592,14 +592,14 @@
                                             $i ++;
                                             $variation = $item->variation;
                                             $stock = $item->stock;
-                                            $customer = $item->stock->order->customer;
+                                            $customer = $item->stock->order->customer ?? null;
 
                                         @endphp
                                         <tr>
                                             <td>{{ $i }}</td>
                                             <td>{{ $products[$variation->product_id]}} {{$storages[$variation->storage] ?? null}} {{$colors[$variation->color] ?? null}} {{$grades[$variation->grade] }} {{$grades[$variation->sub_grade] ?? '' }}</td>
                                             <td>{{ $stock->imei.$stock->serial_number }}</td>
-                                            <td>{{ $customer->first_name }}</td>
+                                            <td>{{ $customer->first_name ?? null }}</td>
                                             @if (session('user')->hasPermission('view_price'))
                                             <td>€{{ amount_formatter($item->price,2) }}</td>
                                             @endif
