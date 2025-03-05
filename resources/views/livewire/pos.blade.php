@@ -131,6 +131,10 @@
                                     <option value="{{ $currency->id }}" data-sign="{{ $currency->sign }}" @if ($currency->id == 4) selected @endif>{{ $currency->code }}</option>
                                 @endforeach
                             </select>
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="reference_id" placeholder="Reference ID" name="reference_id">
+                                <label for="reference_id">Reference ID</label>
+                            </div>
                             <div class="d-flex">
                                 <input type="radio" class="btn-check" name="mode" id="3option" value="1">
                                 <label class="btn btn-outline-dark m-0" for="3option">Purchase</label>

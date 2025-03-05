@@ -1103,11 +1103,11 @@ class Wholesale extends Component
     // Checkout the cart
     public function checkout()
     {
-        $cart = session()->get('cart', []);
-        $currency = session()->get('currency', 4);
-        $customer_id = session()->get('customer_id', 0);
-        $order_type = session()->get('mode');
-        $reference_id = session()->get('reference_id');
+        $cart = request()->input('cart', []);
+        $reference_id = request()->input('reference_id');
+        $order_type = request()->input('mode');
+        $customer_id = request()->input('customer_id');
+        $currency = request()->input('currency');
 
         if (empty($cart)) {
             return response()->json(['success' => false, 'message' => 'Cart is empty!']);
