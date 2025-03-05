@@ -424,11 +424,12 @@ class Repair extends Component
                 continue;
             }
             if(session('check_testing_days') > 0){
-                $error .= "Test";
                 session()->put('check_testing_days',request('check_testing_days'));
                 $api_requests = Api_request_model::where('stock_id',$stock->id)->where('created_at','>=',now()->subDays(request('check_testing_days')))->get();
+                $operations = Stock_operations_model::where('stock_id',$stock->id)->pluck('api_request_id')->toArray();
                 foreach($api_requests as $api_request){
-                    if(Stock_operations_model::where('api_request_id',$api_request->id)->count() == 0){
+                    // if(Stock_operations_model::where('api_request_id',$api_request->id)->count() == 0){
+                    if(!in_array($api_request->id,$operations)){
                         $api_request->status = null;
                         $api_request->save();
                     }
