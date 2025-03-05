@@ -1658,7 +1658,11 @@ class Order extends Component
                     $data = json_decode($issue->data);
                     // echo $variation." ".$data->imei." ".$data->cost;
                     $gb = array_search($data->storage,$storages);
-                    $clr = array_search($data->color,$colors) ?? null;
+                    if($data->color){
+                        $clr = array_search($data->color,$colors) ?? null;
+                    }else{
+                        $clr = null;
+                    }
                     $var = Variation_model::firstOrNew(['product_id' => $product, 'grade' => 9, 'storage' => $gb, 'color' => $clr]);
                     $var->save();
                     $variation = $var->id;
