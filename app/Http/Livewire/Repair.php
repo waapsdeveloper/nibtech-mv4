@@ -441,7 +441,7 @@ class Repair extends Component
 
             })->where('stock_id',$stock->id)->where('status',1)->orderBy('id','desc')->first();
             if($process_stock == null){
-                $error .= "IMEI ".$imei." not found in any list<br>";
+                $error .= "IMEI ".$imei." not found in any list | ";
                 continue;
             }
             // echo $process_stock->process_id;
