@@ -598,7 +598,7 @@
                                         <tr>
                                             <td>{{ $i }}</td>
                                             <td>{{ $products[$variation->product_id]}} {{$storages[$variation->storage] ?? null}} {{$colors[$variation->color] ?? null}} {{$grades[$variation->grade] ?? null }} {{$grades[$variation->sub_grade] ?? '' }}</td>
-                                            <td>{{ $stock->imei.$stock->serial_number }}</td>
+                                            <td>{{ ($stock->imei ?? null).($stock->serial_number ?? null) }}</td>
                                             <td>{{ $customer->first_name ?? null }}</td>
                                             @if (session('user')->hasPermission('view_price'))
                                             <td>€{{ amount_formatter($item->price,2) }}</td>
