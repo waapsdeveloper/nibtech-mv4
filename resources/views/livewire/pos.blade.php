@@ -604,6 +604,15 @@ function addToCart() {
             // alert(data.message);
             updateCartDisplay(data.cart);
             $('#product_detail_modal').modal('hide');
+            // Clear Input Fields
+            document.getElementById('price').value = '0.00';
+            document.getElementById('quantity').value = '1';
+            // unchecked radio buttons
+            document.querySelector('input[name="storage"]:checked').checked = false;
+            document.querySelector('input[name="color"]:checked').checked = false;
+            document.querySelector('input[name="grade"]:checked').checked = false;
+
+
             // Update the cart display if necessary
         }
     });
