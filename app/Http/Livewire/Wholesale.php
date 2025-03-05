@@ -1104,6 +1104,10 @@ class Wholesale extends Component
     public function checkout()
     {
         $cart = session()->get('cart', []);
+        $currency = session()->get('currency', 4);
+        $customer_id = session()->get('customer_id', 0);
+        $order_type = session()->get('mode');
+        $reference_id = session()->get('reference_id');
 
         if (empty($cart)) {
             return response()->json(['success' => false, 'message' => 'Cart is empty!']);
@@ -1111,6 +1115,31 @@ class Wholesale extends Component
 
         // Process checkout logic here (e.g., create an order)
 
+        // Create a new order
+        $order = Order_model::firstOrNew(['reference_id' => $reference_id, 'order_type_id' => $order_type]);
+        $order->customer_id = $customer_id;
+        $order->status = 1;
+        $order->currency = $currency;
+        $order->processed_by = session('user_id');
+        $order->save();
+
+        $item_ids = [];
+        // Add items to the order
+        foreach ($cart as $item) {
+            $variation = Variation_model::firstOrNew(['product_id' => $item['product_id'], 'storage' => $item['storage'], 'color' => $item['color'], 'grade' => $item['grade']]);
+            $variation->save();
+
+            $order_item = Order_item_model::firstOrNew(['order_id' => $order->id, 'variation_id' => $variation->id]);
+            $order_item->quantity = $item['quantity'];
+            $order_item->price = $item['price'] * $item['quantity'];
+            $order_item->discount = $item['discount'] ?? 0;
+            $order_item->status = 1;
+            $order_item->save();
+
+            $item_ids[] = $order_item->id;
+        }
+
+        // Order_item_model::where('order_id', $order->id)->whereNotIn('id', $item_ids)->delete();
 
 
         // Clear the cart after checkout
