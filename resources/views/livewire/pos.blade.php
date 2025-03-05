@@ -607,10 +607,13 @@ function addToCart() {
             // Clear Input Fields
             document.getElementById('price').value = '0.00';
             document.getElementById('quantity').value = '1';
-            // unchecked radio buttons
+            // Recheck default storage, color, and grade
             document.querySelector('input[name="storage"]:checked').checked = false;
+            document.querySelector('input[name="storage"]').checked = true;
             document.querySelector('input[name="color"]:checked').checked = false;
+            document.querySelector('input[name="color"]').checked = true;
             document.querySelector('input[name="grade"]:checked').checked = false;
+            document.querySelector('input[name="grade"]').checked = true;
 
 
             // Update the cart display if necessary
