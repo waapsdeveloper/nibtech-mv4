@@ -405,6 +405,9 @@ class Repair extends Component
             $repairer_id = session('repairer_id');
         }
 
+        if(request('check_testing_days') > 0){
+            session()->put('check_testing_days',request('check_testing_days'));
+        }
         $error = "";
         if(session('process_stock_ids') == null){
             $process_stock_ids = [];
@@ -460,9 +463,6 @@ class Repair extends Component
     }
     public function receive_repair_item($process_id, $imei = null, $back = null){
 
-        if(request('check_testing_days') > 0){
-            session()->put('check_testing_days',request('check_testing_days'));
-        }
         if($imei == null && request('imei')){
             $imei = request('imei');
         }
