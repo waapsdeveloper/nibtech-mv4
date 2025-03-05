@@ -1143,7 +1143,7 @@ class Wholesale extends Component
 
 
         // Clear the cart after checkout
-        session()->forget('cart');
+        // session()->forget('cart');
 
         return response()->json(['success' => true, 'message' => 'Checkout successful!', 'cart' => $cart]);
     }
