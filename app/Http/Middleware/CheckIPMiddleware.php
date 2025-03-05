@@ -33,8 +33,10 @@ class CheckIPMiddleware
         $ip_address = Ip_address_model::where('ip',$ip)->where('status',1)->first();
         if(!$user->hasPermission('add_ip')){
             // dd($ip_address);
-            if($ip_address == null){
+            if($ip_address == null || $ip_address->updated_at->diffInDays(now()) > 5){
                 // dd($ip);
+                $ip_address->status = 2;
+                $ip_address->save();
                 Log::info('New IP detected  for user '.$user->first_name.' with IP '.$ip);
                 abort(403, 'Quote of the day: '.Inspiring::just_quote());
             }

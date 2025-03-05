@@ -631,9 +631,8 @@ class Index extends Component
     }
     public function add_ip(){
         $ip = request()->ip();
-        $ip_address = new Ip_address_model();
+        $ip_address = Ip_address_model::firstOrNew(['ip' => $ip]);
         $ip_address->admin_id = session('user_id');
-        $ip_address->ip = $ip;
         $ip_address->status = 1;
         $ip_address->save();
         return redirect()->back();
