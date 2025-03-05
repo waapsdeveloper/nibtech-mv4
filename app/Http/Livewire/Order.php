@@ -1658,7 +1658,7 @@ class Order extends Component
                     $data = json_decode($issue->data);
                     // echo $variation." ".$data->imei." ".$data->cost;
                     $gb = array_search($data->storage,$storages);
-                    if($data->color){
+                    if(isset($data->color)){
                         $clr = array_search($data->color,$colors) ?? null;
                     }else{
                         $clr = null;
