@@ -300,6 +300,7 @@
                             text: 'Walk-in Customer' // the text of the option
                         },
                         allowClear: true,
+                        tags: true
 
                     }
                 });
