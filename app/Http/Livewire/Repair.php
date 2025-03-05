@@ -424,7 +424,6 @@ class Repair extends Component
                 continue;
             }
             if(session('check_testing_days') > 0){
-                $error .= "Test";
                 session()->put('check_testing_days',request('check_testing_days'));
                 $api_requests = Api_request_model::where('stock_id',$stock->id)->where('created_at','>=',now()->subDays(request('check_testing_days')))->get();
                 foreach($api_requests as $api_request){
