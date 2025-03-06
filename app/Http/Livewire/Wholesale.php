@@ -939,11 +939,11 @@ class Wholesale extends Component
                         'price' => $item->price,
                         'quantity' => $item->quantity,
                         'storage' => $variation->storage,
-                        'storage_name' => $variation->storage_id->name,
+                        'storage_name' => $variation->storage_id->name ?? null,
                         'color' => $variation->color,
-                        'color_name' => $variation->color_id->name,
+                        'color_name' => $variation->color_id->name ?? null,
                         'grade' => $variation->grade,
-                        'grade_name' => $variation->grade_id->name
+                        'grade_name' => $variation->grade_id->name ?? null
                     ];
                 }
                 session()->put('cart', $data['cart']);
