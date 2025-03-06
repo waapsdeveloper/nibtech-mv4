@@ -122,7 +122,7 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <form method="POST" name="checkout" action="{{ url('pos') }}/checkout">
+                <form method="POST" name="checkout" id="checkout_form" action="{{ url('pos') }}/checkout">
                 <div class="card mb-1">
                     <div class="card-header">
                         <div class="d-flex justify-content-between">
@@ -318,7 +318,8 @@
                 updateCartDisplay({!! json_encode($cart) !!});
 
 
-                $('#checkout').click(function() {
+                $('#checkout_form').submit(function (e) {
+                    e.preventDefault();
                     checkoutCart();
                 });
 
