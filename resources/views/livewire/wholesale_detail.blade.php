@@ -598,7 +598,16 @@
                                         <tr>
                                             <td>{{ $i }}</td>
                                             <td>{{ $products[$variation->product_id]}} {{$storages[$variation->storage] ?? null}} {{$colors[$variation->color] ?? null}} {{$grades[$variation->grade] ?? null }} {{$grades[$variation->sub_grade] ?? '' }}</td>
-                                            <td>{{ ($stock->imei ?? null).($stock->serial_number ?? null) }}</td>
+                                            @if ($sale_item->stock == null)
+                                                <td>{{ $item->quantity }} Items</td>
+                                            @else
+                                                @if ($stock->imei != null)
+                                                    <td>{{ $stock->imei }}</td>
+                                                @else
+                                                    <td>{{ $stock->serial_number }}</td>
+                                                @endif
+
+                                            @endif
                                             <td>{{ $customer->first_name ?? null }}</td>
                                             @if (session('user')->hasPermission('view_price'))
                                             <td>€{{ amount_formatter($item->price,2) }}</td>
@@ -662,6 +671,7 @@
                                         $i = 0;
                                         $total = 0;
                                         $total_cost = 0;
+                                        $quantity = 0;
                                     @endphp
                                     <form method="POST" action="{{url('wholesale')}}/update_prices" id="update_prices_{{ $key."_".$key2 }}">
                                         @csrf
@@ -691,6 +701,8 @@
                                             }
                                             $total += $price;
                                             $total_cost += $cost ?? 0;
+                                            $quantity += $sale_item->quantity;
+
                                         @endphp
                                         <tr @if($cost != $price) style="background: LightGreen" @endif>
                                             <td>{{ $i }}</td>
@@ -734,9 +746,9 @@
                             <label for="unit-price" class="">Change Unit Price: </label>
                             <input type="number" name="unit_price" id="unit_price" step="0.01" class="w-50 border-0" placeholder="Input Unit price" form="update_prices_{{ $key."_".$key2 }}">
                         </div>
-                        <div title="Average Cost: {{amount_formatter($total_cost/$i,2)}}">Average: {{amount_formatter($total/$i,2) }}</div>
+                        <div title="Average Cost: {{amount_formatter($total_cost/$quantity,2)}}">Average: {{amount_formatter($total/$quantity,2) }}</div>
                         @endif
-                        <div>Total: {{$i }}</div>
+                        <div>Total: {{$quantity }}</div>
                     </div>
                     </div>
                 </div>
