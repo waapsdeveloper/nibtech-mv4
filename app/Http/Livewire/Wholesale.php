@@ -948,6 +948,7 @@ class Wholesale extends Component
                 }
                 session()->put('cart', $data['cart']);
             }
+            $data['order'] = $order;
         }
 
         return view('livewire.pos')->with($data);
