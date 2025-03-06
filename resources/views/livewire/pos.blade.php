@@ -122,6 +122,7 @@
                 </div>
             </div>
             <div class="col-md-4">
+                <form method="POST" name="checkout" action="{{ url('pos') }}/checkout">
                 <div class="card mb-1">
                     <div class="card-header">
                         <div class="d-flex justify-content-between">
@@ -186,6 +187,7 @@
                         </div>
                     </div>
                 </div>
+                </form>
             </div>
         </div>
         <div class="modal fade" id="product_detail_modal">
@@ -279,7 +281,7 @@
                         cart: {!! json_encode($cart) !!},
                         currency: $("#currency").val(),
                         mode: document.querySelector('input[name="mode"]:checked'),
-                        customer_id: $('#customer_id').select2('data'),
+                        customer_id: $('#customer_id').val(),
                         reference_id: document.getElementById('reference_id').value
                     })
                 })
