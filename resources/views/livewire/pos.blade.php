@@ -122,34 +122,36 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <form method="POST" name="checkout" id="checkout_form" action="{{ url('pos') }}/checkout">
                 <div class="card mb-1">
                     <div class="card-header">
-                        <div class="d-flex justify-content-between">
+                        <form method="POST" id="checkout_form" action="{{ url('pos') }}/checkout">
+                            @csrf
+                            <div class="d-flex justify-content-between">
 
-                            <select class="form-select w-auto" id="currency" name="currency" aria-label="Default select example">
-                                @foreach ($currencies as $currency)
-                                    <option value="{{ $currency->id }}" data-sign="{{ $currency->sign }}" @if ($currency->id == 4) selected @endif>{{ $currency->code }}</option>
-                                @endforeach
-                            </select>
-                            <div class="form-floating">
-                                <input type="text" class="form-control" id="reference_id" placeholder="Reference ID" name="reference_id">
-                                <label for="reference_id">Reference ID</label>
+                                <select class="form-select w-auto" id="currency" name="currency" aria-label="Default select example">
+                                    @foreach ($currencies as $currency)
+                                        <option value="{{ $currency->id }}" data-sign="{{ $currency->sign }}" @if ($currency->id == 4) selected @endif>{{ $currency->code }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="reference_id" placeholder="Reference ID" name="reference_id" value="">
+                                    <label for="reference_id">Reference ID</label>
+                                </div>
+                                <div class="d-flex">
+                                    <input type="radio" class="btn-check" name="mode" id="3option" value="1">
+                                    <label class="btn btn-outline-dark m-0" for="3option">Purchase</label>
+                                    <input type="radio" class="btn-check" name="mode" id="2option" checked value="5">
+                                    <label class="btn btn-outline-dark m-0" for="2option">Sale</label>
+                                </div>
                             </div>
-                            <div class="d-flex">
-                                <input type="radio" class="btn-check" name="mode" id="3option" value="1">
-                                <label class="btn btn-outline-dark m-0" for="3option">Purchase</label>
-                                <input type="radio" class="btn-check" name="mode" id="2option" checked value="5">
-                                <label class="btn btn-outline-dark m-0" for="2option">Sale</label>
-                            </div>
-                        </div>
-                        {{-- <div class="form-floating">
-                            <input type="text" class="form-control" id="customer_name" placeholder="Customer Name">
-                            <label for="customer_name">Customer Name</label>
-                        </div> --}}
+                            {{-- <div class="form-floating">
+                                <input type="text" class="form-control" id="customer_name" placeholder="Customer Name">
+                                <label for="customer_name">Customer Name</label>
+                            </div> --}}
                             <select class="form-select js-data-example-ajax form-control" name="customer_id" id="customer_id" style="width: 100%">
                                 <option value=""></option>
                             </select>
+                        </form>
                     </div>
                     <div class="card-body">
                         <h5>Cart</h5>
@@ -182,12 +184,11 @@
                             </div>
                             <div class="col-md-6">
                                 <button class="btn btn-lg btn-light w-100" onclick="holdCart()">Hold</button>
-                                <button class="btn btn-lg btn-secondary w-100" id="checkout" type="submit">Checkout</button>
+                                <button class="btn btn-lg btn-secondary w-100" id="checkout" type="submit" form="checkout_form">Checkout</button>
                             </div>
                         </div>
                     </div>
                 </div>
-                </form>
             </div>
         </div>
         <div class="modal fade" id="product_detail_modal">
