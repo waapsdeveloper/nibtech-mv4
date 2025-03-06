@@ -277,7 +277,7 @@
                     },
                     body: JSON.stringify({
                         cart: {!! json_encode($cart) !!},
-                        currency: document.querySelector('input[name="currency]:selected').value,
+                        currency: document.querySelector('input[name="currency"]:selected').value,
                         mode: document.querySelector('input[name="mode"]:checked').value,
                         customer_id: $('#customer_id').select2('data'),
                         reference_id: document.getElementById('reference_id').value
