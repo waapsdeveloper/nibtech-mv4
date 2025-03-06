@@ -259,12 +259,19 @@ class Wholesale extends Component
     }
 
     public function update_prices(){
-        print_r(request('item_ids'));
-        echo request('unit_price');
+        // print_r(request('item_ids'));
+        // echo request('unit_price');
+
 
         if(request('unit_price') > 0){
             foreach(request('item_ids') as $item_id){
-                Order_item_model::find($item_id)->update(['price'=>request('unit_price')]);
+                $item = Order_item_model::find($item_id);
+                if($item->stock == null && $item->quantity > 1){
+                    $item->price = request('unit_price') * $item->quantity;
+                }else{
+                    $item->price = request('unit_price');
+                }
+                $item->save();
             }
         }
 
