@@ -598,7 +598,7 @@
                                         <tr>
                                             <td>{{ $i }}</td>
                                             <td>{{ $products[$variation->product_id]}} {{$storages[$variation->storage] ?? null}} {{$colors[$variation->color] ?? null}} {{$grades[$variation->grade] ?? null }} {{$grades[$variation->sub_grade] ?? '' }}</td>
-                                            @if ($sale_item->stock == null)
+                                            @if ($item->stock == null)
                                                 <td>{{ $item->quantity }} Items</td>
                                             @else
                                                 @if ($stock->imei != null)
