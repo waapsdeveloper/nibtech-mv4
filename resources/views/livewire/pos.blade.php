@@ -289,12 +289,9 @@
                 .then(data => {
                     if (data.success) {
                         alert(data.message);
-                        console.log(currency);
-                        console.log(mode);
-                        console.log(customer_id);
                         console.log(data);
 
-                        // window.location.reload();
+                        window.location.reload();
                     }
                 });
             };
