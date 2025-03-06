@@ -1163,7 +1163,7 @@ class Wholesale extends Component
             $item_ids[] = $order_item->id;
         }
 
-        // Order_item_model::where('order_id', $order->id)->whereNotIn('id', $item_ids)->delete();
+        Order_item_model::where('order_id', $order->id)->whereNotIn('id', $item_ids)->delete();
 
 
         // Clear the cart after checkout
