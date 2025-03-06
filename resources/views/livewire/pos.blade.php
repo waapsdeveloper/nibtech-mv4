@@ -325,10 +325,6 @@
                     customer_id = $('#customer_id').val();
                     reference_id = document.getElementById('reference_id').value;
 
-                    console.log(currency);
-                    console.log(mode);
-                    console.log(customer_id);
-                    console.log(reference_id);
                     checkoutCart();
                 });
 
