@@ -1127,7 +1127,7 @@ class Wholesale extends Component
     // Checkout the cart
     public function checkout()
     {
-        return response()->json(['success' => true, 'message' => 'Checkout successful!', 'data' => request()->all()]);
+        // return response()->json(['success' => true, 'message' => 'Checkout successful!', 'data' => request()->all()]);
         $cart = request()->input('cart', []);
         $reference_id = request()->input('reference_id');
         $order_type = request()->input('mode');
