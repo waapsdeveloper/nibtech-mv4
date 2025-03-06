@@ -1162,6 +1162,7 @@ class Wholesale extends Component
             $order_item->status = 1;
             $order_item->save();
 
+
             $item_ids[] = $order_item->id;
         }
 
@@ -1171,6 +1172,6 @@ class Wholesale extends Component
         // Clear the cart after checkout
         // session()->forget('cart');
 
-        return response()->json(['success' => true, 'message' => 'Checkout successful!', 'cart' => $cart]);
+        return response()->json(['success' => true, 'message' => 'Checkout successful!', 'cart' => $cart, 'order' => $order, ]);
     }
 }
