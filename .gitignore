@@ -14,6 +14,12 @@ npm-debug.log
 yarn-error.log
 /.idea
 /.vscode
+<<<<<<< HEAD
 composer.lock
 composer.json
 /config
+user.name
+
+
+
+>>>>>>> 010b91e28bd8c19c5153a6e90700640ef48d4d0c
