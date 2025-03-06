@@ -925,6 +925,30 @@ class Wholesale extends Component
 
         $data['cart'] = session()->get('cart', []);
 
+        if(request('order_id') != null){
+            $order = Order_model::find(request('order_id'));
+            if(in_array($order->order_type_id,[1,5])){
+                foreach($order->order_items as $item){
+                    $variation = $item->variation;
+
+                    $cartKey = $variation->product_id . '-' . $variation->storage . '-' . $variation->color . '-' . $variation->grade;
+
+                    $data['cart'][$cartKey] = [
+                        'product_name' => $variation->product->model,
+                        'product_id' => $variation->product_id,
+                        'price' => $item->price,
+                        'quantity' => $item->quantity,
+                        'storage' => $variation->storage,
+                        'storage_name' => $variation->storage_id->name,
+                        'color' => $variation->color,
+                        'color_name' => $variation->color_id->name,
+                        'grade' => $variation->grade,
+                        'grade_name' => $variation->grade_id->name
+                    ];
+                }
+                session()->put('cart', $data['cart']);
+            }
+        }
 
         return view('livewire.pos')->with($data);
     }
