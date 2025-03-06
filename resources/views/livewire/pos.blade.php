@@ -182,7 +182,7 @@
                             </div>
                             <div class="col-md-6">
                                 <button class="btn btn-lg btn-light w-100" onclick="holdCart()">Hold</button>
-                                <button class="btn btn-lg btn-secondary w-100" id="checkout">Checkout</button>
+                                <button class="btn btn-lg btn-secondary w-100" id="checkout" type="submit">Checkout</button>
                             </div>
                         </div>
                     </div>
