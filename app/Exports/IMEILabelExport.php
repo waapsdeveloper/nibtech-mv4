@@ -42,6 +42,12 @@ class IMEILabelExport
                                     $reference = $last_sale_order->replacement_of->reference_id;
                                     if($reference == 999){
                                         $reference = $last_sale_order->replacement_of->reference_id;
+                                        if($reference == 999){
+                                            $reference = $last_sale_order->replacement_of->reference_id;
+                                            if($reference == 999){
+                                                $reference = $last_sale_order->replacement_of->reference_id;
+                                            }
+                                        }
                                     }
                                 }
                             }
