@@ -689,7 +689,7 @@
                                                 $ex_price = $price * $order->exchange_rate;
                                             }
                                             $total += $price;
-                                            $total_cost += $purchase_item->price;
+                                            $total_cost += $purchase_item->price ?? 0;
                                         @endphp
                                         <tr @if($purchase_item->price != $price) style="background: LightGreen" @endif>
                                             <td>{{ $i }}</td>
