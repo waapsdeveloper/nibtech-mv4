@@ -684,20 +684,21 @@
                                             // $sale_item = $item->sale_item($order_id);
                                             $item = $sale_item->stock ?? null;
                                             $purchase_item = $item->purchase_item ?? null;
+                                            $cost = $cost ?? 0;
                                             $price = $sale_item->price;
                                             if($order->exchange_rate != null){
                                                 $ex_price = $price * $order->exchange_rate;
                                             }
                                             $total += $price;
-                                            $total_cost += $purchase_item->price ?? 0;
+                                            $total_cost += $cost ?? 0;
                                         @endphp
-                                        <tr @if($purchase_item->price != $price) style="background: LightGreen" @endif>
+                                        <tr @if($cost != $price) style="background: LightGreen" @endif>
                                             <td>{{ $i }}</td>
                                             <td>{{ $colors[$variation->color] ?? null }} - {{ $grades[$variation->grade] ?? null }} {{ $grades[$variation->sub_grade] ?? null }}</td>
                                             {{-- <td>{{ $item->order->customer->first_name }}</td> --}}
                                             <td>{{ ($item->imei ?? null).($item->serial_number ?? null) }}</td>
                                             @if (session('user')->hasPermission('view_price'))
-                                            <td @if (session('user')->hasPermission('view_cost')) title="Cost Price: €{{ $purchase_item->price ?? null }}" @endif>
+                                            <td @if (session('user')->hasPermission('view_cost')) title="Cost Price: €{{ $cost ?? null }}" @endif>
                                                 {{ $item->order->customer->first_name }} €{{ amount_formatter($price,2) }}
                                             </td>
                                             @endif
