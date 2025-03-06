@@ -696,7 +696,7 @@
                                             <td>{{ $i }}</td>
                                             <td>{{ $colors[$variation->color] ?? null }} - {{ $grades[$variation->grade] ?? null }} {{ $grades[$variation->sub_grade] ?? null }}</td>
                                             {{-- <td>{{ $item->order->customer->first_name }}</td> --}}
-                                            @if ($item == null)
+                                            @if ($sale_item->stock == null)
                                                 <td>{{ $sale_item->quantity }} Items</td>
                                             @else
                                                 @if ($item->imei != null)
