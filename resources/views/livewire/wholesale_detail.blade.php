@@ -696,7 +696,16 @@
                                             <td>{{ $i }}</td>
                                             <td>{{ $colors[$variation->color] ?? null }} - {{ $grades[$variation->grade] ?? null }} {{ $grades[$variation->sub_grade] ?? null }}</td>
                                             {{-- <td>{{ $item->order->customer->first_name }}</td> --}}
-                                            <td>{{ ($item->imei ?? null).($item->serial_number ?? null) }}</td>
+                                            @if ($item == null)
+                                                <td>{{ $sale_item->quantity }} Items</td>
+                                            @else
+                                                @if ($item->imei != null)
+                                                    <td>{{ $item->imei }}</td>
+                                                @else
+                                                    <td>{{ $item->serial_number }}</td>
+                                                @endif
+
+                                            @endif
                                             @if (session('user')->hasPermission('view_price'))
                                             <td @if (session('user')->hasPermission('view_cost')) title="Cost Price: €{{ $cost ?? null }}" @endif>
                                                 {{ $item->order->customer->first_name ?? null }} €{{ amount_formatter($price,2) }}
