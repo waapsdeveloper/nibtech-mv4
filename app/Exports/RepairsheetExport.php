@@ -83,7 +83,8 @@ class RepairsheetExport implements FromCollection, WithHeadings
                 'order_items.price as price',
                 DB::raw('order_items.price * process.exchange_rate as ex_price'),
             )
-            ->where('process.customer_id', request('id'))
+            // ->where('process.customer_id', request('id'))
+            ->where('process.customer_id', 8571)
             ->where('p_stock.status', 1)
             ->whereNull('process.deleted_at')
             ->whereNull('process_stock.deleted_at')
