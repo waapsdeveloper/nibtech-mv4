@@ -694,7 +694,7 @@
                                             // $sale_item = $item->sale_item($order_id);
                                             $item = $sale_item->stock ?? null;
                                             $purchase_item = $item->purchase_item ?? null;
-                                            $cost = $cost ?? 0;
+                                            $cost = $purchase_item->price ?? 0;
                                             $price = $sale_item->price;
                                             if($order->exchange_rate != null){
                                                 $ex_price = $price * $order->exchange_rate;
