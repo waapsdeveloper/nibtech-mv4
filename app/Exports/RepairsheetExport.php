@@ -60,7 +60,8 @@ class RepairsheetExport implements FromCollection, WithHeadings
                 'grade.name as grade_name',
                 'orders.reference_id as po',
                 'customer.company as customer',
-                'pr.reference_id as process_id',
+                // 'pr.reference_id as process_id',
+                'process.reference_id as process_id',
                 // 'stock.id as stock_id',
                 'stock.imei as imei',
                 'stock.serial_number as serial_number',
@@ -82,7 +83,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
                 'order_items.price as price',
                 DB::raw('order_items.price * process.exchange_rate as ex_price'),
             )
-            ->where('process.id', request('id'))
+            ->where('process.customer_id', request('id'))
             // ->where('p_stock.status', 1)
             ->whereNull('process.deleted_at')
             ->whereNull('process_stock.deleted_at')
