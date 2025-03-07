@@ -958,7 +958,7 @@ class Repair extends Component
         // Generate PDF for the invoice content
         $data = [
             'process' => $process,
-            'customer' => $process->customer,
+            // 'customer' => $process->customer,
             'process_stocks' =>$process_stocks,
             'invoice' => $invoice
         ];
@@ -986,7 +986,9 @@ class Repair extends Component
             $html = view('export.repair_packlist', $data)->render();
         }elseif(request('packlist') == 2){
 
-            return Excel::download(new RepairsheetExport, 'repairs_'.$process->customer->first_name.'_'.$process->reference_id.'_'.$process->description.'_'.$process->process_stocks->count().'pcs.xlsx');
+            return Excel::download(new RepairsheetExport, 'repairs_'.
+            // $process->customer->first_name.'_'.$process->reference_id.'_'.$process->description.'_'.$process->process_stocks->count().
+            'pcs.xlsx');
         }else{
             $html = view('export.repair_invoice', $data)->render();
         }
