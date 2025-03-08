@@ -910,28 +910,28 @@ class Index extends Component
     public function test(){
 
         // Merge Colors all
-        $product_color_merge = Product_color_merge_model::all();
+        // $product_color_merge = Product_color_merge_model::all();
 
-        $product_ids = $product_color_merge->pluck('product_id')->toArray();
-        $color_ids = $product_color_merge->pluck('color_from')->toArray();
+        // $product_ids = $product_color_merge->pluck('product_id')->toArray();
+        // $color_ids = $product_color_merge->pluck('color_from')->toArray();
 
-        $variations = Variation_model::whereIn('product_id', $product_ids)->whereIn('color', $color_ids)->get();
-        foreach($variations as $variation){
-            $pcm = $product_color_merge->where('product_id',$variation->product_id)->where('color_from',$variation->color)->first();
-            if($pcm != null){
-                $variation->color = $pcm->color_to;
-                $variation->save();
-                echo $variation->id . ' - ' . $variation->product_id . ' - ' . $variation->color . '<br>';
-            }
-        }
-
-        // $variations = Variation_model::where('listed_stock','>',0)->whereNotNull('reference_id')->pluck('reference_id');
-
-
-        // $bm = new BackMarketAPIController();
+        // $variations = Variation_model::whereIn('product_id', $product_ids)->whereIn('color', $color_ids)->get();
         // foreach($variations as $variation){
-        //     $response = $bm->updateOneListing($variation,json_encode(['quantity'=>0]));
+        //     $pcm = $product_color_merge->where('product_id',$variation->product_id)->where('color_from',$variation->color)->first();
+        //     if($pcm != null){
+        //         $variation->color = $pcm->color_to;
+        //         $variation->save();
+        //         echo $variation->id . ' - ' . $variation->product_id . ' - ' . $variation->color . '<br>';
+        //     }
         // }
+
+        $variations = Variation_model::where('listed_stock','>',0)->whereNotNull('reference_id')->pluck('reference_id');
+
+
+        $bm = new BackMarketAPIController();
+        foreach($variations as $variation){
+            $response = $bm->updateOneListing($variation,json_encode(['quantity'=>0]));
+        }
         // ini_set('max_execution_time', 1200);
         // ini_set('memory_limit', '2048M');
         // ini_set('group_concat_max_len', 4294967295);
