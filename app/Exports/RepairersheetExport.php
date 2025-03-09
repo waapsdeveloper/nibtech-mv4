@@ -89,7 +89,7 @@ class RepairersheetExport implements FromCollection, WithHeadings
     public function headings(): array
     {
         return [
-            'Model',
+            'Name',
             'Color',
             'Grade',
             // 'PO',

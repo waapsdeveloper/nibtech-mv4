@@ -53,8 +53,9 @@ class PacksheetExport implements FromCollection, WithHeadings
 
 
         ->select(
-            'products.model',
-            'storage.name as storage',
+            DB::raw('CONCAT(products.model, " ", storage.name) as model_storage'),
+            // 'products.model',
+            // 'storage.name as storage',
             'color.name as color',
             'grade.name as grade_name',
             'sub.name as sub_grade',
@@ -112,8 +113,8 @@ class PacksheetExport implements FromCollection, WithHeadings
     public function headings(): array
     {
         return [
-            'Model',
-            'Storage',
+            'Name',
+            // 'Storage',
             'Color',
             'Grade',
             'Sub Grade',
