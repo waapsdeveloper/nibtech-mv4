@@ -562,6 +562,7 @@
                 // Check if there's data
                 if (variations.data.length > 0) {
                     variations.data.forEach(function(variation) {
+
                         // load("{{ url('listing/get_competitors')}}/${variation.id}");
                         // let withBuybox = '';
                         let withoutBuybox = '';
@@ -571,6 +572,27 @@
                         let listedStock = fetchUpdatedQuantity(variation.id);
                         let m_min_price = Math.min(...variation.listings.filter(listing => listing.currency_id === 4).map(listing => listing.min_price));
                         let m_price = Math.min(...variation.listings.filter(listing => listing.currency_id === 4).map(listing => listing.price));
+
+                        switch (variation.state) {
+                            case 0:
+                                state = 'Missing price or comment';
+                                break;
+                            case 1:
+                                state = 'Pending validation';
+                                break;
+                            case 2:
+                                state = 'Online';
+                                break;
+                            case 3:
+                                state = 'Offline';
+                                break;
+                            case 4:
+                                state = 'Deactivated';
+                                break;
+                            default:
+                                state = 'Unknown';
+                        }
+
                         getStocks(variation.id);
                         // $('#open_all_variations').on('click', function() {
                         //     getVariationDetails(variation.id, eurToGbp, m_min_price, m_price, 1)
@@ -742,7 +764,9 @@
                                         </form>
                                     </div>
                                     <div class="p-2">
-
+                                        <h6 class="badge bg-light text-dark">
+                                            ${state}
+                                        </h6>
                                     </div>
                                 </div>
                                 <div class="card-body p-2 collapse multi_collapse" id="details_${variation.id}">
