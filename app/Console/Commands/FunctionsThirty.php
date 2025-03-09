@@ -56,12 +56,12 @@ class FunctionsThirty extends Command
                     $variation->name = $list->title;
                     $variation->reference_uuid = $list->id;
                     $variation->grade = (int)$list->state + 1;
-                    $variation->state = $list->publication_state;
                     $variation->status = 1;
                     // ... other fields
-                    $variation->save();
                     echo $list->listing_id." ";
                 }
+                    $variation->state = $list->publication_state;
+                    $variation->save();
                 $currency = Currency_model::where('code',$list->currency)->first();
                 // echo $list->currency;
                 if($variation == null){
