@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Exports\RepairersheetExport;
 use App\Models\Account_transaction_model;
 use App\Models\Country_model;
 use App\Models\Currency_model;
@@ -13,6 +14,7 @@ use App\Models\Order_model;
 use App\Models\Process_model;
 use App\Models\Process_stock_model;
 use App\Models\Product_storage_sort_model;
+use Maatwebsite\Excel\Facades\Excel;
 
 class Customer extends Component
 {
@@ -50,12 +52,11 @@ class Customer extends Component
             return $q->where('email', 'LIKE', '%' . request('email') . '%');
         })
         ->paginate(50)
-        ->onEachSide(5)
         ->appends(request()->except('page'));
 
         // Redirect if only one customer is found and order_id is present
-        if ($this->customers->count() == 1 && request('order_id') != '') {
-            return redirect()->to(url('edit-customer') . '/' . $this->customers->first()->id);
+        if ($this->customers->total() == 1 && request('order_id') != '') {
+            return redirect()->to(url('edit-customer') . '/' . $this->customers->items()[0]->id);
         }
     }
     public function render()
@@ -347,4 +348,15 @@ class Customer extends Component
         session()->put('success',"Customer has been updated successfully");
         return redirect()->back();
     }
+
+
+    public function export_pending_repairs($customer_id)
+    {
+        $customer = Customer_model::find($customer_id);
+
+        return Excel::download(new RepairersheetExport, 'pending_repairs_'.$customer->company.'.xlsx');
+    }
+
+
+
 }
