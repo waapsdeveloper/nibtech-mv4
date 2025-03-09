@@ -64,6 +64,41 @@ class Customer extends Component
 
         $data['title_page'] = "Customers";
         session()->put('page_title', $data['title_page']);
+        $this->customers = Customer_model::with('country_id')->withCount('orders')
+        ->when(request('type') && request('type') != 0, function($q){
+            if(request('type') == 1){
+                return $q->where('is_vendor',null);
+            }else{
+                return $q->whereNotNull('is_vendor');
+            }
+        })
+        ->when(request('order_id') != '', function ($q) {
+            return $q->whereHas('orders', function ($q) {
+                $q->where('reference_id', 'LIKE', '%' . request('order_id') . '%');
+            });
+        })
+        ->when(request('company') != '', function ($q) {
+            return $q->where('company', 'LIKE', '%' . request('company') . '%');
+        })
+        ->when(request('first_name') != '', function ($q) {
+            return $q->where('first_name', 'LIKE', '%' . request('first_name') . '%');
+        })
+        ->when(request('last_name') != '', function ($q) {
+            return $q->where('last_name', 'LIKE', '%' . request('last_name') . '%');
+        })
+        ->when(request('phone') != '', function ($q) {
+            return $q->where('phone', 'LIKE', '%' . request('phone') . '%');
+        })
+        ->when(request('email') != '', function ($q) {
+            return $q->where('email', 'LIKE', '%' . request('email') . '%');
+        })
+        ->paginate(50)
+        ->appends(request()->except('page'));
+
+        // Redirect if only one customer is found and order_id is present
+        if ($this->customers->total() == 1 && request('order_id') != '') {
+            return redirect()->to(url('edit-customer') . '/' . $this->customers->items()[0]->id);
+        }
         $data['customers'] = $this->customers;
         // foreach($data['customers'] as $customer){
         //     if($customer->orders->count() == 0){
