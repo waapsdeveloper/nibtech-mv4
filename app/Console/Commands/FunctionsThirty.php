@@ -66,6 +66,7 @@ class FunctionsThirty extends Command
                 }
                 if($variation->state != $list->publication_state){
                     $variation->state = $list->publication_state;
+                    echo $list->publication_state." ";
                 }
                     $variation->save();
                 $currency = Currency_model::where('code',$list->currency)->first();
