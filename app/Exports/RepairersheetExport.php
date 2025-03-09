@@ -45,8 +45,8 @@ class RepairersheetExport implements FromCollection, WithHeadings
                 'storage.name as storage',
                 'color.name as color',
                 'grade.name as grade_name',
-                'orders.reference_id as po',
-                'customer.company as customer',
+                // 'orders.reference_id as po',
+                // 'customer.company as customer',
                 'process.reference_id as process_id',
                 // 'stock.id as stock_id',
                 'stock.imei as imei',
@@ -64,12 +64,12 @@ class RepairersheetExport implements FromCollection, WithHeadings
                         " | DrPhone", ""),
                     "BCC", "Battery Cycle Count")))
                 )) as issue'),
-                'admin2.first_name as admin_name',
-                'p_stock.status as status',
+                // 'admin2.first_name as admin_name',
+                // 'p_stock.status as status',
                 'process.updated_at as created_at',
                 // 'p_stock.updated_at as updated_at',
-                'order_items.price as price',
-                DB::raw('order_items.price * process.exchange_rate as ex_price'),
+                // 'order_items.price as price',
+                // DB::raw('order_items.price * process.exchange_rate as ex_price'),
             )
             ->where('process.customer_id', request('id'))
             ->where('process.status', 2)
@@ -94,18 +94,18 @@ class RepairersheetExport implements FromCollection, WithHeadings
             'Storage',
             'Color',
             'Grade',
-            'PO',
-            'Customer',
+            // 'PO',
+            // 'Customer',
             'Process ID', // Corrected to generic 'Process ID' instead of trying to get from $repair_batches
             'IMEI',
             'Serial Number',
             'Issue',
-            'Admin',
-            'Status',
+            // 'Admin',
+            // 'Status',
             'Created At',
             // 'Updated At',
-            'Price',
-            'Exchange Price',
+            // 'Price',
+            // 'Exchange Price',
         ];
     }
 }
