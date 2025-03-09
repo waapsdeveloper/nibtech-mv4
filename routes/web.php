@@ -335,6 +335,7 @@ Route::get('get_b2b_customers_json', [Customer::class,'get_b2b_customers_json'])
 
 Route::get('customer/profile/{id}', [Customer::class,'profile'])->name('view_customer_profile');
 Route::post('customer/add_payment/', [Customer::class,'add_payment'])->name('add_customer_payment');
+Route::get('customer/export_pending_repairs/{id}', [Customer::class,'export_pending_repairs'])->name('view_customer_profile');
 
 Route::get('grade', Grade::class)->name('view_grade');
 Route::get('add-grade', [Grade::class,'add_grade'])->name('add_grade');
