@@ -53,12 +53,16 @@ class FunctionsThirty extends Command
                     // $list = $bm->getOneListing($list->listing_id);
                     $variation = Variation_model::firstOrNew(['reference_id' => trim($list->listing_id)]);
                     $variation->sku = trim($list->sku);
-                    $variation->name = $list->title;
-                    $variation->reference_uuid = $list->id;
                     $variation->grade = (int)$list->state + 1;
                     $variation->status = 1;
                     // ... other fields
                     echo $list->listing_id." ";
+                }
+                if($variation->name == null){
+                    $variation->name = $list->title;
+                }
+                if($variation->reference_uuid == null){
+                    $variation->reference_uuid = $list->id;
                 }
                 if($variation->state != $list->publication_state){
                     $variation->state = $list->publication_state;
