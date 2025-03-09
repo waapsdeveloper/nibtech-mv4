@@ -66,7 +66,7 @@ class RepairersheetExport implements FromCollection, WithHeadings
                 )) as issue'),
                 'admin2.first_name as admin_name',
                 'p_stock.status as status',
-                'p_stock.created_at as created_at',
+                'process.updated_at as created_at',
                 // 'p_stock.updated_at as updated_at',
                 'order_items.price as price',
                 DB::raw('order_items.price * process.exchange_rate as ex_price'),
