@@ -55,9 +55,9 @@ class Customer extends Component
         ->appends(request()->except('page'));
 
         // Redirect if only one customer is found and order_id is present
-        if ($this->customers->total() == 1 && request('order_id') != '') {
-            return redirect()->to(url('edit-customer') . '/' . $this->customers->items()[0]->id);
-        }
+        // if ($this->customers->total() == 1 && request('order_id') != '') {
+        //     return redirect()->to(url('edit-customer') . '/' . $this->customers->items()[0]->id);
+        // }
     }
     public function render()
     {
