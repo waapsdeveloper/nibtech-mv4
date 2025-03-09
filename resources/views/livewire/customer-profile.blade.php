@@ -99,6 +99,7 @@
             <div class="card" id="print_inv">
                 <div class="card-header pb-0 d-flex justify-content-between">
                     <h4 class="card-title">Repair Sent Stock Summery</h4>
+                    <a href="{{url('customer/export_pending_repairs').'/'.$customer->id}}" class="btn btn-primary">Export</a>
                 </div>
                 <div class="card-body"><div class="table-responsive">
                     <form method="GET" action="" target="_blank" id="search_summery">
