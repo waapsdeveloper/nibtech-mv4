@@ -171,7 +171,7 @@
                                 </tbody>
                             </table>
                             <br>
-                        {{$customers->onEachSide(1)->links()}} {{ __('locale.From') }} {{$customers->firstItem()}} {{ __('locale.To') }} {{$customers->lastItem()}} {{ __('locale.Out Of') }} {{$customers->total()}}
+                        {{$customers->links()}} {{ __('locale.From') }} {{$customers->firstItem()}} {{ __('locale.To') }} {{$customers->lastItem()}} {{ __('locale.Out Of') }} {{$customers->total()}}
                         </div>
                     </div>
                 </div>
