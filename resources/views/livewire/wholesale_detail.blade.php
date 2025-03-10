@@ -27,7 +27,27 @@
                         <label class="form-check-label" for="bypass_check">Bypass Wholesale check</label>
                     </span> --}}
                 {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">BulkSale Order Detail</span><br> --}}
-                @if ($order->status == 2)
+                @if ($order->status == 1)
+
+                    <form class="form-inline" id="approveform" style="max-width: 600px" method="POST" action="{{url('wholesale/approve').'/'.$order->id}}">
+                        @csrf
+                        <div class="">
+                            <select name="customer_id" class="form-select">
+                                @foreach ($vendors as $id=>$vendor)
+                                    <option value="{{ $id }}" {{ $order->customer_id == $id ? 'selected' : '' }}>{{ $vendor }}</option>
+
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="reference" name="reference" placeholder="Enter Reference" value="{{$order->reference}}" required onchange="submitForm()">
+                            <label for="reference">Reference</label>
+                        </div>
+                        <button type="submit" class="btn btn-success" name="next" value="1">Next</button>
+                        <a class="btn btn-danger" href="{{url('delete_wholesale') . "/" . $order->id }}">Delete</a>
+                    </form>
+
+                @elseif ($order->status == 2)
                 <form class="form-inline" id="approveform" style="max-width: 600px" method="POST" action="{{url('wholesale/approve').'/'.$order->id}}">
                     @csrf
                     <div class="">
@@ -125,10 +145,8 @@
                 @endif
             </div>
                 @if ($order->status == 1)
-                <form class="form-inline" action="{{ url('wholesale_item_po').'/'.$order_id }}" method="POST" id="wholesale_item">
+                {{-- <form class="form-inline" action="{{ url('wholesale_item_po').'/'.$order_id }}" method="POST" id="wholesale_item">
                     @csrf
-                    {{-- <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
-                    <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required> --}}
 
                     <div class="form-floating">
                         <input type="text" name="product" value="{{ Request::get('product') }}" class="form-control" data-bs-placeholder="Select Model" list="product-menu">
@@ -160,7 +178,7 @@
                     </select>
                     <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
 
-                </form>
+                </form> --}}
                 @endif
                 @if ($order->status == 2)
                 <form class="form-inline " action="{{ url('check_wholesale_item').'/'.$order_id }}" method="POST" id="wholesale_item">

@@ -146,6 +146,36 @@ class Wholesale extends Component
         $order->reference = request('reference');
         $order->tracking_number = request('tracking_number');
 
+        if(request('next') == 1){
+            $order->status = 2;
+            foreach($order->order_items as $item){
+                if($item->stock_id == null){
+                    $same_items = Order_item_model::where('order_id',$order_id)->where('variation_id',$item->variation_id)->where('stock_id',null)->get();
+                    if($same_items->count() != $item->quantity){
+                        $quantity = $item->quantity;
+                        for ($i=1; $i <= $quantity; $i++) {
+
+                            if ($i != 1) {
+
+                                $new_item = new Order_item_model();
+                                $new_item->order_id = $item->order_id;
+                                $new_item->variation_id = $item->variation_id;
+                                $new_item->quantity = 1;
+                                $new_item->status = $item->status;
+                                $new_item->price = $item->price;
+                            }else{
+                                $new_item = $item;
+                                $new_item->price = $item->price/$item->quantity;
+                                $new_item->quantity = 1;
+                            }
+                            $new_item->save();
+
+                        }
+                    }
+                }
+            }
+        }
+
         if(request('approve') == 1){
             $order->status = 3;
             $order->processed_at = now()->format('Y-m-d H:i:s');
