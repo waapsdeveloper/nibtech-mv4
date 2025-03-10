@@ -192,5 +192,9 @@
 
 		<!-- Internal Chart js -->
 		<script src="{{asset('assets/plugins/chartjs/Chart.bundle.min.js')}}"></script>
-
+        <script>
+            $(document).ready(function(){
+                console.log({!! $customers !!});
+            });
+        </script>
     @endsection
