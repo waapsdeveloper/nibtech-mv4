@@ -1833,6 +1833,9 @@ class Order extends Component
     }
     public function export_invoice($orderId)
     {
+        $data['title_page'] = "Invoice";
+        session()->put('page_title', $data['title_page']);
+
 
         // Find the order
         $order = Order_model::with('customer', 'order_items')->find($orderId);
