@@ -94,7 +94,8 @@
         </div>
         <div class="col-md col-sm-6">
             <select name="state" class="form-control form-select" data-bs-placeholder="Select Publication State">
-                <option value="">Publication State</option>
+                <option value="" selected>Published</option>
+                <option value="10">All</option>
                 <option value="0" @if(isset($_GET['state']) && $_GET['state'] == 0) {{'selected'}}@endif>Missing price or comment</option>
                 <option value="1" @if(isset($_GET['state']) && $_GET['state'] == 1) {{'selected'}}@endif>Pending validation</option>
                 <option value="2" @if(isset($_GET['state']) && $_GET['state'] == 2) {{'selected'}}@endif>Online</option>
