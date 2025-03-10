@@ -194,7 +194,7 @@
 		<script src="{{asset('assets/plugins/chartjs/Chart.bundle.min.js')}}"></script>
         <script>
             $(document).ready(function(){
-                console.log({!! $customers !!});
+                console.log(@json($customers));
             });
         </script>
     @endsection
