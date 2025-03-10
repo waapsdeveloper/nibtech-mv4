@@ -18,7 +18,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class Customer extends Component
 {
-    use WithPagination;
+    // use WithPagination;
     protected $customers;
 
     public function mount()
