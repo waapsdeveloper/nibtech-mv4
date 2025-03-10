@@ -284,6 +284,14 @@ class ListingController extends Controller
                     continue;
                 }
                 $country = Country_model::where('code',$list->market)->first();
+                $listings = Listing_model::where('variation_id',$id)->where('country',$country->id)->get();
+                if($listings->count() > 1){
+                    $listings->each(function($listing, $key) {
+                        if ($key > 0) {
+                            $listing->delete();
+                        }
+                    });
+                }
                 $listing = Listing_model::firstOrNew(['variation_id'=>$id, 'country'=>$country->id]);
                 $listing->reference_uuid = $list->product_id;
                 if($list->price != null){
