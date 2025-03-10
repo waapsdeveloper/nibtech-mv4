@@ -2036,6 +2036,13 @@ class Order extends Component
                     return redirect()->back();
 
                 }
+                if($stock[$i]->created_at->diffInDays() < 20){
+                    $stocks = Stock_model::where('variation_id',$variant->id)->where('status',1)->where('order_id','<' , $stock[$i]->order_id)->get();
+                    if($stocks->count() > 0){
+                        session()->put('error', "Sell Old Stock First");
+                        return redirect()->back();
+                    }
+                }
                 // if($stock[$i]->status != 1){
 
                     $last_item = $stock[$i]->last_item();
