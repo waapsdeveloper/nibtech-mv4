@@ -169,9 +169,14 @@
                                         </tr>
                                     @endforeach
                                 </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="8">
+                                            {{ $customers->onEachSide(3)->links() }} {{ __('locale.From') }} {{$customers->firstItem()}} {{ __('locale.To') }} {{$customers->lastItem()}} {{ __('locale.Out Of') }} {{$customers->total()}}
+                                        </td>
+                                    </tr>
+                                </tfoot>
                             </table>
-                            <br>
-                        {{$customers->links()}} {{ __('locale.From') }} {{$customers->firstItem()}} {{ __('locale.To') }} {{$customers->lastItem()}} {{ __('locale.Out Of') }} {{$customers->total()}}
                         </div>
                     </div>
                 </div>
