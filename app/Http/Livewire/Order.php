@@ -2037,7 +2037,7 @@ class Order extends Component
                 }
                 if($stock[$i]->created_at->diffInDays() < 20){
                     $stocks = Stock_model::where('variation_id',$variant->id)->where('status',1)->where('order_id','<' , $stock[$i]->order_id)->get();
-                    if($stocks->count() > 0){
+                    if($stocks->count() > 5){
                         session()->put('error', "Sell Old Stock First");
                         return redirect()->back();
                     }
