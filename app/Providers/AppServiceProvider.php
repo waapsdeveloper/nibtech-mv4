@@ -29,7 +29,6 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::useBootstrapFive();
         Paginator::useBootstrapFour();
-        Paginator::useBootstrap();
         date_default_timezone_set("Europe/London");
 
         // Handle locale settings
