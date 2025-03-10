@@ -120,8 +120,12 @@ class ListingController extends Controller
                 return $q->whereDoesntHave('available_stocks');
             }
         })
-        ->when(request('state') != '', function ($q) {
+        ->when(request('state') == '', function ($q) {
+            return $q->whereIn('state', [2, 3]);
+        })
+        ->when(request('state') != '' && request('state') != 10, function ($q) {
             return $q->where('state', request('state'));
+
         })
         ->when(request('handler_status') != '', function ($q) {
             return $q->whereHas('listings', function ($q) {
