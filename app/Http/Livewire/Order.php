@@ -2034,7 +2034,6 @@ class Order extends Component
                 if(!$stock[$i] || $stock[$i]->status == null){
                     session()->put('error', "Stock not Found");
                     return redirect()->back();
-
                 }
                 if($stock[$i]->created_at->diffInDays() < 20){
                     $stocks = Stock_model::where('variation_id',$variant->id)->where('status',1)->where('order_id','<' , $stock[$i]->order_id)->get();
