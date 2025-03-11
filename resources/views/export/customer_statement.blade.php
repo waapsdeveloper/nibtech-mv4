@@ -90,7 +90,7 @@
                         <h5>invoice@nibritaintech.com</h5>
                 </td>
                 <td width="200"></td>
-                <td width="150">
+                <td width="150" style="text-align: left; padding:0; margin:0; line-height:10px">
                     <br>
                     <br>
                     <br>
@@ -103,7 +103,7 @@
                         </tr>
                         <tr>
                             <td width="30">For:</td>
-                            <td width="120" style="line-height:10px;" cellpadding="0" cellspacing="0">
+                            <td width="120" style="text-align: left; padding:0; margin:0; line-height:10px" cellpadding="0" cellspacing="0">
                                 <h4 style="line-height:11px;">{{ $customer->company }}</h4>
                                 <h5>{{ $customer->email }}</h5>
                                 <h5>{{ $customer->street }} {{ $customer->street2 }}, {{ $customer->city }}</h5>
