@@ -4,6 +4,7 @@ namespace App\Http\Livewire;
 
 use App\Exports\StockSummeryExport;
 use App\Http\Controllers\BackMarketAPIController;
+use App\Models\Account_transaction_model;
 use App\Models\Admin_model;
 use App\Models\Brand_model;
 use App\Models\Category_model;
@@ -909,6 +910,15 @@ class Index extends Component
 
     public function test(){
 
+        $transactions = Account_transaction_model::whereNull('date')->get();
+        foreach($transactions as $transaction){
+            if($transaction->order_id != null){
+                $transaction->date = $transaction->order->processed_at;
+            }elseif($transaction->process_id != null){
+                $transaction->date = $transaction->process->updated_at;
+            }
+            $transaction->save();
+        }
         // Merge Colors all
         // $product_color_merge = Product_color_merge_model::all();
 
