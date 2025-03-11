@@ -381,7 +381,7 @@ class Customer extends Component
 
         // Set document information
         $pdf->SetCreator(PDF_CREATOR);
-        $pdf->SetFont('Courier', '', 12);
+        $pdf->SetFont('Arial', '', 12);
         $pdf->AddPage();
         // $pdf->setCellPaddings(1, 1, 1, 1);
         // $pdf->setCellMargins(1, 1, 1, 1);
