@@ -118,11 +118,11 @@
                         <tr>
                             <td width="30">For:</td>
                             <td width="120" style="text-align: left; padding:0; margin:0; line-height:10px" cellpadding="0" cellspacing="0">
-                                <h4 style="line-height:11px; margin: 0;">{{ $customer->company }}</h4>
-                                <h5 style="margin: 0;">{{ $customer->email }}</h5>
-                                <h5 style="margin: 0;">{{ $customer->street }} {{ $customer->street2 }}, {{ $customer->city }}</h5>
-                                <h5 style="margin: 0;">{{ $customer->postal_code }} {{ $customer->country_id->title ?? null }}</h5>
-                                <h5 style="margin: 0;">{{ $customer->vat }}</h5>
+                                <h4 style="line-height:11px; margin: 0; padding: 0;">{{ $customer->company }}</h4>
+                                <h5 style="margin: 0; padding: 0;">{{ $customer->email }}</h5>
+                                <h5 style="margin: 0; padding: 0;">{{ $customer->street }} {{ $customer->street2 }}, {{ $customer->city }}</h5>
+                                <h5 style="margin: 0; padding: 0;">{{ $customer->postal_code }} {{ $customer->country_id->title ?? null }}</h5>
+                                <h5 style="margin: 0; padding: 0;">{{ $customer->vat }}</h5>
                             </td>
                         </tr>
                     </table>
