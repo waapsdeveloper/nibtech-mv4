@@ -88,8 +88,10 @@
                     <br>
                     <br>
                     <br>
-                    <h4><strong>Statement</strong></h4>
+                    <br>
+                    <br>
                             <div style="line-height:10px;">
+                                <h4><strong>Statement</strong></h4>
                                 <h5>{{ $customer->company }}</h5>
                                 <h5>{{ $customer->first_name." ".$customer->last_name }}</h5>
                                 <h5>{{ $customer->email }}</h5>
