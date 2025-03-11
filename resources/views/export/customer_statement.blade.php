@@ -141,10 +141,10 @@
                 <th style="border-bottom: 1px solid #09F; border-top: 1px solid #09F;" width="100" align="right">Balance</th>
             </tr>
             <tr>
-                <td></td>
-                <td>Previous</td>
-                <td></td>
-                <td align="right">€{{ amount_formatter($balance_bf,2) }}</td>
+                <td style="border-bottom: 1px solid #ccc;"></td>
+                <td style="border-bottom: 1px solid #ccc;">Previous</td>
+                <td style="border-bottom: 1px solid #ccc;">€{{ amount_formatter($balance_bf,2) }}</td>
+                <td style="border-bottom: 1px solid #ccc;" align="right">€{{ amount_formatter($balance_bf,2) }}</td>
 
             </tr>
             @php
