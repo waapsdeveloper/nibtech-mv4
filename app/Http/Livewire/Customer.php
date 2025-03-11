@@ -363,8 +363,16 @@ class Customer extends Component
         ini_set('memory_limit', '512M');
         ini_set('max_execution_time', '300');
 
+        $start_date = request('start_date') ?? date('Y-m-d', strtotime('-1 month'));
+        $end_date = request('end_date') ?? date('Y-m-d');
+        $start = $start_date . ' 00:00:00';
+        $end = $end_date . ' 23:59:59';
+
         // Fetch data
-        $transactions = Account_transaction_model::where('customer_id', $customer_id)->get();
+        $transactions = Account_transaction_model::where('customer_id', $customer_id)
+            ->whereBetween('date', [$start, $end])
+            ->orderBy('id', 'asc')
+            ->get();
         $customer = Customer_model::find($customer_id);
 
         if (!$customer) {
@@ -374,6 +382,9 @@ class Customer extends Component
         $data = [
             'customer' => $customer,
             'transactions' => $transactions,
+            'start_date' => $start_date,
+            'end_date' => $end_date,
+
         ];
 
         // Initialize TCPDF

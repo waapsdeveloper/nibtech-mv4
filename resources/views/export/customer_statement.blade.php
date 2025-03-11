@@ -117,31 +117,14 @@
                     <h5 style="margin: 0; padding: 0;">{{ $customer->street }} {{ $customer->street2 }}, {{ $customer->city }}</h5>
                     <h5 style="margin: 0; padding: 0;">{{ $customer->postal_code }} {{ $customer->country_id->title ?? null }}</h5>
                     <h5 style="margin: 0; padding: 0;">{{ $customer->vat }}</h5>
-{{--
-                    <table cellpadding="0" cellspacing="0">
-                        <tr>
-                            <td colspan="2"></td>
-                        </tr>
-                        <tr>
-                            <td width="30">
-                                <br>
-                                <br>
-                                <br>
-                                For:
-                            </td>
-                            <td width="115" style="text-align: left; padding:0; margin:0; line-height:10px" cellpadding="0" cellspacing="0">
-                            </td>
-                        </tr>
-                    </table> --}}
+
                 </td>
 
             </tr>
 
             <tr style="border-top: 1px solid Black">
-                <td width="300">
-                </td>
-                <td width="60">
-
+                <td colspan="3">
+                    All Invoices between {{ $start_date }} and {{ $end_date }}
                 </td>
             </tr>
         </table>
