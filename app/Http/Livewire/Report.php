@@ -159,7 +159,9 @@ class Report extends Component
             ->leftJoin('process_stock', 'stock.id', '=', 'process_stock.stock_id')
             ->leftJoin('process', 'process_stock.process_id', '=', 'process.id')
             // ->whereBetween('orders.processed_at', [$start_date, $end_date])
-            ->whereIn('variation.id', $variation_ids)
+            ->when($query == 1, function ($q) use ($variation_ids) {
+                return $q->whereIn('variation.id', $variation_ids);
+            })
             ->whereIn('orders.id', $sale_orders)
             ->whereIn('order_items.id', $sale_items)
             ->whereIn('orders.order_type_id', [2,3,5])
