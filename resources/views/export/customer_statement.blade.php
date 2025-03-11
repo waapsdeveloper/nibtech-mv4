@@ -140,13 +140,16 @@
                 <th style="border-bottom: 1px solid #09F; border-top: 1px solid #09F;" width="80" align="right">Amount</th>
                 <th style="border-bottom: 1px solid #09F; border-top: 1px solid #09F;" width="100" align="right">Balance</th>
             </tr>
+            @if ($balance_bf > 0)
+
             <tr>
                 <td style="border-bottom: 1px solid #ccc;"></td>
                 <td style="border-bottom: 1px solid #ccc;">Previous</td>
-                <td style="border-bottom: 1px solid #ccc;">€{{ amount_formatter($balance_bf,2) }}</td>
+                <td style="border-bottom: 1px solid #ccc;" align="right">€{{ amount_formatter($balance_bf,2) }}</td>
                 <td style="border-bottom: 1px solid #ccc;" align="right">€{{ amount_formatter($balance_bf,2) }}</td>
 
             </tr>
+            @endif
             @php
                 $total = $balance_bf;
             @endphp
