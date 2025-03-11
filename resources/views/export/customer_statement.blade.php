@@ -134,12 +134,10 @@
                 </td>
             </tr>
             <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
+                <td>Date</td>
+                <td>Details</td>
+                <td>Amount</td>
+                <td>Balance</td>
             </tr>
 
         </table>
