@@ -414,11 +414,6 @@ class Customer extends Component
 
         // Output PDF
         $pdf->Output($filename, 'I'); // 'I' for inline view, 'D' for download
-    // Add page numbers
-        $pdf->setPrintFooter(true);
-        $pdf->setFooterData(array(0,64,0), array(0,64,128));
-        $pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
-        $pdf->setFooterMargin(PDF_MARGIN_FOOTER);
     }
 
     // public function export_reports($customer_id, $invoice = null)
