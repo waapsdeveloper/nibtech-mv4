@@ -91,7 +91,7 @@
                         <td><h1 style="line-height:14px; margin:0px; ">Statement</h1></td>
                     </tr>
                     <tr>
-                        <td width="10">For:</td>
+                        <td width="30">For:</td>
                         <td style="line-height:8px;">
                             <h4>{{ $customer->company }}</h4>
                             {{-- <h5>{{ $customer->first_name." ".$customer->last_name }}</h5> --}}
