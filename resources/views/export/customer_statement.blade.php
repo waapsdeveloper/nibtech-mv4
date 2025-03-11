@@ -133,6 +133,15 @@
                     All Invoices between {{ $start_date }} and {{ $end_date }}
                 </td>
             </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+
+
         </table>
 
     </div>
