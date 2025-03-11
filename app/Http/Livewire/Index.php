@@ -910,10 +910,10 @@ class Index extends Component
 
     public function test(){
 
-        $transactions = Account_transaction_model::whereNull('date')->get();
+        $transactions = Account_transaction_model::whereBetween('date',['2025-01-11','2025-01-12'])->get();
         foreach($transactions as $transaction){
             if($transaction->order != null){
-                $transaction->date = $transaction->order->processed_at;
+                $transaction->date = $transaction->order->created_at;
             }elseif($transaction->process != null){
                 $transaction->date = $transaction->process->updated_at;
             }
