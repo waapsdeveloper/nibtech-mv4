@@ -90,7 +90,7 @@ class Report extends Component
         $start_date = $start_date . " " . $start_time;
         $end_date = $end_date . " " . $end_time;
 
-
+        $query = 0;
 
         $variation_ids = [];
         // if(request('data') == 1){
@@ -98,13 +98,16 @@ class Report extends Component
         $variation_ids = Variation_model::select('id')
             ->whereHas('product', function ($q) {
                 $q->when(request('category') != '', function ($qu) {
+                    $query = 1;
                     return $qu->where('category', '=', request('category'));
                 })
                 ->when(request('brand') != '', function ($qu) {
+                    $query = 1;
                     return $qu->where('brand', '=', request('brand'));
                 });
             })
             ->when(request('vendor') != '' || request('batch') != '', function ($que) {
+                $query = 1;
                 return $que->whereHas('stocks.order', function ($q) {
                     $q->when(request('vendor') != '', function ($qu) {
                         return $qu->where('customer_id', '=', request('vendor'));
@@ -115,15 +118,19 @@ class Report extends Component
                 });
             })
             ->when(request('product') != '', function ($q) {
+                $query = 1;
                 return $q->where('product_id', '=', request('product'));
             })
             ->when(request('storage') != '', function ($q) {
+                $query = 1;
                 return $q->where('storage', request('storage'));
             })
             ->when(request('color') != '', function ($q) {
+                $query = 1;
                 return $q->where('color', request('color'));
             })
             ->when(request('grade') != '', function ($q) {
+                $query = 1;
                 return $q->where('grade', request('grade'));
             })
             ->pluck('id')->toArray();
@@ -133,7 +140,11 @@ class Report extends Component
             ->whereBetween('processed_at', [$start_date, $end_date])
             ->whereIN('status', [3,6])
             ->pluck('id')->toArray();
-        $sale_items = Order_item_model::whereIn('variation_id', $variation_ids)
+        $sale_items = Order_item_model::when($query == 1, function ($q) use ($variation_ids) {
+                return $q->whereIn('variation_id', $variation_ids);
+            })
+
+        // whereIn('variation_id', $variation_ids)
             ->whereIn('order_id', $sale_orders)
             ->whereIN('status', [3,6])
             ->pluck('id')->toArray();
