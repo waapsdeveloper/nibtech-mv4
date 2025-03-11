@@ -110,10 +110,10 @@
                     <br>
                     <br>
                     <br>
-
-                    <table border="1" cellpadding="0" cellspacing="0">
+                    <br>
+                    <table cellpadding="0" cellspacing="0">
                         <tr>
-                            <td colspan="2"><h1 style="line-height:14px; margin:0px;">Statement</h1></td>
+                            <td colspan="2"><h1 style="line-height:14px; margin:0px; align:right;">Statement</h1></td>
                         </tr>
                         <tr>
                             <td width="30">
