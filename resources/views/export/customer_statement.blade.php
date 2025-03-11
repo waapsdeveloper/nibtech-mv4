@@ -116,7 +116,10 @@
                             <td colspan="2"><h1 style="line-height:14px; margin:0px;">Statement</h1></td>
                         </tr>
                         <tr>
-                            <td width="30">For:</td>
+                            <td width="30">
+                                <br>
+                                For:
+                            </td>
                             <td width="115" style="text-align: left; padding:0; margin:0; line-height:10px" cellpadding="0" cellspacing="0">
                                 <h4 style="line-height:11px; margin: 0; padding: 0;">{{ $customer->company }}</h4>
                                 <h5 style="margin: 0; padding: 0;">{{ $customer->email }}</h5>
