@@ -196,6 +196,8 @@ class Wholesale extends Component
             // $transaction->created_at = $order->created_at;
 
             $transaction->save();
+            $transaction->reference_id = $transaction->id + 300000;
+            $transaction->save();
         }
 
         if(request('approve') == 1){

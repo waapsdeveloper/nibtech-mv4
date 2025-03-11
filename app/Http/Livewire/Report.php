@@ -397,7 +397,7 @@ class Report extends Component
             })
             // ->whereIn('status', [3,6])
             ->get();
-        $currency_check = Order_item_model::whereIn('id', $b2c_order_items->pluck('id')->toArray())->whereNull('currency')->get();
+        $currency_check = $b2c_order_items->whereNull('currency')->get();
         if ($currency_check->count() > 0) {
             foreach ($currency_check as $item) {
                 $item->currency = $item->order->currency;
@@ -405,8 +405,7 @@ class Report extends Component
             }
         }
 
-        $b2c_prices_by_currency = Order_item_model::whereIn('id', $b2c_order_items->pluck('id')->toArray())
-            ->select('currency', DB::raw('SUM(price) as total_price'))
+        $b2c_prices_by_currency = $b2c_order_items->select('currency', DB::raw('SUM(price) as total_price'))
             ->groupBy('currency')
             ->get()
             ->pluck('total_price', 'currency');
