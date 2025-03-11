@@ -134,9 +134,7 @@
                     @if (request('start_date') != null)
                         from {{ $start_date }}
                     @endif
-                    @if (request('end_date') != null)
-                        to {{ $end_date }}
-                    @endif
+                        till {{ $end_date }}
                     </i>
                 </td>
             </tr>
