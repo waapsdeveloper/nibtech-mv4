@@ -61,7 +61,7 @@
     </style>
 </head>
 <body>
-    <img src="{{ public_path('assets/img/background/invoice_header.png') }}" alt="Hello" width="100%">
+    <img src="{{ public_path('assets/img/background/letterhead.png') }}" alt="Hello" width="100%">
     {{-- <iframe src="{{ $order->delivery_note_url }}"></iframe> --}}
     Hello
     <div class="invoice-container">
