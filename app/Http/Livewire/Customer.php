@@ -371,7 +371,7 @@ class Customer extends Component
         // Fetch data
         $transactions = Account_transaction_model::where('customer_id', $customer_id)
             ->whereBetween('date', [$start, $end])
-            ->orderBy('id', 'asc')
+            ->orderBy('date', 'asc')
             ->get();
         $customer = Customer_model::find($customer_id);
 
