@@ -93,9 +93,8 @@
                             <div style="line-height:10px;">
                                 <h2><strong>Statement</strong></h2>
                                 <h4>{{ $customer->company }}</h4>
-                                <h5>{{ $customer->first_name." ".$customer->last_name }}</h5>
+                                {{-- <h5>{{ $customer->first_name." ".$customer->last_name }}</h5> --}}
                                 <h5>{{ $customer->email }}</h5>
-                                <h5>{{ $customer->phone }}</h5>
                                 <h5>{{ $customer->street }} {{ $customer->street2 }}, {{ $customer->city }}</h5>
                                 <h5>{{ $customer->postal_code }} {{ $customer->country_id->title ?? null }}</h5>
                                 <h5>{{ $customer->vat }}</h5>
