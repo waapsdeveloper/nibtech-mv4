@@ -137,7 +137,7 @@
             <hr style="border-bottom: 2px solid Black">
             <tr>
                 <th width="80">Date</th>
-                <th width="275">Details</th>
+                <th width="277">Details</th>
                 <th width="80" align="right">Amount</th>
                 <th width="100" align="right">Balance</th>
             </tr>
