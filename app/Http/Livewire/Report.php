@@ -232,7 +232,10 @@ class Report extends Component
                 DB::raw('SUM(CASE WHEN process.process_type_id = 9 THEN process_stock.price ELSE 0 END) as items_repair_sum')
             )
             ->whereBetween('order_items.created_at', [$start_date, $end_date])
-            ->whereIn('variation.id', $variation_ids)
+            ->when($query == 1, function ($q) use ($variation_ids) {
+                return $q->whereIn('variation.id', $variation_ids);
+            })
+            // ->whereIn('variation.id', $variation_ids)
             ->whereIn('orders.order_type_id', [4,6])
             ->Where('orders.deleted_at',null)
             ->Where('order_items.deleted_at',null)
