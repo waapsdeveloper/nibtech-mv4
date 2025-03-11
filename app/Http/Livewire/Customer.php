@@ -358,59 +358,102 @@ class Customer extends Component
         return Excel::download(new RepairersheetExport, 'pending_repairs_'.$customer->company.'.xlsx');
     }
 
-
     public function export_reports($customer_id, $invoice = null)
     {
         ini_set('memory_limit', '512M');
         ini_set('max_execution_time', '300');
 
-
-        // Find the order
-        $transactions = Account_transaction_model::where('customer_id',$customer_id)->get();
+        // Fetch data
+        $transactions = Account_transaction_model::where('customer_id', $customer_id)->get();
         $customer = Customer_model::find($customer_id);
-        // Generate PDF for the invoice content
+
+        if (!$customer) {
+            abort(404, "Customer not found");
+        }
+
         $data = [
             'customer' => $customer,
             'transactions' => $transactions,
         ];
-        // Create a new TCPDF instance
+
+        // Initialize TCPDF
         $pdf = new TCPDF();
 
         // Set document information
         $pdf->SetCreator(PDF_CREATOR);
-        // $pdf->SetHeaderData('', 0, 'Invoice', '');
-
-        // Add a page
+        $pdf->SetFont('times', '', 12);
         $pdf->AddPage();
 
-        // Set font
-        $pdf->SetFont('times', '', 12);
-
-        // Additional content from your view
-        if(request('statement') == 1){
-            $pdf->SetTitle('Customer Statement '.$customer->company.' pcs');
-            $filename = 'Customer Statement '.$customer->company.' pcs.pdf';
+        // Generate HTML from Blade view
+        if (request('statement') == 1) {
+            $pdf->SetTitle('Customer Statement ' . $customer->company . ' pcs');
+            $filename = 'Customer_Statement_' . str_replace(' ', '_', $customer->company) . '.pdf';
             $html = view('export.customer_statement', $data)->render();
+        } else {
+            $pdf->SetTitle('Customer Report');
+            $filename = 'Customer_Report.pdf';
+            $html = '<h1>Customer Report</h1><p>No statement requested.</p>';
         }
 
+        // Convert HTML to PDF
         $pdf->writeHTML($html, true, false, true, false, '');
 
-        // dd($pdfContent);
-        // Send the invoice via email
-        // Mail::to($order->customer->email)->send(new InvoiceMail($data));
-
-        // Optionally, save the PDF locally
-        // file_put_contents('invoice.pdf', $pdfContent);
-
-        // Get the PDF content
-        $pdf->Output($filename, 'I');
-
-        // $pdfContent = $pdf->Output('', 'S');
-        // Return a response or redirect
-
-        // Pass the PDF content to the view
-        // return view('livewire.show_pdf')->with(['pdfContent'=> $pdfContent, 'delivery_note'=>$order->delivery_note_url]);
+        // Output PDF
+        $pdf->Output($filename, 'I'); // 'I' for inline view, 'D' for download
     }
+
+    // public function export_reports($customer_id, $invoice = null)
+    // {
+    //     ini_set('memory_limit', '512M');
+    //     ini_set('max_execution_time', '300');
+
+
+    //     // Find the order
+    //     $transactions = Account_transaction_model::where('customer_id',$customer_id)->get();
+    //     $customer = Customer_model::find($customer_id);
+    //     // Generate PDF for the invoice content
+    //     $data = [
+    //         'customer' => $customer,
+    //         'transactions' => $transactions,
+    //     ];
+    //     // Create a new TCPDF instance
+    //     $pdf = new TCPDF();
+
+    //     // Set document information
+    //     $pdf->SetCreator(PDF_CREATOR);
+    //     // $pdf->SetHeaderData('', 0, 'Invoice', '');
+
+    //     // Add a page
+    //     $pdf->AddPage();
+
+    //     // Set font
+    //     $pdf->SetFont('times', '', 12);
+
+    //     // Additional content from your view
+    //     if(request('statement') == 1){
+    //         $pdf->SetTitle('Customer Statement '.$customer->company.' pcs');
+    //         $filename = 'Customer Statement '.$customer->company.' pcs.pdf';
+    //         $html = view('export.customer_statement', $data)->render();
+    //     }
+
+    //     $pdf->writeHTML($html, true, false, true, false, '');
+
+    //     // dd($pdfContent);
+    //     // Send the invoice via email
+    //     // Mail::to($order->customer->email)->send(new InvoiceMail($data));
+
+    //     // Optionally, save the PDF locally
+    //     // file_put_contents('invoice.pdf', $pdfContent);
+
+    //     // Get the PDF content
+    //     $pdf->Output($filename, 'I');
+
+    //     // $pdfContent = $pdf->Output('', 'S');
+    //     // Return a response or redirect
+
+    //     // Pass the PDF content to the view
+    //     // return view('livewire.show_pdf')->with(['pdfContent'=> $pdfContent, 'delivery_note'=>$order->delivery_note_url]);
+    // }
 
 
 
