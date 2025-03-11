@@ -366,7 +366,7 @@ class Customer extends Component
 
 
         // Find the order
-        $transactions = Account_transaction_model::where('customer_id',$customer_id);
+        $transactions = Account_transaction_model::where('customer_id',$customer_id)->get();
         $customer = Customer_model::find($customer_id);
         // Generate PDF for the invoice content
         $data = [
