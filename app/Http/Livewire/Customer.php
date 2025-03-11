@@ -368,6 +368,13 @@ class Customer extends Component
         $start = $start_date . ' 00:00:00';
         $end = $end_date . ' 23:59:59';
 
+        $balance_bf = Account_transaction_model::where('customer_id', $customer_id)
+            ->where('date', '<', $start)
+            ->selectRaw('SUM(CASE WHEN transaction_type_id = 1 THEN amount ELSE 0 END) as total_debit, SUM(CASE WHEN transaction_type_id = 2 THEN amount ELSE 0 END) as total_credit')
+            ->first();
+
+        $balance_bf = $balance_bf->total_debit - $balance_bf->total_credit;
+
         // Fetch data
         $transactions = Account_transaction_model::where('customer_id', $customer_id)
             ->whereBetween('date', [$start, $end])
@@ -384,6 +391,7 @@ class Customer extends Component
             'transactions' => $transactions,
             'start_date' => $start_date,
             'end_date' => $end_date,
+            'balance_bf' => $balance_bf,
 
         ];
 
