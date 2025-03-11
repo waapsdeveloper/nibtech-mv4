@@ -110,7 +110,6 @@
                     <br>
                     <br>
                     <br>
-                    <br>
                     <h1 style="line-height:14px; margin:0px; text-align:right;">Statement</h1>
 
                     <h4 style="line-height:11px; margin: 0; padding: 0;">{{ $customer->company }}</h4>
