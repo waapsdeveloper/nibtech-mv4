@@ -73,7 +73,7 @@
                     {{-- <div class="company-info"> --}}
                         <br><br>
                         <br><br>
-                        <img src="{{ public_path('assets/img/brand').'/'.env('APP_LOGO') }}" alt="" height="50">
+                        <img src="{{ public_path('assets/img/brand').'/'.env('APP_LOGO') }}" alt="" height="40">
                     {{-- </div> --}}
                         {{-- <br> --}}
                         <br>
