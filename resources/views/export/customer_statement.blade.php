@@ -134,7 +134,7 @@
                     <i style="">All Invoices between {{ $start_date }} and {{ $end_date }}</i>
                 </td>
             </tr>
-            <tr style="line-height: 10px;">
+            <tr style="line-height: 20px;">
                 <th style="border-bottom: 1px solid #09F; border-top: 1px solid #09F;" width="80">Date</th>
                 <th style="border-bottom: 1px solid #09F; border-top: 1px solid #09F;" width="277">Details</th>
                 <th style="border-bottom: 1px solid #09F; border-top: 1px solid #09F;" width="80" align="right">Amount</th>
