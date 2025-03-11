@@ -75,7 +75,7 @@
                         <img src="{{ public_path('assets/img/brand').'/'.env('APP_LOGO') }}" alt="" height="50">
                     {{-- </div> --}}
                         {{-- <br> --}}
-                        {{-- <br> --}}
+                        <br>
                         <h4><strong>{{ env('APP_NAME') }}</strong></h4>
                         <h4>Cromac Square,</h4>
                         <h4>Forsyth House,</h4>
@@ -84,8 +84,10 @@
                 </td>
                 <td width="150"></td>
                 <td width="200" style="line-height:8px;">
-<br>
-<br>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
                     <h4><strong>Statement</strong></h4>
                             <div style="line-height:10px;">
                                 <h5>{{ $customer->company }}</h5>
