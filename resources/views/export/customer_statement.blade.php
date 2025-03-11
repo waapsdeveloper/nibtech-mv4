@@ -135,10 +135,10 @@
                 </td>
             </tr>
             <tr>
-                <th style="border-bottom: 1px solid rgb(0, 162, 255); border-top: 1px solid rgb(0, 162, 255);" width="80">Date</th>
-                <th style="border-bottom: 1px solid rgb(0, 162, 255); border-top: 1px solid rgb(0, 162, 255);" width="277">Details</th>
-                <th style="border-bottom: 1px solid rgb(0, 162, 255); border-top: 1px solid rgb(0, 162, 255);" width="80" align="right">Amount</th>
-                <th style="border-bottom: 1px solid rgb(0, 162, 255); border-top: 1px solid rgb(0, 162, 255);" width="100" align="right">Balance</th>
+                <th style="border-bottom: 1px solid #09F; border-top: 1px solid #09F;" width="80">Date</th>
+                <th style="border-bottom: 1px solid #09F; border-top: 1px solid #09F;" width="277">Details</th>
+                <th style="border-bottom: 1px solid #09F; border-top: 1px solid #09F;" width="80" align="right">Amount</th>
+                <th style="border-bottom: 1px solid #09F; border-top: 1px solid #09F;" width="100" align="right">Balance</th>
             </tr>
             @php
                 $total = 0;
