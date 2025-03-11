@@ -150,10 +150,10 @@
                     $total += $transaction->amount;
                 @endphp
                 <tr style="border-bottom: 1px solid #333;">
-                    <td>{{ date('d-m-Y', strtotime($transaction->date)) }}</td>
-                    <td>{{ $transaction->description }}</td>
-                    <td align="right">{{ $transaction->currency_id->sign.amount_formatter($transaction->amount,2) }}</td>
-                    <td align="right">{{ $transaction->currency_id->sign.amount_formatter($total,2) }}</td>
+                    <td style="border-bottom: 1px solid #333;">{{ date('d-m-Y', strtotime($transaction->date)) }}</td>
+                    <td style="border-bottom: 1px solid #333;">{{ $transaction->description }}</td>
+                    <td style="border-bottom: 1px solid #333;" align="right">{{ $transaction->currency_id->sign.amount_formatter($transaction->amount,2) }}</td>
+                    <td style="border-bottom: 1px solid #333;" align="right">{{ $transaction->currency_id->sign.amount_formatter($total,2) }}</td>
                 </tr>
             @endforeach
 
