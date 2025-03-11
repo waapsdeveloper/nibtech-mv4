@@ -130,8 +130,14 @@
             <hr style="border-top: 0px solid Black">
             <tr style="line-height: 24px;">
                 <td colspan="4" align="center">
-
-                    <i style="">All Invoices between {{ $start_date }} and {{ $end_date }}</i>
+                    <i style="">All Invoices
+                    @if (request('start_date') != null)
+                        from {{ $start_date }}
+                    @endif
+                    @if (request('end_date') != null)
+                        to {{ $end_date }}
+                    @endif
+                    </i>
                 </td>
             </tr>
             <tr style="line-height: 20px;">
