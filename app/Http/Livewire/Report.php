@@ -145,7 +145,12 @@ class Report extends Component
             })
 
         // whereIn('variation_id', $variation_ids)
-            ->whereIn('order_id', $sale_orders)
+            // ->whereIn('order_id', $sale_orders)
+            ->whereHas('order', function ($q) use ($start_date, $end_date) {
+                $q->whereBetween('processed_at', [$start_date, $end_date])
+                    ->whereIn('status', [3,6])
+                    ->whereIn('order_type_id', [2,3,5]);
+            })
             ->whereIN('status', [3,6])
             ->pluck('id')->toArray();
 
