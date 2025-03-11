@@ -390,15 +390,15 @@ class Customer extends Component
         if (request('statement') == 1) {
             $pdf->SetTitle('Customer Statement ' . $customer->company . ' pcs');
             $filename = 'Customer_Statement_' . str_replace(' ', '_', $customer->company) . '.pdf';
-            $html = view('export.customer_statement', $data)->render();
+            // $html = view('export.customer_statement', $data)->render();
         } else {
             $pdf->SetTitle('Customer Report');
             $filename = 'Customer_Report.pdf';
-            $html = '<h1>Customer Report</h1><p>No statement requested.</p>';
+            // $html = '<h1>Customer Report</h1><p>No statement requested.</p>';
         }
 
         // Convert HTML to PDF
-        $pdf->writeHTML($html, true, false, true, false, '');
+        // $pdf->writeHTML($html, true, false, true, false, '');
 
         // Output PDF
         $pdf->Output($filename, 'I'); // 'I' for inline view, 'D' for download
