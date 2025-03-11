@@ -104,7 +104,7 @@
                         <h5>invoice@nibritaintech.com</h5>
                 </td>
                 <td width="200"></td>
-                <td width="150" style="text-align: left; padding:0; margin:0; line-height:10px">
+                <td width="150" style="text-align: right; padding:0; margin:0; line-height:10px">
                     <br>
                     <br>
                     <br>
