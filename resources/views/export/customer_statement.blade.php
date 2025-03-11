@@ -91,7 +91,7 @@
                     <br>
                     <br>
                             <div style="line-height:10px;">
-                                <h3><strong>Statement</strong></h3>
+                                <h2><strong>Statement</strong></h2>
                                 <h4>{{ $customer->company }}</h4>
                                 <h5>{{ $customer->first_name." ".$customer->last_name }}</h5>
                                 <h5>{{ $customer->email }}</h5>
