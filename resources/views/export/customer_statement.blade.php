@@ -126,6 +126,7 @@
                 <td colspan="3">
                     <hr>
                 </td>
+            </tr>
 
             <tr style="border-top: 1px solid Black">
                 <td colspan="3" align="center">
