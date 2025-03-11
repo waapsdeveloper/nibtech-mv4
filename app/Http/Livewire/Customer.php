@@ -383,8 +383,8 @@ class Customer extends Component
         $pdf->SetCreator(PDF_CREATOR);
         $pdf->SetFont('times', '', 12);
         $pdf->AddPage();
-        $pdf->setCellPaddings(1, 1, 1, 1);
-        $pdf->setCellMargins(1, 1, 1, 1);
+        // $pdf->setCellPaddings(1, 1, 1, 1);
+        // $pdf->setCellMargins(1, 1, 1, 1);
         $pdf->Image(asset('assets/img/backgrounds/letterhead.png'), 10, 10, 190, 20, 'png', '', 'T', false, 300, '', false, false, 0, false, false, false);
         $pdf->Image(asset('assets/img/brand/logo.png'), 10, 10, 30, 30, 'png', '', 'T', false, 300, '', false, false, 0, false, false, false);
         // Generate HTML from Blade view
