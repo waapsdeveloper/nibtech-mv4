@@ -77,10 +77,10 @@
                         {{-- <br> --}}
                         <br>
                         <h4><strong>{{ env('APP_NAME') }}</strong></h4>
-                        <h4>Cromac Square,</h4>
-                        <h4>Forsyth House,</h4>
-                        <h4>Belfast, BT2 8LA</h4>
-                        <h4>invoice@nibritaintech.com</h4>
+                        <h5>Cromac Square,</h5>
+                        <h5>Forsyth House,</h5>
+                        <h5>Belfast, BT2 8LA</h5>
+                        <h5>invoice@nibritaintech.com</h5>
                 </td>
                 <td width="150"></td>
                 <td width="200" style="line-height:8px;">
@@ -91,8 +91,8 @@
                     <br>
                     <br>
                             <div style="line-height:10px;">
-                                <h4><strong>Statement</strong></h4>
-                                <h5>{{ $customer->company }}</h5>
+                                <h3><strong>Statement</strong></h3>
+                                <h4>{{ $customer->company }}</h4>
                                 <h5>{{ $customer->first_name." ".$customer->last_name }}</h5>
                                 <h5>{{ $customer->email }}</h5>
                                 <h5>{{ $customer->phone }}</h5>
