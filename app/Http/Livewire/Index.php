@@ -912,9 +912,9 @@ class Index extends Component
 
         $transactions = Account_transaction_model::whereNull('date')->get();
         foreach($transactions as $transaction){
-            if($transaction->order_id != null){
+            if($transaction->order != null){
                 $transaction->date = $transaction->order->processed_at;
-            }elseif($transaction->process_id != null){
+            }elseif($transaction->process != null){
                 $transaction->date = $transaction->process->updated_at;
             }
             $transaction->save();
