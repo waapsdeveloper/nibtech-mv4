@@ -82,8 +82,8 @@
                         <h5>Belfast, BT2 8LA</h5>
                         <h5>invoice@nibritaintech.com</h5>
                 </td>
-                <td width="150"></td>
-                <td width="200" style="line-height:8px;">
+                <td width="200"></td>
+                <td width="150" style="line-height:8px;">
                     <br>
                     <br>
                     <br>
