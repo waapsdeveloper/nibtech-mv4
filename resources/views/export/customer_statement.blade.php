@@ -163,17 +163,6 @@
         </table>
         <br>
         <br>
-        <table border="0">
-            <tr>
-            <td colspan="2">
-                <hr style="border-top: 1px solid #000">
-            </td>
-            </tr>
-            <tr>
-            <td width="350" style="text-align: right">Total</td>
-            <td style="text-align: right">{{ $currency->sign.amount_formatter($total,2) }}</td>
-            </tr>
-        </table>
     </div>
 </body>
 </html>
