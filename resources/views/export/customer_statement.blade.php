@@ -93,7 +93,8 @@
                     <br>
                     <table>
                     <tr>
-                        <td colspan="2"><h1 style="line-height:14px; margin:0px; ">Statement</h1></td>
+                        <td></td>
+                        <td><h1 style="line-height:14px; margin:0px; ">Statement</h1></td>
                     </tr>
                     <tr>
                         <td width="10">For:</td>
