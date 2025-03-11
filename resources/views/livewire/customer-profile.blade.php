@@ -430,8 +430,8 @@
                                     <div class="form-group">
                                         <label for="type">Payment Type</label>
                                         <select class="form-control form-select" name="type" id="type" required>
-                                            <option value="1">Send</option>
-                                            <option value="2">Receive</option>
+                                            <option value="1">Receive</option>
+                                            <option value="2">Send</option>
                                         </select>
                                     </div>
                                 </div>
