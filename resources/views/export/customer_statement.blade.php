@@ -122,13 +122,14 @@
 
             </tr>
             <br>
-            <tr>
+            {{-- <tr>
                 <td colspan="3">
                     <hr>
                 </td>
-            </tr>
+            </tr> --}}
             <tr style="border-top: 1px solid Black">
                 <td colspan="3" align="center">
+                    <hr>
                     All Invoices between {{ $start_date }} and {{ $end_date }}
                 </td>
             </tr>
