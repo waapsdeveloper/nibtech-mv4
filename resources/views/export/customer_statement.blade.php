@@ -126,7 +126,7 @@
             <br>
             <br>
         <hr>
-        <div><i style="text-align: center;">All Invoices between {{ $start_date }} and {{ $end_date }}</i></div>
+        <div><i style="text-align: center; display:block;">All Invoices between {{ $start_date }} and {{ $end_date }}</i></div>
 
         <table border="0">
             <tr style="border-top: 1px solid Black">
