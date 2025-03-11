@@ -145,12 +145,17 @@
             @endphp
             @foreach ($transactions as $transaction)
                 @php
-                    $total += $transaction->amount;
+                    if($transaction->transaction_type_id == 2){
+                        $amount = $transaction->amount * -1;
+                    }else{
+                        $amount = $transaction->amount;
+                    }
+                    $total += $amount;
                 @endphp
                 <tr style="line-height: 18px;">
                     <td style="border-bottom: 1px solid #ccc;">{{ date('d-m-Y', strtotime($transaction->date)) }}</td>
                     <td style="border-bottom: 1px solid #ccc;">{{ $transaction->description }}</td>
-                    <td style="border-bottom: 1px solid #ccc;" align="right">{{ $transaction->currency_id->sign.amount_formatter($transaction->amount,2) }}</td>
+                    <td style="border-bottom: 1px solid #ccc;" align="right">{{ $transaction->currency_id->sign.amount_formatter($amount,2) }}</td>
                     <td style="border-bottom: 1px solid #ccc;" align="right">{{ $transaction->currency_id->sign.amount_formatter($total,2) }}</td>
                 </tr>
             @endforeach
