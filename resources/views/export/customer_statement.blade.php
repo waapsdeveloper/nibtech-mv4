@@ -130,7 +130,7 @@
                     @endif --}}
                     <table cellspacing="4">
 
-                    <br><br><br><br>
+                    {{-- <br><br><br><br> --}}
                         {{-- <tr>
                             <td style="text-align: left; margin-top:5px;" width="80"><h4><strong>Order ID:</strong></h4></td>
                             <td colspan="2" width="80"><h4 style="font-weight: 400">{{ $order->reference_id }}</h4></td>
