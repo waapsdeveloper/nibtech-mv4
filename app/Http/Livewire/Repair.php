@@ -221,6 +221,8 @@ class Repair extends Component
             // $transaction->created_at = $order->created_at;
 
             $transaction->save();
+            $transaction->reference_id = $transaction->id + 300000;
+            $transaction->save();
         }elseif($transaction->id != null && $repair->status == 3){
             $transaction->status = 2;
             $transaction->save();
