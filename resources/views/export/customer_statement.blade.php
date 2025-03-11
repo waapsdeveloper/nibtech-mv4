@@ -134,14 +134,12 @@
                     <i style="">All Invoices between {{ $start_date }} and {{ $end_date }}</i>
                 </td>
             </tr>
-            <hr style="border-bottom: 2px solid Black">
             <tr>
-                <th width="80">Date</th>
-                <th width="277">Details</th>
-                <th width="80" align="right">Amount</th>
-                <th width="100" align="right">Balance</th>
+                <th style="border-bottom: 1px solid #00f; border-top: 1px solid #00f;" width="80">Date</th>
+                <th style="border-bottom: 1px solid #00f; border-top: 1px solid #00f;" width="277">Details</th>
+                <th style="border-bottom: 1px solid #00f; border-top: 1px solid #00f;" width="80" align="right">Amount</th>
+                <th style="border-bottom: 1px solid #00f; border-top: 1px solid #00f;" width="100" align="right">Balance</th>
             </tr>
-            <hr>
             @php
                 $total = 0;
             @endphp
