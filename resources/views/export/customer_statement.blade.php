@@ -30,7 +30,21 @@
             /* padding: 20px; */
             /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); */
         }
-
+        .pull-right {
+            float: right;
+        }
+        .pull-left {
+            float: left;
+        }
+        .clearfix {
+            clear: both;
+        }
+        .wd-30 {
+            width: 30px;
+        }
+        .wd-120 {
+            width: 120px;
+        }
         .company-info, .invoice-header, .customer-details, .order-details, .order-items, .total-amount {
             /* margin-bottom: 20px; */
         }
@@ -97,15 +111,15 @@
                     <br>
                     <br>
                     <div>
-                        <span>For:</span>
-                        <span>
+                        <div class="pull-left wd-30">For:</div>
+                        <div class="pull-right wd-120">
                             <h4 style="line-height:11px; margin-top: 0;">{{ $customer->company }}</h4>
                             <h5 style="margin-top: 0;">{{ $customer->email }}</h5>
                             <h5 style="margin-top: 0;">{{ $customer->street }} {{ $customer->street2 }}, {{ $customer->city }}</h5>
                             <h5 style="margin-top: 0;">{{ $customer->postal_code }} {{ $customer->country_id->title ?? null }}</h5>
                             <h5 style="margin-top: 0;">{{ $customer->vat }}</h5>
-                        </span>
-
+                        </div>
+                        <div class="clearfix"></div>
                     </div>
 
                     <table border="1" cellpadding="0" cellspacing="0">
