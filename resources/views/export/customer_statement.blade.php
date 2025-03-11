@@ -91,7 +91,7 @@
                     <br>
                     <br>
 
-                    <table>
+                    <table border="1">
                         <tr>
                             <td colspan="2"><h1 style="line-height:14px; margin:0px;">Statement</h1></td>
                         </tr>
