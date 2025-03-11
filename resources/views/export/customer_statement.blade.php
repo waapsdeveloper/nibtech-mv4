@@ -128,7 +128,7 @@
 
         <table border="0">
             <hr style="border-top: 0px solid Black">
-            <tr style="line-height: 20px;">
+            <tr style="line-height: 24px;">
                 <td colspan="4" align="center">
 
                     <i style="">All Invoices between {{ $start_date }} and {{ $end_date }}</i>
@@ -147,7 +147,7 @@
                 @php
                     $total += $transaction->amount;
                 @endphp
-                <tr style="line-height: 17px;">
+                <tr style="line-height: 18px;">
                     <td style="border-bottom: 1px solid #ccc;">{{ date('d-m-Y', strtotime($transaction->date)) }}</td>
                     <td style="border-bottom: 1px solid #ccc;">{{ $transaction->description }}</td>
                     <td style="border-bottom: 1px solid #ccc;" align="right">{{ $transaction->currency_id->sign.amount_formatter($transaction->amount,2) }}</td>
