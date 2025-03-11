@@ -150,7 +150,7 @@
                     $total += $transaction->amount;
                 @endphp
                 <tr>
-                    <td>{{ date('Y-m-d', strtotime($transaction->date)) }}</td>
+                    <td>{{ date('d-m-Y', strtotime($transaction->date)) }}</td>
                     <td>{{ $transaction->description }}</td>
                     <td align="right">{{ $transaction->currency_id->sign.amount_formatter($transaction->amount,2) }}</td>
                     <td align="right">{{ $transaction->currency_id->sign.amount_formatter($total,2) }}</td>
