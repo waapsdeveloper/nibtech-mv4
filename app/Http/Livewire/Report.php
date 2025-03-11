@@ -212,9 +212,17 @@ class Report extends Component
                 $aggregated_cost[$agg->category_id] = 0;
                 continue;
             }
-            $aggregated_cost[$agg->category_id] = Order_item_model::whereIn('stock_id',explode(',',$agg->stock_ids))->whereHas('order', function ($q) {
-                $q->where('order_type_id',1);
-            })->sum('price');
+
+            $stock_ids = explode(',', $agg->stock_ids);
+            $total_cost = 0;
+
+            foreach (array_chunk($stock_ids, 1000) as $chunk) {
+                $total_cost += Order_item_model::whereIn('stock_id', $chunk)->whereHas('order', function ($q) {
+                    $q->where('order_type_id', 1);
+                })->sum('price');
+            }
+
+            $aggregated_cost[$agg->category_id] = $total_cost;
         }
 
         $data['aggregated_sales'] = $aggregates;
