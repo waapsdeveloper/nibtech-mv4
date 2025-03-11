@@ -385,7 +385,7 @@ class Customer extends Component
         $pdf->AddPage();
         $pdf->setCellPaddings(1, 1, 1, 1);
         $pdf->setCellMargins(1, 1, 1, 1);
-
+        $pdf->Image(public_path('assets/img/background/invoice_header.png'), 10, 10, 190, 20, 'png', '', 'T', false, 300, '', false, false, 0, false, false, false);
         // Generate HTML from Blade view
         if (request('statement') == 1) {
             $pdf->SetTitle('Customer Statement ' . $customer->company . ' pcs');
