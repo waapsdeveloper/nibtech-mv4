@@ -389,7 +389,12 @@ class Report extends Component
             })
 
         // whereIn('variation_id', $variation_ids)
-            ->whereIn('order_id', $b2c_order_ids)
+            // ->whereIn('order_id', $b2c_order_ids)
+            ->whereHas('order', function ($q) use ($start_date, $end_date) {
+                $q->whereBetween('processed_at', [$start_date, $end_date])
+                    ->whereIn('status', [3,6])
+                    ->where('order_type_id',3);
+            })
             // ->whereIn('status', [3,6])
             ->get();
         $currency_check = Order_item_model::whereIn('id', $b2c_order_items->pluck('id')->toArray())->whereNull('currency')->get();
