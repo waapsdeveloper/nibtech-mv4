@@ -97,7 +97,7 @@
                         </tr>
                         <tr>
                             <td width="30">For:</td>
-                            <td width="120" style="line-height:10px;">
+                            <td width="120" style="line-height:10px;" cellpadding="0" cellspacing="0">
                                 <h4 style="line-height:11px;">{{ $customer->company }}</h4>
                                 <h5>{{ $customer->email }}</h5>
                                 <h5>{{ $customer->street }} {{ $customer->street2 }}, {{ $customer->city }}</h5>
