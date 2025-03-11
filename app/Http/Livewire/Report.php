@@ -167,7 +167,8 @@ class Report extends Component
             ->when($query == 1, function ($q) use ($variation_ids) {
                 return $q->whereIn('variation.id', $variation_ids);
             })
-            ->whereIn('orders.id', $sale_orders)
+            // ->whereIn('orders.id', $sale_orders)
+            // ->whereBetween('orders.processed_at', [$start_date, $end_date])
             ->whereIn('order_items.id', $sale_items)
             ->whereIn('orders.order_type_id', [2,3,5])
             ->Where('orders.deleted_at',null)
