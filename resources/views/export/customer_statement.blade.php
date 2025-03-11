@@ -144,7 +144,7 @@
                 <td></td>
                 <td>Previous</td>
                 <td></td>
-                <td align="right">{{ $customer->currency_id->sign.amount_formatter($balance_bf,2) }}</td>
+                <td align="right">{{ €.amount_formatter($balance_bf,2) }}</td>
 
             </tr>
             @php
