@@ -104,7 +104,7 @@
                         <h5>invoice@nibritaintech.com</h5>
                 </td>
                 <td width="210"></td>
-                <td width="140" style="text-align: right; padding:0; margin:0; line-height:9px">
+                <td width="140" style="text-align: right; padding:0; margin:0; line-height:10px">
                     <br>
                     <br>
                     <br>
@@ -161,7 +161,19 @@
             @endforeach
 
         </table>
-
+        <br>
+        <br>
+        <table border="0">
+            <tr>
+            <td colspan="2">
+                <hr style="border-top: 1px solid #000">
+            </td>
+            </tr>
+            <tr>
+            <td width="350" style="text-align: right">Total</td>
+            <td style="text-align: right">{{ $currency->sign.amount_formatter($total,2) }}</td>
+            </tr>
+        </table>
     </div>
 </body>
 </html>
