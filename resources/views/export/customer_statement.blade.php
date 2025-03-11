@@ -110,17 +110,6 @@
                     <br>
                     <br>
                     <br>
-                    <div>
-                        <div class="pull-left wd-30">For:</div>
-                        <div class="pull-right wd-120">
-                            <h4 style="line-height:11px; margin-top: 0;">{{ $customer->company }}</h4>
-                            <h5 style="margin-top: 0;">{{ $customer->email }}</h5>
-                            <h5 style="margin-top: 0;">{{ $customer->street }} {{ $customer->street2 }}, {{ $customer->city }}</h5>
-                            <h5 style="margin-top: 0;">{{ $customer->postal_code }} {{ $customer->country_id->title ?? null }}</h5>
-                            <h5 style="margin-top: 0;">{{ $customer->vat }}</h5>
-                        </div>
-                        <div class="clearfix"></div>
-                    </div>
 
                     <table border="1" cellpadding="0" cellspacing="0">
                         <tr>
@@ -129,11 +118,11 @@
                         <tr>
                             <td width="30">For:</td>
                             <td width="120" style="text-align: left; padding:0; margin:0; line-height:10px" cellpadding="0" cellspacing="0">
-                                <h4 style="line-height:11px; margin-top: 0;">{{ $customer->company }}</h4>
-                                <h5 style="margin-top: 0;">{{ $customer->email }}</h5>
-                                <h5 style="margin-top: 0;">{{ $customer->street }} {{ $customer->street2 }}, {{ $customer->city }}</h5>
-                                <h5 style="margin-top: 0;">{{ $customer->postal_code }} {{ $customer->country_id->title ?? null }}</h5>
-                                <h5 style="margin-top: 0;">{{ $customer->vat }}</h5>
+                                <h4 style="line-height:11px; margin: 0;">{{ $customer->company }}</h4>
+                                <h5 style="margin: 0;">{{ $customer->email }}</h5>
+                                <h5 style="margin: 0;">{{ $customer->street }} {{ $customer->street2 }}, {{ $customer->city }}</h5>
+                                <h5 style="margin: 0;">{{ $customer->postal_code }} {{ $customer->country_id->title ?? null }}</h5>
+                                <h5 style="margin: 0;">{{ $customer->vat }}</h5>
                             </td>
                         </tr>
                     </table>
