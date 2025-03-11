@@ -85,7 +85,7 @@
                 </td>
                 <td width="200"></td>
                 <td width="150">
-                    <table>
+                    <table border="1">
                         <tr>
                             <td></td>
                             <td><h1 style="line-height:14px; margin:0px;">Statement</h1></td>
