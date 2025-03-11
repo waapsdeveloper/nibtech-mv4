@@ -136,8 +136,8 @@
             </tr>
             <hr style="border-bottom: 2px solid Black">
             <tr>
-                <th width="100">Date</th>
-                <th>Details</th>
+                <th width="80">Date</th>
+                <th width="200">Details</th>
                 <th align="right">Amount</th>
                 <th align="right">Balance</th>
             </tr>
