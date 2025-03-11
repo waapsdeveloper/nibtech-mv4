@@ -110,7 +110,7 @@
                     <table>
                     <tr>
                         <br>
-                        <td colspan="2"><h3 style="line-height:10px; margin:0px; ">Bill To:</h3></td>
+                        {{-- <td colspan="2"><h3 style="line-height:10px; margin:0px; ">Bill To:</h3></td> --}}
                     </tr>
                     <tr>
                         <td width="10"></td>
