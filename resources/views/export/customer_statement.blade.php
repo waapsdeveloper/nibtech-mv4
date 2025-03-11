@@ -127,7 +127,6 @@
             <br>
 
         <table border="0">
-            <hr>
             <tr style="border-top: 1px solid Black">
                 <td colspan="4" align="center">
 
