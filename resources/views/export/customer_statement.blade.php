@@ -149,11 +149,11 @@
                 @php
                     $total += $transaction->amount;
                 @endphp
-                <tr style="border-bottom: 1px solid #333;">
-                    <td style="border-bottom: 1px solid #333;">{{ date('d-m-Y', strtotime($transaction->date)) }}</td>
-                    <td style="border-bottom: 1px solid #333;">{{ $transaction->description }}</td>
-                    <td style="border-bottom: 1px solid #333;" align="right">{{ $transaction->currency_id->sign.amount_formatter($transaction->amount,2) }}</td>
-                    <td style="border-bottom: 1px solid #333;" align="right">{{ $transaction->currency_id->sign.amount_formatter($total,2) }}</td>
+                <tr style="border-bottom: 1px solid #ccc;">
+                    <td style="border-bottom: 1px solid #ccc;">{{ date('d-m-Y', strtotime($transaction->date)) }}</td>
+                    <td style="border-bottom: 1px solid #ccc;">{{ $transaction->description }}</td>
+                    <td style="border-bottom: 1px solid #ccc;" align="right">{{ $transaction->currency_id->sign.amount_formatter($transaction->amount,2) }}</td>
+                    <td style="border-bottom: 1px solid #ccc;" align="right">{{ $transaction->currency_id->sign.amount_formatter($total,2) }}</td>
                 </tr>
             @endforeach
 
