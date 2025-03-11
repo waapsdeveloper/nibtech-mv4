@@ -127,7 +127,8 @@
             <br>
 
         <table border="0">
-            <tr style="border-top: 1px solid Black">
+            <hr style="border-top: 0px solid Black">
+            <tr>
                 <td colspan="4" align="center">
 
                     <i style="">All Invoices between {{ $start_date }} and {{ $end_date }}</i>
