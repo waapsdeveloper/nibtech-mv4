@@ -84,7 +84,7 @@
                         <h5>invoice@nibritaintech.com</h5>
                 </td>
                 <td width="200"></td>
-                <td width="150" style="line-height:8px;">
+                <td width="150">
                     <br>
                     <br>
                     <br>
@@ -98,7 +98,7 @@
                     </tr>
                     <tr>
                         <td width="10">For:</td>
-                        <td>
+                        <td style="line-height:8px;">
                             <h4>{{ $customer->company }}</h4>
                             {{-- <h5>{{ $customer->first_name." ".$customer->last_name }}</h5> --}}
                             <h5>{{ $customer->email }}</h5>
