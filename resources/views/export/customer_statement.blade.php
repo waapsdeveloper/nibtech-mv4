@@ -142,12 +142,20 @@
                 <th align="right">Balance</th>
             </tr>
             <hr>
-            <tr>
-                <th>Date</th>
-                <th>Details</th>
-                <th>Amount</th>
-                <th>Balance</th>
-            </tr>
+            @php
+                $total = 0;
+            @endphp
+            @foreach ($transactions as $transaction)
+                @php
+                    $total += $transaction->amount;
+                @endphp
+                <tr>
+                    <td>{{ $transaction->date }}</td>
+                    <td>{{ $transaction->description }}</td>
+                    <td align="right">{{ $transaction->currency_id->sign.amount_formatter($transaction->amount,2) }}</td>
+                    <td align="right">{{ $transaction->currency_id->sign.amount_formatter($total,2) }}</td>
+                </tr>
+            @endforeach
 
         </table>
 
