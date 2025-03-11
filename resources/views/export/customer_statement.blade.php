@@ -61,10 +61,64 @@
     </style>
 </head>
 <body>
-    <img src="{{ public_path('assets/img/background/letterhead.png') }}" alt="Hello" width="100%">
     {{-- <iframe src="{{ $order->delivery_note_url }}"></iframe> --}}
-    Hello
+
     <div class="invoice-container">
+
+
+        <table border="0">
+            <tr style="text-align: right; padding:0; margin:0;">
+                <td style="text-align: left; padding:0; margin:0; line-height:10px">
+
+                    {{-- <div class="company-info"> --}}
+                        <br><br>
+                        <img src="{{ public_path('assets/img/brand').'/'.env('APP_LOGO') }}" alt="" height="50">
+                    {{-- </div> --}}
+                        {{-- <br> --}}
+                        {{-- <br> --}}
+                </td>
+                <td width="150"></td>
+                <td width="200" style="line-height:8px;">
+                        <h4><strong>{{ env('APP_NAME') }}</strong></h4>
+                        <h4>Cromac Square,</h4>
+                        <h4>Forsyth House,</h4>
+                        <h4>Belfast, BT2 8LA</h4>
+                        <h4>invoice@nibritaintech.com</h4>
+
+                </td>
+
+            </tr>
+
+            <tr style="border-top: 1px solid Black">
+                <td width="300">
+                    <table>
+                    <tr>
+                        <br>
+                        <td colspan="2"><h3 style="line-height:10px; margin:0px; ">Bill To:</h3></td>
+                    </tr>
+                    <tr>
+                        <td width="10"></td>
+                        <td>
+                            <div style="line-height:10px;">
+                                <h5>{{ $customer->company }}</h5>
+                                <h5>{{ $customer->first_name." ".$customer->last_name }}</h5>
+                                <h5>{{ $customer->email }}</h5>
+                                <h5>{{ $customer->phone }}</h5>
+                                <h5>{{ $customer->street }} {{ $customer->street2 }}, {{ $customer->city }}</h5>
+                                <h5>{{ $customer->postal_code }} {{ $customer->country_id->title ?? null }}</h5>
+                                <h5>{{ $customer->vat }}</h5>
+                                <!-- Add more customer details as needed -->
+                            </div>
+                        </td>
+                    </tr>
+                    </table>
+                </td>
+                <td width="60">
+
+                </td>
+            </tr>
+        </table>
+
     </div>
 </body>
 </html>
