@@ -60,7 +60,7 @@
                 <br>
                 <div class="btn-group position-absolute bottom-0 end-0" role="group" aria-label="Basic example">
                     <a href="{{url('customer/profile').'/'.$customer->id}}?page=orders" class="btn btn-link @if (request('page') == 'orders') bg-white @endif ">All&nbsp;Orders</a>
-                    <a href="{{url('customer/profile').'/'.$customer->id}}?page=transactions" class="btn btn-link @if (request('page') == 'transactions') bg-white @endif ">Transactions</a>
+                    <a href="{{url('customer/profile').'/'.$customer->id}}?page=transactions" class="btn btn-link @if (request('page') == 'transactions') bg-white @endif ">Accounts</a>
                     @if (session('user')->hasPermission('view_customer_repairs') && $repairs->count() > 0)
 
                         <a href="{{url('customer/profile').'/'.$customer->id}}?page=sent_repair_summery" class="btn btn-link @if (request('page') == 'sent_repair_summery') bg-white @endif ">Sent&nbsp;Repair&nbsp;Summery</a>
@@ -190,7 +190,7 @@
                         <div class="card-header pb-0 d-flex justify-content-between">
                             <h5 class="card-title mg-b-0"> Customer Transactions </h5>
                             <button class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#record_payment">Record Payment</button>
-                            <form method="GET" action="{{ url('customer/export_reports/'.$customer->id) }}" class="form-inline">
+                            <form method="GET" action="{{ url('customer/export_reports/'.$customer->id) }}" target="_BLANK" class="form-inline">
                                 <input type="hidden" name="start_date" value="{{ request('start_date') }}">
                                 <input type="hidden" name="end_date" value="{{ request('end_date') }}">
                                 <button type="submit" name="statement" value="1" class="btn btn-primary">Statement</button>
