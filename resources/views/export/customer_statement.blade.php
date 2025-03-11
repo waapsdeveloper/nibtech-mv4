@@ -134,7 +134,7 @@
                     <i style="">All Invoices between {{ $start_date }} and {{ $end_date }}</i>
                 </td>
             </tr>
-
+            <hr>
             <tr>
                 <td>Date</td>
                 <td>Details</td>
