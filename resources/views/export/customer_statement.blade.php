@@ -91,33 +91,28 @@
                     <br>
                     <br>
                     <br>
-                            <div style="line-height:10px;">
-                                <h2><strong>Statement</strong></h2>
-                                <h4>{{ $customer->company }}</h4>
-                                {{-- <h5>{{ $customer->first_name." ".$customer->last_name }}</h5> --}}
-                                <h5>{{ $customer->email }}</h5>
-                                <h5>{{ $customer->street }} {{ $customer->street2 }}, {{ $customer->city }}</h5>
-                                <h5>{{ $customer->postal_code }} {{ $customer->country_id->title ?? null }}</h5>
-                                <h5>{{ $customer->vat }}</h5>
-                                <!-- Add more customer details as needed -->
-                            </div>
+                    <table>
+                    <tr>
+                        <td colspan="2"><h1 style="line-height:14px; margin:0px; ">Statement</h1></td>
+                    </tr>
+                    <tr>
+                        <td width="10">For:</td>
+                        <td>
+                            <h4>{{ $customer->company }}</h4>
+                            {{-- <h5>{{ $customer->first_name." ".$customer->last_name }}</h5> --}}
+                            <h5>{{ $customer->email }}</h5>
+                            <h5>{{ $customer->street }} {{ $customer->street2 }}, {{ $customer->city }}</h5>
+                            <h5>{{ $customer->postal_code }} {{ $customer->country_id->title ?? null }}</h5>
+                            <h5>{{ $customer->vat }}</h5>
+                        </td>
+                    </tr>
+                    </table>
                 </td>
 
             </tr>
 
             <tr style="border-top: 1px solid Black">
                 <td width="300">
-                    <table>
-                    <tr>
-                        <br>
-                        <td colspan="2"><h3 style="line-height:10px; margin:0px; "></h3></td>
-                    </tr>
-                    <tr>
-                        <td width="10"></td>
-                        <td>
-                        </td>
-                    </tr>
-                    </table>
                 </td>
                 <td width="60">
 
