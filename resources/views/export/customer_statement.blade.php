@@ -138,8 +138,8 @@
             <tr>
                 <th>Date</th>
                 <th>Details</th>
-                <th>Amount</th>
-                <th>Balance</th>
+                <th align="right">Amount</th>
+                <th align="right">Balance</th>
             </tr>
             <hr>
             <tr>
