@@ -126,8 +126,8 @@
             <br>
             <br>
 
-                    <hr>
         <table border="0">
+            <hr>
             <tr style="border-top: 1px solid Black">
                 <td colspan="4" align="center">
 
@@ -136,10 +136,17 @@
             </tr>
             <hr>
             <tr>
-                <td>Date</td>
-                <td>Details</td>
-                <td>Amount</td>
-                <td>Balance</td>
+                <th>Date</th>
+                <th>Details</th>
+                <th>Amount</th>
+                <th>Balance</th>
+            </tr>
+            <hr>
+            <tr>
+                <th>Date</th>
+                <th>Details</th>
+                <th>Amount</th>
+                <th>Balance</th>
             </tr>
 
         </table>
