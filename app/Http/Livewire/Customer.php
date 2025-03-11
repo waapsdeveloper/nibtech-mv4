@@ -358,7 +358,7 @@ class Customer extends Component
         return Excel::download(new RepairersheetExport, 'pending_repairs_'.$customer->company.'.xlsx');
     }
 
-    public function export_reports($customer_id, $invoice = null)
+    public function export_reports($customer_id)
     {
         ini_set('memory_limit', '512M');
         ini_set('max_execution_time', '300');
@@ -383,6 +383,8 @@ class Customer extends Component
         $pdf->SetCreator(PDF_CREATOR);
         $pdf->SetFont('times', '', 12);
         $pdf->AddPage();
+        $pdf->setCellPaddings(1, 1, 1, 1);
+        $pdf->setCellMargins(1, 1, 1, 1);
 
         // Generate HTML from Blade view
         if (request('statement') == 1) {
