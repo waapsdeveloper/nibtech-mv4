@@ -96,7 +96,7 @@
                             <td colspan="2"><h1 style="line-height:14px; margin:0px;">Statement</h1></td>
                         </tr>
                         <tr>
-                            <td></td>
+                            <td width="30">For:</td>
                             <td>
                                 <h4>{{ $customer->company }}</h4>
                                 <h5>{{ $customer->email }}</h5>
