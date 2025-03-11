@@ -140,8 +140,15 @@
                 <th style="border-bottom: 1px solid #09F; border-top: 1px solid #09F;" width="80" align="right">Amount</th>
                 <th style="border-bottom: 1px solid #09F; border-top: 1px solid #09F;" width="100" align="right">Balance</th>
             </tr>
+            <tr>
+                <td></td>
+                <td>Previous</td>
+                <td></td>
+                <td align="right">{{ $customer->currency_id->sign.amount_formatter($balance_bf,2) }}</td>
+
+            </tr>
             @php
-                $total = 0;
+                $total = $balance_bf;
             @endphp
             @foreach ($transactions as $transaction)
                 @php
