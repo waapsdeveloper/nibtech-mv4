@@ -169,7 +169,7 @@ class Report extends Component
             })
             // ->whereIn('orders.id', $sale_orders)
             // ->whereBetween('orders.processed_at', [$start_date, $end_date])
-            ->whereIn('order_items.id', $sale_items)
+            // ->whereIn('order_items.id', $sale_items)
             ->whereIn('orders.order_type_id', [2,3,5])
             ->Where('orders.deleted_at',null)
             ->Where('order_items.deleted_at',null)
