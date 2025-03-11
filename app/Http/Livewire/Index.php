@@ -910,6 +910,15 @@ class Index extends Component
 
     public function test(){
 
+        $transactions = Account_transaction_model::whereNull('date')->get();
+        foreach($transactions as $transaction){
+            if($transaction->order != null){
+                $transaction->date = $transaction->order->created_at;
+            }elseif($transaction->process != null){
+                $transaction->date = $transaction->process->updated_at;
+            }
+            $transaction->save();
+        }
         // Merge Colors all
         // $product_color_merge = Product_color_merge_model::all();
 
