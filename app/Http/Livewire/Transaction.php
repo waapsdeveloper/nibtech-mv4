@@ -204,6 +204,21 @@ class Transaction extends Component
         return view('livewire.customer-profile')->with($data);
     }
 
+    public function update_transaction($id)
+    {
+        $transaction = Account_transaction_model::find($id);
+        $transaction->date = request('date');
+        $transaction->description = request('description');
+        $transaction->amount = request('amount');
+        $transaction->currency = request('currency');
+        $transaction->exchange_rate = request('exchange_rate');
+        $transaction->save();
+
+        session()->put('success',"Transaction has been updated successfully");
+        return redirect()->back();
+
+
+    }
     public function add_payment()
     {
         // dd(request()->all());
