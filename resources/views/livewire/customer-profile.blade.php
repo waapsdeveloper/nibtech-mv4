@@ -44,7 +44,7 @@
                     <li class="breadcrumb-item tx-15"><a href="{{ session('previous')}}">Customers</a></li>
                     <li class="breadcrumb-item active" aria-current="page">{{ $customer->company }}</li>
                 </ol>
-                <form method="GET" action="" class="form-inline align-self-center mt-2">
+                <form method="GET" action="" name="search" class="form-inline align-self-center mt-2">
                     <div class="form-floating">
                         <input type="date" class="form-control" name="start_date" value="{{ request('start_date') }}">
                         <label for="start_date">Start Date</label>
@@ -59,11 +59,14 @@
                 <br>
                 <br>
                 <div class="btn-group position-absolute bottom-0 end-0" role="group" aria-label="Basic example">
-                    <a href="{{url('customer/profile').'/'.$customer->id}}?page=orders" class="btn btn-link @if (request('page') == 'orders') bg-white @endif ">All&nbsp;Orders</a>
-                    <a href="{{url('customer/profile').'/'.$customer->id}}?page=transactions" class="btn btn-link @if (request('page') == 'transactions') bg-white @endif ">Accounts</a>
+                    <button type="submit" form="search" name="page" value="orders" class="btn btn-link @if (request('page') == 'orders') bg-white @endif ">All&nbsp;Orders</button>
+                    {{-- <a href="{{url('customer/profile').'/'.$customer->id}}?page=orders" class="btn btn-link @if (request('page') == 'orders') bg-white @endif ">All&nbsp;Orders</a> --}}
+                    <button type="submit" form="search" name="page" value="transactions" class="btn btn-link @if (request('page') == 'transactions') bg-white @endif ">Accounts</button>
+                    {{-- <a href="{{url('customer/profile').'/'.$customer->id}}?page=transactions" class="btn btn-link @if (request('page') == 'transactions') bg-white @endif ">Accounts</a> --}}
                     @if (session('user')->hasPermission('view_customer_repairs') && $repairs->count() > 0)
+                        <button type="submit" form="search" name="page" value="sent_repair_summery" class="btn btn-link @if (request('page') == 'sent_repair_summery') bg-white @endif ">Sent&nbsp;Repair&nbsp;Summery</button>
+                        {{-- <a href="{{url('customer/profile').'/'.$customer->id}}?page=sent_repair_summery" class="btn btn-link @if (request('page') == 'sent_repair_summery') bg-white @endif ">Sent&nbsp;Repair&nbsp;Summery</a> --}}
 
-                        <a href="{{url('customer/profile').'/'.$customer->id}}?page=sent_repair_summery" class="btn btn-link @if (request('page') == 'sent_repair_summery') bg-white @endif ">Sent&nbsp;Repair&nbsp;Summery</a>
                     @endif
                 </div>
             </div>
