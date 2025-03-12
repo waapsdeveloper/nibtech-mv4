@@ -281,7 +281,7 @@
 
                                                             <a href="javascript:void(0);"  data-bs-toggle="modal" data-bs-target="#record_payment" class="dropdown-item" data-transaction_id="{{ $transaction->id }}" data-transaction_ref="{{ $transaction->reference_id }}" data-customer_id="{{ $customer->id }}" data-type="1" data-amount="{{ $remaining }}" data-description="{{ $transaction->description }}" data-date="{{ $transaction->date }}"  data-currency="{{ $transaction->currency }}" data-exchange_rate="{{ $transaction->exchange_rate }}">Record Payment</a>
                                                         @endif
-
+                                                        <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#record_payment" data-transaction_id="{{ $transaction->id }}" data-transaction_ref="{{ $transaction->reference_id }}" data-amount="{{ $remaining }}" data-description="{{ $transaction->description }}" data-date="{{ $transaction->date }}"  data-currency="{{ $transaction->currency }}" data-exchange_rate="{{ $transaction->exchange_rate }}" data-func="edit">Edit Transaction</a>
                                                         <a href="{{url('transaction/delete/'.$transaction->id)}}" class="dropdown-item">Delete</a>
                                                     </div>
                                                 </td>
@@ -459,7 +459,7 @@
                         </div>
                         <div class="modal-body pd-20">
                         <input type="hidden" name="transaction_id" id="transaction_id">
-                            <div class="row">
+                            <div class="row hide-on-edit">
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="type">Payment Type</label>
@@ -539,27 +539,39 @@
         <script>
             $(document).ready(function(){
                 $('#record_payment').on('show.bs.modal', function (event) {
+
                     var button = $(event.relatedTarget);
-                    var type = button.data('type');
                     var amount = button.data('amount');
                     var description = button.data('description');
                     var date = button.data('date');
                     var currency = button.data('currency');
                     var exchange_rate = button.data('exchange_rate');
-                    var customer_id = button.data('customer_id');
                     var transaction_id = button.data('transaction_id');
                     var transaction_ref = button.data('transaction_ref');
                     var modal = $(this);
-                    modal.find('.modal-title').text('Record Payment for ' + transaction_ref);
-                    modal.find('.modal-body #type').val(type);
+                    modal.find('.modal-body #transaction_id').val(transaction_id);
                     modal.find('.modal-body #amount').val(amount);
                     modal.find('.modal-body #description').val(description);
                     modal.find('.modal-body #date').val(date.split(' ')[0]);
                     modal.find('.modal-body #currency').val(currency).change();
                     modal.find('.modal-body #exchange_rate').val(exchange_rate);
-                    modal.find('.modal-body #customer_id').val(customer_id);
-                    modal.find('.modal-body #transaction_id').val(transaction_id);
+
+                    if(button.data('func') == 'edit'){
+                        modal.find('.modal-title').text('Edit Transaction ' + transaction_ref);
+                        modal.find('.modal-body .hide-on-edit').hide();
+                        modal.find('.modal-body #record_payment_form').attr('action', "{{url('transaction/update/')}}/"+transaction_id);
+                    }else {
+
+                        var type = button.data('type');
+                        var customer_id = button.data('customer_id');
+                        modal.find('.modal-title').text('Record Payment for ' + transaction_ref);
+                        modal.find('.modal-body #type').val(type);
+                        modal.find('.modal-body #customer_id').val(customer_id);
+                    }
+
                 });
+
+
 
             })
         </script>
