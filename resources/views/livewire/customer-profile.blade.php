@@ -53,6 +53,7 @@
                         <input type="date" class="form-control" name="end_date" value="{{ request('end_date') }}">
                         <label for="end_date">End Date</label>
                     </div>
+                    <input type="hidden" name="page" value="{{ request('page') }}">
                     <button type="submit" class="btn btn-primary">Filter</button>
                 </form>
                 <br>
@@ -260,6 +261,18 @@
                                                 <td>€{{ amount_formatter($transaction->amount,2) }}</td>
                                                 <td>{{ $transaction->creator->first_name }}</td>
                                                 <td>{{ $transaction->created_at }}</td>
+                                                <td>
+
+                                                    <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
+                                                    <div class="dropdown-menu">
+                                                        @if ($transaction->payment_method_id == null)
+
+                                                            <a href="javascript:void(0);"  data-bs-toggle="modal" data-bs-target="#record_payment" class="dropdown-item" data-transaction_id="{{ $transaction->id }}" data-transaction_ref="{{ $transaction->reference_id }}" data-customer_id="{{ $customer->id }}" data-type="1" data-amount="{{ $transaction->amount }}" data-description="{{ $transaction->description }}" data-date="{{ $transaction->date }}"  data-currency="{{ $transaction->currency_id }}" data-exchange_rate="{{ $transaction->exchange_rate }}">Record Payment</a>
+                                                        @endif
+
+                                                        <a href="{{url('transaction/delete/'.$transaction->id)}}" class="dropdown-item">Delete</a>
+                                                    </div>
+                                                </td>
                                             </tr>
                                         @endforeach
                                     </tbody>
