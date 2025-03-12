@@ -524,7 +524,31 @@
     @section('scripts')
 
         <script>
+            $(document).ready(function(){
+                $('#record_payment').on('show.bs.modal', function (event) {
+                    var button = $(event.relatedTarget);
+                    var type = button.data('type');
+                    var amount = button.data('amount');
+                    var description = button.data('description');
+                    var date = button.data('date');
+                    var currency = button.data('currency');
+                    var exchange_rate = button.data('exchange_rate');
+                    var customer_id = button.data('customer_id');
+                    var transaction_id = button.data('transaction_id');
+                    var transaction_ref = button.data('transaction_ref');
+                    var modal = $(this);
+                    modal.find('.modal-title').text('Record Payment for ' + transaction_ref);
+                    modal.find('.modal-body #type').val(type);
+                    modal.find('.modal-body #amount').val(amount);
+                    modal.find('.modal-body #description').val(description);
+                    modal.find('.modal-body #date').val(date);
+                    modal.find('.modal-body #currency').val(currency);
+                    modal.find('.modal-body #exchange_rate').val(exchange_rate);
+                    modal.find('.modal-body #customer_id').val(customer_id);
+                    modal.find('.modal-body #transaction_id').val(transaction_id);
+                });
 
+            })
         </script>
 		<!--Internal Sparkline js -->
 		<script src="{{asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js')}}"></script>
