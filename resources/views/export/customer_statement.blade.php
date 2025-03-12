@@ -180,7 +180,14 @@
 
                 @endphp
                 <tr style="line-height: 18px;">
-                    <td style="border-bottom: 1px solid #ccc;">{{ date('d-m-Y', strtotime($transaction->date)) }}</td>
+                    <td style="border-bottom: 1px solid #ccc;">
+                        @if ($transaction->date != null)
+                            {{ date('d-m-Y', strtotime($transaction->date)) }}
+                        @else
+                            {{ date('d-m-Y', strtotime($transaction->created_at)) }}
+
+                        @endif
+                    </td>
                     <td style="border-bottom: 1px solid #ccc;">{{ $type.' '.$order }}</td>
                     <td style="border-bottom: 1px solid #ccc;" align="right">{{ $transaction->currency_id->sign.amount_formatter($amount,2) }}</td>
                     <td style="border-bottom: 1px solid #ccc;" align="right">{{ $transaction->currency_id->sign.amount_formatter($total,2) }}</td>
