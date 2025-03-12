@@ -187,7 +187,7 @@ class Customer extends Component
             $processes = $repairs->where('status',2);
             $process_ids = $processes->pluck('id');
             $all_stock_ids = Process_stock_model::whereIn('process_id',$process_ids)->where('status',1)->pluck('stock_id')->unique()->toArray();
-
+            dd($all_stock_ids);
 
             $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q) use ($all_stock_ids){
                 $q->whereIn('stock.id', $all_stock_ids)->where('stock.deleted_at',null);
