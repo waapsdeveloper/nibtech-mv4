@@ -341,6 +341,7 @@ Route::get('customer/export_reports/{id}', [Customer::class,'export_reports'])->
 
 Route::get('transaction', Transaction::class)->name('view_transaction');
 Route::get('transaction/delete/{id}', [Transaction::class,'delete_transaction'])->name('delete_transaction');
+Route::post('transaction/update/{id}', [Transaction::class,'update_transaction'])->name('edit_transaction');
 Route::post('transaction/add_payment', [Transaction::class,'add_payment'])->name('add_payment');
 
 Route::get('grade', Grade::class)->name('view_grade');
