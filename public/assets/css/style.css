@@ -95,7 +95,7 @@ License        :   Licensed under ThemeForest License
 /*dark colors*/
 
 .bg-lightgreen {
-  background-color: lightgreen;
+  background-color: lightgreen !important;
 }
 
 .accordion > .card:not(:first-of-type) .card-header:first-child {
