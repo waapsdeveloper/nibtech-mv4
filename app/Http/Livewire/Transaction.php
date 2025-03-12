@@ -239,7 +239,7 @@ class Transaction extends Component
         $transaction->save();
 
         $parent_transaction = Account_transaction_model::find(request('transaction_id'));
-        if($parent_transaction->amount == $parent_transaction->children->sum('amount')){
+        if($parent_transaction->amount <= $parent_transaction->children->sum('amount')){
             $parent_transaction->status = 3;
         }
         $parent_transaction->save();
