@@ -437,10 +437,11 @@
         <div class="modal fade" id="record_payment" tabindex="-1" role="dialog" aria-labelledby="record_payment" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">
-                    <form method="POST" action="{{url('customer/add_payment')}}" id="record_payment_form">
+                    <form method="POST" action="{{url('transaction/add_payment')}}" id="record_payment_form">
                         @csrf
                         <input type="hidden" name="customer_id" value="{{ $customer->id }}">
                         <input type="hidden" name="type" value="1">
+                        <input type="hidden" name="transaction_id" id="transaction_id">
                         <div class="modal-header">
                             <h5 class="modal-title" id="exampleModalLabel2">Record Payment for {{ $customer->company }}</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">&times;</button>
