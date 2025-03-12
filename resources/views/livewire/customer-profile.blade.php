@@ -441,9 +441,7 @@
                         @csrf
                         <input type="hidden" name="customer_id" value="{{ $customer->id }}">
                         <input type="hidden" name="type" value="1">
-                        <input type="hidden" name="transaction_id" id="transaction_id">
-                        <input type="hidden" name="customer_id" id="customer_id">
-                        <input type="hidden" name="transaction_id" id="transaction_id">
+                        <input type="text" name="transaction_id" id="transaction_id">
                         <div class="modal-header">
                             <h5 class="modal-title" id="exampleModalLabel2">Record Payment for {{ $customer->company }}</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">&times;</button>
