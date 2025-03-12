@@ -112,20 +112,50 @@ class Wholesale_return extends Component
 
         $transaction = Account_transaction_model::firstOrNew(['order_id'=>$order_id]);
         if($transaction->id == null && $order->status == 3){
-            $transaction->amount = $order->order_items->sum('price');
-            $transaction->currency = $order->currency;
-            $transaction->exchange_rate = $order->exchange_rate;
-            $transaction->customer_id = $order->customer_id;
-            $transaction->transaction_type_id = 1;
-            $transaction->status = 1;
-            $transaction->description = $order->reference;
-            $transaction->reference_id = $order->reference_id;
-            $transaction->created_by = session('user_id');
-            // $transaction->created_at = $order->created_at;
+            $orders = [];
+            foreach($order->order_items as $order_item){
+                if(isset($orders[$order_item->linked->order_id])){
+                    $orders[$order_item->linked->order_id] += $order_item->price;
+                }else{
+                    $orders[$order_item->linked->order_id] = $order_item->price;
+                }
+            }
+            if($order->order_items->sum('price') != array_sum($orders)){
+                dd('error');
+            }
+            foreach($orders as $id => $amount){
+                $transaction = new Account_transaction_model();
+                $transaction->order_id = $order_id;
+                $transaction->amount = $amount;
+                $transaction->currency = $order->currency;
+                $transaction->exchange_rate = $order->exchange_rate;
+                $transaction->customer_id = $order->customer_id;
+                $transaction->transaction_type_id = 1;
+                $transaction->status = 1;
+                $transaction->description = $order->reference;
+                $transaction->parent_id = $id;
+                $transaction->created_by = session('user_id');
+                // $transaction->created_at = $order->created_at;
 
-            $transaction->save();
-            $transaction->reference_id = $transaction->id + 300000;
-            $transaction->save();
+                $transaction->save();
+                $transaction->reference_id = $transaction->id + 300000;
+                $transaction->save();
+            }
+
+            // $transaction->amount = $order->order_items->sum('price');
+            // $transaction->currency = $order->currency;
+            // $transaction->exchange_rate = $order->exchange_rate;
+            // $transaction->customer_id = $order->customer_id;
+            // $transaction->transaction_type_id = 1;
+            // $transaction->status = 1;
+            // $transaction->description = $order->reference;
+            // $transaction->reference_id = $order->reference_id;
+            // $transaction->created_by = session('user_id');
+            // // $transaction->created_at = $order->created_at;
+
+            // $transaction->save();
+            // $transaction->reference_id = $transaction->id + 300000;
+            // $transaction->save();
         }elseif($transaction->id != null && $order->status == 3){
             $transaction->status = 2;
             $transaction->save();
