@@ -542,7 +542,7 @@
                     modal.find('.modal-body #amount').val(amount);
                     modal.find('.modal-body #description').val(description);
                     modal.find('.modal-body #date').val(date);
-                    modal.find('.modal-body #currency').val(currency);
+                    modal.find('.modal-body #currency').val(currency).change();
                     modal.find('.modal-body #exchange_rate').val(exchange_rate);
                     modal.find('.modal-body #customer_id').val(customer_id);
                     modal.find('.modal-body #transaction_id').val(transaction_id);
