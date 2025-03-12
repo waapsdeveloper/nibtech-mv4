@@ -260,7 +260,12 @@
                                                 </td>
                                                 <td title="{{ $transaction->description }}" class="wd-250">{{ Str::limit($transaction->description, 27) }}</td>
                                                 <td>€{{ amount_formatter($transaction->amount,2) }}</td>
-                                                <td>€{{ amount_formatter($transaction->amount$transaction->children->sum('amount')) ?? null }}</td>
+
+                                                <td>
+                                                    @if ($transaction->has('children'))
+                                                        €{{ amount_formatter($transaction->amount-$transaction->children->sum('amount')) ?? null }}
+                                                    @endif
+                                                </td>
                                                 <td>{{ $transaction->creator->first_name }}</td>
                                                 <td>{{ $transaction->created_at }}</td>
                                                 <td>
