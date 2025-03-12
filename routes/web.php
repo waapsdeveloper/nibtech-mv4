@@ -36,6 +36,7 @@ use App\Http\Controllers\ListingController;
 use App\Http\Controllers\ReportController;
 use App\Http\Livewire\InventoryVerification;
 use App\Http\Livewire\Stock_room;
+use App\Http\Livewire\Transaction;
 use App\Http\Livewire\Wholesale_return;
 
 /*
@@ -337,6 +338,9 @@ Route::get('customer/profile/{id}', [Customer::class,'profile'])->name('view_cus
 Route::post('customer/add_payment/', [Customer::class,'add_payment'])->name('add_customer_payment');
 Route::get('customer/export_pending_repairs/{id}', [Customer::class,'export_pending_repairs'])->name('view_customer_profile');
 Route::get('customer/export_reports/{id}', [Customer::class,'export_reports'])->name('view_customer_profile');
+
+Route::get('transaction', Transaction::class)->name('view_transaction');
+Route::get('transaction/delete/{id}', [Transaction::class,'delete_transaction'])->name('delete_transaction');
 
 Route::get('grade', Grade::class)->name('view_grade');
 Route::get('add-grade', [Grade::class,'add_grade'])->name('add_grade');
