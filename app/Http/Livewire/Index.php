@@ -910,15 +910,15 @@ class Index extends Component
 
     public function test(){
 
-        $transactions = Account_transaction_model::whereNull('date')->get();
-        foreach($transactions as $transaction){
-            if($transaction->order != null){
-                $transaction->date = $transaction->order->created_at;
-            }elseif($transaction->process != null){
-                $transaction->date = $transaction->process->updated_at;
-            }
-            $transaction->save();
-        }
+        // $transactions = Account_transaction_model::whereNull('date')->get();
+        // foreach($transactions as $transaction){
+        //     if($transaction->order != null){
+        //         $transaction->date = $transaction->order->created_at;
+        //     }elseif($transaction->process != null){
+        //         $transaction->date = $transaction->process->updated_at;
+        //     }
+        //     $transaction->save();
+        // }
         // Merge Colors all
         // $product_color_merge = Product_color_merge_model::all();
 
@@ -969,14 +969,14 @@ class Index extends Component
         // echo "Total Payment Charges: ".array_sum($all_charges->toArray())."<br>";
 
         ini_set('max_execution_time', 1200);
-        // Variation_model::where('product_storage_sort_id',null)->each(function($variation){
-        //     $pss = Product_storage_sort_model::firstOrNew(['product_id'=>$variation->product_id,'storage'=>$variation->storage]);
-        //     if($pss->id == null){
-        //         $pss->save();
-        //     }
-        //     $variation->product_storage_sort_id = $pss->id;
-        //     $variation->save();
-        // });
+        Variation_model::where('product_storage_sort_id',null)->each(function($variation){
+            $pss = Product_storage_sort_model::firstOrNew(['product_id'=>$variation->product_id,'storage'=>$variation->storage]);
+            if($pss->id == null){
+                $pss->save();
+            }
+            $variation->product_storage_sort_id = $pss->id;
+            $variation->save();
+        });
         // $order_c = new Order();
         // Order_model::where('scanned',null)->where('order_type_id',3)->where('tracking_number', '!=', null)->whereBetween('created_at', ['2024-05-01 00:00:00', now()->subDays(1)->format('Y-m-d H:i:s')])
         // ->orderByDesc('id')->each(function($order) use ($order_c){
