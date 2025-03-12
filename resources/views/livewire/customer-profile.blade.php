@@ -461,8 +461,8 @@
                                     <div class="form-group">
                                         <label for="method">Payment Method</label>
                                         <select class="form-control form-select" name="payment_method" id="method" required>
-                                            <option value="1">Cash</option>
-                                            <option value="2">Bank Transfer</option>
+                                            <option value="1">Bank Transfer</option>
+                                            <option value="2">Cash</option>
                                             <option value="3">Credit Card</option>
                                             <option value="4">Cheque</option>
                                             <option value="5">Other</option>
