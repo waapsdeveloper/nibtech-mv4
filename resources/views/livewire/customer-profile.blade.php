@@ -60,13 +60,9 @@
                 <br>
                 <div class="btn-group position-absolute bottom-0 end-0" role="group" aria-label="Basic example">
                     <button type="submit" form="search" name="page" value="orders" class="btn btn-link @if (request('page') == 'orders') bg-white @endif ">All&nbsp;Orders</button>
-                    {{-- <a href="{{url('customer/profile').'/'.$customer->id}}?page=orders" class="btn btn-link @if (request('page') == 'orders') bg-white @endif ">All&nbsp;Orders</a> --}}
                     <button type="submit" form="search" name="page" value="transactions" class="btn btn-link @if (request('page') == 'transactions') bg-white @endif ">Accounts</button>
-                    {{-- <a href="{{url('customer/profile').'/'.$customer->id}}?page=transactions" class="btn btn-link @if (request('page') == 'transactions') bg-white @endif ">Accounts</a> --}}
                     @if (session('user')->hasPermission('view_customer_repairs') && $repairs->count() > 0)
                         <button type="submit" form="search" name="page" value="sent_repair_summery" class="btn btn-link @if (request('page') == 'sent_repair_summery') bg-white @endif ">Sent&nbsp;Repair&nbsp;Summery</button>
-                        {{-- <a href="{{url('customer/profile').'/'.$customer->id}}?page=sent_repair_summery" class="btn btn-link @if (request('page') == 'sent_repair_summery') bg-white @endif ">Sent&nbsp;Repair&nbsp;Summery</a> --}}
-
                     @endif
                 </div>
             </div>
