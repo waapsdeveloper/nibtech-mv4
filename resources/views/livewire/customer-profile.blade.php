@@ -134,6 +134,7 @@
                                 $total_quantity = 0;
                                 $total_cost = 0;
                             @endphp
+                            @dd($sent_stock_summery)
                             @foreach ($sent_stock_summery as $summery)
 
                             @php
