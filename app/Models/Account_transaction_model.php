@@ -50,7 +50,12 @@ class Account_transaction_model extends Model
     public function authorizer(){
         return $this->hasOne(Admin_model::class, 'id', 'authorized_by');
     }
-
+    public function parent(){
+        return $this->hasOne(Account_transaction_model::class, 'id', 'parent_id');
+    }
+    public function children(){
+        return $this->hasMany(Account_transaction_model::class, 'parent_id', 'id');
+    }
 
 
 }
