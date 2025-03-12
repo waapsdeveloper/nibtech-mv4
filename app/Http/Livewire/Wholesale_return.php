@@ -137,6 +137,7 @@ class Wholesale_return extends Component
                 $transaction->description = $order->reference;
                 $transaction->parent_id = $parent->id;
                 $transaction->created_by = session('user_id');
+                $transaction->date = $order->created_at;
                 // $transaction->created_at = $order->created_at;
 
                 $transaction->save();
