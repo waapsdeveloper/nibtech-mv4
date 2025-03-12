@@ -559,7 +559,7 @@
                     if(button.data('func') == 'edit'){
                         modal.find('.modal-title').text('Edit Transaction ' + transaction_ref);
                         modal.find('.modal-body .hide-on-edit').hide();
-                        modal.find('.modal-body #record_payment_form').attr('action', "{{url('transaction/update/')}}/"+transaction_id);
+                        modal.find('.modal-content #record_payment_form').attr('action', "{{url('transaction/update/')}}/"+transaction_id);
                     }else {
 
                         var type = button.data('type');
