@@ -227,6 +227,11 @@
                                                 $process = $transaction->process;
 
                                                 $batch = $order ?? $process;
+                                                if ($transaction->has('children')) {
+                                                    $remaining = $transaction->amount-$transaction->children->sum('amount');
+                                                }else {
+                                                    $remaining = $transaction->amount;
+                                                }
                                             @endphp
                                             <tr @if ($transaction->status == 2) class="bg-warning" @elseif ($transaction->status == 3) class="bg-lightgreen" @endif>
                                                 <td>{{ $i += 1 }}</td>
@@ -263,7 +268,7 @@
 
                                                 <td>
                                                     @if ($transaction->has('children'))
-                                                        €{{ amount_formatter($transaction->amount-$transaction->children->sum('amount')) ?? null }}
+                                                        €{{ amount_formatter($remaining) ?? null }}
                                                     @endif
                                                 </td>
                                                 <td>{{ $transaction->creator->first_name }}</td>
@@ -274,7 +279,7 @@
                                                     <div class="dropdown-menu">
                                                         @if ($transaction->payment_method_id == null)
 
-                                                            <a href="javascript:void(0);"  data-bs-toggle="modal" data-bs-target="#record_payment" class="dropdown-item" data-transaction_id="{{ $transaction->id }}" data-transaction_ref="{{ $transaction->reference_id }}" data-customer_id="{{ $customer->id }}" data-type="1" data-amount="{{ $transaction->amount }}" data-description="{{ $transaction->description }}" data-date="{{ $transaction->date }}"  data-currency="{{ $transaction->currency }}" data-exchange_rate="{{ $transaction->exchange_rate }}">Record Payment</a>
+                                                            <a href="javascript:void(0);"  data-bs-toggle="modal" data-bs-target="#record_payment" class="dropdown-item" data-transaction_id="{{ $transaction->id }}" data-transaction_ref="{{ $transaction->reference_id }}" data-customer_id="{{ $customer->id }}" data-type="1" data-amount="{{ $remaining }}" data-description="{{ $transaction->description }}" data-date="{{ $transaction->date }}"  data-currency="{{ $transaction->currency }}" data-exchange_rate="{{ $transaction->exchange_rate }}">Record Payment</a>
                                                         @endif
 
                                                         <a href="{{url('transaction/delete/'.$transaction->id)}}" class="dropdown-item">Delete</a>
