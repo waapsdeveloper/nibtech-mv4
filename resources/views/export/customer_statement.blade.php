@@ -101,7 +101,7 @@
                         <h5>Cromac Square,</h5>
                         <h5>Forsyth House,</h5>
                         <h5>Belfast, BT2 8LA</h5>
-                        <h5>invoice@nibritaintech.com</h5>
+                        <h5>sales@nibritaintech.com</h5>
                 </td>
                 <td width="210"></td>
                 <td width="140" style="text-align: right; padding:0; margin:0; line-height:10px">
@@ -140,16 +140,24 @@
             </tr>
             <tr style="line-height: 20px;">
                 <th style="border-bottom: 1px solid #09F; border-top: 1px solid #09F;" width="80">Date</th>
-                <th style="border-bottom: 1px solid #09F; border-top: 1px solid #09F;" width="277">Details</th>
-                <th style="border-bottom: 1px solid #09F; border-top: 1px solid #09F;" width="80" align="right">Amount</th>
+                <th style="border-bottom: 1px solid #09F; border-top: 1px solid #09F;" width="197">Details</th>
+                <th style="border-bottom: 1px solid #09F; border-top: 1px solid #09F;" width="80" align="right">Invoices</th>
+                <th style="border-bottom: 1px solid #09F; border-top: 1px solid #09F;" width="80" align="right">Payments</th>
                 <th style="border-bottom: 1px solid #09F; border-top: 1px solid #09F;" width="100" align="right">Balance</th>
             </tr>
-            @if ($balance_bf > 0)
+            @if ($balance_bf != 0)
 
             <tr>
                 <td style="border-bottom: 1px solid #ccc;"></td>
                 <td style="border-bottom: 1px solid #ccc;">Previous</td>
-                <td style="border-bottom: 1px solid #ccc;" align="right">€{{ amount_formatter($balance_bf,2) }}</td>
+                @if ($balance_bf < 0)
+                    <td style="border-bottom: 1px solid #ccc;" align="right">€{{ amount_formatter($balance_bf * -1,2) }}</td>
+                    <td style="border-bottom: 1px solid #ccc;" align="right">€0.00</td>
+                @else
+                    <td style="border-bottom: 1px solid #ccc;" align="right">€0.00</td>
+                    <td style="border-bottom: 1px solid #ccc;" align="right">€{{ amount_formatter($balance_bf,2) }}</td>
+
+                @endif
                 <td style="border-bottom: 1px solid #ccc;" align="right">€{{ amount_formatter($balance_bf,2) }}</td>
 
             </tr>
@@ -189,7 +197,13 @@
                         @endif
                     </td>
                     <td style="border-bottom: 1px solid #ccc;">{{ $type.' '.$order }}</td>
-                    <td style="border-bottom: 1px solid #ccc;" align="right">{{ $transaction->currency_id->sign.amount_formatter($amount,2) }}</td>
+                    @if ($amount < 0)
+                        <td style="border-bottom: 1px solid #ccc;" align="right">€{{ amount_formatter($amount * -1,2) }}</td>
+                        <td style="border-bottom: 1px solid #ccc;" align="right">€0.00</td>
+                    @else
+                        <td style="border-bottom: 1px solid #ccc;" align="right">€0.00</td>
+                        <td style="border-bottom: 1px solid #ccc;" align="right">€{{ amount_formatter($amount,2) }}</td>
+                    @endif
                     <td style="border-bottom: 1px solid #ccc;" align="right">{{ $transaction->currency_id->sign.amount_formatter($total,2) }}</td>
                 </tr>
             @endforeach
