@@ -212,6 +212,7 @@
                                             <th><small><b>Batch Type</b></small></th>
                                             <th><small><b>Description</b></small></th>
                                             <th><small><b>Value</b></small></th>
+                                            <th><small><b>Balance</b></small></th>
                                             <th><small><b>Creator</b></small></th>
                                             <th><small><b>Creation Date</b></small></th>
                                         </tr>
@@ -259,6 +260,7 @@
                                                 </td>
                                                 <td title="{{ $transaction->description }}" class="wd-250">{{ Str::limit($transaction->description, 27) }}</td>
                                                 <td>€{{ amount_formatter($transaction->amount,2) }}</td>
+                                                <td>€{{ amount_formatter($transaction->amount$transaction->children->sum('amount')) ?? null }}</td>
                                                 <td>{{ $transaction->creator->first_name }}</td>
                                                 <td>{{ $transaction->created_at }}</td>
                                                 <td>
