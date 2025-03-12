@@ -93,6 +93,11 @@ License        :   Licensed under ThemeForest License
 /*alerts*/
 /*navigation*/
 /*dark colors*/
+
+.bg-lightgreen {
+  background-color: lightgreen;
+}
+
 .accordion > .card:not(:first-of-type) .card-header:first-child {
   border-radius: 0;
 }
