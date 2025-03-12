@@ -272,7 +272,7 @@
                                                     @endif
                                                 </td>
                                                 <td>{{ $transaction->creator->first_name }}</td>
-                                                <td>{{ $transaction->created_at }}</td>
+                                                <td>{{ $transaction->date }}</td>
                                                 <td>
 
                                                     <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
