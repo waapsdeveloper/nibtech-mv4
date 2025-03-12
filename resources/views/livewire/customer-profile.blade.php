@@ -227,7 +227,7 @@
 
                                                 $batch = $order ?? $process;
                                             @endphp
-                                            <tr @if ($transaction->status == 2) class="bg-warning" @elseif ($transaction->status == 3) class="bg-success" @endif>
+                                            <tr @if ($transaction->status == 2) class="bg-warning" @elseif ($transaction->status == 3) class="bg-lightgreen" @endif>
                                                 <td>{{ $i += 1 }}</td>
                                                 <td>{{ $transaction->reference_id }}</td>
                                                 <td>{{ $transaction->transaction_type->name }}</td>
