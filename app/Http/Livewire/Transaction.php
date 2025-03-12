@@ -206,6 +206,7 @@ class Transaction extends Component
 
     public function add_payment()
     {
+        dd(request()->all());
         $latest_transaction_reference = Account_transaction_model::orderBy('reference_id','desc')->first();
         $transaction = new Account_transaction_model();
         $transaction->reference_id = $latest_transaction_reference->reference_id + 1;
