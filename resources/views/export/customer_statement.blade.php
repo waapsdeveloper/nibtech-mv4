@@ -182,8 +182,8 @@
                         $order = $transaction->process->reference_id;
                     }else{
                         # code...
-                        $type = '';
-                        $order = '';
+                        $type = $transaction->payment_method->name;
+                        $order = $transaction->reference_id;
                     }
 
                 @endphp
