@@ -124,6 +124,8 @@ class Wholesale_return extends Component
                 dd('error');
             }
             foreach($orders as $id => $amount){
+                $parent = Account_transaction_model::where('order_id',$id)->first();
+
                 $transaction = new Account_transaction_model();
                 $transaction->order_id = $order_id;
                 $transaction->amount = $amount;
@@ -133,7 +135,7 @@ class Wholesale_return extends Component
                 $transaction->transaction_type_id = 1;
                 $transaction->status = 1;
                 $transaction->description = $order->reference;
-                $transaction->parent_id = $id;
+                $transaction->parent_id = $parent->id;
                 $transaction->created_by = session('user_id');
                 // $transaction->created_at = $order->created_at;
 
