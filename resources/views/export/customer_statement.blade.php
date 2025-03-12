@@ -199,9 +199,9 @@
                     <td style="border-bottom: 1px solid #ccc;">{{ $type.' '.$order }}</td>
                     @if ($amount < 0)
                         <td style="border-bottom: 1px solid #ccc;" align="right">€{{ amount_formatter($amount * -1,2) }}</td>
-                        <td style="border-bottom: 1px solid #ccc;" align="right">€0.00</td>
+                        <td style="border-bottom: 1px solid #ccc;" align="right">-</td>
                     @else
-                        <td style="border-bottom: 1px solid #ccc;" align="right">€0.00</td>
+                        <td style="border-bottom: 1px solid #ccc;" align="right">-</td>
                         <td style="border-bottom: 1px solid #ccc;" align="right">€{{ amount_formatter($amount,2) }}</td>
                     @endif
                     <td style="border-bottom: 1px solid #ccc;" align="right">{{ $transaction->currency_id->sign.amount_formatter($total,2) }}</td>
