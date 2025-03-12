@@ -262,9 +262,9 @@
                                                 {{-- <td>{{ $batch->reference_id }}</td> --}}
                                                 <td>{{ $batch->order_type->name ?? null }}{{$batch->process_type->name ?? null}}
                                                     {{ $transaction->payment_method->name ?? null }}
-                                                    {{ $transaction->parent->reference_id ?? null }}
                                                 </td>
-                                                <td title="{{ $transaction->description }}" class="wd-250">{{ Str::limit($transaction->description, 27) }}</td>
+                                                <td title="{{ $transaction->description }}" class="wd-250">{{ Str::limit($transaction->description, 27) }}
+                                                    {{ $transaction->parent->reference_id ?? null }}</td>
                                                 <td>€{{ amount_formatter($transaction->amount,2) }}</td>
 
                                                 <td>
