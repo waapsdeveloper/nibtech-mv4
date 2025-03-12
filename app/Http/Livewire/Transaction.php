@@ -223,7 +223,11 @@ class Transaction extends Component
         $transaction->created_by = session('user_id');
         $transaction->save();
 
-
+        $parent_transaction = Account_transaction_model::find(request('transaction_id'));
+        if($parent_transaction->amount == $parent_transaction->children->sum('amount')){
+            $parent_transaction->status = 3;
+        }
+        $parent_transaction->save();
 
         session()->put('success',"Payment has been added successfully");
         return redirect()->back();
