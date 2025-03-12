@@ -165,10 +165,23 @@
                         $amount = $transaction->amount;
                     }
                     $total += $amount;
+
+                    if($transaction->order != null){
+                        $type = $transaction->order->order_type->name;
+                        $order = $transaction->order->reference_id;
+                    }elseif ($transaction->process != null) {
+                        $type = $transaction->process->process_type->name;
+                        $order = $transaction->process->reference_id;
+                    }else{
+                        # code...
+                        $type = '';
+                        $order = '';
+                    }
+
                 @endphp
                 <tr style="line-height: 18px;">
                     <td style="border-bottom: 1px solid #ccc;">{{ date('d-m-Y', strtotime($transaction->date)) }}</td>
-                    <td style="border-bottom: 1px solid #ccc;">{{ $transaction->description }}</td>
+                    <td style="border-bottom: 1px solid #ccc;">{{ $type.' '.$order }}</td>
                     <td style="border-bottom: 1px solid #ccc;" align="right">{{ $transaction->currency_id->sign.amount_formatter($amount,2) }}</td>
                     <td style="border-bottom: 1px solid #ccc;" align="right">{{ $transaction->currency_id->sign.amount_formatter($total,2) }}</td>
                 </tr>
