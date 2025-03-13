@@ -232,7 +232,7 @@ class Stock_room extends Component
             $stock_movement->received_by = $user_id;
             $stock_movement->received_at = Carbon::now();
             if(request('description') != null){
-                $stock_movement->description = request('description');
+                $stock_movement->description .= ' | '.request('description');
             }
                 $stock_movement->save();
 
