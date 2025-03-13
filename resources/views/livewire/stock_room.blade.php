@@ -72,6 +72,10 @@
                             <input class="form-check-input" type="radio" id="replacement" name="description" value="Replacement">
                             <label class="form-check-label" for="replacement">Replacement</label>
                         </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="radio" id="receive" name="description" value="Receive">
+                            <label class="form-check-label" for="receive">Receive</label>
+                        </div>
                     </div> &nbsp;&nbsp;&nbsp;&nbsp;
                     <button class="btn btn-secondary pd-x-20" type="submit">Receive</button>
 
