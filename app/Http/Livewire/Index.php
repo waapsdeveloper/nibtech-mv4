@@ -717,10 +717,16 @@ class Index extends Component
             $price_changes = [];
             foreach ($today_average as $variation_id => $today) {
                 if (isset($yesterday_average[$variation_id])) {
+                    $variation = Variation_model::find($variation_id);
                     $yesterday = $yesterday_average[$variation_id];
                     $change = (($today->average_price - $yesterday->average_price) / $yesterday->average_price) * 100;
                     $price_changes[] = [
                         'variation_id' => $variation_id,
+                        'variation' => ($variation->product->model ?? '') . ' ' . ($variation->storage_id->name ?? '') . ' ' . ($variation->color_id->name ?? '') . ' ' . ($variation->grade_id->name ?? ''),
+                        'product_id' => $variation->product_id,
+                        'storage' => $variation->storage,
+                        'color' => $variation->color,
+                        'grade' => $variation->grade,
                         'change' => $change,
                         'today_average' => $today->average_price,
                         'yesterday_average' => $yesterday->average_price,
