@@ -891,6 +891,65 @@
             });
         @endif
 
+        @if (session('user')->hasPermission('dashboard_price_changes'))
+
+            function get_price_changes() {
+                let increment = $('#increment');
+                let decrement = $('#decrement');
+                let params = {
+                    start_date: "{{ $start_date }}",
+                    end_date: "{{ $end_date }}",
+                    category: "{{ Request::get('category') }}",
+                    brand: "{{ Request::get('brand') }}",
+                    product: "{{ Request::get('product') }}",
+                    sku: "{{ Request::get('sku') }}",
+                    storage: "{{ Request::get('storage') }}",
+                    color: "{{ Request::get('color') }}",
+                    grade: "{{ Request::get('grade') }}",
+                    data: "{{ Request::get('data') }}",
+                }
+                let queryString = $.param(params);
+
+                let new_increment = ``;
+                let new_decrement = ``;
+                // let data = load_data("{{ url('index/get_price_changes') }}"+ '?' + queryString);
+                $.ajax({
+                    url: "{{url('index/get_price_changes')}}?"+queryString,
+                    type: 'GET',
+                    success: function(data) {
+                        data.top_10_changes.forEach((element, index) => {
+                            new_increment += `
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td><a href="{{url('listing')}}?product=${element.product_id}&storage=${element.storage}&color=${element.color}&grade[]=${element.grade}" target="_blank">${element.variation}</a></td>
+                                    <td>${element.yesterday}</td>
+                                    <td>${element.today}</td>
+                                </tr>
+                            `;
+                        });
+                        increment.html(new_increment);
+
+                        data.decrement.forEach((element, index) => {
+                            new_decrement += `
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td><a href="{{url('listing')}}?product=${element.product_id}&storage=${element.storage}&color=${element.color}&grade[]=${element.grade}" target="_blank">${element.variation}</a></td>
+                                    <td>${element.yesterday}</td>
+                                    <td>${element.today}</td>
+                                </tr>
+                            `;
+                        });
+                        decrement.html(new_decrement);
+                    }
+                });
+            }
+
+            $(document).ready(function(){
+                get_price_changes();
+            });
+
+        @endif
+
 
         </script>
 		<script src="{{asset('assets/plugins/chartjs/Chart.bundle.min.js')}}"></script>
