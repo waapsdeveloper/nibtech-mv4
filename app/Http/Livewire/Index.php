@@ -735,8 +735,7 @@ class Index extends Component
 
             $data['top_10_changes'] = $top_10_changes;
 
-            $bottom_10_changes = array_slice($price_changes, -10, -1);
-
+            $bottom_10_changes = array_slice($price_changes, 0, 10);
 
             return response()->json($bottom_10_changes);
 
