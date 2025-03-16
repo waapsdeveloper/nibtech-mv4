@@ -728,8 +728,8 @@ class Index extends Component
                         'color' => $variation->color,
                         'grade' => $variation->grade,
                         'change' => $change,
-                        'today_average' => $today->average_price,
-                        'yesterday_average' => $yesterday->average_price,
+                        'today_average' => amount_formatter($today->average_price),
+                        'yesterday_average' => amount_formatter($yesterday->average_price),
                     ];
                 }
             }
