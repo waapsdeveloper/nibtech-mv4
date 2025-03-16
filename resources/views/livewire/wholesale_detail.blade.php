@@ -802,14 +802,14 @@
         function submitForm(event, id) {
             event.preventDefault();
             var form = $("#update_prices_" + id);
-            var actionUrl = form.attr('action');
+            var actionUrl = {{ url('wholesale') }} + "/update_prices";
 
             $.ajax({
-                type: "GET",
+                type: "POST",
                 url: actionUrl,
                 data: form.serialize(), // serializes the form's elements.
                 success: function(data) {
-                    // alert("Success: " + data); // show response from the PHP script.
+                    alert("Success: " + data); // show response from the PHP script.
                     $('#unit_price_' + id).addClass('bg-success');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
