@@ -261,7 +261,13 @@ class ListingController extends Controller
             });
         })
         ->where('sku', '!=', null)
+        ->whereNull('variation.deleted_at')
+        ->whereNull('products.deleted_at')
+        ->whereNull('storage.deleted_at')
+        ->whereNull('grade.deleted_at')
         ->join('products', 'variation.product_id', '=', 'products.id') // Join the products table
+        ->join('storage', 'variation.storage', '=', 'storage.id') // Join the storage table
+        ->join('grade', 'variation.grade', '=', 'grade.id') // Join the grade table
         ->orderBy('products.model', 'asc') // Order by product model in ascending order
         ->orderBy('variation.storage', 'asc') // Secondary order by storage
         // ->orderBy('variation.color', 'asc') // Secondary order by color
@@ -269,7 +275,7 @@ class ListingController extends Controller
         // ->orderBy('listed_stock', 'desc') // Secondary order by listed stock
         // ->select('variation.*') // Select only the variation columns
         ->groupBy(['variation.product_id', 'variation.storage', 'variation.grade'])
-        ->select('variation.product_id', 'variation.storage', 'variation.grade', DB::raw('GROUP_CONCAT(variation.id) as ids'))
+        ->select('variation.product_id', 'products.model as product_name', 'variation.storage', 'storage.name as storage_name', 'variation.grade', 'grade.name as grade_name', DB::raw('GROUP_CONCAT(variation.id) as ids'))
         ->paginate($per_page)
         ->appends(request()->except('page'));
     }
