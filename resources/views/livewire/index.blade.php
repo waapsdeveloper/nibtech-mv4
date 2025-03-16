@@ -609,7 +609,7 @@
 
                             @if (session('user')->hasPermission('dashboard_price_changes'))
                                 <div class="row">
-                                    <div class="col-md">
+                                    <div class="col-md-6">
 
                                         <div class="card">
                                             <div class="card-header">
@@ -631,7 +631,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md">
+                                    <div class="col-md-6">
                                         <div class="card">
                                             <div class="card-header">
                                                 <h4 class="card-title">Top Decrement</h4>
@@ -922,8 +922,8 @@
                                 <tr>
                                     <td>${index + 1}</td>
                                     <td><a href="{{url('listing')}}?product=${element.product_id}&storage=${element.storage}&color=${element.color}&grade[]=${element.grade}" target="_blank">${element.variation}</a></td>
-                                    <td>${element.yesterday_average}</td>
-                                    <td title="${element.change}%">${element.today_average}</td>
+                                    <td>${element.yesterday_average.toFixed(2)}</td>
+                                    <td title="${element.change.toFixed(2)}%">${element.today_average.toFixed(2)}</td>
                                 </tr>
                             `;
                         });
@@ -934,8 +934,8 @@
                                 <tr>
                                     <td>${index + 1}</td>
                                     <td><a href="{{url('listing')}}?product=${element.product_id}&storage=${element.storage}&color=${element.color}&grade[]=${element.grade}" target="_blank">${element.variation}</a></td>
-                                    <td>${element.yesterday_average}</td>
-                                    <td title="${element.change}%">${element.today_average}</td>
+                                    <td>${element.yesterday_average.toFixed(2)}</td>
+                                    <td title="${element.change.toFixed(2)}%">${element.today_average.toFixed(2)}</td>
                                 </tr>
                             `;
                         });
