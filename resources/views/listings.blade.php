@@ -195,6 +195,7 @@
                                 </td>
                                 <input type="hidden" name="variation_ids[]" value="${variation.ids}" form="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}">
                                 <input type="hidden" name="listing_ids[]" value="${variation.listing_ids}" form="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}">
+                                <input type="submit" form="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}" hidden>
                             </tr>
                         `);
                         $(document).ready(function() {
