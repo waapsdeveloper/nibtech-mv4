@@ -439,6 +439,7 @@
                                     </div>
                                     ${p_append}
                                 </td>
+                                <td>${new Date(listing.updated_at).toGMTString()}</td>
                                 <td>
                                     <div class="form-floating">
                                         <input type="number" class="form-control" id="target_${listing.id}" name="target" step="0.01" value="${listing.target_price}" form="change_target_${listing.id}">
@@ -451,7 +452,6 @@
                                         <label for="">%</label>
                                     </div>
                                 </td>
-                                <td>${new Date(listing.updated_at).toGMTString()}</td>
                             </tr>`;
                         $(document).ready(function() {
                             $("#change_min_price_" + listing.id).on('submit', function(e) {
@@ -718,13 +718,13 @@
                                             <label for="">Target</label>
                                         </div>
                                     </td>
+                                    <td>${new Date(listing.updated_at).toGMTString()}</td>
                                     <td>
                                         <div class="form-floating">
                                             <input type="number" class="form-control" id="percent_${listing.id}" name="percent" step="0.01" value="${listing.target_percentage}" form="change_target_${listing.id}">
                                             <label for="">%</label>
                                         </div>
                                     </td>
-                                    <td>${new Date(listing.updated_at).toGMTString()}</td>
                                 </tr>`;
                             $(document).ready(function() {
                                 $("#change_min_price_" + listing.id).on('submit', function(e) {

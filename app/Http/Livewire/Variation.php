@@ -81,7 +81,8 @@ class Variation extends Component
                     return $q->where('grade', request('grade'));
                 })
                 ->withCount('available_stocks')
-                ->orderBy('name','desc')
+                // ->orderBy('name','desc')
+                ->orderByDesc('id')
                 ->paginate($per_page)
                 ->onEachSide(5)
                 ->appends(request()->except('page'));
