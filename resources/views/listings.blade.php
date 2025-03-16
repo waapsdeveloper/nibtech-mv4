@@ -188,6 +188,7 @@
                                 <td>
                                     <input type="number" class="form-control" name="target_percentage" id="target_percentage" step="0.01" value="${variation.target_percentage}">
                                 </td>
+                                <input type="hidden" name="variation_ids[]" value="${variation.ids}">
                             </tr>
                         `);
                     });
