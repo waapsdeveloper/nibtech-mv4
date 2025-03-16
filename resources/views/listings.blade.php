@@ -194,6 +194,7 @@
                                     <input type="number" class="form-control" name="target_percentage" id="target_percentage" step="0.01" value="${variation.target_percentage}" form="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}">
                                 </td>
                                 <input type="hidden" name="variation_ids[]" value="${variation.ids}" form="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}">
+                                <input type="hidden" name="listing_ids[]" value="${variation.listing_ids}" form="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}">
                             </tr>
                         `);
                         $(document).ready(function() {
@@ -400,6 +401,7 @@
             event.preventDefault(); // avoid executing the actual submit of the form.
 
             var form = $('#bulk_target_' + variationId);
+
 
 
         }
