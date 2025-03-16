@@ -263,8 +263,6 @@ class ListingController extends Controller
         ->where('sku', '!=', null)
         ->whereNull('variation.deleted_at')
         ->whereNull('products.deleted_at')
-        ->whereNull('storage.deleted_at')
-        ->whereNull('grade.deleted_at')
         ->join('products', 'variation.product_id', '=', 'products.id') // Join the products table
         ->join('storage', 'variation.storage', '=', 'storage.id') // Join the storage table
         ->join('grade', 'variation.grade', '=', 'grade.id') // Join the grade table
