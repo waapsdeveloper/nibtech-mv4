@@ -181,16 +181,26 @@
                     data.data.forEach(function(variation) {
                         bulkUpdateTable.append(`
                             <tr>
+
+                                <form class="form-inline" method="POST" id="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}">
+                                    @csrf
+                                    <input type="submit" hidden>
+                                </form>
                                 <td>${variation.product_name} ${variation.storage_name} ${variation.grade_name}</td>
                                 <td>
-                                    <input type="number" class="form-control" name="target_price" id="target_price" step="0.01" value="${variation.target_price}">
+                                    <input type="number" class="form-control" name="target_price" id="target_price" step="0.01" value="${variation.target_price}" form="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}">
                                 </td>
                                 <td>
-                                    <input type="number" class="form-control" name="target_percentage" id="target_percentage" step="0.01" value="${variation.target_percentage}">
+                                    <input type="number" class="form-control" name="target_percentage" id="target_percentage" step="0.01" value="${variation.target_percentage}" form="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}">
                                 </td>
-                                <input type="hidden" name="variation_ids[]" value="${variation.ids}">
+                                <input type="hidden" name="variation_ids[]" value="${variation.ids}" form="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}">
                             </tr>
                         `);
+                        $(document).ready(function() {
+                            $('#bulk_target_'+variation.product_id+'_'+variation.storage+'_'+variation.grade).on('submit', function(e) {
+                                submitForm7(e, variation.product_id+'_'+variation.storage+'_'+variation.grade);
+                            });
+                        });
                     });
                 },
                 error: function(xhr) {
@@ -385,6 +395,13 @@
                     alert("Error: " + textStatus + " - " + errorThrown);
                 }
             });
+        }
+        function submitForm7(event, variationId) {
+            event.preventDefault(); // avoid executing the actual submit of the form.
+
+            var form = $('#bulk_target_' + variationId);
+
+
         }
 
         function updateAverageCost(variationId, prices) {
