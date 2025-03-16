@@ -386,12 +386,26 @@
                     data.listings.forEach(function(listing) {
                         let p_append = '';
                         let pm_append = '';
+                        let possible = 0;
+                        let classs = '';
+                        let cost = 0;
                         if (listing.currency_id == 5) {
                             p_append = 'break: £'+(parseFloat(m_price)*parseFloat(eurToGbp)).toFixed(2);
                             pm_append = 'break: £'+(parseFloat(m_min_price)*parseFloat(eurToGbp)).toFixed(2);
                         }
+                        if(listing.target_price > 0 && listing.target_percentage > 0){
+                            cost = $('#average_cost_'+variationId).text().replace('€', '');
+                            target = ((parseFloat(cost)+20)/ ((100-parseFloat(listing.target_percentage))/100));
+                            if(target <= listing.target_price){
+                                possible = 1;
+                            }
+                            if(listing.target_price >= listing.min_price && listing.target_price <= listing.price && listing.target_price >= listing.buybox_price){
+                                classs = 'bg-lightgreen';
+                            }
+                        }
+
                         listingsTable += `
-                            <tr ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
+                            <tr class="${classs}" ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
                                 <td title="${listing.id} ${countries[listing.country].title}">
                                     <a href="https://www.backmarket.${countries[listing.country].market_url}/${countries[listing.country].market_code}/p/gb/${listing.reference_uuid}" target="_blank">
                                     <img src="{{ asset('assets/img/flags/') }}/${countries[listing.country].code.toLowerCase()}.svg" height="15">
@@ -445,6 +459,7 @@
                                         <input type="number" class="form-control" id="target_${listing.id}" name="target" step="0.01" value="${listing.target_price}" form="change_target_${listing.id}">
                                         <label for="">Target</label>
                                     </div>
+                                    ${possible == 1 ? '<span class="text-success">Possible</span>' : ''}
                                 </td>
                                 <td>
                                     <div class="form-floating">
@@ -663,8 +678,18 @@
                                         ${listing.country_id.code}
                                         </a>`;
                             }
+                            if(listing.target_price > 0 && listing.target_percentage > 0){
+                                cost = $('#average_cost_'+variationId).text().replace('€', '');
+                                target = ((parseFloat(cost)+20)/ ((100-parseFloat(listing.target_percentage))/100));
+                                if(target <= listing.target_price){
+                                    possible = 1;
+                                }
+                                if(listing.target_price >= listing.min_price && listing.target_price <= listing.price && listing.target_price >= listing.buybox_price){
+                                    classs = 'bg-lightgreen';
+                                }
+                            }
                             listingsTable += `
-                                <tr ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
+                                <tr class="${classs}" ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
                                     <td title="${listing.id} ${listing.country_id.title}">
                                         <a href="https://www.backmarket.${listing.country_id.market_url}/${listing.country_id.market_code}/p/gb/${listing.reference_uuid}" target="_blank">
                                         <img src="{{ asset('assets/img/flags/') }}/${listing.country_id.code.toLowerCase()}.svg" height="15">
@@ -712,13 +737,14 @@
                                         </div>
                                         ${p_append}
                                     </td>
+                                    <td>${new Date(listing.updated_at).toGMTString()}</td>
                                     <td>
                                         <div class="form-floating">
                                             <input type="number" class="form-control" id="target_${listing.id}" name="target" step="0.01" value="${listing.target_price}" form="change_target_${listing.id}">
                                             <label for="">Target</label>
                                         </div>
+                                    ${possible == 1 ? '<span class="text-success">Possible</span>' : ''}
                                     </td>
-                                    <td>${new Date(listing.updated_at).toGMTString()}</td>
                                     <td>
                                         <div class="form-floating">
                                             <input type="number" class="form-control" id="percent_${listing.id}" name="percent" step="0.01" value="${listing.target_percentage}" form="change_target_${listing.id}">
