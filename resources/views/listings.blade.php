@@ -184,7 +184,7 @@
 
                                 <form class="form-inline" method="POST" id="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}">
                                     @csrf
-                                    <input type="submit" hidden>
+                                    <input type="submit" form="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}" hidden>
                                 </form>
                                 <td>${variation.product_name} ${variation.storage_name} ${variation.grade_name}</td>
                                 <td>
