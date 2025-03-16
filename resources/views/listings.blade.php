@@ -270,6 +270,27 @@
                 }
             });
         }
+        function submitForm6(event, listingId) {
+            event.preventDefault(); // avoid executing the actual submit of the form.
+
+            var form = $('#change_target_' + listingId);
+            var actionUrl = "{{ url('listing/update_target') }}/" + listingId;
+
+            $.ajax({
+                type: "POST",
+                url: actionUrl,
+                data: form.serialize(), // serializes the form's elements.
+                success: function(data) {
+                    // alert("Success: Min Price changed to " + data); // show response from the PHP script.
+                    $('#target_' + listingId).addClass('bg-green'); // hide the button after submission
+                    $('#percent_' + listingId).addClass('bg-green'); // hide the button after submission
+                    // $('quantity_' + listingId).val(data)
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert("Error: " + textStatus + " - " + errorThrown);
+                }
+            });
+        }
 
         function updateAverageCost(variationId, prices) {
             if (prices.length > 0) {
@@ -401,6 +422,10 @@
                                         @csrf
                                         <input type="submit" hidden>
                                     </form>
+                                    <form class="form-inline" method="POST" id="change_target_${listing.id}">
+                                        @csrf
+                                        <input type="submit" hidden>
+                                    </form>
                                     <div class="form-floating">
                                         <input type="number" class="form-control" id="min_price_${listing.id}" name="min_price" step="0.01" value="${listing.min_price}" form="change_min_price_${listing.id}">
                                         <label for="">Min Price</label>
@@ -414,6 +439,18 @@
                                     </div>
                                     ${p_append}
                                 </td>
+                                <td>
+                                    <div class="form-floating">
+                                        <input type="number" class="form-control" id="Target_${listing.id}" name="target" step="0.01" value="${listing.target_price}" form="change_target_${listing.id}">
+                                        <label for="">Target</label>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="form-floating">
+                                        <input type="number" class="form-control" id="percent_${listing.id}" name="percent" step="0.01" value="${listing.target_percentage}" form="change_target_${listing.id}">
+                                        <label for="">%</label>
+                                    </div>
+                                </td>
                                 <td>${new Date(listing.updated_at).toGMTString()}</td>
                             </tr>`;
                         $(document).ready(function() {
@@ -426,6 +463,9 @@
                             });
                             $('#change_limit_'+listing.id).on('submit', function(e) {
                                 submitForm5(e, listing.id);
+                            });
+                            $('#change_target_'+listing.id).on('submit', function(e) {
+                                submitForm6(e, listing.id);
                             });
                         });
                     });
@@ -655,6 +695,10 @@
                                             @csrf
                                             <input type="submit" hidden>
                                         </form>
+                                        <form class="form-inline" method="POST" id="change_target_${listing.id}">
+                                            @csrf
+                                            <input type="submit" hidden>
+                                        </form>
                                         <div class="form-floating">
                                             <input type="number" class="form-control" id="min_price_${listing.id}" name="min_price" step="0.01" value="${listing.min_price}" form="change_min_price_${listing.id}">
                                             <label for="">Min Price</label>
@@ -667,6 +711,18 @@
                                             <label for="">Price</label>
                                         </div>
                                         ${p_append}
+                                    </td>
+                                    <td>
+                                        <div class="form-floating">
+                                            <input type="number" class="form-control" id="target_${listing.id}" name="target" step="0.01" value="${listing.target_price}" form="change_target_${listing.id}">
+                                            <label for="">Target</label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="form-floating">
+                                            <input type="number" class="form-control" id="percent_${listing.id}" name="percent" step="0.01" value="${listing.target_percentage}" form="change_target_${listing.id}">
+                                            <label for="">%</label>
+                                        </div>
                                     </td>
                                     <td>${new Date(listing.updated_at).toGMTString()}</td>
                                 </tr>`;
@@ -681,6 +737,9 @@
 
                                 $("#change_limit_" + listing.id).on('submit', function(e) {
                                     submitForm5(e, listing.id);
+                                });
+                                $("#change_target_" + listing.id).on('submit', function(e) {
+                                    submitForm6(e, listing.id);
                                 });
                             });
 
@@ -797,6 +856,8 @@
                                                         <th width="80"><small><b>BuyBox</b></small></th>
                                                         <th title="Min Price" width="120"><small><b>Min </b>(<b id="best_price_${variation.id}"></b>)</small></th>
                                                         <th width="120"><small><b>Price</b></small></th>
+                                                        <th width="120"><small><b>Target</b></small></th>
+                                                        <th width="80"><small><b>%</b></small></th>
                                                         <th><small><b>Date</b></small></th>
                                                     </tr>
                                                 </thead>
