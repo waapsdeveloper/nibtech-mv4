@@ -77,7 +77,8 @@
         <div class="d-flex p-2 justify-content-between">
 
             <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target=".multi_collapse" id="open_all_variations">Toggle&nbsp;All</button>
-            <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target=".multi_collapse_handler" id="open_all_handlers">Toggle&nbsp;Handlers</button>
+            {{-- <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target=".multi_collapse_handler" id="open_all_handlers">Toggle&nbsp;Handlers</button> --}}
+            <button class="btn btn-link" type="button" data-bs-toggle="modal" data-bs-target="#bulkModal">Bulk&nbsp;Update</button>
             {{-- <input class="form-check-input" type="radio" id="open_all" name="open_all" value="1" onchange="this.form.submit()" form="search"> --}}
             <label for="perPage" class="form-label">Sort:</label>
             <select name="sort" class="form-select w-auto" id="perPage" onchange="this.form.submit()" form="search">
@@ -99,6 +100,41 @@
     <nav aria-label="Page navigation">
         <ul id="pagination-container" class="pagination justify-content-center"></ul>
     </nav>
+
+    <!-- Bulk Update Modal -->
+    <div class="modal fade" id="bulkModal" tabindex="-1" aria-labelledby="bulkModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form id="bulkUpdateForm" action="" method="POST">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="bulkModalLabel">Bulk Update</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Model</th>
+                                    <th>Target Price</th>
+                                    <th>Target Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+
+                                    <td>
+                                        <input type="number" class="form-control" name="target_price" id="target_price" step="0.01">
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control" name="target_percentage" id="target_percentage" step="0.01">
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
 
 
 @endsection
@@ -885,9 +921,9 @@
                                                         <th width="80"><small><b>BuyBox</b></small></th>
                                                         <th title="Min Price" width="120"><small><b>Min </b>(<b id="best_price_${variation.id}"></b>)</small></th>
                                                         <th width="120"><small><b>Price</b></small></th>
+                                                        <th><small><b>Date</b></small></th>
                                                         <th width="120"><small><b>Target</b></small></th>
                                                         <th width="80"><small><b>%</b></small></th>
-                                                        <th><small><b>Date</b></small></th>
                                                     </tr>
                                                 </thead>
                                                 <tbody id="listings_${variation.id}">
