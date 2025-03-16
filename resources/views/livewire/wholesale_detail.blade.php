@@ -805,11 +805,11 @@
             var actionUrl = form.attr('action');
 
             $.ajax({
-                type: "POST",
+                type: "GET",
                 url: actionUrl,
                 data: form.serialize(), // serializes the form's elements.
                 success: function(data) {
-                    alert("Success: " + data); // show response from the PHP script.
+                    // alert("Success: " + data); // show response from the PHP script.
                     $('#unit_price_' + id).addClass('bg-success');
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
