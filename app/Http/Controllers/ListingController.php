@@ -274,7 +274,7 @@ class ListingController extends Controller
         // ->select('variation.*') // Select only the variation columns
         ->groupBy(['variation.product_id', 'variation.storage', 'variation.grade'])
         ->select('variation.product_id', 'products.model as product_name', 'variation.storage', 'storage.name as storage_name', 'variation.grade', 'grade.name as grade_name', DB::raw('GROUP_CONCAT(variation.id) as ids'))
-        ->paginate(100)
+        ->paginate(300)
         ->appends(request()->except('page'));
         // ->get();
     }
