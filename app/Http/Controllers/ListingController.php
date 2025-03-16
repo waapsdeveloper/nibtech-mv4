@@ -265,7 +265,7 @@ class ListingController extends Controller
         ->whereNull('products.deleted_at')
         ->join('products', 'variation.product_id', '=', 'products.id') // Join the products table
         ->join('storage', 'variation.storage', '=', 'storage.id') // Join the storage table
-        ->join('grade', 'variation.grade', '=', 'grade.id') // Join the grade table
+        ->join('grade', 'variation.grade', '=', 'grade.id')  // Join the grade table
         ->orderBy('products.model', 'asc') // Order by product model in ascending order
         ->orderBy('variation.storage', 'asc') // Secondary order by storage
         // ->orderBy('variation.color', 'asc') // Secondary order by color
