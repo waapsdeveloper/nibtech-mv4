@@ -60,7 +60,7 @@
                     @csrf
 
                     <div class="form-floating">
-                        <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" id="imeiInput" onload="this.focus()" autofocus>
+                        <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" id="imeiInput" onload="this.focus()" autofocus required>
                         <label for="">IMEI</label>
                     </div>&nbsp;&nbsp;&nbsp;&nbsp;
                     <div>
