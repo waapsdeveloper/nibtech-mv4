@@ -762,8 +762,14 @@
 
                         <div>
                             <label for="unit-price" class="">Change Unit Price: </label>
-                            <input type="number" name="unit_price" id="unit_price" step="0.01" class="w-50 border-0" placeholder="Input Unit price" form="update_prices_{{ $key."_".$key2 }}">
+                            <input type="number" name="unit_price" id="unit_price_{{ $key."_".$key2 }}" step="0.01" class="w-50 border-0" placeholder="Input Unit price" form="update_prices_{{ $key."_".$key2 }}">
                         </div>
+                        <script>
+                            $('#update_prices_{{ $key."_".$key2 }}').on('submit', function(e) {
+                                e.preventDefault();
+                                submitForm(e, {{ $key."_".$key2 }});
+                            });
+                        </script>
                         <div title="Average Cost: {{amount_formatter($total_cost/$quantity,2)}}">Average: {{amount_formatter($total/$quantity,2) }}</div>
                         @endif
                         <div>Total: {{$quantity }}</div>
@@ -792,8 +798,25 @@
                     $('#rate').val(''); // Clear the rate field if the currency is not in the list
                 }
             });
-            $('.select2').select2();
         });
+        function submitform(event, id) {
+            event.preventDefault();
+            var form = $("#update_prices_" + id);
+            var actionUrl = form.attr('action');
+
+            $.ajax({
+                type: "POST",
+                url: actionUrl,
+                data: form.serialize(), // serializes the form's elements.
+                success: function(data) {
+                    alert("Success: " + data); // show response from the PHP script.
+                    $('#unit_price_' + id).addClass('bg-success');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert("Error: " + textStatus + " - " + errorThrown);
+                }
+            });
+        }
     </script>
 		<!--Internal Sparkline js -->
 		<script src="{{asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js')}}"></script>
