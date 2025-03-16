@@ -765,8 +765,9 @@
                             <input type="number" name="unit_price" id="unit_price_{{ $key."_".$key2 }}" step="0.01" class="w-50 border-0" placeholder="Input Unit price" form="update_prices_{{ $key."_".$key2 }}">
                         </div>
                         <script>
-                            function submits(event, id) {
-                                event.preventDefault();
+                            $('#update_prices_{{ $key."_".$key2 }}').on('submit', function(e) {
+                                e.preventDefault();
+                                var id = "{{ $key."_".$key2 }}";
                                 var form = $("#update_prices_" + id);
                                 var actionUrl = {{ url('wholesale') }} + "/update_prices";
 
@@ -782,10 +783,6 @@
                                         alert("Error: " + textStatus + " - " + errorThrown);
                                     }
                                 });
-                            }
-                            $('#update_prices_{{ $key."_".$key2 }}').on('submit', function(e) {
-                                e.preventDefault();
-                                submits(e, {{ $key."_".$key2 }});
                             });
                         </script>
                         <div title="Average Cost: {{amount_formatter($total_cost/$quantity,2)}}">Average: {{amount_formatter($total/$quantity,2) }}</div>
