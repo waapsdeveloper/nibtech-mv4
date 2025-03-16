@@ -120,7 +120,7 @@
                                     <th>Target Percentage</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="bulkUpdateTable">
                                 <tr>
                                     <td>
 
@@ -141,6 +141,64 @@
 
 @section('scripts')
     <script>
+
+        $('#bulkModal').on('show.bs.modal', function (event) {
+
+            let params = {
+                product_name: $('#product_name').val(),
+                reference_id: $('#reference_id').val(),
+                product: $('#product').val(),
+                sku: $('input[name="sku"]').val(),
+                color: $('select[name="color"]').val(),
+                storage: $('select[name="storage"]').val(),
+                grade: $('select[name="grade[]"]').val(), // Use .val() for multiple selects if needed
+                category: $('select[name="category"]').val(),
+                brand: $('select[name="brand"]').val(),
+                listed_stock: $('select[name="listed_stock"]').val(),
+                available_stock: $('select[name="available_stock"]').val(),
+                handler_status: $('select[name="handler_status"]').val(),
+                state: $('select[name="state"]').val(),
+                sort: $('select[name="sort"]').val(),
+                per_page: $('select[name="per_page"]').val(),
+                open_all: $('input[name="open_all"]').val(),
+                page: page,
+                csrf: "{{ csrf_token() }}"
+            };
+
+            // Convert params object to a query string
+            let queryString = $.param(params);
+
+            // Append query string to the URL
+            let url = "{{ url('listing/get_target_variations') }}" + '?' + queryString;
+
+            $.ajax({
+                url: url,
+                type: 'GET',
+                dataType: 'json', // Expecting a JSON response
+                success: function(data) {
+                    let bulkUpdateTable = $('#bulkUpdateTable');
+                    bulkUpdateTable.empty(); // Clear any existing content
+                    data.data.forEach(function(variation) {
+                        bulkUpdateTable.append(`
+                            <tr>
+                                <td>${variation.product_name} ${variation.storage_name} ${variation.grade_name}</td>
+                                <td>
+                                    <input type="number" class="form-control" name="target_price" id="target_price" step="0.01" value="${variation.target_price}">
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control" name="target_percentage" id="target_percentage" step="0.01" value="${variation.target_percentage}">
+                                </td>
+                            </tr>
+                        `);
+                    });
+                },
+                error: function(xhr) {
+                    console.error(xhr.responseText); // Log any errors for debugging
+                }
+            });
+
+
+        });
 
         function toggleButtonOnChange(variationId, inputElement) {
 
