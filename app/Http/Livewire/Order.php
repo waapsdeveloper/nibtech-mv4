@@ -2039,7 +2039,7 @@ class Order extends Component
                 }
                 if($stock[$i]->created_at->diffInDays() < 20 && !session('user')->hasPermission('allow_sell_new_stock')){
                     $stocks = Stock_model::where('variation_id',$variant->id)->where('status',1)->where('order_id','<' , $stock[$i]->order_id)->get();
-                    if($stocks->count() > 5){
+                    if($stocks->count() > 5 && $stock[$i]->doesntHave('stock_repairs')){
                         session()->put('error', "Sell Old Stock First");
                         return redirect()->back();
                     }
