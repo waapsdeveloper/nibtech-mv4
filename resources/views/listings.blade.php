@@ -198,7 +198,9 @@
                         `);
                         $(document).ready(function() {
                             $('#bulk_target_'+variation.product_id+'_'+variation.storage+'_'+variation.grade).on('submit', function(e) {
-                                submitForm7(e, variation.product_id+'_'+variation.storage+'_'+variation.grade);
+                                e.preventDefault();
+                                console.log('submitting');
+                                // submitForm7(e, variation.product_id+'_'+variation.storage+'_'+variation.grade);
                             });
                         });
                     });
