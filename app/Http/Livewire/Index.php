@@ -728,7 +728,7 @@ class Index extends Component
                 }
             }
             usort($price_changes, function($a, $b) {
-                return $b['change'] <=> $a['change'];
+                return $a['change'] <=> $b['change'];
             });
 
             $top_10_changes = array_slice($price_changes, 0, 10);
