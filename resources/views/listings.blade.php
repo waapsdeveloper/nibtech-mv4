@@ -180,10 +180,10 @@
                     bulkUpdateTable.empty(); // Clear any existing content
                     data.data.forEach(function(variation) {
                         bulkUpdateTable.append(`
+                            <tr>
                             <form class="form-inline" method="POST" id="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}">
                                 @csrf
                                 <input type="submit" form="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}" hidden>
-                                <tr>
                                     <td>${variation.product_name} ${variation.storage_name} ${variation.grade_name}</td>
                                     <td>
                                         <input type="number" class="form-control" name="target" id="target_price" step="0.01" value="${variation.target_price}" form="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}">
@@ -193,8 +193,8 @@
                                     </td>
                                     <input type="hidden" name="variation_ids[]" value="${variation.ids}" form="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}">
                                     <input type="hidden" name="listing_ids[]" value="${variation.listing_ids}" form="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}">
-                                </tr>
                             </form>
+                                </tr>
                         `);
                         $(document).ready(function() {
                             $('#bulk_target_'+variation.product_id+'_'+variation.storage+'_'+variation.grade).on('submit', function(e) {
