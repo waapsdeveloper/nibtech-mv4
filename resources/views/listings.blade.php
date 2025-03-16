@@ -182,11 +182,12 @@
                         bulkUpdateTable.append(`
                             <tr>
 
+                                <td>
                                 <form class="form-inline" method="POST" id="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}">
                                     @csrf
-                                    <input type="submit" form="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}" hidden>
+                                    <input type="submit" hidden>
                                 </form>
-                                <td>${variation.product_name} ${variation.storage_name} ${variation.grade_name}</td>
+                                ${variation.product_name} ${variation.storage_name} ${variation.grade_name}</td>
                                 <td>
                                     <input type="number" class="form-control" name="target" id="target_price_${variation.product_id+'_'+variation.storage+'_'+variation.grade}" step="0.01" value="${variation.target_price}" form="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}">
                                 </td>
