@@ -441,7 +441,7 @@
                                 </td>
                                 <td>
                                     <div class="form-floating">
-                                        <input type="number" class="form-control" id="Target_${listing.id}" name="target" step="0.01" value="${listing.target_price}" form="change_target_${listing.id}">
+                                        <input type="number" class="form-control" id="target_${listing.id}" name="target" step="0.01" value="${listing.target_price}" form="change_target_${listing.id}">
                                         <label for="">Target</label>
                                     </div>
                                 </td>
