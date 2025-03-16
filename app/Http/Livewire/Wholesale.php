@@ -307,7 +307,8 @@ class Wholesale extends Component
             }
         }
 
-        return redirect()->back();
+        // return redirect()->back();
+        return "Updated";
     }
 
     public function add_wholesale(){
