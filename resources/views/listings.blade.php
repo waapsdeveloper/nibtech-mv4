@@ -195,7 +195,7 @@
                                     <input type="number" class="form-control" name="percent" id="target_percentage_${variation.product_id+'_'+variation.storage+'_'+variation.grade}" step="0.01" value="${variation.target_percentage}" form="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}">
                                 </td>
                                 <input type="hidden" name="variation_ids[]" value="${variation.ids}" form="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}">
-                                <input type="hidden" name="listing_ids[]" value="${variation.listing_ids}" form="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}">
+                                <input type="hidden" id="listing_ids_${variation.product_id+'_'+variation.storage+'_'+variation.grade}" name="listing_ids[]" value="${variation.listing_ids}" form="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}">
                             </tr>
                         `);
                         $(document).ready(function() {
@@ -403,7 +403,8 @@
             event.preventDefault(); // avoid executing the actual submit of the form.
 
             var form = $('#bulk_target_' + variationId);
-            var listing_ids = $('#bulk_target_' + variationId + ' input[name="listing_ids[]"]').val();
+            var listing_ids = $('#listing_ids_' + variationId).val();
+
 
             ids = listing_ids.split(',');
 
