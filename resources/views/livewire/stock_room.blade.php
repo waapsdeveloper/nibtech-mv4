@@ -65,15 +65,15 @@
                     </div>&nbsp;&nbsp;&nbsp;&nbsp;
                     <div>
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="radio" id="com" name="description" value="Change of mind">
+                            <input class="form-check-input" type="radio" id="com" name="description" value="Change of mind" required>
                             <label class="form-check-label" for="com">Change of mind</label>
                         </div>
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="radio" id="replacement" name="description" value="Replacement">
+                            <input class="form-check-input" type="radio" id="replacement" name="description" value="Replacement" required>
                             <label class="form-check-label" for="replacement">Replacement</label>
                         </div>
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="radio" id="receive" name="description" value="Receive">
+                            <input class="form-check-input" type="radio" id="receive" name="description" value="Receive" required>
                             <label class="form-check-label" for="receive">Receive</label>
                         </div>
                     </div> &nbsp;&nbsp;&nbsp;&nbsp;
