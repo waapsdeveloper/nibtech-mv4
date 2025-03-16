@@ -767,7 +767,7 @@
                         <script>
                             $('#update_prices_{{ $key."_".$key2 }}').on('submit', function(e) {
                                 e.preventDefault();
-                                submitForm(e, {{ $key."_".$key2 }});
+                                submits(e, {{ $key."_".$key2 }});
                             });
                         </script>
                         <div title="Average Cost: {{amount_formatter($total_cost/$quantity,2)}}">Average: {{amount_formatter($total/$quantity,2) }}</div>
@@ -799,7 +799,7 @@
                 }
             });
         });
-        function submitForm(event, id) {
+        function submits(event, id) {
             event.preventDefault();
             var form = $("#update_prices_" + id);
             var actionUrl = {{ url('wholesale') }} + "/update_prices";
