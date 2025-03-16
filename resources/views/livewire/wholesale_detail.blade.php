@@ -799,7 +799,7 @@
                 }
             });
         });
-        function submitform(event, id) {
+        function submitForm(event, id) {
             event.preventDefault();
             var form = $("#update_prices_" + id);
             var actionUrl = form.attr('action');
