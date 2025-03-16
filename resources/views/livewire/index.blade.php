@@ -606,6 +606,54 @@
 								</div>
 							</div>
                             @endif
+
+                            @if (session('user')->hasPermission('dashboard_price_changes'))
+                                <div class="row">
+                                    <div class="col-md">
+
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h4 class="card-title">Top Increment</h4>
+                                            </div>
+                                            <div class="card-body">
+                                                <table class="table table-bordered table-hover text-md-nowrap">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>No</th>
+                                                            <th>Product</th>
+                                                            <th>Yesterday</th>
+                                                            <th>Today</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="increment">
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h4 class="card-title">Top Decrement</h4>
+                                            </div>
+                                            <div class="card-body">
+                                                <table class="table table-bordered table-hover text-md-nowrap">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>No</th>
+                                                            <th>Product</th>
+                                                            <th>Yesterday</th>
+                                                            <th>Today</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="decrement">
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
 						</div>
 						<!-- </div> -->
 					</div>
