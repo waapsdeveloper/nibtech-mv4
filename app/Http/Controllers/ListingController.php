@@ -375,5 +375,15 @@ class ListingController extends Controller
         // die;
         return $listing;
     }
+    public function update_target($id){
+        $listing = Listing_model::find($id);
+        $listing->target_price = request('target');
+        $listing->target_percentage = request('percent');
+
+        $listing->save();
+        // print_r($response);
+        // die;
+        return $listing;
+    }
 
 }
