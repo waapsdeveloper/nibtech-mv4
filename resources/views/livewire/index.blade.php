@@ -923,19 +923,19 @@
                                     <td>${index + 1}</td>
                                     <td><a href="{{url('listing')}}?product=${element.product_id}&storage=${element.storage}&color=${element.color}&grade[]=${element.grade}" target="_blank">${element.variation}</a></td>
                                     <td>${element.yesterday_average}</td>
-                                    <td>${element.today_average}</td>
+                                    <td title="${element.change}%">${element.today_average}</td>
                                 </tr>
                             `;
                         });
                         increment.html(new_increment);
 
-                        data.decrement.forEach((element, index) => {
+                        data.bottom_10_changes.forEach((element, index) => {
                             new_decrement += `
                                 <tr>
                                     <td>${index + 1}</td>
                                     <td><a href="{{url('listing')}}?product=${element.product_id}&storage=${element.storage}&color=${element.color}&grade[]=${element.grade}" target="_blank">${element.variation}</a></td>
                                     <td>${element.yesterday_average}</td>
-                                    <td>${element.today_average}</td>
+                                    <td title="${element.change}%">${element.today_average}</td>
                                 </tr>
                             `;
                         });
