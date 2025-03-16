@@ -277,7 +277,7 @@ class ListingController extends Controller
         // ->orderBy('listed_stock', 'desc') // Secondary order by listed stock
         // ->select('variation.*') // Select only the variation columns
         ->groupBy(['variation.product_id', 'variation.storage', 'variation.grade'])
-        ->select('variation.product_id', 'products.model as product_name', 'variation.storage', 'storage.name as storage_name', 'variation.grade', 'grade.name as grade_name', DB::raw('GROUP_CONCAT(variation.id) as ids'))
+        ->select('variation.product_id', 'products.model as product_name', 'variation.storage', 'storage.name as storage_name', 'variation.grade', 'grade.name as grade_name', DB::raw('GROUP_CONCAT(variation.id) as ids'), DB::raw('GROUP_CONCAT(listings.id) as listing_ids'))
         ->paginate(300)
         ->appends(request()->except('page'));
         // ->get();
