@@ -608,9 +608,6 @@
                             @endif
 
                             @if (session('user')->hasPermission('dashboard_price_changes'))
-                                <div class="row">
-                                    <div class="col-md-6">
-
                                         <div class="card">
                                             <div class="card-header">
                                                 <h4 class="card-title">Top Increment</h4>
@@ -630,8 +627,6 @@
                                                 </table>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="col-md-6">
                                         <div class="card">
                                             <div class="card-header">
                                                 <h4 class="card-title">Top Decrement</h4>
@@ -651,8 +646,6 @@
                                                 </table>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
                             @endif
 						</div>
 						<!-- </div> -->
