@@ -15,6 +15,7 @@ use App\Models\Stock_model;
 use App\Models\Storage_model;
 use App\Models\Variation_model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class ListingController extends Controller
@@ -163,6 +164,112 @@ class ListingController extends Controller
                 ->orderBy('variation.color', 'asc') // Secondary order by color
                 ->orderBy('variation.grade', 'asc'); // Secondary order by grade
         })
+        ->paginate($per_page)
+        ->appends(request()->except('page'));
+    }
+
+    public function get_target_variations(){
+        if(request('per_page') != null){
+            $per_page = request('per_page');
+        }else{
+            $per_page = 10;
+        }
+
+        if(request('product_name') != null){
+            $product_name = trim(request('product_name'));
+
+            $arr = explode(" ", $product_name);
+            $last = end($arr);
+
+
+            $storage_search = Storage_model::where('name', 'like', $last.'%')->pluck('id');
+
+            if($storage_search->count() > 0){
+                // dd($storage_search);
+                array_pop($arr);
+                $product_name = implode(" ", $arr);
+            }else{
+                $storage_search = [];
+            }
+            $product_search = Products_model::where('model', 'like', '%'.$product_name.'%')->pluck('id');
+
+
+        }else{
+            $product_search = [];
+            $storage_search = [];
+        }
+        // dd($product_search, $storage_search);
+
+        return Variation_model::when(request('reference_id') != '', function ($q) {
+            return $q->where('reference_id', request('reference_id'));
+        })
+        ->when(request('category') != '', function ($q) {
+            return $q->whereHas('product', function ($q) {
+                $q->where('category', request('category'));
+            });
+        })
+        ->when(request('brand') != '', function ($q) {
+            return $q->whereHas('product', function ($q) {
+                $q->where('brand', request('brand'));
+            });
+        })
+        ->when(request('product') != '', function ($q) {
+            return $q->where('product_id', request('product'));
+        })
+        ->when(count($product_search) > 0, function ($q) use ($product_search) {
+            return $q->whereIn('product_id', $product_search);
+        })
+        ->when(count($storage_search) > 0, function ($q) use ($storage_search) {
+            return $q->whereIn('storage', $storage_search);
+        })
+        ->when(request('sku') != '', function ($q) {
+            return $q->where('sku', request('sku'));
+        })
+        // ->when(request('color') != '', function ($q) {
+        //     return $q->where('color', request('color'));
+        // })
+        ->when(request('storage') != '', function ($q) {
+            return $q->where('storage', request('storage'));
+        })
+        ->when(request('grade') != [], function ($q) {
+            return $q->whereIn('grade', request('grade'));
+        })
+        ->when(request('listed_stock') != '', function ($q) {
+            if (request('listed_stock') == 1) {
+                return $q->where('listed_stock', '>', 0);
+            } elseif (request('listed_stock') == 2) {
+                return $q->where('listed_stock', '<=', 0);
+            }
+        })
+        ->when(request('available_stock') != '', function ($q) {
+            if (request('available_stock') == 1) {
+                return $q->whereHas('available_stocks');
+            } elseif (request('available_stock') == 2) {
+                return $q->whereDoesntHave('available_stocks');
+            }
+        })
+        ->when(request('state') == '', function ($q) {
+            return $q->whereIn('state', [2, 3]);
+        })
+        ->when(request('state') != '' && request('state') != 10, function ($q) {
+            return $q->where('state', request('state'));
+
+        })
+        ->when(request('handler_status') != '', function ($q) {
+            return $q->whereHas('listings', function ($q) {
+                $q->where('handler_status', request('handler_status'));
+            });
+        })
+        ->where('sku', '!=', null)
+        ->join('products', 'variation.product_id', '=', 'products.id') // Join the products table
+        ->orderBy('products.model', 'asc') // Order by product model in ascending order
+        ->orderBy('variation.storage', 'asc') // Secondary order by storage
+        // ->orderBy('variation.color', 'asc') // Secondary order by color
+        ->orderBy('variation.grade', 'asc') // Secondary order by grade
+        // ->orderBy('listed_stock', 'desc') // Secondary order by listed stock
+        // ->select('variation.*') // Select only the variation columns
+        ->groupBy(['variation.product_id', 'variation.storage', 'variation.grade'])
+        ->select('variation.product_id', 'variation.storage', 'variation.grade', DB::raw('GROUP_CONCAT(variation.id) as ids'))
         ->paginate($per_page)
         ->appends(request()->except('page'));
     }
