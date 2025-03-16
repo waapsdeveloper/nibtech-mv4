@@ -622,6 +622,126 @@ class Index extends Component
 
         }
     }
+    public function get_price_changes(){
+
+        if(session('user')->hasPermission('dashboard_price_changes')){
+
+            if(request('days') != null){
+                $days = request('days');
+            }else{
+                $days = 30;
+            }
+            if(request('difference') != null){
+                $difference = request('difference')/100;
+            }else{
+                $difference = 0.2;
+            }
+            if(request('min_sales') != null){
+                $min_sale = request('min_sales');
+            }else{
+                $min_sale = 100;
+            }
+            if(request('max_stock') != null){
+                $max_stock = request('max_stock');
+            }else{
+                $max_stock = 100;
+            }
+
+            $start_date = now()->subDays($days)->startOfDay()->format('Y-m-d');
+            $products = Products_model::orderBy('model','asc')->pluck('model','id');
+            $storages = Storage_model::pluck('name','id');
+            $colors = Color_model::pluck('name','id');
+            $grades = Grade_model::pluck('name','id');
+
+            if(request('per_page_2') != null){
+                $per_page_2 = request('per_page_2');
+            }else{
+                $per_page_2 = 10;
+            }
+            $variation_ids = [];
+            if(request('data') == 1){
+
+                $variation_ids = Variation_model::select('id')
+                ->whereNotNull('sku')
+                ->when(request('product') != '', function ($q) {
+                    return $q->where('product_id', '=', request('product'));
+                })
+                ->when(request('sku') != '', function ($q) {
+                    return $q->where('sku', 'LIKE', '%'.request('sku').'%');
+                })
+                ->when(request('category') != '', function ($q) {
+                    return $q->whereHas('product', function ($qu) {
+                        $qu->where('category', '=', request('category'));
+                    });
+                })
+                ->when(request('brand') != '', function ($q) {
+                    return $q->whereHas('product', function ($qu) {
+                        $qu->where('brand', '=', request('brand'));
+                    });
+                })
+                ->when(request('storage') != '', function ($q) {
+                    return $q->where('variation.storage', 'LIKE', request('storage') . '%');
+                })
+                ->when(request('color') != '', function ($q) {
+                    return $q->where('variation.color', 'LIKE', request('color') . '%');
+                })
+                ->when(request('grade') != '', function ($q) {
+                    return $q->where('variation.grade', 'LIKE', request('grade') . '%');
+                })->pluck('id')->toArray();
+            }
+            $today_average = Order_item_model::when(request('data') == 1, function($q) use ($variation_ids){
+                return $q->whereIn('variation_id', $variation_ids);
+            })
+            ->whereHas('order', function ($q) {
+                $q->where(['order_type_id'=>3])
+                ->where('created_at', '>=', now()->subHours(24));
+            })
+            ->select('variation_id', DB::raw('AVG(price) as average_price'))
+            ->groupBy('variation_id')
+            ->get()
+            ->keyBy('variation_id');
+
+            $yesterday_average = Order_item_model::when(request('data') == 1, function($q) use ($variation_ids){
+                return $q->whereIn('variation_id', $variation_ids);
+            })
+            ->whereHas('order', function ($q) {
+                $q->where(['order_type_id'=>3])
+                ->where('created_at', '>=', now()->subHours(48))
+                ->where('created_at', '<', now()->subHours(24));
+            })
+            ->select('variation_id', DB::raw('AVG(price) as average_price'))
+            ->groupBy('variation_id')
+            ->get()
+            ->keyBy('variation_id');
+
+            $price_changes = [];
+            foreach ($today_average as $variation_id => $today) {
+                if (isset($yesterday_average[$variation_id])) {
+                    $yesterday = $yesterday_average[$variation_id];
+                    $change = (($today->average_price - $yesterday->average_price) / $yesterday->average_price) * 100;
+                    $price_changes[] = [
+                        'variation_id' => $variation_id,
+                        'change' => $change,
+                        'today_average' => $today->average_price,
+                        'yesterday_average' => $yesterday->average_price,
+                    ];
+                }
+            }
+
+            usort($price_changes, function($a, $b) {
+                return abs($b['change']) <=> abs($a['change']);
+            });
+
+            $top_10_changes = array_slice($price_changes, 0, 10);
+
+            $data['top_10_changes'] = $top_10_changes;
+
+
+
+            return response()->json($top_10_changes);
+
+        }
+    }
     public function toggle_amount_view(){
         if(session('amount_view') == 1){
             session()->put('amount_view',0);
