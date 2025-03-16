@@ -188,10 +188,10 @@
                                 </form>
                                 <td>${variation.product_name} ${variation.storage_name} ${variation.grade_name}</td>
                                 <td>
-                                    <input type="number" class="form-control" name="target_price" id="target_price" step="0.01" value="${variation.target_price}" form="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}">
+                                    <input type="number" class="form-control" name="target" id="target_price" step="0.01" value="${variation.target_price}" form="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}">
                                 </td>
                                 <td>
-                                    <input type="number" class="form-control" name="target_percentage" id="target_percentage" step="0.01" value="${variation.target_percentage}" form="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}">
+                                    <input type="number" class="form-control" name="percent" id="target_percentage" step="0.01" value="${variation.target_percentage}" form="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}">
                                 </td>
                                 <input type="hidden" name="variation_ids[]" value="${variation.ids}" form="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}">
                                 <input type="hidden" name="listing_ids[]" value="${variation.listing_ids}" form="bulk_target_${variation.product_id+'_'+variation.storage+'_'+variation.grade}">
@@ -401,6 +401,27 @@
             event.preventDefault(); // avoid executing the actual submit of the form.
 
             var form = $('#bulk_target_' + variationId);
+            var listing_ids = $('#bulk_target_' + variationId + ' input[name="listing_ids[]"]').val();
+
+            ids = listing_ids.split(',');
+
+            ids.forEach(function(id) {
+                var actionUrl = "{{ url('listing/update_target') }}/" + id;
+                $.ajax({
+                    type: "POST",
+                    url: actionUrl,
+                    data: form.serialize(), // serializes the form's elements.
+                    success: function(data) {
+                        // alert("Success: Min Price changed to " + data); // show response from the PHP script.
+                        $('#target_' + id).addClass('bg-green'); // hide the button after submission
+                        $('#percent_' + id).addClass('bg-green'); // hide the button after submission
+                        // $('quantity_' + listingId).val(data)
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert("Error: " + textStatus + " - " + errorThrown);
+                    }
+                });
+            });
 
 
 
