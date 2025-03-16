@@ -805,7 +805,7 @@
             var actionUrl = form.attr('action');
 
             $.ajax({
-                type: "POST",
+                type: "GET",
                 url: actionUrl,
                 data: form.serialize(), // serializes the form's elements.
                 success: function(data) {
