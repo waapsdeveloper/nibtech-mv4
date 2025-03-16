@@ -728,16 +728,17 @@ class Index extends Component
                 }
             }
             usort($price_changes, function($a, $b) {
-                return $a['change'] <=> $b['change'];
+                return $b['change'] <=> $a['change'];
             });
 
             $top_10_changes = array_slice($price_changes, 0, 10);
 
             $data['top_10_changes'] = $top_10_changes;
 
-            $bottom_10_changes = array_slice($price_changes, 0, 10);
+            $bottom_10_changes = array_slice($price_changes, -10, -1);
 
-            return response()->json($bottom_10_changes);
+
+            return response()->json($price_changes);
 
         }
     }
