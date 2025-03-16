@@ -802,10 +802,10 @@
         function submitForm(event, id) {
             event.preventDefault();
             var form = $("#update_prices_" + id);
-            var actionUrl = form.attr('action');
+            var actionUrl = {{ url('wholesale') }} + "/update_prices";
 
             $.ajax({
-                type: "GET",
+                type: "POST",
                 url: actionUrl,
                 data: form.serialize(), // serializes the form's elements.
                 success: function(data) {
