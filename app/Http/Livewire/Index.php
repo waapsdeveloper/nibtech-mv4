@@ -727,9 +727,8 @@ class Index extends Component
                     ];
                 }
             }
-
             usort($price_changes, function($a, $b) {
-                return abs($b['change']) <=> abs($a['change']);
+                return $b['change'] <=> $a['change'];
             });
 
             $top_10_changes = array_slice($price_changes, 0, 10);
