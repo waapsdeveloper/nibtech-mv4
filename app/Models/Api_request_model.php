@@ -188,7 +188,7 @@ class Api_request_model extends Model
                 // }
             }
 
-            if($stock == null && (str_contains(strtolower($datas->BatchID), 'eg') || str_contains(strtolower($datas->TesterName), 'rizwan'))){
+            if($stock == null && (str_contains(strtolower($datas->BatchID), 'eg') || str_contains(strtolower($datas->TesterName), 'rizwan') || str_contains(strtolower($datas->TesterName), 'aqeel'))){
 
                 $curl = curl_init();
 
