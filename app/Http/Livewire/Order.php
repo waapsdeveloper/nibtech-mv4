@@ -1881,6 +1881,10 @@ class Order extends Component
         // dd($pdfContent);
         // Send the invoice via email
 
+        if($order->customer->email == null){
+            session()->put('error', 'Customer Email Not Found');
+            return view('livewire.invoice_new')->with($data);
+        }
         Mail::to($order->customer->email)->queue(new InvoiceMail($data));
         // if(session('user_id') == 1){
 
