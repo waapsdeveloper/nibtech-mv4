@@ -694,6 +694,7 @@ class Index extends Component
             })
             ->whereHas('order', function ($q) {
                 $q->where(['order_type_id'=>3])
+                ->where('currency', 4)
                 ->where('created_at', '>=', now()->subHours(24));
             })
             ->select('variation_id', DB::raw('AVG(price) as average_price'))
@@ -706,6 +707,7 @@ class Index extends Component
             })
             ->whereHas('order', function ($q) {
                 $q->where(['order_type_id'=>3])
+                ->where('currency', 4)
                 ->where('created_at', '>=', now()->subHours(48))
                 ->where('created_at', '<', now()->subHours(24));
             })
