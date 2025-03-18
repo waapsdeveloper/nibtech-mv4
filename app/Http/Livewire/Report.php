@@ -398,7 +398,7 @@ class Report extends Component
             // ->whereIn('status', [3,6])
             ->get();
 
-        dd($b2c_order_items);
+        // dd($b2c_order_items);
         $currency_check = $b2c_order_items->whereNull('currency');
         if ($currency_check->count() > 0) {
             foreach ($currency_check as $item) {
