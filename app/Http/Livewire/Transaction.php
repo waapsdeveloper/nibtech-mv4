@@ -32,13 +32,16 @@ class Transaction extends Component
         $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
         $data['currencies'] = Currency_model::all();
 
+        $per_page = request('per_page') ?? '20';
+
         $transactions = Account_transaction_model::when(request('start_date') != '', function ($q) {
             return $q->whereDate('created_at', '>=', request('start_date'));
         })
         ->when(request('end_date') != '', function ($q) {
             return $q->whereDate('created_at', '<=', request('end_date') . ' 23:59:59');
         })
-        ->orderBy('id','desc')->get();
+        ->orderBy('id','desc')
+        ->paginate($per_page);
         $data['transactions'] = $transactions;
 
         return view('livewire.transaction')->with($data);
