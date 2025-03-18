@@ -407,10 +407,15 @@ class Report extends Component
             }
         }
 
-        $b2c_prices_by_currency = $b2c_order_items->select('currency', DB::raw('SUM(price) as total_price'))
-            ->groupBy('currency')
-            // ->get()
-            ->pluck('total_price', 'currency');
+        $b2c_prices_by_currency = $b2c_order_items->groupBy('currency')
+            ->map(function ($items) {
+                return $items->sum('price');
+            });
+
+        // $b2c_prices_by_currency = $b2c_order_items->select('currency', DB::raw('SUM(price) as total_price'))
+        // ->groupBy('currency')
+        // // ->get()
+        // ->pluck('total_price', 'currency');
         $b2c_total = $b2c_prices_by_currency->toArray();
         $b2c_price = $b2c_prices_by_currency->toArray();
         $b2c_prices_by_currency = $b2c_prices_by_currency->map(function ($price) {
