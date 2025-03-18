@@ -144,6 +144,7 @@
                                             <th><small><b>Ref ID</b></small></th>
                                             <th><small><b>Type</b></small></th>
                                             <th><small><b>Batch</b></small></th>
+                                            <th><small><b>Customer</b></small></th>
                                             <th><small><b>Batch Type</b></small></th>
                                             <th><small><b>Description</b></small></th>
                                             <th><small><b>Value</b></small></th>
@@ -194,6 +195,7 @@
                                                     @endif
                                                     @endif
                                                 </td>
+                                                <td>{{ $transaction->customer->first_name }} {{ $transaction->customer->last_name }}</td>
                                                 {{-- <td>{{ $batch->reference_id }}</td> --}}
                                                 <td>{{ $batch->order_type->name ?? null }}{{$batch->process_type->name ?? null}}
                                                     {{ $transaction->payment_method->name ?? null }}
