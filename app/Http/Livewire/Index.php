@@ -697,7 +697,7 @@ class Index extends Component
                 ->where('currency', 4)
                 ->where('created_at', '>=', now()->startOfDay());
             })
-            ->select('variation_id', DB::raw('AVG(price) as average_price'))
+            ->select('variation_id', DB::raw('AVG(price) as average_price'), DB::raw('SUM(quantity) as total_quantity_sold'))
             ->groupBy('variation_id')
             ->get()
             ->keyBy('variation_id');
@@ -711,7 +711,7 @@ class Index extends Component
                 ->where('created_at', '>=', now()->subDays(1)->startOfDay())
                 ->where('created_at', '<', now()->startOfDay());
             })
-            ->select('variation_id', DB::raw('AVG(price) as average_price'))
+            ->select('variation_id', DB::raw('AVG(price) as average_price'), DB::raw('SUM(quantity) as total_quantity_sold'))
             ->groupBy('variation_id')
             ->get()
             ->keyBy('variation_id');
@@ -731,7 +731,9 @@ class Index extends Component
                         'grade' => $variation->grade,
                         'change' => $change,
                         'today_average' => amount_formatter($today->average_price),
+                        'today_quantity' => $today->total_quantity_sold,
                         'yesterday_average' => amount_formatter($yesterday->average_price),
+                        'yesterday_quantity' => $yesterday->total_quantity_sold,
                     ];
                 }
             }
