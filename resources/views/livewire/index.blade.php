@@ -915,8 +915,8 @@
                                 <tr>
                                     <td>${index + 1}</td>
                                     <td><a href="{{url('listing')}}?product=${element.product_id}&storage=${element.storage}&color=${element.color}&grade[]=${element.grade}" target="_blank">${element.variation}</a></td>
-                                    <td>${element.yesterday_average}</td>
-                                    <td title="${element.change}%">${element.today_average}</td>
+                                    <td>${element.yesterday_average} (${element.yesterday_quantity})</td>
+                                    <td title="${element.change}%">${element.today_average} (${element.today_quantity})</td>
                                 </tr>
                             `;
                         });
@@ -927,8 +927,8 @@
                                 <tr>
                                     <td>${index + 1}</td>
                                     <td><a href="{{url('listing')}}?product=${element.product_id}&storage=${element.storage}&color=${element.color}&grade[]=${element.grade}" target="_blank">${element.variation}</a></td>
-                                    <td>${element.yesterday_average}</td>
-                                    <td title="${element.change}%">${element.today_average}</td>
+                                    <td>${element.yesterday_average} (${element.yesterday_quantity})</td>
+                                    <td title="${element.change}%">${element.today_average} (${element.today_quantity})</td>
                                 </tr>
                             `;
                         });
