@@ -195,7 +195,10 @@
                                                     @endif
                                                     @endif
                                                 </td>
-                                                <td>{{ $transaction->customer->first_name }} {{ $transaction->customer->last_name }}</td>
+                                                <td>
+                                                    {{-- {{ $transaction->customer->first_name }} {{ $transaction->customer->last_name }} --}}
+                                                    {{ $transaction->customer->company ?? $transaction->customer->first_name }}
+                                                </td>
                                                 {{-- <td>{{ $batch->reference_id }}</td> --}}
                                                 <td>{{ $batch->order_type->name ?? null }}{{$batch->process_type->name ?? null}}
                                                     {{ $transaction->payment_method->name ?? null }}
