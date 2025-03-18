@@ -225,6 +225,8 @@
                                         @endforeach
                                     </tbody>
                                 </table>
+                                <br>
+                                {{ $transactions->appends(request()->input())->links() }}
                             </div>
                         </div>
                     </div>
