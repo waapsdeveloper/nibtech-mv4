@@ -30,6 +30,7 @@ class Transaction extends Component
         session()->put('page_title', $data['title_page']);
 
         $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
+        $data['currencies'] = Currency_model::all();
 
         $transactions = Account_transaction_model::when(request('start_date') != '', function ($q) {
             return $q->whereDate('created_at', '>=', request('start_date'));
