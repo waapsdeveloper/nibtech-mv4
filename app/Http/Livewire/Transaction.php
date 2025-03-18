@@ -29,6 +29,8 @@ class Transaction extends Component
         $data['title_page'] = "Transactions";
         session()->put('page_title', $data['title_page']);
 
+        $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
+
         $transactions = Account_transaction_model::when(request('start_date') != '', function ($q) {
             return $q->whereDate('created_at', '>=', request('start_date'));
         })
