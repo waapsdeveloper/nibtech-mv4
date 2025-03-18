@@ -32,7 +32,7 @@ class B2COrderReportExport implements FromCollection, WithHeadings
             'orders.reference_id',
             'variation.sku',
             'order_items.quantity',
-            DB::raw('CONCAT(products.model, " ", storage.name) as model_storage'),
+            DB::raw('CONCAT(products.model, " ", COALESCE(storage.name, "")) as model_storage'),
             // 'products.model',
             // 'storage.name as storage',
             'color.name as color',

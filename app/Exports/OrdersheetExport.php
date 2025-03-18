@@ -27,7 +27,7 @@ class OrdersheetExport implements FromCollection, WithHeadings
             'orders.reference_id',
             'variation.sku',
             'order_items.quantity',
-            DB::raw('CONCAT(products.model, " ", storage.name) as model_storage'),
+            DB::raw('CONCAT(products.model, " ", COALESCE(storage.name, "")) as model_storage'),
             // 'products.model',
             'color.name as color',
             // 'storage.name as storage',

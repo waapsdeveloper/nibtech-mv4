@@ -53,7 +53,7 @@ class PacksheetExport implements FromCollection, WithHeadings
 
 
         ->select(
-            DB::raw('CONCAT(products.model, " ", storage.name) as model_storage'),
+            DB::raw('CONCAT(products.model, " ", COALESCE(storage.name, "")) as model_storage'),
             // 'products.model',
             // 'storage.name as storage',
             'color.name as color',
