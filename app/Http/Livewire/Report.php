@@ -385,59 +385,39 @@ class Report extends Component
             ->get();
         $b2c_order_ids = $b2c_orders->pluck('id')->toArray();
         $b2c_order_items = Order_item_model::when($query == 1, function ($q) use ($variation_ids) {
-                return $q->whereIn('variation_id', $variation_ids);
+            return $q->whereIn('variation_id', $variation_ids);
             })
-
-        // whereIn('variation_id', $variation_ids)
-            // ->whereIn('order_id', $b2c_order_ids)
             ->whereHas('order', function ($q) use ($start_date, $end_date) {
-                $q->whereBetween('processed_at', [$start_date, $end_date])
-                    ->whereIn('status', [3,6])
-                    ->where('order_type_id',3);
+            $q->whereBetween('processed_at', [$start_date, $end_date])
+                ->whereIn('status', [3, 6])
+                ->where('order_type_id', 3);
             })
-            // ->whereIn('status', [3,6])
             ->get();
 
-        // dd($b2c_order_items);
-        $currency_check = $b2c_order_items->whereNull('currency');
-        if ($currency_check->count() > 0) {
-            foreach ($currency_check as $item) {
-                $item->currency = $item->order->currency;
-                $item->save();
+        $b2c_order_items->each(function ($item) {
+            if (is_null($item->currency)) {
+            $item->currency = $item->order->currency;
+            $item->save();
             }
-        }
-
-        $b2c_prices_by_currency = $b2c_order_items->groupBy('currency')
-            ->map(function ($items) {
-                return $items->sum('price');
-            });
-
-        // $b2c_prices_by_currency = $b2c_order_items->select('currency', DB::raw('SUM(price) as total_price'))
-        // ->groupBy('currency')
-        // // ->get()
-        // ->pluck('total_price', 'currency');
-        $b2c_total = $b2c_prices_by_currency->toArray();
-        $b2c_price = $b2c_prices_by_currency->toArray();
-        $b2c_prices_by_currency = $b2c_prices_by_currency->map(function ($price) {
-            return amount_formatter($price);
         });
 
+        $b2c_prices_by_currency = $b2c_order_items->groupBy('currency')
+            ->map->sum('price');
+
+        $b2c_total = $b2c_prices_by_currency->toArray();
+        $b2c_price = $b2c_total;
+        $b2c_prices_by_currency = $b2c_prices_by_currency->map('amount_formatter');
+
         $b2c_charges_by_currency = Order_model::whereIn('id', $b2c_order_items->pluck('order_id')->toArray())
-            ->select('currency', DB::raw('SUM(charges) as total_charges'))
             ->groupBy('currency')
-            ->get()
+            ->select('currency', DB::raw('SUM(charges) as total_charges'))
             ->pluck('total_charges', 'currency');
 
         $b2c_charge = $b2c_charges_by_currency->toArray();
-        foreach ($b2c_charges_by_currency->toArray() as $key => $value) {
-            if (!isset($b2c_total[$key])) {
-                $b2c_total[$key] = 0;
-            }
-            $b2c_total[$key] -= $value;
+        foreach ($b2c_charges_by_currency as $key => $value) {
+            $b2c_total[$key] = ($b2c_total[$key] ?? 0) - $value;
         }
-        $b2c_charges_by_currency = $b2c_charges_by_currency->map(function ($price) {
-            return amount_formatter($price);
-        });
+        $b2c_charges_by_currency = $b2c_charges_by_currency->map('amount_formatter');
 
         $b2c_stock_ids = $b2c_order_items->pluck('stock_id')->toArray();
         $b2c_stock_cost = Order_item_model::whereIn('stock_id', $b2c_stock_ids)
