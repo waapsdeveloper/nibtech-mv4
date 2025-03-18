@@ -397,7 +397,7 @@ class Report extends Component
             })
             // ->whereIn('status', [3,6])
             ->get();
-        $currency_check = $b2c_order_items->whereNull('currency')->get();
+        $currency_check = $b2c_order_items->whereNull('currency');
         if ($currency_check->count() > 0) {
             foreach ($currency_check as $item) {
                 $item->currency = $item->order->currency;
