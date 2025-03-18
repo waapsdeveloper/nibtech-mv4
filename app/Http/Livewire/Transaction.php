@@ -26,16 +26,19 @@ class Transaction extends Component
     public function render()
     {
 
-        $data['title_page'] = "Customers";
+        $data['title_page'] = "Transactions";
         session()->put('page_title', $data['title_page']);
-        $data['customers'] = $this->customers;
-        // foreach($data['customers'] as $customer){
-        //     if($customer->orders->count() == 0){
-        //         $customer->delete();
-        //         $customer->forceDelete();
-        //     }
-        // }
-        return view('livewire.customer')->with($data);
+
+        $transactions = Account_transaction_model::when(request('start_date') != '', function ($q) {
+            return $q->whereDate('created_at', '>=', request('start_date'));
+        })
+        ->when(request('end_date') != '', function ($q) {
+            return $q->whereDate('created_at', '<=', request('end_date') . ' 23:59:59');
+        })
+        ->orderBy('id','desc')->get();
+        $data['transactions'] = $transactions;
+
+        return view('livewire.transaction')->with($data);
     }
 
     public function profile($id)
@@ -254,78 +257,11 @@ class Transaction extends Component
         $data['countries'] = Country_model::all();
         return view('livewire.add-customer')->with($data);
     }
-
-    public function insert_customer()
-    {
-
-        // $parent_id = request()->input('parent');
-        // $role_id = request()->input('role');
-        // $username = request()->input('username');
-        // $f_name = request()->input('fname');
-        // $l_name = request()->input('lname');
-        // $email = request()->input('email');
-        // $password = request()->input('password');
-        // if(Customer_model::where('username',$username)->first() != null){
-
-        //     session()->put('error',"Username Already Exist");
-        //     return redirect('customer');
-        // }
-        // if(Customer_model::where('email',$email)->first() != null){
-
-        //     session()->put('error',"Email Already Exist");
-        //     return redirect('customer');
-        // }
-        // $data = array(
-        //     'parent_id' =>$parent_id,
-        //     'role_id' =>$role_id,
-        //     'username' =>$username,
-        //     'first_name'=> $f_name,
-        //     'last_name'=> $l_name,
-        //     'email'=> $email,
-        //     'password'=> Hash::make($password),
-        // );
-        Customer_model::insert(request('customer'));
-        session()->put('success',"Customer has been added successfully");
-        return redirect('customer');
-    }
-
-    public function edit_customer($id)
-    {
-
-        $data['countries'] = Country_model::all();
-        $data['customer'] = Customer_model::where('id',$id)->first();
-
-        $orders = Order_model::with(['order_items.variation', 'order_items.variation.grade_id', 'order_items.stock'])
-        ->withCount('order_items')->withSum('order_items','price')
-        ->where('orders.customer_id',$id)
-        ->orderBy('orders.created_at', 'desc')
-        ->get();
-        $data['orders'] = $orders;
-        // dd($orders);
-
-
-        $data['repairs'] = Process_model::where('process_type_id', 9)
-        ->where('customer_id', $id)
-        ->orderBy('id', 'desc')
-        ->get();
-
-        return view('livewire.edit-customer')->with($data);
-    }
     public function delete_transaction($id){
         Account_transaction_model::find($id)->delete();
         session()->put('success',"Transaction has been deleted successfully");
         return redirect()->back();
     }
-    public function update_customer($id)
-    {
-        $data = request('customer');
-        $data['is_vendor'] = $data['type'];
-        Customer_model::where('id',$id)->update($data);
-        session()->put('success',"Customer has been updated successfully");
-        return redirect()->back();
-    }
-
-
     public function export_pending_repairs($customer_id)
     {
         $customer = Customer_model::find($customer_id);
