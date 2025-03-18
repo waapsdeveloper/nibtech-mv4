@@ -41,7 +41,7 @@ class RepairersheetExport implements FromCollection, WithHeadings
             ->leftJoin('admin as admin2', 'stock_operations.admin_id', '=', 'admin2.id')
 
             ->select(
-                DB::raw('CONCAT(products.model, " ", storage.name) as model_storage'),
+                DB::raw('CONCAT(products.model, " ", COALESCE(storage.name, "")) as model_storage'),
                 'color.name as color',
                 'grade.name as grade_name',
                 // 'orders.reference_id as po',
