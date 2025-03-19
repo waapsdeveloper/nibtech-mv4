@@ -19,6 +19,11 @@ class Account_transaction_model extends Model
         'process_id',
         'customer_id',
         'transaction_type_id',
+        'order_type_id',
+        'currency',
+        'amount',
+        'date',
+        'description',
 
     ];
 
