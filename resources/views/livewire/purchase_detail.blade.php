@@ -730,7 +730,7 @@
                                                     @php
                                                         $stock->availability();
                                                         $item = $stock->last_item();
-                                                        $variation = $item->variation;
+                                                        $variation = $item->variation ?? null;
                                                     @endphp
                                                     <tr>
                                                         <td>{{ $i + 1 }}</td>
