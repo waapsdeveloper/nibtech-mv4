@@ -297,7 +297,15 @@ class Transaction extends Component
                 $amount = str_replace(',','',$d[$amoun]);
                 $currency = Currency_model::where('code',$d[$currency])->first();
 
-                $transaction = new Account_transaction_model();
+                $transaction = Account_transaction_model::firstOrNew([
+                    'order_id' => $order->id,
+                    'customer_id' => $order->customer_id,
+                    'order_type_id' => 3,
+                    'amount' => $amount,
+                    'currency' => $currency->id,
+                    'date' => Carbon::parse($d[$value_date])->format('Y-m-d H:i:s'),
+                    'description' => $d[$invoice_key],
+                ]);
                 $transaction->customer_id = $order->customer_id;
                 $transaction->order_id = $order->id;
                 $transaction->order_type_id = 3;
