@@ -951,7 +951,9 @@
                                                 <td colspan="2">{{ $transaction->transaction_type->name }}</td>
                                                 <td colspan="3">{{ $transaction->description }}</td>
                                                 <td>{{ $transaction->currency_id->sign.$transaction->amount }}</td>
+                                                <td></td>
                                                 <td>{{ $transaction->date }}</td>
+                                                <td></td>
                                         @endforeach
                                     @endif
                                     @php
