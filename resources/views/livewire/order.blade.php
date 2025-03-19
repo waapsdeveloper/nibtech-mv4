@@ -954,6 +954,7 @@
                                                 <td></td>
                                                 <td>{{ $transaction->date }}</td>
                                                 <td></td>
+                                            </tr>
                                         @endforeach
                                     @endif
                                     @php
