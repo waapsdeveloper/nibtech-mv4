@@ -90,11 +90,16 @@
 
         <div class="d-flex justify-content-between">
             <div>
-                <a href="{{url('wholesale')}}?status=2" class="btn btn-link @if (request('status') == 2) bg-white @endif ">Pending</a>
-                <a href="{{url('wholesale')}}?status=3" class="btn btn-link @if (request('status') == 3) bg-white @endif ">Completed</a>
-                <a href="{{url('wholesale')}}" class="btn btn-link @if (!request('status')) bg-white @endif ">All</a>
+                <a href="{{url('transaction')}}?status=2" class="btn btn-link @if (request('status') == 2) bg-white @endif ">Pending</a>
+                <a href="{{url('transaction')}}?status=3" class="btn btn-link @if (request('status') == 3) bg-white @endif ">Completed</a>
+                <a href="{{url('transaction')}}" class="btn btn-link @if (!request('status')) bg-white @endif ">All</a>
             </div>
             <div class="">
+                <form method="POST" enctype="multipart/form-data" action="{{ url('transaction/add_transaction_sheet')}}" class="form-inline p-1">
+                    @csrf
+                    <input type="file" class="form-control form-control-sm" name="sheet">
+                    <button type="submit" class="btn btn-sm btn-primary">Upload Sheet</button>
+                </form>
             </div>
         </div>
         @if (session('success'))
