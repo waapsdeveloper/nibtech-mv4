@@ -310,6 +310,7 @@ class Transaction extends Component
                 $transaction->description = $d[$invoice_key];
                 $transaction->amount = $amount;
                 $transaction->currency = $currency->id;
+                $transaction->created_by = session('user_id');
 
                 $transaction->save();
 
