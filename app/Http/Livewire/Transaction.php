@@ -14,6 +14,7 @@ use App\Models\Order_model;
 use App\Models\Process_model;
 use App\Models\Process_stock_model;
 use App\Models\Product_storage_sort_model;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 use TCPDF;
 
@@ -226,6 +227,102 @@ class Transaction extends Component
         session()->put('success',"Transaction has been updated successfully");
         return redirect()->back();
 
+
+    }
+
+    public function add_transaction_sheet()
+    {
+        $issue = [];
+        request()->validate([
+            'sheet' => 'required|file|mimes:xlsx,xls',
+        ]);
+
+        // Store the uploaded file in a temporary location
+        $filePath = request()->file('sheet')->store('temp');
+
+        // // Perform operations on the Excel file
+        // $spreadsheet = IOFactory::load(storage_path('app/'.$filePath));
+        // // Perform your operations here...
+
+        // Replace 'your-excel-file.xlsx' with the actual path to your Excel file
+        $excelFilePath = storage_path('app/'.$filePath);
+
+        $data = Excel::toArray([], $excelFilePath)[0];
+        $dh = $data[0];
+        // print_r($dh);
+        unset($data[0]);
+        $arrayLower = array_map('strtolower', $dh);
+        // Search for the lowercase version of the search value in the lowercase array
+        $order_id = array_search('order_id', $arrayLower);
+        if(!$order_id){
+            print_r($dh);
+            session()->put('error', "Heading not Found(order_id)");
+            return redirect()->back();
+            // die;
+        }
+        $value_date = array_search('value_date', $arrayLower);
+        if(!$value_date){
+            print_r($dh);
+            session()->put('error', "Heading not Found(value_date)");
+            return redirect()->back();
+            // die;
+        }
+        $invoice_key = array_search('invoice_key', $arrayLower);
+        if(!$invoice_key){
+            print_r($dh);
+            session()->put('error', "Heading not Found(invoice_key)");
+            return redirect()->back();
+            // die;
+        }
+        $amount = array_search('amount', $arrayLower);
+        if(!$amount){
+            print_r($dh);
+            session()->put('error', "Heading not Found(amount)");
+            return redirect()->back();
+            // die;
+        }
+        $currency = array_search('currency', $arrayLower);
+        if(!$currency){
+            print_r($dh);
+            session()->put('error', "Heading not Found(currency)");
+            return redirect()->back();
+            // die;
+        }
+
+        foreach($data as $dr => $d) {
+            $order = Order_model::where('reference_id',trim($d[$order_id]))->where('order_type_id',3)->first();
+
+            if($order){
+
+                $amount = str_replace(',','',$d[$amount]);
+                $currency = Currency_model::where('code',$d[$currency])->first();
+
+                $transaction = new Account_transaction_model();
+                $transaction->customer_id = $order->customer_id;
+                $transaction->order_id = $order->id;
+                $transaction->order_type_id = 3;
+                if($amount < 0){
+                    $transaction->transaction_type_id = 2;
+                }else{
+                    $transaction->transaction_type_id = 1;
+                }
+                $transaction->date = Carbon::parse($d[$value_date])->format('Y-m-d H:i:s');
+                $transaction->description = $d[$invoice_key];
+                $transaction->amount = $amount;
+                $transaction->currency = $currency->id;
+
+                $transaction->save();
+
+            }else{
+                $issue[] = $d;
+            }
+
+        }
+
+        if(count($issue) > 0){
+            session()->put('error', $issue);
+        }
+        return redirect()->back();
 
     }
     public function add_payment()
