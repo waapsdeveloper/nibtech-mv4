@@ -753,7 +753,7 @@
                                                         @if (session('user')->hasPermission('view_cost'))
                                                         <td>{{ $currency.amount_formatter(($item->price ?? null),2) }}</td>
                                                         @endif
-                                                        <td style="width:220px">{{ $item->created_at }}</td>
+                                                        <td style="width:220px">{{ $item->created_at ?? null }}</td>
                                                     </tr>
                                                     @php
                                                         $i ++;
