@@ -165,7 +165,7 @@ class Order extends Component
         ->when(request('missing') == 'processed_at', function ($q) {
             return $q->whereIn('status', [3,6])->whereNull('processed_at');
         })
-        ->whem(request('transaction') == 1, function ($q) {
+        ->when(request('transaction') == 1, function ($q) {
             return $q->whereHas('transactions', function ($q) {
                 $q->where('status', 1);
             });
