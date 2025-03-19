@@ -200,11 +200,12 @@
                     <a href="{{url('order')}}?missing=charge" class="btn btn-link">Missing Charge ({{ $missing_charge_count }})</a>
 
                 @endif
-                    <a href="{{url('order')}}?missing=scan" class="btn btn-link">Missing Scan</a>
+                <a href="{{url('order')}}?missing=scan" class="btn btn-link">Missing Scan</a>
                 @if ($missing_processed_at_count > 0)
                     <a href="{{url('order')}}?missing=processed_at" class="btn btn-link">Missing Invoiced At ({{ $missing_processed_at_count }})</a>
 
                 @endif
+                <a href="{{url('order')}}?transaction=1" class="btn btn-link">Transaction</a>
             </div>
             <div class="d-flex">
 
@@ -242,6 +243,9 @@
             @endif
             @if (Request::get('with_stock'))
                 <input type="hidden" name="with_stock" value="{{ Request::get('with_stock') }}">
+            @endif
+            @if (Request::get('transaction'))
+                <input type="hidden" name="transaction" value="{{ Request::get('transaction') }}">
             @endif
 
         </form>
@@ -336,6 +340,9 @@
                                     @if (Request::get('missing'))
                                         <input type="hidden" name="missing" value="{{ Request::get('missing') }}">
                                     @endif
+                                    @if (Request::get('transaction'))
+                                        <input type="hidden" name="transaction" value="{{ Request::get('transaction') }}">
+                                    @endif
                                 </form>
                                 <form method="get" action="" class="row form-inline">
                                     <label for="perPage" class="card-title inline">per page:</label>
@@ -363,6 +370,9 @@
                                     @endif
                                     @if (Request::get('missing'))
                                         <input type="hidden" name="missing" value="{{ Request::get('missing') }}">
+                                    @endif
+                                    @if (Request::get('transaction'))
+                                        <input type="hidden" name="transaction" value="{{ Request::get('transaction') }}">
                                     @endif
                                 </form>
                             </div>
@@ -929,6 +939,19 @@
                                                     </tr>
                                                 @endforeach
                                             @endif
+                                        @endforeach
+
+                                    @endif
+                                    @if (request('transaction') == 1)
+                                        @foreach ($order->transactions as $transaction)
+                                            @php
+
+                                            @endphp
+                                            <tr>
+                                                <td>{{ $transaction->transaction_type->name }}</td>
+                                                <td>{{ $transaction->description }}</td>
+                                                <td>{{ $transaction->currency_id->name.$transaction->amount }}</td>
+                                                <td>{{ $transaction->date }}</td>
                                         @endforeach
                                     @endif
                                     @php

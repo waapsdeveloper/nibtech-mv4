@@ -25,6 +25,10 @@ class Order_model extends Model
         'scanned',
     ];
 
+    public function transactions()
+    {
+        return $this->hasMany(Account_transaction_model::class, 'order_id', 'id');
+    }
     public function charge_values()
     {
         return $this->hasManyThrough(Charge_value_model::class, Order_charge_model::class, 'order_id', 'id', 'id', 'charge_value_id');
