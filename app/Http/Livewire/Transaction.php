@@ -232,6 +232,9 @@ class Transaction extends Component
 
     public function add_transaction_sheet()
     {
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '512M');
+
         $issue = [];
         request()->validate([
             'sheet' => 'required|file|mimes:xlsx,xls,csv',
