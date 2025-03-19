@@ -329,7 +329,7 @@ class Transaction extends Component
         }
 
         if(count($issue) > 0){
-            session()->put('error', $issue);
+            session()->put('error', json_encode($issue));
         }
         // return redirect()->back();
 
