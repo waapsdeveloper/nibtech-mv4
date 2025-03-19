@@ -100,7 +100,7 @@ class Order extends Component
             $end_date = now();
         }
 
-        $orders = Order_model::with(['customer','customer.orders','order_items','order_items.variation','order_items.variation.product', 'order_items.variation.grade_id', 'order_items.stock', 'order_items.replacement'])
+        $orders = Order_model::with(['customer','customer.orders','order_items','order_items.variation','order_items.variation.product', 'order_items.variation.grade_id', 'order_items.stock', 'order_items.replacement', 'transactions'])
         // ->where('orders.order_type_id',3)
 
         ->when(request('type') == '', function ($q) {
@@ -164,6 +164,11 @@ class Order extends Component
         })
         ->when(request('missing') == 'processed_at', function ($q) {
             return $q->whereIn('status', [3,6])->whereNull('processed_at');
+        })
+        ->whem(request('transaction') == 1, function ($q) {
+            return $q->whereHas('transactions', function ($q) {
+                $q->where('status', 1);
+            });
         })
         ->when(request('order_id') != '', function ($q) {
             if(str_contains(request('order_id'),'<')){
