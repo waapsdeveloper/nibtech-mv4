@@ -748,7 +748,7 @@
                                                         <td title="Double click to change" data-stock="{{ $stock->id }}">{{ $stock->imei.$stock->serial_number }}</td>
                                                         <td>{{ $item->order->customer->first_name ?? null }}</td>
                                                         @if (session('user')->hasPermission('view_cost'))
-                                                        <td>{{ $currency.amount_formatter($stock->purchase_item->price,2) }}</td>
+                                                        <td>{{ $currency.(amount_formatter($stock->purchase_item->price,2) ?? null) }}</td>
                                                         @endif
                                                         @if (session('user')->hasPermission('view_cost'))
                                                         <td>{{ $currency.amount_formatter($item->price,2) }}</td>
