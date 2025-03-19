@@ -274,8 +274,8 @@ class Transaction extends Component
             return redirect()->back();
             // die;
         }
-        $amount = array_search('amount', $arrayLower);
-        if(!$amount){
+        $amoun = array_search('amount', $arrayLower);
+        if(!$amoun){
             print_r($dh);
             session()->put('error', "Heading not Found(amount)");
             return redirect()->back();
@@ -294,7 +294,7 @@ class Transaction extends Component
 
             if($order){
 
-                $amount = str_replace(',','',$d[$amount]);
+                $amount = str_replace(',','',$d[$amoun]);
                 $currency = Currency_model::where('code',$d[$currency])->first();
 
                 $transaction = new Account_transaction_model();
