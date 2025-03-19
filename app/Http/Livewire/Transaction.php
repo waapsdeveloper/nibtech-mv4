@@ -234,7 +234,7 @@ class Transaction extends Component
     {
         $issue = [];
         request()->validate([
-            'sheet' => 'required|file|mimes:xlsx,xls',
+            'sheet' => 'required|file|mimes:xlsx,xls,csv',
         ]);
 
         // Store the uploaded file in a temporary location
