@@ -185,6 +185,9 @@
                 @if (Request::get('missing'))
                     <input type="hidden" name="missing" value="{{ Request::get('missing') }}">
                 @endif
+                @if (Request::get('transaction'))
+                    <input type="hidden" name="transaction" value="{{ Request::get('transaction') }}">
+                @endif
             </div>
 
         </form>
