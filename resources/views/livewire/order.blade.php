@@ -948,9 +948,9 @@
 
                                             @endphp
                                             <tr>
-                                                <td>{{ $transaction->transaction_type->name }}</td>
-                                                <td>{{ $transaction->description }}</td>
-                                                <td>{{ $transaction->currency_id->name.$transaction->amount }}</td>
+                                                <td colspan="2">{{ $transaction->transaction_type->name }}</td>
+                                                <td colspan="3">{{ $transaction->description }}</td>
+                                                <td>{{ $transaction->currency_id->sign.$transaction->amount }}</td>
                                                 <td>{{ $transaction->date }}</td>
                                         @endforeach
                                     @endif
