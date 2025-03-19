@@ -316,13 +316,13 @@ class Transaction extends Component
             }else{
                 $issue[] = $d;
             }
-
+            print_r($d);
         }
 
         if(count($issue) > 0){
             session()->put('error', $issue);
         }
-        return redirect()->back();
+        // return redirect()->back();
 
     }
     public function add_payment()
