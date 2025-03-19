@@ -167,7 +167,7 @@ class Order extends Component
         })
         ->when(request('transaction') == 1, function ($q) {
             return $q->whereHas('transactions', function ($q) {
-                $q->where('status', 1);
+                $q->where('status', null);
             });
         })
         ->when(request('order_id') != '', function ($q) {
