@@ -730,7 +730,7 @@
                                                     @php
                                                         $stock->availability();
                                                         $item = $stock->last_item();
-                                                        $variation = $item->variation;
+                                                        $variation = $item->variation ?? null;
                                                     @endphp
                                                     <tr>
                                                         <td>{{ $i + 1 }}</td>
@@ -748,12 +748,12 @@
                                                         <td title="Double click to change" data-stock="{{ $stock->id }}">{{ $stock->imei.$stock->serial_number }}</td>
                                                         <td>{{ $item->order->customer->first_name ?? null }}</td>
                                                         @if (session('user')->hasPermission('view_cost'))
-                                                        <td>{{ $currency.amount_formatter($stock->purchase_item->price,2) }}</td>
+                                                        <td>{{ $currency.(amount_formatter(($stock->purchase_item->price ?? null),2) ?? null) }}</td>
                                                         @endif
                                                         @if (session('user')->hasPermission('view_cost'))
-                                                        <td>{{ $currency.amount_formatter($item->price,2) }}</td>
+                                                        <td>{{ $currency.amount_formatter(($item->price ?? null),2) }}</td>
                                                         @endif
-                                                        <td style="width:220px">{{ $item->created_at }}</td>
+                                                        <td style="width:220px">{{ $item->created_at ?? null }}</td>
                                                     </tr>
                                                     @php
                                                         $i ++;
