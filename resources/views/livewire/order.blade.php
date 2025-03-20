@@ -945,7 +945,7 @@
                                         @endforeach
 
                                     @endif
-                                    @if (request('transaction') == 1)
+                                    @if (request('transaction') == 1 || request('missing') == 'refund')
                                         @foreach ($order->transactions as $transaction)
                                             @php
 
