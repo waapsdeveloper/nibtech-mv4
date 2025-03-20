@@ -252,9 +252,9 @@ class Transaction extends Component
 
         $data = Excel::toArray([], $excelFilePath)[0];
         $dh = $data[0];
-        dd($data);
         // print_r($dh);
         unset($data[0]);
+        dd($data);
         $arrayLower = array_map('strtolower', $dh);
         // Search for the lowercase version of the search value in the lowercase array
         $order_id = array_search('order_id', $arrayLower);
