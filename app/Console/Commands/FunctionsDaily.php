@@ -72,7 +72,7 @@ class FunctionsDaily extends Command
             }
             $total_charge = 0;
             if($order->status == 5){
-                $charge = $charges->where('name',"CCBM")->first();
+                $charge = $charges->where('name',"ccbm_fees")->first();
                 $order_charge = Order_charge_model::firstOrNew(['order_id'=>$order->id,'charge_value_id'=>$charge->current_value->id]);
                 if($charge->amount_type == 1){
                     $order_charge->amount = $charge->current_value->value;
