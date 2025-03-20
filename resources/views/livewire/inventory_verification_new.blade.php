@@ -76,7 +76,7 @@ session()->forget('success');
         <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
     </div>
     <script>
-        alert("{{session('error')}}");
+        // alert("{{session('error')}}");
     </script>
 <br>
 @php
