@@ -294,7 +294,11 @@ class Transaction extends Component
 
         foreach($data as $dr => $d) {
             $order = Order_model::where('reference_id',trim($d[$order_id]))->where('order_type_id',3)->first();
-
+            if($order == null){
+                $or = new Order();
+                $or->recheck(trim($d[$order_id]));
+                $order = Order_model::where('reference_id',trim($d[$order_id]))->where('order_type_id',3)->first();
+            }
             if($order){
 
                 $amount = str_replace(',','',$d[$amoun]);
