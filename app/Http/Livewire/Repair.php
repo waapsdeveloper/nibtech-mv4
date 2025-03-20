@@ -765,6 +765,14 @@ class Repair extends Component
 
             $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
 
+            if($stock == null){
+                session()->put('error', "IMEI Invalid / Not Found ". $i.$s);
+                if($back != 1){
+                    return redirect()->back();
+                }else{
+                    return 1;
+                }
+            }
             $variation = Variation_model::where(['id' => $stock->variation_id])->first();
 
             $stock->status = 2;
