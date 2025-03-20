@@ -250,8 +250,9 @@ class Transaction extends Component
         // Replace 'your-excel-file.xlsx' with the actual path to your Excel file
         $excelFilePath = storage_path('app/'.$filePath);
 
-        $data = Excel::toArray([], $excelFilePath, null, \Maatwebsite\Excel\Excel::XLSX, false)[0];
+        $data = Excel::toArray([], $excelFilePath)[0];
         $dh = $data[0];
+        dd($data);
         // print_r($dh);
         unset($data[0]);
         $arrayLower = array_map('strtolower', $dh);
