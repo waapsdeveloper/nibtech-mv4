@@ -254,7 +254,7 @@ class Transaction extends Component
         $dh = $data[0];
         // print_r($dh);
         unset($data[0]);
-        dd($data);
+        dd($dh);
         $arrayLower = array_map('strtolower', $dh);
         // Search for the lowercase version of the search value in the lowercase array
         $order_id = array_search('order_id', $arrayLower);
