@@ -254,7 +254,6 @@ class Transaction extends Component
         $dh = $data[0];
         // print_r($dh);
         unset($data[0]);
-        dd($dh);
         $arrayLower = array_map('strtolower', $dh);
         // Search for the lowercase version of the search value in the lowercase array
         $order_id = array_search('order_id', $arrayLower);
@@ -293,6 +292,7 @@ class Transaction extends Component
             // die;
         }
 
+        dd($dh);
         foreach($data as $dr => $d) {
             $order = Order_model::where('reference_id',trim($d[$order_id]))->where('order_type_id',3)->first();
             if($order == null){
