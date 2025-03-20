@@ -338,7 +338,7 @@ class Transaction extends Component
         if(count($issue) > 0){
             session()->put('error', json_encode($issue));
         }
-        // return redirect()->back();
+        return redirect()->back();
 
     }
     public function add_payment()
