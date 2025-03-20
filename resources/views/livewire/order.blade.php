@@ -953,7 +953,7 @@
                                             <tr class="bg-info text-white">
                                                 <td colspan="2">{{ $transaction->transaction_type->name }}</td>
                                                 <td colspan="3">{{ $transaction->description }}</td>
-                                                <td>{{ $transaction->currency_id->sign.$transaction->amount }}</td>
+                                                <td>{{ $transaction->currency_id->sign. amount_formatter($transaction->amount) }}</td>
                                                 <td></td>
                                                 <td>{{ $transaction->date }}</td>
                                                 <td></td>
