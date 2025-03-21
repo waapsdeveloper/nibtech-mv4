@@ -35,8 +35,10 @@ class CheckIPMiddleware
             // dd($ip_address);
             if($ip_address == null || $ip_address->updated_at->diffInDays(now()) > 5){
                 // dd($ip);
-                $ip_address->status = 2;
-                $ip_address->save();
+                if($ip_address != null){
+                    $ip_address->status = 2;
+                    $ip_address->save();
+                }
                 Log::info('New IP detected  for user '.$user->first_name.' with IP '.$ip);
                 abort(403, 'Quote of the day: '.Inspiring::just_quote());
             }
