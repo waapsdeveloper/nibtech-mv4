@@ -42,8 +42,8 @@ class Inventory extends Component
         if(request('pss') != null){
             $pss = Product_storage_sort_model::find(request('pss'));
             request()->merge(['storage' => $pss->storage, 'product' => $pss->product_id]);
-
         }
+
         $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('first_name','id');
         $data['colors'] = Color_model::pluck('name','id');
         $data['storages'] = Storage_model::pluck('name','id');
@@ -57,6 +57,7 @@ class Inventory extends Component
         }else{
             $replacements = [];
         }
+
         if(request('rma') == 1){
             $rmas = Order_model::where(['order_type_id'=>2])->pluck('id')->toArray();
         }else{
@@ -329,7 +330,7 @@ class Inventory extends Component
         }
         $data['active_inventory_verification'] = $active_inventory_verification;
 
-
+        $data['last_verification_close_date'] = Process_model::where(['process_type_id'=>20,'status'=>2])->latest()->created_at;
 
         if(request('replacement') == 1){
             $replacements = Order_item_model::where(['order_id'=>8974])->where('reference_id','!=',null)->pluck('reference_id')->toArray();
