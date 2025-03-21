@@ -330,7 +330,7 @@ class Inventory extends Component
         }
         $data['active_inventory_verification'] = $active_inventory_verification;
 
-        $data['last_verification_close_date'] = Process_model::where(['process_type_id'=>20,'status'=>2])->latest()->created_at;
+        $data['last_verification_close_date'] = Process_model::where(['process_type_id'=>20,'status'=>2])->latest()->first()->created_at;
 
         if(request('replacement') == 1){
             $replacements = Order_item_model::where(['order_id'=>8974])->where('reference_id','!=',null)->pluck('reference_id')->toArray();
