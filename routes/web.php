@@ -273,7 +273,7 @@ Route::get('get_stock_cost/{id}', [Inventory::class,'get_stock_cost'])->name('vi
 Route::get('get_stock_price/{id}', [Inventory::class,'get_stock_price'])->name('view_inventory');
 
 Route::get('inventory/start_verification', [Inventory::class,'start_verification'])->name('inventory_verification');
-Route::get('inventory/verification', [Inventory::class,'verification'])->name('inventory_verification');
+Route::get('inventory/verification', [Inventory::class,'verification'])->name('inventory_verification_scan');
 Route::get('inventory/resume_verification', [Inventory::class,'resume_verification'])->name('inventory_verification');
 Route::post('inventory/end_verification', [Inventory::class,'end_verification'])->name('inventory_verification');
 Route::post('inventory/add_verification_imei/{id}', [Inventory::class,'add_verification_imei'])->name('inventory_verification');
