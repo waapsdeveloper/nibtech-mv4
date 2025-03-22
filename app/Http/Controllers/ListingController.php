@@ -302,7 +302,9 @@ class ListingController extends Controller
 
         $po = Order_model::where('order_type_id',1)->pluck('customer_id','id');
 
-        return response()->json(['stocks'=>$stocks, 'stock_costs'=>$stock_costs, 'vendors'=>$vendors, 'po'=>$po]);
+        $reference = Order_model::where('order_type_id',1)->pluck('reference_id','id');
+
+        return response()->json(['stocks'=>$stocks, 'stock_costs'=>$stock_costs, 'vendors'=>$vendors, 'po'=>$po, 'reference'=>$reference]);
 
     }
 
