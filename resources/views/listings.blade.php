@@ -487,6 +487,7 @@
                         // console.log(data.stock_costs[item.id]);
                         let price = data.stock_costs[item.id];
                         let vendor = data.vendors[data.po[item.order_id]];
+                        let sreference_id = data.sreference[item.order_id];
                         stockPrices.push(price);
                         // Load stock cost via AJAX
                         datass += `
@@ -497,7 +498,7 @@
                                         ${item.imei ?? item.serial_number ?? ''}
                                     </a>
                                 </td>
-                                <td id="cost_${item.id}" title="${item.order.reference_id}">€${price} (${vendor})</td>
+                                <td id="cost_${item.id}" title="${sreference_id}">€${price} (${vendor})</td>
 
                             </tr>`;
 
