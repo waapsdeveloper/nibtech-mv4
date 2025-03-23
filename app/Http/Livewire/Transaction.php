@@ -105,7 +105,7 @@ class Transaction extends Component
             // die;
         }
         $invoice_key = array_search('invoice_key', $arrayLower);
-        if($invoice_key == null){
+        if(!in_array('invoice_key', $arrayLower)){
             print_r($dh);
             session()->put('error', "Heading not Found(invoice_key)". $invoice_key);
             return redirect()->back();
