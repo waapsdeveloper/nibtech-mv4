@@ -126,7 +126,7 @@ class Transaction extends Component
             // die;
         }
 
-        dd($dh);
+        // dd($dh);
         foreach($data as $dr => $d) {
             $order = Order_model::where('reference_id',trim($d[$order_id]))->where('order_type_id',3)->first();
             if($order == null){
