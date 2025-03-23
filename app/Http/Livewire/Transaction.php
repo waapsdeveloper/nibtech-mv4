@@ -107,7 +107,7 @@ class Transaction extends Component
         $invoice_key = array_search('invoice_key', $arrayLower);
         if(!$invoice_key){
             print_r($dh);
-            session()->put('error', "Heading not Found(invoice_key)". json_encode($arrayLower));
+            session()->put('error', "Heading not Found(invoice_key)". $invoice_key);
             return redirect()->back();
             // die;
         }
