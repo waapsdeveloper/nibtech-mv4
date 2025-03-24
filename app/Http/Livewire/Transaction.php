@@ -125,6 +125,13 @@ class Transaction extends Component
             return redirect()->back();
             // die;
         }
+        $designation = array_search('designation', $arrayLower);
+        if(!$designation){
+            print_r($dh);
+            session()->put('error', "Heading not Found(designation)");
+            return redirect()->back();
+            // die;
+        }
 
         // dd($dh);
         foreach($data as $dr => $d) {
