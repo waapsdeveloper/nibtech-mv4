@@ -317,6 +317,10 @@ class RMA extends Component
         $data['last_ten'] = $last_ten;
         $data['all_variations'] = Variation_model::where('grade',9)->get();
         $data['order'] = Order_model::find($order_id);
+        if($data['order'] == null){
+            session()->put('error', 'Order not found');
+            return redirect('rma');
+        }
         $data['order_id'] = $order_id;
         $data['currency'] = $data['order']->currency_id->sign;
 
