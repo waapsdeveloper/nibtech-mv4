@@ -274,7 +274,6 @@
             // disable form submission twice
             $('#send_' + variationId).addClass('d-none');
 
-            $('#add_' + variationId).val(0);
 
             $.ajax({
                 type: "POST",
@@ -284,7 +283,8 @@
                     // alert("Success: Quantity changed to " + data); // show response from the PHP script.
                     $('#send_' + variationId).addClass('d-none'); // hide the button after submission
                     $('#quantity_' + variationId).val(data)
-                    $('#success_' + variationId).text("Quantity changed by" + quantity + " to " + data);
+                    $('#success_' + variationId).text("Quantity changed by " + quantity + " to " + data);
+                    $('#add_' + variationId).val(0);
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert("Error: " + textStatus + " - " + errorThrown);
