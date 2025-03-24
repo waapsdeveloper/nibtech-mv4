@@ -244,7 +244,7 @@
             // disable submission on enter key
             $('#send_' + variationId).prop('disabled', true);
 
-            $('#quantity_' + variationId).val(0);
+            $('#add_' + variationId).val(0);
             var form = $('#change_qty_' + variationId);
             var actionUrl = form.attr('action');
 
