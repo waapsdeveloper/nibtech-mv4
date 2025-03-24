@@ -34,7 +34,11 @@
             <input type="hidden" name="admin_id" value="{{request('admin_id')}}">
             <button class="btn btn-primary pd-x-20" type="submit">Exit</button>
         </form>
-
+        @if (request('hide') == 1)
+            <a href="{{ url('receive_repair_items') }}" class="btn btn-primary pd-x-20">Show</a>
+        @else
+            <a href="{{ url('receive_repair_items') }}?hide=1" class="btn btn-primary pd-x-20">Hide</a>
+        @endif
     </div>
     <script>
 
