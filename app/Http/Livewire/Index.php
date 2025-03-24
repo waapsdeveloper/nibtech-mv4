@@ -1048,6 +1048,7 @@ class Index extends Component
         $bm = new BackMarketAPIController();
         echo "<pre>";
         print_r($bm->getlabelData());
+        print_r($bm->getReturnLabelData());
         echo "</pre>";
         // $transactions = Account_transaction_model::whereNull('date')->get();
         // foreach($transactions as $transaction){

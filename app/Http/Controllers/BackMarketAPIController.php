@@ -505,6 +505,47 @@ class BackMarketAPIController extends Controller
         return $res1_array;
         // return redirect($result->results[0]->labelUrl);
     }
+    public function getReturnLabelData() {
+        // $end_point = 'shipping/v1/deliveries?start_date=2024-04-01T00:00:00&end_date=2024-04-02T00:00:00';
+        $end_point = 'shipping/v1/returns?order_id=39650328';
+        $result = $this->apiGet($end_point);
+
+        // $res0_array = $result0->results;
+        $res1_array = $result->results;
+
+        // $result0_next = $result0;
+        $result1_next = $result;
+
+
+        $page1 = 1;
+
+        while (($result1_next->next) != null) {
+            if($result1_next->results){
+                $page1++;
+                $end_point_next1_tail = '&page=' . "$page1";
+                $end_point_next1 = $end_point . $end_point_next1_tail;
+                $result1_next = $this->apiGet($end_point_next1);
+                if($result1_next == null){
+                    print_r($result1_next);
+                }else{
+
+                    $result_next1_array = $result1_next->results;
+
+                    foreach ($result_next1_array as $key => $value) {
+                        array_push($res1_array, $result_next1_array[$key]);
+                    }
+                }
+            }
+        }
+
+        // return [
+        //     // 'new_orders' => $res0_array,
+        //     'shipped_orders' => $res1_array,
+        // ];
+
+        return $res1_array;
+        // return redirect($result->results[0]->labelUrl);
+    }
 
     public function getNewOrders($param = []) {
         // $end_point_0 = 'orders?state=0';
