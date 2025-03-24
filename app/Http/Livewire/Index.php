@@ -1045,6 +1045,8 @@ class Index extends Component
 
     public function test(){
 
+        $bm = new BackMarketAPIController();
+        print_r($bm->getlabelData());
         // $transactions = Account_transaction_model::whereNull('date')->get();
         // foreach($transactions as $transaction){
         //     if($transaction->order != null){
