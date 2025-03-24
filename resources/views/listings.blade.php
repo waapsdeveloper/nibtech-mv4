@@ -249,6 +249,8 @@
                 success: function(data) {
                     // alert("Success: Quantity changed to " + data); // show response from the PHP script.
                     $('#send_' + variationId).addClass('d-none'); // hide the button after submission
+                    // disable submit button
+                    $('#send_' + variationId).prop('disabled', true);
                     $('#quantity_' + variationId).val(data)
                     $('#success_' + variationId).text("Quantity changed to " + data);
                 },
