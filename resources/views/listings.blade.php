@@ -238,10 +238,13 @@
 
         function submitForm(event, variationId) {
             event.preventDefault(); // avoid executing the actual submit of the form.
+            var quantity = $('#quantity_' + variationId).val();
             // disable form submission twice
             $('#send_' + variationId).addClass('d-none');
             // disable submission on enter key
             $('#send_' + variationId).prop('disabled', true);
+
+            $('#quantity_' + variationId).val(0);
             var form = $('#change_qty_' + variationId);
             var actionUrl = form.attr('action');
 
@@ -254,7 +257,7 @@
                     $('#send_' + variationId).addClass('d-none'); // hide the button after submission
 
                     $('#quantity_' + variationId).val(data)
-                    $('#success_' + variationId).text("Quantity changed to " + data);
+                    $('#success_' + variationId).text("Quantity changed by" + quantity + " to " + data);
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     alert("Error: " + textStatus + " - " + errorThrown);
