@@ -270,7 +270,7 @@
 
             var form = $('#add_qty_' + variationId);
             var actionUrl = form.attr('action');
-
+            var quantity = $('#add_' + variationId).val();
             // disable form submission twice
             $('#send_' + variationId).addClass('d-none');
 
