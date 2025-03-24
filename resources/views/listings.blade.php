@@ -268,11 +268,18 @@
         function submitForm1(event, variationId) {
             event.preventDefault(); // avoid executing the actual submit of the form.
 
+
             var form = $('#add_qty_' + variationId);
             var actionUrl = form.attr('action');
+
             var quantity = $('#add_' + variationId).val();
             // disable form submission twice
             $('#send_' + variationId).addClass('d-none');
+            // disable submission on enter key for 2 seconds
+            $('#send_' + variationId).prop('disabled', true);
+            setTimeout(function() {
+                $('#send_' + variationId).prop('disabled', false);
+            }, 2000);
 
 
             $.ajax({
