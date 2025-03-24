@@ -271,6 +271,13 @@
             var form = $('#add_qty_' + variationId);
             var actionUrl = form.attr('action');
 
+            // disable form submission twice
+            $('#send_' + variationId).addClass('d-none');
+            // disable submission on enter key
+            $('#send_' + variationId).prop('disabled', true);
+
+            $('#add_' + variationId).val(0);
+
             $.ajax({
                 type: "POST",
                 url: actionUrl,
