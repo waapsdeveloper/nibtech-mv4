@@ -466,7 +466,7 @@ class BackMarketAPIController extends Controller
 
     public function getlabelData() {
         // $end_point = 'shipping/v1/deliveries?start_date=2024-04-01T00:00:00&end_date=2024-04-02T00:00:00';
-        $end_point = 'shipping/v1/deliveries?order_id=47681375';
+        $end_point = 'shipping/v1/deliveries?order_id=45727918';
         $result = $this->apiGet($end_point);
 
         // $res0_array = $result0->results;
@@ -507,7 +507,7 @@ class BackMarketAPIController extends Controller
     }
     public function getReturnLabelData() {
         // $end_point = 'shipping/v1/deliveries?start_date=2024-04-01T00:00:00&end_date=2024-04-02T00:00:00';
-        $end_point = 'shipping/v1/returns?order_id=47681375';
+        $end_point = 'shipping/v1/returns?order_id=45727918';
         $result = $this->apiGet($end_point);
 
         // $res0_array = $result0->results;
