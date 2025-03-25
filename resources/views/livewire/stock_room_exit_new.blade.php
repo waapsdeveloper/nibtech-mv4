@@ -81,6 +81,20 @@ session()->forget('info');
 session()->forget('error');
 @endphp
 @endif
+@if (session('warning'))
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <span class="alert-inner--icon"><i class="fe fe-thumbs-down"></i></span>
+        <span class="alert-inner--text"><strong>{{session('warning')}}</strong></span>
+        <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
+    </div>
+    {{-- <script>
+        alert("{{session('warning')}}");
+    </script> --}}
+<br>
+@php
+session()->forget('warning');
+@endphp
+@endif
     <div class="card">
         <div class="card-header pb-0">
             <div class="d-flex justify-content-between">

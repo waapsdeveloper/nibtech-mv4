@@ -149,7 +149,7 @@ class Stock_room extends Component
 
             }
             if($stock->status == 2){
-                session()->put('error', 'IMEI Already Sold');
+                session()->put('warning', 'IMEI Already Sold');
                 return redirect()->back(); // Redirect here is not recommended
             }
             if($stock->variation->grade == 17){
