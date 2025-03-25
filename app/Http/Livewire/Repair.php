@@ -1038,9 +1038,9 @@ class Repair extends Component
         whereHas('variation', function ($query) {
             $query->where('grade', 8);
         })
-        // ->whereDoesntHave('sale_order', function ($query) {
-        //     $query->where('customer_id', 3955);
-        // })
+        ->whereDoesntHave('sale_order', function ($query) {
+            $query->where('customer_id', 3955);
+        })
         ->whereDoesntHave('sale_order', function ($query) {
             $query->where('order_type_id', 2);
         })
