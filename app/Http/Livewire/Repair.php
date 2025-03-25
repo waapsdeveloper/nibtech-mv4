@@ -394,7 +394,7 @@ class Repair extends Component
         $data['colors'] = Color_model::pluck('name','id');
         if(request('show') == 1){
             if(session('process_stock_ids') != []){
-                $processed_stocks = Process_stock_model::whereIn('id', session('process_stock_ids'))->with(['process','stock'])->orderByDesc('updated_at')->limit($per_page)->get();
+                $processed_stocks = Process_stock_model::whereIn('id', session('process_stock_ids'))->with(['process','stock'])->orderByDesc('updated_at')->get();
                 $data['processed_stocks'] = $processed_stocks;
 
             }
