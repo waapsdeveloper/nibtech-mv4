@@ -253,6 +253,10 @@ class Stock_room extends Component
 
             session()->put('success', 'Stock Received: '.$model.' - '.$storage.' - '.$color.' - '.$grade);
             return redirect()->back(); // Redirect here is not recommended
+        }else{
+            session()->put('error', 'IMEI Required');
+            return redirect()->back(); // Redirect here is not recommended
+
         }
 
 
