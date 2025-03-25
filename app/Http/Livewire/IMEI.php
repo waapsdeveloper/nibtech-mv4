@@ -58,6 +58,7 @@ class IMEI extends Component
                 }elseif($stock->count() > 1){
                     $imeis = $stock->pluck('imei')->toArray();
                     $error = "IMEI not found. Did you mean: ".implode(", ", $imeis);
+                    $stock = null;
                 }else{
                     $stock = null;
                 }
