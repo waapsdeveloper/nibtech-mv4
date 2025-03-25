@@ -1041,9 +1041,9 @@ class Repair extends Component
         // ->whereDoesntHave('sale_order', function ($query) {
         //     $query->where('customer_id', 3955);
         // })
-        // ->whereDoesntHave('sale_order', function ($query) {
-        //     $query->where('order_type_id', 2);
-        // })
+        ->whereDoesntHave('sale_order', function ($query) {
+            $query->where('order_type_id', 2);
+        })
         ->when(request('stock_status'), function ($q) {
             return $q->where('status', request('stock_status'));
         })
