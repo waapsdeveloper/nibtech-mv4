@@ -35,9 +35,9 @@
             <button class="btn btn-primary pd-x-20" type="submit">Exit</button>
         </form>
         @if (request('show') == 1)
-            <a href="{{ url('receive_repair_items') }}?hide=1" class="btn btn-primary pd-x-20">Hide</a>
+            <a href="{{ url('receive_repair_items') }}?hide=1" class="btn btn-link">Hide</a>
         @else
-            <a href="{{ url('receive_repair_items') }}" class="btn btn-primary pd-x-20">Show</a>
+            <a href="{{ url('receive_repair_items') }}" class="btn btn-link">Show</a>
         @endif
     </div>
     <script>
