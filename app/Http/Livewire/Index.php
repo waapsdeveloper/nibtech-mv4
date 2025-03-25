@@ -153,11 +153,14 @@ class Index extends Component
             ->whereDoesntHave('sale_order', function ($query) {
                 $query->where('customer_id', 3955);
             })
+            ->whereHas('sale_order', function ($query) {
+                $query->where('order_type_id', 3)->orWhere(['order_type_id'=>5, 'reference_id'=>999]);
+            })
             ->join('variation', 'stock.variation_id', '=', 'variation.id')
             ->join('grade', 'variation.grade', '=', 'grade.id')
             ->whereIn('grade.id',[8,12,17])
             ->join('orders', 'stock.order_id', '=', 'orders.id')
-            ->where('orders.order_type_id',3)
+            // ->where('orders.order_type_id',3)
             ->groupBy('variation.grade', 'grade.name', 'orders.status', 'stock.status')
             ->orderBy('grade_id')
             ->get();
