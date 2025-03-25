@@ -932,7 +932,8 @@ class Order extends Component
             })->orderBy('product_id')->orderBy('storage')->get();
 
             $variations = Variation_model::whereIn('product_storage_sort_id',$product_storage_sort->pluck('id'))->get();
-            $rtg_variations = $variations->whereIn('grade', [1,2,3,4,5,7,9])->pluck('id');
+            $wip_variations = $variations->whereIn('grade', [9])->pluck('id');
+            $rtg_variations = $variations->whereIn('grade', [1,2,3,4,5,7])->pluck('id');
             $twox_variations = $variations->whereIn('grade', [6])->pluck('id');
             $repair_variations = $variations->whereIn('grade', [8])->pluck('id');
             $rma_variations = $variations->whereIn('grade', [10])->pluck('id');
@@ -951,6 +952,7 @@ class Order extends Component
                 $datas['pss_id'] = $pss->id;
                 $datas['model'] = $product->model.' '.$storage;
                 $datas['available_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',1)->count();
+                $datas['wip_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',1)->whereIn('variation_id',$wip_variations)->count();
                 $datas['rtg_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',1)->whereIn('variation_id',$rtg_variations)->count();
                 $datas['twox_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',1)->whereIn('variation_id',$twox_variations)->count();
                 $datas['rep_stock_count'] = $pss->stocks->where('order_id',$order_id)->where('status',1)->whereIn('variation_id',$repair_variations)->count();
