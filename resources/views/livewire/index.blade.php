@@ -426,43 +426,7 @@
                                             <div class="card-header">
                                                 <h4 class="card-title mb-1">Orders</h4>
                                             </div>
-                                            <div class="card-body py-2" id="orders_data">
-                                                {{-- <table class="w-100">
-                                                    <tr>
-                                                        <td>Total:</td>
-                                                        <td class="tx-right"><a href="{{url('order')}}?start_date={{ $start_date }}&end_date={{ $end_date }}" title="EUR Average: {{ amount_formatter($ttl_average,2) }} | EUR: {{ amount_formatter($ttl_eur,2) }} | GBP: {{ amount_formatter($ttl_gbp,2) }} | Go to orders page">{{ $total_orders }}</a></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Pending:</td>
-                                                        <td class="tx-right"><a href="{{url('order')}}?status=2&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ $pending_orders }}</a></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Conversation:</td>
-                                                        <td class="tx-right"><a href="{{url('order')}}?care=1&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ $total_conversations }}</a></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>
-                                                            <a href="#" data-bs-toggle="modal" data-bs-target="#invoiceByHour" title="Invoiced Orders by Hour">Invoiced:</a>
-                                                        </td>
-                                                        <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="{{ $invoiced_items }} Total Items | {{ $missing_imei }} Dispatched without Device | Go to orders page">{{ $invoiced_orders }}</a></td>
-                                                    </tr>
-                                                    @if (session('user')->hasPermission('dashboard_view_totals'))
-                                                    <tr>
-                                                        <td title="Average Price">Average:</td>
-                                                        <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ amount_formatter($average,2) }}</a></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td title="Total EUR Price">Total EUR:</td>
-                                                        <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ amount_formatter($total_eur,2) }}</a></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td title="Total GBP Price">Total GBP:</td>
-                                                        <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">{{ amount_formatter($total_gbp,2) }}</a></td>
-                                                    </tr>
-                                                    @endif
-                                                </table> --}}
-
-                                            </div>
+                                            <div class="card-body py-2" id="orders_data"></div>
                                         </div>
                                     </div>
                                 @endif
