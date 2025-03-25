@@ -1033,6 +1033,7 @@ class Repair extends Component
 
         $data['grades'] = Grade_model::all();
 
+        $rma_order_ids = Order_model::where('order_type_id', 2)->pluck('id');
 
         $repair_stocks = Stock_model::
         whereHas('variation', function ($query) {
@@ -1041,9 +1042,7 @@ class Repair extends Component
         ->whereDoesntHave('sale_order', function ($query) {
             $query->where('customer_id', 3955);
         })
-        ->whereDoesntHave('sale_order', function ($query) {
-            $query->where('order_type_id', 2);
-        })
+        ->whereNotIn('sale_order_id', $rma_order_ids)
         ->when(request('stock_status'), function ($q) {
             return $q->where('status', request('stock_status'));
         })
