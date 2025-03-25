@@ -929,7 +929,9 @@ class Order extends Component
 
             $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q) use ($order_id){
                 $q->where('stock.order_id', $order_id);
-            })->orderBy('product_id')->orderBy('storage')->get();
+            })->orderBy('product_id')->orderBy('storage')#
+            ->with('stocks')
+            ->get();
 
             $variations = Variation_model::whereIn('product_storage_sort_id',$product_storage_sort->pluck('id'))->get();
             $wip_variations = $variations->whereIn('grade', [9])->pluck('id');
