@@ -941,7 +941,7 @@ class Order extends Component
             $rma_variations = $variations->whereIn('grade', [10])->pluck('id');
             $ws_variations = $variations->whereIn('grade', [11])->pluck('id');
             $bt_variations = $variations->whereIn('grade', [21])->pluck('id');
-            $other_variations = $variations->whereNotIn('id',$rtg_variations)->whereNotIn('id',$twox_variations)->whereNotIn('id',$repair_variations)->whereNotIn('id',$rma_variations)->whereNotIn('id',$ws_variations)->whereNotIn('id',$bt_variations)->pluck('id');
+            $other_variations = $variations->whereNotIn('id',$wip_variations)->whereNotIn('id',$rtg_variations)->whereNotIn('id',$twox_variations)->whereNotIn('id',$repair_variations)->whereNotIn('id',$rma_variations)->whereNotIn('id',$ws_variations)->whereNotIn('id',$bt_variations)->pluck('id');
 
             $result = [];
             foreach($product_storage_sort as $pss){
