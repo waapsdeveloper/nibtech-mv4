@@ -31,7 +31,7 @@ class CheckIPMiddleware
 
         $ip = $request->ip();
         $ip_address = Ip_address_model::where('ip',$ip)->where('status',1)->first();
-        if(!$user->hasPermission('add_ip')){
+        if(!$user->hasPermission('add_ip') && !$user->hasPermission('allow_unknown_ip')){
             // dd($ip_address);
             if($ip_address == null || $ip_address->updated_at->diffInDays(now()) > 5){
                 // dd($ip);
