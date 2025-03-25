@@ -65,15 +65,15 @@
                     </div>&nbsp;&nbsp;&nbsp;&nbsp;
                     <div>
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="radio" id="com" name="description" value="Change of mind" required>
+                            <input class="form-check-input" type="radio" id="com" name="description" value="Change of mind" required @if (session('description') == "Change of mind") {{'checked'}} @endif>
                             <label class="form-check-label" for="com">Change of mind</label>
                         </div>
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="radio" id="replacement" name="description" value="Replacement" required>
+                            <input class="form-check-input" type="radio" id="replacement" name="description" value="Replacement" required @if (session('description') == "Replacement") {{'checked'}} @endif>
                             <label class="form-check-label" for="replacement">Replacement</label>
                         </div>
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="radio" id="receive" name="description" value="Receive" required>
+                            <input class="form-check-input" type="radio" id="receive" name="description" value="Receive" required @if (session('description') == "Receive") {{'checked'}} @endif>
                             <label class="form-check-label" for="receive">Receive</label>
                         </div>
                     </div> &nbsp;&nbsp;&nbsp;&nbsp;
