@@ -157,6 +157,7 @@ class Index extends Component
             ->join('grade', 'variation.grade', '=', 'grade.id')
             ->whereIn('grade.id',[8,12,17])
             ->join('orders', 'stock.order_id', '=', 'orders.id')
+            ->where('orders.order_type_id',3)
             ->groupBy('variation.grade', 'grade.name', 'orders.status', 'stock.status')
             ->orderBy('grade_id')
             ->get();
