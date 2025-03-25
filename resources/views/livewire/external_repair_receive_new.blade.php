@@ -33,12 +33,12 @@
 
             <input type="hidden" name="admin_id" value="{{request('admin_id')}}">
             <button class="btn btn-primary pd-x-20" type="submit">Exit</button>
+            @if (request('show') == 1)
+                <a href="?hide=1" class="btn btn-link">Hide</a>
+            @else
+                <a href="?show=1" class="btn btn-link">Show</a>
+            @endif
         </form>
-        @if (request('show') == 1)
-            <a href="?hide=1" class="btn btn-link">Hide</a>
-        @else
-            <a href="?show=1" class="btn btn-link">Show</a>
-        @endif
     </div>
     <script>
 
