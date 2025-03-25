@@ -162,7 +162,6 @@ class Stock_room extends Component
 
             }else{
                 session()->put('description', request('description'));
-
             }
             // Carbon::now()->format('d-m-Y h A')
             $stock_movement = Stock_movement_model::create([
@@ -191,7 +190,7 @@ class Stock_room extends Component
             return redirect()->back(); // Redirect here is not recommended
 
         }else{
-            session()->put('warning', 'IMEI Required');
+            session()->put('error', 'IMEI Required');
             return redirect()->back(); // Redirect here is not recommended
 
         }
@@ -207,6 +206,13 @@ class Stock_room extends Component
 
     public function receive(){
 
+        if(request('description') == null){
+            session()->put('error', 'Description Required');
+            return redirect()->back(); // Redirect here is not recommended
+
+        }else{
+            session()->put('description', request('description'));
+        }
         $user_id = session('user_id');
         if (request('imei')) {
             if (ctype_digit(request('imei'))) {
