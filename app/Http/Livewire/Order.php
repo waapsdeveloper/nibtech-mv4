@@ -142,7 +142,7 @@ class Order extends Component
         ->when(request('missing') == 'reimburse', function ($q) {
             return $q->whereHas('order_items.linked_child', function ($qu) {
                 $qu->whereHas('order', function ($q) {
-                    $q->where('order.status', '!=', 1);
+                    $q->where('orders.status', '!=', 1);
                 });
             })->where('status', 3)->orderBy('orders.updated_at','desc');
         })
