@@ -299,6 +299,7 @@
                                 $total_sold = 0;
                                 $total_repair = 0;
                                 $total_available = 0;
+                                $total_wip = 0;
                                 $total_rtg = 0;
                                 $total_twox = 0;
                                 $total_rep = 0;
@@ -312,6 +313,7 @@
                                     $total_sold += $summery['sold_stock_count'];
                                     $total_repair += $summery['repair_stock_count'];
                                     $total_available += $summery['available_stock_count'];
+                                    $total_wip += $summery['wip_stock_count'];
                                     $total_rtg += $summery['rtg_stock_count'];
                                     $total_twox += $summery['twox_stock_count'];
                                     $total_rep += $summery['rep_stock_count'];
@@ -327,6 +329,7 @@
                                     <td>{{ $summery['sold_stock_count'] > 0 ? $summery['sold_stock_count'] : '-' }}</td>
                                     <td>{{ $summery['repair_stock_count'] > 0 ? $summery['repair_stock_count'] : '-' }}</td>
                                     <td title="RTG + Others">{{ $summery['available_stock_count'] > 0 ? $summery['available_stock_count'] : '-' }} </td>
+                                    <td>{{ $summery['wip_stock_count'] > 0 ? $summery['wip_stock_count'] : '-' }}</td>
                                     <td>{{ $summery['rtg_stock_count'] > 0 ? $summery['rtg_stock_count'] : '-' }}</td>
                                     <td>{{ $summery['twox_stock_count'] > 0 ? $summery['twox_stock_count'] : '-' }}</td>
                                     <td>{{ $summery['rep_stock_count'] > 0 ? $summery['rep_stock_count'] : '-' }}</td>
@@ -345,6 +348,7 @@
                                 <td><b>{{ $total_sold }}</b></td>
                                 <td><b>{{ $total_repair }}</b></td>
                                 <td><b>{{ $total_available }}</b></td>
+                                <td><b>{{ $total_wip }}</b></td>
                                 <td><b>{{ $total_rtg }}</b></td>
                                 <td><b>{{ $total_twox }}</b></td>
                                 <td><b>{{ $total_rep }}</b></td>
