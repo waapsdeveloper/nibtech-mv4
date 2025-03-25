@@ -281,8 +281,9 @@
                                 <th><small><b>No</b></small></th>
                                 <th><small><b>Model</b></small></th>
                                 <th><small><b>Sold</b></small></th>
-                                <th><small><b>Sent for Repair</b></small></th>
+                                <th><small><b>Repair Sent</b></small></th>
                                 <th><small><b>Available</b></small></th>
+                                <th><small><b>WIP</b></small></th>
                                 <th><small><b>RTG</b></small></th>
                                 <th><small><b>2X</b></small></th>
                                 <th><small><b>Repair</b></small></th>
