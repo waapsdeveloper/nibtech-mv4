@@ -190,6 +190,10 @@ class Stock_room extends Component
             }
             return redirect()->back(); // Redirect here is not recommended
 
+        }else{
+            session()->put('error', 'IMEI Required');
+            return redirect()->back(); // Redirect here is not recommended
+
         }
 
 
