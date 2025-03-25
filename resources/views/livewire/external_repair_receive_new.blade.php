@@ -35,9 +35,9 @@
             <button class="btn btn-primary pd-x-20" type="submit">Exit</button>
         </form>
         @if (request('show') == 1)
-            <a href="{{ url('receive_repair_items') }}?hide=1" class="btn btn-link">Hide</a>
+            <a href="" class="btn btn-link">Hide</a>
         @else
-            <a href="{{ url('receive_repair_items') }}" class="btn btn-link">Show</a>
+            <a href="?show=1" class="btn btn-link">Show</a>
         @endif
     </div>
     <script>
@@ -94,7 +94,7 @@ session()->forget('error');
         <div class="card-header pb-0">
             <div class="d-flex justify-content-between">
                 <h4 class="card-title mg-b-0">Received Today</h4>
-                <form method="GET" action="{{ url('receive_repair_items') }}" class="form-inline">
+                <form method="GET" action="" class="form-inline">
                     <label>Per Page</label>
                     <select name="per_page" class="form-control form-select" onchange="this.form.submit()">
                         <option value="10" @if (request('per_page') == 10) selected @endif>10</option>
