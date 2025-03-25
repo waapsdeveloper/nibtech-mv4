@@ -57,7 +57,7 @@ class IMEI extends Component
                     $stock = $stock->first();
                 }elseif($stock->count() > 1){
                     $imeis = $stock->pluck('imei')->toArray();
-                    $error = "IMEI not found. Did you mean: ".implode(", ", $imeis);
+                    $error = "Did you mean: ".implode(", ", $imeis);
                     $stock = null;
                 }else{
                     $stock = null;
@@ -70,7 +70,7 @@ class IMEI extends Component
             $data['grades'] = Grade_model::pluck('name','id');
             $data['vendor_grades'] = Vendor_grade_model::pluck('name','id');
             if (request('imei') == '' || !$stock || $stock->status == null) {
-                if($error){
+                if(isset($error)){
                     session()->put('error', $error);
                 }else{
                     session()->put('error', 'IMEI Invalid / Not Found');
