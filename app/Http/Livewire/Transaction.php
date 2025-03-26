@@ -91,14 +91,14 @@ class Transaction extends Component
         $arrayLower = array_map('strtolower', $dh);
         // Search for the lowercase version of the search value in the lowercase array
         $order_id = array_search('order_id', $arrayLower);
-        if(!$order_id){
+        if(!in_array('order_id', $arrayLower)){
             print_r($dh);
             session()->put('error', "Heading not Found(order_id)");
             return redirect()->back();
             // die;
         }
         $value_date = array_search('value_date', $arrayLower);
-        if(!$value_date){
+        if(!in_array('value_date', $arrayLower)){
             print_r($dh);
             session()->put('error', "Heading not Found(value_date)");
             return redirect()->back();
@@ -112,21 +112,21 @@ class Transaction extends Component
             // die;
         }
         $amoun = array_search('amount', $arrayLower);
-        if(!$amoun){
+        if(!in_array('amount', $arrayLower)){
             print_r($dh);
             session()->put('error', "Heading not Found(amount)");
             return redirect()->back();
             // die;
         }
         $currenc = array_search('currency', $arrayLower);
-        if(!$currenc){
+        if(!in_array('currency', $arrayLower)){
             print_r($dh);
             session()->put('error', "Heading not Found(currency)");
             return redirect()->back();
             // die;
         }
         $designation = array_search('designation', $arrayLower);
-        if(!$designation){
+        if(!in_array('designation', $arrayLower)){
             print_r($dh);
             session()->put('error', "Heading not Found(designation)");
             return redirect()->back();
