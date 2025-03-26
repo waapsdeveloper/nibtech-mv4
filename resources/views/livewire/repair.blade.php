@@ -267,8 +267,14 @@
                     <tfoot>
                         <tr>
                             <td colspan="2"><b>Total</b></td>
+                            @if ($active_verification != null)
+                            <td><b>{{ $total_verified }}</b></td>
+                            <td><b>{{ $total_remaining }}</b></td>
+                            <td title="{{ amount_formatter($total_cost/($total_verified+$total_remaining),2) }}"><b>{{ amount_formatter($total_cost,2) }}</b></td>
+                            @else
                             <td><b>{{ $total_quantity }}</b></td>
                             <td title="{{ amount_formatter($total_cost/$total_quantity,2) }}"><b>{{ amount_formatter($total_cost,2) }}</b></td>
+                            @endif
                         </tr>
                     </tfoot>
 
