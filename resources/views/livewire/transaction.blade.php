@@ -202,7 +202,7 @@
                                                 </td>
                                                 <td>
                                                     {{-- {{ $transaction->customer->first_name }} {{ $transaction->customer->last_name }} --}}
-                                                    {{ $transaction->customer->company ?? $transaction->customer->first_name }}
+                                                    {{ $transaction->customer->company ?? $transaction->customer->first_name ?? null }}
                                                 </td>
                                                 {{-- <td>{{ $batch->reference_id }}</td> --}}
                                                 <td>{{ $batch->order_type->name ?? null }}{{$batch->process_type->name ?? null}}
