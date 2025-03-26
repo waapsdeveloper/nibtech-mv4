@@ -169,7 +169,12 @@
                         <tr>
                             <th><small><b>No</b></small></th>
                             <th><small><b>Model</b></small></th>
+                            @if ($active_verification != null)
+                            <th><small><b>Verified</b></small></th>
+                            <th><small><b>Remaining</b></small></th>
+                            @else
                             <th><small><b>Quantity</b></small></th>
+                            @endif
                             <th><small><b>Cost</b></small></th>
                         </tr>
                     </thead>
@@ -177,6 +182,8 @@
                         @php
                             $i = 0;
                             $total_quantity = 0;
+                            $total_verified = 0;
+                            $total_remaining = 0;
                             $total_cost = 0;
                         @endphp
                         @foreach ($sent_stock_summery as $summery)
@@ -189,25 +196,54 @@
                             // }else{
                             //     $storage = null;
                             // }
-                            $total_quantity += $summery['quantity'];
-                            $total_cost += $summery['total_cost'];
-                            $stock_imeis = $summery['stock_imeis'];
-                            $temp_array = array_unique($stock_imeis);
-                            $duplicates = sizeof($temp_array) != sizeof($stock_imeis);
-                            $duplicate_count = sizeof($stock_imeis) - sizeof($temp_array);
+                            if ($active_verification != null) {
+                                $total_verified += $summery['verified_quantity'];
+                                $verified_imies = $summery['verified_stock_imeis'];
+                                $temp_array = array_unique($verified_imies);
+                                $duplicates = sizeof($temp_array) != sizeof($verified_imies);
+                                $duplicate_count = sizeof($verified_imies) - sizeof($temp_array);
 
+                                $total_remaining += $summery['remaining_quantity'];
+                                $remaining_imies = $summery['remaining_stock_imeis'];
+                                $temp_array = array_unique($remaining_imies);
+                                $duplicates = sizeof($temp_array) != sizeof($remaining_imies);
+                                $duplicate_count = sizeof($remaining_imies) - sizeof($temp_array);
+                            }else {
+                                $total_quantity += $summery['quantity'];
+                                $total_cost += $summery['total_cost'];
+                                $stock_imeis = $summery['stock_imeis'];
+                                $temp_array = array_unique($stock_imeis);
+                                $duplicates = sizeof($temp_array) != sizeof($stock_imeis);
+                                $duplicate_count = sizeof($stock_imeis) - sizeof($temp_array);
+                            }
                         @endphp
                             <tr>
                                 <td>{{ ++$i }}</td>
                                 {{-- <td>{{ $products[$summery['product_id']]." ".$storage }}</td> --}}
                                 <td><button class="btn py-0 btn-link" type="submit" form="search_summery" name="pss" value="{{$summery['pss_id']}}">{{ $summery['model'] }}</button></td>
+                                @if ($active_verification != null)
+                                <td title="{{json_encode($summery['verified_stock_ids'])}}"><a id="test{{$i}}" href="javascript:void(0)">{{ $summery['verified_quantity'] }}</a>
+                                    @if ($duplicates)
+                                        <span class="badge badge-danger">{{ $duplicate_count }} Duplicate</span>
+                                    @endif
+                                </td>
+                                <td title="{{json_encode($summery['remaining_stock_ids'])}}"><a id="test{{$i}}" href="javascript:void(0)">{{ $summery['remaining_quantity'] }}</a>
+                                    @if ($duplicates)
+                                        <span class="badge badge-danger">{{ $duplicate_count }} Duplicate</span>
+                                    @endif
+                                </td>
+                                @else
                                 <td title="{{json_encode($summery['stock_ids'])}}"><a id="test{{$i}}" href="javascript:void(0)">{{ $summery['quantity'] }}</a>
+                                    @if ($duplicates)
+                                        <span class="badge badge-danger">{{ $duplicate_count }} Duplicate</span>
+                                    @endif
+                                </td>
+                                @endif
+                                {{-- <td title="{{json_encode($summery['stock_ids'])}}"><a id="test{{$i}}" href="javascript:void(0)">{{ $summery['quantity'] }}</a>
                                 @if ($duplicates)
                                     <span class="badge badge-danger">{{ $duplicate_count }} Duplicate</span>
-                                @endif
-                                <td
-                                title="{{ amount_formatter($summery['total_cost']/$summery['quantity']) }}"
-                                >{{ amount_formatter($summery['total_cost'],2) }}</td>
+                                @endif --}}
+                                <td title="{{ amount_formatter($summery['total_cost']/$summery['quantity']) }}">{{ amount_formatter($summery['total_cost'],2) }}</td>
                             </tr>
 
                             <script type="text/javascript">
