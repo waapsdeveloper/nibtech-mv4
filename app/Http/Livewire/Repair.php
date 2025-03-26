@@ -104,7 +104,12 @@ class Repair extends Component
                 // $all_stock_ids = $repaired_stock_ids + $all_stock_ids;
                 // dd($all_stock_ids);
             }
-
+            $active_verification = Process_model::where('process_type_id',20)->where('status',1)->first();
+            $data['active_verification'] = $active_verification;
+            if($active_verification != null){
+                $active_verification_ids = Process_stock_model::where('process_id',$active_verification->id)->pluck('stock_id')->toArray();
+                $all_remaining_stock_ids = array_diff($all_stock_ids,$active_verification_ids);
+            }
             $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q) use ($all_stock_ids){
                 $q->whereIn('stock.id', $all_stock_ids)->where('stock.deleted_at',null);
             })->orderBy('product_id')->orderBy('storage')->get();
@@ -114,26 +119,47 @@ class Repair extends Component
                 $product = $pss->product;
                 $storage = $pss->storage_id->name ?? null;
 
-                $stocks = $pss->stocks->whereIn('id',$all_stock_ids)->where('deleted_at',null);
-                $stock_ids = $stocks->pluck('id');
-
-
-                // $scanned_stock_ids = Process_stock_model::where('process_id',$process_id)->where('status',1)->whereIn('stock_id',$stock_ids)->pluck('stock_id');
-                $stock_imeis = $stocks->whereIn('id',$stock_ids)->whereNotNull('imei')->pluck('imei');
-                $stock_serials = $stocks->whereIn('id',$stock_ids)->whereNotNull('serial_number')->pluck('serial_number');
-
-                $purchase_items = Order_item_model::whereIn('stock_id', $stock_ids)->whereHas('order', function ($q) {
-                    $q->where('order_type_id', 1);
-                })->sum('price');
-
                 $datas = [];
+                if($active_verification != null){
+                    $verified_stocks = $pss->stocks->whereIn('id',$active_verification_ids)->where('deleted_at',null);
+                    $verified_stock_ids = $verified_stocks->pluck('id');
+                    $remaining_stocks = $pss->stocks->whereIn('id',$all_remaining_stock_ids)->where('deleted_at',null);
+                    $remaining_stock_ids = $remaining_stocks->pluck('id');
+                    $verified_stock_imeis = $verified_stocks->whereIn('id',$verified_stock_ids)->whereNotNull('imei')->pluck('imei');
+                    $verified_stock_serials = $verified_stocks->whereIn('id',$verified_stock_ids)->whereNotNull('serial_number')->pluck('serial_number');
+                    $remaining_stock_imeis = $remaining_stocks->whereIn('id',$remaining_stock_ids)->whereNotNull('imei')->pluck('imei');
+                    $remaining_stock_serials = $remaining_stocks->whereIn('id',$remaining_stock_ids)->whereNotNull('serial_number')->pluck('serial_number');
+
+                    $datas['verified_quantity'] = count($verified_stock_ids);
+                    $datas['verified_stock_ids'] = $verified_stock_ids->toArray();
+                    $datas['verified_stock_imeis'] = $verified_stock_imeis->toArray() + $verified_stock_serials->toArray();
+                    $datas['remaining_quantity'] = count($remaining_stock_ids);
+                    $datas['remaining_stock_ids'] = $remaining_stock_ids->toArray();
+                    $datas['remaining_stock_imeis'] = $remaining_stock_imeis->toArray() + $remaining_stock_serials->toArray();
+
+                    $purchase_items = Order_item_model::whereIn('stock_id', $verified_stock_ids + $remaining_stock_ids)->whereHas('order', function ($q) {
+                        $q->where('order_type_id', 1);
+                    })->sum('price');
+                }else{
+                    $stocks = $pss->stocks->whereIn('id',$all_stock_ids)->where('deleted_at',null);
+                    $stock_ids = $stocks->pluck('id');
+                    $stock_imeis = $stocks->whereIn('id',$stock_ids)->whereNotNull('imei')->pluck('imei');
+                    $stock_serials = $stocks->whereIn('id',$stock_ids)->whereNotNull('serial_number')->pluck('serial_number');
+
+                    $datas['quantity'] = count($stock_ids);
+                    $datas['stock_ids'] = $stock_ids->toArray();
+                    $datas['stock_imeis'] = $stock_imeis->toArray() + $stock_serials->toArray();
+
+                    $purchase_items = Order_item_model::whereIn('stock_id', $stock_ids)->whereHas('order', function ($q) {
+                        $q->where('order_type_id', 1);
+                    })->sum('price');
+                }
+
+
                 $datas['pss_id'] = $pss->id;
                 $datas['product_id'] = $pss->product_id;
                 $datas['storage'] = $pss->storage;
                 $datas['model'] = $product->model.' '.$storage;
-                $datas['quantity'] = count($stock_ids);
-                $datas['stock_ids'] = $stock_ids->toArray();
-                $datas['stock_imeis'] = $stock_imeis->toArray() + $stock_serials->toArray();
                 // $datas['average_cost'] = $purchase_items->avg('price');
                 $datas['total_cost'] = $purchase_items;
 
