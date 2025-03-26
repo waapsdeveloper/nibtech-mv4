@@ -143,39 +143,50 @@ class Transaction extends Component
             }elseif($order == null && $d[$order_id] == 'None' && str_contains($d[$designation],'DELIVERY - DHL Express')){
                 $tracking = str_replace('DELIVERY - DHL Express - ','',$d[$designation]);
                 $order = Order_model::where('tracking_number',$tracking)->where('order_type_id',3)->first();
+                if($order == null){
+                    $reference_id = $tracking;
+                }
             }elseif($order == null && $d[$order_id] == '' && str_contains($d[$designation],'avoir_commission_order_id')){
                 $or = str_replace('avoir_commission_order_id','',$d[$designation]);
                 $order = Order_model::where('reference_id',trim($or))->where('order_type_id',3)->first();
+            }else{
+                $reference_id = '';
             }
-            if($order){
+            if($order || isset($reference_id)){
 
                 $amount = str_replace(',','',$d[$amoun]);
                 $currency = Currency_model::where('code',$d[$currenc])->first();
 
-                $transaction = Account_transaction_model::firstOrNew([
-                    'order_id' => $order->id,
-                    'customer_id' => $order->customer_id,
-                    'order_type_id' => 3,
-                    'amount' => $amount,
-                    'currency' => $currency->id,
-                    'date' => Carbon::parse($d[$value_date])->format('Y-m-d H:i:s'),
-                    'description' => $d[$invoice_key],
-                ]);
+                if($order){
+                    $transaction = Account_transaction_model::firstOrNew([
+                        'order_id' => $order->id,
+                        'customer_id' => $order->customer_id,
+                        'order_type_id' => 3,
+                        'amount' => $amount,
+                        'currency' => $currency->id,
+                        'date' => Carbon::parse($d[$value_date])->format('Y-m-d H:i:s'),
+                        'description' => $d[$invoice_key],
+                    ]);
+                }else{
+                    $transaction = Account_transaction_model::firstOrNew([
+                        'reference_id' => $reference_id,
+                        'order_id' => null,
+                        'customer_id' => null,
+                        'order_type_id' => null,
+                        'amount' => $amount,
+                        'currency' => $currency->id,
+                        'date' => Carbon::parse($d[$value_date])->format('Y-m-d H:i:s'),
+                        'description' => $d[$invoice_key],
+                    ]);
+                }
                 if($transaction->id){
                     continue;
                 }
-                $transaction->customer_id = $order->customer_id;
-                $transaction->order_id = $order->id;
-                $transaction->order_type_id = 3;
                 if($amount < 0){
                     $transaction->transaction_type_id = 2;
                 }else{
                     $transaction->transaction_type_id = 1;
                 }
-                $transaction->date = Carbon::parse($d[$value_date])->format('Y-m-d H:i:s');
-                $transaction->description = $d[$invoice_key];
-                $transaction->amount = $amount;
-                $transaction->currency = $currency->id;
                 $transaction->created_by = session('user_id');
 
                 $transaction->save();
