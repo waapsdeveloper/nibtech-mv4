@@ -227,7 +227,7 @@
                                         <span class="badge badge-danger">{{ $duplicate_count }} Duplicate</span>
                                     @endif
                                 </td>
-                                <td title="{{json_encode($summery['remaining_stock_ids'])}}"><a id="test{{$i}}" href="javascript:void(0)">{{ $summery['remaining_quantity'] }}</a>
+                                <td title="{{json_encode($summery['remaining_stock_ids'])}}"><a id="test2{{$i}}" href="javascript:void(0)">{{ $summery['remaining_quantity'] }}</a>
                                     @if ($duplicates)
                                         <span class="badge badge-danger">{{ $duplicate_count }} Duplicate</span>
                                     @endif
@@ -254,6 +254,21 @@
                                     @php
                                         if ($active_verification != null) {
                                             $stock_imeis = $summery['verified_stock_imeis'];
+                                        }else {
+                                            $stock_imeis = $summery['stock_imeis'];
+                                        }
+                                        foreach ($stock_imeis as $val) {
+
+                                            echo "window.open('".url("imei")."?imei=".$val."','_blank');
+                                            ";
+                                        }
+
+                                    @endphp
+                                }
+                                document.getElementById("test2{{$i}}").onclick = function(){
+                                    @php
+                                        if ($active_verification != null) {
+                                            $stock_imeis = $summery['remaining_stock_imeis'];
                                         }else {
                                             $stock_imeis = $summery['stock_imeis'];
                                         }
