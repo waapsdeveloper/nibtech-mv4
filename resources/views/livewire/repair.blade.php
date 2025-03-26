@@ -252,6 +252,11 @@
 
                                 document.getElementById("test{{$i}}").onclick = function(){
                                     @php
+                                        if ($active_verification != null) {
+                                            $stock_imeis = $summery['verified_stock_imeis'];
+                                        }else {
+                                            $stock_imeis = $summery['stock_imeis'];
+                                        }
                                         foreach ($stock_imeis as $val) {
 
                                             echo "window.open('".url("imei")."?imei=".$val."','_blank');
