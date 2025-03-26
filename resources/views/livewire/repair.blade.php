@@ -268,7 +268,7 @@
                                 document.getElementById("test2{{$i}}").onclick = function(){
                                     @php
                                         if ($active_verification != null) {
-                                            $stock_imeis = $summery['remaining_stock_imeis'];
+                                            $stock_imeis = $remaining_imies;
                                         }else {
                                             $stock_imeis = $summery['stock_imeis'];
                                         }
