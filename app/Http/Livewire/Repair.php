@@ -109,6 +109,7 @@ class Repair extends Component
             if($active_verification != null){
                 $active_verification_ids = Process_stock_model::where('process_id',$active_verification->id)->pluck('stock_id')->toArray();
                 $all_remaining_stock_ids = array_diff($all_stock_ids,$active_verification_ids);
+                $active_verification_ids = array_intersect($all_stock_ids,$active_verification_ids);
             }
             $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q) use ($all_stock_ids){
                 $q->whereIn('stock.id', $all_stock_ids)->where('stock.deleted_at',null);
