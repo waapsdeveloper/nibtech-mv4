@@ -136,10 +136,16 @@ class Transaction extends Component
         // dd($dh);
         foreach($data as $dr => $d) {
             $order = Order_model::where('reference_id',trim($d[$order_id]))->where('order_type_id',3)->first();
-            if($order == null){
+            if($order == null && $d[$order_id] != '' && $d[$order_id] != 'None'){
                 $or = new Order();
                 $or->recheck(trim($d[$order_id]));
                 $order = Order_model::where('reference_id',trim($d[$order_id]))->where('order_type_id',3)->first();
+            }elseif($order == null && $d[$order_id] == 'None' && str_contains($d[$designation],'DELIVERY - DHL Express')){
+                $tracking = str_replace('DELIVERY - DHL Express - ','',$d[$designation]);
+                $order = Order_model::where('tracking_number',$tracking)->where('order_type_id',3)->first();
+            }elseif($order == null && $d[$order_id] == '' && str_contains($d[$designation],'avoir_commission_order_id')){
+                $or = str_replace('avoir_commission_order_id','',$d[$designation]);
+                $order = Order_model::where('reference_id',trim($or))->where('order_type_id',3)->first();
             }
             if($order){
 
@@ -155,6 +161,9 @@ class Transaction extends Component
                     'date' => Carbon::parse($d[$value_date])->format('Y-m-d H:i:s'),
                     'description' => $d[$invoice_key],
                 ]);
+                if($transaction->id){
+                    continue;
+                }
                 $transaction->customer_id = $order->customer_id;
                 $transaction->order_id = $order->id;
                 $transaction->order_type_id = 3;
