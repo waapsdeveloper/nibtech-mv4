@@ -137,7 +137,7 @@ class Repair extends Component
                     $datas['remaining_stock_ids'] = $remaining_stock_ids->toArray();
                     $datas['remaining_stock_imeis'] = $remaining_stock_imeis->toArray() + $remaining_stock_serials->toArray();
 
-                    $purchase_items = Order_item_model::whereIn('stock_id', $verified_stock_ids + $remaining_stock_ids)->whereHas('order', function ($q) {
+                    $purchase_items = Order_item_model::whereIn('stock_id', $verified_stock_ids->toArray() + $remaining_stock_ids->toArray())->whereHas('order', function ($q) {
                         $q->where('order_type_id', 1);
                     })->sum('price');
                 }else{
