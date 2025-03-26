@@ -232,18 +232,19 @@
                                         <span class="badge badge-danger">{{ $duplicate_count }} Duplicate</span>
                                     @endif
                                 </td>
+                                <td title="{{ amount_formatter($summery['total_cost']/($summery['verified_quantity']+ $summery['remaining_quantity']),2) }}">{{ amount_formatter($summery['total_cost'],2) }}</td>
                                 @else
                                 <td title="{{json_encode($summery['stock_ids'])}}"><a id="test{{$i}}" href="javascript:void(0)">{{ $summery['quantity'] }}</a>
                                     @if ($duplicates)
                                         <span class="badge badge-danger">{{ $duplicate_count }} Duplicate</span>
                                     @endif
                                 </td>
+                                <td title="{{ amount_formatter($summery['total_cost']/$summery['quantity']) }}">{{ amount_formatter($summery['total_cost'],2) }}</td>
                                 @endif
                                 {{-- <td title="{{json_encode($summery['stock_ids'])}}"><a id="test{{$i}}" href="javascript:void(0)">{{ $summery['quantity'] }}</a>
                                 @if ($duplicates)
                                     <span class="badge badge-danger">{{ $duplicate_count }} Duplicate</span>
                                 @endif --}}
-                                <td title="{{ amount_formatter($summery['total_cost']/$summery['quantity']) }}">{{ amount_formatter($summery['total_cost'],2) }}</td>
                             </tr>
 
                             <script type="text/javascript">
@@ -266,8 +267,14 @@
                     <tfoot>
                         <tr>
                             <td colspan="2"><b>Total</b></td>
+                            @if ($active_verification != null)
+                            <td><b>{{ $total_verified }}</b></td>
+                            <td><b>{{ $total_remaining }}</b></td>
+                            <td title="{{ amount_formatter($total_cost/($total_verified+$total_remaining),2) }}"><b>{{ amount_formatter($total_cost,2) }}</b></td>
+                            @else
                             <td><b>{{ $total_quantity }}</b></td>
                             <td title="{{ amount_formatter($total_cost/$total_quantity,2) }}"><b>{{ amount_formatter($total_cost,2) }}</b></td>
+                            @endif
                         </tr>
                     </tfoot>
 
