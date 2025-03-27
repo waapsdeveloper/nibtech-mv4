@@ -27,4 +27,9 @@ class Order_charge_model extends Model
     {
         return $this->hasOne(Charge_value_model::class, 'id', 'charge_value_id');
     }
+
+    public function charge()
+    {
+        return $this->hasOneThrough(Charge_model::class, Charge_value_model::class, 'id', 'id', 'charge_value_id', 'charge_id');
+    }
 }
