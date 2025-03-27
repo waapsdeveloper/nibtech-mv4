@@ -112,7 +112,8 @@ class FunctionsDaily extends Command
             ->join('order_items', function ($join) {
                 $join->on('stock.id', '=', 'order_items.stock_id')
                     ->where('order_items.deleted_at', null)
-                    ->whereRaw('order_items.order_id = stock.order_id');
+                    ->whereRaw('order_items.order_id = stock.order_id')
+                    ->limit(1);
             })
             ->selectRaw('SUM(order_items.price) as total_price')
             // ->pluck('average_price')
