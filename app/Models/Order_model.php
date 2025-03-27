@@ -35,7 +35,8 @@ class Order_model extends Model
     }
     public function merge_transaction_charge()
     {
-        $latest_transaction_ref = $this->transactions->where('reference_id','!=',null)->orderByDesc('reference_id')->first()->reference_id;
+        $change = false;
+        $latest_transaction_ref = $this->transactions->where('reference_id','!=',null)->sortByDesc('reference_id')->first()->reference_id;
         $transactions = $this->transactions->where('status',null);
         if($transactions->count() > 0){
             $order_charges = $this->order_charges;
@@ -48,8 +49,13 @@ class Order_model extends Model
                         $transaction->reference_id = $latest_transaction_ref+1;
                         $transaction->status = 1;
                         $transaction->save();
+                        $change = true;
                     }
                 }
+            }
+            if($change == true){
+                $this->charges = $order_charges->sum('amount');
+                $this->save();
             }
         }
 
