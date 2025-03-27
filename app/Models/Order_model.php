@@ -29,6 +29,31 @@ class Order_model extends Model
     {
         return $this->hasMany(Account_transaction_model::class, 'order_id', 'id');
     }
+    public function order_charges()
+    {
+        return $this->hasMany(Order_charge_model::class, 'order_id', 'id');
+    }
+    public function merge_transaction_charge()
+    {
+        $latest_transaction_ref = $this->transactions->where('reference_id','!=',null)->orderByDesc('reference_id')->first()->reference_id;
+        $transactions = $this->transactions->where('status',null);
+        if($transactions->count() > 0){
+            $order_charges = $this->order_charges;
+            foreach($order_charges as $order_charge){
+                foreach($transactions as $transaction){
+                    if($order_charge->charge->name == $transaction->description){
+                        $order_charge->transaction_id = $transaction->id;
+                        $order_charge->amount = $transaction->amount;
+                        $order_charge->save();
+                        $transaction->reference_id = $latest_transaction_ref+1;
+                        $transaction->status = 1;
+                        $transaction->save();
+                    }
+                }
+            }
+        }
+
+    }
     public function charge_values()
     {
         return $this->hasManyThrough(Charge_value_model::class, Order_charge_model::class, 'order_id', 'id', 'id', 'charge_value_id');
