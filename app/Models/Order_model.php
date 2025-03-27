@@ -36,7 +36,11 @@ class Order_model extends Model
     public function merge_transaction_charge()
     {
         $change = false;
-        $latest_transaction_ref = Account_transaction_model::where('reference_id','!=',null)->orderByDesc('reference_id')->first()->reference_id;
+        $latest_transaction_ref = Account_transaction_model::where('reference_id', '!=', null)
+            ->whereRaw('reference_id REGEXP "^[0-9]+$"')
+            ->orderByDesc('reference_id')
+            ->first()
+            ->reference_id;
         $transactions = $this->transactions->where('status',null);
         if($transactions->count() > 0){
             $order_charges = $this->order_charges;
