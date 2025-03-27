@@ -107,7 +107,7 @@ class FunctionsDaily extends Command
     }
 
     private function daily_closing(){
-        $stocks = Stock_model::where('status',1)->where('stock.deleted_at',null)->where('order_items.deleted_at',null)
+        $stocks = Stock_model::where('stock.status',1)->where('stock.deleted_at',null)->where('order_items.deleted_at',null)
         // ->join('order_items', 'stock.id', '=', 'order_items.stock_id')
             ->join('order_items', function ($join) {
                 $join->on('stock.id', '=', 'order_items.stock_id')
