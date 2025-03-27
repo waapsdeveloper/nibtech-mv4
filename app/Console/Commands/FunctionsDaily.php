@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Http\Livewire\Order;
 use App\Models\Charge_model;
+use App\Models\Daily_closing_model;
 use App\Models\Order_charge_model;
 use App\Models\Order_model;
 use App\Models\Product_storage_sort_model;
@@ -43,6 +44,7 @@ class FunctionsDaily extends Command
         // $this->remove_extra_variations();
         $this->check_stock_status();
         $this->add_order_charge();
+        $this->daily_closing();
     }
 
     private function check_stock_status(){
@@ -104,4 +106,24 @@ class FunctionsDaily extends Command
         }
     }
 
+    private function daily_closing(){
+        $stocks = Stock_model::where('status',1)->where('stock.deleted_at',null)->where('order_items.deleted_at',null)
+        // ->join('order_items', 'stock.id', '=', 'order_items.stock_id')
+            ->join('order_items', function ($join) {
+                $join->on('stock.id', '=', 'order_items.stock_id')
+                    ->where('order_items.deleted_at', null)
+                    ->whereRaw('order_items.order_id = stock.order_id');
+            })
+            ->selectRaw('SUM(order_items.price) as total_price')
+            // ->pluck('average_price')
+            ->first();
+
+        $daily_closing = Daily_closing_model::where('created_at', '>=', now()->startOfDay())->first();
+        if($daily_closing == null){
+            $daily_closing = new Daily_closing_model();
+            $daily_closing->value = $stocks->total_price;
+            $daily_closing->save();
+        }
+
+    }
 }
