@@ -946,6 +946,9 @@
 
                                     @endif
                                     @if (request('transaction') == 1 || request('missing'))
+                                        @php
+                                            $order->merge_transaction_charge();
+                                        @endphp
                                         @foreach ($order->transactions as $transaction)
                                             @php
 
