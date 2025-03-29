@@ -53,7 +53,7 @@ class Repair extends Component
         $data['title_page'] = "Repairs";
         session()->put('page_title', $data['title_page']);
 
-        if(session('user')->has('customers')){
+        if(session('user')->customers != null){
             $admin_customers = session('user')->customers;
             $admin_customer_ids = $admin_customers->pluck('id')->toArray();
             $data['admin_customers'] = $admin_customers;
