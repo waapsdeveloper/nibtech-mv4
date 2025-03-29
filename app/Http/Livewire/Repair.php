@@ -62,7 +62,7 @@ class Repair extends Component
 
 
         $data['latest_reference'] = Process_model::where('process_type_id',9)->orderBy('reference_id','DESC')->first()->reference_id ?? 5998;
-        $data['repairers'] = Customer_model::whereNotNull('is_vendor')->when($admin_customer_ids, function ($q) use ($admin_customer_ids) {
+        $data['repairers'] = Customer_model::whereNotNull('is_vendor')->when(isset($admin_customer_ids), function ($q) use ($admin_customer_ids) {
             return $q->whereIn('id', $admin_customer_ids);
         })->pluck('company','id');
         if(request('per_page') != null){
