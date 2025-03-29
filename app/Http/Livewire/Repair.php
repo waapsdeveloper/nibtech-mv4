@@ -58,11 +58,6 @@ class Repair extends Component
             $admin_customer_ids = $admin_customers->pluck('id')->toArray();
             $data['admin_customers'] = $admin_customers;
             $data['admin_customer_ids'] = $admin_customer_ids;
-        }else{
-            $admin_customers = [];
-            $admin_customer_ids = [];
-            $data['admin_customers'] = [];
-            $data['admin_customer_ids'] = [];
         }
 
 
