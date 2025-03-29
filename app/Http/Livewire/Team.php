@@ -220,6 +220,6 @@ class Team extends Component
         }
 
             // Return response
-            return response()->json(['success' => true]);
+            return response()->json(['success' => 'sad']);
     }
 }
