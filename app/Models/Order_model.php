@@ -62,7 +62,7 @@ class Order_model extends Model
                 $this->save();
             }
         }
-        return $change;
+        return " Transaction charge merged";
 
     }
     public function charge_values()
