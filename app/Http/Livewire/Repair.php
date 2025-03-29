@@ -59,6 +59,9 @@ class Repair extends Component
             $data['admin_customers'] = $admin_customers;
             $data['admin_customer_ids'] = $admin_customer_ids;
             // dd($admin_customers);
+        }else{
+            $admin_customers = null;
+            $admin_customer_ids = null;
         }
 
 
