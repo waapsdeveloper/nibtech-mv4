@@ -184,10 +184,6 @@
                                         permissionsDiv.innerHTML = '';
                                         @foreach ($permissions as $permission)
                                             var isChecked = data.permissions.includes('{{ $permission->name }}') ? 'checked' : '';
-                                            if (data.admin_permissions != [] && isChecked == '') {
-                                                var isChecked = data.admin_permissions.includes('{{ $permission->name }}') ? 'checked' : '';
-                                            }
-                                            var isDisabled = data.permissions.includes('{{ $permission->name }}') ? 'disabled' : '';
                                             permissionsDiv.innerHTML += `
                                                 <div class="form-check form-switch ms-4">
                                                     <input type="checkbox" value="{{ $permission->id }}" name="permission[]" class="form-check-input" ${isChecked} ${isDisabled} onclick="togglePermission(${roleId},{{ $permission->id }}, this.checked)">
