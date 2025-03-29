@@ -73,7 +73,7 @@ class Repair extends Component
             $per_page = 20;
         }
 
-        if(isset($admin_customer_ids)){
+        if($admin_customer_ids != null){
             $data['repairers'] = $data['repairers']->whereIn('id',$admin_customer_ids)->pluck('company','id');
         }else{
             $data['repairers'] = $data['repairers']->pluck('company','id');
@@ -95,7 +95,7 @@ class Repair extends Component
         ->when(request('status'), function ($q) {
             return $q->where('status', request('status'));
         })
-        ->when($admin_customers != null, function ($q) use ($admin_customer_ids) {
+        ->when($admin_customer_ids != null, function ($q) use ($admin_customer_ids) {
             return $q->whereIn('customer_id', $admin_customer_ids);
         })
         ->orderBy('reference_id', 'desc') // Secondary order by reference_id
