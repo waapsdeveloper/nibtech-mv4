@@ -147,13 +147,7 @@ class Team extends Component
         }else{
             Admin_customer_model::where('admin_id',$id)->delete();
         }
-        $remaining_customers = Admin_customer_model::where('admin_id',$id)->pluck('customer_id')->toArray();
-        if($remaining_customers != null){
-            $customers = Customer_model::whereNotIn('id',$remaining_customers)->get();
-            foreach($customers as $customer){
-                Admin_customer_model::where('admin_id',$id)->where('customer_id',$customer->id)->delete();
-            }
-        }
+        $remaining_customers = Admin_customer_model::where('admin_id',$id)->whereNotIn('customer_id',$customer_restrictions)->delete();
 
 
         session()->put('success',"Member has been updated successfully");
