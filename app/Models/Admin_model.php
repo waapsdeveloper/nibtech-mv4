@@ -43,7 +43,7 @@ class Admin_model extends Model
     {
 
         if (session('user_id') == 1){
-            dd($this->role->permissions, );
+            dd($this->role->permissions);
             return true;
         }
 
