@@ -53,8 +53,23 @@ class Repair extends Component
         $data['title_page'] = "Repairs";
         session()->put('page_title', $data['title_page']);
 
+        if(session('user')->customers->count() > 0){
+            $admin_customers = session('user')->customers;
+            $admin_customer_ids = $admin_customers->pluck('id')->toArray();
+            $data['admin_customers'] = $admin_customers;
+            $data['admin_customer_ids'] = $admin_customer_ids;
+        }else{
+            $admin_customers = [];
+            $admin_customer_ids = [];
+            $data['admin_customers'] = [];
+            $data['admin_customer_ids'] = [];
+        }
+
+
         $data['latest_reference'] = Process_model::where('process_type_id',9)->orderBy('reference_id','DESC')->first()->reference_id ?? 5998;
-        $data['repairers'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
+        $data['repairers'] = Customer_model::whereNotNull('is_vendor')->when($admin_customer_ids, function ($q) use ($admin_customer_ids) {
+            return $q->whereIn('id', $admin_customer_ids);
+        })->pluck('company','id');
         if(request('per_page') != null){
             $per_page = request('per_page');
         }else{
