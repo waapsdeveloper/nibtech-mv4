@@ -127,7 +127,7 @@
                             <label for="role">Select Role:</label>
                             <select id="role" class="form-select" onchange="fetchPermissions()">
                                 @foreach ($roles as $role)
-                                    <option value="{{ $role->id }}" @if($role->id == $member->role_id) selected @endif>{{ $role->name }}</option>
+                                    <option value="{{ $role->id }}" @if($role->id > session('user')->role_id) selected @endif>{{ $role->name }}</option>
                                 @endforeach
                             </select>
                         </div>
