@@ -37,16 +37,21 @@ class Order_model extends Model
     {
         $message = "";
         $change = false;
-        $latest_transaction_ref = Account_transaction_model::where('reference_id', '!=', null)
-            ->whereRaw('reference_id REGEXP "^[0-9]+$"')
-            ->orderByDesc('reference_id')
-            ->first()
-            ->reference_id;
         $transactions = $this->transactions->where('status',null);
         if($transactions->count() > 0){
             $order_charges = $this->order_charges;
             foreach($order_charges as $order_charge){
                 foreach($transactions as $transaction){
+                    $latest_transaction_ref = Account_transaction_model::where('reference_id', '!=', null)
+                        ->whereRaw('reference_id REGEXP "^[0-9]+$"')
+                        ->orderByDesc('reference_id')
+                        ->first()
+                        ->reference_id;
+                    if($transaction->description == 'sales'){
+                        $transaction->reference_id = $latest_transaction_ref+1;
+                        $transaction->status = 1;
+                        $transaction->save();
+                    }
                     if($order_charge->charge->name == $transaction->description){
                         $order_charge->transaction_id = $transaction->id;
                         $order_charge->amount = $transaction->amount;
