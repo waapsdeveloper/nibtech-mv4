@@ -23,4 +23,13 @@ class Permission_model extends Model
     {
         return $this->belongsToMany(Role_model::class);
     }
+    public function admin_permissions()
+    {
+        return $this->hasMany(Admin_permission_model::class, 'permission_id', 'id');
+    }
+    public function admins()
+    {
+        return $this->hasManyThrough(Admin_model::class, Admin_permission_model::class, 'permission_id', 'id', 'id', 'admin_id');
+    }
+
 }
