@@ -364,7 +364,7 @@ class Repair extends Component
 
         $data['process'] = Process_model::find($process_id);
 
-        if(session('user')->count('admin_customers') > 0){
+        if(session('user')->admin_customers->count() > 0){
 
             if(!in_array($data['process']->customer_id, session('user')->admin_customers->pluck('customer_id')->toArray())){
                 session()->put('error', 'You are not allowed to view this repair');
