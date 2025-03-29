@@ -21,6 +21,13 @@ class AuthorizeMiddleware
         if($userId != null){
 
             $user = Admin_model::find($userId);
+
+            if($user->status == 2){
+                // Log the unauthorized access attempt
+                Log::info('Unauthorized Login attempt by blocked user '.$user->first_name.' to '.$currentRoute);
+                abort(403, 'Account Blocked - Quote of the day: '.Inspiring::just_quote());
+            }
+
             $all_grades = Grade_model::all();
             session()->put('user',$user);
             session()->put('all_grades',$all_grades);
