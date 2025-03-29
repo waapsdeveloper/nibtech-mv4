@@ -18,6 +18,8 @@ class Team extends Component
 
         $data['title_page'] = "Team";
         session()->put('page_title', $data['title_page']);
+        $data['roles'] = Role_model::where('id','>=',session('user')->role_id)->get();
+        $data['permissions'] = Permission_model::all();
         $data['admin_team'] = Admin_model::where('parent_id','>=',session('user_id'))->Paginate(50);
         return view('livewire.team')->with($data);
     }
