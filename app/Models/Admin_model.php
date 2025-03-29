@@ -53,6 +53,7 @@ class Admin_model extends Model
         }
         // Check if user has the permission directly
         if ($this->permissions->contains('name', $permission)) {
+            dd($this->permissions);
             return true;
         }
         // Check if user has the required role but does not have the permission directly
