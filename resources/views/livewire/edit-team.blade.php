@@ -158,7 +158,7 @@
                                             // .then(response => response.json()) // Parse response as JSON
                                             .then(data => {
                                                 // Update UI based on server response
-                                                // console.log(data); // You can handle the response as per your requirement
+                                                console.log(data); // You can handle the response as per your requirement
                                             })
                                             .catch(error => {
                                                 console.error('Error:', error);
