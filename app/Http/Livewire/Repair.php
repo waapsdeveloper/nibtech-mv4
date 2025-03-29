@@ -53,9 +53,9 @@ class Repair extends Component
         $data['title_page'] = "Repairs";
         session()->put('page_title', $data['title_page']);
 
-        $admin_customers = session('user')->customers;
+        $admin_customers = session('user')->admin_customers;
         if($admin_customers != null){
-            $admin_customer_ids = $admin_customers->pluck('id')->toArray();
+            $admin_customer_ids = $admin_customers->pluck('customer_id')->toArray();
             $data['admin_customers'] = $admin_customers;
             $data['admin_customer_ids'] = $admin_customer_ids;
             // dd($admin_customers);
