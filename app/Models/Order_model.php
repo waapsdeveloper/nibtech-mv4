@@ -35,6 +35,7 @@ class Order_model extends Model
     }
     public function merge_transaction_charge()
     {
+        $message = "";
         $change = false;
         $latest_transaction_ref = Account_transaction_model::where('reference_id', '!=', null)
             ->whereRaw('reference_id REGEXP "^[0-9]+$"')
@@ -54,6 +55,9 @@ class Order_model extends Model
                         $transaction->status = 1;
                         $transaction->save();
                         $change = true;
+                        $message .= "Transaction charge merged for order ".$this->reference_id." and transaction ".$transaction->reference_id;
+
+
                     }
                 }
             }
@@ -62,7 +66,7 @@ class Order_model extends Model
                 $this->save();
             }
         }
-        return " Transaction charge merged";
+        return $message;
 
     }
     public function charge_values()
