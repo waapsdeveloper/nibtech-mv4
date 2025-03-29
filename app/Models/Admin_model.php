@@ -29,7 +29,10 @@ class Admin_model extends Model
     {
         return $this->hasOne(Role_model::class, 'id', 'role_id');
     }
-
+    public function admin_customers()
+    {
+        return $this->hasMany(Admin_customer_model::class, 'admin_id', 'id');
+    }
     public function customers()
     {
         return $this->hasOneThrough(Customer_model::class, Admin_customer_model::class, 'admin_id', 'id', 'id', 'customer_id');
