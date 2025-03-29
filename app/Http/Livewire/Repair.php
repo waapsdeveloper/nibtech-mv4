@@ -364,9 +364,12 @@ class Repair extends Component
 
         $data['process'] = Process_model::find($process_id);
 
-        if(session('user') && session('user')->has('admin_customers') && !in_array($data['process']->customer_id, session('user')->admin_customers->pluck('customer_id')->toArray())){
-            session()->put('error', 'You are not allowed to view this repair');
-            return redirect('repair');
+        if(session('user')->count('admin_customers') > 0){
+
+            if(!in_array($data['process']->customer_id, session('user')->admin_customers->pluck('customer_id')->toArray())){
+                session()->put('error', 'You are not allowed to view this repair');
+                return redirect('repair');
+            }
         }
 
 
