@@ -1,18 +1,18 @@
 <?php
 
 namespace App\Http\Livewire;
-    use Livewire\Component;
-    use App\Models\Variation_model;
-    use App\Models\Products_model;
-    use App\Models\Stock_model;
-    use App\Models\Order_model;
-    use App\Models\Order_item_model;
-    use App\Models\Customer_model;
-    use App\Models\Currency_model;
-    use App\Models\Storage_model;
+use Livewire\Component;
+use App\Models\Variation_model;
+use App\Models\Products_model;
+use App\Models\Stock_model;
+use App\Models\Order_model;
+use App\Models\Order_item_model;
+use App\Models\Customer_model;
+use App\Models\Currency_model;
+use App\Models\Storage_model;
 use App\Exports\RepairsheetExport;
 use Maatwebsite\Excel\Facades\Excel;
-    use TCPDF;
+use TCPDF;
 use App\Models\Api_request_model;
 use App\Models\Color_model;
 use App\Models\ExchangeRate;
@@ -98,82 +98,6 @@ class InventoryVerification extends Component
         }
         // return redirect()->back();
     }
-    public function repair_approve($repair_id){
-        $repair = Process_model::find($repair_id);
-        $item_count = $repair->process_stocks->count();
-        $cost = request('cost');
-        $unit_cost = $cost/$item_count;
-        foreach($repair->process_stocks as $item){
-            $item->price = $unit_cost;
-            $item->save();
-        }
-        $repair->status = 3;
-        $repair->save();
-
-        return redirect()->back();
-    }
-    public function repair_revert_status($repair_id){
-        $repair = Process_model::find($repair_id);
-        $repair->status -= 1;
-        $repair->save();
-        return redirect()->back();
-    }
-    public function delete_repair($process_id){
-
-
-        $items = Process_stock_model::where('process_id',$process_id)->get();
-        foreach($items as $orderItem){
-            if($orderItem->stock){
-                // Access the variation through orderItem->stock->variation
-                $variation = $orderItem->stock->variation;
-
-                $variation->stock += 1;
-                Stock_model::find($orderItem->stock_id)->update([
-                    'status' => 1
-                ]);
-            }
-            $orderItem->delete();
-        }
-        Process_model::where('id',$process_id)->delete();
-        Process_stock_model::where('process_id',$process_id)->delete();
-        session()->put('success', 'Order deleted successfully');
-        return redirect()->back();
-
-    }
-    public function delete_repair_item($process_stock_id = null){
-        if($process_stock_id != null){
-            $process_stock = Process_stock_model::find($process_stock_id);
-        }
-        if(request('imei') != null){
-            $imei = trim(request('imei'));
-            $stock = Stock_model::where('imei', $imei)->orWhere('serial_number', $imei)->first();
-            $process_stock = Process_stock_model::where('stock_id', $stock->id)->where('process_id', request('process_id'))->first();
-        }
-
-        if($process_stock == null){
-            session()->put('error', "Stock not in this list");
-            return redirect()->back();
-        }
-        // Access the variation through process_stock->stock->variation
-        $variation = $process_stock->stock->variation;
-
-        $process_stock->stock->status = 1;
-        $process_stock->stock->save();
-
-        $variation->stock += 1;
-        $variation->save();
-
-        // No variation record found or product_id and sku are both null, delete the order item
-
-        // $process_stock->stock->delete();
-        $process_stock->delete();
-        // $orderItem->forceDelete();
-
-        session()->put('success', 'Stock deleted successfully');
-
-        return redirect()->back();
-
-    }
     public function verification_detail($process_id){
 
         ini_set('memory_limit', '2048M');
@@ -209,7 +133,7 @@ class InventoryVerification extends Component
 
         $data['process_id'] = $process_id;
 
-        $all_stock_ids = Process_stock_model::where('process_id',$process_id)->pluck('stock_id')->unique()->toArray();
+        $all_stock_ids = Process_stock_model::where('process_id',$process_id)->where('status',1)->pluck('stock_id')->unique()->toArray();
 
 
         $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q) use ($all_stock_ids){
