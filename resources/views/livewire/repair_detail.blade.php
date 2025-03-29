@@ -141,6 +141,8 @@
         <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
 
             @if ($process->status == 1)
+            @if (session('user')->hasPermission('add_repair_item'))
+
             <div class="p-2">
                 <h4>Add External Repair Item
                     {{-- Option to show advance options --}}
@@ -290,9 +292,10 @@
                     </ul>
                 </div>
             </div>
-
+            @endif
             @elseif ($process->status == 2)
 
+            @if (session('user')->hasPermission('receive_repair_item'))
             <div class="p-2">
                 <h4>Receive External Repair Item</h4>
 
@@ -308,7 +311,7 @@
 
                 </form>
             </div>
-
+            @endif
             <div class="btn-group p-1" role="group">
                 <a href="{{url('repair_email')}}/{{ $process->id }}" target="_blank"><button class="btn btn-secondary">Send Email</button></a>
                 <a href="{{url('export_repair_invoice')}}/{{ $process->id }}" target="_blank"><button class="btn btn-secondary">Invoice</button></a>
