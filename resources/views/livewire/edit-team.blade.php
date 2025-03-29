@@ -175,7 +175,9 @@
                                                     permissionsDiv.innerHTML = '';
                                                     @foreach ($permissions as $permission)
                                                         var isChecked = data.permissions.includes('{{ $permission->name }}') ? 'checked' : '';
-                                                        var isChecked = data.admin_permissions.includes('{{ $permission->name }}') ? 'checked' : '';
+                                                        if (data.admin_permissions != []) {
+                                                            var isChecked = data.admin_permissions.includes('{{ $permission->name }}') ? 'checked' : '';
+                                                        }
                                                         var isDisabled = data.permissions.includes('{{ $permission->name }}') ? 'disabled' : '';
                                                         permissionsDiv.innerHTML += `
                                                             <div class="form-check form-switch ms-4">
