@@ -106,6 +106,9 @@ class Repair extends Component
         if (session('user')->hasPermission('view_repair_summery') && request('summery') == 1) {
 
             $processes = Process_model::where('process_type_id',9)
+            ->when($admin_customer_ids != null, function ($q) use ($admin_customer_ids) {
+                return $q->whereIn('customer_id', $admin_customer_ids);
+            })
             ->when(request('start_date'), function ($q) {
                 return $q->where('created_at', '>=', request('start_date'));
             })
@@ -358,6 +361,16 @@ class Repair extends Component
         }else{
             $per_page = 20;
         }
+
+        $data['process'] = Process_model::find($process_id);
+
+        if(!in_array($data['process']->customer_id,session('user')->admin_customer->pluck('customer_id')->toArray())){
+            session()->put('error', 'You are not allowed to view this repair');
+            return redirect('repair');
+        }
+
+
+
         $data['repairers'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
         $data['vendors'] = Customer_model::whereNotNull('is_vendor')->get();
         $data['exchange_rates'] = ExchangeRate::pluck('rate','target_currency');
@@ -395,7 +408,6 @@ class Repair extends Component
         $data['processed_stocks'] = $processed_stocks;
 
         $data['all_variations'] = Variation_model::where('grade',9)->get();
-        $data['process'] = Process_model::find($process_id);
         $data['currency'] = $data['process']->currency_id->sign ?? 4;
 
         $data['previous_repairs'] = Process_model::where('id','!=',$process_id)->where('process_type_id',9)->orderBy('id','desc')->pluck('id');
