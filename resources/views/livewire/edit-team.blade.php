@@ -167,7 +167,7 @@
 
 
                                         function fetchPermissions() {
-                                            var roleId = document.getElementById('role').value;
+                                            var roleId = {{ $member->role_id }};
                                             fetch(`{{ url('get_permissions') }}/${roleId}`)
                                                 .then(response => response.json())
                                                 .then(data => {
