@@ -110,17 +110,17 @@
                         <div class="col-md-3">
                             <div class="card">
                                 <div class="card-header">
-                                    <h4 class="card-title mb-1">Role - Permissions</h4>
-                                    <p>Here, you can chage permission for selected role</p>
+                                    <h4 class="card-title mb-1">Permissions</h4>
+                                    <p>Here, you can chage permission for selected Member</p>
                                 </div>
                                 <div class="card-body">
                                     <div>
-                                        <label for="role">Select Role:</label>
+                                        {{-- <label for="role">Select Role:</label>
                                         <select id="role" class="form-select" onchange="fetchPermissions()">
                                             @foreach ($roles as $role)
                                                 <option value="{{ $role->id }}" @if($role->id == $member->role_id) selected @endif>{{ $role->name }}</option>
                                             @endforeach
-                                        </select>
+                                        </select> --}}
                                     </div>
                                     <br>
                                     <div id="permissions">
@@ -143,12 +143,12 @@
                                         //             console.error('Error:', error);
                                         //         });
                                         // }
-                                        function togglePermission(roleId, permissionId, isChecked) {
+                                        function togglePermission(permissionId, isChecked) {
                                         // Get the CSRF token from the meta tag in your HTML
                                         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
                                         // Send AJAX request to server to create or delete role permission
-                                        fetch(`{{ url('toggle_role_permission') }}/${roleId}/${permissionId}/${isChecked}`, {
+                                        fetch(`{{ url('toggle_user_permission') }}/${permissionId}/${isChecked}`, {
                                             method: 'POST',
                                             headers: {
                                                 // 'Content-Type': 'application/json',
@@ -174,11 +174,12 @@
                                                     var permissionsDiv = document.getElementById('permissions');
                                                     permissionsDiv.innerHTML = '';
                                                     @foreach ($permissions as $permission)
-                                                        var isChecked = data.includes('{{ $permission->name }}') ? 'checked' : '';
+                                                        var isChecked = data.permissions.includes('{{ $permission->name }}') ? 'checked' : '';
+                                                        var isChecked = data.admin_permissions.includes('{{ $permission->name }}') ? 'checked' : '';
+                                                        var isDisabled = data.permissions.includes('{{ $permission->name }}') ? 'disabled' : '';
                                                         permissionsDiv.innerHTML += `
                                                             <div class="form-check form-switch ms-4">
-                                                                <input type="checkbox" value="{{ $permission->id }}" name="permission[]" class="form-check-input" ${isChecked}
-                                                                    onclick="togglePermission(${roleId}, {{ $permission->id }}, this.checked)">
+                                                                <input type="checkbox" value="{{ $permission->id }}" name="permission[]" class="form-check-input" ${isChecked} ${isDisabled} onclick="togglePermission(${roleId}, {{ $permission->id }}, this.checked)">
                                                                 <label class="form-check-label" for="permission">{{ $permission->name }}</label>
                                                             </div>`;
                                                     @endforeach
