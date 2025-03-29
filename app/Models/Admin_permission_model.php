@@ -15,6 +15,8 @@ class Admin_permission_model extends Model
     protected $fillable = [
         // other fields...
         // 'reference_id',
+        'admin_id',
+        'permission_id',
     ];
 
     public function admin()
