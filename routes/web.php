@@ -297,14 +297,6 @@ Route::get('variation', Variation::class)->name('view_variation');
 Route::post('variation/update_product/{id}', [Variation::class,'update_product'])->name('update_variation');
 Route::post('variation/merge/{id}', [Variation::class,'merge'])->name('merge_variation');
 
-// Route::get('listing_old', Listing::class)->name('view_listing');
-// Route::get('get_variations', [Listing::class,'get_variations'])->name('view_listing');
-// Route::get('get_variation_available_stock/{id}', [Listing::class,'get_variation_available_stock'])->name('view_listing');
-// Route::get('listing/get_competitors/{id}', [Listing::class,'get_competitors'])->name('view_listing');
-// Route::get('listing/get_sales/{id}', [Listing::class,'get_sales'])->name('view_listing');
-// Route::post('listing/update_quantity/{id}', [Listing::class,'update_quantity'])->name('update_listing_quantity');
-// Route::post('listing/update_price/{id}', [Listing::class,'update_price'])->name('update_listing_price');
-
 Route::get('listing', [ListingController::class, 'index'])->name('view_listing');
 Route::get('listing/get_variations', [ListingController::class, 'get_variations'])->name('view_listing');
 Route::get('listing/get_target_variations', [ListingController::class, 'get_target_variations'])->name('view_listing');
@@ -360,7 +352,8 @@ Route::get('charge/edit/{id}', [Charge::class,'edit_charge'])->name('edit_charge
 Route::post('charge/update/{id}', [Charge::class,'update_charge'])->name('edit_charge');
 
 Route::get('get_permissions/{id}', [Team::class,'get_permissions'])->name('view_permissions');
-Route::post('toggle_role_permission/{roleId}/{permissionId}/{isChecked}', [Team::class, 'toggle_role_permission'])->name('change_permission');
+Route::post('toggle_role_permission/{roleId}/{permissionId}/{isChecked}', [Team::class, 'toggle_role_permission'])->name('change_role_permission');
+Route::post('toggle_user_permission/{permissionId}/{isChecked}', [Team::class, 'toggle_user_permission'])->name('change_permission');
 
 Route::post('change', [Change::class,'change_password'])->name('profile');
 Route::get('OTP/{any}', [Change::class,'otp'])->name('profile');
