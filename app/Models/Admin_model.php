@@ -45,6 +45,7 @@ class Admin_model extends Model
         if (session('user_id') == 1){
 
             return true;
+            dd($this->permissions);
         }
 
         // Check if user has the permission through any of their roles
