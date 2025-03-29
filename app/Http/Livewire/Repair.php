@@ -53,12 +53,12 @@ class Repair extends Component
         $data['title_page'] = "Repairs";
         session()->put('page_title', $data['title_page']);
 
-        if(session('user')->customers != null){
-            $admin_customers = session('user')->customers;
+        $admin_customers = session('user')->customers;
+        if($admin_customers != null){
             $admin_customer_ids = $admin_customers->pluck('id')->toArray();
             $data['admin_customers'] = $admin_customers;
             $data['admin_customer_ids'] = $admin_customer_ids;
-            dd($admin_customers);
+            // dd($admin_customers);
         }
 
 
@@ -91,6 +91,9 @@ class Repair extends Component
         })
         ->when(request('status'), function ($q) {
             return $q->where('status', request('status'));
+        })
+        ->when($admin_customers != null, function ($q) use ($admin_customer_ids) {
+            return $q->whereIn('customer_id', $admin_customer_ids);
         })
         ->orderBy('reference_id', 'desc') // Secondary order by reference_id
         ->paginate($per_page)
