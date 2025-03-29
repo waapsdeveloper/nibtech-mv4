@@ -133,7 +133,7 @@ class InventoryVerification extends Component
 
         $data['process_id'] = $process_id;
 
-        $all_stock_ids = Process_stock_model::where('process_id',$process_id)->where('status',1)->pluck('stock_id')->unique()->toArray();
+        $all_stock_ids = Process_stock_model::where('process_id',$process_id)->pluck('stock_id')->unique()->toArray();
 
 
         $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q) use ($all_stock_ids){
@@ -174,7 +174,7 @@ class InventoryVerification extends Component
             $datas['product_id'] = $pss->product_id;
             $datas['storage'] = $pss->storage;
             $datas['model'] = $product->model.' '.$storage;
-            $datas['quantity'] = count($stock_ids);
+            $datas['quantity'] = count($scanned_stock_ids);
             $datas['stock_ids'] = $scanned_stock_ids->toArray();
             $datas['stock_imeis'] = $stock_imeis->toArray() + $stock_serials->toArray();
             // $datas['average_cost'] = $purchase_items->avg('price');
