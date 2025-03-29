@@ -22,7 +22,7 @@ class AuthorizeMiddleware
 
             $user = Admin_model::find($userId);
 
-            if($user->status == 2){
+            if($user->status == 0){
                 // Log the unauthorized access attempt
                 Log::info('Unauthorized Login attempt by blocked user '.$user->first_name.' to '.$currentRoute);
                 abort(403, 'Account Blocked - Quote of the day: '.Inspiring::just_quote());
