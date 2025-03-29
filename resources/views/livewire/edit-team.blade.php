@@ -106,7 +106,7 @@
                                                     <label class="form-label mg-b-0">Customer Restriction</label>
                                                 </div>
                                                 <div class="col-md-8 mg-t-5 mg-md-t-0">
-                                                    <select class="form-select" multiple name="customer_restriction[]">
+                                                    <select class="form-select select2" multiple name="customer_restriction[]">
                                                         @foreach ($vendors as $customer)
                                                             <option value="{{ $customer->id }}" @if(in_array($customer->id, $customer_restrictions)) selected @endif>{{ $customer->company }}</option>
                                                         @endforeach
@@ -211,6 +211,14 @@
                     @endsection
     @section('scripts')
 
+        <script>
+            $(document).ready(function() {
+                $('.select2').select2({
+                    placeholder: 'Select Customer Restriction',
+                    allowClear: true
+                });
+            });
+        </script>
 		<!-- Form-layouts js -->
 		<script src="{{asset('assets/js/form-layouts.js')}}"></script>
 
