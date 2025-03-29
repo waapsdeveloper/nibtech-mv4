@@ -43,7 +43,7 @@ class Admin_model extends Model
     {
 
         if (session('user_id') == 1){
-            dd($this->role->permissions);
+            // dd($this->role->permissions);
             return true;
         }
 
@@ -53,10 +53,8 @@ class Admin_model extends Model
         }
         // Check if user has the permission directly
         if ($this->permissions->contains('name', $permission)) {
-            dd($this->permissions);
             return true;
         }
-        // Check if user has the required role but does not have the permission directly
         // foreach ($this->roles as $role) {
         if ($this->role->permissions->isEmpty() && $this->role->name === 'Super Admin') {
             return true;
