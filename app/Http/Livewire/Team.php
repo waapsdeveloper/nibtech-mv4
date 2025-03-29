@@ -100,6 +100,7 @@ class Team extends Component
         $data['parents'] = Admin_model::where('role_id','>=',$data['user']->role_id)->get();
         $data['permissions'] = Permission_model::all();
         $data['member'] = Admin_model::where('id',$id)->first();
+        $data['customer_restrictions'] = Admin_customer_model::where('admin_id',$id)->pluck('customer_id')->toArray();
         $data['vendors'] = Customer_model::whereNotNull('is_vendor')->get();
         return view('livewire.edit-team')->with($data);
     }
