@@ -5,6 +5,7 @@ namespace App\Http\Livewire;
 use Livewire\Component;
 use App\Models\Admin_model;
 use App\Models\Admin_permission_model;
+use App\Models\Customer_model;
 use App\Models\Role_model;
 use App\Models\Permission_model;
 use App\Models\Role_permission_model;
@@ -98,7 +99,7 @@ class Team extends Component
         $data['parents'] = Admin_model::where('role_id','>=',$data['user']->role_id)->get();
         $data['permissions'] = Permission_model::all();
         $data['member'] = Admin_model::where('id',$id)->first();
-        $data['vendors'] = Admin_model::whereNotNull('is_vendor')->get();
+        $data['vendors'] = Customer_model::whereNotNull('is_vendor')->get();
         return view('livewire.edit-team')->with($data);
     }
     public function update_member($id)
