@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Models\Admin_customer_model;
 use Livewire\Component;
 use App\Models\Admin_model;
 use App\Models\Admin_permission_model;
@@ -112,6 +113,7 @@ class Team extends Component
         $l_name = request()->input('lname');
         $email = request()->input('email');
         $password = request()->input('password');
+        $customer_restrictions = request()->input('customer_restriction');
 
         if(Admin_model::where('username',$username)->where('id','!=',$id)->first() != null){
 
@@ -135,6 +137,25 @@ class Team extends Component
             $data['password'] = Hash::make($password);
         }
         Admin_model::where('id',$id)->update($data);
+        if($customer_restrictions != null){
+            foreach($customer_restrictions as $customer_id){
+                $admin_customer = Admin_customer_model::where('admin_id',$id)->where('customer_id',$customer_id)->first();
+                if($admin_customer == null){
+                    Admin_customer_model::insert(['admin_id'=>$id,'customer_id'=>$customer_id]);
+                }
+            }
+        }else{
+            Admin_customer_model::where('admin_id',$id)->delete();
+        }
+        $remaining_customers = Admin_customer_model::where('admin_id',$id)->pluck('customer_id')->toArray();
+        if($remaining_customers != null){
+            $customers = Customer_model::whereNotIn('id',$remaining_customers)->get();
+            foreach($customers as $customer){
+                Admin_customer_model::where('admin_id',$id)->where('customer_id',$customer->id)->delete();
+            }
+        }
+
+
         session()->put('success',"Member has been updated successfully");
         return redirect('team');
     }
