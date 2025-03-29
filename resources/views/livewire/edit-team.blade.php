@@ -108,7 +108,7 @@
                                                 <div class="col-md-8 mg-t-5 mg-md-t-0">
                                                     <select class="form-select" multiple name="customer_restriction[]">
                                                         @foreach ($vendors as $customer)
-                                                            <option value="{{ $customer->id }}" @if($member->customer_restriction != null && in_array($customer->id, json_decode($member->customer_restriction))) selected @endif>{{ $customer->name }}</option>
+                                                            <option value="{{ $customer->id }}" @if($member->customers != null && in_array($customer->id, json_decode($member->customers))) selected @endif>{{ $customer->company }}</option>
                                                         @endforeach
                                                     </select>
                                                 </div>

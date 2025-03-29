@@ -30,6 +30,10 @@ class Admin_model extends Model
         return $this->hasOne(Role_model::class, 'id', 'role_id');
     }
 
+    public function customers()
+    {
+        return $this->hasOneThrough(Customer_model::class, Admin_customer_model::class, 'admin_id', 'id', 'id', 'customer_id');
+    }
     public function permissions()
     {
         return $this->hasManyThrough(Permission_model::class, Admin_permission_model::class, 'admin_id', 'id', 'id', 'permission_id');
