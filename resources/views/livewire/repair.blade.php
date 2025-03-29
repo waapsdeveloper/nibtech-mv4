@@ -227,7 +227,7 @@
                                         <span class="badge badge-danger">{{ $duplicate_count }} Duplicate</span>
                                     @endif
                                 </td>
-                                <td title="{{json_encode($summery['remaining_stock_ids'])}}"><a id="test2{{$i}}" href="javascript:void(0)">{{ $summery['remaining_quantity'] }}</a>
+                                <td title="{{json_encode($summery['remaining_stock_ids'])}}"><a id="2test{{$i}}" href="javascript:void(0)">{{ $summery['remaining_quantity'] }}</a>
                                     @if ($duplicates)
                                         <span class="badge badge-danger">{{ $duplicate_count }} Duplicate</span>
                                     @endif
@@ -265,7 +265,7 @@
 
                                     @endphp
                                 }
-                                document.getElementById("test2{{$i}}").onclick = function(){
+                                document.getElementById("2test{{$i}}").onclick = function(){
                                     @php
                                         if ($active_verification != null) {
                                             $stock_imeis = $remaining_imies;
