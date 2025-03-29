@@ -175,7 +175,7 @@
                                                     permissionsDiv.innerHTML = '';
                                                     @foreach ($permissions as $permission)
                                                         var isChecked = data.permissions.includes('{{ $permission->name }}') ? 'checked' : '';
-                                                        if (data.admin_permissions != []) {
+                                                        if (data.admin_permissions != [] ) {
                                                             var isChecked = data.admin_permissions.includes('{{ $permission->name }}') ? 'checked' : '';
                                                         }
                                                         var isDisabled = data.permissions.includes('{{ $permission->name }}') ? 'disabled' : '';
