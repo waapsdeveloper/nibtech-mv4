@@ -142,7 +142,7 @@ class Team extends Component
             foreach($customer_restrictions as $customer_id){
                 $admin_customer = Admin_customer_model::where('admin_id',$id)->where('customer_id',$customer_id)->first();
                 if($admin_customer == null){
-                    Admin_customer_model::insert(['admin_id'=>$id,'customer_id'=>$customer_id]);
+                    Admin_customer_model::insert(['admin_id'=>$id,'customer_id'=>$customer_id,'added_by'=>session('user_id')]);
                 }
             }
         }else{
