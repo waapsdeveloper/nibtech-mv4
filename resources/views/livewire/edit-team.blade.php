@@ -101,6 +101,19 @@
                                                     <input class="form-control" placeholder="Enter password for member" name="password" type="password">
                                                 </div>
                                             </div>
+                                            <div class="row row-xs align-items-center mg-b-20">
+                                                <div class="col-md-4">
+                                                    <label class="form-label mg-b-0">Customer Restriction</label>
+                                                </div>
+                                                <div class="col-md-8 mg-t-5 mg-md-t-0">
+                                                    <select class="form-select" multiple name="customer_restriction[]">
+                                                        @foreach ($vendors as $customer)
+                                                            <option value="{{ $customer->id }}" @if($member->customer_restriction != null && in_array($customer->id, json_decode($member->customer_restriction))) selected @endif>{{ $customer->name }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+
                                             <button class="btn btn-primary pd-x-30 mg-r-5 mg-t-5 float-end" >Update</button>
                                         </div>
                                     </div>

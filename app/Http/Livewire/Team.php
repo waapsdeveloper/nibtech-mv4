@@ -70,17 +70,23 @@ class Team extends Component
 
     public function update_status($id)
     {
-       $member = Admin_model::where('id',$id)->first();
-       $status = $member->status;
-       if($status == 1){
-        Admin_model::where('id',$id)->update(['status'=> 0]);
-        session()->put('success',"Member has been Activated successfully");
-        return redirect('team');
-       }else{
-        Admin_model::where('id',$id)->update(['status'=> 1]);
-        session()->put('success',"Member has been Deactivated successfully");
-        return redirect('team');
-       }
+        if (session('user')->hasPermission('change_member_status')){
+
+            $member = Admin_model::where('id',$id)->first();
+            $status = $member->status;
+            if($status == 1){
+                Admin_model::where('id',$id)->update(['status'=> 0]);
+                session()->put('success',"Member has been Activated successfully");
+                return redirect('team');
+            }else{
+                Admin_model::where('id',$id)->update(['status'=> 1]);
+                session()->put('success',"Member has been Deactivated successfully");
+                return redirect('team');
+            }
+        }else{
+            session()->put('error',"Permission Denied");
+            return redirect('team');
+        }
     }
     public function edit_member($id)
     {
@@ -92,6 +98,7 @@ class Team extends Component
         $data['parents'] = Admin_model::where('role_id','>=',$data['user']->role_id)->get();
         $data['permissions'] = Permission_model::all();
         $data['member'] = Admin_model::where('id',$id)->first();
+        $data['vendors'] = Admin_model::whereNotNull('is_vendor')->get();
         return view('livewire.edit-team')->with($data);
     }
     public function update_member($id)
