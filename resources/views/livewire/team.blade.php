@@ -56,7 +56,12 @@
         @endif
         <br>
         <div class="row">
-            <div class="col-xl-12">
+            <div @if (session('user')->hasPermission('change_role_permissions'))
+                class="col-xl-9"
+            @else
+                class="col-xl-12"
+            @endif
+            >
                 <div class="card">
                     <div class="card-header pb-0">
                         <div class="d-flex justify-content-between">
@@ -110,6 +115,93 @@
                     </div>
                 </div>
             </div>
+            @if (session('user')->hasPermission('change_role_permissions'))
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title mb-1">Role - Permissions</h4>
+                        <p>Here, you can chage permission for selected Role</p>
+                    </div>
+                    <div class="card-body">
+                        <div>
+                            <label for="role">Select Role:</label>
+                            <select id="role" class="form-select" onchange="fetchPermissions()">
+                                @foreach ($roles as $role)
+                                    <option value="{{ $role->id }}" @if($role->id == $member->role_id) selected @endif>{{ $role->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <br>
+                        <div id="permissions">
+                            <!-- Permissions will be displayed here -->
+                        </div>
+                        <script>
+
+                            document.addEventListener('DOMContentLoaded', function() {
+                                fetchPermissions()
+                            })
+                            // function togglePermission(roleId, permissionId, isChecked) {
+                            //     // Send AJAX request to server to create or delete role permission
+                            //     fetch(`{{ url('toggle_role_permission') }}/${roleId}/${permissionId}/${isChecked}`, { method: 'POST' })
+                            //         // .then(response => response.json())
+                            //         .then(data => {
+                            //             // Update UI based on server response
+                            //             console.log(data); // You can handle the response as per your requirement
+                            //         })
+                            //         .catch(error => {
+                            //             console.error('Error:', error);
+                            //         });
+                            // }
+                            function togglePermission(roleId,permissionId, isChecked) {
+                            // Get the CSRF token from the meta tag in your HTML
+                            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+                            // Send AJAX request to server to create or delete role permission
+                            fetch(`{{ url('toggle_role_permission') }}/${roleId}/${permissionId}/${isChecked}`, {
+                                method: 'POST',
+                                headers: {
+                                    // 'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': csrfToken // Include the CSRF token in the headers
+                                }
+                            })
+                                // .then(response => response.json()) // Parse response as JSON
+                                .then(data => {
+                                    // Update UI based on server response
+                                    console.log(data); // You can handle the response as per your requirement
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                });
+                        }
+
+
+                            function fetchPermissions() {
+                                var roleId = document.getElementById('role').value;
+                                fetch(`{{ url('get_permissions') }}/${roleId}`)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        var permissionsDiv = document.getElementById('permissions');
+                                        permissionsDiv.innerHTML = '';
+                                        @foreach ($permissions as $permission)
+                                            var isChecked = data.permissions.includes('{{ $permission->name }}') ? 'checked' : '';
+                                            if (data.admin_permissions != [] && isChecked == '') {
+                                                var isChecked = data.admin_permissions.includes('{{ $permission->name }}') ? 'checked' : '';
+                                            }
+                                            var isDisabled = data.permissions.includes('{{ $permission->name }}') ? 'disabled' : '';
+                                            permissionsDiv.innerHTML += `
+                                                <div class="form-check form-switch ms-4">
+                                                    <input type="checkbox" value="{{ $permission->id }}" name="permission[]" class="form-check-input" ${isChecked} ${isDisabled} onclick="togglePermission(${roleId},{{ $permission->id }}, this.checked)">
+                                                    <label class="form-check-label" for="permission">{{ $permission->name }}</label>
+                                                </div>`;
+                                        @endforeach
+                                    });
+                            }
+                        </script>
+
+                    </div>
+                </div>
+            </div>
+            @endif
         </div>
         @php
             session()->forget('success');
