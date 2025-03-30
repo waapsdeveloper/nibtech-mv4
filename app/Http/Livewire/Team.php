@@ -145,10 +145,10 @@ class Team extends Component
                     Admin_customer_model::insert(['admin_id'=>$id,'customer_id'=>$customer_id,'added_by'=>session('user_id')]);
                 }
             }
+            $remaining_customers = Admin_customer_model::where('admin_id',$id)->whereNotIn('customer_id',$customer_restrictions)->delete();
         }else{
             Admin_customer_model::where('admin_id',$id)->delete();
         }
-        $remaining_customers = Admin_customer_model::where('admin_id',$id)->whereNotIn('customer_id',$customer_restrictions)->delete();
 
 
         session()->put('success',"Member has been updated successfully");
