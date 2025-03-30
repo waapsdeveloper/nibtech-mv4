@@ -53,8 +53,12 @@ class Order_model extends Model
                         $transaction->save();
                     }
                     if($order_charge->charge->name == $transaction->description){
+                        $amount = $transaction->amount;
+                        if($amount < 0){
+                            $amount = $amount * -1;
+                        }
                         $order_charge->transaction_id = $transaction->id;
-                        $order_charge->amount = $transaction->amount;
+                        $order_charge->amount = $amount;
                         $order_charge->save();
                         $transaction->reference_id = $latest_transaction_ref+1;
                         $transaction->status = 1;
