@@ -186,7 +186,7 @@
                                             var isChecked = data.permissions.includes('{{ $permission->name }}') ? 'checked' : '';
                                             permissionsDiv.innerHTML += `
                                                 <div class="form-check form-switch ms-4">
-                                                    <input type="checkbox" value="{{ $permission->id }}" name="permission[]" class="form-check-input" ${isChecked} ${isDisabled} onclick="togglePermission(${roleId},{{ $permission->id }}, this.checked)">
+                                                    <input type="checkbox" value="{{ $permission->id }}" name="permission[]" class="form-check-input" ${isChecked} onclick="togglePermission(${roleId},{{ $permission->id }}, this.checked)">
                                                     <label class="form-check-label" for="permission">{{ $permission->name }}</label>
                                                 </div>`;
                                         @endforeach
