@@ -99,6 +99,19 @@ class FunctionsDaily extends Command
                     $order_charge->save();
 
                 }
+                $payment_method_charge = $charges->where('payment_method_id',$order->payment_method_id)->first();
+                if($payment_method_charge != null){
+                    $order_charge = Order_charge_model::firstOrNew(['order_id'=>$order->id,'charge_value_id'=>$payment_method_charge->current_value->id]);
+                    if($payment_method_charge->amount_type == 1){
+                        $order_charge->amount = $payment_method_charge->current_value->value;
+                        $total_charge += $payment_method_charge->current_value->value;
+                    }elseif($payment_method_charge->amount_type == 2){
+                        $order_charge->amount = $order->price * $payment_method_charge->current_value->value / 100;
+                        $total_charge += $order->price * $payment_method_charge->current_value->value / 100;
+                    }
+                    $order_charge->save();
+                }
+
             }
             $order->charges = $total_charge;
             $order->save();
