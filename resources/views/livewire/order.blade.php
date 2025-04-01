@@ -595,7 +595,7 @@
                                                     @if(!isset($stock->imei) && !isset($stock->serial_number) && $item->status > 2 && $item->quantity == 1)
 
 
-                                                        <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
+                                                        <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}#order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
                                                         <a class="dropdown-item" href="{{url('order')}}/refresh/{{ $order->reference_id }}"><i class="fe fe-arrows-rotate me-2 "></i>Refresh</a>
                                                     @endif --}}
                                                 @endif
@@ -712,7 +712,7 @@
                                                     <a class="dropdown-item" href="{{url('order')}}/recheck/{{ $order->reference_id }}/false/false/null/true/true" target="_blank">Data</a>
                                                     <a class="dropdown-item" href="{{url('order')}}/label/{{ $order->reference_id }}/true/true" target="_blank">Label Data</a>
                                                     @endif
-                                                    <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank">View in Backmarket</a>
+                                                    <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}#order-details={{ $order->reference_id }}" target="_blank">View in Backmarket</a>
                                                     <a class="dropdown-item" href="#" onclick="window.open('{{url('order')}}/export_invoice_new/{{$order->id}}','_blank','print_popup');">Invoice 2</a>
                                                     @if (request('missing') == 'scan' && session('user')->hasPermission('mark_scanned'))
                                                         <a class="dropdown-item" href="{{url('order')}}/mark_scanned/{{ $order->id }}">Mark Scanned</a>
@@ -810,7 +810,7 @@
                                                         <div class="dropdown-menu">
                                                             <a class="dropdown-item" href="{{url('order/delete_replacement_item').'/'.$itm->id}}"><i class="fe fe-trash-2 me-2"></i>Delete</a>
                                                             <a class="dropdown-item" id="replacement_{{ $itm->id }}" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $itm->order->reference_id }}" data-bs-item="{{ $itm->id }}" data-bs-return="@if($itm->check_return) 1 @endif"> Replacement </a>
-                                                            <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
+                                                            <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}#order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
                                                             {{-- <a class="dropdown-item" href="javascript:void(0);"><i class="fe fe-trash-2 me-2"></i>Delete</a> --}}
                                                         </div>
                                                     </td>
@@ -864,7 +864,7 @@
                                                                     <div class="dropdown-menu">
                                                                         <a class="dropdown-item" href="{{url('order/delete_replacement_item').'/'.$itm->id}}"><i class="fe fe-trash-2 me-2"></i>Delete</a>
                                                                         <a class="dropdown-item" id="replacement_{{ $itm->id }}" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $itm->order->reference_id }}" data-bs-item="{{ $itm->id }}" data-bs-return="@if($itm->check_return) 1 @endif"> Replacement </a>
-                                                                        <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
+                                                                        <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}#order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
                                                                         {{-- <a class="dropdown-item" href="javascript:void(0);"><i class="fe fe-trash-2 me-2"></i>Delete</a> --}}
                                                                     </div>
                                                                 </td>
@@ -936,7 +936,7 @@
                                                         <td>
                                                             <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical text-white tx-18"></i></a>
                                                             <div class="dropdown-menu">
-                                                                <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $ord->reference_id }}&see-order-details={{ $ord->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
+                                                                <a class="dropdown-item" href="https://backmarket.fr/bo_merchant/orders/all?orderId={{ $ord->reference_id }}#order-details={{ $ord->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a>
                                                             </div>
                                                         </td>
                                                     </tr>
