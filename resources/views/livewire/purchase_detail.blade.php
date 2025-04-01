@@ -216,6 +216,7 @@
                                 <th><small><b>Quantity</b></small></th>
                                 <th><small><b>Cost</b></small></th>
                                 <th><small><b>Price</b></small></th>
+                                <th><small><b>Profit</b></small></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -229,6 +230,7 @@
                                     <td>{{ $summery['quantity'] }}</td>
                                     <td title="{{ $summery['average_cost'] }}">{{ amount_formatter($summery['total_cost'],2) }}</td>
                                     <td title="{{ $summery['average_price'] }}">{{ amount_formatter($summery['total_price'],2) }}</td>
+                                    <td title="{{ $summery['average_profit'] }}">{{ amount_formatter($summery['profit'],2) }}</td>
                                 </tr>
                                 {{-- @endif --}}
                             @endforeach
@@ -256,6 +258,38 @@
                                 $i = 0;
                             @endphp
                             @foreach ($available_stock_summery as $summery)
+                                <tr>
+                                    <td>{{ ++$i }}</td>
+                                    <td>{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</td>
+                                    <td>{{ $summery['quantity'] }}</td>
+                                    <td title="{{ $summery['average_cost'] }}">{{ amount_formatter($summery['total_cost'],2) }}</td>
+                                </tr>
+                                {{-- @endif --}}
+                            @endforeach
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header pb-0">
+                    Repair Sent Stock Summery
+                </div>
+                <div class="card-body"><div class="table-responsive">
+                    <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                        <thead>
+                            <tr>
+                                <th><small><b>No</b></small></th>
+                                <th><small><b>Model</b></small></th>
+                                <th><small><b>Quantity</b></small></th>
+                                <th><small><b>Cost</b></small></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                                $i = 0;
+                            @endphp
+                            @foreach ($arepair_sent_stock_summery as $summery)
                                 <tr>
                                     <td>{{ ++$i }}</td>
                                     <td>{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</td>
