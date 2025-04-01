@@ -47,11 +47,14 @@ class Order_model extends Model
                         ->orderByDesc('reference_id')
                         ->first()
                         ->reference_id;
-                    if($transaction->description == 'sales'){
+
+                    $description = trim($transaction->description);
+                    $charge_name = trim($order_charge->charge->name);
+                    if($description == 'sales'){
                         $transaction->reference_id = $latest_transaction_ref+1;
                         $transaction->status = 1;
                         $transaction->save();
-                    }elseif($order_charge->charge->name == $transaction->description){
+                    }elseif($charge_name == $description){
                         $amount = $transaction->amount;
                         if($amount < 0){
                             $amount = $amount * -1;
@@ -65,7 +68,7 @@ class Order_model extends Model
                         $change = true;
                         $message .= "Transaction charge merged for order ".$this->reference_id." and transaction ".$transaction->reference_id;
                     }else{
-                        $message .= "Transaction charge not merged for order ".$this->reference_id." and transaction ".$transaction->reference_id;
+                        $message .= "Transaction charge not merged for order ".$this->reference_id." and transaction ".$description;
                     }
                 }
             }
