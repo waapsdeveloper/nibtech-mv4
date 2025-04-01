@@ -269,6 +269,7 @@ class Repair extends Component
             $transaction->description = $repair->description;
             $transaction->reference_id = $repair->reference_id;
             $transaction->created_by = session('user_id');
+            $transaction->date = now()->format('Y-m-d H:i:s');
             // $transaction->created_at = $order->created_at;
 
             $transaction->save();
