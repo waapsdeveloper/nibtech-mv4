@@ -763,6 +763,20 @@ class Order extends Component
         $data['grades'] = Grade_model::pluck('name','id');
 
         if(request('summery') == 1){
+            $sold_total = [
+                'total_cost' => 0,
+                'total_price' => 0,
+                'total_profit' => 0,
+                'total_quantity' => 0,
+            ];
+            $available_total = [
+                'total_cost' => 0,
+                'total_quantity' => 0,
+            ];
+            $repair_total = [
+                'total_cost' => 0,
+                'total_quantity' => 0,
+            ];
 
             $repair_ids = Process_model::where('process_type_id',9)->pluck('id');
             $repair_stock_ids = Process_stock_model::whereIn('process_id',$repair_ids)->where('status',1)->pluck('stock_id');
@@ -853,10 +867,16 @@ class Order extends Component
                 $sold_stocks_2[$key]['sold_quantity'] = $total_quantity;
                 $sold_stocks_2[$key]['profit'] = $total_price - $total_cost;
                 $sold_stocks_2[$key]['average_profit'] = $average_profit;
+
+                $sold_total['total_cost'] += $total_cost;
+                $sold_total['total_price'] += $total_price;
+                $sold_total['total_profit'] += $total_price - $total_cost;
+                $sold_total['total_quantity'] += $total_quantity;
             }
 
             // dd($sold_stocks_2);
             $data['sold_stock_summery'] = $sold_stocks_2;
+            $data['sold_total'] = $sold_total;
 
 
 
@@ -921,10 +941,14 @@ class Order extends Component
                 $total_cost = Order_item_model::whereIn('stock_id', $repair_stock['stock_ids'])->where('order_id',$order_id)->sum('price');
                 $repair_stocks_2[$key]['average_cost'] = $average_cost;
                 $repair_stocks_2[$key]['total_cost'] = $total_cost;
+
+                $repair_total['total_cost'] += $total_cost;
+                $repair_total['total_quantity'] += $repair_stocks_2[$key]['quantity'];
             }
 
             // dd($repair_stocks_2);
             $data['repair_sent_stock_summery'] = $repair_stocks_2;
+            $data['repair_sent_total'] = $repair_total;
 
 
             // Retrieve variations with related stocks
@@ -988,10 +1012,14 @@ class Order extends Component
                 $total_cost = Order_item_model::whereIn('stock_id', $available_stock['stock_ids'])->where('order_id',$order_id)->sum('price');
                 $available_stocks_2[$key]['average_cost'] = $average_cost;
                 $available_stocks_2[$key]['total_cost'] = $total_cost;
+
+                $available_total['total_cost'] += $total_cost;
+                $available_total['total_quantity'] += $available_stocks_2[$key]['quantity'];
             }
 
             // dd($available_stocks_2);
             $data['available_stock_summery'] = $available_stocks_2;
+            $data['available_total'] = $available_total;
         }elseif(request('summery') == 2){
 
 
