@@ -51,8 +51,7 @@ class Order_model extends Model
                         $transaction->reference_id = $latest_transaction_ref+1;
                         $transaction->status = 1;
                         $transaction->save();
-                    }
-                    if($order_charge->charge->name == $transaction->description){
+                    }elseif($order_charge->charge->name == $transaction->description){
                         $amount = $transaction->amount;
                         if($amount < 0){
                             $amount = $amount * -1;
@@ -65,8 +64,8 @@ class Order_model extends Model
                         $transaction->save();
                         $change = true;
                         $message .= "Transaction charge merged for order ".$this->reference_id." and transaction ".$transaction->reference_id;
-
-
+                    }else{
+                        $message .= "Transaction charge not merged for order ".$this->reference_id." and transaction ".$transaction->reference_id;
                     }
                 }
             }
