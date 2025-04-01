@@ -54,6 +54,7 @@ class Order_model extends Model
                         $transaction->reference_id = $latest_transaction_ref+1;
                         $transaction->status = 1;
                         $transaction->save();
+                        $message .= "Transaction sales merged for order ".$this->reference_id." and transaction ".$transaction->reference_id;
                     }elseif($charge_name == $description){
                         $amount = $transaction->amount;
                         if($amount < 0){
