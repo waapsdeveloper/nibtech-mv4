@@ -786,8 +786,8 @@ class Order extends Component
                 ->get(['product_id', 'storage']);
 
             // Process the retrieved data to get stock IDs
-            $result = $sold_stocks->map(function ($variation) {
-                $stocks = $variation->stocks;
+            $result = $sold_stocks->map(function ($variation) use ($repair_stock_ids) {
+                $stocks = $variation->stocks->whereNotIn('id',$repair_stock_ids);
 
                 // Collect all stock IDs
                 $stockIds = $stocks->pluck('id');
