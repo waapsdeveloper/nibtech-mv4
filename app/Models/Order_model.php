@@ -68,7 +68,7 @@ class Order_model extends Model
                         $change = true;
                         $message .= "Transaction charge merged for order ".$this->reference_id." and transaction ".$transaction->reference_id;
                     }else{
-                        $message .= "Transaction charge not merged for order ".$this->reference_id." and transaction ".$description;
+                        $message .= "Transaction charge not merged for order ".$this->reference_id." and transaction ".$description. " with charge ".$charge_name;
                     }
                 }
             }
