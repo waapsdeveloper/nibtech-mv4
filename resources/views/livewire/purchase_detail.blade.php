@@ -235,6 +235,16 @@
                                 {{-- @endif --}}
                             @endforeach
                         </tbody>
+                        <tfoot>
+                            <tr>
+                                <th></th>
+                                <th><b>Total</b></th>
+                                <th><b>{{ $sold_total['total_quantity'] }}</b></th>
+                                <th><b>{{ amount_formatter($sold_total['total_cost'],2) }}</b></th>
+                                <th><b>{{ amount_formatter($sold_total['total_price'],2) }}</b></th>
+                                <th><b>{{ amount_formatter($sold_total['total_profit'],2) }}</b></th>
+                            </tr>
+                        </tfoot>
 
                     </table>
                 </div>
@@ -267,7 +277,14 @@
                                 {{-- @endif --}}
                             @endforeach
                         </tbody>
-
+                        <tfoot>
+                            <tr>
+                                <th></th>
+                                <th><b>Total</b></th>
+                                <th><b>{{ $available_total['total_quantity'] }}</b></th>
+                                <th><b>{{ amount_formatter($available_total['total_cost'],2) }}</b></th>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
@@ -299,6 +316,14 @@
                                 {{-- @endif --}}
                             @endforeach
                         </tbody>
+                        <tfoot>
+                            <tr>
+                                <th></th>
+                                <th><b>Total</b></th>
+                                <th><b>{{ $repair_sent_total['total_quantity'] }}</b></th>
+                                <th><b>{{ amount_formatter($repair_sent_total['total_cost'],2) }}</b></th>
+                            </tr>
+                        </tfoot>
 
                     </table>
                 </div>
