@@ -193,6 +193,7 @@ class Wholesale extends Component
             $transaction->description = $order->reference;
             $transaction->reference_id = $order->reference_id;
             $transaction->created_by = session('user_id');
+            $transaction->date = now()->format('Y-m-d H:i:s');
             // $transaction->created_at = $order->created_at;
 
             $transaction->save();
