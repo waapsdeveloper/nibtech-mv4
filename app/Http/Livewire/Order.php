@@ -769,18 +769,17 @@ class Order extends Component
 
 
             // Retrieve variations with related stocks
-            $sold_stocks = Variation_model::whereHas('stocks', function ($query) use ($order_id) {
-                    $query->where('order_id', $order_id)->where('status', 2);
+            $sold_stocks = Variation_model::whereHas('stocks', function ($query) use ($order_id, $repair_stock_ids) {
+                    $query->where('order_id', $order_id)->where('status', 2)->whereNotIn('id',$repair_stock_ids);
                 })
-                ->whereNotIn('id',$repair_stock_ids)
                 ->withCount([
-                    'stocks as quantity' => function ($query) use ($order_id) {
-                        $query->where('order_id', $order_id)->where('status', 2);
+                    'stocks as quantity' => function ($query) use ($order_id, $repair_stock_ids) {
+                        $query->where('order_id', $order_id)->where('status', 2)->whereNotIn('id',$repair_stock_ids);
                     }
                 ])
                 ->with([
-                    'stocks' => function ($query) use ($order_id) {
-                        $query->where('order_id', $order_id)->where('status', 2);
+                    'stocks' => function ($query) use ($order_id, $repair_stock_ids) {
+                        $query->where('order_id', $order_id)->where('status', 2)->whereNotIn('id',$repair_stock_ids);
                     }
                 ])
                 ->get(['product_id', 'storage']);
