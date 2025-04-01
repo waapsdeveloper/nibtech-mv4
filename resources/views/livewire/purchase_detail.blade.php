@@ -289,7 +289,7 @@
                             @php
                                 $i = 0;
                             @endphp
-                            @foreach ($arepair_sent_stock_summery as $summery)
+                            @foreach ($repair_sent_stock_summery as $summery)
                                 <tr>
                                     <td>{{ ++$i }}</td>
                                     <td>{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</td>
