@@ -360,7 +360,7 @@
                                                         </a>
                                                     @endif
                                                     @if ($item->care_id != null)
-                                                        <a class="" href="https://backmarket.fr/bo_merchant/customer-request/{{ $item->care_id }}" target="_blank"><strong class="text-danger">Conversation</strong></a>
+                                                        <a class="" href="https://backmarket.fr/bo_merchant/customer-care/help-requests/{{ $item->care_id }}" target="_blank"><strong class="text-danger">Conversation</strong></a>
                                                     @endif
                                                 </td>
                                                 <td>{{ $item->quantity }}</td>
@@ -549,7 +549,7 @@
                                                                 @endif
 
                                                                 @if ($itm->care_id != null)
-                                                                    <a class="" href="https://backmarket.fr/bo_merchant/customer-request/{{ $itm->care_id }}" target="_blank"><strong class="text-white">Conversation</strong></a>
+                                                                    <a class="" href="https://backmarket.fr/bo_merchant/customer-care/help-requests/{{ $itm->care_id }}" target="_blank"><strong class="text-white">Conversation</strong></a>
                                                                 @endif
                                                             </td>
                                                             <td>{{ $itm->quantity }}</td>
@@ -586,7 +586,7 @@
                                                                 @endif
 
                                                                 @if ($itm->care_id != null)
-                                                                    <a class="" href="https://backmarket.fr/bo_merchant/customer-request/{{ $itm->care_id }}" target="_blank"><strong class="text-white">Conversation</strong></a>
+                                                                    <a class="" href="https://backmarket.fr/bo_merchant/customer-care/help-requests/{{ $itm->care_id }}" target="_blank"><strong class="text-white">Conversation</strong></a>
                                                                 @endif
                                                             </td>
                                                             <td>{{ $itm->quantity }}</td>
