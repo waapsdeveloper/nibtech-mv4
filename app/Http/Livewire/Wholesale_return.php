@@ -34,7 +34,21 @@ class Wholesale_return extends Component
         $data['title_page'] = "Bulksale Returns";
         session()->put('page_title', $data['title_page']);
 
-        $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
+        $admin_customers = session('user')->admin_customers;
+        if($admin_customers != null){
+            $admin_customer_ids = $admin_customers->pluck('customer_id')->toArray();
+            $data['admin_customers'] = $admin_customers;
+            $data['admin_customer_ids'] = $admin_customer_ids;
+            // dd($admin_customers);
+        }else{
+            $admin_customers = null;
+            $admin_customer_ids = null;
+        }
+        if($admin_customer_ids != null){
+            $data['vendors'] = Customer_model::whereNotNull('is_vendor')->whereIn('id',$admin_customer_ids)->pluck('company','id');
+        }else{
+            $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
+        }
 
         $data['latest_reference'] = Order_model::where('order_type_id',4)->orderBy('reference_id','DESC')->first()->reference_id;
         $data['order_statuses'] = Order_status_model::get();
@@ -58,39 +72,14 @@ class Wholesale_return extends Component
         ->when(request('status') != '', function ($q) {
             return $q->where('orders.status', request('status'));
         })
+        ->when($admin_customer_ids != null, function ($q) use ($admin_customer_ids) {
+            return $q->whereIn('orders.customer_id', $admin_customer_ids);
+        })
         ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
         // ->select('orders.*')
         ->paginate($per_page)
         ->onEachSide(5)
         ->appends(request()->except('page'));
-        // $data['orders'] = Order_model::select(
-        //     'orders.id',
-        //     'orders.reference_id',
-        //     DB::raw('SUM(order_items.price) as total_price'),
-        //     DB::raw('COUNT(order_items.id) as total_quantity'),
-        //     DB::raw('COUNT(CASE WHEN stock.status = 1 THEN order_items.id END) as available_stock'),
-        //     'orders.created_at')
-        // ->where('orders.order_type_id', 6)
-        // ->join('order_items', 'orders.id', '=', 'order_items.order_id')
-        // ->join('stock', 'order_items.stock_id', '=', 'stock.id')
-        // ->when(request('start_date'), function ($q) {
-        //     return $q->where('orders.created_at', '>=', request('start_date'));
-        // })
-        // ->when(request('end_date'), function ($q) {
-        //     return $q->where('orders.created_at', '<=', request('end_date') . " 23:59:59");
-        // })
-        // ->when(request('order_id'), function ($q) {
-        //     return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
-        // })
-        // ->when(request('status'), function ($q) {
-        //     return $q->where('orders.status', request('status'));
-        // })
-        // ->where('order_items.deleted_at',null)
-        // ->groupBy('orders.id', 'orders.reference_id', 'orders.created_at')
-        // ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
-        // ->paginate($per_page)
-        // ->onEachSide(5)
-        // ->appends(request()->except('page'));
 
         return view('livewire.wholesale_return')->with($data);
     }
@@ -237,6 +226,18 @@ class Wholesale_return extends Component
         $data['title_page'] = "Return Detail";
         session()->put('page_title', $data['title_page']);
 
+        $data['order'] = Order_model::find($order_id);
+
+
+        if(session('user')->admin_customers->count() > 0){
+
+            if(!in_array($data['order']->customer_id, session('user')->admin_customers->pluck('customer_id')->toArray())){
+                session()->put('error', 'You are not allowed to view this Batch');
+                return redirect('wholesale_return');
+            }
+        }
+
+
         $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
         $data['storages'] = Storage_model::pluck('name','id');
         $data['products'] = Products_model::pluck('model','id');
@@ -246,7 +247,6 @@ class Wholesale_return extends Component
         $data['imei'] = request('imei');
 
         $data['all_variations'] = Variation_model::where('grade',9)->get();
-        $data['order'] = Order_model::find($order_id);
         $data['order_id'] = $order_id;
         $data['currency'] = $data['order']->currency_id->sign;
 
