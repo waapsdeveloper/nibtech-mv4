@@ -764,22 +764,26 @@ class Order extends Component
 
         if(request('summery') == 1){
 
+            $repair_ids = Process_model::where('process_type_id',9)->pluck('id');
+            $repair_stock_ids = Process_stock_model::whereIn('process_id',$repair_ids)->where('status',1)->pluck('stock_id');
+
 
             // Retrieve variations with related stocks
             $sold_stocks = Variation_model::whereHas('stocks', function ($query) use ($order_id) {
-                $query->where('order_id', $order_id)->where('status', 2);
-            })
-            ->withCount([
-                'stocks as quantity' => function ($query) use ($order_id) {
                     $query->where('order_id', $order_id)->where('status', 2);
-                }
-            ])
-            ->with([
-                'stocks' => function ($query) use ($order_id) {
-                    $query->where('order_id', $order_id)->where('status', 2);
-                }
-            ])
-            ->get(['product_id', 'storage']);
+                })
+                ->whereNotIn('id',$repair_stock_ids)
+                ->withCount([
+                    'stocks as quantity' => function ($query) use ($order_id) {
+                        $query->where('order_id', $order_id)->where('status', 2);
+                    }
+                ])
+                ->with([
+                    'stocks' => function ($query) use ($order_id) {
+                        $query->where('order_id', $order_id)->where('status', 2);
+                    }
+                ])
+                ->get(['product_id', 'storage']);
 
             // Process the retrieved data to get stock IDs
             $result = $sold_stocks->map(function ($variation) {
@@ -798,29 +802,28 @@ class Order extends Component
 
             // Group the results by product_id and storage
             $groupedResult = $result->groupBy(function ($item) {
-                return $item['product_id'] . '.' . $item['storage'];
-            })->map(function ($items, $key) {
-                list($product_id, $storage) = explode('.', $key);
+                    return $item['product_id'] . '.' . $item['storage'];
+                })->map(function ($items, $key) {
+                    list($product_id, $storage) = explode('.', $key);
 
-                // Merge all stock IDs for the group
-                $stockIds = $items->flatMap(function ($item) {
-                    return $item['stock_ids'];
-                })->unique()->values()->toArray(); // Convert to array
+                    // Merge all stock IDs for the group
+                    $stockIds = $items->flatMap(function ($item) {
+                        return $item['stock_ids'];
+                    })->unique()->values()->toArray(); // Convert to array
 
-                // Sum the quantity
-                $quantity = $items->sum('quantity'); // Sum the quantities
+                    // Sum the quantity
+                    $quantity = $items->sum('quantity'); // Sum the quantities
 
-                return [
-                    'product_id' => $product_id,
-                    'storage' => $storage,
-                    'quantity' => $quantity,
-                    'stock_ids' => $stockIds // Already an array
-                ];
-            })->values();
+                    return [
+                        'product_id' => $product_id,
+                        'storage' => $storage,
+                        'quantity' => $quantity,
+                        'stock_ids' => $stockIds // Already an array
+                    ];
+                })->values();
 
             // Sort the results by quantity in descending order
             $sold_stocks_2 = $groupedResult->sortByDesc('quantity')->toArray();
-
             foreach($sold_stocks_2 as $key => $sold_stock){
                 $average_cost = Order_item_model::whereIn('stock_id', $sold_stock['stock_ids'])->where('order_id',$order_id)->avg('price');
                 $total_cost = Order_item_model::whereIn('stock_id', $sold_stock['stock_ids'])->where('order_id',$order_id)->sum('price');
@@ -847,6 +850,8 @@ class Order extends Component
                 $sold_stocks_2[$key]['average_price'] = $average_price;
                 $sold_stocks_2[$key]['total_price'] = $total_price;
                 $sold_stocks_2[$key]['sold_quantity'] = $total_quantity;
+                $sold_stocks_2[$key]['profit'] = $total_price - $total_cost;
+                $sold_stocks_2[$key]['average_profit'] = $sold_stocks_2[$key]['profit'] / $total_quantity;
             }
 
             // dd($sold_stocks_2);
@@ -855,20 +860,88 @@ class Order extends Component
 
 
             // Retrieve variations with related stocks
+            $repair_stocks = Variation_model::whereHas('stocks', function ($query) use ($order_id) {
+                    $query->where('order_id', $order_id)->where('status', 2);
+                })
+                ->whereIn('id',$repair_stock_ids)
+                ->withCount([
+                    'stocks as quantity' => function ($query) use ($order_id) {
+                        $query->where('order_id', $order_id)->where('status', 1);
+                    }
+                ])
+                ->with([
+                    'stocks' => function ($query) use ($order_id) {
+                        $query->where('order_id', $order_id)->where('status', 1);
+                    }
+                ])
+                ->get(['product_id', 'storage']);
+
+            // Process the retrieved data to get stock IDs
+            $result = $repair_stocks->map(function ($variation) {
+                $stocks = $variation->stocks;
+
+                // Collect all stock IDs
+                $stockIds = $stocks->pluck('id');
+
+                return [
+                    'product_id' => $variation->product_id,
+                    'storage' => $variation->storage,
+                    'quantity' => $variation->quantity, // Use quantity from withCount
+                    'stock_ids' => $stockIds->toArray() // Convert collection to array
+                ];
+            });
+
+            // Group the results by product_id and storage
+            $groupedResult = $result->groupBy(function ($item) {
+                    return $item['product_id'] . '.' . $item['storage'];
+                })->map(function ($items, $key) {
+                    list($product_id, $storage) = explode('.', $key);
+
+                    // Merge all stock IDs for the group
+                    $stockIds = $items->flatMap(function ($item) {
+                            return $item['stock_ids'];
+                        })->unique()->values()->toArray(); // Convert to array
+
+                        // Sum the quantity
+                    $quantity = $items->sum('quantity'); // Sum the quantities
+
+                    return [
+                        'product_id' => $product_id,
+                        'storage' => $storage,
+                        'quantity' => $quantity,
+                        'stock_ids' => $stockIds // Already an array
+                    ];
+                })->values();
+
+            // Sort the results by quantity in descending order
+            $repair_stocks_2 = $groupedResult->sortByDesc('quantity')->toArray();
+
+            foreach($repair_stocks_2 as $key => $repair_stock){
+                $average_cost = Order_item_model::whereIn('stock_id', $repair_stock['stock_ids'])->where('order_id',$order_id)->avg('price');
+                $total_cost = Order_item_model::whereIn('stock_id', $repair_stock['stock_ids'])->where('order_id',$order_id)->sum('price');
+                $repair_stocks_2[$key]['average_cost'] = $average_cost;
+                $repair_stocks_2[$key]['total_cost'] = $total_cost;
+            }
+
+            // dd($repair_stocks_2);
+            $data['repair_sent_stock_summery'] = $repair_stocks_2;
+
+
+            // Retrieve variations with related stocks
             $available_stocks = Variation_model::whereHas('stocks', function ($query) use ($order_id) {
-                $query->where('order_id', $order_id)->where('status', 1);
-            })
-            ->withCount([
-                'stocks as quantity' => function ($query) use ($order_id) {
                     $query->where('order_id', $order_id)->where('status', 1);
-                }
-            ])
-            ->with([
-                'stocks' => function ($query) use ($order_id) {
-                    $query->where('order_id', $order_id)->where('status', 1);
-                }
-            ])
-            ->get(['product_id', 'storage']);
+                })
+                ->withCount([
+                    'stocks as quantity' => function ($query) use ($order_id) {
+                        $query->where('order_id', $order_id)->where('status', 1);
+                    }
+                ])
+                ->with([
+                    'stocks' => function ($query) use ($order_id) {
+                        $query->where('order_id', $order_id)->where('status', 1);
+                    }
+                ])
+                ->get(['product_id', 'storage']);
 
             // Process the retrieved data to get stock IDs
             $result = $available_stocks->map(function ($variation) {
@@ -887,25 +960,25 @@ class Order extends Component
 
             // Group the results by product_id and storage
             $groupedResult = $result->groupBy(function ($item) {
-                return $item['product_id'] . '.' . $item['storage'];
-            })->map(function ($items, $key) {
-                list($product_id, $storage) = explode('.', $key);
+                    return $item['product_id'] . '.' . $item['storage'];
+                })->map(function ($items, $key) {
+                    list($product_id, $storage) = explode('.', $key);
 
-                // Merge all stock IDs for the group
-                $stockIds = $items->flatMap(function ($item) {
-                    return $item['stock_ids'];
-                })->unique()->values()->toArray(); // Convert to array
+                    // Merge all stock IDs for the group
+                    $stockIds = $items->flatMap(function ($item) {
+                            return $item['stock_ids'];
+                        })->unique()->values()->toArray(); // Convert to array
 
-                // Sum the quantity
-                $quantity = $items->sum('quantity'); // Sum the quantities
+                        // Sum the quantity
+                    $quantity = $items->sum('quantity'); // Sum the quantities
 
-                return [
-                    'product_id' => $product_id,
-                    'storage' => $storage,
-                    'quantity' => $quantity,
-                    'stock_ids' => $stockIds // Already an array
-                ];
-            })->values();
+                    return [
+                        'product_id' => $product_id,
+                        'storage' => $storage,
+                        'quantity' => $quantity,
+                        'stock_ids' => $stockIds // Already an array
+                    ];
+                })->values();
 
             // Sort the results by quantity in descending order
             $available_stocks_2 = $groupedResult->sortByDesc('quantity')->toArray();
