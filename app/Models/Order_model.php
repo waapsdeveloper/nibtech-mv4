@@ -50,6 +50,7 @@ class Order_model extends Model
 
                     $description = trim($transaction->description);
                     $charge_name = trim($order_charge->charge->name);
+                    $message .= "Transaction description: ".$description. " and charge name: ".$charge_name . "\n";
                     if($description == 'sales'){
                         $transaction->reference_id = $latest_transaction_ref+1;
                         $transaction->status = 1;
