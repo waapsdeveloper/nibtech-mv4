@@ -842,8 +842,10 @@ class Order extends Component
                 // $average_cost = $total_cost/$total_quantity;
                 if($total_quantity == 0){
                     $average_price = "Issue";
+                    $average_profit = "Issue";
                 }else{
                     $average_price = $total_price/$total_quantity;
+                    $average_profit = ($total_price - $total_cost)/$total_quantity;
                 }
                 $sold_stocks_2[$key]['average_cost'] = $average_cost;
                 $sold_stocks_2[$key]['total_cost'] = $total_cost;
@@ -851,7 +853,7 @@ class Order extends Component
                 $sold_stocks_2[$key]['total_price'] = $total_price;
                 $sold_stocks_2[$key]['sold_quantity'] = $total_quantity;
                 $sold_stocks_2[$key]['profit'] = $total_price - $total_cost;
-                $sold_stocks_2[$key]['average_profit'] = $sold_stocks_2[$key]['profit'] / $total_quantity;
+                $sold_stocks_2[$key]['average_profit'] = $average_profit;
             }
 
             // dd($sold_stocks_2);
