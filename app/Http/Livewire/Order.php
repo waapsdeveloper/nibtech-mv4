@@ -861,25 +861,24 @@ class Order extends Component
 
 
             // Retrieve variations with related stocks
-            $repair_stocks = Variation_model::whereHas('stocks', function ($query) use ($order_id) {
-                    $query->where('order_id', $order_id)->where('status', 2);
+            $repair_stocks = Variation_model::whereHas('stocks', function ($query) use ($order_id, $repair_stock_ids) {
+                    $query->where('order_id', $order_id)->where('status', 2)->whereIn('id',$repair_stock_ids);
                 })
-                ->whereIn('id',$repair_stock_ids)
                 ->withCount([
-                    'stocks as quantity' => function ($query) use ($order_id) {
-                        $query->where('order_id', $order_id)->where('status', 1);
+                    'stocks as quantity' => function ($query) use ($order_id, $repair_stock_ids) {
+                        $query->where('order_id', $order_id)->where('status', 2)->whereIn('id',$repair_stock_ids);
                     }
                 ])
                 ->with([
-                    'stocks' => function ($query) use ($order_id) {
-                        $query->where('order_id', $order_id)->where('status', 1);
+                    'stocks' => function ($query) use ($order_id, $repair_stock_ids) {
+                        $query->where('order_id', $order_id)->where('status', 2)->whereIn('id',$repair_stock_ids);
                     }
                 ])
                 ->get(['product_id', 'storage']);
 
             // Process the retrieved data to get stock IDs
-            $result = $repair_stocks->map(function ($variation) {
-                $stocks = $variation->stocks;
+            $result = $repair_stocks->map(function ($variation) use ($repair_stock_ids) {
+                $stocks = $variation->stocks->whereIn('id',$repair_stock_ids);
 
                 // Collect all stock IDs
                 $stockIds = $stocks->pluck('id');
