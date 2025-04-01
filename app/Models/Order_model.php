@@ -39,7 +39,7 @@ class Order_model extends Model
         $change = false;
         $transactions = $this->transactions->where('status',null);
         if($transactions->count() > 0){
-            $order_charges = $this->order_charges;
+            $order_charges = $this->order_charges->where('transaction_id',null);
             foreach($order_charges as $order_charge){
                 $charge_name = trim($order_charge->charge->name);
                 $message .= "Order charge name: ".$charge_name . "\n";
