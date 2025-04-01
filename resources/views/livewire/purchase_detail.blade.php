@@ -190,8 +190,8 @@
                 <a href="{{url('purchase/detail')."/".$order->id}}?status=2" class="btn btn-link @if (request('status') == 2) bg-white @endif ">Sold</a>
                 <a href="{{url('purchase/detail')."/".$order->id}}" class="btn btn-link @if (!request('status')) bg-white @endif " >All</a>
                 @if (session('user')->hasPermission('view_purchase_summery'))
-                <a href="{{url('purchase/detail')."/".$order->id}}?summery=1" class="btn btn-link @if (request('summery') == 1) bg-white @endif ">Summery</a>
-                <a href="{{url('purchase/detail')."/".$order->id}}?summery=2" class="btn btn-link @if (request('summery') == 2) bg-white @endif ">Purchase Summery</a>
+                <a href="{{url('purchase/detail')."/".$order->id}}?summery=1" class="btn btn-link @if (request('summery') == 1) bg-white @endif ">PnL</a>
+                <a href="{{url('purchase/detail')."/".$order->id}}?summery=2" class="btn btn-link @if (request('summery') == 2) bg-white @endif ">Summery</a>
 
                 @endif
             </div>
