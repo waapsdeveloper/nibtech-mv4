@@ -873,7 +873,7 @@ class Order extends Component
                 $sold_stocks_2[$key]['average_charge'] = $average_charge;
                 $sold_stocks_2[$key]['total_charge'] = $total_charge;
                 $sold_stocks_2[$key]['sold_quantity'] = $total_quantity;
-                $sold_stocks_2[$key]['profit'] = $total_price - $total_cost;
+                $sold_stocks_2[$key]['profit'] = $total_price - $total_cost - $total_charge;
                 $sold_stocks_2[$key]['average_profit'] = $average_profit;
 
                 $sold_total['total_cost'] += $total_cost;
