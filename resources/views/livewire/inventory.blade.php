@@ -257,52 +257,7 @@
                 @endif
             </div>
 
-            @if (request('summery') != 1)
-            @if ($active_inventory_verification != null)
-                <div>
-                    <form class="form-inline" action="{{ url('inventory/add_verification_imei').'/'.$active_inventory_verification->id }}" method="POST" id="wholesale_item">
-                        @csrf
-                        <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
-                        <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
-                        <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
-
-                    </form>
-
-                </div>
-                <script>
-
-                    window.onload = function() {
-                        document.getElementById('imei').focus();
-                    };
-                    document.addEventListener('DOMContentLoaded', function() {
-                        var input = document.getElementById('imei');
-                        input.focus();
-                        input.select();
-                    });
-                </script>
-                <a onclick="window.open('{{url('inventory/verification')}}','print_popup','width=1600,height=600');" class="btn btn-link">Verification Window</a>
-            @endif
-            <div class="">
-                @if ($active_inventory_verification == null)
-                <a class="btn btn-sm btn-secondary pd-x-20 " href="{{url('inventory/start_verification')}}">Start Inventory Verification</a>
-                @if ($last_verification_date > now()->subDays(10))
-
-                    <a class="btn btn-sm btn-secondary pd-x-20 " href="{{url('inventory/resume_verification')}}">Resume Inventory Verification</a>
-                @endif
-
-                <button class="btn btn-sm btn-secondary pd-x-20 " type="submit" form="export" name="inventorysheet" value="1">Export Sheet</button>
-
-                @else
-
-                <form action="{{ url('inventory/end_verification')}}" method="POST" class="form-inline">
-                    @csrf
-                    <input type="text" class="form-control form-control-sm" name="description" value="{{$active_inventory_verification->description}}" placeholder="Enter Reason" id="description" required>
-                    <button class="btn btn-sm btn-primary pd-x-20" type="submit">End Verification</button>
-                </form>
-
-                @endif
-            </div>
-            @else
+            @if (request('summery') == 1)
 
             <button class="btn btn-sm btn-secondary" id="print_btn" onclick="PrintElem('print_inv')"><i class="fa fa-print"></i></button>
             @endif
@@ -427,65 +382,8 @@
         </div>
         @else
 
-        @if ($active_inventory_verification != null)
         <div class="row">
-            <div class="col-xl-12">
-                <div class="card">
-                    <div class="card-header pb-0">
-                        <div class="d-flex justify-content-between">
-                            <h4 class="card-title mg-b-0">Latest Scanned</h4>
-                            <h4 class="card-title mg-b-0">Counter: {{ session('counter') }} <a href="{{ url('inventory/resume_verification?reset_counter=1') }}">Reset</a></h4>
-
-                            <h4 class="card-title mg-b-0">Total Scanned: {{$scanned_total}}</h4>
-                        </div>
-                    </div>
-                    <div class="card-body"><div class="table-responsive" style="max-height: 250px">
-                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
-                                <thead>
-                                    <tr>
-                                        <th><small><b>No</b></small></th>
-                                        <th><small><b>Variation</b></small></th>
-                                        <th><small><b>IMEI | Serial Number</b></small></th>
-                                        <th><small><b>Vendor</b></small></th>
-                                        <th><small><b>Creation Date</b></small></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @php
-                                        $i = 0;
-                                    @endphp
-                                    @foreach ($last_ten as $item)
-                                        <tr>
-                                            @if ($item->stock == null)
-                                                {{$item->stock_id}}
-                                                @continue
-                                            @endif
-                                            <td>{{ $i + 1 }}</td>
-                                            <td>{{ $item->stock->variation->product->model ?? "Variation Model Not added"}} {{$storages[$item->stock->variation->storage] ?? null}} {{$colors[$item->stock->variation->color] ?? null}} {{$grades[$item->stock->variation->grade] ?? "Variation Grade Not added Reference: ".$item->stock->variation->reference_id }}</td>
-                                            <td>{{ $item->stock->imei.$item->stock->serial_number }}</td>
-                                            <td>{{ $item->stock->order->customer->last_name ?? "Purchase Entry Error" }}</td>
-                                            <td style="width:220px">{{ $item->created_at }}</td>
-                                        </tr>
-                                        @php
-                                            $i ++;
-                                        @endphp
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        <br>
-                    </div>
-
-                    </div>
-                </div>
-            </div>
-        </div>
-        @endif
-        <div class="row">
-            <div @if ($active_inventory_verification == null)
-                 class="col-xl-12"
-                 @else
-                 class="col-xl-9"
-            @endif>
+            <div>
                 <div class="card">
                     <div class="card-header pb-0">
                         <div class="d-flex justify-content-between">
@@ -593,57 +491,6 @@
                     </div>
                 </div>
             </div>
-            @if ($active_inventory_verification != null)
-                <div class="col-xl-3">
-                    <div class="card">
-                        <div class="card-header pb-0">
-                            <div class="d-flex justify-content-between">
-                                <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$verified_stocks->firstItem()}} {{ __('locale.To') }} {{$verified_stocks->lastItem()}} {{ __('locale.Out Of') }} {{$verified_stocks->total()}} </h5>
-                            </div>
-                        </div>
-                        <div class="card-body"><div class="table-responsive">
-                                <table class="table table-bordered table-hover mb-0 text-md-nowrap">
-                                    <thead>
-                                        <tr>
-                                            <th><small><b>No</b></small></th>
-                                            <th><small><b>IMEI / Serial Number</b></small></th>
-                                            <th><small><b>Admin</b></small></th>
-
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @php
-                                            $i = $verified_stocks->firstItem() - 1;
-                                        @endphp
-                                        @foreach ($verified_stocks as $index => $verified_stock)
-                                            @php
-                                                $stock = $verified_stock->stock;
-                                            @endphp
-                                            <tr>
-                                                <td title="{{ $verified_stock->id }}">{{ $i + 1 }}</td>
-                                                <td><a title="Search Serial {{ $stock->variation->product->model . " " . (isset($stock->variation->storage) ? $storages[$stock->variation->storage] . " " : null) . " " .
-                                                    (isset($stock->variation->color) ? $colors[$stock->variation->color] . " " : null) . ($stock->variation->grade_id->name ?? '?') . (isset($stock->variation->sub_grade) ? " ".$grades[$stock->variation->sub_grade] : null) }} " href="{{url('imei')."?imei=".$stock->imei.$stock->serial_number}}" target="_blank" @if ($stock->status == 2)
-                                                        class="text-danger"
-                                                    @endif
-                                                    > {{$stock->imei.$stock->serial_number }} </a></td>
-                                                <td>{{ $verified_stock->admin->first_name ?? null }}</td>
-                                            </tr>
-
-                                            @php
-                                                $i ++;
-                                            @endphp
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            <br>
-                            {{ $verified_stocks->onEachSide(1)->links() }} {{ __('locale.From') }} {{$verified_stocks->firstItem()}} {{ __('locale.To') }} {{$verified_stocks->lastItem()}} {{ __('locale.Out Of') }} {{$verified_stocks->total()}}
-                        </div>
-
-                        </div>
-                    </div>
-
-                </div>
-            @endif
         </div>
 
         <div class="modal" id="modaldemo">
