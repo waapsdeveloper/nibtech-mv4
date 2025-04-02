@@ -237,24 +237,6 @@
                 <a href="{{url('inventory_verification/progress')}}?status=3" class="btn btn-link @if (request('status') == 3) bg-white @endif ">Active</a>
                 <a href="{{url('inventory_verification/progress')}}?status=2" class="btn btn-link @if (request('status') == 2) bg-white @endif ">Pending</a>
                 <a href="{{url('inventory_verification/progress')}}" class="btn btn-link @if (request('status') == null) bg-white @endif">All</a>
-                @if (session('user')->hasPermission('view_inventory_summery'))
-                <button class="btn btn-link  @if (request('summery') == 1) bg-white @endif" type="submit" form="summery">Summery</button>
-                <form method="GET" action="" id="summery">
-                    <input type="hidden" name="summery" value="1">
-                    <input type="hidden" name="category" value="{{ Request::get('category') }}">
-                    <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
-                    <input type="hidden" name="product" value="{{ Request::get('product') }}">
-                    <input type="hidden" name="storage" value="{{ Request::get('storage') }}">
-                    <input type="hidden" name="vendor" value="{{ Request::get('vendor') }}">
-                    @if (Request::get('grade'))
-                    @foreach (Request::get('grade') as $grd)
-
-                        <input type="hidden" name="grade[]" value="{{ $grd }}">
-                    @endforeach
-                    @endif
-                    <input type="hidden" name="status" value="{{ Request::get('status') }}">
-                </form>
-                @endif
             </div>
 
             @if (request('summery') != 1)
