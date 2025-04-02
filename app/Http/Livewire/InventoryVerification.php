@@ -465,7 +465,7 @@ class InventoryVerification extends Component
             }
         // dd($data['vendor_average_cost']);
         }
-        return view('livewire.inventory_verification_progress')->with($data);
+        return view('livewire.verification_progress')->with($data);
     }
 
     public function end_verification($id) {
