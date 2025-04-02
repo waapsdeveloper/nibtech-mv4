@@ -767,6 +767,7 @@ class Order extends Component
             $sold_total = [
                 'total_cost' => 0,
                 'total_price' => 0,
+                'total_charge' => 0,
                 'total_profit' => 0,
                 'total_quantity' => 0,
             ];
@@ -843,6 +844,7 @@ class Order extends Component
                 $total_cost = Order_item_model::whereIn('stock_id', $sold_stock['stock_ids'])->where('order_id',$order_id)->sum('price');
                 // $total_cost = 0;
                 $total_price = 0;
+                $total_charge = 0;
                 $total_quantity = 0;
                 foreach($sold_stock['stock_ids'] as $stock_id){
                     $stock = Stock_model::find($stock_id);
@@ -850,28 +852,34 @@ class Order extends Component
                     $last_item = $stock->last_item();
                     if(in_array($last_item->order->order_type_id,[2,3,5])){
                         $total_price += $last_item->price;
+                        $total_charge += $last_item->charges;
                         $total_quantity++;
                     }
                 }
                 // $average_cost = $total_cost/$total_quantity;
                 if($total_quantity == 0){
                     $average_price = "Issue";
+                    $average_charge = "Issue";
                     $average_profit = "Issue";
                 }else{
                     $average_price = $total_price/$total_quantity;
+                    $average_charge = $total_charge/$total_quantity;
                     $average_profit = ($total_price - $total_cost)/$total_quantity;
                 }
                 $sold_stocks_2[$key]['average_cost'] = $average_cost;
                 $sold_stocks_2[$key]['total_cost'] = $total_cost;
                 $sold_stocks_2[$key]['average_price'] = $average_price;
                 $sold_stocks_2[$key]['total_price'] = $total_price;
+                $sold_stocks_2[$key]['average_charge'] = $average_charge;
+                $sold_stocks_2[$key]['total_charge'] = $total_charge;
                 $sold_stocks_2[$key]['sold_quantity'] = $total_quantity;
                 $sold_stocks_2[$key]['profit'] = $total_price - $total_cost;
                 $sold_stocks_2[$key]['average_profit'] = $average_profit;
 
                 $sold_total['total_cost'] += $total_cost;
                 $sold_total['total_price'] += $total_price;
-                $sold_total['total_profit'] += $total_price - $total_cost;
+                $sold_total['total_charge'] += $total_charge;
+                $sold_total['total_profit'] += $total_price - $total_cost - $total_charge;
                 $sold_total['total_quantity'] += $total_quantity;
             }
 
