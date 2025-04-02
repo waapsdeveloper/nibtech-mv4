@@ -117,7 +117,7 @@
                     </select>
                 </div>
                 <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
-                <a href="{{url('inventory')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
+                <a href="{{url('inventory_verification/progress')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
                 <button class="btn btn-primary pd-x-20" name="verify" value="1" type="submit">Verify</button>
             </div>
 
@@ -158,7 +158,7 @@
             function selectBrand(brandId) {
                 // Use the selectedCategoryId variable here to fetch stocks based on both category and brand
                 if (selectedCategoryId !== null) {
-                    fetch("{{ url('inventory') }}/get_products?category=" + selectedCategoryId + "&brand=" + brandId)
+                    fetch("{{ url('inventory_verification/progress') }}/get_products?category=" + selectedCategoryId + "&brand=" + brandId)
                         .then(response => response.json())
                         .then(products => {
                             const productMenu = document.getElementById('product-menu');
@@ -233,10 +233,10 @@
         <div class="d-flex justify-content-between">
             <div>
 
-                <a href="{{url('inventory')}}?status=3&grade[]=1&grade[]=2&grade[]=3&grade[]=5&grade[]=7&grade[]=9" class="btn btn-link @if (request('status') == 3 && request('grade') == [1,2,3,5,7,9]) bg-white @endif ">RTG</a>
-                <a href="{{url('inventory')}}?status=3" class="btn btn-link @if (request('status') == 3) bg-white @endif ">Active</a>
-                <a href="{{url('inventory')}}?status=2" class="btn btn-link @if (request('status') == 2) bg-white @endif ">Pending</a>
-                <a href="{{url('inventory')}}" class="btn btn-link @if (request('status') == null) bg-white @endif">All</a>
+                <a href="{{url('inventory_verification/progress')}}?status=3&grade[]=1&grade[]=2&grade[]=3&grade[]=5&grade[]=7&grade[]=9" class="btn btn-link @if (request('status') == 3 && request('grade') == [1,2,3,5,7,9]) bg-white @endif ">RTG</a>
+                <a href="{{url('inventory_verification/progress')}}?status=3" class="btn btn-link @if (request('status') == 3) bg-white @endif ">Active</a>
+                <a href="{{url('inventory_verification/progress')}}?status=2" class="btn btn-link @if (request('status') == 2) bg-white @endif ">Pending</a>
+                <a href="{{url('inventory_verification/progress')}}" class="btn btn-link @if (request('status') == null) bg-white @endif">All</a>
                 @if (session('user')->hasPermission('view_inventory_summery'))
                 <button class="btn btn-link  @if (request('summery') == 1) bg-white @endif" type="submit" form="summery">Summery</button>
                 <form method="GET" action="" id="summery">
@@ -549,7 +549,7 @@
                                     @foreach ($stocks as $index => $stock)
                                         <tr>
                                             <td title="{{ $stock->id }}">{{ $i + 1 }}</td>
-                                            <td><a title="Filter this variation" href="{{url('inventory').'?product='.$stock->variation->product_id.'&storage='.$stock->variation->storage.'&grade[]='.$stock->variation->grade}}">{{ (isset($stock->variation->product_id) ? $stock->variation->product->model . " " : null). (isset($stock->variation->storage) ? $storages[$stock->variation->storage] . " " : null) . " " .
+                                            <td><a title="Filter this variation" href="{{url('inventory_verification/progress').'?product='.$stock->variation->product_id.'&storage='.$stock->variation->storage.'&grade[]='.$stock->variation->grade}}">{{ (isset($stock->variation->product_id) ? $stock->variation->product->model . " " : null). (isset($stock->variation->storage) ? $storages[$stock->variation->storage] . " " : null) . " " .
                                             (isset($stock->variation->color) ? $colors[$stock->variation->color] . " " : null) . ($grades[$stock->variation->grade] ?? "Grade Issue") . (isset($stock->variation->sub_grade) ? " ".$grades[$stock->variation->sub_grade] : null) }} </a></td>
                                             <td><a title="{{$stock->id}} | Search Serial" href="{{url('imei')."?imei=".$stock->imei.$stock->serial_number}}" target="_blank"> {{$stock->imei.$stock->serial_number }} </a></td>
                                             <td><a title="Vendor Profile" href="{{url('edit-customer').'/'.$stock->order->customer_id}}" target="_blank"> {{ $stock->order->customer->last_name ?? null}} </a></td>
