@@ -284,6 +284,7 @@ Route::post('belfast_inventory/aftersale_action/{id}/{action}', [Inventory::clas
 
 Route::get('inventory_verification', InventoryVerification::class)->name('view_inventory_verifications');
 Route::get('inventory_verification/detail/{id}', [InventoryVerification::class,'verification_detail'])->name('verification_detail');
+Route::get('inventory_verification/progress', [InventoryVerification::class,'verification_progress'])->name('verification_detail');
 
 Route::get('product', Product::class)->name('view_product');
 Route::post('add_product', [Product::class,'add_product'])->name('add_product');
