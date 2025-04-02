@@ -837,6 +837,7 @@ class Order extends Component
                     ];
                 })->values();
 
+            $s_orders = [];
             // Sort the results by quantity in descending order
             $sold_stocks_2 = $groupedResult->sortByDesc('quantity')->toArray();
             foreach($sold_stocks_2 as $key => $sold_stock){
@@ -846,13 +847,22 @@ class Order extends Component
                 $total_price = 0;
                 $total_charge = 0;
                 $total_quantity = 0;
+
                 foreach($sold_stock['stock_ids'] as $stock_id){
                     $stock = Stock_model::find($stock_id);
                     // $total_cost += $stock->purchase_item->price;
                     $last_item = $stock->last_item();
                     if(in_array($last_item->order->order_type_id,[2,3,5])){
                         $total_price += $last_item->price;
-                        $total_charge += $last_item->charges;
+                        if(!in_array($last_item->order_id,$s_orders)){
+                            $s_orders[] = $last_item->order_id;
+                            if($last_item->order->charges != null){
+                                $total_charge += $last_item->order->charges;
+                            }else{
+                                $total_charge += $last_item->order->charges;
+                            }
+                        }
+
                         $total_quantity++;
                     }
                 }
