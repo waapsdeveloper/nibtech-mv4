@@ -122,7 +122,7 @@ class InventoryVerification extends Component
         $data['grades'] = Grade_model::pluck('name','id');
         $data['colors'] = Color_model::pluck('name','id');
 
-        $last_ten = Process_stock_model::where('process_id',$process_id)->where('status',2)->orderBy('id','desc')->limit($per_page)->get();
+        $last_ten = Process_stock_model::where('process_id',$process_id)->where('status',1)->orderBy('id','desc')->limit($per_page)->get();
         $data['last_ten'] = $last_ten;
 
         $processed_stocks = Process_stock_model::where(['process_id'=>$process_id,'status'=>2])->orderByDesc('updated_at')->get();
