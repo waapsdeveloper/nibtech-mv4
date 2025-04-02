@@ -82,10 +82,10 @@ class Order_model extends Model
                 $this->charges = $order_charges->sum('amount');
                 $this->save();
             }
-            if($add == false){
-                $this->charges = null;
-                $this->save();
-            }
+            // if($add == false){
+            //     $this->charges = null;
+            //     $this->save();
+            // }
         }
         return $message;
 
