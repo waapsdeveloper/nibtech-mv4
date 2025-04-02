@@ -236,7 +236,7 @@
                                                 (isset($stock->variation->storage) ? $storages[$stock->variation->storage] . " " : null) . " " . (isset($stock->variation->color) ? $colors[$stock->variation->color] . " " : null) . " " . $grades[$stock->variation->grade] }} </a></td>
                                             <td><a title="Search Serial" href="{{url('imei')."?imei=".$stock->imei.$stock->serial_number}}" target="_blank"> {{$stock->imei.$stock->serial_number }} </a></td>
                                             <td><a title="Vendor Profile" href="{{url('edit-customer').'/'.$stock->order->customer_id}}" target="_blank"> {{ $stock->order->customer->first_name ?? null}} </a> <br> <a title="Purchase Order Details" href="{{url('purchase/detail').'/'.$stock->order_id}}" target="_blank"> {{ $stock->order->reference_id }} </a></td>
-                                            <td><a href="https://www.backmarket.fr/bo_merchant/orders/all?orderId={{ $order->reference_id }}" target="_blank">{{ $order->reference_id }}</a></td>
+                                            <td><a href="https://www.backmarket.fr/bo-seller/orders/all?orderId={{ $order->reference_id }}" target="_blank">{{ $order->reference_id }}</a></td>
                                             @if (session('user')->hasPermission('view_cost'))
                                             <td>{{ $currencies[$stock->order->currency] ?? null }}{{$stock->purchase_item->price ?? null }}</td>
                                             @endif
