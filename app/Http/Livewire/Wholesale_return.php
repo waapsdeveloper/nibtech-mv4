@@ -101,30 +101,30 @@ class Wholesale_return extends Component
 
         $transaction = Account_transaction_model::firstOrNew(['order_id'=>$order_id]);
         if($transaction->id == null && $order->status == 3){
-            $orders = [];
-            foreach($order->order_items as $order_item){
-                if(isset($orders[$order_item->linked->order_id])){
-                    $orders[$order_item->linked->order_id] += $order_item->price;
-                }else{
-                    $orders[$order_item->linked->order_id] = $order_item->price;
-                }
-            }
-            if($order->order_items->sum('price') != array_sum($orders)){
-                dd('error');
-            }
-            foreach($orders as $id => $amount){
-                $parent = Account_transaction_model::where('order_id',$id)->first();
+            // $orders = [];
+            // foreach($order->order_items as $order_item){
+            //     if(isset($orders[$order_item->linked->order_id])){
+            //         $orders[$order_item->linked->order_id] += $order_item->price;
+            //     }else{
+            //         $orders[$order_item->linked->order_id] = $order_item->price;
+            //     }
+            // }
+            // if($order->order_items->sum('price') != array_sum($orders)){
+            //     dd('error');
+            // }
+            // foreach($orders as $id => $amount){
+            //     $parent = Account_transaction_model::where('order_id',$id)->first();
 
                 $transaction = new Account_transaction_model();
                 $transaction->order_id = $order_id;
-                $transaction->amount = $amount;
+                $transaction->amount = $order->order_items->sum('price');
                 $transaction->currency = $order->currency;
                 $transaction->exchange_rate = $order->exchange_rate;
                 $transaction->customer_id = $order->customer_id;
                 $transaction->transaction_type_id = 1;
                 $transaction->status = 1;
                 $transaction->description = $order->reference;
-                $transaction->parent_id = $parent->id;
+                // $transaction->parent_id = $parent->id;
                 $transaction->created_by = session('user_id');
                 $transaction->date = $order->created_at;
                 // $transaction->created_at = $order->created_at;
@@ -132,7 +132,7 @@ class Wholesale_return extends Component
                 $transaction->save();
                 $transaction->reference_id = $transaction->id + 300000;
                 $transaction->save();
-            }
+            // }
 
             // $transaction->amount = $order->order_items->sum('price');
             // $transaction->currency = $order->currency;
