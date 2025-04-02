@@ -2370,7 +2370,7 @@ class Order extends Component
                     document.body.removeChild(el);
                 });
 
-                window.open("https://backmarket.fr/bo_merchant/orders/all?orderId='.$order->reference_id.'", "_blank");
+                window.open("https://backmarket.fr/bo-seller/orders/all?orderId='.$order->reference_id.'", "_blank");
             </script>';
         }
 
@@ -2632,7 +2632,7 @@ class Order extends Component
 
             // JavaScript to open two tabs and print
             echo '<script>
-            window.open("https://backmarket.fr/bo_merchant/orders/all?orderId='.$order->reference_id.'", "_blank");
+            window.open("https://backmarket.fr/bo-seller/orders/all?orderId='.$order->reference_id.'", "_blank");
             window.location.href = document.referrer;
             </script>';
         }else{

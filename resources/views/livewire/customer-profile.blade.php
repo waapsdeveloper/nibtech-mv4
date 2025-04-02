@@ -247,13 +247,13 @@
                                                     @elseif ($batch->order_type_id == 5 && $batch->reference_id != 999)
                                                         <a href="{{url('wholesale/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a>
                                                     @elseif ($batch->order_type_id == 5 && $batch->reference_id == 999)
-                                                        <a href="https://www.backmarket.fr/bo_merchant/orders/all?orderId={{ $item->reference_id }}" target="_blank">Replacement <br> {{ $item->reference_id }}</a>
+                                                        <a href="https://www.backmarket.fr/bo-seller/orders/all?orderId={{ $item->reference_id }}" target="_blank">Replacement <br> {{ $item->reference_id }}</a>
                                                     @elseif ($batch->order_type_id == 4)
                                                         <a href="{{url('return/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a>
                                                     @elseif ($batch->order_type_id == 6)
                                                         <a href="{{url('wholesale_return/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a>
                                                     @elseif ($batch->order_type_id == 3)
-                                                        <a href="https://www.backmarket.fr/bo_merchant/orders/all?orderId={{ $batch->reference_id }}" target="_blank">{{ $batch->reference_id }}</a>
+                                                        <a href="https://www.backmarket.fr/bo-seller/orders/all?orderId={{ $batch->reference_id }}" target="_blank">{{ $batch->reference_id }}</a>
                                                     @elseif ($batch->process_type_id == 9)
                                                         <a href="{{url('repair/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a>
                                                     @endif
