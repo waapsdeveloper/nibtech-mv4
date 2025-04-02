@@ -23,6 +23,7 @@
                 {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">BulkSale</span> --}}
                 <a href="{{url('inventory/start_verification')}}" class="btn btn-success float-right" data-bs-target="#modaldemo"
                 data-bs-toggle="modal"><i class="mdi mdi-plus"></i> New Verification </a>
+                <a href="{{url('inventory_verification/progress')}}" class="btn btn-primary float-right"> Verification Progress </a>
 
                 </div>
                 <div class="justify-content-center mt-2">
