@@ -190,8 +190,8 @@
                 <a href="{{url('purchase/detail')."/".$order->id}}?status=2" class="btn btn-link @if (request('status') == 2) bg-white @endif ">Sold</a>
                 <a href="{{url('purchase/detail')."/".$order->id}}" class="btn btn-link @if (!request('status')) bg-white @endif " >All</a>
                 @if (session('user')->hasPermission('view_purchase_summery'))
-                <a href="{{url('purchase/detail')."/".$order->id}}?summery=1" class="btn btn-link @if (request('summery') == 1) bg-white @endif ">PnL</a>
                 <a href="{{url('purchase/detail')."/".$order->id}}?summery=2" class="btn btn-link @if (request('summery') == 2) bg-white @endif ">Summery</a>
+                <a href="{{url('purchase/detail')."/".$order->id}}?summery=1" class="btn btn-link @if (request('summery') == 1) bg-white @endif ">P&L</a>
 
                 @endif
             </div>
@@ -215,6 +215,7 @@
                                 <th><small><b>Model</b></small></th>
                                 <th><small><b>Quantity</b></small></th>
                                 <th><small><b>Cost</b></small></th>
+                                <th><small><b>Charge</b></small></th>
                                 <th><small><b>Price</b></small></th>
                                 <th><small><b>Profit</b></small></th>
                             </tr>
@@ -229,6 +230,7 @@
                                     <td>{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</td>
                                     <td>{{ $summery['quantity'] }}</td>
                                     <td title="{{ $summery['average_cost'] }}">{{ amount_formatter($summery['total_cost'],2) }}</td>
+                                    <td title="{{ $summery['average_charge'] }}">{{ amount_formatter($summery['total_charge'],2) }}</td>
                                     <td title="{{ $summery['average_price'] }}">{{ amount_formatter($summery['total_price'],2) }}</td>
                                     <td title="{{ $summery['average_profit'] }}">{{ amount_formatter($summery['profit'],2) }}</td>
                                 </tr>
