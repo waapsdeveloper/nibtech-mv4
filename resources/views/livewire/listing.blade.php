@@ -269,7 +269,7 @@
                                 $listed_stock = $variation->update_qty($bm);
                             @endphp
                             <h5>
-                                <a href="https://www.backmarket.fr/bo_merchant/listings/active?sku={{ $sku }}" title="View BM Ad" target="_blank">
+                                <a href="https://www.backmarket.fr/bo-seller/listings/active?sku={{ $sku }}" title="View BM Ad" target="_blank">
                             {{ $variation->sku." - ".$variation->product->model." ".$storage." ".$color." ".$grade }}
                             </a>
                             </h5>

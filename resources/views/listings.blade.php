@@ -955,7 +955,7 @@
                                 <div class="card-header py-0 d-flex justify-content-between">
                                     <div>
                                         <h5>
-                                            <a href="https://www.backmarket.fr/bo_merchant/listings/active?sku=${variation.sku}" title="View BM Ad" target="_blank">
+                                            <a href="https://www.backmarket.fr/bo-seller/listings/active?sku=${variation.sku}" title="View BM Ad" target="_blank">
                                                 <span style="background-color: ${colors[variation.color]}; width: 30px; height: 16px; display: inline-block;"></span>
                                                 ${variation.sku} - ${variation.product.model} ${storages[variation.storage] || ''} ${colors[variation.color] || ''} ${grades[variation.grade] || ''}
                                             </a>
