@@ -204,7 +204,7 @@ class Customer extends Component
         }
         $data['totals'][] = [
             'type' => 'Total',
-            'total_price' => - $total_purchase + $total_rma + $total_ws - $total_ws_return + $total_payment_received - $total_payment_sent,
+            'total_price' => - $total_purchase + $total_rma + $total_ws - $total_ws_return - $total_payment_received + $total_payment_sent,
             'total_items' => - $total_purchase_items + $total_rma_items + $total_ws_items - $total_ws_return_items,
             'total_orders' => $total_purchase_orders + $total_rma_orders + $total_ws_orders + $total_ws_return_orders,
         ];
