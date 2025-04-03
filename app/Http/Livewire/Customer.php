@@ -115,27 +115,44 @@ class Customer extends Component
         ->orderBy('id', 'desc')
         ->get();
 
+        $payments = Account_transaction_model::where('customer_id',$id)
+        ->when(request('start_date') != '', function ($q) {
+            return $q->whereDate('created_at', '>=', request('start_date'));
+        })
+        ->when(request('end_date') != '', function ($q) {
+            return $q->whereDate('created_at', '<=', request('end_date') . ' 23:59:59');
+        })
+        ->where('payment_method_id', '!=', null)
+        ->orderBy('date','desc')->get();
+
+
         $data['currencies'] = Currency_model::all();
 
 
         $data['customer'] = $customer;
         $data['orders'] = $orders;
         $data['repairs'] = $repairs;
+        $data['payments'] = $payments;
 
         $total_purchase = $orders->where('order_type_id', 1)->sum('order_items_sum_price');
         $total_rma = $orders->where('order_type_id', 2)->sum('order_items_sum_price');
         $total_ws = $orders->where('order_type_id', 5)->sum('order_items_sum_price');
         $total_ws_return = $orders->where('order_type_id', 6)->sum('order_items_sum_price');
+        $total_payment_received = $payments->where('transaction_type_id', 1)->sum('amount');
+        $total_payment_sent = $payments->where('transaction_type_id', 2)->sum('amount');
 
         $total_purchase_items = $orders->where('order_type_id', 1)->sum('order_items_count');
         $total_rma_items = $orders->where('order_type_id', 2)->sum('order_items_count');
         $total_ws_items = $orders->where('order_type_id', 5)->sum('order_items_count');
         $total_ws_return_items = $orders->where('order_type_id', 6)->sum('order_items_count');
 
+
         $total_purchase_orders = $orders->where('order_type_id', 1)->count();
         $total_rma_orders = $orders->where('order_type_id', 2)->count();
         $total_ws_orders = $orders->where('order_type_id', 5)->count();
         $total_ws_return_orders = $orders->where('order_type_id', 6)->count();
+        $total_payment_received_counts = $payments->where('transaction_type_id', 1)->count();
+        $total_payment_sent_counts = $payments->where('transaction_type_id', 2)->count();
 
         if($total_purchase_orders > 0){
             $data['totals'][] = [
@@ -169,9 +186,25 @@ class Customer extends Component
                 'total_orders' => $total_ws_return_orders,
             ];
         }
+        if($total_payment_received_counts > 0){
+            $data['totals'][] = [
+                'type' => 'PayIn',
+                'total_price' => $total_payment_received,
+                'total_items' => null,
+                'total_orders' => $total_payment_received_counts,
+            ];
+        }
+        if($total_payment_sent_counts > 0){
+            $data['totals'][] = [
+                'type' => 'PayOut',
+                'total_price' => - $total_payment_sent,
+                'total_items' => null,
+                'total_orders' => $total_payment_sent_counts,
+            ];
+        }
         $data['totals'][] = [
             'type' => 'Total',
-            'total_price' => - $total_purchase + $total_rma + $total_ws - $total_ws_return,
+            'total_price' => - $total_purchase + $total_rma + $total_ws - $total_ws_return + $total_payment_received - $total_payment_sent,
             'total_items' => - $total_purchase_items + $total_rma_items + $total_ws_items - $total_ws_return_items,
             'total_orders' => $total_purchase_orders + $total_rma_orders + $total_ws_orders + $total_ws_return_orders,
         ];
