@@ -236,13 +236,13 @@ class StockSummeryExport
                         // $pdf->MultiCell(18, 6, $this->bold($data['graded_average_price'][1] ?? 0), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
                         // Very Good Grade
-                        $pdf->MultiCell(21, 6, $this->bold($data['graded_average_price'][2] ?? 0), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                        $pdf->MultiCell(21, 6, $this->bold($data['graded_average_price'][2] ?? 0, $sign), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
                         // Good Grade
-                        $pdf->MultiCell(21, 6, $this->bold($data['graded_average_price'][3] ?? 0), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                        $pdf->MultiCell(21, 6, $this->bold($data['graded_average_price'][3] ?? 0, $sign), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
                         // Stallone Grade (Grade 5)
-                        $pdf->MultiCell(21, 6, $this->bold($data['graded_average_price'][5] ?? 0), 1, 'C', false, 1, '', '', true, 0, false, true, 6, 'T', true);
+                        $pdf->MultiCell(21, 6, $this->bold($data['graded_average_price'][5] ?? 0, $sign), 1, 'C', false, 1, '', '', true, 0, false, true, 6, 'T', true);
                     }
                 }
 
