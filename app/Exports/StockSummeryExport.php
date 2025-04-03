@@ -129,6 +129,18 @@ class StockSummeryExport
                     $pdf->Ln(); // Move to the next line
                 foreach($datas as $data) {
                     $i++;
+                    if ($i == 43) {
+                        $pdf->AddPage();
+                        $pdf->SetFont('times', 'B', 10);
+                        $pdf->Cell(8, 0, 'No');
+                        $pdf->Cell(84, 0, 'Model');
+                        $pdf->Cell(14, 0, 'Count', 0, 0, 'C');
+                        $pdf->Cell(21, 0, 'Average', 0, 0, 'C');
+                        $pdf->Cell(21, 0, 'A+', 0, 0, 'C');
+                        $pdf->Cell(21, 0, 'A/A-', 0, 0, 'C');
+                        $pdf->Cell(21, 0, 'B+', 0, 0, 'C');
+                        $pdf->Ln(); // Move to the next line
+                    }
 
                     // Set line style for borders
                     $pdf->SetLineStyle(['width' => 0.1, 'color' => [0, 0, 0]]);
