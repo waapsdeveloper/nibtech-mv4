@@ -168,7 +168,7 @@ class StockSummeryExport
                     $pdf->Ln(); // Move to the next line
                 foreach($datas as $data) {
                     $i++;
-                    if ($i == 43) {
+                    if (($i - 1) % 42 == 0) {
                         $pdf->AddPage();
                         $pdf->SetFont('times', 'B', 10);
                         if ($type == 'cost') {
