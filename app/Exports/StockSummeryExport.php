@@ -83,7 +83,7 @@ class StockSummeryExport
                         continue;
                     }
                     $data['average_cost'] += $purchase_item->price;
-                    $data['average_price'] += $purchase_item->price*0.06+$purchase_item->price;
+                    $data['average_price'] += ($purchase_item->price*0.06+$purchase_item->price) * $exchange_rate;
                     $data['stock_count']++;
                     if(!isset($data['graded_average_cost'][$variation->grade])){
                         $data['graded_average_cost'][$variation->grade] = 0;
@@ -95,7 +95,7 @@ class StockSummeryExport
                         $data['graded_stock_count'][$variation->grade] = 0;
                     }
                     $data['graded_average_cost'][$variation->grade] += $purchase_item->price;
-                    $data['graded_average_price'][$variation->grade] += $purchase_item->price*0.06+$purchase_item->price;
+                    $data['graded_average_price'][$variation->grade] += ($purchase_item->price*0.06+$purchase_item->price) * $exchange_rate;
                     $data['graded_stock_count'][$variation->grade]++;
                 }
             }
