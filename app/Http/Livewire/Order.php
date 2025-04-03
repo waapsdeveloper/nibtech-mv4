@@ -886,7 +886,7 @@ class Order extends Component
                 }else{
                     $average_price = $total_price/$total_quantity;
                     $average_charge = $total_charge/$total_quantity;
-                    $average_profit = ($total_price - $total_cost)/$total_quantity;
+                    $average_profit = ($total_price - $total_cost - $total_charge - $total_repair)/$total_quantity;
                 }
                 $sold_stocks_2[$key]['average_cost'] = $average_cost;
                 $sold_stocks_2[$key]['total_cost'] = $total_cost;
