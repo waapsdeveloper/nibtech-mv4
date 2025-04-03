@@ -115,13 +115,13 @@ class StockSummeryExport
                 // Add headings
                 $pdf->SetFont('times', 'B', 10);
                 $pdf->Cell(8, 0, 'No');
-                $pdf->Cell(80, 0, 'Model');
-                $pdf->Cell(12, 0, 'Count');
-                $pdf->Cell(18, 0, 'Average');
+                $pdf->Cell(84, 0, 'Model');
+                $pdf->Cell(14, 0, 'Count', 0, 0, 'C');
+                $pdf->Cell(21, 0, 'Average', 0, 0, 'C');
                 // $pdf->Cell(18, 0, 'Premium');
-                $pdf->Cell(18, 0, 'A+');
-                $pdf->Cell(18, 0, 'A/A-');
-                $pdf->Cell(18, 0, 'B+');
+                $pdf->Cell(21, 0, 'A+', 0, 0, 'C');
+                $pdf->Cell(21, 0, 'A/A-', 0, 0, 'C');
+                $pdf->Cell(21, 0, 'B+', 0, 0, 'C');
 
                 $i = 0;
                 // Set font for data
@@ -137,27 +137,27 @@ class StockSummeryExport
                     $pdf->MultiCell(8, 6, $i, 1, 'L', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
                     // Model Name (wraps text if too long)
-                    $pdf->MultiCell(80, 6, $data['model'], 1, 'L', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                    $pdf->MultiCell(84, 6, $data['model'], 1, 'L', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
                     $pdf->SetFont('times', 'B', 12);
                     // Stock count
-                    $pdf->MultiCell(12, 6, $data['stock_count'], 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                    $pdf->MultiCell(14, 6, $data['stock_count'], 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
                     // Average cost
-                    $pdf->MultiCell(18, 6, '€ '.number_format($data['average_price'], 2), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                    $pdf->MultiCell(21, 6, '€ '.number_format($data['average_price'], 2), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
                     $pdf->SetFont('times', '', 12);
                     // Premium Grade
                     // $pdf->MultiCell(18, 6, $this->bold($data['graded_average_price'][1] ?? 0), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
                     // Very Good Grade
-                    $pdf->MultiCell(18, 6, $this->bold($data['graded_average_price'][2] ?? 0), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                    $pdf->MultiCell(21, 6, $this->bold($data['graded_average_price'][2] ?? 0), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
                     // Good Grade
-                    $pdf->MultiCell(18, 6, $this->bold($data['graded_average_price'][3] ?? 0), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                    $pdf->MultiCell(21, 6, $this->bold($data['graded_average_price'][3] ?? 0), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
                     // Stallone Grade (Grade 5)
-                    $pdf->MultiCell(18, 6, $this->bold($data['graded_average_price'][5] ?? 0), 1, 'C', false, 1, '', '', true, 0, false, true, 6, 'T', true);
+                    $pdf->MultiCell(21, 6, $this->bold($data['graded_average_price'][5] ?? 0), 1, 'C', false, 1, '', '', true, 0, false, true, 6, 'T', true);
                 }
 
             }
