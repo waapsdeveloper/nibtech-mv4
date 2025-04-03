@@ -46,7 +46,17 @@
 						<span class="main-content-title mg-b-0 mg-b-lg-1">{{ __('locale.Dashboards') }}</span>
 						</div>
                         @if (session('user')->hasPermission('available_stock_cost_summery'))
-                            <a href="{{ url('index/stock_cost_summery') }}" target="_blank" class="btn btn-sm btn-primary">Stock Cost Summery</a>
+                        {{-- Dropdown Summery --}}
+                        <div class="dropdown d-flex">
+                            <button class="btn btn-primary btn-sm me-2" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                Stock Cost | Price Summery
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <li><a class="dropdown-item" href="{{ url('index/stock_cost_summery') }}">€ Cost</a></li>
+                                <li><a class="dropdown-item" href="{{ url('index/stock_cost_summery') }}?type=price">€ Price</a></li>
+                                <li><a class="dropdown-item" href="{{ url('index/stock_cost_summery') }}?type=price&currency=5">£ Price</a></li>
+                            </ul>
+                        </div>
 
                         @endif
 						<div class="justify-content-center mt-2">
