@@ -175,14 +175,14 @@
                     $total += $amount;
 
                     if($transaction->order != null){
-                        $type = $transaction->order->order_type->name;
+                        $type = $transaction->order->order_type->name ?? "Error";
                         $order = $transaction->order->reference_id;
                     }elseif ($transaction->process != null) {
-                        $type = $transaction->process->process_type->name;
+                        $type = $transaction->process->process_type->name ?? "Error";
                         $order = $transaction->process->reference_id;
                     }else{
                         # code...
-                        $type = $transaction->payment_method->name;
+                        $type = $transaction->payment_method->name ?? "Error";
                         $order = $transaction->reference_id;
                     }
 

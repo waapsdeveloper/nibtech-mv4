@@ -1060,7 +1060,7 @@ class Index extends Component
             $message = '';
             foreach($result as $category => $brnds){
                 foreach($brnds as $brand => $data){
-                    $message .= $categories[$category].' - '.$brands[$brand].'<br>';
+                    $message .= '<strong>'.$categories[$category].' - '.$brands[$brand].'</strong><br>';
                     foreach($data as $key => $value){
                         if($value['stock_count'] == 0){
                             unset($result[$category][$brand][$key]);
