@@ -215,6 +215,7 @@
                                 <th><small><b>Model</b></small></th>
                                 <th><small><b>Quantity</b></small></th>
                                 <th><small><b>Cost</b></small></th>
+                                <th><small><b>Repair</b></small></th>
                                 <th><small><b>Charge</b></small></th>
                                 <th><small><b>Price</b></small></th>
                                 <th><small><b>Profit</b></small></th>
