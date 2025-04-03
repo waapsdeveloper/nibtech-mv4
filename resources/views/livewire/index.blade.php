@@ -52,9 +52,11 @@
                                 Stock Cost | Price Summery
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                <li><a class="dropdown-item" href="{{ url('index/stock_cost_summery') }}">€ Cost</a></li>
-                                <li><a class="dropdown-item" href="{{ url('index/stock_cost_summery') }}?type=price">€ Price</a></li>
-                                <li><a class="dropdown-item" href="{{ url('index/stock_cost_summery') }}?type=price&currency=5">£ Price</a></li>
+                                <li><a class="dropdown-item" href="{{ url('index/stock_cost_summery') }}" target="_BLANK">€ Cost</a></li>
+                                <li><a class="dropdown-item" href="{{ url('index/stock_cost_summery') }}?type=price" target="_BLANK">€ Price</a></li>
+                                <li><a class="dropdown-item" href="{{ url('index/stock_cost_summery') }}?type=price&currency=5" target="_BLANK">£ Price</a></li>
+                                <li><a class="dropdown-item" href="{{ url('index/stock_cost_summery') }}?type=price_text&currency=5" target="_BLANK">£ Price Text</a></li>
+
                             </ul>
                         </div>
 
