@@ -18,6 +18,7 @@ use App\Models\Products_model;
 use App\Models\Color_model;
 use App\Models\Currency_model;
 use App\Models\Customer_model;
+use App\Models\ExchangeRate;
 use App\Models\Storage_model;
 use App\Models\Grade_model;
 use App\Models\Ip_address_model;
@@ -948,6 +949,116 @@ class Index extends Component
 
     public function stock_cost_summery(){
 
+
+        if (request()->has('type')) {
+            $type = request()->get('type');
+        } else {
+            $type = 'cost';
+        }
+        if (request()->has('currency')) {
+            $currency = request()->get('currency');
+        } else {
+            $currency = 4;
+            $sign = '€';
+        }
+        if ($currency != 4) {
+            $curr = Currency_model::find($currency);
+            $exchange_rate = ExchangeRate::where('target_currency', $curr->code)->first();
+            if ($exchange_rate) {
+                $exchange_rate = $exchange_rate->rate;
+                $sign = $curr->sign;
+            } else {
+                $exchange_rate = 1;
+                $sign = '€';
+            }
+
+        }
+
+        $grades = [1,2,3,4,5];
+
+        $categories = Category_model::pluck('name','id');
+        $brands = Brand_model::pluck('name','id');
+        $grade_names = Grade_model::whereIn('id', $grades)->pluck('name','id');
+        $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q){
+            $q->where('stock.status',1);
+        })
+        ->join('products', 'product_storage_sort.product_id', '=', 'products.id')
+        ->orderBy('products.model')
+        // ->orderBy('product_id')
+        ->orderBy('product_storage_sort.storage')
+        ->select('product_storage_sort.*')
+        ->with(['product','stocks' => function($q){
+            $q->where('stock.status',1);
+        }, 'stocks.variation'])
+        ->get();
+
+        $result = [];
+        foreach($product_storage_sort as $pss){
+            $product = $pss->product;
+            $storage = $pss->storage_id->name ?? null;
+            $data = [];
+            $data['model'] = $product->model.' '.$storage;
+            $data['stock_count'] = 0;
+            $data['average_cost'] = 0;
+            $data['average_price'] = 0;
+            $data['graded_average_cost'] = [];
+            $data['graded_average_price'] = [];
+            $data['graded_stock_count'] = [];
+
+            // print_r($pss->stocks->where('status',1));
+            foreach($pss->stocks->where('status',1) as $stock){
+                $variation = $stock->variation;
+                if(in_array($variation->grade, $grades)){
+                    $purchase_item = $stock->order_items->where('order_id',$stock->order_id)->first();
+                    if($purchase_item == null){
+                        echo 'Purchase item not found for stock id: '.$stock->id;
+                        continue;
+                    }
+                    $data['average_cost'] += $purchase_item->price;
+                    $data['average_price'] += ($purchase_item->price*0.06+$purchase_item->price) * $exchange_rate;
+                    $data['stock_count']++;
+                    if(!isset($data['graded_average_cost'][$variation->grade])){
+                        $data['graded_average_cost'][$variation->grade] = 0;
+                    }
+                    if(!isset($data['graded_average_price'][$variation->grade])){
+                        $data['graded_average_price'][$variation->grade] = 0;
+                    }
+                    if(!isset($data['graded_stock_count'][$variation->grade])){
+                        $data['graded_stock_count'][$variation->grade] = 0;
+                    }
+                    $data['graded_average_cost'][$variation->grade] += $purchase_item->price;
+                    $data['graded_average_price'][$variation->grade] += ($purchase_item->price*0.06+$purchase_item->price) * $exchange_rate;
+                    $data['graded_stock_count'][$variation->grade]++;
+                }
+            }
+            if($data['stock_count'] == 0){
+                continue;
+            }
+            $data['average_cost'] = $data['average_cost']/$data['stock_count'];
+            foreach($grades as $grade){
+                if(!isset($data['graded_average_cost'][$grade])){
+                    continue;
+                }
+                if(!isset($data['graded_stock_count'][$grade])){
+                    continue;
+                }
+                $data['graded_average_cost'][$grade] = $data['graded_average_cost'][$grade]/$data['graded_stock_count'][$grade];
+            }
+            $data['average_price'] = $data['average_price']/$data['stock_count'];
+            foreach($grades as $grade){
+                if(!isset($data['graded_average_price'][$grade])){
+                    continue;
+                }
+                if(!isset($data['graded_stock_count'][$grade])){
+                    continue;
+                }
+                $data['graded_average_price'][$grade] = $data['graded_average_price'][$grade]/$data['graded_stock_count'][$grade];
+            }
+            $result[$product->category][$product->brand][] = $data;
+        }
+
+        print_r($result);
+        die();
         $pdf = new StockSummeryExport();
         $pdf->generatePdf();
 
