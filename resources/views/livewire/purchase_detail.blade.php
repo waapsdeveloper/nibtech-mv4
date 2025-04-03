@@ -230,6 +230,7 @@
                                     <td>{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</td>
                                     <td>{{ $summery['quantity'] }}</td>
                                     <td title="{{ $summery['average_cost'] }}">€{{ amount_formatter($summery['total_cost'],2) }}</td>
+                                    <td>€{{ amount_formatter($summery['total_repair']) }}</td>
                                     <td title="{{ $summery['average_charge'] }}">€{{ amount_formatter($summery['total_charge'],2) }}</td>
                                     <td title="{{ $summery['average_price'] }}">€{{ amount_formatter($summery['total_price'],2) }}</td>
                                     <td title="{{ $summery['average_profit'] }}">€{{ amount_formatter($summery['profit'],2) }}</td>
@@ -243,6 +244,7 @@
                                 <th><b>Total</b></th>
                                 <th><b>{{ $sold_total['total_quantity'] }}</b></th>
                                 <th><b>€{{ amount_formatter($sold_total['total_cost'],2) }}</b></th>
+                                <th><b>€{{ amount_formatter($sold_total['total_repair'],2) }}</b></th>
                                 <th><b>€{{ amount_formatter($sold_total['total_charge'],2) }}</b></th>
                                 <th><b>€{{ amount_formatter($sold_total['total_price'],2) }}</b></th>
                                 <th><b>€{{ amount_formatter($sold_total['total_profit'],2) }}</b></th>
