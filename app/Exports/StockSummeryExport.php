@@ -172,6 +172,7 @@ class StockSummeryExport
                         $pdf->AddPage();
                         $pdf->SetFont('times', 'B', 10);
                         if ($type == 'cost') {
+                            $pdf->Cell(8, 0, 'No');
                             $pdf->Cell(80, 0, 'Model');
                             $pdf->Cell(12, 0, 'Count', 0, 0, 'C');
                             $pdf->Cell(18, 0, 'Average', 0, 0, 'C');
@@ -180,6 +181,7 @@ class StockSummeryExport
                             $pdf->Cell(18, 0, 'Good', 0, 0, 'C');
                             $pdf->Cell(18, 0, 'Stallone', 0, 0, 'C');
                         } else {
+                            $pdf->Cell(8, 0, 'No');
                             $pdf->Cell(84, 0, 'Model');
                             $pdf->Cell(14, 0, 'Count', 0, 0, 'C');
                             $pdf->Cell(21, 0, 'Average', 0, 0, 'C');
