@@ -30,7 +30,7 @@ class StockSummeryExport
         // ->orderBy('product_id')
         ->orderBy('product_storage_sort.storage')
         ->select('product_storage_sort.*')
-        ->with(['product','product.category','product.brand','stocks' => function($q){
+        ->with(['product','product.category_id','product.brand_id','stocks' => function($q){
             $q->where('status',1);
         }, 'stocks.variation' => function($q) use($grades){
             $q->whereIn('grade',$grades);
