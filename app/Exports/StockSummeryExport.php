@@ -4,6 +4,7 @@ namespace App\Exports;
 
 use App\Models\Brand_model;
 use App\Models\Category_model;
+use App\Models\Currency_model;
 use App\Models\ExchangeRate;
 use App\Models\Grade_model;
 use App\Models\Product_storage_sort_model;
@@ -26,9 +27,19 @@ class StockSummeryExport
             $currency = request()->get('currency');
         } else {
             $currency = 4;
+            $sign = '€';
         }
         if ($currency != 4) {
             $curr = Currency_model::find($currency);
+            $exchange_rate = ExchangeRate::where('target_currency', $curr->code)->first();
+            if ($exchange_rate) {
+                $exchange_rate = $exchange_rate->rate;
+                $sign = $curr->sign;
+            } else {
+                $exchange_rate = 1;
+                $sign = '€';
+            }
+
         }
 
         $grades = [1,2,3,4,5];
@@ -195,20 +206,20 @@ class StockSummeryExport
                         $pdf->MultiCell(12, 6, $data['stock_count'], 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
                         // Average cost
-                        $pdf->MultiCell(18, 6, '€ '.number_format($data['average_price'], 2), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                        $pdf->MultiCell(18, 6, $sign.' '.number_format($data['average_price'], 2), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
                         $pdf->SetFont('times', '', 12);
                         // Premium Grade
-                        $pdf->MultiCell(18, 6, $this->bold($data['graded_average_price'][1] ?? 0), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                        $pdf->MultiCell(18, 6, $this->bold($data['graded_average_price'][1] ?? 0, $sign), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
                         // Very Good Grade
-                        $pdf->MultiCell(18, 6, $this->bold($data['graded_average_price'][2] ?? 0), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                        $pdf->MultiCell(18, 6, $this->bold($data['graded_average_price'][2] ?? 0, $sign), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
                         // Good Grade
-                        $pdf->MultiCell(18, 6, $this->bold($data['graded_average_price'][3] ?? 0), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                        $pdf->MultiCell(18, 6, $this->bold($data['graded_average_price'][3] ?? 0, $sign), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
                         // Stallone Grade (Grade 5)
-                        $pdf->MultiCell(18, 6, $this->bold($data['graded_average_price'][5] ?? 0), 1, 'C', false, 1, '', '', true, 0, false, true, 6, 'T', true);
+                        $pdf->MultiCell(18, 6, $this->bold($data['graded_average_price'][5] ?? 0, $sign), 1, 'C', false, 1, '', '', true, 0, false, true, 6, 'T', true);
                     } else {
                         // Model Name (wraps text if too long)
                         $pdf->MultiCell(84, 6, $data['model'], 1, 'L', false, 0, '', '', true, 0, false, true, 6, 'T', true);
@@ -218,7 +229,7 @@ class StockSummeryExport
                         $pdf->MultiCell(14, 6, $data['stock_count'], 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
                         // Average cost
-                        $pdf->MultiCell(21, 6, '€ '.number_format($data['average_price'], 2), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                        $pdf->MultiCell(21, 6, $sign.' '.number_format($data['average_price'], 2), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
                         $pdf->SetFont('times', '', 12);
                         // Premium Grade
@@ -242,9 +253,9 @@ class StockSummeryExport
     }
 
     // Custom function for ellipsizing text
-    private function bold($text) {
+    private function bold($text, $sign) {
         if ($text != 0) {
-            $text = '€ '.number_format($text,2);
+            $text = $sign.' '.number_format($text,2);
         } else {
             $text = '-';
         }
