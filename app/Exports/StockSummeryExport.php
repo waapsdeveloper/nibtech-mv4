@@ -32,9 +32,7 @@ class StockSummeryExport
         ->select('product_storage_sort.*')
         ->with(['product','stocks' => function($q){
             $q->where('stock.status',1);
-        }, 'stocks.variation' => function($q) use($grades){
-            $q->whereIn('variations.grade',$grades);
-        }])
+        }, 'stocks.variation'])
         ->get();
 
         $result = [];
