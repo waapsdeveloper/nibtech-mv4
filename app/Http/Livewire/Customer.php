@@ -239,6 +239,7 @@ class Customer extends Component
             ->when(request('end_date') != '', function ($q) {
                 return $q->whereDate('created_at', '<=', request('end_date') . ' 23:59:59');
             })
+            ->with(['transaction_type', 'payment_method', 'order', 'process'])
             ->orderBy('date','desc')->get();
             $data['transactions'] = $transactions;
 
