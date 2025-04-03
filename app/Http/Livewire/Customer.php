@@ -117,10 +117,10 @@ class Customer extends Component
 
         $payments = Account_transaction_model::where('customer_id',$id)
         ->when(request('start_date') != '', function ($q) {
-            return $q->whereDate('created_at', '>=', request('start_date'));
+            return $q->whereDate('date', '>=', request('start_date'));
         })
         ->when(request('end_date') != '', function ($q) {
-            return $q->whereDate('created_at', '<=', request('end_date') . ' 23:59:59');
+            return $q->whereDate('date', '<=', request('end_date') . ' 23:59:59');
         })
         ->where('payment_method_id', '!=', null)
         ->orderBy('date','desc')->get();
