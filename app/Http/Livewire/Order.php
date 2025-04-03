@@ -1587,6 +1587,10 @@ class Order extends Component
         $variation = Variation_model::find($variation_id);
         if(request('price')){
             $price = request('price');
+            if(!is_numeric($price)){
+                session()->put('error', "Formula in Cost is not Allowed");
+                return redirect()->back();
+            }
         }
         if(request('v_grade')){
             $v_grade = request('v_grade');
