@@ -766,6 +766,7 @@ class Order extends Component
         if(request('summery') == 1){
             $sold_total = [
                 'total_cost' => 0,
+                'total_repair' => 0,
                 'total_price' => 0,
                 'total_charge' => 0,
                 'total_profit' => 0,
@@ -844,6 +845,7 @@ class Order extends Component
                 $average_cost = Order_item_model::whereIn('stock_id', $sold_stock['stock_ids'])->where('order_id',$order_id)->avg('price');
                 $total_cost = Order_item_model::whereIn('stock_id', $sold_stock['stock_ids'])->where('order_id',$order_id)->sum('price');
                 // $total_cost = 0;
+                $total_repair = 0;
                 $total_price = 0;
                 $total_charge = 0;
                 $total_quantity = 0;
@@ -865,6 +867,16 @@ class Order extends Component
 
                         $total_quantity++;
                     }
+
+                    $process_stocks = $stock->process_stocks;
+                    if($process_stocks != null){
+                        foreach($process_stocks as $process_stock){
+                            if($process_stock->process->process_type_id == 9 && $process_stock->status == 2){
+                                $total_repair += $process_stock->price;
+                            }
+                        }
+                    }
+
                 }
                 // $average_cost = $total_cost/$total_quantity;
                 if($total_quantity == 0){
@@ -878,6 +890,7 @@ class Order extends Component
                 }
                 $sold_stocks_2[$key]['average_cost'] = $average_cost;
                 $sold_stocks_2[$key]['total_cost'] = $total_cost;
+                $sold_stocks_2[$key]['total_repair'] = $total_repair;
                 $sold_stocks_2[$key]['average_price'] = $average_price;
                 $sold_stocks_2[$key]['total_price'] = $total_price;
                 $sold_stocks_2[$key]['average_charge'] = $average_charge;
@@ -887,6 +900,7 @@ class Order extends Component
                 $sold_stocks_2[$key]['average_profit'] = $average_profit;
 
                 $sold_total['total_cost'] += $total_cost;
+                $sold_total['total_repair'] += $total_repair;
                 $sold_total['total_price'] += $total_price;
                 $sold_total['total_charge'] += $total_charge;
                 $sold_total['total_profit'] += $total_price - $total_cost - $total_charge;
