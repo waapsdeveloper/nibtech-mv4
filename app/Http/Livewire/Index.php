@@ -1056,8 +1056,22 @@ class Index extends Component
             }
             $result[$product->category][$product->brand][] = $data;
         }
+        $message = '';
+        foreach($result as $category => $brands){
+            foreach($brands as $brand => $data){
+                $message .= $categories[$category].' - '.$brands[$brand].'<br>';
+                foreach($data as $key => $value){
+                    if($value['stock_count'] == 0){
+                        unset($result[$category][$brand][$key]);
+                    }
+                }
+            }
+        }
+        $message .= '<br><br>';
         echo "<pre>";
         print_r($result);
+        echo "<br><br>";
+        echo $message;
         echo "</pre>";
         die();
         $pdf = new StockSummeryExport();
