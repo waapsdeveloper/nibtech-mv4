@@ -138,7 +138,7 @@
                 </div>
                 <div class="col-md col-sm-6">
                     <div class="form-floating">
-                        <input type="text" class="form-control" id="price" name="price" placeholder="Enter Price" value="@isset($_GET['price']){{$_GET['price']}}@endisset" required>
+                        <input type="number" step="0.01" class="form-control" id="price" name="price" placeholder="Enter Price" value="@isset($_GET['price']){{$_GET['price']}}@endisset" required>
                         <label for="price">Cost</label>
                     </div>
                 </div>
