@@ -24,7 +24,13 @@ class StockSummeryExport
         $grade_names = Grade_model::whereIn('id', $grades)->pluck('name','id');
         $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q){
             $q->where('stock.status',1);
-        })->orderBy('product_id')->orderBy('storage')->get();
+        })
+        ->join('products', 'product_storage_sort.product_id', '=', 'products.id')
+        ->orderBy('products.model')
+        // ->orderBy('product_id')
+        ->orderBy('product_storage_sort.storage')
+        ->select('product_storage_sort.*')
+        ->get();
 
         $result = [];
         foreach($product_storage_sort as $pss){
