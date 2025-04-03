@@ -40,7 +40,9 @@ class StockSummeryExport
             $data['model'] = $product->model.' '.$storage;
             $data['stock_count'] = 0;
             $data['average_cost'] = 0;
+            $data['average_price'] = 0;
             $data['graded_average_cost'] = [];
+            $data['graded_average_price'] = [];
             $data['graded_stock_count'] = [];
 
             // print_r($pss->stocks->where('status',1));
@@ -53,14 +55,19 @@ class StockSummeryExport
                         continue;
                     }
                     $data['average_cost'] += $purchase_item->price;
+                    $data['average_price'] += $purchase_item->price*0.06+$purchase_item->price;
                     $data['stock_count']++;
                     if(!isset($data['graded_average_cost'][$variation->grade])){
                         $data['graded_average_cost'][$variation->grade] = 0;
+                    }
+                    if(!isset($data['graded_average_price'][$variation->grade])){
+                        $data['graded_average_price'][$variation->grade] = 0;
                     }
                     if(!isset($data['graded_stock_count'][$variation->grade])){
                         $data['graded_stock_count'][$variation->grade] = 0;
                     }
                     $data['graded_average_cost'][$variation->grade] += $purchase_item->price;
+                    $data['graded_average_price'][$variation->grade] += $purchase_item->price*0.06+$purchase_item->price;
                     $data['graded_stock_count'][$variation->grade]++;
                 }
             }
@@ -76,6 +83,16 @@ class StockSummeryExport
                     continue;
                 }
                 $data['graded_average_cost'][$grade] = $data['graded_average_cost'][$grade]/$data['graded_stock_count'][$grade];
+            }
+            $data['average_price'] = $data['average_price']/$data['stock_count'];
+            foreach($grades as $grade){
+                if(!isset($data['graded_average_price'][$grade])){
+                    continue;
+                }
+                if(!isset($data['graded_stock_count'][$grade])){
+                    continue;
+                }
+                $data['graded_average_price'][$grade] = $data['graded_average_price'][$grade]/$data['graded_stock_count'][$grade];
             }
             $result[$product->category][$product->brand][] = $data;
         }
@@ -101,10 +118,10 @@ class StockSummeryExport
                 $pdf->Cell(80, 0, 'Model');
                 $pdf->Cell(12, 0, 'Count');
                 $pdf->Cell(18, 0, 'Average');
-                $pdf->Cell(18, 0, 'Premium');
-                $pdf->Cell(18, 0, 'Very Good');
-                $pdf->Cell(18, 0, 'Good');
-                $pdf->Cell(18, 0, 'Stallone');
+                // $pdf->Cell(18, 0, 'Premium');
+                $pdf->Cell(18, 0, 'A+');
+                $pdf->Cell(18, 0, 'A/A-');
+                $pdf->Cell(18, 0, 'B+');
 
                 $i = 0;
                 // Set font for data
@@ -127,20 +144,20 @@ class StockSummeryExport
                     $pdf->MultiCell(12, 6, $data['stock_count'], 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
                     // Average cost
-                    $pdf->MultiCell(18, 6, '€ '.number_format($data['average_cost'], 2), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                    $pdf->MultiCell(18, 6, '€ '.number_format($data['average_price'], 2), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
                     $pdf->SetFont('times', '', 12);
                     // Premium Grade
-                    $pdf->MultiCell(18, 6, $this->bold($data['graded_average_cost'][1] ?? 0), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                    // $pdf->MultiCell(18, 6, $this->bold($data['graded_average_price'][1] ?? 0), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
                     // Very Good Grade
-                    $pdf->MultiCell(18, 6, $this->bold($data['graded_average_cost'][2] ?? 0), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                    $pdf->MultiCell(18, 6, $this->bold($data['graded_average_price'][2] ?? 0), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
                     // Good Grade
-                    $pdf->MultiCell(18, 6, $this->bold($data['graded_average_cost'][3] ?? 0), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                    $pdf->MultiCell(18, 6, $this->bold($data['graded_average_price'][3] ?? 0), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
                     // Stallone Grade (Grade 5)
-                    $pdf->MultiCell(18, 6, $this->bold($data['graded_average_cost'][5] ?? 0), 1, 'C', false, 1, '', '', true, 0, false, true, 6, 'T', true);
+                    $pdf->MultiCell(18, 6, $this->bold($data['graded_average_price'][5] ?? 0), 1, 'C', false, 1, '', '', true, 0, false, true, 6, 'T', true);
                 }
 
             }
