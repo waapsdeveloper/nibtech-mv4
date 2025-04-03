@@ -143,6 +143,7 @@ class StockSummeryExport
                         $pdf->Cell(21, 0, 'A/A-', 0, 0, 'C');
                         $pdf->Cell(21, 0, 'B+', 0, 0, 'C');
                         $pdf->Ln(); // Move to the next line
+                        $pdf->SetFont('times', '', 12);
                     }
 
                     // Set line style for borders
