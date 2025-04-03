@@ -1065,7 +1065,7 @@ class Index extends Component
                         if($value['stock_count'] == 0){
                             unset($result[$category][$brand][$key]);
                         }
-                        $message .= $value['model'].' - QTY: '.$value['stock_count'].' - '.$sign.' '.amount_formatter($value['average_price']).'<br>';
+                        $message .= $value['model'].' - '.$value['stock_count'].'pcs @ '.$sign.''.amount_formatter($value['average_price']).'<br>';
                     }
                     $message .= '<br><br>';
                 }
