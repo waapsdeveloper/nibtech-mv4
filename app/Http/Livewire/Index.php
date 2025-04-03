@@ -1056,8 +1056,9 @@ class Index extends Component
             }
             $result[$product->category][$product->brand][] = $data;
         }
-
+        echo "<pre>";
         print_r($result);
+        echo "</pre>";
         die();
         $pdf = new StockSummeryExport();
         $pdf->generatePdf();
