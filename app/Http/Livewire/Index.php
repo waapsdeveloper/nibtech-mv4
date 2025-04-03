@@ -1066,11 +1066,11 @@ class Index extends Component
                     }
                     $message .= $value['model'].' - '.$sign.' '.amount_formatter($value['average_price']).'<br>';
                 }
+                $message .= '<br><br>';
             }
         }
-        $message .= '<br><br>';
         echo "<pre>";
-        print_r($result);
+        // print_r($result);
         echo "<br><br>";
         echo $message;
         echo "</pre>";
