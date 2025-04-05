@@ -547,16 +547,16 @@ class ListingController extends Controller
         foreach($variations as $variation){
             $updatedQuantity = $variation->update_qty($bm);
             $listed_stock_verification = Listed_stock_verification_model::firstOrNew(['process_id'=>$listing_verification->id, 'variation_id'=>$variation->id]);
-            $listed_stock_verification->qty_from = $updatedQuantity+$variation;
+            $listed_stock_verification->qty_from = $updatedQuantity;
             $listed_stock_verification->admin_id = session('user_id');
             $listed_stock_verification->save();
 
-            // $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>0]));
+            $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>0]));
 
-            // if($response->quantity != null){
-            //     $variation->listed_stock = $response->quantity;
-            //     $variation->save();
-            // }
+            if($response->quantity != null){
+                $variation->listed_stock = $response->quantity;
+                $variation->save();
+            }
         }
 
 
