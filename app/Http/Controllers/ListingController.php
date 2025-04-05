@@ -7,9 +7,11 @@ use App\Models\Country_model;
 use App\Models\Customer_model;
 use App\Models\ExchangeRate;
 use App\Models\Grade_model;
+use App\Models\Listed_stock_verification_model;
 use App\Models\Listing_model;
 use App\Models\Order_item_model;
 use App\Models\Order_model;
+use App\Models\Process_model;
 use App\Models\Products_model;
 use App\Models\Stock_model;
 use App\Models\Storage_model;
@@ -504,4 +506,43 @@ class ListingController extends Controller
         return $listing;
     }
 
+    public function start_listing_verification(){
+
+        $bm = new BackMarketAPIController();
+        $variations = Variation_model::where('listed_stock','>',0)->whereNotNull('reference_id')->get();
+        $check_active_verification = Process_model::where('process_type_id',21)->where('status',1)->first();
+        if($check_active_verification != null){
+            session()->flash('error', 'There is already an active listing verification process.');
+            return redirect()->back();
+        }
+        $last_process = Process_model::where('process_type_id',21)->orderBy('reference_id','desc')->first();
+        if($last_process != null){
+            $last_process = $last_process->reference_id;
+        }else{
+            $last_process = 9000;
+        }
+        $listing_verification = new Process_model();
+        $listing_verification->description = "Listing verification";
+        $listing_verification->process_type_id = 21;
+        $listing_verification->reference_id = $last_process + 1;
+        $listing_verification->status = 1;
+        $listing_verification->save();
+
+        foreach($variations as $variation){
+            $updatedQuantity = $variation->update_qty($bm);
+            $listed_stock_verification = Listed_stock_verification_model::firstOrNew(['process_id'=>$listing_verification->id, 'variation_id'=>$variation->id]);
+            $listed_stock_verification->qty_from = $updatedQuantity;
+            $listed_stock_verification->admin_id = session('user_id');
+            $listed_stock_verification->save();
+
+            // $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>0]));
+
+            // if($response->quantity != null){
+            //     $variation->listed_stock = $response->quantity;
+            //     $variation->save();
+            // }
+        }
+
+        return redirect(url('listing?special=verify_listing&sort=4'))->with('success', 'Listing verification process started successfully.');
+    }
 }
