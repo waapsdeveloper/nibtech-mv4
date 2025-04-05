@@ -451,10 +451,25 @@ class ListingController extends Controller
         $variation = Variation_model::find($id);
         $bm = new BackMarketAPIController();
         $updatedQuantity = $variation->update_qty($bm);
-        $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>$updatedQuantity + request('stock')]));
+        $pending_orders = $variation->pending_orders->sum('quantity');
+
+        $check_active_verification = Process_model::where('process_type_id',21)->where('status',1)->first();
+        if($check_active_verification != null){
+            $new_quantity = request('stock') - $pending_orders;
+        }else{
+            $new_quantity = request('stock') + $updatedQuantity;
+        }
+        $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>$new_quantity]));
         if($response->quantity != null){
             $variation->listed_stock = $response->quantity;
             $variation->save();
+        }
+        if($check_active_verification != null){
+            $listed_stock_verification = Listed_stock_verification_model::firstOrNew(['process_id'=>$check_active_verification->id, 'variation_id'=>$variation->id]);
+            $listed_stock_verification->qty_change = request('stock');
+            $listed_stock_verification->qty_to = $response->quantity;
+            $listed_stock_verification->admin_id = session('user_id');
+            $listed_stock_verification->save();
         }
         return $response->quantity;
     }
@@ -525,13 +540,14 @@ class ListingController extends Controller
         $listing_verification->description = "Listing verification";
         $listing_verification->process_type_id = 21;
         $listing_verification->reference_id = $last_process + 1;
+        $listing_verification->admin_id = session('user_id');
         $listing_verification->status = 1;
         $listing_verification->save();
 
         foreach($variations as $variation){
             $updatedQuantity = $variation->update_qty($bm);
             $listed_stock_verification = Listed_stock_verification_model::firstOrNew(['process_id'=>$listing_verification->id, 'variation_id'=>$variation->id]);
-            $listed_stock_verification->qty_from = $updatedQuantity+$variation->pending_orders->sum('quantity');
+            $listed_stock_verification->qty_from = $updatedQuantity+$variation;
             $listed_stock_verification->admin_id = session('user_id');
             $listed_stock_verification->save();
 
@@ -542,6 +558,7 @@ class ListingController extends Controller
             //     $variation->save();
             // }
         }
+
 
         return redirect()->to(url('listing?special=verify_listing&sort=4'))->with('success', 'Listing verification process started successfully.');
     }
