@@ -543,6 +543,6 @@ class ListingController extends Controller
             // }
         }
 
-        return redirect(url('listing?special=verify_listing&sort=4'))->with('success', 'Listing verification process started successfully.');
+        return redirect()->to(url('listing?special=verify_listing&sort=4'))->with('success', 'Listing verification process started successfully.');
     }
 }
