@@ -531,7 +531,7 @@ class ListingController extends Controller
         foreach($variations as $variation){
             $updatedQuantity = $variation->update_qty($bm);
             $listed_stock_verification = Listed_stock_verification_model::firstOrNew(['process_id'=>$listing_verification->id, 'variation_id'=>$variation->id]);
-            $listed_stock_verification->qty_from = $updatedQuantity;
+            $listed_stock_verification->qty_from = $updatedQuantity+$variation->pending_orders->sum('quantity');
             $listed_stock_verification->admin_id = session('user_id');
             $listed_stock_verification->save();
 
