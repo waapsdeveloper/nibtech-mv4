@@ -310,7 +310,7 @@ Route::post('listing/add_quantity/{id}', [ListingController::class,'add_quantity
 Route::post('listing/update_price/{id}', [ListingController::class,'update_price'])->name('update_listing_price');
 Route::post('listing/update_limit/{id}', [ListingController::class,'update_limit'])->name('update_listing_handler_limit');
 Route::post('listing/update_target/{id}', [ListingController::class,'update_target'])->name('update_listing_target');
-
+Route::get('listing/start_listing_verification', [ListingController::class,'start_listing_verification'])->name('listing_verification');
 
 Route::get('process', Process::class)->name('view_process');
 
