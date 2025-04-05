@@ -77,10 +77,13 @@
         <h5 class="card-title mg-b-0" id="page_info"> </h5>
         <div class="d-flex p-2 justify-content-between">
 
+            <a href="{{ url('listing/start_listing_verification') }}" class="btn btn-primary" id="start_verification">Start&nbsp;Verification</a>
+            @if (request('special') != 'verify_listing')
             <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target=".multi_collapse" id="open_all_variations">Toggle&nbsp;All</button>
             {{-- <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target=".multi_collapse_handler" id="open_all_handlers">Toggle&nbsp;Handlers</button> --}}
             <button class="btn btn-link" type="button" data-bs-toggle="modal" data-bs-target="#bulkModal">Bulk&nbsp;Update</button>
             {{-- <input class="form-check-input" type="radio" id="open_all" name="open_all" value="1" onchange="this.form.submit()" form="search"> --}}
+            @endif
             <label for="perPage" class="form-label">Sort:</label>
             <select name="sort" class="form-select w-auto" id="perPage" onchange="this.form.submit()" form="search">
                 <option value="1" {{ Request::get('sort') == 1 ? 'selected' : '' }}>Stock DESC</option>
