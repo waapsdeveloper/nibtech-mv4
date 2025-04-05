@@ -70,6 +70,7 @@
 
     <form action="" method="GET" id="search" onsubmit="fetchVariations()">
         <livewire:search-listing />
+        <input type="hidden" name="special" value="{{ Request::get('special') }}">
     </form>
 
     <div class="d-flex justify-content-between">
@@ -168,7 +169,8 @@
                 per_page: $('select[name="per_page"]').val(),
                 open_all: $('input[name="open_all"]').val(),
                 page: "{{ Request::get('page') ?? 1 }}",
-                csrf: "{{ csrf_token() }}"
+                special: "{{ Request::get('special') }}",
+                csrf: "{{ csrf_token() }}",
             };
 
             // Convert params object to a query string
@@ -694,6 +696,7 @@
                     per_page: $('select[name="per_page"]').val(),
                     open_all: $('input[name="open_all"]').val(),
                     page: page,
+                    special: "{{ Request::get('special') }}",
                     csrf: "{{ csrf_token() }}"
                 };
 
