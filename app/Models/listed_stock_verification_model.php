@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Listed_stock_verification_model extends Model
 {
     use HasFactory;
-    use softDeletes;
+    // use softDeletes;
     protected $table = 'listed_stock_verification';
     protected $primaryKey = 'id';
     // public $timestamps = FALSE;
