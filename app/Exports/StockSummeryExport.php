@@ -40,6 +40,9 @@ class StockSummeryExport
                 $sign = '€';
             }
 
+        }else{
+            $exchange_rate = 1;
+            $sign = '€';
         }
 
         $grades = [1,2,3,4,5];
