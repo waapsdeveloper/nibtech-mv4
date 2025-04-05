@@ -990,13 +990,17 @@
                                         </h6>
                                         <h6 class="mb-0">Difference: ${variation.available_stocks.length - variation.pending_orders.length}</h6>
                                     </div>
+                                    @if (request('special') != 'verify_inventory')
+
                                     <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#details_${variation.id}" aria-expanded="false" aria-controls="details_${variation.id}" onClick="getVariationDetails(${variation.id}, ${eurToGbp}, ${m_min_price}, ${m_price})">
                                         <i class="fas fa-chevron-down"></i>
                                     </button>
+                                    @endif
 
                                 </div>
                                 <div class="d-flex justify-content-between">
 
+                                    @if (request('special') != 'verify_inventory')
                                     <div class="p-2">
                                         <h6 class="d-inline">Without&nbsp;Buybox</h6>
                                         ${withoutBuybox}
@@ -1016,6 +1020,7 @@
                                             <input type="submit" class="btn btn-light" value="Push">
                                         </form>
                                     </div>
+                                    @endif
                                     <div class="p-2">
                                         <h6 class="badge bg-light text-dark">
                                             ${state}
