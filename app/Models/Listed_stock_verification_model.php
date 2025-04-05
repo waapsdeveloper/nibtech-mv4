@@ -18,6 +18,7 @@ class Listed_stock_verification_model extends Model
         // other fields...
         'process_id',
         'variation_id',
+        'pending_orders',
         'qty_from',
         'qty_change',
         'qty_to',
