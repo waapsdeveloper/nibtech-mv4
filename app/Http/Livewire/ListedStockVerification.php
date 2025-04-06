@@ -125,7 +125,7 @@ class ListedStockVerification extends Component
 
         $data['process_id'] = $process_id;
 
-        return view('livewire.verification_detail')->with($data);
+        return view('livewire.listed_stock_verification_detail')->with($data);
 
     }
 
