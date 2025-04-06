@@ -26,9 +26,9 @@
                         <input type="checkbox" value="1" name="bypass_check" class="form-check-input" form="repair_item" @if (session('bypass_check') == 1) checked @endif>
                         <label class="form-check-label" for="bypass_check">Bypass Repair check</label>
                     </span> --}}
-                <span class="main-content-title mg-b-0 mg-b-lg-1">Inventory Verification Batch Detail</span>
+                <span class="main-content-title mg-b-0 mg-b-lg-1">Listed Stock Verification Batch Detail</span>
                 @if ($process->status == 1)
-                <form class="form-inline" id="approveform" method="POST" action="{{url('inventory_verification/ship').'/'.$process->id}}">
+                <form class="form-inline" id="approveform" method="POST" action="{{url('listed_stock_verification/ship').'/'.$process->id}}">
                     @csrf
                     <div class="form-floating">
                         <input type="text" class="form-control" id="description" name="description" placeholder="Enter Description" value="{{$process->description}}" required>
@@ -65,12 +65,12 @@
 
                 @if (session('user')->hasPermission('verification_revert_status'))
                     <br>
-                    <a href="{{url('inventory_verification/revert_status').'/'.$process->id}}">Revert Back to Pending</a>
+                    <a href="{{url('listed_stock_verification/revert_status').'/'.$process->id}}">Revert Back to Pending</a>
                 @endif
 
                 @endif
                     {{-- @if ($process->status == 2)
-                    <form class="form-inline" method="POST" action="{{url('inventory_verification/approve').'/'.$process->id}}">
+                    <form class="form-inline" method="POST" action="{{url('listed_stock_verification/approve').'/'.$process->id}}">
                         @csrf
                         <div class="form-floating">
                             <input type="text" class="form-control" id="cost" name="cost" placeholder="Enter Total Cost" required>
@@ -84,14 +84,14 @@
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
-                        <li class="breadcrumb-item tx-15"><a href="{{ session('previous')}}">Inventory Verification</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Inventory Verification Detail</li>
+                        <li class="breadcrumb-item tx-15"><a href="{{ session('previous')}}">listed_stock Verification</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Listed Stock Verification Detail</li>
                     </ol>
                 </div>
             </div>
         <!-- /breadcrumb -->
         <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
-                {{-- <center><h4>Inventory Verification Batch Detail</h4></center> --}}
+                {{-- <center><h4>listed_stock Verification Batch Detail</h4></center> --}}
             <h5>Reference: {{ $process->reference_id }} | Total Items: {{ $process->process_stocks->count() }}</h5>
         </div>
 
@@ -226,10 +226,10 @@
 
         <div class="card" id="print_inv">
             <div class="card-header pb-0 d-flex justify-content-between">
-                <h4 class="card-title">Inventory Verification Summery</h4>
+                <h4 class="card-title">listed_stock Verification Summery</h4>
             </div>
             <div class="card-body"><div class="table-responsive">
-                <form method="GET" action="{{url('inventory')}}" target="_blank" id="search_summery">
+                <form method="GET" action="{{url('listed_stock')}}" target="_blank" id="search_summery">
                     <input type="hidden" name="category" value="{{ Request::get('category') }}">
                     <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
                     <input type="hidden" name="color" value="{{ Request::get('color') }}">
