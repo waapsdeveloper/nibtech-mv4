@@ -150,7 +150,7 @@
                                 <option value="{{ $id }}"@if($id == $stock->variation->color) {{'selected'}}@endif>{{ $name }}</option>
                             @endforeach
                         </select>
-                        <select name="return[grade]" class="form-control form-select">
+                        <select name="return[grade]" class="form-control form-select" required>
                             <option value="">Move to</option>
                             @foreach ($grades as $id => $name)
                                 @if($id > 5)
@@ -160,7 +160,7 @@
                         </select>
 
                         <div class="form-floating">
-                            <input type="text" class="form-control pd-x-20" name="return[description]" placeholder="Reason" style="width: 270px;">
+                            <input type="text" class="form-control pd-x-20" name="return[description]" placeholder="Reason" style="width: 270px;" required>
                             {{-- <input type="text" class="form-control" name="return[imei]" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset"> --}}
                             <label for="">Reason</label>
                         </div>
