@@ -272,8 +272,8 @@
                                 <td>{{ $item->qty_change }}</td>
                                 <td>{{ $item->qty_to }}</td>
                                 <td>{{ $item->admin->first_name." ".$item->admin->last_name }}</td>
-                                <td style="width:180px">{{ $item->created_at }}</td>
-                                <td style="width:180px">{{ $item->updated_at }}</td>
+                                <td style="width:150px">{{ $item->created_at }}</td>
+                                <td style="width:150px">{{ $item->updated_at }}</td>
                             </tr>
                             @php
                                 $i ++;
