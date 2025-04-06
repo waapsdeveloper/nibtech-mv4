@@ -315,6 +315,8 @@ Route::get('listing/start_listing_verification', [ListingController::class,'star
 
 Route::get('listed_stock_verification', ListedStockVerification::class)->name('view_listed_stock_verification');
 Route::get('listed_stock_verification/detail/{id}', [ListedStockVerification::class,'verification_detail'])->name('listed_stock_verification_detail');
+Route::get('listed_stock_verification/undo/{id}', [ListedStockVerification::class,'undo_verification'])->name('listed_stock_verification_undo');
+
 
 Route::get('process', Process::class)->name('view_process');
 

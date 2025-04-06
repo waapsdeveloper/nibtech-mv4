@@ -450,7 +450,10 @@ class ListingController extends Controller
         }
         return $response->quantity;
     }
-    public function add_quantity($id){
+    public function add_quantity($id, $stock = 'no'){
+        if($stock == 'no'){
+            $stock = request('stock');
+        }
         $variation = Variation_model::find($id);
         $bm = new BackMarketAPIController();
         $updatedQuantity = $variation->update_qty($bm);
@@ -458,9 +461,9 @@ class ListingController extends Controller
 
         $check_active_verification = Process_model::where('process_type_id',21)->where('status',1)->first();
         if($check_active_verification != null){
-            $new_quantity = request('stock') - $pending_orders;
+            $new_quantity = $stock - $pending_orders;
         }else{
-            $new_quantity = request('stock') + $updatedQuantity;
+            $new_quantity = $stock + $updatedQuantity;
         }
         $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>$new_quantity]));
         if($response->quantity != null){
@@ -469,7 +472,7 @@ class ListingController extends Controller
         }
         if($check_active_verification != null){
             $listed_stock_verification = Listed_stock_verification_model::firstOrNew(['process_id'=>$check_active_verification->id, 'variation_id'=>$variation->id]);
-            $listed_stock_verification->qty_change = request('stock');
+            $listed_stock_verification->qty_change = $stock;
             $listed_stock_verification->qty_to = $response->quantity;
             $listed_stock_verification->admin_id = session('user_id');
             $listed_stock_verification->save();
