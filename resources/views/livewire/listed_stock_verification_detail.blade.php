@@ -161,65 +161,7 @@
         session()->forget('error');
         @endphp
         @endif
-        @php
-            $imei_list = [];
-        @endphp
 
-        @if ($process->status == 1)
-
-        <div class="row">
-            <div class="col-xl-12">
-                <div class="card">
-                    <div class="card-header pb-0">
-                        <div class="d-flex justify-content-between">
-                            <h4 class="card-title mg-b-0">Latest Added Items</h4>
-                        </div>
-                    </div>
-                    <div class="card-body"><div class="table-responsive" style="max-height: 250px">
-                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
-                                <thead>
-                                    <tr>
-                                        <th><small><b>No</b></small></th>
-                                        <th><small><b>Variation</b></small></th>
-                                        <th><small><b>IMEI | Serial Number</b></small></th>
-                                        <th><small><b>Vendor</b></small></th>
-                                        <th><small><b>Reason</b></small></th>
-                                        <th><small><b>Creation Date</b></small></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @php
-                                        $i = 0;
-                                    @endphp
-                                    @foreach ($last_ten as $p_stock)
-                                        @php
-                                            $item = $p_stock->stock;
-                                        @endphp
-
-                                        <tr>
-                                            <td>{{ $i + 1 }}</td>
-                                            <td>{{ $products[$item->variation->product_id]}} {{$storages[$item->variation->storage] ?? null}} {{$colors[$item->variation->color] ?? null}} {{$grades[$item->variation->grade] ?? "Grade not added" }} {{$grades[$item->variation->sub_grade] ?? '' }}</td>
-                                            <td>{{ $item->imei.$item->serial_number }}</td>
-                                            <td>{{ $item->order->customer->first_name }}
-                                                @if ($item->previous_repair != null)
-                                                    <a href="{{url('repair/detail/'.$item->previous_repair->proces_id)}}">{{ $item->previous_repair->process->reference_id }}</a>
-                                                @endif
-                                            </td>
-                                            <td>{{ $item->latest_operation->description ?? null }}</td>
-                                            <td style="width:220px">{{ $item->created_at }}</td>
-                                        </tr>
-                                        @php
-                                            $i ++;
-                                        @endphp
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        <br>
-                    </div>
-
-                </div>
-            </div>
-        </div>
     </div>
         <br>
         @endif
