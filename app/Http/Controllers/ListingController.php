@@ -461,7 +461,8 @@ class ListingController extends Controller
 
         $check_active_verification = Process_model::where('process_type_id',21)->where('status',1)->first();
         if($check_active_verification != null){
-            $new_quantity = $stock - $pending_orders;
+            // $new_quantity = $stock - $pending_orders;
+            $new_quantity = $stock;
         }else{
             $new_quantity = $stock + $updatedQuantity;
         }
