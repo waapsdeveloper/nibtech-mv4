@@ -11,6 +11,7 @@ use App\Models\Customer_model;
 use App\Models\Currency_model;
 use App\Models\Storage_model;
 use App\Exports\RepairsheetExport;
+use App\Http\Controllers\ListingController;
 use Maatwebsite\Excel\Facades\Excel;
 use TCPDF;
 use App\Models\Api_request_model;
@@ -127,6 +128,18 @@ class ListedStockVerification extends Component
 
         return view('livewire.listed_stock_verification_detail')->with($data);
 
+    }
+
+    public function undo_verification($id){
+        $listed_stocks = Listed_stock_verification_model::where('process_id', $id)->get();
+        $listingController = new ListingController();
+        foreach($listed_stocks as $listed_stock){
+            if($listed_stock->variation_id != null){
+                $listingController->add_quantity($listed_stock->variation_id, $listed_stock->qty_from);
+            }
+        }
+        session()->put('success', 'Listed Stock Verification Undoned');
+        return redirect()->back();
     }
 
     public function verification_progress() {
