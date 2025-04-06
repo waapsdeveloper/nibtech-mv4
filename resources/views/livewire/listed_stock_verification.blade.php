@@ -170,8 +170,8 @@
                                             <tr>
                                                 <td>{{ $i + 1 }}</td>
                                                 <td><a href="{{url('listed_stock_verification/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a></td>
-                                                <td>{{ $items->count() }}</td>
-                                                <td></td>
+                                                <td>{{ $items->listed_stocks_verification->sum('qty_from') }}</td>
+                                                <td>{{ $items->listed_stocks_verification->sum('qty_to') }}</td>
                                                 <td style="width:220px">{{ $batch->created_at }}</td>
                                                 <td style="width:220px">{{ $batch->updated_at }}</td>
                                                 <td>
