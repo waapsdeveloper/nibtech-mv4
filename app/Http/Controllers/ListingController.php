@@ -78,6 +78,9 @@ class ListingController extends Controller
         ->when(request('reference_id') != '', function ($q) {
             return $q->where('reference_id', request('reference_id'));
         })
+        ->when(request('variation_id') != '', function ($q) {
+            return $q->where('id', request('variation_id'));
+        })
         ->when(request('category') != '', function ($q) {
             return $q->whereHas('product', function ($q) {
                 $q->where('category', request('category'));
