@@ -249,14 +249,37 @@
                     <thead>
                         <tr>
                             <th><small><b>No</b></small></th>
-                            <th><small><b>Model</b></small></th>
-                            <th><small><b>Quantity</b></small></th>
-                            <th><small><b>Cost</b></small></th>
-                            <th><small><b>Remaining</b></small></th>
-                            <th><small><b>Cost</b></small></th>
+                            <th><small><b>Veriation</b></small></th>
+                            <th><small><b>Pending Orders</b></small></th>
+                            <th><small><b>Quantity Before</b></small></th>
+                            <th><small><b>Quantity Added</b></small></th>
+                            <th><small><b>Quantity After</b></small></th>
+                            <th><small><b>Admin</b></small></th>
+                            <th><small><b>Creation Date</b></small></th>
+                            <th><small><b>Update Date</b></small></th>
                         </tr>
                     </thead>
-
+                    <tbody>
+                        @php
+                            $i = 0;
+                        @endphp
+                        @foreach ($verified_listed_stocks as $item)
+                            <tr>
+                                <td>{{ $i + 1 }}</td>
+                                <td>{{ $products[$item->variation->product_id]}} {{$storages[$item->variation->storage] ?? null}} {{$colors[$item->variation->color] ?? null}} {{$grades[$item->variation->grade] ?? "Grade not added" }} {{$grades[$item->variation->sub_grade] ?? '' }}</td>
+                                <td>{{ $item->pending_orders }}</td>
+                                <td>{{ $item->qty_from }}</td>
+                                <td>{{ $item->qty_change }}</td>
+                                <td>{{ $item->qty_to }}</td>
+                                <td>{{ $item->admin->first_name." ".$item->admin->last_name }}</td>
+                                <td style="width:220px">{{ $item->created_at }}</td>
+                                <td style="width:220px">{{ $item->updated_at }}</td>
+                            </tr>
+                            @php
+                                $i ++;
+                            @endphp
+                        @endforeach
+                    </tbody>
 
                 </table>
             </div>
