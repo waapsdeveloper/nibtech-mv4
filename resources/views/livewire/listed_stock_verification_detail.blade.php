@@ -164,7 +164,6 @@
 
     </div>
         <br>
-        @endif
 
         <div class="card" id="print_inv">
             <div class="card-header pb-0 d-flex justify-content-between">
