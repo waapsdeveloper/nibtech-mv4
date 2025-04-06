@@ -267,34 +267,6 @@
 
         <script>
 
-        $(document).ready(function() {
-            $('#currency').on('input', function() {
-                var selectedCurrency = $(this).val();
-                var rate = $('#currencies').find('option[value="' + selectedCurrency + '"]').data('rate');
-                if (rate !== undefined) {
-                    $('#rate').val(rate);
-                } else {
-                    $('#rate').val(''); // Clear the rate field if the currency is not in the list
-                }
-            });
-
-            $('.select2').select2({
-                placeholder: 'Select an option',
-                allowClear: true
-            });
-
-            $('#advance_options').collapse("{{ request('show_advance') == 1 ? 'show' : 'hide' }}");
-        });
-
-
-        document.getElementById("open_all_imei").onclick = function(){
-            @php
-                foreach ($imei_list as $imei) {
-                    echo "window.open('".url("imei")."?imei=".$imei."','_blank');";
-                }
-
-            @endphp
-        }
         </script>
 		<!--Internal Sparkline js -->
 		<script src="{{asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js')}}"></script>
