@@ -262,6 +262,11 @@
                     <tbody>
                         @php
                             $i = 0;
+
+                            $total_pending_orders = 0;
+                            $total_qty_from = 0;
+                            $total_qty_change = 0;
+                            $total_qty_to = 0;
                         @endphp
                         @foreach ($verified_listed_stocks as $item)
                             <tr>
@@ -276,10 +281,24 @@
                                 <td style="width:150px">{{ $item->updated_at }}</td>
                             </tr>
                             @php
+                                $total_pending_orders += $item->pending_orders;
+                                $total_qty_from += $item->qty_from;
+                                $total_qty_change += $item->qty_change;
+                                $total_qty_to += $item->qty_to;
                                 $i ++;
                             @endphp
                         @endforeach
                     </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="2" class="text-center"><b>Total</b></td>
+                            <td><b>{{ $total_pending_orders }}</b></td>
+                            <td><b>{{ $total_qty_from }}</b></td>
+                            <td><b>{{ $total_qty_change }}</b></td>
+                            <td><b>{{ $total_qty_to }}</b></td>
+                            <td colspan="3"></td>
+                        </tr>
+                    </tfoot>
 
                 </table>
             </div>
