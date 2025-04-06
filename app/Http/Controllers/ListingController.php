@@ -461,8 +461,8 @@ class ListingController extends Controller
 
         $check_active_verification = Process_model::where('process_type_id',21)->where('status',1)->first();
         if($check_active_verification != null){
-            // $new_quantity = $stock - $pending_orders;
-            $new_quantity = $stock;
+            $new_quantity = $stock - $pending_orders;
+            // $new_quantity = $stock;
         }else{
             $new_quantity = $stock + $updatedQuantity;
         }
@@ -473,6 +473,7 @@ class ListingController extends Controller
         }
         if($check_active_verification != null){
             $listed_stock_verification = Listed_stock_verification_model::firstOrNew(['process_id'=>$check_active_verification->id, 'variation_id'=>$variation->id]);
+            $listed_stock_verification->pending_orders = $pending_orders;
             $listed_stock_verification->qty_change = $stock;
             $listed_stock_verification->qty_to = $response->quantity;
             $listed_stock_verification->admin_id = session('user_id');
