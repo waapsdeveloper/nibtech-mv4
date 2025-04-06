@@ -35,6 +35,7 @@ use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\ListingController;
 use App\Http\Controllers\ReportController;
 use App\Http\Livewire\InventoryVerification;
+use App\Http\Livewire\ListedStockVerification;
 use App\Http\Livewire\Stock_room;
 use App\Http\Livewire\Transaction;
 use App\Http\Livewire\Wholesale_return;
@@ -311,6 +312,9 @@ Route::post('listing/update_price/{id}', [ListingController::class,'update_price
 Route::post('listing/update_limit/{id}', [ListingController::class,'update_limit'])->name('update_listing_handler_limit');
 Route::post('listing/update_target/{id}', [ListingController::class,'update_target'])->name('update_listing_target');
 Route::get('listing/start_listing_verification', [ListingController::class,'start_listing_verification'])->name('listing_verification');
+
+Route::get('listed_stock_verification', ListedStockVerification::class)->name('view_listed_stock_verification');
+Route::get('listed_stock_verification/detail/{id}', [ListedStockVerification::class,'verification_detail'])->name('listed_stock_verification_detail');
 
 Route::get('process', Process::class)->name('view_process');
 
