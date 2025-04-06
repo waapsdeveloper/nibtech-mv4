@@ -71,7 +71,7 @@ class ListedStockVerification extends Component
 
 
         // dd($data['orders']);
-        return view('livewire.verification')->with($data);
+        return view('livewire.listed_stock_verification')->with($data);
     }
     public function close_process($process_id){
         $process = Process_model::find($process_id);
