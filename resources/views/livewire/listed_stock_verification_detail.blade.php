@@ -226,7 +226,7 @@
 
         <div class="card" id="print_inv">
             <div class="card-header pb-0 d-flex justify-content-between">
-                <h4 class="card-title">listed_stock Verification Summery</h4>
+                <h4 class="card-title">Listed Stock Verification Summery</h4>
             </div>
             <div class="card-body"><div class="table-responsive">
                 <form method="GET" action="{{url('listed_stock')}}" target="_blank" id="search_summery">
@@ -256,98 +256,7 @@
                             <th><small><b>Cost</b></small></th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @php
-                            $i = 0;
-                            $total_quantity = 0;
-                            $total_cost = 0;
-                            $remaining_quantity = 0;
-                            $remaining_total_cost = 0;
-                        @endphp
-                        @foreach ($available_stock_summery as $summery)
 
-                        @php
-                            // print_r($summery);
-                            // continue;
-                            // if($summery['storage'] > 0){
-                            //     $storage = $storages[$summery['storage']];
-                            // }else{
-                            //     $storage = null;
-                            // }
-                            $total_quantity += $summery['quantity'];
-                            $total_cost += $summery['total_cost'];
-                            $remaining_quantity += $summery['remaining_quantity'];
-                            $remaining_total_cost += $summery['remaining_total_cost'];
-                            $stock_imeis = $summery['stock_imeis'];
-                            $remaining_stock_imeis = $summery['remaining_stock_imeis'];
-                            $temp_array = array_unique($stock_imeis);
-                            $duplicates = sizeof($temp_array) != sizeof($stock_imeis);
-                            $duplicate_count = sizeof($stock_imeis) - sizeof($temp_array);
-
-                            $total_avg = 0;
-                            if($summery['quantity'] > 0){
-                                $total_avg = $summery['total_cost']/$summery['quantity'];
-                            }
-                            $remaining_avg = 0;
-                            if($summery['remaining_quantity'] > 0){
-                                $remaining_avg = $summery['remaining_total_cost']/$summery['remaining_quantity'];
-                            }
-                        @endphp
-                            <tr>
-                                <td>{{ ++$i }}</td>
-                                {{-- <td>{{ $products[$summery['product_id']]." ".$storage }}</td> --}}
-                                <td><button class="btn py-0 btn-link" type="submit" form="search_summery" name="pss" value="{{$summery['pss_id']}}">{{ $summery['model'] }}</button></td>
-                                <td title="{{json_encode($summery['stock_ids'])}}"><a id="test{{$i}}" href="javascript:void(0)">{{ $summery['quantity'] }}</a>
-                                @if ($duplicates)
-                                    <span class="badge badge-danger">{{ $duplicate_count }} Duplicate</span>
-                                @endif
-                                </td>
-                                <td
-                                title="{{ amount_formatter($total_avg) }}"
-                                >{{ amount_formatter($summery['total_cost'],2) }}</td>
-                                <td title="{{json_encode($summery['remaining_stock_ids'])}}">
-                                    <a id="test2{{$i}}" href="javascript:void(0)">{{ $summery['remaining_quantity'] }}</a>
-                                </td>
-                                <td title="{{ amount_formatter($remaining_avg) }}">{{ amount_formatter($summery['remaining_total_cost'],2) }}</td>
-
-                            </tr>
-
-                            <script type="text/javascript">
-
-
-                                document.getElementById("test{{$i}}").onclick = function(){
-                                    @php
-                                        foreach ($stock_imeis as $val) {
-
-                                            echo "window.open('".url("imei")."?imei=".$val."','_blank');
-                                            ";
-                                        }
-
-                                    @endphp
-                                }
-                                document.getElementById("test2{{$i}}").onclick = function(){
-                                    @php
-                                        foreach ($remaining_stock_imeis as $val) {
-
-                                            echo "window.open('".url("imei")."?imei=".$val."','_blank');
-                                            ";
-                                        }
-
-                                    @endphp
-                                }
-                            </script>
-                            {{-- @endif --}}
-                        @endforeach
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="2"><b>Total</b></td>
-                            <td><b>{{ $total_quantity }}</b></td>
-                            <td title="{{ amount_formatter($total_cost/$total_quantity,2) }}"><b>{{ amount_formatter($total_cost,2) }}</b></td>
-                            <td><b>{{ $remaining_quantity }}</b></td>
-                            <td><b>{{ amount_formatter($remaining_total_cost,2) }}</b></td>
-                        </tr>
-                    </tfoot>
 
                 </table>
             </div>
