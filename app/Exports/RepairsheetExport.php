@@ -112,7 +112,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
             'Serial Number',
             'Issue',
             'Admin',
-            'Status',
+            'Statuss',
             'Price',
             'Exchange Price',
         ];
