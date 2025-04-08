@@ -345,7 +345,7 @@ class Repair extends Component
         // $orderItem->forceDelete();
 
         session()->put('success', 'Stock deleted successfully');
-        return redirect()->back()->with('remove', 1);
+        return redirect()->back()->withInput(['remove'=> 1]);
 
     }
     public function repair_detail($process_id){
