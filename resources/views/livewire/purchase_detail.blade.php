@@ -782,6 +782,7 @@
                                                     <th><small><b>No</b></small></th>
                                                     <th><small><b>Variation</b></small></th>
                                                     <th><small><b>IMEI | Serial Number</b></small></th>
+                                                    <th><small><b>Batch</b></small></th>
                                                     <th><small><b>Customer</b></small></th>
                                                     @if (session('user')->hasPermission('view_cost'))
                                                     <th><small><b>Cost</b></small></th>
@@ -816,6 +817,7 @@
                                                             {{ $product." ".$storage." ".$color}} {{$grade }} {{$sub_grade}}
                                                         </td>
                                                         <td title="Double click to change" data-stock="{{ $stock->id }}">{{ $stock->imei.$stock->serial_number }}</td>
+                                                        <td>{{ $item->order->reference_id }}</td>
                                                         <td>{{ $item->order->customer->first_name ?? null }}</td>
                                                         @if (session('user')->hasPermission('view_cost'))
                                                         <td>{{ $currency.(amount_formatter(($stock->purchase_item->price ?? null),2) ?? null) }}</td>
