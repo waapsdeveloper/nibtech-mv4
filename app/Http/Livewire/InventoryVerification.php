@@ -277,7 +277,9 @@ class InventoryVerification extends Component
             ->onEachSide(5)
             ->appends(request()->except('page'));
             $data['verified_stocks'] = $verified_stocks;
-            $last_ten = Process_stock_model::where('process_id', $active_inventory_verification->id)->where('admin_id',session('user_id'))->where('status',1)->orderBy('id','desc')->limit(10)->get();
+            $last_ten = Process_stock_model::where('process_id', $active_inventory_verification->id)
+            // ->where('admin_id',session('user_id'))
+            ->where('status',1)->orderBy('id','desc')->limit(10)->get();
             $data['last_ten'] = $last_ten;
             $scanned_total = Process_stock_model::where('process_id', $active_inventory_verification->id)->where('admin_id',session('user_id'))->orderBy('id','desc')->count();
             $data['scanned_total'] = $scanned_total;
