@@ -75,6 +75,14 @@
                         @endforeach
                     </datalist>
                 </div>
+
+                <div class="col-md col-sm-2">
+                    <div class="form-floating">
+                        <input type="text" name="sku" value="{{ Request::get('sku') }}" class="form-control" data-bs-placeholder="Select SKU">
+                        <label for="sku">SKU</label>
+                    </div>
+                </div>
+
                 <div class="col-md col-sm-2">
                     {{-- <div class="card-header">
                         <h4 class="card-title mb-1">Storage</h4>
