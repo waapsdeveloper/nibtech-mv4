@@ -134,7 +134,7 @@
                                     @endforeach
                                 </select>
                                 <div class="form-floating">
-                                    <input type="text" class="form-control" id="reference_id" placeholder="Reference ID" name="reference_id" value="{{ $order->reference_id ?? null}}">
+                                    <input type="text" class="form-control" id="reference_id" placeholder="Reference ID" name="reference_id" value="{{ $order->reference_id ?? $new_reference_id }}">
                                     <label for="reference_id">Reference ID</label>
                                 </div>
                                 <div class="d-flex">

@@ -990,6 +990,9 @@ class Wholesale extends Component
                 session()->put('cart', $data['cart']);
             }
             $data['order'] = $order;
+        }else{
+            $new_reference_id = Order_model::where('order_type_id', 5)->orderByDesc('reference_id')->first()->reference_id+1;
+            $data['new_reference_id'] = $new_reference_id;
         }
 
         return view('livewire.pos')->with($data);
