@@ -320,6 +320,7 @@ Route::get('listed_stock_verification/undo/{id}', [ListedStockVerification::clas
 Route::get('topup', Topup::class)->name('view_topup');
 Route::post('topup/start', [Topup::class,'start_topup'])->name('start_topup');
 Route::get('topup/detail/{id}', [Topup::class,'topup_detail'])->name('topup_detail');
+Route::post('topup/add_topup_item/{id}', [Topup::class,'add_topup_item'])->name('add_topup_item');
 
 
 Route::get('process', Process::class)->name('view_process');
