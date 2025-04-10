@@ -102,6 +102,23 @@
             <h4>Scan Item</h4>
             <h4 class="card-title mg-b-0">Counter: {{ session('counter') }} <a href="{{ url('inventory/resume_verification?reset_counter=1') }}">Reset</a></h4>
 
+{{--
+            <div class="btn-group p-1" role="group">
+                <a href="{{url('repair_email')}}/{{ $process->id }}" target="_blank"><button class="btn btn-secondary">Send Email</button></a>
+                <a href="{{url('export_repair_invoice')}}/{{ $process->id }}" target="_blank"><button class="btn btn-secondary">Invoice</button></a>
+                @if ($process->exchange_rate != null)
+                <a href="{{url('export_repair_invoice')}}/{{ $process->id }}/1" target="_blank"><button class="btn btn-secondary">{{$process->currency_id->sign}} Invoice</button></a>
+
+                @endif
+                <button type="button" class="btn btn-secondary dropdown-toggle" id="pack_sheet" data-bs-toggle="dropdown" aria-expanded="false">
+                Pack Sheet
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="pack_sheet">
+                    <li><a class="dropdown-item" href="{{url('export_repair_invoice')}}/{{ $process->id }}?packlist=2&id={{ $process->id }}">.xlsx</a></li>
+                    <li><a class="dropdown-item" href="{{url('export_repair_invoice')}}/{{ $process->id }}?packlist=1" target="_blank">.pdf</a></li>
+                </ul>
+            </div> --}}
+        </div>
             <div class="p-2">
 
 
@@ -150,23 +167,6 @@
                     <button class="btn btn-primary pd-x-20" type="submit">Insert</button>
                 </form>
             </div>
-{{--
-            <div class="btn-group p-1" role="group">
-                <a href="{{url('repair_email')}}/{{ $process->id }}" target="_blank"><button class="btn btn-secondary">Send Email</button></a>
-                <a href="{{url('export_repair_invoice')}}/{{ $process->id }}" target="_blank"><button class="btn btn-secondary">Invoice</button></a>
-                @if ($process->exchange_rate != null)
-                <a href="{{url('export_repair_invoice')}}/{{ $process->id }}/1" target="_blank"><button class="btn btn-secondary">{{$process->currency_id->sign}} Invoice</button></a>
-
-                @endif
-                <button type="button" class="btn btn-secondary dropdown-toggle" id="pack_sheet" data-bs-toggle="dropdown" aria-expanded="false">
-                Pack Sheet
-                </button>
-                <ul class="dropdown-menu" aria-labelledby="pack_sheet">
-                    <li><a class="dropdown-item" href="{{url('export_repair_invoice')}}/{{ $process->id }}?packlist=2&id={{ $process->id }}">.xlsx</a></li>
-                    <li><a class="dropdown-item" href="{{url('export_repair_invoice')}}/{{ $process->id }}?packlist=1" target="_blank">.pdf</a></li>
-                </ul>
-            </div> --}}
-        </div>
             <script>
                 window.onload = function() {
                     document.getElementById('imei').focus();
