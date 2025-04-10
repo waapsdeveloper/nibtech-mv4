@@ -23,7 +23,7 @@
                 {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">BulkSale</span> --}}
                 {{-- <a href="{{url('topup/start')}}" class="btn btn-success float-right" data-bs-target="#modaldemo"
                 data-bs-toggle="modal"><i class="mdi mdi-plus"></i> New Topup </a> --}}
-                <form action="{{url('topup/start')}}" method="POST" id="topup_form">
+                <form action="{{url('topup/start')}}" method="POST" id="topup_form" class="form-inline">
                     @csrf
                     <div class="form-floating">
                         <input type="number" class="form-control" id="floatingInput" name="quantity" placeholder="Quantity" required>
