@@ -146,6 +146,135 @@ class Topup extends Component
         return view('livewire.topup_detail')->with($data);
 
     }
+    public function add_topup_item($process_id){
+        if(request('reference') != null){
+            session()->put('reference', request('reference'));
+            $reference = request('reference');
+        }else{
+            $reference = null;
+        }
+
+        $imei = request('imei');
+        $imeis = explode("\n", $imei);
+        foreach($imeis as $imei){
+            if (ctype_digit($imei)) {
+                $i = $imei;
+                $stock = Stock_model::where(['imei' => $i])->first();
+            } else {
+                $s = $imei;
+                $t = mb_substr($imei,1);
+                $stock = Stock_model::whereIn('serial_number', [$s, $t])->first();
+            }
+
+            if($stock == null){
+                session()->put('error', 'IMEI Invalid / Not Found');
+                return redirect()->back();
+
+            }
+
+            $stock->availability();
+
+
+            if(request('copy') == 1){
+                $variation = $stock->variation;
+                if(request('product') != null){
+                    $product_id = request('product');
+                    if($variation->product_id != $product_id){
+                        return redirect()->back()->with('error', 'Product ID does not match with the stock variation');
+                    }
+                }else{
+                    $product_id = $variation->product_id;
+                }
+                if(request('storage') != null){
+                    $storage_id = request('storage');
+                    if($variation->storage != $storage_id){
+                        return redirect()->back()->with('error', 'Storage ID does not match with the stock variation');
+                    }
+                }else{
+                    $storage_id = $variation->storage;
+                }
+                if(request('color') != null){
+                    $color_id = request('color');
+                }else{
+                    $color_id = $variation->color;
+                }
+                if(request('grade') != null){
+                    $grade_id = request('grade');
+                    if($variation->grade != $grade_id){
+                        return redirect()->back()->with('error', 'Grade ID does not match with the stock variation');
+                    }
+                }else{
+                    $grade_id = $variation->grade;
+                }
+                $new_variation = Variation_model::firstOrNew([
+                    'product_id' => $product_id,
+                    'storage' => $storage_id,
+                    'color' => $color_id,
+                    'grade' => $grade_id,
+                ]);
+                // dd($new_variation);
+                if($stock->variation_id != $new_variation->id){
+                    $new_variation->status = 1;
+                    $new_variation->stock += 1;
+                    $new_variation->save();
+                    $stock_operation = Stock_operations_model::create([
+                        'stock_id' => $stock->id,
+                        'old_variation_id' => $stock->variation_id,
+                        'new_variation_id' => $new_variation->id,
+                        'description' => 'Variation changed during TopUp',
+                        'admin_id' => session('user_id'),
+                    ]);
+                    session()->put('success', 'Stock Variation changed successfully from '.$stock->variation_id.' to '.$new_variation->id);
+                    $stock->variation_id = $new_variation->id;
+                    $stock->save();
+                }
+                    session()->put('copy', 1);
+                    session()->put('product', request('product'));
+                    session()->put('storage', request('storage'));
+                    session()->put('color', request('color'));
+                    session()->put('grade', request('grade'));
+            }else{
+                session()->put('copy', 0);
+                session()->put('product', $stock->variation->product_id);
+                session()->put('storage', $stock->variation->storage);
+                session()->put('color', $stock->variation->color);
+                session()->put('grade', $stock->variation->grade);
+            }
+
+            $process_stock = Process_stock_model::firstOrNew(['process_id'=>$process_id, 'stock_id'=>$stock->id]);
+            $process_stock->admin_id = session('user_id');
+            $process_stock->variation_id = $stock->variation_id;
+            $process_stock->description = $reference;
+            if($process_stock->id == null){
+                $process_stock->status = 1;
+                $process_stock->save();
+                // Check if the session variable 'counter' is set
+                if (session()->has('counter')) {
+                    // Increment the counter
+                    session()->increment('counter');
+                } else {
+                    // Initialize the counter if it doesn't exist
+                    session()->put('counter', 1);
+                }
+                $model = $stock->variation->product->model ?? '?';
+                $storage = $stock->variation->storage_id->name ?? '?';
+                $color = $stock->variation->color_id->name ?? '?';
+                $grade = $stock->variation->grade_id->name ?? '?';
+
+                session()->put('success', 'Stock Verified successfully: '.$model.' - '.$storage.' - '.$color.' - '.$grade);
+            }else{
+                if($process_stock->status == 2){
+                    $process_stock->status = 1;
+                    $process_stock->save();
+                    session()->put('success', 'Stock ReVerified successfully');
+                }else{
+                    session()->put('error', 'Stock already verified');
+                }
+            }
+        }
+        return redirect()->back();
+    }
+
 
     public function undo_topup($id){
         $listed_stocks = Process_stock_model::where('process_id', $id)->get();

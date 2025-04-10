@@ -747,7 +747,7 @@ class Inventory extends Component
             // }
             // $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
             if($stock == null){
-                session()->put('error', 'IMIE Invalid / Not Found');
+                session()->put('error', 'IMEI Invalid / Not Found');
                 return redirect()->back();
 
             }
