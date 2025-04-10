@@ -1834,7 +1834,7 @@ class Order extends Component
             $variation = request('variation');
             $data = json_decode($issue->data);
             // echo $variation." ".$data->imei." ".$data->cost;
-            if($data->v_grade){
+            if(isset($data->v_grade) && $data->v_grade){
                 $v_grade = Vendor_grade_model::where('name',$data->v_grade)->first()->id ?? null;
             }
 
