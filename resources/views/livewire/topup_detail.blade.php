@@ -254,6 +254,7 @@
             </div>
 
         </div>
+        @if (request('show') == 1)
 
         <div class="card">
             <div class="card-header">
@@ -291,6 +292,7 @@
                 </div>
             </div>
         </div>
+        @endif
     </div>
         <br>
 
