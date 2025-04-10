@@ -126,6 +126,10 @@ class MoveInventory extends Component
             session()->put('description',request('description'));
         }
 
+        if(request('color')){
+
+            return redirect()->back()->with('error', $color);
+        }
         if (request('imei')) {
             $imei_list = request('imei');
         }
@@ -181,7 +185,6 @@ class MoveInventory extends Component
                     }
                     if(request('color') != ''){
                         $color = request('color');
-                        return redirect()->back()->with('error', $color);
                     }
                     if(request('price') != ''){
                         if($imei_count == count($prices)){
