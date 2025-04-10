@@ -26,7 +26,7 @@
                         <input type="checkbox" value="1" name="bypass_check" class="form-check-input" form="repair_item" @if (session('bypass_check') == 1) checked @endif>
                         <label class="form-check-label" for="bypass_check">Bypass Repair check</label>
                     </span> --}}
-                <span class="main-content-title mg-b-0 mg-b-lg-1">Topup Batch Detail</span>
+                <span class="main-content-title">Topup Batch Detail</span>
                 @if ($process->status == 1)
                 <form class="form-inline" id="approveform" method="POST" action="{{url('topup/ship').'/'.$process->id}}">
                     @csrf
