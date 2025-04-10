@@ -215,35 +215,71 @@
                 </div>
             </div>
             <div class="card-body"><div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                    <thead>
+                        <tr>
+                            <th><small><b>No</b></small></th>
+                            <th><small><b>Variation</b></small></th>
+                            <th><small><b>IMEI | Serial Number</b></small></th>
+                            <th><small><b>Reference</b></small></th>
+                            <th><small><b>Operation</b></small></th>
+                            <th><small><b>Vendor</b></small></th>
+                            <th><small><b>Creation Date</b></small></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                            $i = 0;
+                        @endphp
+                        @foreach ($last_ten as $item)
+                            <tr>
+                                @if ($item->stock == null)
+                                    {{$item->stock_id}}
+                                    @continue
+                                @endif
+                                <td>{{ $i + 1 }}</td>
+                                <td>{{ $item->stock->variation->product->model ?? "Variation Model Not added"}} {{$storages[$item->stock->variation->storage] ?? null}} {{$colors[$item->stock->variation->color] ?? null}} {{$grades[$item->stock->variation->grade] ?? "Variation Grade Not added Reference: ".$item->stock->variation->reference_id }}</td>
+                                <td>{{ $item->stock->imei.$item->stock->serial_number }}</td>
+                                <td>{{ $item->description }}</td>
+                                <td>{{ $item->stock->latest_operation->description ?? null }}</td>
+                                <td>{{ $item->stock->order->customer->first_name ?? "Purchase Entry Error" }}</td>
+                                <td style="width:220px">{{ $item->created_at }}</td>
+                            </tr>
+                            @php
+                                $i ++;
+                            @endphp
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
                     <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                         <thead>
                             <tr>
                                 <th><small><b>No</b></small></th>
                                 <th><small><b>Variation</b></small></th>
-                                <th><small><b>IMEI | Serial Number</b></small></th>
-                                <th><small><b>Reference</b></small></th>
-                                <th><small><b>Operation</b></small></th>
-                                <th><small><b>Vendor</b></small></th>
-                                <th><small><b>Creation Date</b></small></th>
+                                <th><small><b>Qty</b></small></th>
+                                <th><small><b></b></small></th>
                             </tr>
                         </thead>
                         <tbody>
                             @php
                                 $i = 0;
                             @endphp
-                            @foreach ($last_ten as $item)
+                            @foreach ($variations as $variation)
                                 <tr>
-                                    @if ($item->stock == null)
-                                        {{$item->stock_id}}
-                                        @continue
-                                    @endif
                                     <td>{{ $i + 1 }}</td>
-                                    <td>{{ $item->stock->variation->product->model ?? "Variation Model Not added"}} {{$storages[$item->stock->variation->storage] ?? null}} {{$colors[$item->stock->variation->color] ?? null}} {{$grades[$item->stock->variation->grade] ?? "Variation Grade Not added Reference: ".$item->stock->variation->reference_id }}</td>
-                                    <td>{{ $item->stock->imei.$item->stock->serial_number }}</td>
-                                    <td>{{ $item->description }}</td>
-                                    <td>{{ $item->stock->latest_operation->description ?? null }}</td>
-                                    <td>{{ $item->stock->order->customer->first_name ?? "Purchase Entry Error" }}</td>
-                                    <td style="width:220px">{{ $item->created_at }}</td>
+                                    <td>{{ $variation->sku ?? "Variation SKU Not added"}} {{ $variation->product->model ?? "Variation Model Not added"}} {{$storages[$variation->storage] ?? null}} {{$colors[$variation->color] ?? null}} {{$grades[$variation->grade] ?? "Variation Grade Not added" }}</td>
+                                    <td>{{ $stocks->where('variation_id',$variation->id)->count() }}</td>
+                                    <td><a href="{{ url('topup/print_topup').'/'.$process->id.'/'.$variation->id }}" class="btn btn-secondary" target="_blank">Print</a></td>
                                 </tr>
                                 @php
                                     $i ++;
@@ -251,8 +287,8 @@
                             @endforeach
                         </tbody>
                     </table>
-            </div>
 
+                </div>
             </div>
         </div>
     </div>
