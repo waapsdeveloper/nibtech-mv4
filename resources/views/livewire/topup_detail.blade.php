@@ -207,9 +207,6 @@
         @endphp
         @endif
 
-    </div>
-        <br>
-
         <div class="card">
             <div class="card-header pb-0">
                 <div class="d-flex justify-content-between">
@@ -269,6 +266,9 @@
 
             </div>
         </div>
+    </div>
+        <br>
+
 
     @endsection
 
