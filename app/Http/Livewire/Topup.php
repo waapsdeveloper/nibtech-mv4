@@ -87,7 +87,6 @@ class Topup extends Component
         $process->process_type_id = 22;
         $process->status = 1;
         $process->admin_id = session('user_id');
-        $process->description = request('description');
         $process->quantity = request('quantity');
         $process->save();
 
