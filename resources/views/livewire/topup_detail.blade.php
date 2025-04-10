@@ -247,6 +247,7 @@
         <div class="card" id="topup_variations">
             <div class="card-header">
                 <h4 class="card-title mg-b-0">Topup Variations</h4>
+                <h4>Created: {{ $process->created_at }}</h4>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
