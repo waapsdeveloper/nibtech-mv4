@@ -87,7 +87,7 @@
 
             <div class="btn-group p-1" role="group">
                 {{-- JS Print to Print topup Variations DIv --}}
-                <button type="button" class="btn btn-primary" onclick="window.getElementById('topup_variations').print();">Print</button>
+                <button type="button" class="btn btn-primary" onclick="document.getElementById('topup_variations').print();">Print</button>
                 @if (request('show') == 1)
                     <a href="{{ url('topup/detail').'/'.$process->id }}" class="btn btn-secondary">Hide Topup</a>
                 @else
