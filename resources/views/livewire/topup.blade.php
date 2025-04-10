@@ -21,15 +21,15 @@
             <div class="breadcrumb-header justify-content-between">
                 <div class="left-content">
                 {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">BulkSale</span> --}}
-                <a href="{{url('inventory/start_verification')}}" class="btn btn-success float-right" data-bs-target="#modaldemo"
-                data-bs-toggle="modal"><i class="mdi mdi-plus"></i> New Listed Stock Verification </a>
-                <a href="{{url('inventory_verification/progress')}}" class="btn btn-primary float-right"> Verification Progress </a>
+                <a href="{{url('topup/start_verification')}}" class="btn btn-success float-right" data-bs-target="#modaldemo"
+                data-bs-toggle="modal"><i class="mdi mdi-plus"></i> New Topup </a>
+                <a href="{{url('topup/progress')}}" class="btn btn-primary float-right"> Topup Progress </a>
 
                 </div>
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Listed Stock Verification</li>
+                        <li class="breadcrumb-item active" aria-current="page">Topup</li>
                     </ol>
                 </div>
             </div>
@@ -73,7 +73,7 @@
         <br>
         <div class="row">
             <div class="col-md-12" style="border-bottom: 1px solid rgb(216, 212, 212);">
-                <center><h4>Listed Stock Verification</h4></center>
+                <center><h4>Topup</h4></center>
             </div>
         </div>
         <br>
@@ -137,8 +137,8 @@
                                     <tr>
                                         <th><small><b>No</b></small></th>
                                         <th><small><b>Batch ID</b></small></th>
-                                        <th><small><b>Qty Old</b></small></th>
-                                        <th><small><b>Qty New</b></small></th>
+                                        <th><small><b>Qty Scanned</b></small></th>
+                                        <th><small><b>Qty Missed</b></small></th>
                                         <th><small><b>Start Date</b></small></th>
                                         <th><small><b>End Date</b></small></th>
                                         <th></th>
@@ -167,7 +167,7 @@
                                         {{-- @foreach ($items as $itemIndex => $item) --}}
                                             <tr>
                                                 <td>{{ $i + 1 }}</td>
-                                                <td><a href="{{url('listed_stock_verification/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a></td>
+                                                <td><a href="{{url('topup/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a></td>
                                                 <td>{{ $batch->listed_stocks_verification->sum('qty_from') }}</td>
                                                 <td>{{ $batch->listed_stocks_verification->sum('qty_to') }}</td>
                                                 <td style="width:220px">{{ $batch->created_at }}</td>
