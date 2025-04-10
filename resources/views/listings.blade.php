@@ -460,6 +460,23 @@
 
         }
 
+        function submitForm8(event, variationId, listings) {
+            event.preventDefault(); // avoid executing the actual submit of the form.
+
+            var form = $('#change_all_price_' + variationId);
+            var min_price = $('#all_min_price_' + variationId).val();
+            var price = $('#all_price_' + variationId).val();
+
+            listings.forEach(function(listing) {
+                if (min_price > 0){
+                    $('#min_price_limit_' + listing.id).val(min_price);
+                }
+                if (price > 0){
+                    $('#price_limit_' + listing.id).val(price);
+                }
+                submitForm5(event, listing.id);
+            });
+        }
         function updateAverageCost(variationId, prices) {
             if (prices.length > 0) {
                 let average = prices.reduce((a, b) => parseFloat(a) + parseFloat(b), 0) / prices.length;
@@ -947,16 +964,6 @@
 
                         });
 
-                        // <form class="form-inline" method="POST" id="change_qty_${variation.id}" action="{{url('listing/update_quantity')}}/${variation.id}">
-                        //                 @csrf
-                        //                 <div class="form-floating">
-                        //                     <input type="number" class="form-control" name="stock" id="quantity_${variation.id}" value="${listedStock || 0}" style="width:80px;" oninput="toggleButtonOnChange(${variation.id}, this)">
-                        //                     <label for="">Stock</label>
-                        //                 </div>
-                        //                 <button id="send_${variation.id}" class="btn btn-light d-none" onclick="submitForm(event, ${variation.id})">Push</button>
-                        //                 <span class="text-success" id="success_${variation.id}"></span>
-                        //             </form>
-                        // Create variation card
                         variationsContainer.append(`
                             <div class="card">
                                 <div class="card-header py-0 d-flex justify-content-between">
@@ -1011,6 +1018,21 @@
                                     <div class="p-2">
                                         <h6 class="d-inline">Without&nbsp;Buybox</h6>
                                         ${withoutBuybox}
+                                    </div>
+                                    <div class="p-2">
+                                        <h6 class="d-inline">Change&nbsp;All&nbsp;€&nbsp;handlers</h6>
+                                        <form class="form-inline" method="POST" id="change_all_handler_${variation.id}">
+                                            @csrf
+                                            <div class="form-floating d-inline">
+                                                <input type="number" class="form-control" id="all_min_handler_${variation.id}" name="all_min_handler" step="0.01" value="" style="width:80px;">
+                                                <label for="">Min&nbsp;Handler</label>
+                                            </div>
+                                            <div class="form-floating d-inline">
+                                                <input type="number" class="form-control" id="all_handler_${variation.id}" name="all_handler" step="0.01" value="" style="width:80px;">
+                                                <label for="">Handler</label>
+                                            </div>
+                                            <input type="submit" class="btn btn-light" value="Change">
+                                        </form>
                                     </div>
                                     <div class="p-2">
                                         <h6 class="d-inline">Change&nbsp;All&nbsp;€&nbsp;prices</h6>
@@ -1087,6 +1109,9 @@
 
                             $("#change_all_price_" + variation.id).on('submit', function(e) {
                                 submitForm4(e, variation.id, eur_listings[variation.id]);
+                            });
+                            $("#change_all_handler_" + variation.id).on('submit', function(e) {
+                                submitForm8(e, variation.id, eur_listings[variation.id]);
                             });
                         });
                     });
