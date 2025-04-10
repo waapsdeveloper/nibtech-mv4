@@ -241,7 +241,7 @@
 
         <div class="card">
             <div class="card-header">
-
+                <h4 class="card-title mg-b-0">Topup Variations</h4>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
