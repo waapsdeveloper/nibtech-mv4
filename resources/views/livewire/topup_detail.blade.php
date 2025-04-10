@@ -237,7 +237,6 @@
             </div>
             </div>
         </div>
-        <br>
         @if (request('show') == 1)
 
         <div class="card">
