@@ -103,8 +103,8 @@
 
 
             <div class="btn-group p-1" role="group">
-                <a href="{{ url('topup/print_topup').'/'.$process->id }}" class="btn btn-secondary btn-sm" target="_blank">Print Topup</a>
-                <a href="{{ url('topup/detail').'/'.$process->id.'?show=1' }}" class="btn btn-secondary btn-sm">Show Topup</a>
+                <a href="{{ url('topup/print_topup').'/'.$process->id }}" class="btn btn-secondary" target="_blank">Print Topup</a>
+                <a href="{{ url('topup/detail').'/'.$process->id.'?show=1' }}" class="btn btn-secondary">Show Topup</a>
             </div>
         </div>
             <div class="p-2">
