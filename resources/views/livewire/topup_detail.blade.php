@@ -286,6 +286,7 @@
                                                 @foreach ($stocks->where('variation_id', $variation->id) as $stock)
                                                     <form method="POST" action="{{ url('move_inventory/change_grade') }}" id="form-{{ $stock->id }}">
                                                         @csrf
+                                                        <button type="submit" class="btn btn-primary" form="form-{{ $stock->id }}"></button>
                                                     </form>
                                                     <tr>
                                                         <td>{{ $stock->id }}</td>
@@ -297,9 +298,6 @@
                                                                     <option value="{{ $id }}" @if ($id == $stock->variation->color) {{'selected'}}@endif>{{ $name }}</option>
                                                                 @endforeach
                                                             </select>
-                                                        </td>
-                                                        <td>
-                                                            <button type="submit" class="btn btn-primary" form="form-{{ $stock->id }}">Change</button>
                                                         </td>
                                                         <td style="width:220px">{{ $stock->created_at }}</td>
                                                     </tr>
