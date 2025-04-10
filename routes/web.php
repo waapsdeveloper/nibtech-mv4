@@ -318,6 +318,8 @@ Route::get('listed_stock_verification/detail/{id}', [ListedStockVerification::cl
 Route::get('listed_stock_verification/undo/{id}', [ListedStockVerification::class,'undo_verification'])->name('listed_stock_verification_undo');
 
 Route::get('topup', Topup::class)->name('view_topup');
+Route::post('topup/start', [Topup::class,'start_topup'])->name('start_topup');
+Route::get('topup/detail/{id}', [Topup::class,'topup_detail'])->name('topup_detail');
 
 
 Route::get('process', Process::class)->name('view_process');

@@ -75,7 +75,24 @@ class Topup extends Component
         return view('livewire.topup')->with($data);
     }
 
-    
+    public function start_topup(){
+        $latest_ref = Process_model::where('process_type_id', 22)->latest()->first();
+        if($latest_ref != null){
+            $latest_ref = $latest_ref->reference_id + 1;
+        }else{
+            $latest_ref = 40001;
+        }
+        $process = new Process_model();
+        $process->reference_id = $latest_ref;
+        $process->process_type_id = 22;
+        $process->status = 1;
+        $process->admin_id = session('user_id');
+        $process->description = request('description');
+        $process->quantity = request('quantity');
+        $process->save();
+
+        return redirect()->to(url('topup/detail').'/'.$process->id)->with('success', 'Topup Started Started');
+    }
 
     public function close_process($process_id){
         $process = Process_model::find($process_id);
@@ -472,6 +489,6 @@ class Topup extends Component
         session()->put('success', 'Inventory Verification ended');
         return redirect()->back();
     }
-    
+
 
 }
