@@ -211,6 +211,68 @@
     </div>
         <br>
 
+        <div class="card">
+            <div class="card-header pb-0">
+                <div class="d-flex justify-content-between">
+                    <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$last_ten->firstItem()}} {{ __('locale.To') }} {{$last_ten->lastItem()}} {{ __('locale.Out Of') }} {{$last_ten->total()}} </h5>
+                    <h4 class="card-title mg-b-0">Latest Scanned</h4>
+                    <h4 class="card-title mg-b-0">Counter: {{ session('counter') }} <a href="{{ url('inventory/resume_verification?reset_counter=1') }}">Reset</a></h4>
+
+                    <h4 class="card-title mg-b-0">Total Scanned: {{$scanned_total}}</h4>
+                    <form method="get" action="" class="row form-inline">
+                        <label for="perPage" class="card-title inline">per page:</label>
+                        <select name="per_page" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
+                            <option value="10" {{ Request::get('per_page') == 10 ? 'selected' : '' }}>10</option>
+                            <option value="20" {{ Request::get('per_page') == 20 ? 'selected' : '' }}>20</option>
+                            <option value="50" {{ Request::get('per_page') == 50 ? 'selected' : '' }}>50</option>
+                            <option value="100" {{ Request::get('per_page') == 100 ? 'selected' : '' }}>100</option>
+                        </select>
+                    </form>
+                </div>
+            </div>
+            <div class="card-body"><div class="table-responsive">
+                    <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                        <thead>
+                            <tr>
+                                <th><small><b>No</b></small></th>
+                                <th><small><b>Variation</b></small></th>
+                                <th><small><b>IMEI | Serial Number</b></small></th>
+                                <th><small><b>Reference</b></small></th>
+                                <th><small><b>Operation</b></small></th>
+                                <th><small><b>Vendor</b></small></th>
+                                <th><small><b>Creation Date</b></small></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                                $i = $last_ten->firstItem() - 1;
+                            @endphp
+                            @foreach ($last_ten as $item)
+                                <tr>
+                                    @if ($item->stock == null)
+                                        {{$item->stock_id}}
+                                        @continue
+                                    @endif
+                                    <td>{{ $i + 1 }}</td>
+                                    <td>{{ $item->stock->variation->product->model ?? "Variation Model Not added"}} {{$storages[$item->stock->variation->storage] ?? null}} {{$colors[$item->stock->variation->color] ?? null}} {{$grades[$item->stock->variation->grade] ?? "Variation Grade Not added Reference: ".$item->stock->variation->reference_id }}</td>
+                                    <td>{{ $item->stock->imei.$item->stock->serial_number }}</td>
+                                    <td>{{ $item->description }}</td>
+                                    <td>{{ $item->stock->latest_operation->description ?? null }}</td>
+                                    <td>{{ $item->stock->order->customer->first_name ?? "Purchase Entry Error" }}</td>
+                                    <td style="width:220px">{{ $item->created_at }}</td>
+                                </tr>
+                                @php
+                                    $i ++;
+                                @endphp
+                            @endforeach
+                        </tbody>
+                    </table>
+                    <br>
+                    {{ $last_ten->onEachSide(5)->links() }} {{ __('locale.From') }} {{$last_ten->firstItem()}} {{ __('locale.To') }} {{$last_ten->lastItem()}} {{ __('locale.Out Of') }} {{$last_ten->total()}}
+            </div>
+
+            </div>
+        </div>
 
     @endsection
 
