@@ -214,7 +214,6 @@
         <div class="card">
             <div class="card-header pb-0">
                 <div class="d-flex justify-content-between">
-                    <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$last_ten->firstItem()}} {{ __('locale.To') }} {{$last_ten->lastItem()}} {{ __('locale.Out Of') }} {{$last_ten->total()}} </h5>
                     <h4 class="card-title mg-b-0">Latest Scanned</h4>
                     <h4 class="card-title mg-b-0">Counter: {{ session('counter') }} <a href="{{ url('inventory/resume_verification?reset_counter=1') }}">Reset</a></h4>
 
@@ -245,7 +244,7 @@
                         </thead>
                         <tbody>
                             @php
-                                $i = $last_ten->firstItem() - 1;
+                                $i = 0;
                             @endphp
                             @foreach ($last_ten as $item)
                                 <tr>
@@ -267,8 +266,6 @@
                             @endforeach
                         </tbody>
                     </table>
-                    <br>
-                    {{ $last_ten->onEachSide(5)->links() }} {{ __('locale.From') }} {{$last_ten->firstItem()}} {{ __('locale.To') }} {{$last_ten->lastItem()}} {{ __('locale.Out Of') }} {{$last_ten->total()}}
             </div>
 
             </div>
