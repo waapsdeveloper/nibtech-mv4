@@ -245,9 +245,9 @@
         @if (request('show') == 1)
 
         <div class="card" id="topup_variations">
-            <div class="card-header d-flex justify-content-between">
+            <div class="card-header d-flex justify-content-between pb-0">
                 <h4 class="card-title mg-b-0">Topup Variations</h4>
-                <h5>Created: {{ $process->created_at }}</h5>
+                <h5 class="card-title mg-b-0">Created: {{ $process->created_at }}</h5>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
