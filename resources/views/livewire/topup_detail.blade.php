@@ -87,7 +87,7 @@
 
             <div class="btn-group p-1" role="group">
                 {{-- JS Print to Print topup Variations DIv --}}
-                <button type="button" class="btn btn-primary" onclick="document.getElementById('topup_variations').print();">Print</button>
+                <button type="button" class="btn btn-primary" onclick="PrintElem('topup_variations');">Print</button>
                 @if (request('show') == 1)
                     <a href="{{ url('topup/detail').'/'.$process->id }}" class="btn btn-secondary">Hide Topup</a>
                 @else
@@ -334,6 +334,25 @@
 
         <script>
 
+            function PrintElem(elem)
+            {
+                var mywindow = window.open('', 'PRINT', 'height=400,width=600');
+
+                mywindow.document.write('<html><head>');
+                mywindow.document.write(`<link rel="stylesheet" href="{{asset('assets/plugins/bootstrap/css/bootstrap.min.css')}}" type="text/css" />`);
+                mywindow.document.write(`<link rel="stylesheet" href="{{asset('assets/css/style.css')}}" type="text/css" />`);
+                mywindow.document.write('<title>' + document.title  + '</title></head><body >');
+                mywindow.document.write(document.getElementById(elem).innerHTML);
+                mywindow.document.write('</body></html>');
+
+                mywindow.document.close(); // necessary for IE >= 10
+                mywindow.focus(); // necessary for IE >= 10*/
+
+                mywindow.print();
+                mywindow.close();
+
+                return true;
+            }
         </script>
 		<!--Internal Sparkline js -->
 		<script src="{{asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js')}}"></script>
