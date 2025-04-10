@@ -105,9 +105,9 @@
 
                 <form class="form-inline" action="{{ url('topup/add_topup_imei').'/'.$process->id }}" method="POST" id="">
                     @csrf
-                    <div class="input-group">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
                         <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
-                        <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
 
                     </div>
 
