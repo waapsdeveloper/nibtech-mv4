@@ -463,9 +463,9 @@
         function submitForm8(event, variationId, listings) {
             event.preventDefault(); // avoid executing the actual submit of the form.
 
-            var form = $('#change_all_price_' + variationId);
-            var min_price = $('#all_min_price_' + variationId).val();
-            var price = $('#all_price_' + variationId).val();
+            var form = $('#change_all_handler_' + variationId);
+            var min_price = $('#all_min_handler_' + variationId).val();
+            var price = $('#all_handler_' + variationId).val();
 
             listings.forEach(function(listing) {
                 if (min_price > 0){
@@ -1016,10 +1016,6 @@
 
                                     @if (request('special') != 'verify_listing')
                                     <div class="p-2">
-                                        <h6 class="d-inline">Without&nbsp;Buybox</h6>
-                                        ${withoutBuybox}
-                                    </div>
-                                    <div class="p-2">
                                         <h6 class="d-inline">Change&nbsp;All&nbsp;€&nbsp;handlers</h6>
                                         <form class="form-inline" method="POST" id="change_all_handler_${variation.id}">
                                             @csrf
@@ -1048,6 +1044,10 @@
                                             </div>
                                             <input type="submit" class="btn btn-light" value="Push">
                                         </form>
+                                    </div>
+                                    <div class="p-2">
+                                        <h6 class="d-inline">Without&nbsp;Buybox</h6>
+                                        ${withoutBuybox}
                                     </div>
                                     @endif
                                     <div class="p-2">
