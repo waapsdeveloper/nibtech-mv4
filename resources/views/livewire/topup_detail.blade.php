@@ -271,7 +271,7 @@
                                     </td>
                                     <td></td>
                                 </tr>
-                                <tr class="collapse bg-lightGreen" id="stocks-{{ $variation->id }}">
+                                <tr class="collapse bg-lightgreen" id="stocks-{{ $variation->id }}">
                                     <td colspan="5">
                                         <table class="table table-bordered">
                                             <thead>
