@@ -35,7 +35,7 @@
                         <label for="description">Description</label>
                     </div>
                     <button type="submit" class="btn btn-success" name="approve" value="1">Ship</button>
-                    <a class="btn btn-danger" href="{{url('delete_verification') . "/" . $process->id }}">Delete</a>
+                    <a class="btn btn-danger" href="{{url('topup/delete') . "/" . $process->id }}">Delete</a>
                 </form>
 
                 <script>
@@ -97,7 +97,7 @@
 
         <br>
 
-        {{-- <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
+        <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
 
 
             <div class="p-2">
@@ -120,7 +120,7 @@
                     <li><a class="dropdown-item" href="{{url('export_repair_invoice')}}/{{ $process->id }}?packlist=1" target="_blank">.pdf</a></li>
                 </ul>
             </div>
-        </div> --}}
+        </div>
             <script>
                 window.onload = function() {
                     document.getElementById('imei').focus();
