@@ -277,18 +277,31 @@
                                             <thead>
                                                 <tr>
                                                     <th><small><b>Stock ID</b></small></th>
-                                                    <th><small><b>IMEI</b></small></th>
-                                                    <th><small><b>Serial Number</b></small></th>
+                                                    <th><small><b>IMEI | Serial Number</b></small></th>
+                                                    <th><small><b>Color</b></small></th>
                                                     <th><small><b>Creation Date</b></small></th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 @foreach ($stocks->where('variation_id', $variation->id) as $stock)
+                                                    <form method="POST" action="{{ url('move_inventory/change_grade') }}" id="form-{{ $stock->id }}">
+                                                        @csrf
+                                                    </form>
                                                     <tr>
                                                         <td>{{ $stock->id }}</td>
-                                                        <td>{{ $stock->imei }}</td>
-                                                        <td>{{ $stock->serial_number }}</td>
-                                                        <td>{{ $stock->created_at }}</td>
+                                                        <td>{{ $stock->imei }}{{ $stock->serial_number }}</td>
+                                                        <td>
+                                                            <select name="grade" class="form-control form-select" onchange="document.getElementById('form-{{ $stock->id }}').submit()">
+                                                                <option value="">Select Color</option>
+                                                                @foreach ($colors as $id => $name)
+                                                                    <option value="{{ $id }}" @if ($id == $stock->variation->color) {{'selected'}}@endif>{{ $name }}</option>
+                                                                @endforeach
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <button type="submit" class="btn btn-primary" form="form-{{ $stock->id }}">Change</button>
+                                                        </td>
+                                                        <td style="width:220px">{{ $stock->created_at }}</td>
                                                     </tr>
                                                 @endforeach
                                             </tbody>
