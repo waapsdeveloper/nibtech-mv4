@@ -22,76 +22,59 @@
         <!-- breadcrumb -->
             <div class="breadcrumb-header justify-content-between mt-0">
                 <div class="left-content">
-                    {{-- <span class="ms-3 form-check form-switch ms-4">
-                        <input type="checkbox" value="1" name="bypass_check" class="form-check-input" form="repair_item" @if (session('bypass_check') == 1) checked @endif>
-                        <label class="form-check-label" for="bypass_check">Bypass Repair check</label>
-                    </span> --}}
-                {{-- <span class="main-content-title">Topup Batch Detail</span> --}}
                 @if ($process->status == 1)
-                <form class="form-inline" id="approveform" method="POST" action="{{url('topup/ship').'/'.$process->id}}">
-                    @csrf
-                    <div class="form-floating">
-                        <input type="text" class="form-control" id="description" name="description" placeholder="Enter Description" value="{{$process->description}}" required>
-                        <label for="description">Description</label>
-                    </div>
-                    <button type="submit" class="btn btn-success" name="approve" value="1">Ship</button>
-                    <a class="btn btn-danger" href="{{url('topup/delete') . "/" . $process->id }}">Delete</a>
-                </form>
-
-                <script>
-                    function submitForm() {
-                        var form = $("#approveform");
-                        var actionUrl = form.attr('action');
-
-                        $.ajax({
-                            type: "POST",
-                            url: actionUrl,
-                            data: form.serialize(), // serializes the form's elements.
-                            success: function(data) {
-                                alert("Success: " + data); // show response from the PHP script.
-                            },
-                            error: function(jqXHR, textStatus, errorThrown) {
-                                alert("Error: " + textStatus + " - " + errorThrown);
-                            }
-                        });
-                    }
-
-                </script>
-                @else
-                <br>
-                {{ $process->description }}
-
-
-
-                @if (session('user')->hasPermission('verification_revert_status'))
-                    <br>
-                    <a href="{{url('topup/revert_status').'/'.$process->id}}">Revert Back to Pending</a>
-                @endif
-
-                @endif
-                    {{-- @if ($process->status == 2)
-                    <form class="form-inline" method="POST" action="{{url('topup/approve').'/'.$process->id}}">
+                    <form class="form-inline" id="approveform" method="POST" action="{{url('topup/ship').'/'.$process->id}}">
                         @csrf
                         <div class="form-floating">
-                            <input type="text" class="form-control" id="cost" name="cost" placeholder="Enter Total Cost" required>
-                            <label for="cost">Total Cost</label>
+                            <input type="text" class="form-control" id="description" name="description" placeholder="Enter Description" value="{{$process->description}}" required>
+                            <label for="description">Description</label>
                         </div>
-                        <button type="submit" class="btn btn-success">Close</button>
+                        <button type="submit" class="btn btn-success" name="approve" value="1">Ship</button>
+                        <a class="btn btn-danger" href="{{url('topup/delete') . "/" . $process->id }}">Delete</a>
                     </form>
 
-                    @endif --}}
+                    <script>
+                        function submitForm() {
+                            var form = $("#approveform");
+                            var actionUrl = form.attr('action');
+
+                            $.ajax({
+                                type: "POST",
+                                url: actionUrl,
+                                data: form.serialize(), // serializes the form's elements.
+                                success: function(data) {
+                                    alert("Success: " + data); // show response from the PHP script.
+                                },
+                                error: function(jqXHR, textStatus, errorThrown) {
+                                    alert("Error: " + textStatus + " - " + errorThrown);
+                                }
+                            });
+                        }
+
+                    </script>
+                @else
+                    <br>
+                    {{ $process->description }}
+
+
+
+                    @if (session('user')->hasPermission('topup_revert_status'))
+                        <br>
+                        <a href="{{url('topup/revert_status').'/'.$process->id}}">Revert Back to Pending</a>
+                    @endif
+
+                @endif
                 </div>
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
-                        <li class="breadcrumb-item tx-15"><a href="{{ session('previous')}}">listed_stock Verification</a></li>
+                        <li class="breadcrumb-item tx-15"><a href="{{ session('previous')}}">Topup</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Topup Detail</li>
                     </ol>
                 </div>
             </div>
         <!-- /breadcrumb -->
         <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
-                {{-- <center><h4>listed_stock Verification Batch Detail</h4></center> --}}
             <h5>Reference: {{ $process->reference_id }} | Batch Quantity: {{ $process->quantity }} | Scanned Quantity: {{ $process->process_stocks->count() }}</h5>
         </div>
 
@@ -107,79 +90,79 @@
                 <a href="{{ url('topup/detail').'/'.$process->id.'?show=1' }}" class="btn btn-secondary">Show Topup</a>
             </div>
         </div>
-            <div class="p-2">
+        <div class="p-2">
 
 
-                <form class="form-inline" action="{{ url('topup/add_topup_item').'/'.$process->id }}" method="POST" id="">
-                    @csrf
-                    <div class="form-floating">
-                        <input type="text" class="form-control form-control-sm" name="reference" id="reference" placeholder="Enter Reference" value="{{ session('reference') }}">
-                        <label for="reference" class="">Reference: &nbsp;</label>
-                    </div>
-                    <div class="form-floating">
-                        <input type="text" class="form-control" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
-                        <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
+            <form class="form-inline" action="{{ url('topup/add_topup_item').'/'.$process->id }}" method="POST" id="">
+                @csrf
+                <div class="form-floating">
+                    <input type="text" class="form-control form-control-sm" name="reference" id="reference" placeholder="Enter Reference" value="{{ session('reference') }}">
+                    <label for="reference" class="">Reference: &nbsp;</label>
+                </div>
+                <div class="form-floating">
+                    <input type="text" class="form-control" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
+                    <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
 
-                    </div>
+                </div>
 
-                    <select name="product" class="form-control form-select" style="width: 150px;">
-                        <option value="">Model</option>
-                        @foreach ($products as $id => $name)
-                            <option value="{{ $id }}"@if($id == session('product')) {{'selected'}}@endif>{{ $name }}</option>
-                        @endforeach
-                    </select>
-                    <select name="storage" class="form-control form-select" style="width: 150px;">
-                        <option value="">Storage</option>
-                        @foreach ($storages as $id => $name)
-                            <option value="{{ $id }}"@if($id == session('storage')) {{'selected'}}@endif>{{ $name }}</option>
-                        @endforeach
-                    </select>
-                    <select name="color" class="form-control form-select" style="width: 150px;">
-                        <option value="">Color</option>
-                        @foreach ($colors as $id => $name)
-                            <option value="{{ $id }}"@if($id == session('color')) {{'selected'}}@endif>{{ $name }}</option>
-                        @endforeach
-                    </select>
-                    <select name="grade" class="form-control form-select">
-                        <option value="">Grade</option>
-                        @foreach ($grades as $id => $name)
-                            <option value="{{ $id }}" @if ($id == session('grade')) {{'selected'}}@endif>{{ $name }}</option>
-                        @endforeach
-                    </select>
+                <select name="product" class="form-control form-select" style="width: 150px;">
+                    <option value="">Model</option>
+                    @foreach ($products as $id => $name)
+                        <option value="{{ $id }}"@if($id == session('product')) {{'selected'}}@endif>{{ $name }}</option>
+                    @endforeach
+                </select>
+                <select name="storage" class="form-control form-select" style="width: 150px;">
+                    <option value="">Storage</option>
+                    @foreach ($storages as $id => $name)
+                        <option value="{{ $id }}"@if($id == session('storage')) {{'selected'}}@endif>{{ $name }}</option>
+                    @endforeach
+                </select>
+                <select name="color" class="form-control form-select" style="width: 150px;">
+                    <option value="">Color</option>
+                    @foreach ($colors as $id => $name)
+                        <option value="{{ $id }}"@if($id == session('color')) {{'selected'}}@endif>{{ $name }}</option>
+                    @endforeach
+                </select>
+                <select name="grade" class="form-control form-select">
+                    <option value="">Grade</option>
+                    @foreach ($grades as $id => $name)
+                        <option value="{{ $id }}" @if ($id == session('grade')) {{'selected'}}@endif>{{ $name }}</option>
+                    @endforeach
+                </select>
 
 
-                    <div class="input-group form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="com" name="copy" value="1" @if (session('copy') == 1) {{'checked'}} @endif>&nbsp;&nbsp;
-                        <label class="form-check-label" for="com">Copy</label>
-                    </div>
-                    <button class="btn btn-primary pd-x-20" type="submit">Insert</button>
-                </form>
-            </div>
-            <script>
-                window.onload = function() {
-                    document.getElementById('imei').focus();
-                    document.getElementById('imei').click();
-                    setTimeout(function(){ document.getElementById('imei').focus();$('#imei').focus(); }, 500);
-                };
-                document.addEventListener('DOMContentLoaded', function() {
-                    var input = document.getElementById('imei');
-                    input.focus();
-                    input.select();
-                    document.getElementById('imei').click();
-                    setTimeout(function(){ document.getElementById('imei').focus();$('#imei').focus(); }, 500);
-                });
-            </script>
+                <div class="input-group form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="com" name="copy" value="1" @if (session('copy') == 1) {{'checked'}} @endif>&nbsp;&nbsp;
+                    <label class="form-check-label" for="com">Copy</label>
+                </div>
+                <button class="btn btn-primary pd-x-20" type="submit">Insert</button>
+            </form>
+        </div>
+        <script>
+            window.onload = function() {
+                document.getElementById('imei').focus();
+                document.getElementById('imei').click();
+                setTimeout(function(){ document.getElementById('imei').focus();$('#imei').focus(); }, 500);
+            };
+            document.addEventListener('DOMContentLoaded', function() {
+                var input = document.getElementById('imei');
+                input.focus();
+                input.select();
+                document.getElementById('imei').click();
+                setTimeout(function(){ document.getElementById('imei').focus();$('#imei').focus(); }, 500);
+            });
+        </script>
         <br>
         @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <span class="alert-inner--icon"><i class="fe fe-thumbs-up"></i></span>
-            <span class="alert-inner--text"><strong>{{session('success')}}</strong></span>
-            <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
-        </div>
-        <br>
-        @php
-        session()->forget('success');
-        @endphp
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <span class="alert-inner--icon"><i class="fe fe-thumbs-up"></i></span>
+                <span class="alert-inner--text"><strong>{{session('success')}}</strong></span>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <br>
+            @php
+            session()->forget('success');
+            @endphp
         @endif
         @if (session('error'))
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -252,7 +235,7 @@
                     </tbody>
                 </table>
             </div>
-
+            </div>
         </div>
         <br>
         @if (request('show') == 1)
