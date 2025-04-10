@@ -129,10 +129,10 @@ class Topup extends Component
         }
         $data['vendors'] = Customer_model::whereNotNull('is_vendor')->get();
         $data['exchange_rates'] = ExchangeRate::pluck('rate','target_currency');
+        $data['products'] = Products_model::pluck('model','id')->orderBy('model','asc');
         $data['storages'] = Storage_model::pluck('name','id');
-        $data['products'] = Products_model::pluck('model','id');
-        $data['grades'] = Grade_model::pluck('name','id');
         $data['colors'] = Color_model::pluck('name','id');
+        $data['grades'] = Grade_model::pluck('name','id');
 
         $last_ten = Process_stock_model::where('process_id',$process_id)->orderBy('id','desc')->limit($per_page)->get();
         $data['last_ten'] = $last_ten;
