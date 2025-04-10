@@ -317,6 +317,8 @@ Route::get('listed_stock_verification', ListedStockVerification::class)->name('v
 Route::get('listed_stock_verification/detail/{id}', [ListedStockVerification::class,'verification_detail'])->name('listed_stock_verification_detail');
 Route::get('listed_stock_verification/undo/{id}', [ListedStockVerification::class,'undo_verification'])->name('listed_stock_verification_undo');
 
+Route::get('topup', Topup::class)->name('view_topup');
+
 
 Route::get('process', Process::class)->name('view_process');
 
