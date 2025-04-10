@@ -284,7 +284,7 @@
                                             </thead>
                                             <tbody>
                                                 @foreach ($stocks->where('variation_id', $variation->id) as $stock)
-                                                    <form method="POST" action="{{ url('move_inventory/change_grade') }}" id="form-{{ $stock->id }}">
+                                                    <form method="POST" action="{{ url('move_inventory/change_grade/1') }}" id="form-{{ $stock->id }}">
                                                         @csrf
                                                         <input type="hidden" name="imei" value="{{ $stock->imei ?? $stock->serial_number }}">
                                                         <input type="hidden" name="description" value="Manual Color Change Due to Topup">
