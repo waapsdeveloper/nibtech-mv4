@@ -294,7 +294,7 @@
                                                         <td>{{ $stock->id }}</td>
                                                         <td>{{ $stock->imei }}{{ $stock->serial_number }}</td>
                                                         <td>
-                                                            <select name="color" class="form-control form-select" form="orm-{{ $stock->id }}" onchange="document.getElementById('form-{{ $stock->id }}').submit()">
+                                                            <select name="color" class="form-control form-select" form="form-{{ $stock->id }}" onchange="document.getElementById('form-{{ $stock->id }}').submit()">
                                                                 <option value="">Select Color</option>
                                                                 @foreach ($colors as $id => $name)
                                                                     <option value="{{ $id }}" @if ($id == $stock->variation->color) {{'selected'}}@endif>{{ $name }}</option>
