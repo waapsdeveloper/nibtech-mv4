@@ -99,7 +99,7 @@
 
         <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
 
-            <h4>Scan Item</h4>
+            <h4>Topup Details</h4>
 
 {{--
             <div class="btn-group p-1" role="group">
