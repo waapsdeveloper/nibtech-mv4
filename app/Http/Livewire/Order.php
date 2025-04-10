@@ -1834,8 +1834,10 @@ class Order extends Component
             $variation = request('variation');
             $data = json_decode($issue->data);
             // echo $variation." ".$data->imei." ".$data->cost;
-            if(isset($data->v_grade) && $data->v_grade){
-                $v_grade = Vendor_grade_model::where('name',$data->v_grade)->first()->id ?? null;
+            if(isset($data->v_grade)){
+                if($data->v_grade){
+                    $v_grade = Vendor_grade_model::where('name',$data->v_grade)->first()->id ?? null;
+                }
             }
 
             if($this->add_purchase_item($issue->order_id, $imei, $variation, $data->cost, 1, $v_grade) == 1){
