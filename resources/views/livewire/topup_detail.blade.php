@@ -103,7 +103,7 @@
             <div class="p-2">
                 <h4>Scan Item</h4>
 
-                <form class="form-inline" action="{{ url('topup/add_topup_imei').'/'.$process->id }}" method="POST" id="">
+                <form class="form-inline" action="{{ url('topup/add_topup_item').'/'.$process->id }}" method="POST" id="">
                     @csrf
                     <div class="form-floating">
                         <input type="text" class="form-control form-control-sm" name="reference" id="reference" placeholder="Enter Reference" value="{{ session('reference') }}">
