@@ -103,7 +103,7 @@
             <div class="p-2">
                 <h4>Scan Item</h4>
 
-                <form class="form-inline" action="{{ url('topup/add_topup_imei').'/'.$topup->id }}" method="POST" id="">
+                <form class="form-inline" action="{{ url('topup/add_topup_imei').'/'.$process->id }}" method="POST" id="">
                     @csrf
                     <div class="input-group">
                         <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
