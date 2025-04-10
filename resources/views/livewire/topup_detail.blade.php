@@ -263,9 +263,37 @@
                                 <tr>
                                     <td>{{ $i + 1 }}</td>
                                     <td>{{ $variation->sku ?? "Variation SKU Not added"}}</td>
-                                    <td> {{ $variation->product->model ?? "Variation Model Not added"}} {{$storages[$variation->storage] ?? null}} {{$colors[$variation->color] ?? null}} {{$grades[$variation->grade] ?? "Variation Grade Not added" }}</td>
-                                    <td>{{ $stocks->where('variation_id',$variation->id)->count() }}</td>
+                                    <td>{{ $variation->product->model ?? "Variation Model Not added"}} {{$storages[$variation->storage] ?? null}} {{$colors[$variation->color] ?? null}} {{$grades[$variation->grade] ?? "Variation Grade Not added" }}</td>
+                                    <td>
+                                        <a href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#stocks-{{ $variation->id }}" aria-expanded="false" aria-controls="stocks-{{ $variation->id }}">
+                                            {{ $stocks->where('variation_id', $variation->id)->count() }}
+                                        </a>
+                                    </td>
                                     <td></td>
+                                </tr>
+                                <tr class="collapse" id="stocks-{{ $variation->id }}">
+                                    <td colspan="5">
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th><small><b>Stock ID</b></small></th>
+                                                    <th><small><b>IMEI</b></small></th>
+                                                    <th><small><b>Serial Number</b></small></th>
+                                                    <th><small><b>Creation Date</b></small></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ($stocks->where('variation_id', $variation->id) as $stock)
+                                                    <tr>
+                                                        <td>{{ $stock->id }}</td>
+                                                        <td>{{ $stock->imei }}</td>
+                                                        <td>{{ $stock->serial_number }}</td>
+                                                        <td>{{ $stock->created_at }}</td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </td>
                                 </tr>
                                 @php
                                     $i ++;
