@@ -141,6 +141,7 @@ class Topup extends Component
         $data['all_variations'] = Variation_model::whereNotNull('sku')->get();
         $data['process'] = Process_model::find($process_id);
 
+        $data['scanned_total'] = Process_stock_model::where('process_id',$process_id)->count();
         $data['process_id'] = $process_id;
 
         return view('livewire.topup_detail')->with($data);
