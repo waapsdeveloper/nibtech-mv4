@@ -101,10 +101,50 @@
 
 
             <div class="p-2">
-                <h4>Receive External Repair Item</h4>
+                <h4>Scan Item</h4>
 
+                <form class="form-inline" action="{{ url('topup/add_topup_imei').'/'.$topup->id }}" method="POST" id="">
+                    @csrf
+                    <div class="input-group">
+                        <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
+                        <input type="text" class="form-control form-control-sm" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
+
+                    </div>
+
+                    <select name="product" class="form-control form-select" style="width: 150px;">
+                        <option value="">Model</option>
+                        @foreach ($products as $id => $name)
+                            <option value="{{ $id }}"@if($id == session('product')) {{'selected'}}@endif>{{ $name }}</option>
+                        @endforeach
+                    </select>
+                    <select name="storage" class="form-control form-select" style="width: 150px;">
+                        <option value="">Storage</option>
+                        @foreach ($storages as $id => $name)
+                            <option value="{{ $id }}"@if($id == session('storage')) {{'selected'}}@endif>{{ $name }}</option>
+                        @endforeach
+                    </select>
+                    <select name="color" class="form-control form-select" style="width: 150px;">
+                        <option value="">Color</option>
+                        @foreach ($colors as $id => $name)
+                            <option value="{{ $id }}"@if($id == session('color')) {{'selected'}}@endif>{{ $name }}</option>
+                        @endforeach
+                    </select>
+                    <select name="grade" class="form-control form-select">
+                        <option value="">Grade</option>
+                        @foreach ($grades as $id => $name)
+                            <option value="{{ $id }}" @if ($id == session('grade')) {{'selected'}}@endif>{{ $name }}</option>
+                        @endforeach
+                    </select>
+
+
+                    <div class="input-group form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="com" name="copy" value="1" @if (session('copy') == 1) {{'checked'}} @endif>&nbsp;&nbsp;\
+                        <label class="form-check-label" for="com">Copy</label>
+                    </div>
+                    <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
+                </form>
             </div>
-
+{{--
             <div class="btn-group p-1" role="group">
                 <a href="{{url('repair_email')}}/{{ $process->id }}" target="_blank"><button class="btn btn-secondary">Send Email</button></a>
                 <a href="{{url('export_repair_invoice')}}/{{ $process->id }}" target="_blank"><button class="btn btn-secondary">Invoice</button></a>
@@ -119,7 +159,7 @@
                     <li><a class="dropdown-item" href="{{url('export_repair_invoice')}}/{{ $process->id }}?packlist=2&id={{ $process->id }}">.xlsx</a></li>
                     <li><a class="dropdown-item" href="{{url('export_repair_invoice')}}/{{ $process->id }}?packlist=1" target="_blank">.pdf</a></li>
                 </ul>
-            </div>
+            </div> --}}
         </div>
             <script>
                 window.onload = function() {
