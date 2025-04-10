@@ -20,7 +20,7 @@
 
 
         <!-- breadcrumb -->
-            <div class="breadcrumb-header justify-content-between">
+            <div class="breadcrumb-header justify-content-between mt-0">
                 <div class="left-content">
                     {{-- <span class="ms-3 form-check form-switch ms-4">
                         <input type="checkbox" value="1" name="bypass_check" class="form-check-input" form="repair_item" @if (session('bypass_check') == 1) checked @endif>
