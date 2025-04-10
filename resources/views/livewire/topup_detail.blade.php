@@ -102,6 +102,8 @@
 
             <div class="p-2">
                 <h4>Scan Item</h4>
+                <h4 class="card-title mg-b-0">Counter: {{ session('counter') }} <a href="{{ url('inventory/resume_verification?reset_counter=1') }}">Reset</a></h4>
+
 
                 <form class="form-inline" action="{{ url('topup/add_topup_item').'/'.$process->id }}" method="POST" id="">
                     @csrf
@@ -145,7 +147,7 @@
                         <input class="form-check-input" type="checkbox" id="com" name="copy" value="1" @if (session('copy') == 1) {{'checked'}} @endif>&nbsp;&nbsp;
                         <label class="form-check-label" for="com">Copy</label>
                     </div>
-                    <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
+                    <button class="btn btn-primary pd-x-20" type="submit">Insert</button>
                 </form>
             </div>
 {{--
