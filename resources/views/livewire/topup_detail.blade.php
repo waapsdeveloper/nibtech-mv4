@@ -86,8 +86,13 @@
 
 
             <div class="btn-group p-1" role="group">
-                <a href="{{ url('topup/print_topup').'/'.$process->id }}" class="btn btn-secondary" target="_blank">Print Topup</a>
-                <a href="{{ url('topup/detail').'/'.$process->id.'?show=1' }}" class="btn btn-secondary">Show Topup</a>
+                {{-- JS Print to Print topup Variations DIv --}}
+                <button type="button" class="btn btn-primary" onclick="window.getElementById('topup_variations').print();">Print</button>
+                @if (request('show') == 1)
+                    <a href="{{ url('topup/detail').'/'.$process->id }}" class="btn btn-secondary">Hide Topup</a>
+                @else
+                    <a href="{{ url('topup/detail').'/'.$process->id.'?show=1' }}" class="btn btn-secondary">Show Topup</a>
+                @endif
             </div>
         </div>
         <div class="p-2">
@@ -239,7 +244,7 @@
         </div>
         @if (request('show') == 1)
 
-        <div class="card">
+        <div class="card" id="topup_variations">
             <div class="card-header">
                 <h4 class="card-title mg-b-0">Topup Variations</h4>
             </div>
