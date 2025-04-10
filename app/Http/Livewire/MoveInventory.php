@@ -126,10 +126,6 @@ class MoveInventory extends Component
             session()->put('description',request('description'));
         }
 
-        if(request('color')){
-
-            return redirect()->back()->with('error', $color);
-        }
         if (request('imei')) {
             $imei_list = request('imei');
         }
