@@ -266,6 +266,7 @@
                         <thead>
                             <tr>
                                 <th><small><b>No</b></small></th>
+                                <th><small><b>SKU</b></small></th>
                                 <th><small><b>Variation</b></small></th>
                                 <th><small><b>Qty</b></small></th>
                                 <th><small><b></b></small></th>
@@ -278,9 +279,10 @@
                             @foreach ($variations as $variation)
                                 <tr>
                                     <td>{{ $i + 1 }}</td>
-                                    <td>{{ $variation->sku ?? "Variation SKU Not added"}} {{ $variation->product->model ?? "Variation Model Not added"}} {{$storages[$variation->storage] ?? null}} {{$colors[$variation->color] ?? null}} {{$grades[$variation->grade] ?? "Variation Grade Not added" }}</td>
+                                    <td>{{ $variation->sku ?? "Variation SKU Not added"}}</td>
+                                    <td> {{ $variation->product->model ?? "Variation Model Not added"}} {{$storages[$variation->storage] ?? null}} {{$colors[$variation->color] ?? null}} {{$grades[$variation->grade] ?? "Variation Grade Not added" }}</td>
                                     <td>{{ $stocks->where('variation_id',$variation->id)->count() }}</td>
-                                    <td><a href="{{ url('topup/print_topup').'/'.$process->id.'/'.$variation->id }}" class="btn btn-secondary" target="_blank">Print</a></td>
+                                    <td></td>
                                 </tr>
                                 @php
                                     $i ++;
