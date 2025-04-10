@@ -29,7 +29,7 @@
                         <input type="number" class="form-control" id="floatingInput" name="quantity" placeholder="Quantity" required>
                         <label for="floatingInput">Quantity</label>
                     </div>
-                    <button type="submit" class="btn btn-primary mt-2">Start New Topup</button>
+                    <button type="submit" class="btn btn-primary">Start New Topup</button>
                 </form>
                 {{-- <a href="{{url('topup/progress')}}" class="btn btn-primary float-right"> Topup Progress </a> --}}
 
