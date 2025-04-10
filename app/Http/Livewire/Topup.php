@@ -139,10 +139,18 @@ class Topup extends Component
 
 
         $data['all_variations'] = Variation_model::whereNotNull('sku')->get();
-        $data['process'] = Process_model::find($process_id);
+        $data['process'] = Process_model::with(['process_stocks'])->find($process_id);
 
         $data['scanned_total'] = Process_stock_model::where('process_id',$process_id)->count();
         $data['process_id'] = $process_id;
+
+        if(request('show') != null){
+            $stocks = Stock_model::whereIn('id',$data['process']->process_stocks->pluck('stock_id')->toArray())->get();
+            $variations = Variation_model::whereIn('id',$stocks->pluck('variation_id')->toArray())->get();
+            $data['stocks'] = $stocks;
+            $data['variations'] = $variations;
+
+        }
 
         return view('livewire.topup_detail')->with($data);
 
