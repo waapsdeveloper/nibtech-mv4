@@ -92,7 +92,7 @@
         <!-- /breadcrumb -->
         <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
                 {{-- <center><h4>listed_stock Verification Batch Detail</h4></center> --}}
-            <h5>Reference: {{ $process->reference_id }} | From: {{ $process->listed_stocks_verification->sum('qty_from') }} | To: {{ $process->listed_stocks_verification->sum('qty_to') }}</h5>
+            <h5>Reference: {{ $process->reference_id }} | Batch Quantity: {{ $process->quantity }} | Scanned Quantity: {{ $process->process_stocks->count() }}</h5>
         </div>
 
         <br>
