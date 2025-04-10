@@ -21,9 +21,9 @@
             <div class="breadcrumb-header justify-content-between">
                 <div class="left-content">
                 {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">BulkSale</span> --}}
-                <a href="{{url('topup/start_verification')}}" class="btn btn-success float-right" data-bs-target="#modaldemo"
+                <a href="{{url('topup/start')}}" class="btn btn-success float-right" data-bs-target="#modaldemo"
                 data-bs-toggle="modal"><i class="mdi mdi-plus"></i> New Topup </a>
-                <a href="{{url('topup/progress')}}" class="btn btn-primary float-right"> Topup Progress </a>
+                {{-- <a href="{{url('topup/progress')}}" class="btn btn-primary float-right"> Topup Progress </a> --}}
 
                 </div>
                 <div class="justify-content-center mt-2">
