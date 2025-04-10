@@ -181,6 +181,7 @@ class MoveInventory extends Component
                     }
                     if(request('color') != ''){
                         $color = request('color');
+                        return redirect()->back()->with('error', $color);
                     }
                     if(request('price') != ''){
                         if($imei_count == count($prices)){
