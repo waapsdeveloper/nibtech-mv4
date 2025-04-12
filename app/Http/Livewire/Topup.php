@@ -100,10 +100,28 @@ class Topup extends Component
         if(request('approve') == 1){
             $process->status = 2;
 
-            $process_stocks = Process_stock_model::where('process_id', $process_id)->groupBy('variation_id')->selectRaw('variation_id, Count(*) as total')->get();
-            $variation_qty = $process_stocks;
+            $variation_qty = Process_stock_model::where('process_id', $process_id)->groupBy('variation_id')->selectRaw('variation_id, Count(*) as total')->get();
 
-            dd($variation_qty);
+            $wrong_variations = Variation_model::whereIn('id', $variation_qty->pluck('variation_id')->toArray())->whereNull('sku')->where('grade', '<', 6)->get();
+            if($wrong_variations->count() > 0){
+                session()->put('error', 'Please add SKU for the following variations:');
+                foreach($wrong_variations as $variation){
+                    session()->put('error', $variation->product->model.' - '.$variation->storage_id->name.' - '.$variation->color_id->name.' - '.$variation->grade_id->name);
+                }
+                return redirect()->back();
+            }
+
+            $listingController = new ListingController();
+            foreach($variation_qty as $variation){
+                $topup = Listed_stock_verification_model::firstOrNew(['process_id'=>$process_id, 'variation_id'=>$variation->variation_id]);
+                $topup->qty_change = $variation->total;
+                $topup->admin_id = session('user_id');
+
+                $topup->qty_to = $listingController->add_quantity($variation->variation_id, $variation->total);
+                $topup->save();
+            }
+
+
         }
 
         $process->save();
@@ -592,54 +610,6 @@ class Topup extends Component
         return view('livewire.verification_progress')->with($data);
     }
 
-    public function push_topup($id) {
-
-
-        $aftersale = Order_item_model::whereHas('order', function ($q) {
-            $q->where('order_type_id',4)->where('status','<',3);
-        })->pluck('stock_id')->toArray();
-
-        $remaining_stocks = Stock_model::where('status', 1)->whereHas('order', function ($q) {
-            $q->where('status', 3);
-        })->whereNotIn('id', $aftersale)->whereNotIn('id', Process_stock_model::where('process_id', $id)->pluck('stock_id')->toArray())->get();
-
-        $client = new Client();
-
-        $stock_imeis = $remaining_stocks->whereNotNull('imei')->pluck('imei')->toArray();
-        $stock_imeis += $remaining_stocks->whereNotNull('serial_number')->pluck('serial_number')->toArray();
-
-        $imeis = implode(" ",$stock_imeis);
-        $client->request('POST', url('move_inventory/change_grade'), [
-            'form_params' => [
-                'imei' => $imeis,
-                'grade' => 17,
-                'description' => 'Missing Stock',
-            ]
-        ]);
-
-        $remaining_stocks = Stock_model::where('status', 1)->whereHas('order', function ($q) {
-            $q->where('status', 3);
-        })->whereNotIn('id', $aftersale)->whereNotIn('id', Process_stock_model::where('process_id', $id)->pluck('stock_id')->toArray())->get();
-
-        foreach($remaining_stocks as $stock){
-            $process_stock = Process_stock_model::firstOrNew(['process_id'=>$id, 'stock_id'=>$stock->id]);
-            if($process_stock->id == null){
-                $process_stock->variation_id = $stock->variation_id;
-                $process_stock->admin_id = session('user_id');
-                $process_stock->status = 2;
-                $process_stock->description = 'Missing Stock';
-                $process_stock->save();
-
-
-            }
-        }
-
-
-        $verification = Process_model::find($id)->update(['status'=>2,'description'=>request('description')]);
-
-        session()->put('success', 'Inventory Verification ended');
-        return redirect()->back();
-    }
 
 
 }
