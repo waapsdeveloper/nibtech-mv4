@@ -94,7 +94,7 @@ class Topup extends Component
     }
 
     public function close_topup($process_id){
-        $process = Process_model::find($process_id)->with(['process_stocks']);
+        $process = Process_model::with(['process_stocks'])->find($process_id);
         $process->description = request('description');
 
         if(request('approve') == 1){
