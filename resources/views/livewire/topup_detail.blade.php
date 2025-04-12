@@ -306,17 +306,17 @@
                                                         <td>
                                                             <select name="color" class="form-control form-select" form="form-{{ $stock->id }}" onchange="document.getElementById('form-{{ $stock->id }}').submit()">
                                                                 <option value="">Select Color</option>
-                                                                @foreach ($colors as $color)
-                                                                  @if ($model_colors->contains($color->id))
-                                                                    <option value="{{ $color->id }}" {{ $product->color == $color->id ? 'selected' : '' }}>{{ $color->name }}</option>
+                                                                @foreach ($colors as $id => $name)
+                                                                  @if ($model_colors->contains($id))
+                                                                    <option value="{{ $id }}" {{ $product->color == $id ? 'selected' : '' }}>{{ $name }}</option>
 
                                                                   @endif
                                                                 @endforeach
-                                                                @foreach ($colors as $color)
-                                                                  @if ($model_colors->contains($color->id))
+                                                                @foreach ($colors as $id => $name)
+                                                                  @if ($model_colors->contains($id))
                                                                     @continue
                                                                   @endif
-                                                                    <option value="{{ $color->id }}" {{ $variation->color == $color->id ? 'selected' : '' }}>{{ $color->name }}</option>
+                                                                    <option value="{{ $id }}" {{ $variation->color == $id ? 'selected' : '' }}>{{ $name }}</option>
                                                                 @endforeach
                                                                 {{-- @foreach ($colors as $id => $name)
                                                                     <option value="{{ $id }}" @if ($id == $stock->variation->color) {{'selected'}}@endif>{{ $name }}</option>
