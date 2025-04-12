@@ -89,6 +89,7 @@
 
         <div class="d-flex justify-content-between">
             <div>
+                <a href="{{url('wholesale')}}?status=1" class="btn btn-link @if (request('status') == 1) bg-white @endif ">Pending POS</a>
                 <a href="{{url('wholesale')}}?status=2" class="btn btn-link @if (request('status') == 2) bg-white @endif ">Pending</a>
                 <a href="{{url('wholesale')}}?status=3" class="btn btn-link @if (request('status') == 3) bg-white @endif ">Shipped</a>
                 <a href="{{url('wholesale')}}" class="btn btn-link @if (!request('status')) bg-white @endif ">All</a>
