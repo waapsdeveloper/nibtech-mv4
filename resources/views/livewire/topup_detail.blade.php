@@ -290,6 +290,9 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
+                                                @php
+                                                    $model_colors = $variation->same_products->pluck('color')->unique();
+                                                @endphp
                                                 @foreach ($stocks->where('variation_id', $variation->id) as $stock)
                                                     <form method="POST" action="{{ url('move_inventory/change_grade/1') }}" id="form-{{ $stock->id }}">
                                                         @csrf
@@ -303,9 +306,21 @@
                                                         <td>
                                                             <select name="color" class="form-control form-select" form="form-{{ $stock->id }}" onchange="document.getElementById('form-{{ $stock->id }}').submit()">
                                                                 <option value="">Select Color</option>
-                                                                @foreach ($colors as $id => $name)
-                                                                    <option value="{{ $id }}" @if ($id == $stock->variation->color) {{'selected'}}@endif>{{ $name }}</option>
+                                                                @foreach ($colors as $color)
+                                                                  @if ($model_colors->contains($color->id))
+                                                                    <option value="{{ $color->id }}" {{ $product->color == $color->id ? 'selected' : '' }}>{{ $color->name }}</option>
+
+                                                                  @endif
                                                                 @endforeach
+                                                                @foreach ($colors as $color)
+                                                                  @if ($model_colors->contains($color->id))
+                                                                    @continue
+                                                                  @endif
+                                                                    <option value="{{ $color->id }}" {{ $variation->color == $color->id ? 'selected' : '' }}>{{ $color->name }}</option>
+                                                                @endforeach
+                                                                {{-- @foreach ($colors as $id => $name)
+                                                                    <option value="{{ $id }}" @if ($id == $stock->variation->color) {{'selected'}}@endif>{{ $name }}</option>
+                                                                @endforeach --}}
                                                             </select>
                                                         </td>
                                                         <td>
