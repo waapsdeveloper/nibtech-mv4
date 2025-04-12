@@ -93,7 +93,7 @@ class Topup extends Component
         return redirect()->to(url('topup/detail').'/'.$process->id)->with('success', 'Topup Started Started');
     }
 
-    public function close_process($process_id){
+    public function close_topup($process_id){
         $process = Process_model::find($process_id)->with(['process_stocks']);
         $process->description = request('description');
 
