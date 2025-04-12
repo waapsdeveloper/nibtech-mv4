@@ -294,7 +294,7 @@ class Topup extends Component
 
                 session()->put('success', 'Stock Added successfully: SKU:'.$stock->variation->sku.' - '.$model.' - '.$storage.' - '.$color.' - '.$grade);
             }else{
-                if($process_stock->status == 2){
+                if(request('copy') == 1){
                     $process_stock->status = 1;
                     $process_stock->save();
                     session()->put('success', 'Stock ReAdded successfully SKU:'.$stock->variation->sku);
