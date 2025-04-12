@@ -135,10 +135,15 @@
                     @endforeach
                 </select>
 
-
+                <div>
                 <div class="input-group form-check form-switch">
                     <input class="form-check-input" type="checkbox" id="com" name="copy" value="1" @if (session('copy') == 1) {{'checked'}} @endif>&nbsp;&nbsp;
                     <label class="form-check-label" for="com">Copy</label>
+                </div>
+                <div class="input-group form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="com" name="copy_grade" value="1" @if (session('copy_grade') == 1) {{'checked'}} @endif>&nbsp;&nbsp;
+                    <label class="form-check-label" for="com">Copy Grade</label>
+                </div>
                 </div>
                 <button class="btn btn-primary pd-x-20" type="submit">Insert</button>
             </form>
