@@ -255,6 +255,11 @@ class Topup extends Component
                 session()->put('grade', $stock->variation->grade);
             }
 
+            if($stock->variation->sku == null){
+                session()->put('error', 'SKU Not Found');
+                return redirect()->back();
+            }
+
             $process_stock = Process_stock_model::firstOrNew(['process_id'=>$process_id, 'stock_id'=>$stock->id]);
             $process_stock->admin_id = session('user_id');
             $process_stock->variation_id = $stock->variation_id;
