@@ -153,7 +153,7 @@
 								</li>
                                 @endif --}}
 
-                                @if($user->hasPermission('view_options'))
+                                @if($user->hasPermission('view_product') || $user->hasPermission('view_grade') || $user->hasPermission('view_role') || $user->hasPermission('view_color') || $user->hasPermission('view_storage') || $user->hasPermission('view_team') || $user->hasPermission('view_customer') || $user->hasPermission('view_b2b_customer') || $user->hasPermission('view_charge'))
                                 <li class="slide has-sub">
                                     <a class="side-menu__item" data-bs-toggle="collapse" href="#optionsMenu" role="button" aria-expanded="false" aria-controls="optionsMenu">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="2" clip-rule="evenodd" class="side-menu__icon" width="24" height="24" viewBox="0 0 48 48">
