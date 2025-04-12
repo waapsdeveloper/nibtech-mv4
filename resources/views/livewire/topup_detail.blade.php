@@ -194,6 +194,7 @@
                     <form method="get" action="" class="row form-inline">
                         <label for="perPage" class="card-title inline">per page:</label>
                         <select name="per_page" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
+                            <option value="5" {{ Request::get('per_page') == 5 ? 'selected' : '' }}>10</option>
                             <option value="10" {{ Request::get('per_page') == 10 ? 'selected' : '' }}>10</option>
                             <option value="20" {{ Request::get('per_page') == 20 ? 'selected' : '' }}>20</option>
                             <option value="50" {{ Request::get('per_page') == 50 ? 'selected' : '' }}>50</option>
@@ -226,7 +227,7 @@
                                     @continue
                                 @endif
                                 <td>{{ $i + 1 }}</td>
-                                <td>{{ $item->stock->variation->product->model ?? "Variation Model Not added"}} {{$storages[$item->stock->variation->storage] ?? null}} {{$colors[$item->stock->variation->color] ?? null}} {{$grades[$item->stock->variation->grade] ?? "Variation Grade Not added Reference: ".$item->stock->variation->reference_id }}</td>
+                                <td>{{ $item->stock->variation->sku ?? null }}</td>
                                 <td>{{ $item->stock->imei.$item->stock->serial_number }}</td>
                                 <td>{{ $item->description }}</td>
                                 <td>{{ $item->stock->latest_operation->description ?? null }}</td>
