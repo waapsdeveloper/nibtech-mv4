@@ -152,10 +152,15 @@ class Topup extends Component
         if(request('show') != null){
             $stocks = Stock_model::whereIn('id',$data['process']->process_stocks->pluck('stock_id')->toArray())->get();
             // $variations = Variation_model::whereIn('id',$stocks->pluck('variation_id')->toArray())->get();
-            $process_stock = Process_stock_model::where('process_id',$process_id)->with(['variation'])->pluck('variation_id')->unique();
-            $variations = $process_stock->variations;
+            $variation_ids = Process_stock_model::where('process_id', $process_id)->pluck('variation_id')->unique();
+            $variations = Variation_model::whereIn('id', $variation_ids)->get();
+            $data['variations'] = $variations->sortBy(function ($variation) use ($process_id) {
+                return Process_stock_model::where('process_id', $process_id)
+                    ->where('variation_id', $variation->id)
+                    ->orderBy('id', 'asc')
+                    ->value('id');
+            });
             $data['stocks'] = $stocks;
-            $data['variations'] = $variations;
 
         }
 
