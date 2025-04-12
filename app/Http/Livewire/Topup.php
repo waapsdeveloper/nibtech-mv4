@@ -144,14 +144,16 @@ class Topup extends Component
 
 
         $data['all_variations'] = Variation_model::whereNotNull('sku')->get();
-        $data['process'] = Process_model::with(['process_stocks'])->find($process_id);
-
+        $process = Process_model::with(['process_stocks'])->find($process_id);
+        $data['process'] = $process;
         $data['scanned_total'] = Process_stock_model::where('process_id',$process_id)->count();
         $data['process_id'] = $process_id;
 
         if(request('show') != null){
             $stocks = Stock_model::whereIn('id',$data['process']->process_stocks->pluck('stock_id')->toArray())->get();
-            $variations = Variation_model::whereIn('id',$stocks->pluck('variation_id')->toArray())->get();
+            // $variations = Variation_model::whereIn('id',$stocks->pluck('variation_id')->toArray())->get();
+            $process_stock = Process_stock_model::where('process_id',$process_id)->with(['variation'])->pluck('variation_id')->unique();
+            $variations = $process_stock->variations;
             $data['stocks'] = $stocks;
             $data['variations'] = $variations;
 
