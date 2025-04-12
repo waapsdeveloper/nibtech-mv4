@@ -75,7 +75,11 @@
             </div>
         <!-- /breadcrumb -->
         <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
-            <h5>Reference: {{ $process->reference_id }} | Batch Quantity: {{ $process->quantity }} | Scanned Quantity: {{ $process->process_stocks->count() }}</h5>
+            <h5>Reference: {{ $process->reference_id }} | Batch Quantity: {{ $process->quantity }} | Scanned Quantity: {{ $process->process_stocks->count() }}
+                @if ($process->status == 2)
+                    | Listed Quantity: {{ $process->listed_stocks_verification->sum('qty_change') }}
+                @endif
+            </h5>
         </div>
 
         <br>
