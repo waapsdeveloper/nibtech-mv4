@@ -285,6 +285,7 @@
                                                     <th><small><b>Stock ID</b></small></th>
                                                     <th><small><b>IMEI | Serial Number</b></small></th>
                                                     <th><small><b>Color</b></small></th>
+                                                    <th><small><b>Grade</b></small></th>
                                                     <th><small><b>Creation Date</b></small></th>
                                                 </tr>
                                             </thead>
@@ -304,6 +305,14 @@
                                                                 <option value="">Select Color</option>
                                                                 @foreach ($colors as $id => $name)
                                                                     <option value="{{ $id }}" @if ($id == $stock->variation->color) {{'selected'}}@endif>{{ $name }}</option>
+                                                                @endforeach
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <select name="grade" class="form-control form-select" form="form-{{ $stock->id }}" onchange="document.getElementById('form-{{ $stock->id }}').submit()">
+                                                                <option value="">Select Grade</option>
+                                                                @foreach ($grades as $id => $name)
+                                                                    <option value="{{ $id }}" @if ($id == $stock->variation->grade) {{'selected'}}@endif>{{ $name }}</option>
                                                                 @endforeach
                                                             </select>
                                                         </td>
