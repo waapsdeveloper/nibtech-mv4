@@ -238,12 +238,17 @@
                                     {{$item->stock_id}}
                                     @continue
                                 @endif
+                                @php
+                                    $stock = $item->stock;
+                                    $variation = $stock->variation;
+                                    $customer = $stock->order->customer;
+                                @endphp
                                 <td>{{ $i + 1 }}</td>
-                                <td>{{ $item->stock->variation->sku ?? null }}</td>
-                                <td>{{ $item->stock->imei.$item->stock->serial_number }}</td>
+                                <td>{{ $variation->sku ?? null }}</td>
+                                <td>{{ $stock->imei.$stock->serial_number }}</td>
                                 <td>{{ $item->description }}</td>
-                                <td>{{ $item->stock->latest_operation->description ?? null }}</td>
-                                <td>{{ $item->stock->order->customer->first_name ?? "Purchase Entry Error" }}</td>
+                                <td>{{ $stock->latest_operation->description ?? null }}</td>
+                                <td>{{ $customer->first_name ?? "Purchase Entry Error" }}</td>
                                 <td style="width:220px">{{ $item->created_at }}</td>
                             </tr>
                             @php
