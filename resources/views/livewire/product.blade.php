@@ -227,7 +227,7 @@
                             <div class="form-group">
                                 <label for="">Category</label>
                                 <select class="form-select" placeholder="Input Category" name="product[category]" required>
-                                    <option>Select Category</option>
+                                    <option value="">Select Category</option>
                                     @foreach ($categories as $category)
                                         <option value="{{ $category->id }}">{{ $category->name }}</option>
 
@@ -237,7 +237,7 @@
                             <div class="form-group">
                                 <label for="">Brand</label>
                                 <select class="form-select" placeholder="Input Brand" name="product[brand]" required>
-                                    <option>Select Brand</option>
+                                    <option value="">Select Brand</option>
                                     @foreach ($brands as $brand)
                                         <option value="{{ $brand->id }}">{{ $brand->name }}</option>
 
