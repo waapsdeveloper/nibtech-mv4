@@ -163,25 +163,25 @@
                                         <i class="angle fe fe-chevron-down"></i>
                                     </a>
                                     <ul class="collapse slide-menu child1" id="optionsMenu">
-                                        <li>
+                                        <li class="slide">
                                             <a class="sub-menu__item" href="{{url('grade')}}">Grades</a>
                                         </li>
-                                        <li>
+                                        <li class="slide">
                                             <a class="sub-menu__item" href="{{url('product')}}">Products</a>
                                         </li>
-                                        <li>
+                                        <li class="slide">
                                             <a class="sub-menu__item" href="{{url('role')}}">Roles</a>
                                         </li>
-                                        <li>
+                                        <li class="slide">
                                             <a class="sub-menu__item" href="{{url('color')}}">Colors</a>
                                         </li>
-                                        <li>
+                                        <li class="slide">
                                             <a class="sub-menu__item" href="{{url('storage')}}">Storages</a>
                                         </li>
-                                        <li>
+                                        <li class="slide">
                                             <a class="sub-menu__item" href="{{url('team')}}">Team</a>
                                         </li>
-                                        <li>
+                                        <li class="slide">
                                             <a class="sub-menu__item" href="{{url('charge')}}">Charges</a>
                                         </li>
                                     </ul>
