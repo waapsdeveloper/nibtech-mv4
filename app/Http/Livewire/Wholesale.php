@@ -1188,6 +1188,9 @@ class Wholesale extends Component
 
         // Create a new order
         $order = Order_model::firstOrNew(['reference_id' => $reference_id, 'order_type_id' => $order_type]);
+        if ($order->id != null) {
+            return response()->json(['success' => false, 'message' => 'Order already exists!']);
+        }
         $order->customer_id = $customer_id;
         $order->status = 1;
         $order->currency = $currency;
@@ -1215,7 +1218,7 @@ class Wholesale extends Component
 
 
         // Clear the cart after checkout
-        // session()->forget('cart');
+        session()->forget('cart');
 
         return response()->json(['success' => true, 'message' => 'Checkout successful!', 'cart' => $cart, 'order' => $order, ]);
     }
