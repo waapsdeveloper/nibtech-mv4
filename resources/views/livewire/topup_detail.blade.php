@@ -183,71 +183,137 @@
         session()->forget('error');
         @endphp
         @endif
+        @if ($process->status == 1)
 
-        <div class="card">
-            <div class="card-header pb-0">
-                <div class="d-flex justify-content-between">
-                    <h4 class="card-title mg-b-0">Latest Scanned</h4>
-                    <h4 class="card-title mg-b-0">Counter: {{ session('counter') }} <a href="{{ url('inventory/resume_verification?reset_counter=1') }}">Reset</a></h4>
+            <div class="card">
+                <div class="card-header pb-0">
+                    <div class="d-flex justify-content-between">
+                        <h4 class="card-title mg-b-0">Latest Scanned</h4>
+                        <h4 class="card-title mg-b-0">Counter: {{ session('counter') }} <a href="{{ url('inventory/resume_verification?reset_counter=1') }}">Reset</a></h4>
 
-                    <h4 class="card-title mg-b-0">Total Scanned: {{$scanned_total}}</h4>
-                    <form method="get" action="" class="row form-inline">
-                        <label for="perPage" class="card-title inline">per page:</label>
-                        <select name="per_page" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
-                            <option value="5" {{ Request::get('per_page') == 5 ? 'selected' : '' }}>10</option>
-                            <option value="10" {{ Request::get('per_page') == 10 ? 'selected' : '' }}>10</option>
-                            <option value="20" {{ Request::get('per_page') == 20 ? 'selected' : '' }}>20</option>
-                            <option value="50" {{ Request::get('per_page') == 50 ? 'selected' : '' }}>50</option>
-                            <option value="100" {{ Request::get('per_page') == 100 ? 'selected' : '' }}>100</option>
-                        </select>
-                    </form>
+                        <h4 class="card-title mg-b-0">Total Scanned: {{$scanned_total}}</h4>
+                        <form method="get" action="" class="row form-inline">
+                            <label for="perPage" class="card-title inline">per page:</label>
+                            <select name="per_page" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
+                                <option value="5" {{ Request::get('per_page') == 5 ? 'selected' : '' }}>10</option>
+                                <option value="10" {{ Request::get('per_page') == 10 ? 'selected' : '' }}>10</option>
+                                <option value="20" {{ Request::get('per_page') == 20 ? 'selected' : '' }}>20</option>
+                                <option value="50" {{ Request::get('per_page') == 50 ? 'selected' : '' }}>50</option>
+                                <option value="100" {{ Request::get('per_page') == 100 ? 'selected' : '' }}>100</option>
+                            </select>
+                        </form>
+                    </div>
                 </div>
+                <div class="card-body"><div class="table-responsive">
+                    <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                        <thead>
+                            <tr>
+                                <th><small><b>No</b></small></th>
+                                <th><small><b>Variation</b></small></th>
+                                <th><small><b>IMEI | Serial Number</b></small></th>
+                                <th><small><b>Reference</b></small></th>
+                                <th><small><b>Operation</b></small></th>
+                                <th><small><b>Vendor</b></small></th>
+                                <th><small><b>Creation Date</b></small></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                                $i = 0;
+                            @endphp
+                            @foreach ($last_ten as $item)
+                                <tr>
+                                    @if ($item->stock == null)
+                                        {{$item->stock_id}}
+                                        @continue
+                                    @endif
+                                    @php
+                                        $stock = $item->stock;
+                                        $variation = $stock->variation;
+                                        $customer = $stock->order->customer;
+                                    @endphp
+                                    <td>{{ $i + 1 }}</td>
+                                    <td>{{ $variation->sku ?? null }}</td>
+                                    <td>{{ $stock->imei.$stock->serial_number }}</td>
+                                    <td>{{ $item->description }}</td>
+                                    <td>{{ $stock->latest_operation->description ?? null }}</td>
+                                    <td>{{ $customer->first_name ?? "Purchase Entry Error" }}</td>
+                                    <td style="width:220px">{{ $item->created_at }}</td>
+                                </tr>
+                                @php
+                                    $i ++;
+                                @endphp
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                </div>
+            </div>
+        @else
+        <div class="card" id="print_inv">
+            <div class="card-header pb-0 d-flex justify-content-between">
+                <h4 class="card-title">Changed Stock</h4>
             </div>
             <div class="card-body"><div class="table-responsive">
                 <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                     <thead>
                         <tr>
                             <th><small><b>No</b></small></th>
-                            <th><small><b>Variation</b></small></th>
-                            <th><small><b>IMEI | Serial Number</b></small></th>
-                            <th><small><b>Reference</b></small></th>
-                            <th><small><b>Operation</b></small></th>
-                            <th><small><b>Vendor</b></small></th>
+                            <th><small><b>Veriation</b></small></th>
+                            <th><small><b>Pending Orders</b></small></th>
+                            <th><small><b>Quantity Before</b></small></th>
+                            <th><small><b>Quantity Added</b></small></th>
+                            <th><small><b>Quantity After</b></small></th>
+                            <th><small><b>Admin</b></small></th>
                             <th><small><b>Creation Date</b></small></th>
+                            <th><small><b>Update Date</b></small></th>
                         </tr>
                     </thead>
                     <tbody>
                         @php
                             $i = 0;
+
+                            $total_pending_orders = 0;
+                            $total_qty_from = 0;
+                            $total_qty_change = 0;
+                            $total_qty_to = 0;
                         @endphp
-                        @foreach ($last_ten as $item)
+                        @foreach ($listed_stocks as $item)
                             <tr>
-                                @if ($item->stock == null)
-                                    {{$item->stock_id}}
-                                    @continue
-                                @endif
-                                @php
-                                    $stock = $item->stock;
-                                    $variation = $stock->variation;
-                                    $customer = $stock->order->customer;
-                                @endphp
                                 <td>{{ $i + 1 }}</td>
-                                <td>{{ $variation->sku ?? null }}</td>
-                                <td>{{ $stock->imei.$stock->serial_number }}</td>
-                                <td>{{ $item->description }}</td>
-                                <td>{{ $stock->latest_operation->description ?? null }}</td>
-                                <td>{{ $customer->first_name ?? "Purchase Entry Error" }}</td>
-                                <td style="width:220px">{{ $item->created_at }}</td>
+                                <td>{{ $products[$item->variation->product_id]}} {{$storages[$item->variation->storage] ?? null}} {{$colors[$item->variation->color] ?? null}} {{$grades[$item->variation->grade] ?? "Grade not added" }} {{$grades[$item->variation->sub_grade] ?? '' }}</td>
+                                <td>{{ $item->pending_orders }}</td>
+                                <td>{{ $item->qty_from }}</td>
+                                <td>{{ $item->qty_change }}</td>
+                                <td>{{ $item->qty_to }}</td>
+                                <td>{{ $item->admin->first_name." ".$item->admin->last_name }}</td>
+                                <td style="width:150px">{{ $item->created_at }}</td>
+                                <td style="width:150px">{{ $item->updated_at }}</td>
                             </tr>
                             @php
+                                $total_pending_orders += $item->pending_orders;
+                                $total_qty_from += $item->qty_from;
+                                $total_qty_change += $item->qty_change;
+                                $total_qty_to += $item->qty_to;
                                 $i ++;
                             @endphp
                         @endforeach
                     </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="2" class="text-center"><b>Total</b></td>
+                            <td><b>{{ $total_pending_orders }}</b></td>
+                            <td><b>{{ $total_qty_from }}</b></td>
+                            <td><b>{{ $total_qty_change }}</b></td>
+                            <td><b>{{ $total_qty_to }}</b></td>
+                            <td colspan="3"></td>
+                        </tr>
+                    </tfoot>
+
                 </table>
             </div>
-            </div>
         </div>
+        @endif
         @if (request('show') == 1)
 
         <div class="card" id="topup_variations">
