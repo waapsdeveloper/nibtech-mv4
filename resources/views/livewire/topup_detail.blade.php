@@ -29,7 +29,7 @@
                             <input type="text" class="form-control" id="description" name="description" placeholder="Enter Description" value="{{$process->description}}" required>
                             <label for="description">Description</label>
                         </div>
-                        <button type="submit" class="btn btn-success" name="approve" value="1">Ship</button>
+                        <button type="submit" class="btn btn-success" name="approve" value="1">Push & Close</button>
                         <a class="btn btn-danger" href="{{url('topup/delete') . "/" . $process->id }}">Delete</a>
                     </form>
 
