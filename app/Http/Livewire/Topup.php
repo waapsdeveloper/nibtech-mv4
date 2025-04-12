@@ -94,11 +94,16 @@ class Topup extends Component
     }
 
     public function close_process($process_id){
-        $process = Process_model::find($process_id);
+        $process = Process_model::find($process_id)->with(['process_stocks']);
         $process->description = request('description');
 
         if(request('approve') == 1){
             $process->status = 2;
+
+            $process_stocks = $process->process_stocks;
+            $variation_qty = $process_stocks->groupBy('variation_id')->selectRaw('variation_id, Count(*) as total')->get();
+
+            dd($variation_qty);
         }
 
         $process->save();
