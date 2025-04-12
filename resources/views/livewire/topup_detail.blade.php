@@ -308,7 +308,7 @@
                                                                 <option value="">Select Color</option>
                                                                 @foreach ($colors as $id => $name)
                                                                   @if ($model_colors->contains($id))
-                                                                    <option value="{{ $id }}" {{ $product->color == $id ? 'selected' : '' }}>{{ $name }}</option>
+                                                                    <option value="{{ $id }}" {{ $variation->color == $id ? 'selected' : '' }}>{{ $name }}</option>
 
                                                                   @endif
                                                                 @endforeach
