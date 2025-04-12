@@ -34,9 +34,14 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\ListingController;
 use App\Http\Controllers\ReportController;
+use App\Http\Livewire\Brand;
+use App\Http\Livewire\Category;
+use App\Http\Livewire\Color;
 use App\Http\Livewire\InventoryVerification;
 use App\Http\Livewire\ListedStockVerification;
+use App\Http\Livewire\Role;
 use App\Http\Livewire\Stock_room;
+use App\Http\Livewire\Storage;
 use App\Http\Livewire\Transaction;
 use App\Http\Livewire\Wholesale_return;
 
@@ -357,6 +362,36 @@ Route::get('add-grade', [Grade::class,'add_grade'])->name('add_grade');
 Route::post('insert-grade', [Grade::class,'insert_grade'])->name('add_grade');
 Route::get('edit-grade/{id}', [Grade::class,'edit_grade'])->name('edit_grade');
 Route::post('update-grade/{id}', [Grade::class,'update_grade'])->name('edit_grade');
+
+Route::get('storage', Storage::class)->name('view_storage');
+Route::get('add-storage', [Storage::class,'add_storage'])->name('add_storage');
+Route::post('insert-storage', [Storage::class,'insert_storage'])->name('add_storage');
+Route::get('edit-storage/{id}', [Storage::class,'edit_storage'])->name('edit_storage');
+Route::post('update-storage/{id}', [Storage::class,'update_storage'])->name('edit_storage');
+
+Route::get('color', Color::class)->name('view_color');
+Route::get('add-color', [Color::class,'add_color'])->name('add_color');
+Route::post('insert-color', [Color::class,'insert_color'])->name('add_color');
+Route::get('edit-color/{id}', [Color::class,'edit_color'])->name('edit_color');
+Route::post('update-color/{id}', [Color::class,'update_color'])->name('edit_color');
+
+Route::get('category', Category::class)->name('view_category');
+Route::get('add-category', [Category::class,'add_category'])->name('add_category');
+Route::post('insert-category', [Category::class,'insert_category'])->name('add_category');
+Route::get('edit-category/{id}', [Category::class,'edit_category'])->name('edit_category');
+Route::post('update-category/{id}', [Category::class,'update_category'])->name('edit_category');
+
+Route::get('brand', Brand::class)->name('view_brand');
+Route::get('add-brand', [Brand::class,'add_brand'])->name('add_brand');
+Route::post('insert-brand', [Brand::class,'insert_brand'])->name('add_brand');
+Route::get('edit-brand/{id}', [Brand::class,'edit_brand'])->name('edit_brand');
+Route::post('update-brand/{id}', [Brand::class,'update_brand'])->name('edit_brand');
+
+Route::get('role', Role::class)->name('view_role');
+Route::get('add-role', [Role::class,'add_role'])->name('add_role');
+Route::post('insert-role', [Role::class,'insert_role'])->name('add_role');
+Route::get('edit-role/{id}', [Role::class,'edit_role'])->name('edit_role');
+Route::post('update-role/{id}', [Role::class,'update_role'])->name('edit_role');
 
 Route::get('charge', Charge::class)->name('view_charge');
 Route::post('charge/add', [Charge::class,'add_charge'])->name('add_charge');
