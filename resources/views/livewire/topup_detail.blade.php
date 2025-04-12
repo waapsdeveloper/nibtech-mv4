@@ -116,18 +116,6 @@
 
                 </div>
 
-                <select name="product" class="form-control form-select" style="width: 150px;">
-                    <option value="">Model</option>
-                    @foreach ($products as $id => $name)
-                        <option value="{{ $id }}"@if($id == session('product')) {{'selected'}}@endif>{{ $name }}</option>
-                    @endforeach
-                </select>
-                <select name="storage" class="form-control form-select" style="width: 150px;">
-                    <option value="">Storage</option>
-                    @foreach ($storages as $id => $name)
-                        <option value="{{ $id }}"@if($id == session('storage')) {{'selected'}}@endif>{{ $name }}</option>
-                    @endforeach
-                </select>
                 <select name="color" class="form-control form-select" style="width: 150px;">
                     <option value="">Color</option>
                     @foreach ($colors as $id => $name)
