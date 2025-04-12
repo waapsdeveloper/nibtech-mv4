@@ -162,7 +162,7 @@
                                         <span class="side-menu__label">Options</span>
                                         <i class="angle fe fe-chevron-down"></i>
                                     </a>
-                                    <ul class="collapse slide-menu child1" id="optionsMenu">
+                                    <ul class="collapse" id="optionsMenu">
                                         <li class="slide">
                                             <a class="sub-menu__item" href="{{url('grade')}}">Grades</a>
                                         </li>
