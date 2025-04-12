@@ -95,6 +95,8 @@
                 @endif
             </div>
         </div>
+        @if ($process->status == 1)
+
         <div class="p-2">
 
 
@@ -148,6 +150,7 @@
                 <button class="btn btn-primary pd-x-20" type="submit">Insert</button>
             </form>
         </div>
+        @endif
         <script>
             window.onload = function() {
                 document.getElementById('imei').focus();
