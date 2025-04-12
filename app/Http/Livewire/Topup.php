@@ -274,6 +274,7 @@ class Topup extends Component
                     session()->put('grade', request('grade'));
             }else{
                 session()->put('copy', 0);
+                session()->put('copy_grade', 0);
                 session()->put('product', $stock->variation->product_id);
                 session()->put('storage', $stock->variation->storage);
                 session()->put('color', $stock->variation->color);
