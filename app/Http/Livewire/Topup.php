@@ -275,14 +275,14 @@ class Topup extends Component
                 $color = $stock->variation->color_id->name ?? '?';
                 $grade = $stock->variation->grade_id->name ?? '?';
 
-                session()->put('success', 'Stock Added successfully: '.$model.' - '.$storage.' - '.$color.' - '.$grade);
+                session()->put('success', 'Stock Added successfully: SKU:'.$stock->variation->sku.' - '.$model.' - '.$storage.' - '.$color.' - '.$grade);
             }else{
                 if($process_stock->status == 2){
                     $process_stock->status = 1;
                     $process_stock->save();
-                    session()->put('success', 'Stock ReAdded successfully');
+                    session()->put('success', 'Stock ReAdded successfully SKU:'.$stock->variation->sku);
                 }else{
-                    session()->put('error', 'Stock already Added');
+                    session()->put('error', 'Stock already Added SKU:'.$stock->variation->sku);
                 }
             }
         }

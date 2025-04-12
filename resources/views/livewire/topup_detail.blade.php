@@ -258,7 +258,6 @@
                                 <th><small><b>SKU</b></small></th>
                                 <th><small><b>Variation</b></small></th>
                                 <th><small><b>Qty</b></small></th>
-                                <th><small><b></b></small></th>
                             </tr>
                         </thead>
                         <tbody>
