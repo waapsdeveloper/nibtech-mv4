@@ -727,7 +727,12 @@
                                             <td>{{ $colors[$variation->color] ?? null }} - {{ $grades[$variation->grade] ?? null }} {{ $grades[$variation->sub_grade] ?? null }}</td>
                                             {{-- <td>{{ $item->order->customer->first_name }}</td> --}}
                                             @if ($sale_item->stock == null)
-                                                <td>{{ $sale_item->quantity }} Items</td>
+                                                <td>
+                                                    @if ($order->status == 1)
+                                                        <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#add_item_stock_modal" onclick="add_item_stock({{ $sale_item->id }})"><i class="fa fa-plus"></i></a>
+                                                    @endif
+                                                    {{ $sale_item->quantity }} Items
+                                                </td>
                                             @else
                                                 @if ($item->imei != null)
                                                     <td>{{ $item->imei }}</td>
@@ -797,6 +802,9 @@
         </div>
 
         @endif
+
+        <div class="modal" id="add_item_stock_modal">
+        </div>
 
     @endsection
 
