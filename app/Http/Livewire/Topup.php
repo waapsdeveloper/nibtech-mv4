@@ -130,7 +130,7 @@ class Topup extends Component
         if(request('per_page') != null){
             $per_page = request('per_page');
         }else{
-            $per_page = 20;
+            $per_page = 5;
         }
         $data['vendors'] = Customer_model::whereNotNull('is_vendor')->get();
         $data['exchange_rates'] = ExchangeRate::pluck('rate','target_currency');
