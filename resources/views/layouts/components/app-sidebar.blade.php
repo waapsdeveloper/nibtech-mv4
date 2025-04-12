@@ -197,6 +197,7 @@
                                         <li class="slide">
                                             <a class="side-menu__item ps-0" href="{{url('charge')}}">Charges</a>
                                         </li>
+                                        @endif
                                     </ul>
                                 </li>
                                 @endif
