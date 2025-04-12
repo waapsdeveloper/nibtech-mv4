@@ -359,6 +359,11 @@
 
         <script>
 
+            $(document).ready(function() {
+
+                $('#sb_toggle').click();
+
+            });
             function PrintElem(elem)
             {
                 var mywindow = window.open('', 'PRINT', 'height=400,width=600');
