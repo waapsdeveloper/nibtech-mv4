@@ -147,8 +147,6 @@ class Topup extends Component
         }
         $data['vendors'] = Customer_model::whereNotNull('is_vendor')->get();
         $data['exchange_rates'] = ExchangeRate::pluck('rate','target_currency');
-        $data['products'] = Products_model::orderBy('model','asc')->pluck('model','id');
-        $data['storages'] = Storage_model::pluck('name','id');
         $data['colors'] = Color_model::pluck('name','id');
         $data['grades'] = Grade_model::where('id','<',6)->pluck('name','id');
 
@@ -163,6 +161,8 @@ class Topup extends Component
         $data['process_id'] = $process_id;
 
         if(request('show') != null){
+            $data['products'] = Products_model::orderBy('model','asc')->pluck('model','id');
+            $data['storages'] = Storage_model::pluck('name','id');
             $stocks = Stock_model::whereIn('id',$data['process']->process_stocks->pluck('stock_id')->toArray())->get();
             // $variations = Variation_model::whereIn('id',$stocks->pluck('variation_id')->toArray())->get();
             $variation_ids = Process_stock_model::where('process_id', $process_id)->pluck('variation_id')->unique();
