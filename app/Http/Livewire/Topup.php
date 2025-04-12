@@ -137,7 +137,7 @@ class Topup extends Component
         $data['products'] = Products_model::orderBy('model','asc')->pluck('model','id');
         $data['storages'] = Storage_model::pluck('name','id');
         $data['colors'] = Color_model::pluck('name','id');
-        $data['grades'] = Grade_model::pluck('name','id');
+        $data['grades'] = Grade_model::where('id','<',6)->pluck('name','id');
 
         $last_ten = Process_stock_model::where('process_id',$process_id)->orderBy('id','desc')->limit($per_page)->get();
         $data['last_ten'] = $last_ten;
