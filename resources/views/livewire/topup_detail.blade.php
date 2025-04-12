@@ -23,7 +23,7 @@
             <div class="breadcrumb-header justify-content-between mt-0">
                 <div class="left-content">
                 @if ($process->status == 1)
-                    <form class="form-inline" id="approveform" method="POST" action="{{url('topup/ship').'/'.$process->id}}">
+                    <form class="form-inline" id="approveform" method="POST" action="{{url('topup/close').'/'.$process->id}}">
                         @csrf
                         <div class="form-floating">
                             <input type="text" class="form-control" id="description" name="description" placeholder="Enter Description" value="{{$process->description}}" required>
