@@ -450,7 +450,7 @@ class ListingController extends Controller
         }
         return $response->quantity;
     }
-    public function add_quantity($id, $stock = 'no'){
+    public function add_quantity($id, $stock = 'no', $process_id = null){
         if($stock == 'no'){
             $stock = request('stock');
         }
@@ -474,6 +474,16 @@ class ListingController extends Controller
         if($check_active_verification != null){
             $listed_stock_verification = Listed_stock_verification_model::firstOrNew(['process_id'=>$check_active_verification->id, 'variation_id'=>$variation->id]);
             $listed_stock_verification->pending_orders = $pending_orders;
+            $listed_stock_verification->qty_change = $stock;
+            $listed_stock_verification->qty_to = $response->quantity;
+            $listed_stock_verification->admin_id = session('user_id');
+            $listed_stock_verification->save();
+        }else{
+            $listed_stock_verification = new Listed_stock_verification_model();
+            $listed_stock_verification->process_id = $process_id;
+            $listed_stock_verification->variation_id = $variation->id;
+            $listed_stock_verification->pending_orders = $pending_orders;
+            $listed_stock_verification->qty_from = $updatedQuantity;
             $listed_stock_verification->qty_change = $stock;
             $listed_stock_verification->qty_to = $response->quantity;
             $listed_stock_verification->admin_id = session('user_id');
