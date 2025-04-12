@@ -164,25 +164,25 @@
                                     </a>
                                     <ul class="collapse" id="optionsMenu">
                                         <li class="slide">
-                                            <a class="sub-menu__item" href="{{url('grade')}}">Grades</a>
+                                            <a class="side-menu__item" href="{{url('grade')}}">Grades</a>
                                         </li>
                                         <li class="slide">
-                                            <a class="sub-menu__item" href="{{url('product')}}">Products</a>
+                                            <a class="side-menu__item" href="{{url('product')}}">Products</a>
                                         </li>
                                         <li class="slide">
-                                            <a class="sub-menu__item" href="{{url('role')}}">Roles</a>
+                                            <a class="side-menu__item" href="{{url('role')}}">Roles</a>
                                         </li>
                                         <li class="slide">
-                                            <a class="sub-menu__item" href="{{url('color')}}">Colors</a>
+                                            <a class="side-menu__item" href="{{url('color')}}">Colors</a>
                                         </li>
                                         <li class="slide">
-                                            <a class="sub-menu__item" href="{{url('storage')}}">Storages</a>
+                                            <a class="side-menu__item" href="{{url('storage')}}">Storages</a>
                                         </li>
                                         <li class="slide">
-                                            <a class="sub-menu__item" href="{{url('team')}}">Team</a>
+                                            <a class="side-menu__item" href="{{url('team')}}">Team</a>
                                         </li>
                                         <li class="slide">
-                                            <a class="sub-menu__item" href="{{url('charge')}}">Charges</a>
+                                            <a class="side-menu__item" href="{{url('charge')}}">Charges</a>
                                         </li>
                                     </ul>
                                 </li>
