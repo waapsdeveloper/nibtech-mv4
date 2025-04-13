@@ -40,14 +40,15 @@ class Api_request_model extends Model
         $requests = Api_request_model::where('status', null)->orderBy('id','asc')->get();
         // $requests = Api_request_model::orderBy('id','asc')->get();
         foreach($requests as $request){
-            unset($sub_grade);
             $data = $request->request;
             $datas = $data;
-            if (strpos($datas, '"{\"ModelNo') != 0) {
+            if ($request->json == 1) {
+                $datas = json_decode($data);
+            }elseif (strpos($datas, '"{\"ModelNo') != 0) {
                 $datas = json_decode($datas);
                 $datas = json_decode($datas);
                 // echo "Hello";
-            } else{
+            } else {
                 if (strpos($data, '{') !== false && strpos($data, '}') !== false) {
                     $datas = preg_split('/(?<=\}),(?=\{)/', $data)[0];
                 }
@@ -61,6 +62,11 @@ class Api_request_model extends Model
             }
             // echo "<br>";
             // print_r($datas);
+
+            if($request->json == null){
+                unset($datas->OEMData);
+                dd($datas);
+            }
 
             if($datas->Imei == '' && $datas->Imei2 == ''){
                 $stock = Stock_model::where('serial_number',$datas->Serial)->first();
