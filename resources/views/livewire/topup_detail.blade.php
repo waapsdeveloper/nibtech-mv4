@@ -373,7 +373,7 @@
                                                         </td>
                                                         <td style="width:220px">{{ $stock->created_at }}</td>
                                                         <td>
-                                                            @if (session('user')->hasPermission('delete_topup_item'))
+                                                            @if (session('user')->hasPermission('delete_topup_item') && $process->status == 1)
                                                                 <a href="{{ url('topup/delete_item').'/'.$stock->id }}" class="btn btn-danger btn-sm">
                                                                     <i class="fa fa-trash"></i>
                                                                 </a>
