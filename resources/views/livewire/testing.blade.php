@@ -99,7 +99,7 @@
                                 // echo "Hell2o";
                             }
                             if($datas->Imei == null && $datas->Imei2 == null){
-                                echo $result->find_serial_request($datas->SerialNo);
+                                echo $result->find_serial_request($datas->Serial);
                             }
                             echo "Test DateTime s: ".$result->created_at;
                             echo "<a href='".url('testing/repush/'.$result->id)."'> Repush Test</a><br>";
