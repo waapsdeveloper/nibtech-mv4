@@ -30,7 +30,6 @@ class Testing extends Component
     public function render()
     {
 
-        echo "<div style='float:right;'><form method='post' action='".url("testing/upload_excel")."' enctype='multipart/form-data'>".csrf_field()."<input type='file' name='sheet'><input type='submit' value='Upload'></form></div>";
         $testing = new Api_request_model();
         $testing->push_testing();
         // $this->remove_extra_variations();

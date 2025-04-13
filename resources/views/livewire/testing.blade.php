@@ -67,6 +67,12 @@
         <div class="card">
             <div class="card-header pb-0">
 
+                <div style='float:right;'>
+                    <form method='post' action='".url("testing/upload_excel")."' enctype='multipart/form-data'>
+                        @csrf
+                        <input type='file' name='sheet'><input type='submit' value='Upload'>
+                    </form>
+                </div>
             </div>
             <div class="card-body"><div class="table-responsive">
 
