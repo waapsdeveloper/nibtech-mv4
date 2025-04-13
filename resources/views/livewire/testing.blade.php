@@ -82,7 +82,7 @@
                             $result = json_decode($request->request);
                             $datas = $result;
                             if($datas->Imei == '' && $datas->Imei2 == '' && $datas->Serial != ''){
-                                echo $result->find_serial_request($datas->Serial);
+                                echo $request->find_serial_request($datas->Serial);
                             }
                             // echo "Test DateTime s: ".$result->created_at;
                             echo "<br>";
