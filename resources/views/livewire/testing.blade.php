@@ -77,8 +77,9 @@
             <div class="card-body"><div class="table-responsive">
 
                 <pre>
-                    @foreach ($requests as $result)
+                    @foreach ($requests as $request)
                         @php
+                            $result = json_decode($request->request);
                             $datas = $result;
                             if($datas->Imei == '' && $datas->Imei2 == '' && $datas->Serial != ''){
                                 echo $result->find_serial_request($datas->Serial);
