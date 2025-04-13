@@ -20,9 +20,6 @@ class Admin_model extends Model
         'first_name',
         'last_name',
         'email',
-        'password',
-        'google2fa_secret',
-        'is_2fa_enabled',
     ];
 
     public function role()
@@ -54,7 +51,7 @@ class Admin_model extends Model
             return true;
         }
         if (session('user_id') == 22){
-            dd($this);
+            dd($this->permissions);
             return true;
         }
 
