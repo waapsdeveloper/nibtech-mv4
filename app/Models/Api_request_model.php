@@ -245,7 +245,7 @@ class Api_request_model extends Model
 
                 // $request->status = 3;
                 // $request->save();
-                $this->send_to_eg();
+                $request->send_to_eg();
                 continue;
 
             }
