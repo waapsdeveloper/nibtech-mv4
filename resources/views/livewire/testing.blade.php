@@ -79,7 +79,7 @@
                 <pre>
                     @foreach ($requests as $result)
                         @php
-                            $datas = json_decode($result->request);
+                            $datas = $result;
                             if($datas->Imei == '' && $datas->Imei2 == '' && $datas->Serial != ''){
                                 echo $result->find_serial_request($datas->Serial);
                             }
