@@ -353,11 +353,11 @@
                                         <table class="table table-bordered">
                                             <thead>
                                                 <tr>
-                                                    <th><small><b>Stock ID</b></small></th>
+                                                    <th><small><b>#</b></small></th>
                                                     <th><small><b>IMEI | Serial Number</b></small></th>
-                                                    <th><small><b>Color</b></small></th>
-                                                    <th><small><b>Grade</b></small></th>
+                                                    <th><small><b>Operation</b></small></th>
                                                     <th><small><b>Creation Date</b></small></th>
+                                                    <th></th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -372,6 +372,14 @@
                                                             {{ $stock->latest_operation->description ?? null }}
                                                         </td>
                                                         <td style="width:220px">{{ $stock->created_at }}</td>
+                                                        <td>
+                                                            @if (session('user')->hasPermission('delete_topup_item'))
+                                                                <a href="{{ url('topup/delete_item').'/'.$stock->id }}" class="btn btn-danger btn-sm">
+                                                                    <i class="fa fa-trash"></i>
+                                                                </a>
+
+                                                            @endif
+                                                        </td>
                                                     </tr>
                                                 @endforeach
                                             </tbody>
