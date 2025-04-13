@@ -98,9 +98,22 @@
                                 }
                                 // echo "Hell2o";
                             }
-                            if($datas->Imei == '' && $datas->Imei2 == '' && $datas->Serial != ''){
-                                echo $result->find_serial_request($datas->Serial);
+                            if($datas->Imei == '' && $datas->Imei2 == ''){
+                                $stock = Stock_model::where('serial_number',$datas->Serial)->first();
+                            }else{
+                                $stock = Stock_model::where('imei',$datas->Imei)->orWhere('imei',$datas->Imei2)->orWhere('serial_number',$datas->Serial)->first();
                             }
+
+                            if(!$stock && $datas->Imei == '' && $datas->Imei2 == ''){
+                                // $api_request = Api_request_model::where('stock_id','!=',null)->where('status','!=',null)->first();
+                                // if($api_request){
+                                //     $stock = Stock_model::find($api_request->stock_id);
+                                // }
+                                continue;
+                            }
+                            // if($datas->Imei == '' && $datas->Imei2 == '' && $datas->Serial != ''){
+                            //     echo $result->find_serial_request($datas->Serial);
+                            // }
                             echo "Test DateTime s: ".$result->created_at;
                             echo "<br>";
                             // echo "<a href='".url('testing/repush/'.$result->id)."'> Repush Test</a><br>";
