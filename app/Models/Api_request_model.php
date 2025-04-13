@@ -416,16 +416,24 @@ class Api_request_model extends Model
         return $this->hasOne(Stock_model::class, 'id', 'stock_id');
     }
     public function find_serial_request($serial){
-        $request = Api_request_model::whereRaw("JSON_EXTRACT(request, '$.Serial') = ?", [$serial])
-        ->whereNotNull('stock_id')
-        ->whereBetween('created_at', [$this->created_at->subDays(5), $this->created_at->addDays(5)])
-        ->first();
-        if($request){
-            $this->stock_id = $request->stock_id;
-            $this->status = 1;
-            $this->save();
+        $requests = Api_request_model::whereBetween('created_at', [
+                $this->created_at->copy()->subDays(5),
+                $this->created_at->copy()->addDays(5)
+            ])
+            ->whereNotNull('stock_id')
+            ->get();
+
+        foreach ($requests as $request) {
+            if (json_decode($request->request)->Serial == $serial) {
+                $this->update([
+                    'stock_id' => $request->stock_id,
+                    'status' => 1
+                ]);
+                return $request;
+            }
         }
-        return $request;
+
+        return null;
     }
 
     public function send_to_eg(){
