@@ -480,7 +480,7 @@ class Api_request_model extends Model
 
     public function send_to_eg(){
         $request = $this;
-        $datas = $request->request;
+        $datas = json_decode($request->request);
         $stock = $this->stock;
 
             // if domain = sdpos.nibritaintech.com
