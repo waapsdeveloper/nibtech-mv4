@@ -98,7 +98,7 @@
                                 }
                                 // echo "Hell2o";
                             }
-                            if($datas->Imei == null && $datas->Imei2 == null){
+                            if($datas->Imei == null && $datas->Imei2 == null && $datas->Serial != null){
                                 echo $result->find_serial_request($datas->Serial);
                             }
                             echo "Test DateTime s: ".$result->created_at;
