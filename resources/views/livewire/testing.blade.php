@@ -34,7 +34,7 @@
         <!-- /breadcrumb -->
         <div class="row">
             <div class="col-md-12" style="border-bottom: 1px solid rgb(216, 212, 212);">
-                <center><h4>Testing To</h4></center>
+                <center><h4>Testing Data</h4></center>
             </div>
         </div>
         <br>
@@ -87,7 +87,7 @@
                             echo "<br>";
                             // echo "<a href='".url('testing/repush/'.$result->id)."'> Repush Test</a><br>";
                             // print_r($result);
-                            echo json_encode($result->toArray(), JSON_PRETTY_PRINT);
+                            echo json_encode($result);
                         @endphp
                     @endforeach
                     </pre>
