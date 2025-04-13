@@ -24,6 +24,7 @@ class Api_request_model extends Model
 
     public function push_testing()
     {
+        $return = [];
         $imeis = [];
         $admins = Admin_model::pluck('first_name','id')->toArray();
         $lowercaseAdmins = array_map('strtolower', $admins);
@@ -89,6 +90,8 @@ class Api_request_model extends Model
             // // print_r($request);
             // print_r($datas);
             // echo "</pre></div>";
+            $return[] = $datas;
+
             }
 
             $colorName = strtolower($datas->Color); // Convert color name to lowercase
@@ -410,6 +413,7 @@ class Api_request_model extends Model
             }
         }
 
+        return $return;
     }
 
     public function stock(){
