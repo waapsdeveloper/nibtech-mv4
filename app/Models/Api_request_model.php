@@ -160,6 +160,8 @@ class Api_request_model extends Model
                     $grade = $stock->variation->grade;
                 }elseif($gradeName == 'a'){
                     $grade = 2;
+                }elseif($gradeName == 'verygood'){
+                    $grade = 2;
                 }elseif(in_array($gradeName, ['a-','b'])){
                     $grade = 3;
                 }elseif(in_array($gradeName, ['ab','c'])){
