@@ -5,29 +5,20 @@ use Livewire\Component;
 use App\Models\Variation_model;
 use App\Models\Products_model;
 use App\Models\Stock_model;
-use App\Models\Order_model;
 use App\Models\Order_item_model;
 use App\Models\Customer_model;
-use App\Models\Currency_model;
 use App\Models\Storage_model;
-use App\Exports\RepairsheetExport;
 use App\Http\Controllers\ListingController;
-use Maatwebsite\Excel\Facades\Excel;
-use TCPDF;
-use App\Models\Api_request_model;
 use App\Models\Brand_model;
 use App\Models\Category_model;
 use App\Models\Color_model;
 use App\Models\ExchangeRate;
 use App\Models\Grade_model;
 use App\Models\Listed_stock_verification_model;
-use App\Models\Order_issue_model;
 use App\Models\Process_model;
 use App\Models\Process_stock_model;
 use App\Models\Product_storage_sort_model;
 use App\Models\Stock_operations_model;
-use GuzzleHttp\Client;
-use Illuminate\Support\Facades\DB;
 
 
 class Topup extends Component
@@ -323,6 +314,16 @@ class Topup extends Component
         return redirect()->back();
     }
 
+    public function delete_topup_item($id){
+        $process_stock = Process_stock_model::find($id);
+        if($process_stock != null){
+            $process_stock->delete();
+            session()->put('success', 'Stock Deleted successfully');
+        }else{
+            session()->put('error', 'Stock Not Found');
+        }
+        return redirect()->back();
+    }
 
     public function undo_topup($id){
         $listed_stocks = Process_stock_model::where('process_id', $id)->get();
