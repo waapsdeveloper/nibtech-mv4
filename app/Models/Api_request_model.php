@@ -424,7 +424,27 @@ class Api_request_model extends Model
             ->get();
 
         foreach ($requests as $request) {
-            if (json_decode($request->request)->Serial == $serial) {
+
+            $data = $request->request;
+            $datas = $data;
+            if (strpos($datas, '"{\"ModelNo') != 0) {
+                $datas = json_decode($datas);
+                $datas = json_decode($datas);
+                // echo "Hello";
+            } else{
+                if (strpos($data, '{') !== false && strpos($data, '}') !== false) {
+                    $datas = preg_split('/(?<=\}),(?=\{)/', $data)[0];
+                }
+                if (is_string($datas)) {
+                    $datas = json_decode($datas);
+                }
+                if (is_string($datas)) {
+                    $datas = json_decode($datas);
+                }
+                // echo "Hell2o";
+            }
+
+            if ($datas->Serial == $serial) {
                 $this->update([
                     'stock_id' => $request->stock_id,
                     'status' => 1
