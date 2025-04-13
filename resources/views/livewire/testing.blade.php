@@ -83,7 +83,7 @@
                             // if($datas->Imei == '' && $datas->Imei2 == '' && $datas->Serial != ''){
                             //     echo $result->find_serial_request($datas->Serial);
                             // }
-                            echo "Test DateTime s: ".$result->created_at;
+                            // echo "Test DateTime s: ".$result->created_at;
                             echo "<br>";
                             // echo "<a href='".url('testing/repush/'.$result->id)."'> Repush Test</a><br>";
                             print_r($datas);
