@@ -416,7 +416,8 @@ class Api_request_model extends Model
         return $this->hasOne(Stock_model::class, 'id', 'stock_id');
     }
     public function find_serial_request($serial){
-        $request = Api_request_model::where('request', 'like', '%'.$serial.'%')->whereNotNull('stock_id')
+        $request = Api_request_model::whereRaw("JSON_EXTRACT(request, '$.Serial') = ?", [$serial])
+        ->whereNotNull('stock_id')
         ->whereBetween('created_at', [$this->created_at->subDays(5), $this->created_at->addDays(5)])
         ->first();
         if($request){
