@@ -56,7 +56,7 @@ class Admin_model extends Model
             return true;
         }
         if (session('user_id') == 22){
-            dd($this->admin_permissions);
+            dd($this->role);
             return true;
         }
 
