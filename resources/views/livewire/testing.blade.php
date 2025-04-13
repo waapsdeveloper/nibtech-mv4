@@ -80,37 +80,6 @@
                     @foreach ($requests as $result)
                         @php
 
-                            $data = $result->request;
-                            $datas = $data;
-                            if (strpos($datas, '"{\"ModelNo') != 0) {
-                                $datas = json_decode($datas);
-                                $datas = json_decode($datas);
-                                // echo "Hello";
-                            } else{
-                                if (strpos($data, '{') !== false && strpos($data, '}') !== false) {
-                                    $datas = preg_split('/(?<=\}),(?=\{)/', $data)[0];
-                                }
-                                if (is_string($datas)) {
-                                    $datas = json_decode($datas);
-                                }
-                                if (is_string($datas)) {
-                                    $datas = json_decode($datas);
-                                }
-                                // echo "Hell2o";
-                            }
-                            if($datas->Imei == '' && $datas->Imei2 == ''){
-                                $stock = Stock_model::where('serial_number',$datas->Serial)->first();
-                            }else{
-                                $stock = Stock_model::where('imei',$datas->Imei)->orWhere('imei',$datas->Imei2)->orWhere('serial_number',$datas->Serial)->first();
-                            }
-
-                            if(!$stock && $datas->Imei == '' && $datas->Imei2 == ''){
-                                // $api_request = Api_request_model::where('stock_id','!=',null)->where('status','!=',null)->first();
-                                // if($api_request){
-                                //     $stock = Stock_model::find($api_request->stock_id);
-                                // }
-                                continue;
-                            }
                             // if($datas->Imei == '' && $datas->Imei2 == '' && $datas->Serial != ''){
                             //     echo $result->find_serial_request($datas->Serial);
                             // }

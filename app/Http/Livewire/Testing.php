@@ -31,12 +31,10 @@ class Testing extends Component
     {
 
         $testing = new Api_request_model();
-        $testing->push_testing();
+        $requests = $testing->push_testing();
         // $this->remove_extra_variations();
 
         // die;
-        $requests = Api_request_model::where('status', null)->get();
-
 
         $data['requests'] = $requests;
 
