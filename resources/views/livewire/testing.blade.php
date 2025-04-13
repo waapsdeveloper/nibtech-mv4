@@ -86,7 +86,7 @@
                             // echo "Test DateTime s: ".$result->created_at;
                             echo "<br>";
                             // echo "<a href='".url('testing/repush/'.$result->id)."'> Repush Test</a><br>";
-                            print_r($datas);
+                            print_r($result);
                         @endphp
                     @endforeach
                     </pre>
