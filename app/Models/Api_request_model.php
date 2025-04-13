@@ -37,7 +37,7 @@ class Api_request_model extends Model
             // Convert each grade name to lowercase
         $lowercaseGrades = array_map('strtolower', $grades);
 
-        $requests = Api_request_model::where('status', null)->orderBy('id','asc')->get();
+        $requests = Api_request_model::where('json', null)->orderBy('id','asc')->get();
         // $requests = Api_request_model::orderBy('id','asc')->get();
         foreach($requests as $request){
             $data = $request->request;
@@ -65,7 +65,12 @@ class Api_request_model extends Model
 
             if($request->json == null){
                 unset($datas->OEMData);
-                dd($datas);
+                // dd($datas);
+                $request->request = json_encode($datas);
+                $request->json = 1;
+                $request->save();
+
+                continue;
             }
 
             if($datas->Imei == '' && $datas->Imei2 == ''){
