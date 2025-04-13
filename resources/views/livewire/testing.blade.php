@@ -96,9 +96,6 @@
                             echo "<a href='".url('testing/repush/'.$result->id)."'> Repush Test</a><br>";
                             print_r($datas);
                         @endphp
-                        @php
-                            $i ++;
-                        @endphp
                     @endforeach
                     </pre>
 
