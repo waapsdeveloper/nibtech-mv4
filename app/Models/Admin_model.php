@@ -20,9 +20,6 @@ class Admin_model extends Model
         'first_name',
         'last_name',
         'email',
-        'password',
-        'google2fa_secret',
-        'is_2fa_enabled',
     ];
 
     public function role()
