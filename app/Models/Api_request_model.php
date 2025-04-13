@@ -84,11 +84,11 @@ class Api_request_model extends Model
             }
             if(!in_array($datas->Imei, $imeis)){
                 $imeis[] = $datas->Imei;
-            echo "<div class='col-md-4'><pre>";
+            // echo "<div class='col-md-4'><pre>";
 
-            // print_r($request);
-            print_r($datas);
-            echo "</pre></div>";
+            // // print_r($request);
+            // print_r($datas);
+            // echo "</pre></div>";
             }
 
             $colorName = strtolower($datas->Color); // Convert color name to lowercase
@@ -190,40 +190,42 @@ class Api_request_model extends Model
             // if domain = sdpos.nibritaintech.com
             if(config('app.url') == 'https://sdpos.nibritaintech.com' && $stock == null && (str_contains(strtolower($datas->BatchID), 'eg') || str_contains(strtolower($datas->TesterName), 'rizwan') || str_contains(strtolower($datas->TesterName), 'aqeel'))){
 
-                $curl = curl_init();
+                // $curl = curl_init();
 
-                curl_setopt_array($curl, array(
-                  CURLOPT_URL => 'https://egpos.nibritaintech.com/api/request',
-                  CURLOPT_RETURNTRANSFER => true,
-                  CURLOPT_ENCODING => '',
-                  CURLOPT_MAXREDIRS => 10,
-                  CURLOPT_TIMEOUT => 0,
-                  CURLOPT_FOLLOWLOCATION => true,
-                  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                  CURLOPT_CUSTOMREQUEST => 'POST',
-                  CURLOPT_POSTFIELDS => json_encode($datas),
-                  CURLOPT_HTTPHEADER => array(
-                    'Accept: application/json',
-                    'Content-Type: application/json',
-                    'Authorization: Bearer 2|otpLfHymDGDscNuKjk9CQMx620avGG0aWgMpuPAp5d1d27d2'
-                  ),
-                ));
+                // curl_setopt_array($curl, array(
+                //   CURLOPT_URL => 'https://egpos.nibritaintech.com/api/request',
+                //   CURLOPT_RETURNTRANSFER => true,
+                //   CURLOPT_ENCODING => '',
+                //   CURLOPT_MAXREDIRS => 10,
+                //   CURLOPT_TIMEOUT => 0,
+                //   CURLOPT_FOLLOWLOCATION => true,
+                //   CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                //   CURLOPT_CUSTOMREQUEST => 'POST',
+                //   CURLOPT_POSTFIELDS => json_encode($datas),
+                //   CURLOPT_HTTPHEADER => array(
+                //     'Accept: application/json',
+                //     'Content-Type: application/json',
+                //     'Authorization: Bearer 2|otpLfHymDGDscNuKjk9CQMx620avGG0aWgMpuPAp5d1d27d2'
+                //   ),
+                // ));
 
-                $response = curl_exec($curl);
+                // $response = curl_exec($curl);
 
-                curl_close($curl);
-                echo $response;
+                // curl_close($curl);
+                // echo $response;
 
 
-                if($response){
-                    echo "<pre>";
-                    print_r($response);
-                    echo "</pre>";
-                    echo "<br><br><br>Hello<br><br><br>";
-                }
+                // if($response){
+                //     echo "<pre>";
+                //     print_r($response);
+                //     echo "</pre>";
+                //     echo "<br><br><br>Hello<br><br><br>";
+                // }
 
-                $request->status = 3;
-                $request->save();
+                // $request->status = 3;
+                // $request->save();
+                $this->send_to_eg();
+                continue;
 
             }
 
@@ -408,5 +410,51 @@ class Api_request_model extends Model
             }
         }
 
+    }
+
+    public function send_to_eg(){
+        $request = $this;
+        $datas = $request->request;
+        $stock = $this->stock;
+
+            // if domain = sdpos.nibritaintech.com
+        if(config('app.url') == 'https://sdpos.nibritaintech.com' && $stock == null && (str_contains(strtolower($datas->BatchID), 'eg') || str_contains(strtolower($datas->TesterName), 'rizwan') || str_contains(strtolower($datas->TesterName), 'aqeel'))){
+
+            $curl = curl_init();
+
+            curl_setopt_array($curl, array(
+                CURLOPT_URL => 'https://egpos.nibritaintech.com/api/request',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POSTFIELDS => json_encode($datas),
+                CURLOPT_HTTPHEADER => array(
+                'Accept: application/json',
+                'Content-Type: application/json',
+                'Authorization: Bearer 2|otpLfHymDGDscNuKjk9CQMx620avGG0aWgMpuPAp5d1d27d2'
+                ),
+            ));
+
+            $response = curl_exec($curl);
+
+            curl_close($curl);
+            echo $response;
+
+
+            if($response){
+                echo "<pre>";
+                print_r($response);
+                echo "</pre>";
+                echo "<br><br><br>Hello<br><br><br>";
+            }
+
+            $request->status = 3;
+            $request->save();
+
+        }
     }
 }
