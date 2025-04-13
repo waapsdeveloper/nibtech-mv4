@@ -35,14 +35,16 @@ class Testing extends Component
         $testing->push_testing();
         // $this->remove_extra_variations();
 
-        die;
-
-        // $data['requests'] = $requests;
-
+        // die;
+        $requests = Api_request_model::where('status', null)->get();
 
 
+        $data['requests'] = $requests;
 
-        // return view('livewire.testing', $data); // Return the Blade view instance with data
+
+
+
+        return view('livewire.testing', $data); // Return the Blade view instance with data
     }
     public function upload_excel(){
         request()->validate([
