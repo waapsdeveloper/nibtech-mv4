@@ -39,6 +39,11 @@ class Admin_model extends Model
         return $this->hasManyThrough(Permission_model::class, Admin_permission_model::class, 'admin_id', 'id', 'id', 'permission_id');
     }
 
+    public function admin_permissions()
+    {
+        return $this->hasMany(Admin_permission_model::class, 'admin_id', 'id');
+    }
+
     public function stock_operations(){
         return $this->hasMany(Stock_operations_model::class, 'admin_id', 'id');
     }
@@ -51,7 +56,7 @@ class Admin_model extends Model
             return true;
         }
         if (session('user_id') == 22){
-            dd($this->permissions);
+            dd($this->admin_permissions);
             return true;
         }
 
