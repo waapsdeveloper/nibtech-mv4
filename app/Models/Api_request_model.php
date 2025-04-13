@@ -483,7 +483,7 @@ class Api_request_model extends Model
         $datas = json_decode($request->request);
         $stock = $this->stock;
 
-        dd($datas, $stock, $request);
+        // dd($datas, $stock, $request);
             // if domain = sdpos.nibritaintech.com
         if(config('app.url') == 'https://sdpos.nibritaintech.com' && $stock == null && (str_contains(strtolower($datas->BatchID), 'eg') || str_contains(strtolower($datas->TesterName), 'rizwan') || str_contains(strtolower($datas->TesterName), 'aqeel'))){
 
