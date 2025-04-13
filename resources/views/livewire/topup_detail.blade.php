@@ -342,11 +342,9 @@
                                     <td>{{ $variation->sku ?? "Variation SKU Not added"}}</td>
                                     <td>{{ $products[$variation->product_id] ?? "Variation Model Not added"}} {{$storages[$variation->storage] ?? null}} {{$colors[$variation->color] ?? null}} {{$grades[$variation->grade] ?? "Variation Grade Not added" }}</td>
                                     <td>
-                                        <a href="javascript:void(0);" onclick="loadStocks({{ $variation->id }})">
-                                            <span id="stock-count-{{ $variation->id }}">{{ $stocks->where('variation_id', $variation->id)->count() }}</span>
+                                        <a href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#stocks-{{ $variation->id }}" aria-expanded="false" aria-controls="stocks-{{ $variation->id }}">
+                                            {{ $stocks->where('variation_id', $variation->id)->count() }}
                                         </a>
-                                        <div id="stocks-{{ $variation->id }}" class="collapse bg-lightgreen"></div>
-
                                     </td>
                                     <td></td>
                                 </tr>
@@ -357,31 +355,31 @@
                                                 <tr>
                                                     <th><small><b>#</b></small></th>
                                                     <th><small><b>IMEI | Serial Number</b></small></th>
+                                                    <th><small><b>Operation</b></small></th>
                                                     <th><small><b>Creation Date</b></small></th>
                                                     <th></th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 @php
-                                                    $i = 0;
+                                                    $j = 0;
                                                 @endphp
                                                 @foreach ($stocks->where('variation_id', $variation->id) as $stock)
                                                     <tr>
-                                                        <td>{{ $i + 1 }}</td>
+                                                        <td>{{ ++$j }}</td>
                                                         <td>{{ $stock->imei }}{{ $stock->serial_number }}</td>
                                                         <td>
-                                                            @if ($stock->latest_operation)
-                                                                {{ $stock->latest_operation->description }}
-                                                            @endif
+                                                            {{ $stock->latest_operation->description ?? null }}
                                                         </td>
-                                                        <td>{{ $stock->process_stock($process_id)->created_at }}</td>
-                                                        @if (session('user')->hasPermission('delete_topup_item') && $process->status == 1)
-                                                            <td>
-                                                                <a href="{{ url('topup/delete_item').'/'.$stock->process_stock($process_id)->id }}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to remove this stock from topup?')">
+                                                        <td style="width:220px">{{ $stock->created_at }}</td>
+                                                        <td>
+                                                            @if (session('user')->hasPermission('delete_topup_item') && $process->status == 1)
+                                                                <a href="{{ url('topup/delete_item').'/'.$stock->id }}" class="btn btn-danger btn-sm">
                                                                     <i class="fa fa-trash"></i>
                                                                 </a>
-                                                            </td>
-                                                        @endif
+
+                                                            @endif
+                                                        </td>
                                                     </tr>
                                                 @endforeach
                                             </tbody>
@@ -414,26 +412,6 @@
                 $('#sb_toggle').click();
 
             });
-
-            function loadStocks(variationId) {
-                const stocksContainer = document.getElementById(`stocks-${variationId}`);
-                if (stocksContainer.innerHTML.trim() === '') {
-                    $.ajax({
-                        url: "{{ url('topup/get_stocks') }}/" + variationId,
-                        method: "GET",
-                        success: function(data) {
-                            stocksContainer.innerHTML = data;
-                            $(`#stocks-${variationId}`).collapse('toggle');
-                        },
-                        error: function(xhr, status, error) {
-                            alert('Error loading stocks: ' + error);
-                        }
-                    });
-                } else {
-                    $(`#stocks-${variationId}`).collapse('toggle');
-                }
-            }
-
             function PrintElem(elem)
             {
                 var mywindow = window.open('', 'PRINT', 'height=400,width=600');
