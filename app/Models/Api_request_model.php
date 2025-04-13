@@ -209,7 +209,7 @@ class Api_request_model extends Model
                 // }
             }
             // if domain = sdpos.nibritaintech.com
-            if(config('app.url') == 'https://sdpos.nibritaintech.com' && $stock == null && (str_contains(strtolower($datas->BatchID), 'eg') || str_contains(strtolower($datas->TesterName), 'rizwan') || str_contains(strtolower($datas->TesterName), 'aqeel'))){
+            if(config('app.url') == 'https://sdpos.nibritaintech.com' && $stock == null && (str_contains(strtolower($datas->BatchID), 'patel') || str_contains(strtolower($datas->TesterName), 'rizwan') || str_contains(strtolower($datas->TesterName), 'aqeel'))){
 
                 // $curl = curl_init();
 
@@ -485,7 +485,7 @@ class Api_request_model extends Model
 
         // dd($datas, $stock, $request);
             // if domain = sdpos.nibritaintech.com
-        if(config('app.url') == 'https://sdpos.nibritaintech.com' && $stock == null && (str_contains(strtolower($datas->BatchID), 'eg') || str_contains(strtolower($datas->TesterName), 'rizwan') || str_contains(strtolower($datas->TesterName), 'aqeel'))){
+        if(config('app.url') == 'https://sdpos.nibritaintech.com' && $stock == null && (str_contains(strtolower($datas->BatchID), 'patel') || str_contains(strtolower($datas->TesterName), 'rizwan') || str_contains(strtolower($datas->TesterName), 'aqeel'))){
 
             $curl = curl_init();
 
