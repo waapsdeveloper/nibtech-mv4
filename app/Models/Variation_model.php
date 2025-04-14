@@ -81,6 +81,16 @@ class Variation_model extends Model
         return $this->hasOne(Grade_model::class, 'id', 'sub_grade');
     }
 
+    public function today_orders()
+    {
+        return $this->hasMany(Order_item_model::class, 'variation_id', 'id')->whereHas('order', function($q){
+            $q->whereDate('created_at', date('Y-m-d'))->where('order_type_id',3);
+        });
+    }
+    public function today_orders_count()
+    {
+        return $this->today_orders->count();
+    }
     public function images()
     {
         return $this->hasMany(Variation_image_model::class, 'variation_id', 'id')->orderBy('sort', 'asc');
