@@ -24,6 +24,7 @@ class Api_request_model extends Model
 
     public function push_testing()
     {
+        unset($sub_grade);
         $return = [];
         $imeis = [];
         $admins = Admin_model::pluck('first_name','id')->toArray();
