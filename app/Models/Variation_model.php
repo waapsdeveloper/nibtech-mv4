@@ -154,31 +154,27 @@ class Variation_model extends Model
         $variation->save();
     }
     public function merge($id){
-        if(request('variation')){
-            $duplicate = Variation_model::find($id);
-            $new = Variation_model::find(request('variation'));
-            if($duplicate != null && $new != null){
+        $duplicate = $this;
+        $new = Variation_model::find($id);
+        if($duplicate != null && $new != null){
 
-                // Update related records to point to the original variation
-                Listing_model::where('variation_id', $duplicate->id)->update(['variation_id' => $new->id]);
-                Listed_stock_verification_model::where('variation_id', $duplicate->id)->update(['variation_id' => $new->id]);
-                Order_item_model::where('variation_id', $duplicate->id)->update(['variation_id' => $new->id]);
-                Process_model::where('old_variation_id', $duplicate->id)->update(['old_variation_id' => $new->id]);
-                Process_model::where('new_variation_id', $duplicate->id)->update(['new_variation_id' => $new->id]);
-                Process_stock_model::where('variation_id', $duplicate->id)->update(['variation_id' => $new->id]);
-                Stock_model::where('variation_id', $duplicate->id)->update(['variation_id' => $new->id]);
-                Stock_operations_model::where('old_variation_id', $duplicate->id)->update(['old_variation_id' => $new->id]);
-                Stock_operations_model::where('new_variation_id', $duplicate->id)->update(['new_variation_id' => $new->id]);
+            // Update related records to point to the original variation
+            Listing_model::where('variation_id', $duplicate->id)->update(['variation_id' => $new->id]);
+            Listed_stock_verification_model::where('variation_id', $duplicate->id)->update(['variation_id' => $new->id]);
+            Order_item_model::where('variation_id', $duplicate->id)->update(['variation_id' => $new->id]);
+            Process_model::where('old_variation_id', $duplicate->id)->update(['old_variation_id' => $new->id]);
+            Process_model::where('new_variation_id', $duplicate->id)->update(['new_variation_id' => $new->id]);
+            Process_stock_model::where('variation_id', $duplicate->id)->update(['variation_id' => $new->id]);
+            Stock_model::where('variation_id', $duplicate->id)->update(['variation_id' => $new->id]);
+            Stock_operations_model::where('old_variation_id', $duplicate->id)->update(['old_variation_id' => $new->id]);
+            Stock_operations_model::where('new_variation_id', $duplicate->id)->update(['new_variation_id' => $new->id]);
 
-                // Soft delete the duplicate
-                $duplicate->delete();
-                session()->put('success', 'Variation Merged');
-            }else{
-                session()->put('error', 'Variation Not Found');
-
-            }
+            // Soft delete the duplicate
+            $duplicate->delete();
+            session()->put('success', 'Variation Merged');
         }else{
-            session()->put('error', 'Variation Not selected');
+            session()->put('error', 'Variation Not Found');
+
         }
     }
 }
