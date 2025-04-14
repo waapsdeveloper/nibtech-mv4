@@ -198,7 +198,7 @@
                                 @php
                                     $model_colors = $product->same_products->pluck('color')->unique();
 
-                                    if ($product->duplicates->count() == 1) {
+                                    if ($product->duplicates->count() == 1 && $product->sku == null) {
                                         $duplicate = $product->duplicates->first();
                                         $product->merge($duplicate->id);
                                     }
