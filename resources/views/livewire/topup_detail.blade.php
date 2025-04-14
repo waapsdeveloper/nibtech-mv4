@@ -249,7 +249,7 @@
                 </div>
                 </div>
             </div>
-        @else
+        @endif
         <div class="card" id="print_inv">
             <div class="card-header pb-0 d-flex justify-content-between">
                 <h4 class="card-title">Changed Stock</h4>
@@ -313,7 +313,7 @@
                 </table>
             </div>
         </div>
-        @endif
+        {{-- @endif --}}
         @if (request('show') == 1)
 
         <div class="card" id="topup_variations">

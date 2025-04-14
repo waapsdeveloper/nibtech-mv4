@@ -167,9 +167,9 @@ class Topup extends Component
             $data['stocks'] = $stocks;
 
         }
-        if($process->status == 2){
+        // if($process->status == 2){
             $data['listed_stocks'] = Listed_stock_verification_model::where('process_id', $process_id)->orderBy('variation_id')->get();
-        }
+        // }
 
         return view('livewire.topup_detail')->with($data);
 
