@@ -133,8 +133,11 @@ class ListingController extends Controller
             return $q->where('state', request('state'));
 
         })
-        // ->when(request('sale_40') != '', function ($q) {
-        //     return $q->whereHas('t
+        ->when(request('sale_40') != '', function ($q) {
+            return $q->whereHas('today_orders_count', function ($q) {
+            $q->havingRaw('today_orders_count < (listed_stock * 0.05)');
+            });
+        })
         ->when(request('handler_status') == 2, function ($q) {
             return $q->whereHas('listings', function ($q) {
                 $q->where('handler_status', request('handler_status'))->whereIn('country', [73, 199]);
