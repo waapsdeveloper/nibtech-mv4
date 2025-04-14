@@ -41,6 +41,7 @@ class Api_request_model extends Model
         $requests = Api_request_model::where('status', null)->orderBy('id','asc')->get();
         // $requests = Api_request_model::orderBy('id','asc')->get();
         foreach($requests as $request){
+            unset($sub_grade);
             $data = $request->request;
             $datas = $data;
             if ($request->json == 1) {
