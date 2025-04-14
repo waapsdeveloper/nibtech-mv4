@@ -55,7 +55,7 @@ class PriceHandler extends Command
 
             $responses = $bm->getListingCompetitors($variation->reference_uuid);
             if ($responses == null) {
-                $error .= "No response for variation: " . $variation->reference_uuid . "\n";
+                $error .= "No response for variation: " . $variation->sku . "\n";
                 continue;
             }
             foreach($responses as $list){
