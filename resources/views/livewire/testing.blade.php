@@ -92,6 +92,7 @@
                             if(in_array($datas->Serial, $serials)){
                                 echo "Duplicate Serial: ".$datas->Serial;
                                 echo "<br>";
+                                continue;
                             }else{
                                 $serials[] = $datas->Serial;
                             }
