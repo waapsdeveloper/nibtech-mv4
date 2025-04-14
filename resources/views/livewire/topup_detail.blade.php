@@ -341,7 +341,11 @@
                                     class="bg-danger"
                                 @endif>
                                     <td>{{ $i + 1 }}</td>
-                                    <td>{{ $variation->sku ?? "Variation SKU Not added"}}</td>
+                                    <td>{{ $variation->sku ?? "Variation SKU Not added"}}
+                                        @if ($variation->listed_stock < 0)
+                                            {{ $variation->listed_stock }}
+                                        @endif
+                                    </td>
                                     <td>{{ $products[$variation->product_id] ?? "Variation Model Not added"}} {{$storages[$variation->storage] ?? null}} {{$colors[$variation->color] ?? null}} {{$grades[$variation->grade] ?? "Variation Grade Not added" }}</td>
                                     <td>
                                         <a href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#stocks-{{ $variation->id }}" aria-expanded="false" aria-controls="stocks-{{ $variation->id }}">
