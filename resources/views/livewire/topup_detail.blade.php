@@ -249,7 +249,8 @@
                 </div>
                 </div>
             </div>
-        @else
+        @endif
+        @if ($listed_stocks->count() > 0)
         <div class="card" id="print_inv">
             <div class="card-header pb-0 d-flex justify-content-between">
                 <h4 class="card-title">Changed Stock</h4>
