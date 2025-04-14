@@ -133,7 +133,14 @@ class ListingController extends Controller
             return $q->where('state', request('state'));
 
         })
-        ->when(request('handler_status') != '', function ($q) {
+        // ->when(request('sale_40') != '', function ($q) {
+        //     return $q->whereHas('t
+        ->when(request('handler_status') == 2, function ($q) {
+            return $q->whereHas('listings', function ($q) {
+                $q->where('handler_status', request('handler_status'))->whereIn('country', [73, 199]);
+            });
+        })
+        ->when(request('handler_status') == 1, function ($q) {
             return $q->whereHas('listings', function ($q) {
                 $q->where('handler_status', request('handler_status'));
             });
