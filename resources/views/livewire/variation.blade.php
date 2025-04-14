@@ -197,6 +197,11 @@
                               @foreach ($variations as $index => $product)
                                 @php
                                     $model_colors = $product->same_products->pluck('color')->unique();
+
+                                    if ($product->duplicates->count() == 1) {
+                                        $duplicate = $product->duplicates->first();
+                                        $product->merge($duplicate->id);
+                                    }
                                 @endphp
                                   <form class="form-inline" method="POST" action="{{ url('variation/merge').'/'.$product->id }}" id="merge_{{$product->id}}">
                                       @csrf
