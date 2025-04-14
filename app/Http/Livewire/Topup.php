@@ -104,7 +104,10 @@ class Topup extends Component
 
             $listingController = new ListingController();
             foreach($variation_qty as $variation){
-                echo $listingController->add_quantity($variation->variation_id, $variation->total, $process->id);
+                $listed_stock = Listed_stock_verification_model::where('process_id', $process->id)->where('variation_id', $variation->variation_id)->first();
+                if($listed_stock == null){
+                    echo $listingController->add_quantity($variation->variation_id, $variation->total, $process->id);
+                }
             }
 
 
