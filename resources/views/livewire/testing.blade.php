@@ -75,7 +75,9 @@
                 </div>
             </div>
             <div class="card-body"><div class="table-responsive">
-
+                @php
+                    $serials = [];
+                @endphp
                 <pre>
                     @foreach ($requests as $request)
                         @php
@@ -86,6 +88,12 @@
                             }
                             if(str_contains(strtolower($datas->BatchID), 'eg')){
                                 $request->send_to_eg();
+                            }
+                            if(in_array($datas->Serial, $serials)){
+                                echo "Duplicate Serial: ".$datas->Serial;
+                                echo "<br>";
+                            }else{
+                                $serials[] = $datas->Serial;
                             }
                             // echo "Test DateTime s: ".$result->created_at;
                             echo "<br>";
