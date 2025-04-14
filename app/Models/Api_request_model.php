@@ -273,7 +273,7 @@ class Api_request_model extends Model
                         'color' => $stock->variation->color,
                         'grade' => $stock->variation->grade,
                     ];
-                    if(isset($sub_grade)){
+                    if(isset($sub_grade) && $grade > 5){
                         $new_variation['sub_grade'] = $sub_grade;
                     }
 
