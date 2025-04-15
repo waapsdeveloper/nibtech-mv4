@@ -85,6 +85,13 @@
                             $datas = $result;
                             if($datas->Imei == '' && $datas->Imei2 == '' && $datas->Serial != ''){
                                 echo $request->find_serial_request($datas->Serial);
+                                echo "<br>";
+                                echo "<form method='post' action='".url("testing/add_imei")."/".$request->id."'>
+                                        @csrf
+                                        <input type='hidden' name='serial' value='".$datas->Serial."'>
+                                        <input type='text' name='imei' placeholder='Enter IMEI'>
+                                        <button type='submit'>Add IMEI</button>
+                                      </form>";
                             }
                             if(str_contains(strtolower($datas->BatchID), 'eg')){
                                 $request->send_to_eg();
@@ -96,11 +103,8 @@
                             }else{
                                 $serials[] = $datas->Serial;
                             }
-                            // echo "Test DateTime s: ".$result->created_at;
                             echo "<br>";
-                            // echo "<a href='".url('testing/repush/'.$result->id)."'> Repush Test</a><br>";
                             print_r($result);
-                            // echo json_encode($result);
                         @endphp
                     @endforeach
                     </pre>
