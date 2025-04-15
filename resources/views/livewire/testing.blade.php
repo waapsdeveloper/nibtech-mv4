@@ -100,14 +100,14 @@
                             echo "<br>";
                             print_r($result);
                         @endphp
-
+                        @if($datas->Imei == '' && $datas->Imei2 == '' && $datas->Serial != '')
                         <form method='post' action='{{url("testing/add_imei")."/".$request->id}}'>
                             @csrf
                             <input type='hidden' name='serial' value='".$datas->Serial."'>
                             <input type='text' name='imei' placeholder='Enter IMEI'>
                             <button type='submit'>Add IMEI</button>
                         </form>
-
+                        @endif
                     @endforeach
                     </pre>
 
