@@ -138,7 +138,7 @@ class ListingController extends Controller
             // $q->havingRaw('COUNT(*) < (listed_stock * 0.05)');
             // });
             // ->where('sku', null);
-            return $q->whereCount('today_orders', '<', DB::raw('listed_stock * 0.05'));
+            return $q->withCount('today_orders')->where('today_orders_count', '<', DB::raw('listed_stock * 0.05'));
         })
         ->when(request('handler_status') == 2, function ($q) {
             return $q->whereHas('listings', function ($q) {
