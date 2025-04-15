@@ -238,7 +238,7 @@ Route::get('move_inventory/check_storage_change', [MoveInventory::class,'check_s
 Route::get('testing', Testing::class)->name('view_testing_api_data');
 Route::post('testing/upload_excel', [Testing::class, 'upload_excel'])->name('upload_testing_api_data');
 Route::get('testing/repush/{id}', [Testing::class, 'repush'])->name('repush_testing_api_data');
-Route::get('testing/add_imei/{id}', [Testing::class, 'add_imei'])->name('add_testing_api_data');
+Route::post('testing/add_imei/{id}', [Testing::class, 'add_imei'])->name('add_testing_api_data');
 
 Route::get('order', Order::class)->name('view_order');
 Route::get('order/get_b2c_orders_by_customer_json/{id}/{order_id}', [Order::class,'get_b2c_orders_by_customer_json'])->name('view_order');
