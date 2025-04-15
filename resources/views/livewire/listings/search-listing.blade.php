@@ -112,6 +112,11 @@
             </select>
         </div>
         <div class="">
+
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="sale_40" name="sale_40" value="Sales Below 5%" @if (request('sale_40')) {{'checked'}} @endif>
+                <label class="form-check-label" for="sale_40">Sales Below 5%</label>
+            </div>
             <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
             <a href="{{url('listing')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
         </div>
