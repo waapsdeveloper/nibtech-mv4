@@ -134,8 +134,8 @@ class ListingController extends Controller
 
         })
         ->when(request('sale_40') != '', function ($q) {
-            return $q->whereHas('today_orders_count', function ($q) {
-            $q->havingRaw('today_orders_count < (listed_stock * 0.05)');
+            return $q->whereHas('today_orders', function ($q) {
+            $q->havingRaw('COUNT(*) < (listed_stock * 0.05)');
             });
             // ->where('sku', null);
         })
