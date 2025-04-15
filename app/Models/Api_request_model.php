@@ -452,6 +452,15 @@ class Api_request_model extends Model
             $data = $request->request;
             $datas = json_decode($data);
 
+            if (is_string($datas)) {
+                $datas = json_decode($datas);
+            }
+            if (is_string($datas)) {
+                $datas = json_decode($datas);
+            }
+            if (strpos($data, '{') !== false && strpos($data, '}') !== false) {
+                $datas = preg_split('/(?<=\}),(?=\{)/', $data)[0];
+            }
             if ($datas->Serial == $serial) {
                 $this->update([
                     'stock_id' => $request->stock_id,
