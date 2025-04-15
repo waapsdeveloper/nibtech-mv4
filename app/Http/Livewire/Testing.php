@@ -100,6 +100,8 @@ class Testing extends Component
         $request->request = json_encode($data);
         $request->save();
 
+        return redirect()->back()->with('message', 'IMEI Added');
+
     }
 
 
