@@ -717,6 +717,7 @@
                     open_all: $('input[name="open_all"]').val(),
                     page: page,
                     special: "{{ Request::get('special') }}",
+                    sale_40: "{{ Request::get('sale_40') }}",
                     variation_id: "{{ Request::get('variation_id') }}",
                     csrf: "{{ csrf_token() }}"
                 };
