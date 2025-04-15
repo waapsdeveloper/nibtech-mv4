@@ -94,8 +94,8 @@ class Testing extends Component
     public function add_imei($id){
         $request = Api_request_model::find($id);
         $data = json_decode($request->request, true);
-        if($data['imei'] == null){
-            $data['imei'] = request('imei');
+        if($data['Imei'] == null){
+            $data['Imei'] = request('imei');
         }
         $request->request = json_encode($data);
         $request->save();
