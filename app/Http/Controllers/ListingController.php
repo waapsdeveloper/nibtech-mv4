@@ -410,6 +410,7 @@ class ListingController extends Controller
                 $error = $responses;
                 $error .= " - ".$variation->reference_uuid;
                 Log::error($error);
+                return response()->json(['error'=>$error]);
             }
             foreach($responses as $list){
                 if(is_string($list) || is_int($list)){
