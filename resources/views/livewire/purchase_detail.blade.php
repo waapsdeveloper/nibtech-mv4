@@ -1051,6 +1051,35 @@
                 })
                 .catch(error => console.error('Error fetching product details:', error));
             }
+            function loadProductSaleDetails(orderId, productId) {
+
+                fetch(`{{ url('purchase') }}/purchase_model_color_graded_sale/${orderId}/${productId}`)
+                .then(response => response.json())
+                .then(products => {
+                    // console.log(products);
+                    // Render the product details
+
+                    const productMenu = document.getElementById('count_data');
+                    productMenu.innerHTML = ''; // Clear existing products
+
+                    // Iterate through the products and create menu items
+                    for (const [key, product] of Object.entries(products)) {
+                        const productDiv = document.createElement('tr');
+
+                        const productLink = document.createElement('td');
+                        productLink.innerHTML = `${product.grade}`;
+
+                        productDiv.appendChild(productLink);
+                        const productLink2 = document.createElement('td');
+                        productLink2.innerHTML = `${product.quantity}`;
+
+                        productDiv.appendChild(productLink2);
+
+                        productMenu.appendChild(productDiv);
+                    };
+                })
+                .catch(error => console.error('Error fetching product details:', error));
+            }
         </script>
 		<!--Internal Sparkline js -->
 		<script src="{{asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js')}}"></script>
