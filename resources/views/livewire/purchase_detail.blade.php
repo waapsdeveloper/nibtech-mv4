@@ -1147,7 +1147,7 @@
 
                     // Calculate totals
 
-                    const totals = products['total_graded_count'];
+                    const totals = productss['total_graded_count'];
 
                     const productMenuFooter = document.getElementById('count_data_2_footer');
                     productMenuFooter.innerHTML = ''; // Clear existing products
@@ -1158,7 +1158,7 @@
                     productDiv2.appendChild(productLink1);
 
                     const productLink2 = document.createElement('th');
-                    productLink2.innerHTML = `${Object.keys(totals).length}`;
+                    productLink2.innerHTML = `${totals.quantity}`;
                     productDiv2.appendChild(productLink2);
 
                     // const productLink3 = document.createElement('th');
