@@ -762,8 +762,7 @@
                                             <tfoot>
                                                 <tr>
                                                     <td colspan="4">
-                                                        <button class="btn btn-danger" onclick="deleteAll('
-                                                        {{ implode(',', $ids) }}')">Delete All</button>
+                                                        <button class="btn btn-danger" onclick="deleteAll('{{ implode(',', $ids) }}')">Delete All</button>
                                                     </td>
                                                 </tr>
                                             </tfoot>
