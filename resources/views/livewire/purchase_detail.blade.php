@@ -1137,7 +1137,7 @@
 
                         const productLink7 = document.createElement('td');
                         productLink7.title = "Average : " + product.average_profit;
-                        productLink7.innerHTML = `${product.total_profit}`;
+                        productLink7.innerHTML = `${product.profit}`;
                         productDiv.appendChild(productLink7);
 
                         productMenu.appendChild(productDiv);
