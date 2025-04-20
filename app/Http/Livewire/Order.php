@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\DB;
     use App\Mail\InvoiceMail;
 use App\Models\Account_transaction_model;
 use App\Models\Color_model;
+use App\Models\ExchangeRate;
 use App\Models\Grade_model;
 use App\Models\Order_issue_model;
 use App\Models\Process_model;
@@ -856,8 +857,17 @@ class Order extends Component
                     $stock = Stock_model::find($stock_id);
                     // $total_cost += $stock->purchase_item->price;
                     $last_item = $stock->last_item();
-                    if(in_array($last_item->order->order_type_id,[2,3,5])){
-                        $total_price += $last_item->price;
+                    $last_order = $last_item->order;
+                    if(in_array($last_order->order_type_id,[2,3,5])){
+                        if($last_order->order_type_id == 3 && $last_item->currency != 4){
+                            $currency = Currency_model::find($last_item->currency);
+                            $exchange_rate = ExchangeRate::where('target_currency',$currency->code)->first();
+
+                            $total_price += $last_item->price / $exchange_rate->rate;
+                        }else{
+                            $total_price += $last_item->price;
+                        }
+                        // $total_price += $last_item->price;
                         if(!in_array($last_item->order_id,$s_orders)){
                             $s_orders[] = $last_item->order_id;
                             if($last_item->order->charges != null){
