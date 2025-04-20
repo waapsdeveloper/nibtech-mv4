@@ -1255,18 +1255,25 @@ class Order extends Component
             $average_charge = $total_quantity ? $total_charge / $total_quantity : "Issue";
             $average_profit = $total_quantity ? ($total_price - $total_cost - $total_charge - $total_repair) / $total_quantity : "Issue";
 
-            $graded_count[$key] = [
-                'average_cost' => $sold_stock['average_cost'],
-                'total_cost' => $total_cost,
-                'total_repair' => $total_repair,
-                'average_price' => $average_price,
-                'total_price' => $total_price,
-                'average_charge' => $average_charge,
-                'total_charge' => $total_charge,
-                'sold_quantity' => $total_quantity,
-                'profit' => $total_price - $total_cost - $total_charge - $total_repair,
-                'average_profit' => $average_profit,
-            ];
+            $graded_count[$key]['average_price'] = $average_price;
+            $graded_count[$key]['total_price'] = $total_price;
+            $graded_count[$key]['average_charge'] = $average_charge;
+            $graded_count[$key]['total_charge'] = $total_charge;
+            $graded_count[$key]['sold_quantity'] = $total_quantity;
+            $graded_count[$key]['profit'] = $total_price - $total_cost - $total_charge - $total_repair;
+            $graded_count[$key]['average_profit'] = $average_profit;
+            // $graded_count[$key] = [
+            //     'average_cost' => $sold_stock['average_cost'],
+            //     'total_cost' => $total_cost,
+            //     'total_repair' => $total_repair,
+            //     'average_price' => $average_price,
+            //     'total_price' => $total_price,
+            //     'average_charge' => $average_charge,
+            //     'total_charge' => $total_charge,
+            //     'sold_quantity' => $total_quantity,
+            //     'profit' => $total_price - $total_cost - $total_charge - $total_repair,
+            //     'average_profit' => $average_profit,
+            // ];
         }
 
         $data['graded_count'] = $graded_count;
