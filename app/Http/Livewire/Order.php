@@ -864,15 +864,15 @@ class Order extends Component
                             $exchange_rate = ExchangeRate::where('target_currency',$currency->code)->first();
 
                             $total_price += $last_item->price / $exchange_rate->rate;
+                            // $total_price += $last_item->price;
+                            if(!in_array($last_item->order_id,$s_orders)){
+                                $s_orders[] = $last_item->order_id;
+                                $total_charge += $last_item->order->charges / $exchange_rate->rate;
+                            }
                         }else{
                             $total_price += $last_item->price;
-                        }
-                        // $total_price += $last_item->price;
-                        if(!in_array($last_item->order_id,$s_orders)){
-                            $s_orders[] = $last_item->order_id;
-                            if($last_item->order->charges != null){
-                                $total_charge += $last_item->order->charges;
-                            }else{
+                            if(!in_array($last_item->order_id,$s_orders)){
+                                $s_orders[] = $last_item->order_id;
                                 $total_charge += $last_item->order->charges;
                             }
                         }
@@ -1273,13 +1273,27 @@ class Order extends Component
             foreach ($sold_stock['stock_ids'] as $stock_id) {
                 $stock = Stock_model::find($stock_id);
                 $last_item = $stock->last_item();
+                $last_order = $last_item->order;
 
                 if (in_array($last_item->order->order_type_id, [2, 3, 5])) {
-                    $total_price += $last_item->price;
-                    if (!in_array($last_item->order_id, $s_orders)) {
-                        $s_orders[] = $last_item->order_id;
-                        $total_charge += $last_item->order->charges ?? 0;
+
+                    if($last_order->order_type_id == 3 && $last_item->currency != 4 && $last_item->currency != null){
+                        $currency = Currency_model::find($last_item->currency);
+                        $exchange_rate = ExchangeRate::where('target_currency',$currency->code)->first();
+
+                        $total_price += $last_item->price / $exchange_rate->rate;
+                        if (!in_array($last_item->order_id, $s_orders)) {
+                            $s_orders[] = $last_item->order_id;
+                            $total_charge += $last_item->order->charges / $exchange_rate->rate ?? 0;
+                        }
+                    }else{
+                        $total_price += $last_item->price;
+                        if (!in_array($last_item->order_id, $s_orders)) {
+                            $s_orders[] = $last_item->order_id;
+                            $total_charge += $last_item->order->charges ?? 0;
+                        }
                     }
+                    // $total_price += $last_item->price;
                     $total_quantity++;
                 }
 
