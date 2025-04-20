@@ -1154,7 +1154,7 @@
                     const productDiv2 = document.createElement('tr');
 
                     const productLink1 = document.createElement('th');
-                    productLink1.colspan = 2;
+                    productLink1.setAttribute('colspan', '2');
                     productLink1.innerHTML = `Total`;
                     productDiv2.appendChild(productLink1);
 
