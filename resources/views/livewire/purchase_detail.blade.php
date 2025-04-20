@@ -726,6 +726,11 @@
                                                     @php
                                                     $i ++;
                                                     $purchase_item = $item->purchase_item;
+                                                    if($purchase_item != null){
+                                                        $price = amount_formatter($purchase_item->price);
+                                                    }else{
+                                                        $price = "Error in Purchase Entry";
+                                                    }
                                                     $prices[] = $purchase_item->price ?? 0;
                                                     if($variation->grade == 9){
                                                         if($item->stock_operations->count() == 0){
@@ -745,7 +750,7 @@
                                                         <td>{{ $i }}</td>
                                                         <td data-stock="{{ $item->id }}" class="{{$class}}">{{ $item->imei.$item->serial_number }}</td>
                                                         @if (session('user')->hasPermission('view_cost'))
-                                                        <td>{{ $currency}}{{amount_formatter($purchase_item->price) ?? "Error in Purchase Entry" }}</td>
+                                                        <td>{{ $currency}}{{ $price }}</td>
                                                         @endif
                                                         @if (session('user')->hasPermission('delete_purchase_item'))
                                                         <td><a href="{{ url('delete_order_item').'/'}}{{$purchase_item->id ?? null }}"
