@@ -1192,6 +1192,92 @@ class Order extends Component
 
     }
 
+    public function purchase_model_color_graded_sale($order_id, $pss_id){
+        $repair_ids = Process_model::where('process_type_id', 9)->pluck('id');
+        $pss = Product_storage_sort_model::find($pss_id);
+        $variations = $pss->variations;
+        $stocks = $pss->stocks->where('order_id', $order_id)->where('status', 2);
+        $grades = Grade_model::pluck('name', 'id');
+        $colors = Color_model::whereIn('id', $variations->pluck('color'))->pluck('name', 'id');
+        $graded_count = [];
+        $s_orders = [];
+        $sold_stocks_2 = [];
+
+        foreach ($colors as $color_id => $color) {
+            foreach ($grades as $grade_id => $grade) {
+            $graded_variations = $variations->where('grade', $grade_id)->where('color', $color_id);
+            $graded_stock_ids = $stocks->whereIn('variation_id', $graded_variations->pluck('id'))->pluck('id')->toArray();
+            $total_cost = Order_item_model::whereIn('stock_id', $graded_stock_ids)->where('order_id', $order_id)->sum('price');
+            $average_cost = $graded_stock_ids ? $total_cost / count($graded_stock_ids) : 0;
+            $total_repair = Process_stock_model::whereIn('stock_id', $graded_stock_ids)->where('status', 2)->whereIn('process_id', $repair_ids)->sum('price');
+            $average_repair = $graded_stock_ids ? $total_repair / count($graded_stock_ids) : 0;
+
+            $graded_count[$color_id . '.' . $grade_id] = [
+                'quantity' => count($graded_stock_ids),
+                'grade' => $grade,
+                'grade_id' => $grade_id,
+                'color' => $color,
+                'color_id' => $color_id,
+                'stock_ids' => $graded_stock_ids,
+                'total_cost' => $total_cost,
+                'average_cost' => $average_cost,
+                'total_repair' => $total_repair,
+                'average_repair' => $average_repair,
+                'quantity' => count($graded_stock_ids),
+            ];
+            }
+        }
+
+        foreach ($graded_count as $key => $sold_stock) {
+            $total_cost = $sold_stock['total_cost'];
+            $total_repair = $sold_stock['total_repair'];
+            $total_price = 0;
+            $total_charge = 0;
+            $total_quantity = 0;
+
+            foreach ($sold_stock['stock_ids'] as $stock_id) {
+                $stock = Stock_model::find($stock_id);
+                $last_item = $stock->last_item();
+
+                if (in_array($last_item->order->order_type_id, [2, 3, 5])) {
+                    $total_price += $last_item->price;
+                    if (!in_array($last_item->order_id, $s_orders)) {
+                        $s_orders[] = $last_item->order_id;
+                        $total_charge += $last_item->order->charges ?? 0;
+                    }
+                    $total_quantity++;
+                }
+
+            }
+
+            $average_price = $total_quantity ? $total_price / $total_quantity : "Issue";
+            $average_charge = $total_quantity ? $total_charge / $total_quantity : "Issue";
+            $average_profit = $total_quantity ? ($total_price - $total_cost - $total_charge - $total_repair) / $total_quantity : "Issue";
+
+            $graded_count[$key] = [
+                'average_cost' => $sold_stock['average_cost'],
+                'total_cost' => $total_cost,
+                'total_repair' => $total_repair,
+                'average_price' => $average_price,
+                'total_price' => $total_price,
+                'average_charge' => $average_charge,
+                'total_charge' => $total_charge,
+                'sold_quantity' => $total_quantity,
+                'profit' => $total_price - $total_cost - $total_charge - $total_repair,
+                'average_profit' => $average_profit,
+            ];
+        }
+
+        $data['graded_count'] = $graded_count;
+        // $data['graded_count'] = $stocks->select('grade.name as grade', 'variation.grade as grade_id', DB::raw('COUNT(*) as quantity'))
+        // ->join('variation', 'stock.variation_id', '=', 'variation.id')
+        // ->join('grade', 'variation.grade', '=', 'grade.id')
+        // ->groupBy('variation.grade', 'grade.name')
+        // ->orderBy('grade_id')
+        // ->get();
+
+        return response()->json($data['graded_count']);
+    }
     public function purchase_model_graded_count($order_id, $pss_id){
         $pss = Product_storage_sort_model::find($pss_id);
         $stocks = $pss->stocks->where('order_id',$order_id);
