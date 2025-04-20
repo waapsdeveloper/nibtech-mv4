@@ -229,7 +229,7 @@
                                 <tr>
                                     <td>{{ $i++ }}</td>
 
-                                    <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#graded_count_modal" onclick="loadProductSaleDetails({{$order_id}},{{$summery['pss_id']}})">{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</a></td>
+                                    <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#color_graded_count_modal" onclick="loadProductSaleDetails({{$order_id}},{{$summery['pss_id']}})">{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</a></td>
                                     <td>{{ $summery['quantity'] }}</td>
                                     <td title="{{ $summery['average_cost'] }}">€{{ amount_formatter($summery['total_cost'],2) }}</td>
                                     <td>€{{ amount_formatter($summery['total_repair']) }}</td>
@@ -985,6 +985,42 @@
                 </div>
             </div>
         </div>
+        <div class="modal" id="color_graded_count_modal">
+            <div class="modal-dialog wd-xl-400" role="document">
+                <div class="modal-content">
+                    <div class="modal-body pd-sm-40">
+                        <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
+                            type="button"><span aria-hidden="true">&times;</span></button>
+                        <h5 class="modal-title mg-b-5">Colored Graded Total</h5>
+                        <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                            <thead>
+                                <tr>
+                                    {{-- <th><small><b>No</b></small></th> --}}
+                                    <th><small><b>Color</b></small></th>
+                                    <th><small><b>Grade</b></small></th>
+                                    <th><small><b>Quantity</b></small></th>
+                                    <th><small><b>Cost</b></small></th>
+                                    <th><small><b>Repair</b></small></th>
+                                    <th><small><b>Charge</b></small></th>
+                                    <th><small><b>Price</b></small></th>
+                                    <th><small><b>Profit</b></small></th>
+                                </tr>
+                            </thead>
+                            <tbody id="count_data_2">
+                            </tbody>
+
+                            <tfoot>
+                                <tr>
+                                    {{-- <th><small><b>No</b></small></th> --}}
+                                    {{-- <th><b>Total</b></th>
+                                    <th><b>{{ $total }}</b></th> --}}
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     @endsection
 
     @section('scripts')
@@ -1069,16 +1105,40 @@
 
                         const productLink = document.createElement('td');
                         productLink.innerHTML = `${product.grade}`;
-
                         productDiv.appendChild(productLink);
+
                         const productLink1 = document.createElement('td');
                         productLink.innerHTML = `${product.color}`;
-
                         productDiv.appendChild(productLink1);
+
                         const productLink2 = document.createElement('td');
                         productLink2.innerHTML = `${product.quantity}`;
-
                         productDiv.appendChild(productLink2);
+
+                        const productLink3 = document.createElement('td');
+                        productLink3.title = "Average : " + product.average_cost;
+                        productLink3.innerHTML = `${product.total_cost}`;
+                        productDiv.appendChild(productLink3);
+
+                        const productLink4 = document.createElement('td');
+                        productLink4.title = "Average : " + product.average_repair;
+                        productLink4.innerHTML = `${product.total_repair}`;
+                        productDiv.appendChild(productLink4);
+
+                        const productLink5 = document.createElement('td');
+                        productLink5.title = "Average : " + product.average_charge;
+                        productLink5.innerHTML = `${product.total_charge}`;
+                        productDiv.appendChild(productLink5);
+
+                        const productLink6 = document.createElement('td');
+                        productLink6.title = "Average : " + product.average_price;
+                        productLink6.innerHTML = `${product.total_price}`;
+                        productDiv.appendChild(productLink6);
+
+                        const productLink7 = document.createElement('td');
+                        productLink7.title = "Average : " + product.average_profit;
+                        productLink7.innerHTML = `${product.total_profit}`;
+                        productDiv.appendChild(productLink7);
 
                         productMenu.appendChild(productDiv);
                     };
