@@ -763,7 +763,7 @@
                                                 <tr>
                                                     <td colspan="4">
                                                         <button class="btn btn-danger" onclick="deleteAll('
-                                                        {{ implode($ids, ',') }}')">Delete All</button>
+                                                        {{ implode(',', $ids) }}')">Delete All</button>
                                                     </td>
                                                 </tr>
                                             </tfoot>
