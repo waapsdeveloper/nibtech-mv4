@@ -989,16 +989,16 @@
     @section('scripts')
         <script>
 
-            function deleteAll(ids) {
-                if (confirm('Are you sure you want to delete all items?')) {
-                    const idArray = ids.split(',');
-                    idArray.forEach(id => {
-                        if (id) {
-                            window.open(`{{ url('delete_order_item') }}/${id}`, '_blank');
-                        }
-                    });
-                }
-            }
+            // function deleteAll(ids) {
+            //     if (confirm('Are you sure you want to delete all items?')) {
+            //         const idArray = ids.split(',');
+            //         idArray.forEach(id => {
+            //             if (id) {
+            //                 window.open(`{{ url('delete_order_item') }}/${id}`, '_blank');
+            //             }
+            //         });
+            //     }
+            // }
             function PrintElem(elem)
 {
                 var mywindow = window.open('', 'PRINT', 'height=400,width=600');
