@@ -1158,7 +1158,7 @@
                     productDiv2.appendChild(productLink1);
 
                     const productLink2 = document.createElement('th');
-                    productLink2.innerHTML = `${totals}`;
+                    productLink2.innerHTML = `${Object.keys(products).length}`;
                     productDiv2.appendChild(productLink2);
 
                     // const productLink3 = document.createElement('th');
