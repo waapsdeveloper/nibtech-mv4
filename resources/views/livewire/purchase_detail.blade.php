@@ -1103,9 +1103,9 @@
                     for (const [key, product] of Object.entries(products)) {
                         const productDiv = document.createElement('tr');
                         console.log(product);
-                        // const productLink1 = document.createElement('td');
-                        // productLink.innerHTML = `${product.color}`;
-                        // productDiv.appendChild(productLink1);
+                        const productLink1 = document.createElement('td');
+                        productLink.innerHTML = `${product.color}`;
+                        productDiv.appendChild(productLink1);
 
                         const productLink = document.createElement('td');
                         productLink.innerHTML = `${product.grade}`;
@@ -1116,30 +1116,30 @@
                         productLink2.innerHTML = `${product.quantity}`;
                         productDiv.appendChild(productLink2);
 
-                        // const productLink3 = document.createElement('td');
-                        // productLink3.title = "Average : " + product.average_cost;
-                        // productLink3.innerHTML = `${product.total_cost}`;
-                        // productDiv.appendChild(productLink3);
+                        const productLink3 = document.createElement('td');
+                        productLink3.title = "Average : " + product.average_cost;
+                        productLink3.innerHTML = `${product.total_cost}`;
+                        productDiv.appendChild(productLink3);
 
-                        // const productLink4 = document.createElement('td');
-                        // productLink4.title = "Average : " + product.average_repair;
-                        // productLink4.innerHTML = `${product.total_repair}`;
-                        // productDiv.appendChild(productLink4);
+                        const productLink4 = document.createElement('td');
+                        productLink4.title = "Average : " + product.average_repair;
+                        productLink4.innerHTML = `${product.total_repair}`;
+                        productDiv.appendChild(productLink4);
 
-                        // const productLink5 = document.createElement('td');
-                        // productLink5.title = "Average : " + product.average_charge;
-                        // productLink5.innerHTML = `${product.total_charge}`;
-                        // productDiv.appendChild(productLink5);
+                        const productLink5 = document.createElement('td');
+                        productLink5.title = "Average : " + product.average_charge;
+                        productLink5.innerHTML = `${product.total_charge}`;
+                        productDiv.appendChild(productLink5);
 
-                        // const productLink6 = document.createElement('td');
-                        // productLink6.title = "Average : " + product.average_price;
-                        // productLink6.innerHTML = `${product.total_price}`;
-                        // productDiv.appendChild(productLink6);
+                        const productLink6 = document.createElement('td');
+                        productLink6.title = "Average : " + product.average_price;
+                        productLink6.innerHTML = `${product.total_price}`;
+                        productDiv.appendChild(productLink6);
 
-                        // const productLink7 = document.createElement('td');
-                        // productLink7.title = "Average : " + product.average_profit;
-                        // productLink7.innerHTML = `${product.profit}`;
-                        // productDiv.appendChild(productLink7);
+                        const productLink7 = document.createElement('td');
+                        productLink7.title = "Average : " + product.average_profit;
+                        productLink7.innerHTML = `${product.profit}`;
+                        productDiv.appendChild(productLink7);
 
                         productMenu.appendChild(productDiv);
                     };
