@@ -1294,6 +1294,7 @@ class Order extends Component
         }
 
         $data['graded_count'] = $graded_count;
+        $data['total_graded_count'] = $total_graded_count;
         // $data['graded_count'] = $stocks->select('grade.name as grade', 'variation.grade as grade_id', DB::raw('COUNT(*) as quantity'))
         // ->join('variation', 'stock.variation_id', '=', 'variation.id')
         // ->join('grade', 'variation.grade', '=', 'grade.id')
@@ -1301,7 +1302,7 @@ class Order extends Component
         // ->orderBy('grade_id')
         // ->get();
 
-        return response()->json($data['graded_count']);
+        return response()->json($data);
     }
     public function purchase_model_graded_count($order_id, $pss_id){
         $pss = Product_storage_sort_model::find($pss_id);

@@ -1095,6 +1095,7 @@
                 .then(products => {
                     console.log(products);
                     // Render the product details
+                    products = products['graded_count'];
 
                     const productMenu = document.getElementById('count_data_2');
                     productMenu.innerHTML = ''; // Clear existing products
@@ -1102,7 +1103,7 @@
                     // Iterate through the products and create menu items
                     for (const [key, product] of Object.entries(products)) {
                         const productDiv = document.createElement('tr');
-                        console.log(product);
+                        // console.log(product);
                         const productLink1 = document.createElement('td');
                         productLink1.innerHTML = `${product.color}`;
                         productDiv.appendChild(productLink1);
