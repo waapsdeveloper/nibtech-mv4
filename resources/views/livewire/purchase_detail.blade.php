@@ -1115,10 +1115,10 @@
                         productLink2.innerHTML = `${product.quantity}`;
                         productDiv.appendChild(productLink2);
 
-                        const productLink3 = document.createElement('td');
-                        productLink3.title = "Average : " + product.average_cost;
-                        productLink3.innerHTML = `${product.total_cost}`;
-                        productDiv.appendChild(productLink3);
+                        // const productLink3 = document.createElement('td');
+                        // productLink3.title = "Average : " + product.average_cost;
+                        // productLink3.innerHTML = `${product.total_cost}`;
+                        // productDiv.appendChild(productLink3);
 
                         // const productLink4 = document.createElement('td');
                         // productLink4.title = "Average : " + product.average_repair;
