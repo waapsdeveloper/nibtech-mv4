@@ -1207,6 +1207,20 @@ class Order extends Component
         $s_orders = [];
         $sold_stocks_2 = [];
 
+        $total_graded_count = [
+            'quantity' => 0,
+            'total_cost' => 0,
+            'average_cost' => 0,
+            'total_repair' => 0,
+            'average_repair' => 0,
+            'total_price' => 0,
+            'total_charge' => 0,
+            'profit' => 0,
+            'average_price' => 0,
+            'average_charge' => 0,
+            'average_profit' => 0,
+        ];
+
         foreach ($colors as $color_id => $color) {
             foreach ($grades as $grade_id => $grade) {
                 $graded_variations = $variations->where('grade', $grade_id)->where('color', $color_id);
@@ -1231,6 +1245,11 @@ class Order extends Component
                     'total_repair' => $total_repair,
                     'average_repair' => $average_repair,
                 ];
+                $total_graded_count['quantity'] += count($graded_stock_ids);
+                $total_graded_count['total_cost'] += $total_cost;
+                $total_graded_count['average_cost'] += $average_cost;
+                $total_graded_count['total_repair'] += $total_repair;
+                $total_graded_count['average_repair'] += $average_repair;
             }
         }
 
@@ -1265,21 +1284,17 @@ class Order extends Component
             $graded_count[$key]['total_charge'] = is_numeric($total_charge) ? amount_formatter($total_charge) : $total_charge;
             $graded_count[$key]['profit'] = is_numeric($total_price - $total_cost - $total_charge - $total_repair) ? amount_formatter($total_price - $total_cost - $total_charge - $total_repair) : $total_price - $total_cost - $total_charge - $total_repair;
             $graded_count[$key]['average_profit'] = is_numeric($average_profit) ? amount_formatter($average_profit) : $average_profit;
-            // $graded_count[$key] = [
-            //     'average_cost' => $sold_stock['average_cost'],
-            //     'total_cost' => $total_cost,
-            //     'total_repair' => $total_repair,
-            //     'average_price' => $average_price,
-            //     'total_price' => $total_price,
-            //     'average_charge' => $average_charge,
-            //     'total_charge' => $total_charge,
-            //     'sold_quantity' => $total_quantity,
-            //     'profit' => $total_price - $total_cost - $total_charge - $total_repair,
-            //     'average_profit' => $average_profit,
-            // ];
+
+            $total_graded_count['total_price'] += $total_price;
+            $total_graded_count['total_charge'] += $total_charge;
+            $total_graded_count['profit'] += $total_price - $total_cost - $total_charge - $total_repair;
+            $total_graded_count['average_price'] += $average_price;
+            $total_graded_count['average_charge'] += $average_charge;
+            $total_graded_count['average_profit'] += $average_profit;
         }
 
         $data['graded_count'] = $graded_count;
+        $data['total_graded_count'] = $total_graded_count;
         // $data['graded_count'] = $stocks->select('grade.name as grade', 'variation.grade as grade_id', DB::raw('COUNT(*) as quantity'))
         // ->join('variation', 'stock.variation_id', '=', 'variation.id')
         // ->join('grade', 'variation.grade', '=', 'grade.id')
@@ -1287,7 +1302,7 @@ class Order extends Component
         // ->orderBy('grade_id')
         // ->get();
 
-        return response()->json($data['graded_count']);
+        return response()->json($data);
     }
     public function purchase_model_graded_count($order_id, $pss_id){
         $pss = Product_storage_sort_model::find($pss_id);
