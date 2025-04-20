@@ -1145,6 +1145,8 @@
                         productMenu.appendChild(productDiv);
                     };
 
+                    // Calculate totals
+
                     const totals = products['total_graded_count'];
 
                     const productMenuFooter = document.getElementById('count_data_2_footer');
@@ -1156,33 +1158,33 @@
                     productDiv2.appendChild(productLink1);
 
                     const productLink2 = document.createElement('th');
-                    productLink2.innerHTML = `${totals['quantity']}`;
+                    productLink2.innerHTML = `${totals}`;
                     productDiv2.appendChild(productLink2);
 
-                    const productLink3 = document.createElement('th');
-                    productLink3.title = "Average : " + totals.average_cost;
-                    productLink3.innerHTML = `${totals.total_cost}`;
-                    productDiv2.appendChild(productLink3);
+                    // const productLink3 = document.createElement('th');
+                    // productLink3.title = "Average : " + totals.average_cost;
+                    // productLink3.innerHTML = `${totals.total_cost}`;
+                    // productDiv2.appendChild(productLink3);
 
-                    const productLink4 = document.createElement('th');
-                    productLink4.title = "Average : " + totals.average_repair;
-                    productLink4.innerHTML = `${totals.total_repair}`;
-                    productDiv2.appendChild(productLink4);
+                    // const productLink4 = document.createElement('th');
+                    // productLink4.title = "Average : " + totals.average_repair;
+                    // productLink4.innerHTML = `${totals.total_repair}`;
+                    // productDiv2.appendChild(productLink4);
 
-                    const productLink5 = document.createElement('th');
-                    productLink5.title = "Average : " + totals.average_charge;
-                    productLink5.innerHTML = `${totals.total_charge}`;
-                    productDiv2.appendChild(productLink5);
+                    // const productLink5 = document.createElement('th');
+                    // productLink5.title = "Average : " + totals.average_charge;
+                    // productLink5.innerHTML = `${totals.total_charge}`;
+                    // productDiv2.appendChild(productLink5);
 
-                    const productLink6 = document.createElement('th');
-                    productLink6.title = "Average : " + totals.average_price;
-                    productLink6.innerHTML = `${totals.total_price}`;
-                    productDiv2.appendChild(productLink6);
+                    // const productLink6 = document.createElement('th');
+                    // productLink6.title = "Average : " + totals.average_price;
+                    // productLink6.innerHTML = `${totals.total_price}`;
+                    // productDiv2.appendChild(productLink6);
 
-                    const productLink7 = document.createElement('th');
-                    productLink7.title = "Average : " + totals.average_profit;
-                    productLink7.innerHTML = `${totals.profit}`;
-                    productDiv2.appendChild(productLink7);
+                    // const productLink7 = document.createElement('th');
+                    // productLink7.title = "Average : " + totals.average_profit;
+                    // productLink7.innerHTML = `${totals.profit}`;
+                    // productDiv2.appendChild(productLink7);
                     productMenuFooter.appendChild(productDiv2);
 
 
