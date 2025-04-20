@@ -859,7 +859,7 @@ class Order extends Component
                     $last_item = $stock->last_item();
                     $last_order = $last_item->order;
                     if(in_array($last_order->order_type_id,[2,3,5])){
-                        if($last_order->order_type_id == 3 && $last_item->currency != 4){
+                        if($last_order->order_type_id == 3 && $last_item->currency != 4 && $last_item->currency != null){
                             $currency = Currency_model::find($last_item->currency);
                             $exchange_rate = ExchangeRate::where('target_currency',$currency->code)->first();
 
