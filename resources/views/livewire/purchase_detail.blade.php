@@ -758,7 +758,7 @@
                                                     </tr>
                                                 @endforeach
                                             </tbody>
-                                            @if (session('user')->hasPermission('delete_purchase_item_group'))
+                                            {{-- @if (session('user')->hasPermission('delete_purchase_item_group'))
                                             <tfoot>
                                                 <tr>
                                                     <td colspan="4">
@@ -766,7 +766,7 @@
                                                     </td>
                                                 </tr>
                                             </tfoot>
-                                            @endif
+                                            @endif --}}
                                         </table>
                                     <br>
                                 </div>
