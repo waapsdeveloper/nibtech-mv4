@@ -1096,7 +1096,7 @@
                     console.log(products);
                     // Render the product details
 
-                    const productMenu = document.getElementById('count_data');
+                    const productMenu = document.getElementById('count_data_2');
                     productMenu.innerHTML = ''; // Clear existing products
 
                     // Iterate through the products and create menu items
