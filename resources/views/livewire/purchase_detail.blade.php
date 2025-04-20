@@ -1103,13 +1103,14 @@
                     for (const [key, product] of Object.entries(products)) {
                         const productDiv = document.createElement('tr');
 
+                        // const productLink1 = document.createElement('td');
+                        // productLink.innerHTML = `${product.color}`;
+                        // productDiv.appendChild(productLink1);
+
                         const productLink = document.createElement('td');
                         productLink.innerHTML = `${product.grade}`;
                         productDiv.appendChild(productLink);
 
-                        const productLink1 = document.createElement('td');
-                        productLink.innerHTML = `${product.color}`;
-                        productDiv.appendChild(productLink1);
 
                         const productLink2 = document.createElement('td');
                         productLink2.innerHTML = `${product.quantity}`;
