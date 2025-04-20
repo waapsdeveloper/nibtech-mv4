@@ -1009,7 +1009,7 @@
                             <tbody id="count_data_2">
                             </tbody>
 
-                            <tfoot>
+                            <tfoot id="count_data_2_footer">
                                 <tr>
                                     {{-- <th><small><b>No</b></small></th> --}}
                                     {{-- <th><b>Total</b></th>
@@ -1097,6 +1097,7 @@
                     // Render the product details
                     products = products['graded_count'];
 
+                    totals = products['total_graded_count'];
                     const productMenu = document.getElementById('count_data_2');
                     productMenu.innerHTML = ''; // Clear existing products
 
@@ -1144,6 +1145,46 @@
 
                         productMenu.appendChild(productDiv);
                     };
+
+                    const productMenuFooter = document.getElementById('count_data_2_footer');
+                    productMenuFooter.innerHTML = ''; // Clear existing products
+                    const productDiv = document.createElement('tr');
+
+                    const productLink1 = document.createElement('th');
+                    productLink1.innerHTML = `Total`;
+                    productDiv.appendChild(productLink1);
+
+                    const productLink2 = document.createElement('th');
+                    productLink2.innerHTML = `${totals.quantity}`;
+                    productDiv.appendChild(productLink2);
+
+                    const productLink3 = document.createElement('th');
+                    productLink3.title = "Average : " + totals.average_cost;
+                    productLink3.innerHTML = `${totals.total_cost}`;
+                    productDiv.appendChild(productLink3);
+
+                    const productLink4 = document.createElement('th');
+                    productLink4.title = "Average : " + totals.average_repair;
+                    productLink4.innerHTML = `${totals.total_repair}`;
+                    productDiv.appendChild(productLink4);
+
+                    const productLink5 = document.createElement('th');
+                    productLink5.title = "Average : " + totals.average_charge;
+                    productLink5.innerHTML = `${totals.total_charge}`;
+                    productDiv.appendChild(productLink5);
+
+                    const productLink6 = document.createElement('th');
+                    productLink6.title = "Average : " + totals.average_price;
+                    productLink6.innerHTML = `${totals.total_price}`;
+                    productDiv.appendChild(productLink6);
+
+                    const productLink7 = document.createElement('th');
+                    productLink7.title = "Average : " + totals.average_profit;
+                    productLink7.innerHTML = `${totals.profit}`;
+                    productDiv.appendChild(productLink7);
+                    productMenuFooter.appendChild(productDiv);
+
+
                 })
                 .catch(error => console.error('Error fetching product details:', error));
             }
