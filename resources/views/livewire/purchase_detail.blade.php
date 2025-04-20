@@ -710,9 +710,7 @@
                                             <tbody>
                                                 @php
                                                     $i = 0;
-                                                    $id = [];
-                                                @endphp
-                                                @php
+                                                    $ids = [];
                                                     $stocks = $variation->stocks;
                                                     $j = 0;
                                                     $prices = [];
@@ -726,11 +724,11 @@
                                                     if($purchase_item != null){
                                                         $price = amount_formatter($purchase_item->price);
                                                         $prices[] = $purchase_item->price ?? 0;
-                                                        $id[] = $purchase_item->id;
+                                                        $ids[] = $purchase_item->id;
                                                     }else{
                                                         $price = "Error in Purchase Entry";
                                                         $prices[] = 0;
-                                                        $id[] = null;
+                                                        $ids[] = null;
                                                     }
 
                                                     if($variation->grade == 9){
