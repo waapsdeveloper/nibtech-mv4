@@ -1294,15 +1294,20 @@ class Order extends Component
         }
 
         $data['graded_count'] = $graded_count;
-        $data['total_graded_count'] = array_map(function ($value, $key) {
-            return $key === 'quantity' ? $value : amount_formatter($value);
-        }, $total_graded_count);
-        // $data['graded_count'] = $stocks->select('grade.name as grade', 'variation.grade as grade_id', DB::raw('COUNT(*) as quantity'))
-        // ->join('variation', 'stock.variation_id', '=', 'variation.id')
-        // ->join('grade', 'variation.grade', '=', 'grade.id')
-        // ->groupBy('variation.grade', 'grade.name')
-        // ->orderBy('grade_id')
-        // ->get();
+
+        $data['total_graded_count'] = [
+            'quantity' => $total_graded_count['quantity'],
+            'total_cost' => amount_formatter($total_graded_count['total_cost']),
+            'average_cost' => amount_formatter($total_graded_count['average_cost']),
+            'total_repair' => amount_formatter($total_graded_count['total_repair']),
+            'average_repair' => amount_formatter($total_graded_count['average_repair']),
+            'total_price' => amount_formatter($total_graded_count['total_price']),
+            'total_charge' => amount_formatter($total_graded_count['total_charge']),
+            'profit' => amount_formatter($total_graded_count['profit']),
+            'average_price' => amount_formatter($total_graded_count['average_price']),
+            'average_charge' => amount_formatter($total_graded_count['average_charge']),
+            'average_profit' => amount_formatter($total_graded_count['average_profit']),
+        ];
 
         return response()->json($data);
     }
