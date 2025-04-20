@@ -1097,7 +1097,6 @@
                     // Render the product details
                     products = products['graded_count'];
 
-                    totals = products['total_graded_count'];
                     const productMenu = document.getElementById('count_data_2');
                     productMenu.innerHTML = ''; // Clear existing products
 
@@ -1146,6 +1145,8 @@
                         productMenu.appendChild(productDiv);
                     };
 
+                    totals = products['total_graded_count'];
+
                     const productMenuFooter = document.getElementById('count_data_2_footer');
                     productMenuFooter.innerHTML = ''; // Clear existing products
                     const productDiv = document.createElement('tr');
@@ -1155,7 +1156,7 @@
                     productDiv.appendChild(productLink1);
 
                     const productLink2 = document.createElement('th');
-                    productLink2.innerHTML = `${totals.quantity}`;
+                    productLink2.innerHTML = `${totals['quantity']}`;
                     productDiv.appendChild(productLink2);
 
                     const productLink3 = document.createElement('th');
