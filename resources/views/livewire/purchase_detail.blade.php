@@ -764,7 +764,7 @@
                                         </table>
                                     <br>
                                 </div>
-                                <div class="card-footer">
+                                {{-- <div class="card-footer"> --}}
                                     {{-- <button class="btn btn-primary" onclick="PrintElem('print_{{ $variation->id }}')">Print</button> --}}
                                     {{-- <button class="btn btn-primary" onclick="loadProductDetails({{$order_id}},{{$variation->id}})">Load</button> --}}
                                     {{-- <button class="btn btn-primary" onclick="loadProductDetails({{$order_id}},{{$variation->id}})">Load</button> --}}
