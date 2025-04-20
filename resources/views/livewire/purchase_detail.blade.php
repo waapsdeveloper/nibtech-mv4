@@ -769,9 +769,6 @@
                                     {{-- <button class="btn btn-primary" onclick="loadProductDetails({{$order_id}},{{$variation->id}})">Load</button> --}}
                                     {{-- <button class="btn btn-primary" onclick="loadProductDetails({{$order_id}},{{$variation->id}})">Load</button> --}}
                                     {{-- <a href="{{ url('purchase') }}/purchase_model_graded_count/{{$order_id}}/{{$variation->id}}" class="btn btn-primary">Load</a> --}}
-                                    @php
-                                        $i = 0;
-                                    @endphp
                                     @if (session('user')->hasPermission('view_cost') && count($prices)>0)
                                         <div class="text-end">Average Cost: {{array_sum($prices)/count($prices) }} &nbsp;&nbsp;&nbsp; Total: {{$i }}</div>
                                     @endif
