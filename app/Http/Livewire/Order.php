@@ -809,6 +809,7 @@ class Order extends Component
                 $stockIds = $stocks->pluck('id');
 
                 return [
+                    'pss_id' => $variation->product_storage_sort_id,
                     'product_id' => $variation->product_id,
                     'storage' => $variation->storage,
                     'quantity' => $variation->quantity, // Use quantity from withCount
@@ -831,6 +832,7 @@ class Order extends Component
                     $quantity = $items->sum('quantity'); // Sum the quantities
 
                     return [
+                        'pss_id' => $items[0]['pss_id'],
                         'product_id' => $product_id,
                         'storage' => $storage,
                         'quantity' => $quantity,
