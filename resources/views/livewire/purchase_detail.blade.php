@@ -1092,10 +1092,10 @@
 
                 fetch(`{{ url('purchase') }}/purchase_model_color_graded_sale/${orderId}/${productId}`)
                 .then(response => response.json())
-                .then(products => {
-                    console.log(products);
+                .then(productss => {
+                    console.log(productss);
                     // Render the product details
-                    products = products['graded_count'];
+                    products = productss['graded_count'];
 
                     const productMenu = document.getElementById('count_data_2');
                     productMenu.innerHTML = ''; // Clear existing products
@@ -1158,7 +1158,7 @@
                     productDiv2.appendChild(productLink1);
 
                     const productLink2 = document.createElement('th');
-                    productLink2.innerHTML = `${Object.keys(products).length}`;
+                    productLink2.innerHTML = `${Object.keys(totals).length}`;
                     productDiv2.appendChild(productLink2);
 
                     // const productLink3 = document.createElement('th');
