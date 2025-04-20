@@ -1102,7 +1102,7 @@
                     // Iterate through the products and create menu items
                     for (const [key, product] of Object.entries(products)) {
                         const productDiv = document.createElement('tr');
-
+                        console.log(product);
                         // const productLink1 = document.createElement('td');
                         // productLink.innerHTML = `${product.color}`;
                         // productDiv.appendChild(productLink1);
