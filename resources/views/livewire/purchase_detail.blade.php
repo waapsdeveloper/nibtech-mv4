@@ -1093,7 +1093,7 @@
                 fetch(`{{ url('purchase') }}/purchase_model_color_graded_sale/${orderId}/${productId}`)
                 .then(response => response.json())
                 .then(products => {
-                    // console.log(products);
+                    console.log(products);
                     // Render the product details
 
                     const productMenu = document.getElementById('count_data');
