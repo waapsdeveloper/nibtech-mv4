@@ -1214,6 +1214,9 @@ class Order extends Component
             $total_repair = Process_stock_model::whereIn('stock_id', $graded_stock_ids)->where('status', 2)->whereIn('process_id', $repair_ids)->sum('price');
             $average_repair = $graded_stock_ids ? $total_repair / count($graded_stock_ids) : 0;
 
+            if (count($graded_stock_ids) == 0) {
+                continue;
+            }
             $graded_count[$color_id . '.' . $grade_id] = [
                 'quantity' => count($graded_stock_ids),
                 'grade' => $grade,
