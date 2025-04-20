@@ -1262,7 +1262,6 @@ class Order extends Component
             $graded_count[$key]['total_price'] = $total_price;
             $graded_count[$key]['average_charge'] = $average_charge;
             $graded_count[$key]['total_charge'] = $total_charge;
-            $graded_count[$key]['sold_quantity'] = $total_quantity;
             $graded_count[$key]['profit'] = $total_price - $total_cost - $total_charge - $total_repair;
             $graded_count[$key]['average_profit'] = $average_profit;
             // $graded_count[$key] = [
