@@ -1294,7 +1294,9 @@ class Order extends Component
         }
 
         $data['graded_count'] = $graded_count;
-        $data['total_graded_count'] = array_map('amount_formatter', $total_graded_count);
+        $data['total_graded_count'] = array_map(function ($value, $key) {
+            return $key === 'quantity' ? $value : amount_formatter($value);
+        }, $total_graded_count, array_keys($total_graded_count));
         // $data['graded_count'] = $stocks->select('grade.name as grade', 'variation.grade as grade_id', DB::raw('COUNT(*) as quantity'))
         // ->join('variation', 'stock.variation_id', '=', 'variation.id')
         // ->join('grade', 'variation.grade', '=', 'grade.id')
