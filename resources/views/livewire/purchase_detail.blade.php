@@ -714,24 +714,25 @@
                                                 @endphp
                                                 @php
                                                     $stocks = $variation->stocks;
-                                                    // $items = $stocks->order_item;
                                                     $j = 0;
                                                     $prices = [];
-                                                    // print_r($stocks);
                                                 @endphp
 
                                                 @foreach ($stocks as $item)
-                                                    {{-- @dd($item) --}}
-                                                    {{-- @if($item->order_item[0]->order_id == $order_id) --}}
                                                     @php
                                                     $i ++;
+
                                                     $purchase_item = $item->purchase_item;
                                                     if($purchase_item != null){
                                                         $price = amount_formatter($purchase_item->price);
+                                                        $prices[] = $purchase_item->price ?? 0;
+                                                        $id[] = $purchase_item->id;
                                                     }else{
                                                         $price = "Error in Purchase Entry";
+                                                        $prices[] = 0;
+                                                        $id[] = null;
                                                     }
-                                                    $prices[] = $purchase_item->price ?? 0;
+
                                                     if($variation->grade == 9){
                                                         if($item->stock_operations->count() == 0){
                                                             $class = "text-danger";
@@ -754,13 +755,33 @@
                                                         @endif
                                                         @if (session('user')->hasPermission('delete_purchase_item'))
                                                         <td><a href="{{ url('delete_order_item').'/'}}{{$purchase_item->id ?? null }}"
-                                                            {{-- onclick="if (confirm('Remove IMEI from Order')){return true;}else{event.stopPropagation(); event.preventDefault();};" --}}
                                                             ><i class="fa fa-trash"></i></a></td>
                                                         @endif
                                                     </tr>
-                                                    {{-- @endif --}}
                                                 @endforeach
                                             </tbody>
+                                            @if (session('user')->hasPermission('delete_purchase_item_group'))
+                                            <tfoot>
+                                                <tr>
+                                                    <td colspan="4">
+                                                        <button class="btn btn-danger" onclick="deleteAll('
+                                                        {{ implode($ids, ',') }}')">Delete All</button>
+                                                    </td>
+                                                </tr>
+                                            </tfoot>
+                                            @endif
+<script>
+    function deleteAll(ids) {
+        if (confirm('Are you sure you want to delete all items?')) {
+            const idArray = ids.split(',');
+            idArray.forEach(id => {
+                if (id) {
+                    window.open(`{{ url('delete_order_item') }}/${id}`, '_blank');
+                }
+            });
+        }
+    }
+</script>
                                         </table>
                                     <br>
                                 </div>
@@ -1004,35 +1025,35 @@
                 $('.test').select2();
             });
 
-function loadProductDetails(orderId, productId) {
+            function loadProductDetails(orderId, productId) {
 
-fetch(`{{ url('purchase') }}/purchase_model_graded_count/${orderId}/${productId}`)
-    .then(response => response.json())
-    .then(products => {
-        // console.log(products);
-        // Render the product details
+                fetch(`{{ url('purchase') }}/purchase_model_graded_count/${orderId}/${productId}`)
+                .then(response => response.json())
+                .then(products => {
+                    // console.log(products);
+                    // Render the product details
 
-        const productMenu = document.getElementById('count_data');
-        productMenu.innerHTML = ''; // Clear existing products
+                    const productMenu = document.getElementById('count_data');
+                    productMenu.innerHTML = ''; // Clear existing products
 
-        // Iterate through the products and create menu items
-        for (const [key, product] of Object.entries(products)) {
-            const productDiv = document.createElement('tr');
+                    // Iterate through the products and create menu items
+                    for (const [key, product] of Object.entries(products)) {
+                        const productDiv = document.createElement('tr');
 
-            const productLink = document.createElement('td');
-            productLink.innerHTML = `${product.grade}`;
+                        const productLink = document.createElement('td');
+                        productLink.innerHTML = `${product.grade}`;
 
-            productDiv.appendChild(productLink);
-            const productLink2 = document.createElement('td');
-            productLink2.innerHTML = `${product.quantity}`;
+                        productDiv.appendChild(productLink);
+                        const productLink2 = document.createElement('td');
+                        productLink2.innerHTML = `${product.quantity}`;
 
-            productDiv.appendChild(productLink2);
+                        productDiv.appendChild(productLink2);
 
-            productMenu.appendChild(productDiv);
-        };
-    })
-    .catch(error => console.error('Error fetching product details:', error));
-}
+                        productMenu.appendChild(productDiv);
+                    };
+                })
+                .catch(error => console.error('Error fetching product details:', error));
+            }
         </script>
 		<!--Internal Sparkline js -->
 		<script src="{{asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js')}}"></script>
