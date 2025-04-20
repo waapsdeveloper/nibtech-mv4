@@ -1104,7 +1104,7 @@
                         const productDiv = document.createElement('tr');
                         console.log(product);
                         const productLink1 = document.createElement('td');
-                        productLink.innerHTML = `${product.color}`;
+                        productLink1.innerHTML = `${product.color}`;
                         productDiv.appendChild(productLink1);
 
                         const productLink = document.createElement('td');
