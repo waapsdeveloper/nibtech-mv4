@@ -1144,46 +1144,46 @@
 
                         productMenu.appendChild(productDiv);
                     };
-                    const totals = products['total_graded_count'] || { quantity: 0, average_cost: 0, total_cost: 0, average_repair: 0, total_repair: 0, average_charge: 0, total_charge: 0, average_price: 0, total_price: 0, average_profit: 0, profit: 0 };
+
+                    const totals = products['total_graded_count'];
 
                     const productMenuFooter = document.getElementById('count_data_2_footer');
                     productMenuFooter.innerHTML = ''; // Clear existing products
-                    const productDiv = document.createElement('tr');
+                    const productDiv2 = document.createElement('tr');
 
                     const productLink1 = document.createElement('th');
                     productLink1.innerHTML = `Total`;
-                    productDiv.appendChild(productLink1);
+                    productDiv2.appendChild(productLink1);
 
                     const productLink2 = document.createElement('th');
                     productLink2.innerHTML = `${totals.quantity}`;
-                    productDiv.appendChild(productLink2);
+                    productDiv2.appendChild(productLink2);
 
                     const productLink3 = document.createElement('th');
                     productLink3.title = "Average : " + totals.average_cost;
                     productLink3.innerHTML = `${totals.total_cost}`;
-                    productDiv.appendChild(productLink3);
+                    productDiv2.appendChild(productLink3);
 
                     const productLink4 = document.createElement('th');
                     productLink4.title = "Average : " + totals.average_repair;
                     productLink4.innerHTML = `${totals.total_repair}`;
-                    productDiv.appendChild(productLink4);
+                    productDiv2.appendChild(productLink4);
 
                     const productLink5 = document.createElement('th');
                     productLink5.title = "Average : " + totals.average_charge;
                     productLink5.innerHTML = `${totals.total_charge}`;
-                    productDiv.appendChild(productLink5);
+                    productDiv2.appendChild(productLink5);
 
                     const productLink6 = document.createElement('th');
                     productLink6.title = "Average : " + totals.average_price;
                     productLink6.innerHTML = `${totals.total_price}`;
-                    productDiv.appendChild(productLink6);
+                    productDiv2.appendChild(productLink6);
 
                     const productLink7 = document.createElement('th');
                     productLink7.title = "Average : " + totals.average_profit;
                     productLink7.innerHTML = `${totals.profit}`;
-                    productDiv.appendChild(productLink7);
-
-                    productMenuFooter.appendChild(productDiv);
+                    productDiv2.appendChild(productLink7);
+                    productMenuFooter.appendChild(productDiv2);
 
 
                 })
