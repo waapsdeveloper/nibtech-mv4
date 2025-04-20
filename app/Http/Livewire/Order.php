@@ -1225,7 +1225,6 @@ class Order extends Component
                 'average_cost' => $average_cost,
                 'total_repair' => $total_repair,
                 'average_repair' => $average_repair,
-                'quantity' => count($graded_stock_ids),
             ];
             }
         }
