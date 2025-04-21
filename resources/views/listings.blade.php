@@ -577,8 +577,8 @@
                         let classs = '';
                         let cost = 0;
                         if (listing.currency_id == 5) {
-                            p_append = 'break: £'+(parseFloat(m_price)*parseFloat(eurToGbp)).toFixed(2);
-                            pm_append = 'break: £'+(parseFloat(m_min_price)*parseFloat(eurToGbp)).toFixed(2);
+                            p_append = 'France: £'+(parseFloat(m_price)*parseFloat(eurToGbp)).toFixed(2);
+                            pm_append = 'France: £'+(parseFloat(m_min_price)*parseFloat(eurToGbp)).toFixed(2);
                         }
                         if(listing.target_price > 0 && listing.target_percentage > 0){
                             cost = $('#average_cost_'+variationId).text().replace('€', '');
@@ -849,8 +849,8 @@
                             let classs = '';
                             let cost = 0;
                             if (listing.currency_id == 5) {
-                                p_append = 'break: £'+(m_price*eurToGbp).toFixed(2);
-                                pm_append = 'break: £'+(m_min_price*eurToGbp).toFixed(2);
+                                p_append = 'France: £'+(m_price*eurToGbp).toFixed(2);
+                                pm_append = 'France: £'+(m_min_price*eurToGbp).toFixed(2);
                             }else{
                                 eur_listings[variation.id] = eur_listings[variation.id] || [];
                                 eur_listings[variation.id].push(listing);
