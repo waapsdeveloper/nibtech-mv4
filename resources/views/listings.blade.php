@@ -815,8 +815,8 @@
                         let listingsTable = '';
                         let stockPrices = [];
                         let listedStock = fetchUpdatedQuantity(variation.id);
-                        let m_min_price = Math.min(...variation.listings.filter(listing => listing.country_id === 73).map(listing => listing.min_price));
-                        let m_price = Math.min(...variation.listings.filter(listing => listing.country_id === 73).map(listing => listing.price));
+                        let m_min_price = Math.min(...variation.listings.filter(listing => listing.country === 73).map(listing => listing.min_price));
+                        let m_price = Math.min(...variation.listings.filter(listing => listing.country === 73).map(listing => listing.price));
 
                         switch (variation.state) {
                             case 0:
