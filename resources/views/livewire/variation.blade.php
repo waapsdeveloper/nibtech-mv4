@@ -265,7 +265,7 @@
                                       </td>
                                       <td>
                                         <select name="update[grade]" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
-                                          <option value="">None</option>
+                                          {{-- <option value="">None</option> --}}
                                           @foreach ($grades as $grade)
                                             <option value="{{ $grade->id }}" {{ $product->grade == $grade->id ? 'selected' : '' }}>{{ $grade->name }}</option>
                                           @endforeach
