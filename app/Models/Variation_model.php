@@ -81,6 +81,15 @@ class Variation_model extends Model
         return $this->hasOne(Grade_model::class, 'id', 'sub_grade');
     }
 
+    public function listed_stock_verifications()
+    {
+        return $this->hasMany(Listed_stock_verification_model::class, 'variation_id', 'id');
+    }
+    public function process_listed_stock_verifications($process_id)
+    {
+        return $this->hasMany(Listed_stock_verification_model::class, 'variation_id', 'id')->where('process_id', $process_id);
+    }
+
     public function today_orders()
     {
         return $this->hasMany(Order_item_model::class, 'variation_id', 'id')->whereHas('order', function($q){

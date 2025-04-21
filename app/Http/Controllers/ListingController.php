@@ -112,6 +112,11 @@ class ListingController extends Controller
         ->when(request('grade') != [], function ($q) {
             return $q->whereIn('grade', request('grade'));
         })
+        ->when(request('topup') != '', function ($q) {
+            return $q->whereHas('listed_stock_verifications', function ($q) {
+                $q->where('process_id', request('topup'));
+            });
+        })
         ->when(request('listed_stock') != '', function ($q) {
             if (request('listed_stock') == 1) {
                 return $q->where('listed_stock', '>', 0);
