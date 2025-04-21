@@ -132,13 +132,9 @@ class StockSummeryExport
         $pdf->SetMargins(10, 10, 10);
 
         if( $type == 'cost') {
-            $pdf->SetHeaderData('', '', 'Stock Summary Report - Cost', '');
+            $pdf->setTitle('Stock Summary Report - Cost');
         } else {
-            if($currency != 4){
-                $pdf->SetHeaderData('', '', 'Stock Summary Report - Price ('.$sign.')', '');
-            } else {
-                $pdf->SetHeaderData('', '', 'Stock Summary Report - Price', '');
-            }
+            $pdf->setTitle('Stock Summary Report - Price ('.$sign.')');
         }
         foreach($result as $category => $cat){
             // Add heading cell at the top center
