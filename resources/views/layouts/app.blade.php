@@ -44,6 +44,12 @@
             .form-floating>label {
             padding: 0.5rem 0.75rem;
             }
+            @media print {
+                .main-header{
+                    position: relative;
+                }
+            }
+
         </style>
         @livewireStyles
         <script src="//unpkg.com/alpinejs" defer></script>
