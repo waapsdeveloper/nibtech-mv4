@@ -51,17 +51,17 @@ class StockSummeryExport
         $brands = Brand_model::pluck('name','id');
         $grade_names = Grade_model::whereIn('id', $grades)->pluck('name','id');
         $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q){
-            $q->where('stock.status',1);
-        })
-        ->join('products', 'product_storage_sort.product_id', '=', 'products.id')
-        ->orderBy('products.model')
-        // ->orderBy('product_id')
-        ->orderBy('product_storage_sort.storage')
-        ->select('product_storage_sort.*')
-        ->with(['product','stocks' => function($q){
-            $q->where('stock.status',1);
-        }, 'stocks.variation'])
-        ->get();
+                $q->where('stock.status',1);
+            })
+            ->join('products', 'product_storage_sort.product_id', '=', 'products.id')
+            ->orderBy('products.model')
+            // ->orderBy('product_id')
+            ->orderBy('product_storage_sort.storage')
+            ->select('product_storage_sort.*')
+            ->with(['product','stocks' => function($q){
+                $q->where('stock.status',1);
+            }, 'stocks.variation'])
+            ->get();
 
         $result = [];
         foreach($product_storage_sort as $pss){
@@ -131,6 +131,15 @@ class StockSummeryExport
         $pdf = new TCPDF();
         $pdf->SetMargins(10, 10, 10);
 
+        if( $type == 'cost') {
+            $pdf->SetHeaderData('', '', 'Stock Summary Report - Cost', '');
+        } else {
+            if($currency != 4){
+                $pdf->SetHeaderData('', '', 'Stock Summary Report - Price ('.$sign.')', '');
+            } else {
+                $pdf->SetHeaderData('', '', 'Stock Summary Report - Price', '');
+            }
+        }
         foreach($result as $category => $cat){
             // Add heading cell at the top center
             foreach($cat as $brand => $datas){
