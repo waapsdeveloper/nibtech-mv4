@@ -83,6 +83,9 @@
                         @php
                             $result = json_decode($request->request);
                             $datas = $result;
+                            if(is_string($result)){
+                                continue;
+                            }
                             if($datas->Imei == '' && $datas->Imei2 == '' && $datas->Serial != ''){
                                 echo $request->find_serial_request($datas->Serial);
                                 echo "<br>";
