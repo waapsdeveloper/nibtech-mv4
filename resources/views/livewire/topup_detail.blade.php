@@ -14,6 +14,13 @@
             .childs{
                 padding-top:5px
             }
+
+            @media print {
+                .main-header{
+                    position: relative;
+                }
+            }
+
         </style>
     @endsection
     @section('content')
