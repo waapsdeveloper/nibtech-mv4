@@ -1453,6 +1453,8 @@ class Order extends Component
             // echo $dr." ";
             // print_r($d);
             $n = trim($d[$name]);
+            $n = str_replace('  ',' ',$n);
+            $n = str_replace('  ',' ',$n);
             $c = $d[$cost];
             if(ctype_digit(trim($d[$imei]))){
                 $i = trim($d[$imei]);
