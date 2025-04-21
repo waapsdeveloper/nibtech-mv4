@@ -835,7 +835,7 @@
                                                             @php
                                                             isset($variation->product_id)?$product = $products[$variation->product_id]:$product = null;
                                                             isset($variation->color)?$color = $colors[$variation->color]:$color = null;
-                                                            isset($variation->storage)?$storage = $storages[$variation->storage] ?? null:$storage = null;
+                                                            // isset($variation->storage)?$storage = $storages[$variation->storage] ?? null:$storage = null;
                                                             isset($variation->grade)?$grade = $grades[$variation->grade]:$grade = null;
                                                             isset($variation->sub_grade)?$sub_grade = $grades[$variation->sub_grade]:$sub_grade = null;
                                                             @endphp
