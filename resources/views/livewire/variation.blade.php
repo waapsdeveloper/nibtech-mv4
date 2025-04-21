@@ -257,7 +257,7 @@
                                       </td>
                                       <td>
                                           <select name="update[storage]" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
-                                              <option value="">None</option>
+                                              {{-- <option value="">None</option> --}}
                                               @foreach ($storages as $storage)
                                                   <option value="{{ $storage->id }}" {{ $product->storage == $storage->id ? 'selected' : '' }}>{{ $storage->name }}</option>
                                               @endforeach
