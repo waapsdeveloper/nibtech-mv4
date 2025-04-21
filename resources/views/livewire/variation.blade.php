@@ -240,7 +240,7 @@
                                       </td>
                                       <td>
                                           <select name="update[color]" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
-                                              <option value="">None</option>
+                                              <option value=""></option>
                                               @foreach ($colors as $color)
                                                 @if ($model_colors->contains($color->id))
                                                   <option value="{{ $color->id }}" {{ $product->color == $color->id ? 'selected' : '' }}>{{ $color->name }}</option>
@@ -257,7 +257,7 @@
                                       </td>
                                       <td>
                                           <select name="update[storage]" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
-                                              {{-- <option value="">None</option> --}}
+                                              <option value=""></option>
                                               @foreach ($storages as $storage)
                                                   <option value="{{ $storage->id }}" {{ $product->storage == $storage->id ? 'selected' : '' }}>{{ $storage->name }}</option>
                                               @endforeach
@@ -265,7 +265,7 @@
                                       </td>
                                       <td>
                                         <select name="update[grade]" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
-                                          <option value="">None</option>
+                                          <option value=""></option>
                                           @foreach ($grades as $grade)
                                             <option value="{{ $grade->id }}" {{ $product->grade == $grade->id ? 'selected' : '' }}>{{ $grade->name }}</option>
                                           @endforeach
@@ -273,7 +273,7 @@
                                       </td>
                                       <td>
                                           <select name="update[sub_grade]" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
-                                            <option value="">Any</option>
+                                            <option value=""></option>
                                             <option value="0">None</option>
                                               @foreach ($grades as $grade)
                                                   <option value="{{ $grade->id }}" {{ $product->sub_grade == $grade->id ? 'selected' : '' }}>{{ $grade->name }}</option>
