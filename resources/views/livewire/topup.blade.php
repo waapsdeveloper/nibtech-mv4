@@ -178,7 +178,7 @@
                                             <tr>
                                                 <td>{{ $i + 1 }}</td>
                                                 <td><a href="{{url('topup/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a></td>
-                                                <td>{{ $batch->processed_stocks->count() }}</td>
+                                                <td>{{ $batch->process_stocks->count() }}</td>
                                                 <td>{{ $batch->listed_stocks_verification->sum('qty_from') }}</td>
                                                 <td>{{ $batch->listed_stocks_verification->sum('qty_change') }}</td>
                                                 <td>{{ $batch->listed_stocks_verification->sum('qty_to') }}</td>
