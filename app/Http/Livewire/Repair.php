@@ -990,6 +990,7 @@ class Repair extends Component
                     'message' => $datas['message'],
                 ]);
             }
+            session()->put('error', json_encode($issue));
         }
 
         return redirect()->back();
