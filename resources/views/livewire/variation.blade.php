@@ -40,7 +40,6 @@
       <div class="row">
 
         <div class="form-group col-md col-sm-6">
-            <label for="">Category</label>
             <select class="form-select" placeholder="Input Category" name="category" required>
                 <option value="">Select Category</option>
                 @foreach ($categories as $category)
@@ -50,7 +49,6 @@
             </select>
         </div>
         <div class="form-group col-md col-sm-6">
-            <label for="">Brand</label>
             <select class="form-select" placeholder="Input Brand" name="brand">
                 <option value="">Select Brand</option>
                 @foreach ($brands as $brand)
