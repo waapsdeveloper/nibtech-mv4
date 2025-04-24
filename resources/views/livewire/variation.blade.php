@@ -40,11 +40,10 @@
       <div class="row">
 
         <div class="form-group col-md col-sm-6">
-            <select class="form-select" placeholder="Input Category" name="category" required>
+            <select class="form-select" placeholder="Input Category" name="category">
                 <option value="">Select Category</option>
                 @foreach ($categories as $category)
-                    <option value="{{ $category->id }}">{{ $category->name }}</option>
-
+                    <option value="{{ $category->id }}" @isset($_GET['category']) @if($category->id == $_GET['category']) selected @endif @endisset>{{ $category->name }}</option>
                 @endforeach
             </select>
         </div>
@@ -52,7 +51,7 @@
             <select class="form-select" placeholder="Input Brand" name="brand">
                 <option value="">Select Brand</option>
                 @foreach ($brands as $brand)
-                    <option value="{{ $brand->id }}">{{ $brand->name }}</option>
+                    <option value="{{ $brand->id }}" @isset($_GET['brand']) @if($brand->id == $_GET['brand']) selected @endif @endisset>{{ $brand->name }}</option>
 
                 @endforeach
             </select>
