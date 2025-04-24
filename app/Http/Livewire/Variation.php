@@ -2,7 +2,9 @@
 
 namespace App\Http\Livewire;
     use App\Http\Controllers\BackMarketAPIController;
-    use Livewire\Component;
+use App\Models\Brand_model;
+use App\Models\Category_model;
+use Livewire\Component;
     use App\Models\Variation_model;
     use App\Models\Products_model;
     use App\Models\Color_model;
@@ -43,6 +45,8 @@ class Variation extends Component
             }
 
 
+        $data['categories'] = Category_model::all();
+        $data['brands'] = Brand_model::all();
         $data['products'] = Products_model::orderBy('model')->get();
         $data['colors'] = Color_model::orderBy('name')->get();
         $data['storages'] = Storage_model::all();
@@ -84,6 +88,16 @@ class Variation extends Component
                 })
                 ->when(request('grade') != '', function ($q) {
                     return $q->where('grade', request('grade'));
+                })
+                ->when(request('category') != '', function ($q) {
+                    return $q->whereHas('product', function ($q) {
+                        return $q->where('category', request('category'));
+                    });
+                })
+                ->when(request('brand') != '', function ($q) {
+                    return $q->whereHas('product', function ($q) {
+                        return $q->where('brand', request('brand'));
+                    });
                 })
                 ->withCount('available_stocks')
                 // ->orderBy('name','desc')
