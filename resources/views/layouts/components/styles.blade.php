@@ -1,5 +1,4 @@
-		<!-- FAVICON -->
-		<link rel="icon" href="{{asset('assets/img/brand').'/'.env('APP_ICON')}}" type="image/x-icon"/>
+
 
 		<!-- ICONS CSS -->
 		<link href="{{asset('assets/plugins/icons/icons.css')}}" rel="stylesheet">
