@@ -1199,29 +1199,34 @@ class Order extends Component
 
                 if($testings->count() > 0){
                     $testing_list = [];
+                    $lower_products = array_map('strtolower', $data['products']->toArray());
+                    $lower_storages = array_map('strtolower', $data['storages']->toArray());
+                    $lower_colors = array_map('strtolower', $data['colors']->toArray());
+                    $lower_grades = array_map('strtolower', $data['grades']->toArray());
                     // dd($testings);
                     foreach($testings as $testing){
                         $request = json_decode($testing->request);
-                        if(in_array($request->ModelName, $data['products']->toArray())){
-                            $product_id = array_search($request->ModelName, $data['products']->toArray());
+                        if(in_array(strtolower($request->ModelName), $lower_products)){
+                            $product_id = array_search(strtolower($request->ModelName), $lower_products);
                         }else{
                             continue;
                         }
-                        if(in_array($request->Memory, $data['storages']->toArray())){
-                            $storage_id = array_search($request->Memory, $data['storages']->toArray());
+                        if(in_array(strtolower($request->Memory), $lower_storages)){
+                            $storage_id = array_search(strtolower($request->Memory), $lower_storages);
                         }else{
                             continue;
                         }
-                        if(in_array($request->Color, $data['colors']->toArray())){
-                            $color_id = array_search($request->Color, $data['colors']->toArray());
+                        if(in_array(strtolower($request->Color), $lower_colors)){
+                            $color_id = array_search(strtolower($request->Color), $lower_colors);
                         }else{
                             $color_id = null;
                         }
-                        if(in_array($request->Grade, $data['grades']->toArray())){
-                            $grade_id = array_search($request->Grade, $data['grades']->toArray());
+                        if(in_array(strtolower($request->Grade), $lower_grades)){
+                            $grade_id = array_search(strtolower($request->Grade), $lower_grades);
                         }else{
                             $grade_id = 7;
                         }
+
                         $variation = Variation_model::firstOrNew([
                             'product_id'=>$product_id,
                             'storage'=>$storage_id,
