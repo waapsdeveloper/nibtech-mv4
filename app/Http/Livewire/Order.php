@@ -1233,7 +1233,7 @@ class Order extends Component
                         }
 
                         if($request->Imei != null || $request->Serial != null){
-                            if(Stock_model::where('imei',$request->IMEI)->orWhere('imei',$request->Imei2)->orWhere('serial_number',$request->Serial)->exists()){
+                            if(Stock_model::where('imei',$request->Imei)->orWhere('imei',$request->Imei2)->orWhere('serial_number',$request->Serial)->exists()){
                                 continue;
                             }
                             $testing_list[$variation->id][] = [
