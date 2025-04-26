@@ -1239,6 +1239,11 @@ class Order extends Component
                             $testing_list[$variation->id][] = [
                                 'imei' => $request->Imei,
                                 'serial_number' => $request->Serial,
+                                'variation_id' => $variation->id,
+                                'product' => $request->ModelName,
+                                'storage' => $request->Memory,
+                                'color' => $request->Color,
+                                'grade' => $request->Grade,
                                 'status' => 1,
                             ];
                         }
