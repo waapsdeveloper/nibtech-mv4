@@ -27,6 +27,10 @@
                     <form class="form-inline" id="approveform" method="POST" action="{{url('topup/close').'/'.$process->id}}">
                         @csrf
                         <div class="form-floating">
+                            <input type="number" class="form-control" id="quantity" name="quantity" placeholder="Enter Quantity" value="{{$process->quantity}}" required>
+                            <label for="quantity">Batch Total Quantity</label>
+                        </div>
+                        <div class="form-floating">
                             <input type="text" class="form-control" id="description" name="description" placeholder="Enter Description" value="{{$process->description}}" required>
                             <label for="description">Description</label>
                         </div>
