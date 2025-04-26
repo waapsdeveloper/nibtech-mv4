@@ -1237,7 +1237,7 @@ class Order extends Component
                                 continue;
                             }
                             $testing_list[$variation->id][] = [
-                                'imei' => $request->IMEI,
+                                'imei' => $request->Imei,
                                 'serial_number' => $request->Serial,
                                 'status' => 1,
                             ];
