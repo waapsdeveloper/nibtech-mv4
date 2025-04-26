@@ -87,6 +87,7 @@ class Topup extends Component
     public function close_topup($process_id){
         $process = Process_model::find($process_id);
         $process->description = request('description');
+        $process->quantity = request('quantity');
 
         if(request('approve') == 1){
             $process->status = 2;
@@ -100,6 +101,8 @@ class Topup extends Component
                     session()->put('error', $variation->product->model.' - '.$variation->storage_id->name.' - '.$variation->color_id->name.' - '.$variation->grade_id->name);
                 }
                 return redirect()->back();
+
+
             }
 
             $listingController = new ListingController();
@@ -122,6 +125,17 @@ class Topup extends Component
         }
         // return redirect()->back();
     }
+
+    public function update_min_prices($process_id){
+        $process = Process_model::find($process_id);
+
+
+
+
+        session()->put('success', 'Minimum Prices Updated');
+        return redirect()->back();
+    }
+
     public function topup_detail($process_id){
 
         ini_set('memory_limit', '2048M');
