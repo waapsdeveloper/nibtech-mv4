@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\DB;
     use TCPDF;
     use App\Mail\InvoiceMail;
 use App\Models\Account_transaction_model;
+use App\Models\Api_request_model;
 use App\Models\Color_model;
 use App\Models\ExchangeRate;
 use App\Models\Grade_model;
@@ -764,6 +765,8 @@ class Order extends Component
         $data['colors'] = Color_model::pluck('name','id');
         $data['grades'] = Grade_model::pluck('name','id');
 
+        $data['order'] = Order_model::find($order_id);
+
         if(request('summery') == 1){
             $sold_total = [
                 'total_cost' => 0,
@@ -1187,9 +1190,19 @@ class Order extends Component
 
             $data['order_issues'] = $order_issues;
             // dd($data['missing_stock']);
+
+            if($data['order']->status == 2){
+
+                $testings = Api_request_model::whereNull('status')
+                ->where('request->BatchID', 'LIKE', '%'.$data['order']->reference_id.'%')
+                ->get();
+
+                if($testings->count() > 0){
+                    dd($testings);
+                }
+            }
         }
         $data['all_variations'] = Variation_model::where('grade',9)->get();
-        $data['order'] = Order_model::find($order_id);
         $data['order_id'] = $order_id;
         $data['currency'] = $data['order']->currency_id->sign;
 
