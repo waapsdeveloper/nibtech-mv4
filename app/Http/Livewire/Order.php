@@ -1228,7 +1228,7 @@ class Order extends Component
                             'color'=>$color_id,
                             'grade'=>$grade_id,
                         ]);
-                        if($variation->doesntExist()){
+                        if($variation->id == null){
                             $variation->save();
                         }
 
