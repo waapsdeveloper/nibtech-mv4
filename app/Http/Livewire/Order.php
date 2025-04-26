@@ -1198,7 +1198,7 @@ class Order extends Component
                 ->get();
 
                 if($testings->count() > 0){
-                    dd($testings);
+                    // dd($testings);
                 }
             }
         }
