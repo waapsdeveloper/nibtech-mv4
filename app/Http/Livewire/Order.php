@@ -1191,14 +1191,61 @@ class Order extends Component
             $data['order_issues'] = $order_issues;
             // dd($data['missing_stock']);
 
-            if($data['order']->status == 2){
+            if($data['order']->reference_id == 10364){
 
                 $testings = Api_request_model::whereNull('status')
                 ->where('request->BatchID', 'LIKE', '%'.$data['order']->reference_id.'%')
                 ->get();
 
                 if($testings->count() > 0){
+                    $testing_list = [];
                     // dd($testings);
+                    foreach($testings as $testing){
+                        $request = json_decode($testing->request);
+                        if(in_array($request->ModelName, $data['products']->toArray())){
+                            $product_id = array_search($request->ModelName, $data['products']->toArray());
+                        }else{
+                            continue;
+                        }
+                        if(in_array($request->Memory, $data['storages']->toArray())){
+                            $storage_id = array_search($request->Memory, $data['storages']->toArray());
+                        }else{
+                            continue;
+                        }
+                        if(in_array($request->Color, $data['colors']->toArray())){
+                            $color_id = array_search($request->Color, $data['colors']->toArray());
+                        }else{
+                            $color_id = null;
+                        }
+                        if(in_array($request->Grade, $data['grades']->toArray())){
+                            $grade_id = array_search($request->Grade, $data['grades']->toArray());
+                        }else{
+                            $grade_id = 7;
+                        }
+                        $variation = Variation_model::firstOrNew([
+                            'product_id'=>$product_id,
+                            'storage'=>$storage_id,
+                            'color'=>$color_id,
+                            'grade'=>$grade_id,
+                        ]);
+                        if($variation->doesntExist()){
+                            $variation->save();
+                        }
+
+                        if($request->IMEI != null || $request->Serial != null){
+                            if(Stock_model::where('imei',$request->IMEI)->orWhere('imei',$request->Imei2)->orWhere('serial_number',$request->Serial)->exists()){
+                                continue;
+                            }
+                            $testing_list[$variation->id][] = [
+                                'imei' => $request->IMEI,
+                                'serial_number' => $request->Serial,
+                                'status' => 1,
+                            ];
+                        }
+                    }
+                    if(count($testing_list) > 0){
+                        dd($testing_list);
+                    }
                 }
             }
         }
