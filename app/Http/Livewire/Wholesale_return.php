@@ -50,7 +50,7 @@ class Wholesale_return extends Component
             $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
         }
 
-        $data['latest_reference'] = Order_model::where('order_type_id',4)->orderBy('reference_id','DESC')->first()->reference_id;
+        $data['latest_reference'] = Order_model::where('order_type_id',4)->orderBy('reference_id','DESC')->first()->reference_id ?? 4999;
         $data['order_statuses'] = Order_status_model::get();
         if(request('per_page') != null){
             $per_page = request('per_page');
