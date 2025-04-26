@@ -1232,7 +1232,7 @@ class Order extends Component
                             $variation->save();
                         }
 
-                        if($request->IMEI != null || $request->Serial != null){
+                        if($request->Imei != null || $request->Serial != null){
                             if(Stock_model::where('imei',$request->IMEI)->orWhere('imei',$request->Imei2)->orWhere('serial_number',$request->Serial)->exists()){
                                 continue;
                             }
