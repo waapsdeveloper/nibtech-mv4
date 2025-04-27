@@ -206,54 +206,54 @@ class StockSummeryExport
                     $pdf->SetLineStyle(['width' => 0.1, 'color' => [0, 0, 0]]);
 
                     // No column (serial number)
-                    $pdf->MultiCell(8, 6, $i, 1, 'L', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                    $pdf->MultiCell(8, 6, $i, 1, 'L', false, 0, null, null, true, 0, false, true, 6, 'T', true);
                     if ($type == 'cost'){
 
                         // Model Name (wraps text if too long)
-                        $pdf->MultiCell(80, 6, $data['model'], 1, 'L', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                        $pdf->MultiCell(80, 6, $data['model'], 1, 'L', false, 0, null, null, true, 0, false, true, 6, 'T', true);
 
                         $pdf->SetFont('times', 'B', 12);
                         // Stock count
-                        $pdf->MultiCell(12, 6, $data['stock_count'], 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                        $pdf->MultiCell(12, 6, $data['stock_count'], 1, 'C', false, 0, null, null, true, 0, false, true, 6, 'T', true);
 
                         // Average cost
-                        $pdf->MultiCell(18, 6, $sign.' '.number_format($data['average_cost'], 2), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                        $pdf->MultiCell(18, 6, $sign.' '.number_format($data['average_cost'], 2), 1, 'C', false, 0, null, null, true, 0, false, true, 6, 'T', true);
 
                         $pdf->SetFont('times', '', 12);
                         // Premium Grade
-                        $pdf->MultiCell(18, 6, $this->bold($data['graded_average_cost'][1] ?? 0, $sign), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                        $pdf->MultiCell(18, 6, $this->bold($data['graded_average_cost'][1] ?? 0, $sign), 1, 'C', false, 0, null, null, true, 0, false, true, 6, 'T', true);
 
                         // Very Good Grade
-                        $pdf->MultiCell(18, 6, $this->bold($data['graded_average_cost'][2] ?? 0, $sign), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                        $pdf->MultiCell(18, 6, $this->bold($data['graded_average_cost'][2] ?? 0, $sign), 1, 'C', false, 0, null, null, true, 0, false, true, 6, 'T', true);
 
                         // Good Grade
-                        $pdf->MultiCell(18, 6, $this->bold($data['graded_average_cost'][3] ?? 0, $sign), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                        $pdf->MultiCell(18, 6, $this->bold($data['graded_average_cost'][3] ?? 0, $sign), 1, 'C', false, 0, null, null, true, 0, false, true, 6, 'T', true);
 
                         // Stallone Grade (Grade 5)
-                        $pdf->MultiCell(18, 6, $this->bold($data['graded_average_cost'][5] ?? 0, $sign), 1, 'C', false, 1, '', '', true, 0, false, true, 6, 'T', true);
+                        $pdf->MultiCell(18, 6, $this->bold($data['graded_average_cost'][5] ?? 0, $sign), 1, 'C', false, 1, null, null, true, 0, false, true, 6, 'T', true);
                     } else {
                         // Model Name (wraps text if too long)
-                        $pdf->MultiCell(84, 6, $data['model'], 1, 'L', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                        $pdf->MultiCell(84, 6, $data['model'], 1, 'L', false, 0, null, null, true, 0, false, true, 6, 'T', true);
 
                         $pdf->SetFont('times', 'B', 12);
                         // Stock count
-                        $pdf->MultiCell(14, 6, $data['stock_count'], 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                        $pdf->MultiCell(14, 6, $data['stock_count'], 1, 'C', false, 0, null, null, true, 0, false, true, 6, 'T', true);
 
                         // Average cost
-                        $pdf->MultiCell(21, 6, $sign.' '.number_format($data['average_price'], 2), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                        $pdf->MultiCell(21, 6, $sign.' '.number_format($data['average_price'], 2), 1, 'C', false, 0, null, null, true, 0, false, true, 6, 'T', true);
 
                         $pdf->SetFont('times', '', 12);
                         // Premium Grade
                         // $pdf->MultiCell(18, 6, $this->bold($data['graded_average_price'][1] ?? 0), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
 
                         // Very Good Grade
-                        $pdf->MultiCell(21, 6, $this->bold($data['graded_average_price'][2] ?? 0, $sign), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                        $pdf->MultiCell(21, 6, $this->bold($data['graded_average_price'][2] ?? 0, $sign), 1, 'C', false, 0, null, null, true, 0, false, true, 6, 'T', true);
 
                         // Good Grade
-                        $pdf->MultiCell(21, 6, $this->bold($data['graded_average_price'][3] ?? 0, $sign), 1, 'C', false, 0, '', '', true, 0, false, true, 6, 'T', true);
+                        $pdf->MultiCell(21, 6, $this->bold($data['graded_average_price'][3] ?? 0, $sign), 1, 'C', false, 0, null, null, true, 0, false, true, 6, 'T', true);
 
                         // Stallone Grade (Grade 5)
-                        $pdf->MultiCell(21, 6, $this->bold($data['graded_average_price'][5] ?? 0, $sign), 1, 'C', false, 1, '', '', true, 0, false, true, 6, 'T', true);
+                        $pdf->MultiCell(21, 6, $this->bold($data['graded_average_price'][5] ?? 0, $sign), 1, 'C', false, 1, null, null, true, 0, false, true, 6, 'T', true);
                     }
                 }
 
