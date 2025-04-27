@@ -495,9 +495,9 @@
                                                     {{-- <input type="hidden" name="ids[]" value="{{$row->id}}" form="order_issues_{{$j}}"> --}}
                                                     <tr>
                                                         <td>{{ $i++ }}</td>
-                                                        <td>{{ $row->imei }}</td>
-                                                        <td>{{ $row->serial_number }}</td>
-                                                        <td>{{ $row->product .' '.$row->storage . ' ' . $row->color . ' ' . $row->grade }}</td>
+                                                        <td>{{ $row['imei'] }}</td>
+                                                        <td>{{ $row['serial_number'] }}</td>
+                                                        <td>{{ $row['product'] .' '.$row['storage'] . ' ' . $row['color'] . ' ' . $row['grade'] }}</td>
                                                     </tr>
 
                                                 @endforeach
