@@ -145,6 +145,7 @@
                                     <tr>
                                         <th><small><b>No</b></small></th>
                                         <th><small><b>Batch ID</b></small></th>
+                                        <th><small><b>Description</b></small></th>
                                         <th><small><b>Qty Scanned</b></small></th>
                                         <th><small><b>Qty Before</b></small></th>
                                         <th><small><b>Qty Added</b></small></th>
