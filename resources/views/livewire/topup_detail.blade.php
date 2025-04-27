@@ -232,6 +232,10 @@
                                         {{$item->stock_id}}
                                         @continue
                                     @endif
+                                    @if ($item->stock->order == null)
+                                        {{$item->stock_id}}
+                                        @continue
+                                    @endif
                                     @php
                                         $stock = $item->stock;
                                         $variation = $stock->variation;
