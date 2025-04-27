@@ -329,6 +329,7 @@ Route::post('topup/start', [Topup::class,'start_topup'])->name('start_topup');
 Route::get('topup/detail/{id}', [Topup::class,'topup_detail'])->name('topup_detail');
 Route::post('topup/add_topup_item/{id}', [Topup::class,'add_topup_item'])->name('add_topup_item');
 Route::get('topup/delete_topup_item/{id}', [Topup::class,'delete_topup_item'])->name('delete_topup_item');
+Route::get('topup/delete/{id}', [Topup::class,'delete_topup'])->name('delete_topup');
 Route::post('topup/close/{id}', [Topup::class,'close_topup'])->name('close_topup');
 
 
