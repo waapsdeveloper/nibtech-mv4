@@ -100,11 +100,17 @@ class PriceHandler extends Command
                     $listing->handler_status = 2;
                 }
                 $listing->save();
+                if ($error != '') {
+                    return 1; // Return 1 to indicate an error occurred
+                }
+
+                return 0; // Return 0 to indicate success
             }
         }
         if($error != ''){
             $this->info($error);
         }
+        return 0;
 
     }
 }
