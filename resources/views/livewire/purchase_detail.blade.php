@@ -492,7 +492,7 @@
                                                     </td>
                                                 </tr>
                                                 @foreach ($testing_list_grouped as $row)
-                                                    <input type="hidden" name="ids[]" value="{{$row->id}}" form="order_issues_{{$j}}">
+                                                    {{-- <input type="hidden" name="ids[]" value="{{$row->id}}" form="order_issues_{{$j}}"> --}}
                                                     <tr>
                                                         <td>{{ $i++ }}</td>
                                                         <td>{{ $row->imei }}</td>
