@@ -1934,9 +1934,14 @@ class Order extends Component
         $order = Order_model::find($order_id);
         $variation = Variation_model::find(request('variation_id'));
         $imeis = request('imeis');
-        if($order != null){
-            dd(request()->all(), $variation);
+        $price = request('price');
+        if($order != null && $variation != null && count($imeis) > 0 && $price != null){
+            foreach($imeis as $imei){
+                $imei = trim($imei);
+                $this->add_purchase_item($order_id, $imei, $variation->id, $price, 1);
+            }
         }
+        return redirect()->back();
 
     }
     public function remove_issues(){
