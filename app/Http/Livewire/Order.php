@@ -1935,7 +1935,7 @@ class Order extends Component
         $variation = Variation_model::find(request('variation'));
         $imeis = request('imeis');
         if($order != null){
-            dd(request()->all());
+            dd(request()->all(), $variation);
         }
 
     }
