@@ -429,6 +429,92 @@
             </div>
         @else
             @if (session('user')->hasPermission('view_issues'))
+                @if (isset($testing_list) && count($testing_list)>0)
+
+                <div class="row">
+                    <div class="col-xl-12">
+                        <div class="card">
+                            <div class="card-header pb-0">
+                                <div class="d-flex justify-content-between">
+                                    <h4 class="card-title mg-b-0">Order Testing List</h4>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive" style="max-height: 500px">
+                                    <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                                        @php
+                                            $col = 3;
+                                        @endphp
+                                        <thead>
+                                            <tr>
+                                                <th><small><b>No</b></small></th>
+                                                <th><small><b>IMEI</b></small></th>
+                                                <th><small><b>Serial Number</b></small></th>
+                                                <th><small><b>Model</b></small></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @php
+                                                $i = 0;
+                                                $j = 0;
+                                            @endphp
+                                            @foreach ($testing_list as $id => $testing_list_grouped)
+                                                @php
+                                                    $variation = $all_variations->where('id',$id)->first();
+                                                    if($variation != null && $variation->product_id){
+                                                        $product = $products[$variation->product_id];
+                                                    }else{
+                                                        $product = null;
+                                                    }
+                                                    if($variation != null && $variation->storage){
+                                                        $storage = $storages[$variation->storage];
+                                                    }else{
+                                                        $storage = null;
+                                                    }
+                                                    if($variation != null && $variation->color){
+                                                        $color = $colors[$variation->color];
+                                                    }else{
+                                                        $color = null;
+                                                    }
+                                                    if($variation != null && $variation->grade){
+                                                        $grade = $grades[$variation->grade];
+                                                    }else{
+                                                        $grade = null;
+                                                    }
+                                                    $variation_name = $product." ".$storage." ".$color." ".$grade;
+                                                @endphp
+                                                <tr class="bg-light tx-center">
+                                                    <td colspan="3" >{{ $variation_name }}</td>
+                                                    <td colspan="2">
+                                                        <form id="order_issues_{{$j+=1}}" method="POST" action="{{ url('purchase/remove_issues') }}" class="form-inline">
+                                                            @csrf
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                                @foreach ($testing_list_grouped as $row)
+                                                    <input type="hidden" name="ids[]" value="{{$row->id}}" form="order_issues_{{$j}}">
+                                                    <tr>
+                                                        <td>{{ $i++ }}</td>
+                                                        <td>{{ $row->imei }}</td>
+                                                        <td>{{ $row->serial_number }}</td>
+                                                        <td>{{ $row->product .' '.$row->storage . ' ' . $row->color . ' ' . $row->grade }}</td>
+                                                    </tr>
+
+                                                @endforeach
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                    <br>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                @endif
+            @endif
+            @if (session('user')->hasPermission('view_issues'))
                 @if (count($order_issues)>0)
 
                 <div class="row">
