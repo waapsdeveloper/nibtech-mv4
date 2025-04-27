@@ -460,7 +460,7 @@
                                             @endphp
                                             @foreach ($testing_list as $id => $testing_list_grouped)
                                                 <tr class="bg-light tx-center">
-                                                    <td colspan="3" >{{ $testing_list_grouped[0]['product'].' '.$testing_list_grouped[0]['storage'] . ' ' . $testing_list_grouped[0]['color'] . ' ' . $testing_list_grouped[0]['grade']  }}</td>
+                                                    <td colspan="3" >{{ $testing_list_grouped[0]['product'].' '.$testing_list_grouped[0]['storage'] . ' ' . $testing_list_grouped[0]['color']  }}</td>
                                                     <td>
                                                         <form id="order_testing_list_{{$j+=1}}" method="POST" action="{{ url('purchase/add_testing_list').'/'.$order->id }}" class="form-inline">
                                                             @csrf
@@ -481,7 +481,7 @@
                                                         <td>{{ ++$i }}</td>
                                                         <td>{{ $row['imei'] }}</td>
                                                         <td>{{ $row['serial_number'] }}</td>
-                                                        <td>{{ $row['product'] .' '.$row['storage'] . ' ' . $row['color'] . ' ' . $row['grade'] }}</td>
+                                                        <td>{{ $row['product'] .' '.$row['storage'] . ' ' . $row['color'] }}</td>
                                                     </tr>
 
                                                 @endforeach

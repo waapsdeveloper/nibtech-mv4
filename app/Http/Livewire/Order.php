@@ -1259,7 +1259,7 @@ class Order extends Component
                                 'product' => $request->ModelName,
                                 'storage' => $request->Memory,
                                 'color' => $request->Color,
-                                'grade' => $request->Grade,
+                                // 'grade' => $request->Grade,
                                 'status' => 1,
                             ];
                         }
