@@ -267,9 +267,9 @@
                             <th><small><b>No</b></small></th>
                             <th><small><b>Veriation</b></small></th>
                             <th title="Pending Orders"><small><b>Orders</b></small></th>
-                            <th><small><b>Qty Before</b></small></th>
-                            <th><small><b>Qty Added</b></small></th>
-                            <th><small><b>Qty After</b></small></th>
+                            <th title="Quantity Before"><small><b>Qty Bfr</b></small></th>
+                            <th title="Quantity Added"><small><b>Qty Add</b></small></th>
+                            <th title="Quantity After"><small><b>Qty Afr</b></small></th>
                             <th><small><b>Admin</b></small></th>
                             <th><small><b>Creation Date</b></small></th>
                             <th><small><b>Update Date</b></small></th>
