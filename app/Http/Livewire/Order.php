@@ -1930,6 +1930,15 @@ class Order extends Component
         }
 
     }
+    public function add_testing_list($order_id){
+        $order = Order_model::find($order_id);
+        $variation = Variation_model::find(request('variation'));
+        $imeis = request('imeis');
+        if($order != null){
+            dd(request()->all());
+        }
+
+    }
     public function remove_issues(){
         // dd(request()->all());
         $ids = request('ids');
