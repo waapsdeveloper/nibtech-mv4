@@ -348,7 +348,7 @@ class Topup extends Component
     public function delete_topup($id){
         $process = Process_model::find($id);
         if($process != null){
-            $process->process_stocks->delete();
+            $process->process_stocks()->delete();
             $process->delete();
             session()->put('success', 'Topup Deleted successfully');
         }else{
