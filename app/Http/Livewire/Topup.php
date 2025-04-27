@@ -96,10 +96,13 @@ class Topup extends Component
 
             $wrong_variations = Variation_model::whereIn('id', $variation_qty->pluck('variation_id')->toArray())->whereNull('sku')->where('grade', '<', 6)->get();
             if($wrong_variations->count() > 0){
-                session()->put('error', 'Please add SKU for the following variations:');
+                $error = 'Please add SKU for the following variations:';
+                // session()->put('error', 'Please add SKU for the following variations:');
                 foreach($wrong_variations as $variation){
-                    session()->put('error', $variation->product->model.' - '.$variation->storage_id->name.' - '.$variation->color_id->name.' - '.$variation->grade_id->name);
+                    $error .= ' '.$variation->product->model.' - '.$variation->storage_id->name.' - '.$variation->color_id->name.' - '.$variation->grade_id->name;
+                    // session()->put('error', $variation->product->model.' - '.$variation->storage_id->name.' - '.$variation->color_id->name.' - '.$variation->grade_id->name);
                 }
+                session()->put('error', $error);
                 return redirect()->back();
 
 
