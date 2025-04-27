@@ -462,13 +462,22 @@
                                                 <tr class="bg-light tx-center">
                                                     <td colspan="3" >{{ $testing_list_grouped[0]['product'].' '.$testing_list_grouped[0]['storage'] . ' ' . $testing_list_grouped[0]['color'] . ' ' . $testing_list_grouped[0]['grade']  }}</td>
                                                     <td>
-                                                        <form id="order_issues_{{$j+=1}}" method="POST" action="{{ url('purchase/remove_issues') }}" class="form-inline">
+                                                        <form id="order_testing_list_{{$j+=1}}" method="POST" action="{{ url('purchase/add_testing_list') }}" class="form-inline">
                                                             @csrf
+                                                            <input type="hidden" name="order_id" value="{{$order->id}}">
+                                                            <input type="hidden" name="variation_id" value="{{$id}}">
+                                                            <input type="number" name="price" class="form-control" placeholder="Price" step="0.01" required>
+                                                            <button class="btn btn-secondary m-0" name="add_testing_list" value="1">Add to Batch</button>
                                                         </form>
                                                     </td>
                                                 </tr>
                                                 @foreach ($testing_list_grouped as $row)
                                                     {{-- <input type="hidden" name="ids[]" value="{{$row->id}}" form="order_issues_{{$j}}"> --}}
+                                                    @if ($row['imei'] != null)
+                                                        <input type="hidden" name="imeis[]" value="{{$row['imei']}}" form="order_testing_list_{{$j}}">
+                                                    @else
+                                                        <input type="hidden" name="imeis[]" value="{{$row['serial_number']}}" form="order_testing_list_{{$j}}">
+                                                    @endif
                                                     <tr>
                                                         <td>{{ ++$i }}</td>
                                                         <td>{{ $row['imei'] }}</td>
