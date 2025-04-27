@@ -1222,11 +1222,11 @@ class Order extends Component
                         }else{
                             $color_id = null;
                         }
-                        if(in_array(strtolower($request->Grade), $lower_grades)){
-                            $grade_id = array_search(strtolower($request->Grade), $lower_grades);
-                        }else{
-                            $grade_id = 7;
-                        }
+                        // if(in_array(strtolower($request->Grade), $lower_grades)){
+                        //     $grade_id = array_search(strtolower($request->Grade), $lower_grades);
+                        // }else{
+                            $grade_id = 9;
+                        // }
 
                         $variation = Variation_model::firstOrNew([
                             'product_id'=>$product_id,
