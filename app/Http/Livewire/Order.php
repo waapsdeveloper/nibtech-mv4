@@ -1941,7 +1941,7 @@ class Order extends Component
                 $this->add_purchase_item($order_id, $imei, $variation->id, $price, 1);
             }
         }
-        return redirect()->back();
+        return redirect()->back()->with('success', 'IMEI Added to Batch');
 
     }
     public function remove_issues(){
