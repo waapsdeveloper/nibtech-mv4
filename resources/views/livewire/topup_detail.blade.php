@@ -271,8 +271,8 @@
                             <th title="Quantity Added"><small><b>Qty Add</b></small></th>
                             <th title="Quantity After"><small><b>Qty Afr</b></small></th>
                             <th><small><b>Admin</b></small></th>
-                            <th><small><b>Creation Date</b></small></th>
-                            <th><small><b>Update Date</b></small></th>
+                            <th width="180"><small><b>Creation Date</b></small></th>
+                            <th width="180"><small><b>Update Date</b></small></th>
                         </tr>
                     </thead>
                     <tbody>
