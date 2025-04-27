@@ -60,7 +60,7 @@ class Order extends Component
         $data['grades'] = Grade_model::pluck('name','id');
 
         $data['currencies'] = Currency_model::pluck('sign', 'id');
-        $data['last_hour'] = Carbon::now()->subHour(2);
+        $data['last_hour'] = Carbon::now()->subHour();
         $data['admins'] = Admin_model::pluck('first_name','id');
         $data['testers'] = Admin_model::where('role_id',7)->pluck('last_name');
         $user_id = session('user_id');
@@ -403,7 +403,7 @@ class Order extends Component
         session()->put('page_title', $data['title_page']);
 
         $data['grades'] = Grade_model::all();
-        $data['last_hour'] = Carbon::now()->subHour(72);
+        $data['last_hour'] = Carbon::now()->subHour();
         $data['admins'] = Admin_model::where('id','!=',1)->get();
         $data['testers'] = Admin_model::where('role_id',7)->pluck('last_name');
         $user_id = session('user_id');
@@ -1199,6 +1199,7 @@ class Order extends Component
 
                 if($testings->count() > 0){
                     $testing_list = [];
+                    $imei_list = [];
                     $lower_products = array_map('strtolower', $data['products']->toArray());
                     $lower_storages = array_map('strtolower', $data['storages']->toArray());
                     $lower_colors = array_map('strtolower', $data['colors']->toArray());
@@ -1240,6 +1241,16 @@ class Order extends Component
                         if($request->Imei != null || $request->Serial != null){
                             if(Stock_model::where('imei',$request->Imei)->orWhere('imei',$request->Imei2)->orWhere('serial_number',$request->Serial)->exists()){
                                 continue;
+                            }
+                            if($request->Imei != null){
+                                $imei = $request->Imei;
+                            }else{
+                                $imei = $request->Serial;
+                            }
+                            if(in_array($imei, $imei_list)){
+                                continue;
+                            }else{
+                                $imei_list[] = $imei;
                             }
                             $testing_list[$variation->id][] = [
                                 'imei' => $request->Imei,

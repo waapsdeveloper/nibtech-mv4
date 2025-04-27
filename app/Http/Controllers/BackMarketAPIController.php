@@ -344,14 +344,15 @@ class BackMarketAPIController extends Controller
                     if(!isset($result_next->results)){
                         print_r($result_next);
                         break;
-                    }
-                    $result_next_array = $result_next->results;
+                    }else{
+                        $result_next_array = $result_next->results;
 
-                    foreach ($result_next_array as $key => $value) {
-                        array_push($result_array, $result_next_array[$key]);
-                    }
-                    if($i == 50){
-                        break;
+                        foreach ($result_next_array as $key => $value) {
+                            array_push($result_array, $result_next_array[$key]);
+                        }
+                        if($i == 50){
+                            break;
+                        }
                     }
                 }
             }
