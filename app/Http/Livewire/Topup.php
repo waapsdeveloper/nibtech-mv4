@@ -354,7 +354,7 @@ class Topup extends Component
         }else{
             session()->put('error', 'Topup Not Found');
         }
-        return redirect()->back();
+        return redirect()->to(url('topup'))->with('success', 'Topup Deleted successfully');
     }
 
 
