@@ -459,33 +459,9 @@
                                                 $j = 0;
                                             @endphp
                                             @foreach ($testing_list as $id => $testing_list_grouped)
-                                                @php
-                                                    $variation = $all_variations->where('id',$id)->first();
-                                                    if($variation != null && $variation->product_id){
-                                                        $product = $products[$variation->product_id];
-                                                    }else{
-                                                        $product = null;
-                                                    }
-                                                    if($variation != null && $variation->storage){
-                                                        $storage = $storages[$variation->storage];
-                                                    }else{
-                                                        $storage = null;
-                                                    }
-                                                    if($variation != null && $variation->color){
-                                                        $color = $colors[$variation->color];
-                                                    }else{
-                                                        $color = null;
-                                                    }
-                                                    if($variation != null && $variation->grade){
-                                                        $grade = $grades[$variation->grade];
-                                                    }else{
-                                                        $grade = null;
-                                                    }
-                                                    $variation_name = $product." ".$storage." ".$color." ".$grade;
-                                                @endphp
                                                 <tr class="bg-light tx-center">
-                                                    <td colspan="3" >{{ $variation_name }}</td>
-                                                    <td colspan="2">
+                                                    <td colspan="3" >{{ $testing_list_grouped[0]['product'].' '.$testing_list_grouped[0]['storage'] . ' ' . $testing_list_grouped[0]['color'] . ' ' . $testing_list_grouped[0]['grade']  }}</td>
+                                                    <td>
                                                         <form id="order_issues_{{$j+=1}}" method="POST" action="{{ url('purchase/remove_issues') }}" class="form-inline">
                                                             @csrf
                                                         </form>
