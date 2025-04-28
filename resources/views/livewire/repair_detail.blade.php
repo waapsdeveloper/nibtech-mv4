@@ -571,7 +571,7 @@
                                         <th><small><b>Last Updated</b></small></th>
 
                                         @if (session('user')->hasPermission('revert_repair_item'))
-                                        {{-- <th></th> --}}
+                                        <th></th>
                                         @endif
                                     </tr>
                                 </thead>
