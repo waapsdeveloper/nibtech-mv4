@@ -213,7 +213,7 @@
                                                 <td>
                                                     <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                                     <div class="dropdown-menu">
-                                                        <a class="dropdown-item" href="{{url('delete_order') . "/" . $order->id }}"><i class="fe fe-arrows-rotate me-2 "></i>Delete</a>
+                                                        <a class="dropdown-item" href="{{url('delete_order') . "/" . $order->id }}"><i class="fe fe-arrows-rotate me-2 " onclick="return confirm('Are you sure you want to delete this order?');" ></i>Delete</a>
                                                         {{-- <a class="dropdown-item" href="{{ $order->delivery_note_url }}" target="_blank"><i class="fe fe-arrows-rotate me-2 "></i>Delivery Note</a>
                                                         <a class="dropdown-item" href="https://backmarket.fr/bo-seller/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a> --}}
                                                         {{-- <a class="dropdown-item" href="javascript:void(0);"><i class="fe fe-trash-2 me-2"></i>Delete</a> --}}

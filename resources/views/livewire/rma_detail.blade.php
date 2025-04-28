@@ -48,7 +48,7 @@
                         <label for="reference">Vendor Reference</label>
                     </div>
                     <button type="submit" class="btn btn-success" name="approve" value="1">Approve</button>
-                    <a class="btn btn-danger" href="{{url('delete_rma') . "/" . $order->id }}">Delete</a>
+                    <a class="btn btn-danger" href="{{url('delete_rma') . "/" . $order->id }}" onclick="return confirm('Are you sure you want to delete this RMA?');" >Delete</a>
                 </form>
                 <script>
                     function submitForm() {
@@ -78,7 +78,7 @@
                         <label for="tracking_number">Tracking Number</label>
                     </div>
                     <button type="submit" class="btn btn-success" name="approve" value="1">Approve</button>
-                    <a class="btn btn-danger" href="{{url('delete_rma') . "/" . $order->id }}">Delete</a>
+                    <a class="btn btn-danger" href="{{url('delete_rma') . "/" . $order->id }}" onclick="return confirm('Are you sure you want to delete this RMA?');"  id="delete_rma" >Delete</a>
                 </form>
                     <br>
                 @else
@@ -341,7 +341,7 @@
                                             @endif
                                             <td style="width:220px">{{ $item->created_at }}</td>
                                             @if (session('user')->hasPermission('delete_rma_item') && $order->status == 1)
-                                            <td><a href="{{ url('delete_rma_item').'/'.$item->id }}"><i class="fa fa-trash"></i></a></td>
+                                            <td><a href="{{ url('delete_rma_item').'/'.$item->id }}" onclick="return confirm('Are you sure you want to delete this item?');"><i class="fa fa-trash"></i></a></td>
 
                                             @endif
                                         </tr>
@@ -431,7 +431,7 @@
                                             </td>
 
                                             @if (session('user')->hasPermission('delete_rma_item') && $order->status == 1)
-                                            <td><a href="{{ url('delete_rma_item').'/'.$sale_order->id }}"><i class="fa fa-trash"></i></a></td>
+                                            <td><a href="{{ url('delete_rma_item').'/'.$sale_order->id }}" onclick="return confirm('Are you sure you want to delete this item?');" title="Delete Item"><i class="fa fa-trash"></i></a></td>
                                             @endif
                                             <input type="hidden" name="item_ids[]" value="{{ $sale_order->id }}">
                                         </tr>

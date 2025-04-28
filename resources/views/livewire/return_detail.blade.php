@@ -779,7 +779,7 @@
                                                     <td>{{ $row->admin->first_name ?? null }}</td>
                                                     <td>{{ $row->updated_at ?? null }}</td>
                                                     @if (session('user')->hasPermission('delete_return_item'))
-                                                    <td><a href="{{ url('delete_return_item').'/'.$order_item->id }}"><i class="fa fa-trash"></i></a></td>
+                                                    <td><a href="{{ url('delete_return_item').'/'.$order_item->id }}" onclick="return confirm('Are you sure you want to delete this item?');" title="Delete"><i class="fa fa-trash"></i></a></td>
                                                     @endif
                                                 </tr>
                                                 {{-- @endif --}}

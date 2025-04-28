@@ -35,7 +35,7 @@
                         <label for="description">Description</label>
                     </div>
                     <button type="submit" class="btn btn-success" name="approve" value="1">Ship</button>
-                    <a class="btn btn-danger" href="{{url('delete_verification') . "/" . $process->id }}">Delete</a>
+                    <a class="btn btn-danger" href="{{url('delete_verification') . "/" . $process->id }}" onclick="return confirm('Are you sure you want to delete this item?');">Delete</a>
                 </form>
 
                 <script>

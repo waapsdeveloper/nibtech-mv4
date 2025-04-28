@@ -241,7 +241,7 @@
                             <h4 class="card-title mg-b-0">
                                 @if (session('user')->hasPermission('delete_multiple_moves'))
 
-                                    <form id="pdf" method="POST" action="{{url('move_inventory/delete_multiple_moves')}}">
+                                    <form id="pdf" method="POST" action="{{url('move_inventory/delete_multiple_moves')}}" onsubmit="return confirm('Are you sure you want to delete these items?');">
                                         @csrf
                                         <input type="hidden" name="grade" value="{{ session('grade') }}">
                                         <input type="hidden" name="description" value="{{ session('description') }}">
@@ -374,7 +374,7 @@
                                                 <td>{{ $operation->admin->first_name ?? null }}</td>
                                                 <td>{{ $operation->created_at }}</td>
                                                 <td>
-                                                    <form method="POST" action="{{url('move_inventory/delete_move')}}">
+                                                    <form method="POST" action="{{url('move_inventory/delete_move')}}" onsubmit="return confirm('Are you sure you want to delete this item?');">
                                                         @csrf
                                                         <input type="hidden" name="id" value="{{ $operation->id }}">
                                                         <input type="hidden" name="grade" value="{{ session('grade') }}">
