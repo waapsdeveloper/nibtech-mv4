@@ -202,7 +202,7 @@
                                                     <tr>
                                                         <td>{{ $i + 1 }}</td>
                                                         <td>
-                                                            <input type="text" name="update[product_id]" list="models" class="form-select form-select-sm" value="{{ explode(' - ', $product->name)[0] }}" required>
+                                                            <input type="text" name="update[product_id]" list="models" class="form-select form-select-sm" value="{{ rtrim(explode(' - ', $product->name)[0], ' mm') }}" required>
                                                             <datalist id="models">
                                                                 <option value="">None</option>
                                                                 @foreach ($products as $id => $prod)
