@@ -117,7 +117,7 @@
 
                     <button class="btn btn-primary" >Update</button>
                     @if ($charge->order_charges->count() == 0)
-                        <a href="{{url('charge/delete')}}/{{$charge->id}}">Delete</a>
+                        <a href="{{url('charge/delete')}}/{{$charge->id}}" onclick="return confirm('Are you sure you want to delete this charge?');" class="btn btn-danger" style="float: right;">Delete</a>
                     @endif
                 </form>
                 <br>

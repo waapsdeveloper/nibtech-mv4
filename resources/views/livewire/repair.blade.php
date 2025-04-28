@@ -444,7 +444,7 @@
                                                 <td>
                                                     <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                                     <div class="dropdown-menu">
-                                                        <a class="dropdown-item" href="{{url('delete_repair') . "/" . $order->id }}"><i class="fe fe-arrows-rotate me-2 "></i>Delete</a>
+                                                        <a class="dropdown-item" href="{{url('delete_repair') . "/" . $order->id }}" onclick="return confirm('Are you sure you want to delete this repair?');" ><i class="fe fe-trash-2 me-2"></i>Delete</a>
                                                     </div>
                                                 </td>
                                             </tr>

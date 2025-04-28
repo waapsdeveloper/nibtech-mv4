@@ -142,7 +142,7 @@
                     </div>
                     <button class="btn btn-primary pd-x-30 mg-r-5 mg-t-5" >Update</button>
                     @if ($customer->orders->count() == 0)
-                        <a href="{{url('customer/delete')}}/{{$customer->id}}">Delete</a>
+                        <a href="{{url('customer/delete')}}/{{$customer->id}}" onclick="return confirm('Are you sure?')" class="btn btn-danger pd-x-30 mg-r-5 mg-t-5">Delete</a>
                     @endif
                 </form>
             </div>
@@ -339,7 +339,7 @@
                                                 <td>
                                                     <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                                     <div class="dropdown-menu">
-                                                        <a class="dropdown-item" href="{{url('delete_repair') . "/" . $order->id }}"><i class="fe fe-arrows-rotate me-2 "></i>Delete</a>
+                                                        <a class="dropdown-item" href="{{url('delete_repair') . "/" . $order->id }}" onclick="return confirm('Are you sure?')"><i class="fe fe-arrows-rotate me-2 "></i>Delete</a>
                                                     </div>
                                                 </td>
                                             </tr>

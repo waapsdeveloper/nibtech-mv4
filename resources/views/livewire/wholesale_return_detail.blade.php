@@ -284,7 +284,7 @@
                                             @endif
                                             <td style="width:220px">{{ $item->created_at }}</td>
                                             @if (session('user')->hasPermission('delete_wholesale_return_item') && $order->status != 3)
-                                            <td><a href="{{ url('delete_wholesale_return_item').'/'.$item->id }}"><i class="fa fa-trash"></i></a></td>
+                                            <td><a href="{{ url('delete_wholesale_return_item').'/'.$item->id }}" onclick="return confirm('Are you sure you want to delete this item?');"><i class="fa fa-trash"></i></a></td>
                                             @endif
                                         </tr>
                                         @php
@@ -377,7 +377,7 @@
                                                 <td>{{ $row->admin->first_name ?? null }}</td>
                                                 <td>{{ $row->updated_at ?? null }}</td>
                                                 @if (session('user')->hasPermission('delete_wholesale_return_item') && $order->status != 3)
-                                                <td><a href="{{ url('delete_wholesale_return_item').'/'.$stock->sale_item($order_id)->id }}"><i class="fa fa-trash"></i></a></td>
+                                                <td><a href="{{ url('delete_wholesale_return_item').'/'.$stock->sale_item($order_id)->id }}" onclick="return confirm('Are you sure you want to delete this item?');"><i class="fa fa-trash"></i></a></td>
                                                 @endif
                                             </tr>
                                             {{-- @endif --}}
