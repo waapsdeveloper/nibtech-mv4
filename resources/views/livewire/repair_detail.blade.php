@@ -525,7 +525,7 @@
                                                 {{ $item->order->customer->first_name }} {{ $currency.amount_formatter($item->purchase_item->price ?? "0") }}
                                             </td>
 
-                                            @if (session('user')->hasPermission('delete_repair_item'))
+                                            @if (session('user')->hasPermission('delete_repair_item') && $process->status == 1)
                                             <td><a href="{{ url('delete_repair_item').'/'.$item->process_stock($process_id)->id }}" onclick="return confirm('Are you sure you want to delete this item?');" title="Delete Item"><i class="fa fa-trash"></i></a></td>
                                             @endif
                                             <input type="hidden" name="item_ids[]" value="{{ $item->process_stock($process_id)->id }}">
@@ -570,7 +570,7 @@
                                         @endif
                                         <th><small><b>Last Updated</b></small></th>
 
-                                        @if (session('user')->hasPermission('delete_repair_item'))
+                                        @if (session('user')->hasPermission('revert_repair_item'))
                                         {{-- <th></th> --}}
                                         @endif
                                     </tr>
@@ -615,8 +615,8 @@
                                             <td>{{ amount_formatter($processed_stock->price,2) }}</td>
                                             @endif
                                             <td>{{$processed_stock->updated_at}}</td>
-                                            @if (session('user')->hasPermission('delete_repair_item'))
-                                            {{-- <td><a href="{{ url('delete_repair_item').'/'.$item->process_stock($process_id)->id }}"><i class="fa fa-trash"></i></a></td> --}}
+                                            @if (session('user')->hasPermission('revert_repair_item') && $process->status == 2)
+                                            <td><a href="{{ url('revert_repair_item').'/'.$item->process_stock($process_id)->id }}"><i class="fa fa-refresh"></i></a></td>
                                             @endif
                                             <input type="hidden" name="item_ids[]" value="{{ $item->process_stock($process_id)->id }}">
                                         </tr>
