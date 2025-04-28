@@ -199,10 +199,17 @@
                                                 @foreach ($variations as $index => $product)
                                                     <form method="post" action="{{url('variation/update_product')}}/{{ $product->id }}" class="row form-inline">
                                                         @csrf
+                                                    @php
+                                                        $name = explode(' - ', $product->name);
+                                                        $name = $name[0];
+                                                        $name = explode(' ', $name);
+                                                        array_splice($name, -1);
+                                                        $name = implode(' ', $name);
+                                                    @endphp
                                                     <tr>
                                                         <td>{{ $i + 1 }}</td>
                                                         <td>
-                                                            <input type="text" name="update[product_id]" list="models" class="form-select form-select-sm" value="{{ explode(' - ', $product->name)[0] }}" required>
+                                                            <input type="text" name="update[product_id]" list="models" class="form-select form-select-sm" value="{{ $name }}" required>
                                                             <datalist id="models">
                                                                 <option value="">None</option>
                                                                 @foreach ($products as $id => $prod)
