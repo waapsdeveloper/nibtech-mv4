@@ -35,7 +35,7 @@
                             <label for="description">Description</label>
                         </div>
                         <button type="submit" class="btn btn-success" name="approve" value="1">Push & Close</button>
-                        <a class="btn btn-danger" href="{{url('topup/delete') . "/" . $process->id }}">Delete</a>
+                        <a class="btn btn-danger" href="{{url('topup/delete') . "/" . $process->id }}" onclick="return confirm('Are you sure you want to delete this topup?');">Delete</a>
                     </form>
 
                     <script>
@@ -390,7 +390,7 @@
                                                         <td style="width:220px">{{ $stock->process_stock($process_id)->created_at }}</td>
                                                         <td>
                                                             @if (session('user')->hasPermission('delete_topup_item') && $process->status == 1)
-                                                                <a href="{{ url('topup/delete_topup_item').'/'.$stock->process_stock($process_id)->id }}" class="btn btn-danger btn-sm">
+                                                                <a href="{{ url('topup/delete_topup_item').'/'.$stock->process_stock($process_id)->id }}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this item?');">
                                                                     <i class="fa fa-trash"></i>
                                                                 </a>
 

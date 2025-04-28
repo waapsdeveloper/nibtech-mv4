@@ -44,7 +44,7 @@
                             <label for="reference">Reference</label>
                         </div>
                         <button type="submit" class="btn btn-success" name="next" value="1">Next</button>
-                        <a class="btn btn-danger" href="{{url('delete_wholesale') . "/" . $order->id }}">Delete</a>
+                        <a class="btn btn-danger" href="{{url('delete_wholesale') . "/" . $order->id }}" onclick="return confirm('Are you sure you want to delete this order?')">Delete</a>
                     </form>
 
                 @elseif ($order->status == 2)
@@ -80,7 +80,7 @@
                         <label for="tracking_number">Tracking Number</label>
                     </div>
                     <button type="submit" class="btn btn-success" name="approve" value="1">Approve</button>
-                    <a class="btn btn-danger" href="{{url('delete_wholesale') . "/" . $order->id }}">Delete</a>
+                    <a class="btn btn-danger" href="{{url('delete_wholesale') . "/" . $order->id }}" onclick="return confirm('Are you sure you want to delete this order?')">Delete</a>
                 </form>
 
                     {{-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> --}}
@@ -632,7 +632,7 @@
                                             @endif
                                             <td style="width:220px">{{ $item->created_at }}</td>
                                             @if (session('user')->hasPermission('delete_wholesale_item') && $order->status == 2)
-                                            <td><a href="{{ url('delete_wholesale_item').'/'.$item->id }}"><i class="fa fa-trash"></i></a></td>
+                                            <td><a href="{{ url('delete_wholesale_item').'/'.$item->id }}" onclick="return confirm('Are you sure you want to delete this item?');"><i class="fa fa-trash"></i></a></td>
                                             @endif
                                         </tr>
                                     @endforeach
@@ -747,7 +747,7 @@
                                             </td>
                                             @endif
                                             @if (session('user')->hasPermission('delete_wholesale_item') && $order->status == 2)
-                                            <td><a href="{{ url('delete_wholesale_item').'/'.$sale_item->id }}"><i class="fa fa-trash"></i></a></td>
+                                            <td><a href="{{ url('delete_wholesale_item').'/'.$sale_item->id }}" onclick="return confirm('Are you sure you want to delete this item?');"><i class="fa fa-trash"></i></a></td>
                                             @endif
                                             @if ($order->status == 3 && $sale_item->check_return != null)
                                                 <td><a href="{{ url('imei').'?imei='.($item->imei ?? null).($item->serial_number ?? null) }}" target="_blank"><i class="fa fa-link"></i></a></td>

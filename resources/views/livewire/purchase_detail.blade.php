@@ -44,7 +44,7 @@
                         </div>
                         {{-- <button type="submit" class="btn" name="save" value="1">Save</button> --}}
                         <button type="submit" class="btn btn-success" name="approve" value="1">Approve</button>
-                        <a class="btn btn-danger" href="{{url('delete_order') . "/" . $order->id }}">Delete</a>
+                        <a class="btn btn-danger" href="{{url('delete_order') . "/" . $order->id }}" onclick="return confirm('Are you sure you want to delete this order?');">Delete</a>
                     </form>
 
                     {{-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> --}}
@@ -773,7 +773,7 @@
                                                     @if (session('user')->hasPermission('view_cost'))
                                                     <th><small><b>Cost</b></small></th>
                                                     @endif
-                                                    @if (session('user')->hasPermission('delete_purchase_item'))
+                                                    @if (session('user')->hasPermission('delete_purchase_item') && $order->status == 2)
                                                     <th></th>
                                                     @endif
                                                 </tr>
@@ -822,9 +822,8 @@
                                                         @if (session('user')->hasPermission('view_cost'))
                                                         <td>{{ $currency}}{{ $price }}</td>
                                                         @endif
-                                                        @if (session('user')->hasPermission('delete_purchase_item'))
-                                                        <td><a href="{{ url('delete_order_item').'/'}}{{$purchase_item->id ?? null }}"
-                                                            ><i class="fa fa-trash"></i></a></td>
+                                                        @if (session('user')->hasPermission('delete_purchase_item') && $order->status == 2)
+                                                        <td><a href="{{ url('delete_order_item').'/'}}{{$purchase_item->id ?? null }}" onclick="return confirm('Are you sure you want to delete this item?');" title="Delete"><i class="fa fa-trash"></i></a></td>
                                                         @endif
                                                     </tr>
                                                 @endforeach

@@ -228,7 +228,7 @@
                                                             <a href="javascript:void(0);"  data-bs-toggle="modal" data-bs-target="#record_payment" class="dropdown-item" data-transaction_id="{{ $transaction->id }}" data-transaction_ref="{{ $transaction->reference_id }}" data-customer_id="{{ $transaction->customer_id }}" data-type="1" data-amount="{{ $remaining }}" data-description="{{ $transaction->description }}" data-date="{{ $transaction->date }}"  data-currency="{{ $transaction->currency }}" data-exchange_rate="{{ $transaction->exchange_rate }}">Record Payment</a>
                                                         @endif
                                                         <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#record_payment" data-transaction_id="{{ $transaction->id }}" data-transaction_ref="{{ $transaction->reference_id }}" data-amount="{{ $transaction->amount }}" data-description="{{ $transaction->description }}" data-date="{{ $transaction->date }}"  data-currency="{{ $transaction->currency }}" data-exchange_rate="{{ $transaction->exchange_rate }}" data-func="edit">Edit Transaction</a>
-                                                        <a href="{{url('transaction/delete/'.$transaction->id)}}" class="dropdown-item">Delete</a>
+                                                        <a href="{{url('transaction/delete/'.$transaction->id)}}" class="dropdown-item" onclick="return confirm('Are you sure you want to delete this transaction?');" >Delete</a>
                                                     </div>
                                                 </td>
                                             </tr>

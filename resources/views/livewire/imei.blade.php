@@ -291,7 +291,7 @@
 
                                             @if (session('user')->hasPermission('imei_delete_order_item') || (session('user')->hasPermission('imei_delete_return_item') && $order->order_type_id == 4))
                                                 <td>
-                                                    <a href="{{url('imei/delete_order_item').'/'.$item->id}}" class="btn btn-link"><i class="fa fa-trash"></i></a>
+                                                    <a href="{{url('imei/delete_order_item').'/'.$item->id}}" class="btn btn-link" onclick="return confirm('Are you sure you want to delete this item?');" title="Delete"><i class="fa fa-trash"></i></a>
                                                 </td>
                                             @endif
                                         </tr>
@@ -459,7 +459,7 @@
                                             @endif</td> --}}
                                             <td style="width:220px">{{ $p_stock->created_at}} <br> {{ $process->tracking_number }}</td>
                                             <td>
-                                                <a href="{{ url('inventory/delete_verification_item').'/'.$p_stock->id }}" class="btn btn-link"><i class="fa fa-trash"></i></a>
+                                                <a href="{{ url('inventory/delete_verification_item').'/'.$p_stock->id }}" class="btn btn-link" onclick="return confirm('Are you sure you want to delete this item?');" title="Delete" style="color: red;"><i class="fa fa-trash"></i></a>
                                             </td>
                                         </tr>
                                     @php
@@ -539,7 +539,7 @@
                                                 @if (session('user')->hasPermission('delete_move') && $i == 0)
 
                                                 <td>
-                                                    <form method="POST" action="{{url('move_inventory/delete_move')}}">
+                                                    <form method="POST" action="{{url('move_inventory/delete_move')}}" onsubmit="if (confirm('Are you sure you want to delete this item?')){return true;}else{event.stopPropagation(); event.preventDefault();}">
                                                         @csrf
                                                         <input type="hidden" name="id" value="{{ $operation->id }}">
                                                         <button type="submit" class="btn btn-link"><i class="fa fa-trash"></i></button>
