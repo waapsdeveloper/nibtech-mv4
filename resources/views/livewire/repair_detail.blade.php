@@ -616,7 +616,7 @@
                                             @endif
                                             <td>{{$processed_stock->updated_at}}</td>
                                             @if (session('user')->hasPermission('revert_repair_item') && $process->status == 2)
-                                            <td><a href="{{ url('revert_repair_item').'/'.$item->process_stock($process_id)->id }}" title="Revert Item">x</a></td>
+                                            <td><a href="{{ url('revert_repair_item').'/'.$item->process_stock($process_id)->id }}" title="Revert Item" onclick="return confirm('Are you sure you want to revert this item?');"><i class="fa fa-undo"></i></a></td>
                                             @endif
                                             <input type="hidden" name="item_ids[]" value="{{ $item->process_stock($process_id)->id }}">
                                         </tr>
