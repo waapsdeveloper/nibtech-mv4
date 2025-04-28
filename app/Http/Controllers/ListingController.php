@@ -129,6 +129,15 @@ class ListingController extends Controller
                 return $q->whereHas('available_stocks');
             } elseif (request('available_stock') == 2) {
                 return $q->whereDoesntHave('available_stocks');
+            } elseif (request('available_stock') == 3) {
+                return $q->whereHas('available_stocks', function ($query) {
+                    $query->select(DB::raw('SUM(quantity) as total_available'))->groupBy('variation_id');
+                })
+                ->whereHas('pending_orders', function ($query) {
+                    $query->select(DB::raw('SUM(quantity) as total_pending'))->groupBy('variation_id');
+                })
+                ->whereRaw('(SELECT SUM(quantity) FROM available_stocks WHERE available_stocks.variation_id = variation.id) -
+                            (SELECT SUM(quantity) FROM pending_orders WHERE pending_orders.variation_id = variation.id) != listed_stock');
             }
         })
         ->when(request('state') == '', function ($q) {
