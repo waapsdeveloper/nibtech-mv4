@@ -61,7 +61,7 @@
                         <label for="description">Description</label>
                     </div>
                     <button type="submit" class="btn btn-success" name="approve" value="1">Ship</button>
-                    <a class="btn btn-danger" href="{{url('delete_repair') . "/" . $process->id }}">Delete</a>
+                    <a class="btn btn-danger" href="{{url('delete_repair') . "/" . $process->id }}" onclick="return confirm('Are you sure you want to delete this repair?');">Delete</a>
                 </form>
 
                 <script>
@@ -123,7 +123,7 @@
             <h5>Reference: {{ $process->reference_id }} | Repairer: {{ $process->customer->first_name ?? null }} | Total Items: {{ $process->process_stocks->count() }} | Total Price: {{ $currency.amount_formatter($process->process_stocks->sum('price'),2) }}</h5>
             @if ($process->status == 1)
             <div class="p-1">
-                <form class="form-inline" action="{{ url('delete_repair_item') }}" method="POST" id="repair_item">
+                <form class="form-inline" action="{{ url('delete_repair_item') }}" method="POST" id="repair_item" onSubmit="return confirm('Are you sure you want to remove this item?');">
                     @csrf
                     <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
                     <input type="text" class="form-control form-control-sm" name="imei" @if (request('remove') == 1) id="imei" @endif placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
@@ -526,7 +526,7 @@
                                             </td>
 
                                             @if (session('user')->hasPermission('delete_repair_item'))
-                                            <td><a href="{{ url('delete_repair_item').'/'.$item->process_stock($process_id)->id }}"><i class="fa fa-trash"></i></a></td>
+                                            <td><a href="{{ url('delete_repair_item').'/'.$item->process_stock($process_id)->id }}" onclick="return confirm('Are you sure you want to delete this item?');" title="Delete Item"><i class="fa fa-trash"></i></a></td>
                                             @endif
                                             <input type="hidden" name="item_ids[]" value="{{ $item->process_stock($process_id)->id }}">
                                         </tr>

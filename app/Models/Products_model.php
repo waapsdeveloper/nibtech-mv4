@@ -16,7 +16,6 @@ class Products_model extends Model
     // public $timestamps = FALSE;
     protected $fillable = [
         // other fields...
-        'reference_id',
     ];
     public function variations()
     {
