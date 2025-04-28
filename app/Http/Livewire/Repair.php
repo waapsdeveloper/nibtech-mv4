@@ -348,6 +348,22 @@ class Repair extends Component
         return redirect()->back()->withInput(['remove'=> 1]);
 
     }
+    public function revert_repair_item($process_stock_id = null){
+        if($process_stock_id != null){
+            $process_stock = Process_stock_model::find($process_stock_id);
+        }
+        if($process_stock != null){
+            $process_stock->status = 1;
+            $process_stock->save();
+            $stock = Stock_model::find($process_stock->stock_id);
+            if($stock != null){
+                $stock->status = 2;
+                $stock->save();
+            }
+        }
+        return redirect()->back()->with('success','Repair item reverted successfully');
+    }
+
     public function repair_detail($process_id){
 
         if(str_contains(url()->previous(),url('repair')) && !str_contains(url()->previous(),'detail')){
