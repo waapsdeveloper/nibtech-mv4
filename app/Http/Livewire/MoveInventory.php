@@ -227,8 +227,13 @@ class MoveInventory extends Component
                     'storage' => $storage,
                     'color' => $color,
                     'grade' => $grade,
-                    'sub_grade' => $sub_grade,
+                    // 'sub_grade' => $sub_grade,
                 ]);
+                if($grade > 5){
+                    $new_variation->sub_grade = $sub_grade;
+                }else{
+                    $new_variation->sub_grade = null;
+                }
                 $new_variation->status = 1;
 
                 if($new_variation->id && $stock->variation_id == $new_variation->id && request('price') == null && $allow_same == false){
