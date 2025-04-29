@@ -1045,7 +1045,7 @@
                                         <span id="sales_${variation.id}"></span>
                                     </div>
 
-                                    <a href="javascript:void(0)" class="btn btn-link" id="variation_history_${variation.id}" onClick="show_variation_history(event, ${variation.id}, '${variation.sku} ${variation.product.model} ${storages[variation.storage] || ''} ${colors[variation.color] || ''} ${grades[variation.grade] || ''}')" data-bs-toggle="modal" data-bs-target="#modal_history">
+                                    <a href="javascript:void(0)" class="btn btn-link" id="variation_history_${variation.id}" onClick="show_variation_history(${variation.id}, '${variation.sku} ${variation.product.model} ${storages[variation.storage] || ''} ${colors[variation.color] || ''} ${grades[variation.grade] || ''}')" data-bs-toggle="modal" data-bs-target="#modal_history">
                                         <i class="fas fa-history"></i>
                                     </a>
 
