@@ -198,7 +198,7 @@
                 dataType: 'json',
                 success: function(data) {
                     let historyTable = '';
-                    data.history.forEach(function(item) {
+                    data.listed_stock_verifications.forEach(function(item) {
                         historyTable += `
                             <tr>
                                 <td>${item.process_ref}</td>
