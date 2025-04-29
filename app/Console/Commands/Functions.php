@@ -49,9 +49,9 @@ class Functions extends Command
         echo 3;
         $this->duplicate_orders();
         echo 4;
-        $this->push_testing_api();
-        echo 5;
         $this->misc();
+        echo 5;
+        $this->push_testing_api();
     }
     private function refund_currency(){
 
