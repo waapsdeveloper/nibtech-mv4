@@ -532,9 +532,9 @@
     //   }, {
         name: 'Orders',
         data: data1.split(',')
-    //   }, {
-    //     name: 'GBP',
-    //     data: data2.split(',')
+      }, {
+        name: 'Topup',
+        data: data2.split(',')
       }],
       chart: {
         type: 'line',
