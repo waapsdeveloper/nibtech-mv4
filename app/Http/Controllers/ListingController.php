@@ -328,6 +328,17 @@ class ListingController extends Controller
 
     }
 
+    public function get_variation_history($id){
+        $listed_stock_verifications = Listed_stock_verification_model::where('variation_id',$id)->orderByDesc('id')->limit(20)->get();
+
+        $listed_stock_verifications->each(function($verification){
+            $verification->process_ref = Process_model::find($verification->process_id)->reference_id ?? null;
+            $verification->admin = Customer_model::find($verification->admin_id)->first_name ?? null;
+        });
+
+        return response()->json(['listed_stock_verifications'=>$listed_stock_verifications]);
+    }
+
     public function get_stock_cost($id){
         $stock = Stock_model::find($id);
         return $stock->purchase_item->price;
