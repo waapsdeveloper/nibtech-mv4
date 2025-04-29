@@ -567,7 +567,7 @@
         curve: 'smooth',
         show: true,
         width: 4,
-        colors: ["#C5102F", "#05255F"]
+        colors: ["#008000", "#C5102F", "#05255F"]
       },
       legend: {
         show: true,
