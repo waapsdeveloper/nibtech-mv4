@@ -23,6 +23,7 @@ use App\Models\Storage_model;
 use App\Models\Grade_model;
 use App\Models\Ip_address_model;
 use App\Models\Order_charge_model;
+use App\Models\Process_model;
 use App\Models\Product_storage_sort_model;
 use App\Models\Variation_model;
 use App\Models\Stock_model;
@@ -196,6 +197,22 @@ class Index extends Component
 
 
         if (session('user')->hasPermission('monthly_sales_chart')){
+            $order = [];
+            $dates = [];
+            for ($i = 1; $i <= date('d'); $i++) {
+                $start = date('Y-m-' . $i . ' 00:00:00');
+                $end = date('Y-m-' . $i . ' 23:59:59');
+                $orders = Process_model::where('created_at', '>', $start)->where('process_type_id',22)
+                    ->where('created_at', '<=', $end)->sum('quantity');
+                $order[$i] = $orders;
+                $dates[$i] = $i;
+            }
+            echo '<script> sessionStorage.setItem("failed", "' . implode(',', $order) . '");</script>';
+            echo '<script> sessionStorage.setItem("dates", "' . implode(',', $dates) . '");</script>';
+        }
+
+
+        if (session('user')->hasPermission('monthly_topup_chart')){
             $order = [];
             $dates = [];
             for ($i = 1; $i <= date('d'); $i++) {
