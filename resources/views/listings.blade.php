@@ -152,12 +152,12 @@
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 id="variation_name"></h5>
+                    <h5 class="modal-title" id="variationHistoryModalLabel">Variation History</h5>
                     <button type="button" class="btn-close " data-bs-dismiss="modal" aria-label="Close">
                         <i data-feather="x" class="fas fa-times"></i>
                     </button>
                 </div>
-                    <h5 class="modal-title" id="variationHistoryModalLabel">Variation History</h5>
+                    <h5 id="variation_name"></h5>
                 <div class="modal-body">
                     <table class="table table-bordered table-striped">
                         <thead>
