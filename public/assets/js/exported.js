@@ -550,11 +550,11 @@
             ranges: [{
               from: -100,
               to: -46,
-              color: '#C5102F'
+              color: '#008000'
             }, {
               from: -45,
               to: 0,
-              color: '#05255F'
+              color: '#C5102F'
             }]
           },
           columnWidth: '100%'
