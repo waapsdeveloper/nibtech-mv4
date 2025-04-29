@@ -145,12 +145,70 @@
         </div>
     </div>
 
+    <!-- /Bulk Update Modal -->
+
+    {{-- Variation History Modal --}}
+    <div class="modal fade" id="variationHistoryModal" tabindex="-1" aria-labelledby="variationHistoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="variationHistoryModalLabel">Variation History</h5>
+
+                    <button type="button" class="btn-close " data-bs-dismiss="modal" aria-label="Close">
+                        <i data-feather="x" class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Topup Ref</th>
+                                <th>Pending Orders</th>
+                                <th>Qty Before</th>
+                                <th>Qty Added</th>
+                                <th>Qty After</th>
+                                <th>Admin</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="variationHistoryTable">
+                            <!-- Data will be populated here via AJAX -->
+                        </tbody>
+                    </table>
 
 
 @endsection
 
 @section('scripts')
     <script>
+
+        function show_variation_history(variationId) {
+            $.ajax({
+                url: "{{ url('listing/get_variation_history') }}/" + variationId,
+                type: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    let historyTable = '';
+                    data.history.forEach(function(item) {
+                        historyTable += `
+                            <tr>
+                                <td>${item.process_ref}</td>
+                                <td>${item.pending_orders}</td>
+                                <td>${item.qty_before}</td>
+                                <td>${item.qty_added}</td>
+                                <td>${item.qty_after}</td>
+                                <td>${item.admin}</td>
+                                <td>${new Date(item.created_at).toGMTString()}</td>
+                            </tr>`;
+                    });
+                    $('#variationHistoryTable').html(historyTable);
+                },
+                error: function(xhr) {
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+
 
         $('#bulkModal').on('show.bs.modal', function (event) {
 
@@ -978,7 +1036,9 @@
                                         <span id="sales_${variation.id}"></span>
                                     </div>
 
-
+                                    <a href="javascript:void(0)" class="btn btn-link" id="variation_history_${variation.id}" onClick="getVariationHistory(${variation.id})">
+                                        <i class="fas fa-history"></i>
+                                    </a>
                                     <form class="form-inline wd-150" method="POST" id="add_qty_${variation.id}" action="{{url('listing/add_quantity')}}/${variation.id}">
                                         @csrf
                                         <div class="form-floating">
