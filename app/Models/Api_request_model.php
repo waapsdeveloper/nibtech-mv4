@@ -299,6 +299,50 @@ class Api_request_model extends Model
 
                 }
 
+                if(str_contains(strtolower($datas->Comments), 'dual-sim')){
+                    $p = $stock->variation->product;
+                    if(!str_contains($p->model, 'Dual Sim')){
+                        $product = Products_model::firstOrNew(['model'=>$p->model.' Dual Sim']);
+                        if(!$product->id){
+                            $product->category = $p->category;
+                            $product->brand = $p->brand;
+                            $product->model = $p->model.' Dual Sim';
+                            $product->save();
+                        }
+                        $p = $product;
+                    }
+
+                    $new_variation = [
+                        'product_id' => $p->id,
+                        'storage' => $stock->variation->storage,
+                        'color' => $stock->variation->color,
+                        'grade' => $stock->variation->grade,
+                    ];
+                    if(isset($sub_grade) && $grade > 5){
+                        $new_variation['sub_grade'] = $sub_grade;
+                    }
+
+                    $variation = Variation_model::firstOrNew($new_variation);
+                    if($variation->id == null){
+                        $variation->status = 1;
+                        $variation->save();
+                    }
+                    $stock_operation = Stock_operations_model::create([
+                        'stock_id' => $stock->id,
+                        'api_request_id' => $request->id,
+                        'old_variation_id' => $stock->variation_id,
+                        'new_variation_id' => $variation->id,
+                        'description' => "Dual-eSim Declared by tester | DrPhone",
+                        'admin_id' => $admin,
+                        'created_at' => Carbon::parse($datas->Time)->format('Y-m-d H:i:s'),
+                    ]);
+
+                    $stock->variation_id = $variation->id;
+                    $stock->save();
+
+                    $stock = Stock_model::find($stock->id);
+
+                }
                 $new_variation = [
                     'product_id' => $stock->variation->product_id,
                     'storage' => $stock->variation->storage,
