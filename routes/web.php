@@ -315,6 +315,7 @@ Route::get('listing/get_sales/{id}', [ListingController::class, 'get_sales'])->n
 Route::get('listing/get_variation_available_stocks/{id}', [ListingController::class, 'get_variation_available_stocks'])->name('view_listing');
 Route::get('listing/get_updated_quantity/{id}', [ListingController::class, 'getUpdatedQuantity'])->name('view_listing');
 Route::get('listing/get_competitors/{id}/{no_check?}', [ListingController::class, 'getCompetitors'])->name('view_listing');
+Route::get('listing/get_variation_history/{id}', [ListingController::class, 'get_variation_history'])->name('view_listing_history');
 Route::post('listing/update_quantity/{id}', [ListingController::class,'update_quantity'])->name('update_listing_quantity');
 Route::post('listing/add_quantity/{id}', [ListingController::class,'add_quantity'])->name('update_listing_quantity');
 Route::post('listing/update_price/{id}', [ListingController::class,'update_price'])->name('update_listing_price');
