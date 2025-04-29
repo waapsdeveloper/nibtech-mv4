@@ -175,6 +175,11 @@
                             <!-- Data will be populated here via AJAX -->
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{-- /Variation History Modal --}}
 
 
 @endsection
