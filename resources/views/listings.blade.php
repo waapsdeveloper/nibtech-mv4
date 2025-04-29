@@ -151,7 +151,7 @@
     <div class="modal fade" id="variationHistoryModal" tabindex="-1" aria-labelledby="variationHistoryModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header">
+                <div class="modal-header justify-content-between">
                     <h5 class="modal-title" id="variationHistoryModalLabel">Variation History</h5>
                     <h5 id="variation_name"></h5>
                     <button type="button" class="btn-close " data-bs-dismiss="modal" aria-label="Close">
