@@ -153,7 +153,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="variationHistoryModalLabel">Variation History</h5>
-
+                    <h5 id="variation_name"></h5>
                     <button type="button" class="btn-close " data-bs-dismiss="modal" aria-label="Close">
                         <i data-feather="x" class="fas fa-times"></i>
                     </button>
@@ -183,6 +183,9 @@
     <script>
 
         function show_variation_history(variationId) {
+            $('#variationHistoryModal').modal('show');
+            $('#variation_name').text(data.variation_name);
+            $('#variationHistoryTable').html('Loading...');
             $.ajax({
                 url: "{{ url('listing/get_variation_history') }}/" + variationId,
                 type: 'GET',
@@ -1036,9 +1039,10 @@
                                         <span id="sales_${variation.id}"></span>
                                     </div>
 
-                                    <a href="javascript:void(0)" class="btn btn-link" id="variation_history_${variation.id}" onClick="getVariationHistory(${variation.id})">
+                                    <a href="javascript:void(0)" class="btn btn-link" id="variation_history_${variation.id}" onClick="show_variation_history(event, ${variation.id})" data-bs-toggle="modal" data-bs-target="#modal_history" data-variation_name="${variation.sku} ${variation.product.model} ${storages[variation.storage] || ''} ${colors[variation.color] || ''} ${grades[variation.grade] || ''}">
                                         <i class="fas fa-history"></i>
                                     </a>
+
                                     <form class="form-inline wd-150" method="POST" id="add_qty_${variation.id}" action="{{url('listing/add_quantity')}}/${variation.id}">
                                         @csrf
                                         <div class="form-floating">
