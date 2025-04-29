@@ -134,7 +134,7 @@ class Functions extends Command
         if($variations->count() > 0){
             echo $variations->count();
             foreach($variations as $variation){
-                if($variation->product_id == null){
+                if($variation->product_id == null || $variation->storage == null){
                     continue;
                 }
                 $storage = $variation->storage ?? 0;
