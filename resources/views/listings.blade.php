@@ -182,9 +182,10 @@
 @section('scripts')
     <script>
 
-        function show_variation_history(variationId) {
+        function show_variation_history(variationId, variationName) {
             $('#variationHistoryModal').modal('show');
-            $('#variation_name').text(data.variation_name);
+
+            $('#variation_name').text(variationName);
             $('#variationHistoryTable').html('Loading...');
             $.ajax({
                 url: "{{ url('listing/get_variation_history') }}/" + variationId,
@@ -1039,7 +1040,7 @@
                                         <span id="sales_${variation.id}"></span>
                                     </div>
 
-                                    <a href="javascript:void(0)" class="btn btn-link" id="variation_history_${variation.id}" onClick="show_variation_history(event, ${variation.id})" data-bs-toggle="modal" data-bs-target="#modal_history" data-variation_name="${variation.sku} ${variation.product.model} ${storages[variation.storage] || ''} ${colors[variation.color] || ''} ${grades[variation.grade] || ''}">
+                                    <a href="javascript:void(0)" class="btn btn-link" id="variation_history_${variation.id}" onClick="show_variation_history(event, ${variation.id}, "${variation.sku} ${variation.product.model} ${storages[variation.storage] || ''} ${colors[variation.color] || ''} ${grades[variation.grade] || ''}")" data-bs-toggle="modal" data-bs-target="#modal_history">
                                         <i class="fas fa-history"></i>
                                     </a>
 
