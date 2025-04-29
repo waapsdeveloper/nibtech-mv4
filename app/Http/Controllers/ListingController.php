@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Admin_model;
 use App\Models\Color_model;
 use App\Models\Country_model;
 use App\Models\Customer_model;
@@ -333,7 +334,7 @@ class ListingController extends Controller
 
         $listed_stock_verifications->each(function($verification){
             $verification->process_ref = Process_model::find($verification->process_id)->reference_id ?? null;
-            $verification->admin = Customer_model::find($verification->admin_id)->first_name ?? null;
+            $verification->admin = Admin_model::find($verification->admin_id)->first_name ?? null;
         });
 
         return response()->json(['listed_stock_verifications'=>$listed_stock_verifications]);
