@@ -46,13 +46,17 @@ class SalesReturn extends Component
         $data['orders'] = Order_model::select(
             'orders.id',
             'orders.reference_id',
-            // DB::raw('SUM(order_items.price) as total_price'),
+            DB::raw('SUM(purchase_item.price) as total_price'),
             DB::raw('COUNT(order_items.id) as total_quantity'),
             DB::raw('COUNT(CASE WHEN stock.status = 1 THEN order_items.id END) as available_stock'),
             'orders.created_at')
         ->where('orders.order_type_id', 4)
         ->join('order_items', 'orders.id', '=', 'order_items.order_id')
         ->join('stock', 'order_items.stock_id', '=', 'stock.id')
+        ->join('order_items as purchase_item', function ($join) {
+            $join->on('purchase_item.order_id', '=', 'stock.order_id')
+             ->on('purchase_item.stock_id', '=', 'stock.id');
+        })
         ->when(request('start_date'), function ($q) {
             return $q->where('orders.created_at', '>=', request('start_date'));
         })
