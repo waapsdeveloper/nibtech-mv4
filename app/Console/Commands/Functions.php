@@ -137,7 +137,8 @@ class Functions extends Command
                 if($variation->product_id == null || $variation->storage == null){
                     continue;
                 }
-                $pss = Product_storage_sort_model::firstOrNew(['product_id'=>$variation->product_id,'storage'=>$variation->storage]);
+                $storage = $variation->storage ?? 0;
+                $pss = Product_storage_sort_model::firstOrNew(['product_id'=>$variation->product_id,'storage'=>$storage]);
                 if($pss->id == null){
                     $pss->save();
                 }
