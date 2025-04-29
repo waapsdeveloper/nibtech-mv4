@@ -203,9 +203,9 @@
                             <tr>
                                 <td>${item.process_ref}</td>
                                 <td>${item.pending_orders}</td>
-                                <td>${item.qty_before}</td>
-                                <td>${item.qty_added}</td>
-                                <td>${item.qty_after}</td>
+                                <td>${item.qty_from}</td>
+                                <td>${item.qty_change}</td>
+                                <td>${item.qty_to}</td>
                                 <td>${item.admin}</td>
                                 <td>${new Date(item.created_at).toGMTString()}</td>
                             </tr>`;
