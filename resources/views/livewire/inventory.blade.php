@@ -515,47 +515,46 @@
         </div>
 
 
-        <div class="modal" id="color_graded_count_modal">
-            <div class="modal-dialog modal-lg" role="document">
-                <div class="modal-content">
-                    <div class="modal-body pd-sm-40">
-                        <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
-                            type="button"><span aria-hidden="true">&times;</span></button>
-                        <h5 class="modal-title mg-b-5">Colored Graded Total</h5>
-                        <table class="table table-bordered table-hover mb-0 text-md-nowrap">
-                            <thead>
-                                <tr>
-                                    <th><small><b>No</b></small></th>
-                                    <th><small><b>Color</b></small></th>
-                                    <th><small><b>Grade</b></small></th>
-                                    <th><small><b>Quantity</b></small></th>
-                                    <th><small><b>Cost</b></small></th>
-                                </tr>
-                            </thead>
-                            <tbody id="color_graded_count_data">
-                                <tr>
-                                    {{-- <th><small><b>No</b></small></th> --}}
-                                    {{-- <th><b>Total</b></th>
-                                    <th><b>{{ $total }}</b></th> --}}
-                                </tr>
-                            </tbody>
+    @endif
 
-                            <tfoot id="color_graded_count_total">
-                                <tr>
-                                    {{-- <th><small><b>No</b></small></th> --}}
-                                    {{-- <th><b>Total</b></th>
-                                    <th><b>{{ $total }}</b></th> --}}
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
+    <div class="modal" id="color_graded_count_modal">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-body pd-sm-40">
+                    <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
+                        type="button"><span aria-hidden="true">&times;</span></button>
+                    <h5 class="modal-title mg-b-5">Colored Graded Total</h5>
+                    <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                        <thead>
+                            <tr>
+                                <th><small><b>No</b></small></th>
+                                <th><small><b>Color</b></small></th>
+                                <th><small><b>Grade</b></small></th>
+                                <th><small><b>Quantity</b></small></th>
+                                <th><small><b>Cost</b></small></th>
+                            </tr>
+                        </thead>
+                        <tbody id="color_graded_count_data">
+                            <tr>
+                                {{-- <th><small><b>No</b></small></th> --}}
+                                {{-- <th><b>Total</b></th>
+                                <th><b>{{ $total }}</b></th> --}}
+                            </tr>
+                        </tbody>
+
+                        <tfoot id="color_graded_count_total">
+                            <tr>
+                                {{-- <th><small><b>No</b></small></th> --}}
+                                {{-- <th><b>Total</b></th>
+                                <th><b>{{ $total }}</b></th> --}}
+                            </tr>
+                        </tfoot>
+                    </table>
                 </div>
             </div>
         </div>
-
     </div>
 
-    @endif
 @endsection
 
 @section('scripts')
