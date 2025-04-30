@@ -306,6 +306,15 @@
             <div class="card-header pb-0 d-flex justify-content-between">
                 <h4 class="card-title">Repair Received Stock History</h4>
                 <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$received_stocks->firstItem()}} {{ __('locale.To') }} {{$received_stocks->lastItem()}} {{ __('locale.Out Of') }} {{$received_stocks->total()}} </h5>
+                <div class=" mg-b-0">
+                    <select name="perPage" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()" form="search">
+                        <option value="10" {{ Request::get('per_page') == 10 ? 'selected' : '' }}>10</option>
+                        <option value="20" {{ Request::get('per_page') == 20 ? 'selected' : '' }}>20</option>
+                        <option value="50" {{ Request::get('per_page') == 50 ? 'selected' : '' }}>50</option>
+                        <option value="100" {{ Request::get('per_page') == 100 ? 'selected' : '' }}>100</option>
+                    </select>
+                </div>
+                        
             </div>
             <div class="card-body"><div class="table-responsive">
                 <table class="table table-bordered table-hover mb-0 text-md-nowrap">
@@ -429,7 +438,6 @@
                                             // print_r($order);
                                         @endphp
 
-                                        {{-- @foreach ($items as $itemIndex => $item) --}}
                                             <tr>
                                                     <td>{{ $i + 1 }}</td>
                                                     <td><a href="{{url('repair/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
@@ -448,10 +456,6 @@
                                                     </div>
                                                 </td>
                                             </tr>
-                                            {{-- @php
-                                                $j++;
-                                            @endphp
-                                        @endforeach --}}
                                         @php
                                             $i ++;
                                         @endphp
