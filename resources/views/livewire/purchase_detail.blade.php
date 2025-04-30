@@ -398,8 +398,16 @@
                                         {{ $summery['sold_stock_count'] > 0 ? $summery['sold_stock_count'] : '-' }}
                                         </a>
                                     </td>
-                                    <td>{{ $summery['repair_stock_count'] > 0 ? $summery['repair_stock_count'] : '-' }}</td>
-                                    <td title="RTG + Others">{{ $summery['available_stock_count'] > 0 ? $summery['available_stock_count'] : '-' }} </td>
+                                    <td>
+                                        <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#graded_count_modal" onclick="loadProductDetails({{$order_id}},{{$summery['pss_id']}},'repair')">
+                                        {{ $summery['repair_stock_count'] > 0 ? $summery['repair_stock_count'] : '-' }}
+                                        </a>
+                                    </td>
+                                    <td title="RTG + Others">
+                                        <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#graded_count_modal" onclick="loadProductDetails({{$order_id}},{{$summery['pss_id']}},'available')">
+                                        {{ $summery['available_stock_count'] > 0 ? $summery['available_stock_count'] : '-' }}
+                                        </a>
+                                    </td>
                                     <td>{{ $summery['wip_stock_count'] > 0 ? $summery['wip_stock_count'] : '-' }}</td>
                                     <td>
                                         <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#graded_count_modal" onclick="loadProductDetails({{$order_id}},{{$summery['pss_id']}},'rtg')">
