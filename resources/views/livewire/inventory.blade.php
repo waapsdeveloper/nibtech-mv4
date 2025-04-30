@@ -553,7 +553,7 @@
                     // Render the product details
                     products = productss['graded_count'];
 
-                    const productMenu = document.getElementById('count_data_2');
+                    const productMenu = document.getElementById('color_graded_count_data');
                     productMenu.innerHTML = ''; // Clear existing products
 
                     // Iterate through the products and create menu items
