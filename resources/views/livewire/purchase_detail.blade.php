@@ -647,7 +647,7 @@
                                                                     <label for="imei">IMEI</label>
                                                                 </div>
                                                                 <div class="form-floating">
-                                                                    <input type="text" list="variations" id="variation" name="variation" class="form-control" value="{{ $grouped_issue->name }}">
+                                                                    <input type="text" list="variations" id="variation" name="variation" class="form-control" value="">
                                                                     <datalist id="variations">
                                                                         <option value="">Select</option>
                                                                         @foreach ($all_variations as $variation)
