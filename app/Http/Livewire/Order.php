@@ -2087,6 +2087,7 @@ class Order extends Component
             }
         }
         if(request('add_imei') == 1){
+            $data = json_decode($issue->data);
             $imei = request('imei');
             $variation = request('variation');
             if($variation == null){
@@ -2103,7 +2104,6 @@ class Order extends Component
 
             }
 
-            $data = json_decode($issue->data);
             // echo $variation." ".$data->imei." ".$data->cost;
             if(isset($data->v_grade) && $data->v_grade){
                 $v_grade = Vendor_grade_model::where('name',$data->v_grade)->first()->id ?? null;
