@@ -524,6 +524,11 @@
                                 </tr>
                             </thead>
                             <tbody id="color_graded_count_data">
+                                <tr>
+                                    {{-- <th><small><b>No</b></small></th> --}}
+                                    {{-- <th><b>Total</b></th>
+                                    <th><b>{{ $total }}</b></th> --}}
+                                </tr>
                             </tbody>
 
                             <tfoot id="color_graded_count_total">
