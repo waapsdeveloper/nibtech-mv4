@@ -274,6 +274,7 @@ Route::get('sales/allowed', [Order::class,'sales_allowed'])->name('dispatch_admi
 Route::post('order/dispatch_allowed/{id}', [Order::class,'dispatch_allowed'])->name('dispatch_admin');
 
 Route::get('inventory', Inventory::class)->name('view_inventory');
+Route::get('inventory/color_graded_count/{id}', [Inventory::class,'color_graded_count'])->name('view_inventory');
 Route::get('inventory/get_products', [Inventory::class,'get_products'])->name('view_inventory');
 Route::get('inventory/get_variations/{id}', [Inventory::class,'get_variations'])->name('view_inventory');
 Route::get('inventory/inventory_get_vendor_wise_average', [Inventory::class, 'inventoryGetVendorWiseAverage'])->name('view_inventory');
