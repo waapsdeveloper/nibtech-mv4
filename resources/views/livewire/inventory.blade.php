@@ -352,7 +352,7 @@
 
                                 @endphp
                                 <tr>
-                                    <td>{{ ++$i }}</td
+                                    <td>{{ ++$i }}</td>
                                     <td><button class="btn py-0 btn-link" type="submit" form="search_summery"
                                             name="pss"
                                             value="{{ $summery['pss_id'] }}">{{ $summery['model'] }}</button>
