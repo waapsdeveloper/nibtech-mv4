@@ -350,7 +350,9 @@
                             <tr>
                                 <td>{{ ++$i }}</td>
                                 {{-- <td>{{ $products[$summery['product_id']]." ".$storage }}</td> --}}
-                                <td><button class="btn py-0 btn-link" type="submit" form="search_summery" name="pss" value="{{$summery['pss_id']}}">{{ $summery['model'] }}</button></td>
+                                <td><button class="btn py-0 btn-link" type="submit" form="search_summery" name="pss" value="{{$summery['pss_id']}}">{{ $summery['model'] }}</button>
+                                <button class="btn py-0 btn-link" type="button" data-bs-toggle="modal" data-bs-target="#color_graded_count_modal" onclick="load_color_graded_count({{$summery['pss_id']}},{{$summery['product_id']}})">{{ $summery['color'] }}</button>
+                                </td>
                                 <td title="{{json_encode($summery['stock_ids'])}}"><a id="test{{$i}}" href="javascript:void(0)">{{ $summery['quantity'] }}</a>
                                 @if ($duplicates)
                                     <span class="badge badge-danger">{{ $duplicate_count }} Duplicate</span>
@@ -390,7 +392,7 @@
         </div>
         @else
 
-        <div class="row">
+        <div class="">
             <div>
                 <div class="card">
                     <div class="card-header pb-0">
@@ -501,46 +503,35 @@
             </div>
         </div>
 
-        <div class="modal" id="modaldemo">
-            <div class="modal-dialog wd-xl-400" role="document">
+
+        <div class="modal" id="color_graded_count_modal">
+            <div class="modal-dialog modal-lg" role="document">
                 <div class="modal-content">
                     <div class="modal-body pd-sm-40">
                         <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
                             type="button"><span aria-hidden="true">&times;</span></button>
-                        <h5 class="modal-title mg-b-5">Add Product</h5>
-                        <hr>
-                        <form action="{{ url('add_product') }}" method="POST">
-                            @csrf
-                            <div class="form-group">
-                                <label for="">Category</label>
-                                <select class="form-select" placeholder="Input Category" name="product[category]" required>
-                                    <option>Select Category</option>
-                                    @foreach ($categories as $category)
-                                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                        <h5 class="modal-title mg-b-5">Colored Graded Total</h5>
+                        <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                            <thead>
+                                <tr>
+                                    <th><small><b>No</b></small></th>
+                                    <th><small><b>Color</b></small></th>
+                                    <th><small><b>Grade</b></small></th>
+                                    <th><small><b>Quantity</b></small></th>
+                                    <th><small><b>Cost</b></small></th>
+                                </tr>
+                            </thead>
+                            <tbody id="count_data_2">
+                            </tbody>
 
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="">Brand</label>
-                                <select class="form-select" placeholder="Input Brand" name="product[brand]" required>
-                                    <option>Select Brand</option>
-                                    @foreach ($brands as $brand)
-                                        <option value="{{ $brand->id }}">{{ $brand->name }}</option>
-
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="">Model</label>
-                                <input class="form-control" placeholder="Input Model" name="product[model]" type="text" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="">Description</label>
-                                <textarea class="form-control" placeholder="Input Description" name="product[description]"></textarea>
-                            </div>
-                            <button class="btn btn-primary btn-block">{{ __('locale.Submit') }}</button>
-                        </form>
+                            <tfoot id="color_graded_count_data">
+                                <tr>
+                                    {{-- <th><small><b>No</b></small></th> --}}
+                                    {{-- <th><b>Total</b></th>
+                                    <th><b>{{ $total }}</b></th> --}}
+                                </tr>
+                            </tfoot>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -551,6 +542,73 @@
 
     @section('scripts')
         <script>
+            function load_color_graded_count(orderId, productId) {
+
+                    fetch(`{{ url('inventory') }}/color_graded_count/${productId}`)
+                .then(response => response.json())
+                .then(productss => {
+                    console.log(productss);
+                    // Render the product details
+                    products = productss['graded_count'];
+
+                    const productMenu = document.getElementById('count_data_2');
+                    productMenu.innerHTML = ''; // Clear existing products
+
+                    // Iterate through the products and create menu items
+                    for (const [key, product] of Object.entries(products)) {
+                        const productDiv = document.createElement('tr');
+                        // console.log(product);
+                        const productLink1 = document.createElement('td');
+                        productLink1.innerHTML = `${product.color}`;
+                        productDiv.appendChild(productLink1);
+
+                        const productLink = document.createElement('td');
+                        productLink.innerHTML = `${product.grade}`;
+                        productDiv.appendChild(productLink);
+
+
+                        const productLink2 = document.createElement('td');
+                        productLink2.innerHTML = `${product.quantity}`;
+                        productDiv.appendChild(productLink2);
+
+                        const productLink3 = document.createElement('td');
+                        productLink3.title = "Average : " + product.average_cost;
+                        productLink3.innerHTML = `${product.total_cost}`;
+                        productDiv.appendChild(productLink3);
+
+
+                        productMenu.appendChild(productDiv);
+                    };
+
+                    // Calculate totals
+
+                    const totals = productss['total_graded_count'];
+
+                    const productMenuFooter = document.getElementById('count_data_2_footer');
+                    productMenuFooter.innerHTML = ''; // Clear existing products
+                    const productDiv2 = document.createElement('tr');
+
+                    const productLink1 = document.createElement('th');
+                    productLink1.setAttribute('colspan', '2');
+                    productLink1.innerHTML = `Total`;
+                    productDiv2.appendChild(productLink1);
+
+                    const productLink2 = document.createElement('th');
+                    productLink2.innerHTML = `${totals.quantity}`;
+                    productDiv2.appendChild(productLink2);
+
+                    const productLink3 = document.createElement('th');
+                    productLink3.title = "Average : " + totals.average_cost;
+                    productLink3.innerHTML = `${totals.total_cost}`;
+                    productDiv2.appendChild(productLink3);
+
+
+                    productMenuFooter.appendChild(productDiv2);
+
+
+                })
+                .catch(error => console.error('Error fetching product details:', error));
+            }
             function PrintElem(elem)
             {
                 var mywindow = window.open('', 'PRINT', 'height=400,width=600');

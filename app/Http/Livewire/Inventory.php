@@ -441,6 +441,57 @@ class Inventory extends Component
         return response()->json($variation);
     }
 
+    public function color_graded_count($pss_id){
+        $pss = Product_storage_sort_model::find($pss_id);
+        $variations = $pss->variations;
+        $stocks = $pss->stocks->where('status', 1);
+        $all_po = Order_model::where('order_type_id', 1)->pluck('id')->toArray();
+        $grades = Grade_model::pluck('name', 'id');
+        $colors = Color_model::whereIn('id', $variations->pluck('color'))->pluck('name', 'id');
+        $graded_count = [];
+
+        $total_graded_count = [
+            'quantity' => 0,
+            'total_cost' => 0,
+            'average_cost' => 0,
+        ];
+
+        foreach ($colors as $color_id => $color) {
+            foreach ($grades as $grade_id => $grade) {
+                $graded_variations = $variations->where('grade', $grade_id)->where('color', $color_id);
+                $graded_stock_ids = $stocks->whereIn('variation_id', $graded_variations->pluck('id'))->pluck('id')->toArray();
+                $total_cost = Order_item_model::whereIn('stock_id', $graded_stock_ids)->whereIn('order_id', $all_po)->sum('price');
+                $average_cost = $graded_stock_ids ? $total_cost / count($graded_stock_ids) : 0;
+
+                if (count($graded_stock_ids) == 0) {
+                    continue;
+                }
+                $graded_count[$color_id . '.' . $grade_id] = [
+                    'quantity' => count($graded_stock_ids),
+                    'grade' => $grade,
+                    'grade_id' => $grade_id,
+                    'color' => $color,
+                    'color_id' => $color_id,
+                    'stock_ids' => $graded_stock_ids,
+                    'total_cost' => $total_cost,
+                    'average_cost' => $average_cost,
+                ];
+                $total_graded_count['quantity'] += count($graded_stock_ids);
+                $total_graded_count['total_cost'] += $total_cost;
+                $total_graded_count['average_cost'] += $average_cost;
+            }
+        }
+
+        $data['graded_count'] = $graded_count;
+
+        $data['total_graded_count'] = [
+            'quantity' => $total_graded_count['quantity'],
+            'total_cost' => amount_formatter($total_graded_count['total_cost']),
+            'average_cost' => amount_formatter($total_graded_count['average_cost']),
+        ];
+
+        return response()->json($data);
+    }
 
     public function inventoryGetVendorWiseAverage(){
 
