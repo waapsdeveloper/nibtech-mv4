@@ -196,6 +196,7 @@
                 @endif
             </div>
             <div class="">
+                <a href="{{ url('purchase/export').'/'.$order->id }}?sheet=2" class="btn btn-link"><i class="fa fa-file-excel"></i></a>
                 @if (request('summery'))
                     <button class="btn btn-sm btn-secondary" id="print_btn" onclick="PrintElem('print_inv')"><i class="fa fa-print"></i></button>
                 @endif
@@ -828,28 +829,13 @@
                                                     </tr>
                                                 @endforeach
                                             </tbody>
-                                            {{-- @if (session('user')->hasPermission('delete_purchase_item_group'))
-                                            <tfoot>
-                                                <tr>
-                                                    <td colspan="4">
-                                                        <button class="btn btn-danger" onclick="deleteAll('{{ implode(',', $ids) }}')">Delete All</button>
-                                                    </td>
-                                                </tr>
-                                            </tfoot>
-                                            @endif --}}
                                         </table>
                                     <br>
                                 </div>
-                                {{-- <div class="card-footer"> --}}
-                                    {{-- <button class="btn btn-primary" onclick="PrintElem('print_{{ $variation->id }}')">Print</button> --}}
-                                    {{-- <button class="btn btn-primary" onclick="loadProductDetails({{$order_id}},{{$variation->id}})">Load</button> --}}
-                                    {{-- <button class="btn btn-primary" onclick="loadProductDetails({{$order_id}},{{$variation->id}})">Load</button> --}}
-                                    {{-- <a href="{{ url('purchase') }}/purchase_model_graded_count/{{$order_id}}/{{$variation->id}}" class="btn btn-primary">Load</a> --}}
                                     @if (session('user')->hasPermission('view_cost') && count($prices)>0)
                                         <div class="text-end">Average Cost: {{array_sum($prices)/count($prices) }} &nbsp;&nbsp;&nbsp; Total: {{$i }}</div>
                                     @endif
 
-                                {{-- <div class="text-end">Average Cost: {{array_sum($prices)/count($prices) }} &nbsp;&nbsp;&nbsp; Total: {{$i }}</div> --}}
                                 </div>
                             </div>
                         </div>
