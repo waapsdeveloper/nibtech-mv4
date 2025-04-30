@@ -52,10 +52,11 @@ class PurchasesheetExport implements FromCollection, WithHeadings
         })
         ->leftJoin('admin', 'stock_operations.admin_id', '=', 'admin.id')
 
-        // <?php
-        // ...
+
         ->select(
             DB::raw('CONCAT(products.model, " ", COALESCE(storage.name, "")) as model_storage'),
+            // 'products.model',
+            // 'storage.name as storage',
             'color.name as color',
             'grade.name as grade_name',
             'sub.name as sub_grade',
@@ -65,8 +66,9 @@ class PurchasesheetExport implements FromCollection, WithHeadings
             'orders.created_at as po_date',
             'customer.first_name as vendor',
             'vendor_grade.name as vendor_grade',
-            DB::raw('GROUP_CONCAT(DISTINCT s_orders.reference_id SEPARATOR ", ") as orders'),
-            DB::raw('GROUP_CONCAT(DISTINCT process.reference_id SEPARATOR ", ") as process'),
+            // all s_orders reference_id separated by comma
+            // DB::raw('GROUP_CONCAT(DISTINCT s_orders.reference_id SEPARATOR ", ") as orders'),
+            // DB::raw('GROUP_CONCAT(DISTINCT process.reference_id SEPARATOR ", ") as process'),
             DB::raw('TRIM(BOTH " " FROM UPPER(
                 TRIM(LEADING "Battery | " FROM TRIM(LEADING " | " FROM REPLACE(
                     REPLACE(
@@ -93,13 +95,17 @@ class PurchasesheetExport implements FromCollection, WithHeadings
                     " | DrPhone", ""),
                 "BCC", "Battery Cycle Count")))
             )) as old_issue'),
+            // 'stock_operations.description as issue',
+            // 'old_operations.description as old_issue',
             'admin.first_name as admin',
+            // 'order_items.price as price'
+            // Conditional price based on invoice flag
             $this->invoice == 1
-                ? DB::raw('order_items.price * orders.exchange_rate as price')
+                ? DB::raw('order_items.price * orders.exchange_rate as price') // Use exchange rate if invoice = 1
                 : 'order_items.price as price'
         )
         ->where('orders.id', request('id'))
-        ->where('orders.deleted_at', null)
+        ->where('orders.deleted_at',null)
         ->where('order_items.deleted_at', null)
         ->where('stock.deleted_at', null)
         ->where('stock_operations.deleted_at', null)
@@ -107,89 +113,9 @@ class PurchasesheetExport implements FromCollection, WithHeadings
         ->where('s_orders.deleted_at', null)
         ->where('process_stock.deleted_at', null)
         ->where('process.deleted_at', null)
-        ->groupBy(
-            'products.model',
-            'storage.name',
-            'color.name',
-            'grade.name',
-            'sub.name',
-            'stock.imei',
-            'stock.serial_number',
-            'orders.reference_id',
-            'orders.created_at',
-            'customer.first_name',
-            'vendor_grade.name',
-            'admin.first_name',
-            'order_items.price',
-            'orders.exchange_rate'
-        )
         ->orderBy('products.model', 'ASC')
         ->orderBy('storage.name', 'ASC')
         ->get();
-        // ...
-        // ->select(
-        //     DB::raw('CONCAT(products.model, " ", COALESCE(storage.name, "")) as model_storage'),
-        //     // 'products.model',
-        //     // 'storage.name as storage',
-        //     'color.name as color',
-        //     'grade.name as grade_name',
-        //     'sub.name as sub_grade',
-        //     'stock.imei as imei',
-        //     'stock.serial_number as serial_number',
-        //     'orders.reference_id as po',
-        //     'orders.created_at as po_date',
-        //     'customer.first_name as vendor',
-        //     'vendor_grade.name as vendor_grade',
-        //     // all s_orders reference_id separated by comma
-        //     DB::raw('GROUP_CONCAT(DISTINCT s_orders.reference_id SEPARATOR ", ") as orders'),
-        //     DB::raw('GROUP_CONCAT(DISTINCT process.reference_id SEPARATOR ", ") as process'),
-        //     DB::raw('TRIM(BOTH " " FROM UPPER(
-        //         TRIM(LEADING "Battery | " FROM TRIM(LEADING " | " FROM REPLACE(
-        //             REPLACE(
-        //                 REPLACE(
-        //                     REPLACE(
-        //                         REPLACE(
-        //                             REPLACE(stock_operations.description, "TG", ""),
-        //                         "Cover", ""),
-        //                     "5D", ""),
-        //                 "Dual-Esim", ""),
-        //             " | DrPhone", ""),
-        //         "BCC", "Battery Cycle Count")))
-        //     )) as issue'),
-        //     DB::raw('TRIM(BOTH " " FROM UPPER(
-        //         TRIM(LEADING "Battery | " FROM TRIM(LEADING " | " FROM REPLACE(
-        //             REPLACE(
-        //                 REPLACE(
-        //                     REPLACE(
-        //                         REPLACE(
-        //                             REPLACE(old_operations.description, "TG", ""),
-        //                         "Cover", ""),
-        //                     "5D", ""),
-        //                 "Dual-Esim", ""),
-        //             " | DrPhone", ""),
-        //         "BCC", "Battery Cycle Count")))
-        //     )) as old_issue'),
-        //     // 'stock_operations.description as issue',
-        //     // 'old_operations.description as old_issue',
-        //     'admin.first_name as admin',
-        //     // 'order_items.price as price'
-        //     // Conditional price based on invoice flag
-        //     $this->invoice == 1
-        //         ? DB::raw('order_items.price * orders.exchange_rate as price') // Use exchange rate if invoice = 1
-        //         : 'order_items.price as price'
-        // )
-        // ->where('orders.id', request('id'))
-        // ->where('orders.deleted_at',null)
-        // ->where('order_items.deleted_at', null)
-        // ->where('stock.deleted_at', null)
-        // ->where('stock_operations.deleted_at', null)
-        // ->where('old_operations.deleted_at', null)
-        // ->where('s_orders.deleted_at', null)
-        // ->where('process_stock.deleted_at', null)
-        // ->where('process.deleted_at', null)
-        // ->orderBy('products.model', 'ASC')
-        // ->orderBy('storage.name', 'ASC')
-        // ->get();
 
         return $data;
     }
