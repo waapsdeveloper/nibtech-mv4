@@ -112,7 +112,7 @@ Route::get('purchase/purchase_model_color_graded_sale/{order_id}/{pss_id}', [Ord
 Route::post('purchase/approve/{id}', [Order::class,'purchase_approve'])->name('purchase_approve');
 Route::get('purchase/revert_status/{id}', [Order::class,'purchase_revert_status'])->name('purchase_revert_status');
 Route::post('purchase/remove_issues', [Order::class,'remove_issues'])->name('remove_purchase_issues');
-Route::post('purchase/export/{id}', [Order::class,'export_purchase_sheet'])->name('export_purchase_sheet');
+Route::get('purchase/export/{id}', [Order::class,'export_purchase_sheet'])->name('export_purchase_sheet');
 
 Route::get('report_new', [ReportController::class, 'index'])->name('view_report');
 

@@ -1568,7 +1568,7 @@ class Order extends Component
                 array_pop($names);
                 $n = implode(" ", $names);
             }else{
-                $gb = null;
+                $gb = 0;
             }
 
             if(trim($d[$imei]) == ''){
