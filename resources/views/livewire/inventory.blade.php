@@ -351,7 +351,9 @@
                                 <td>{{ ++$i }}</td>
                                 {{-- <td>{{ $products[$summery['product_id']]." ".$storage }}</td> --}}
                                 <td><button class="btn py-0 btn-link" type="submit" form="search_summery" name="pss" value="{{$summery['pss_id']}}">{{ $summery['model'] }}</button>
-                                <button class="btn py-0 btn-link" type="button" data-bs-toggle="modal" data-bs-target="#color_graded_count_modal" onclick="load_color_graded_count({{$summery['pss_id']}})">
+                                <button class="btn py-0 btn-link" type="button" data-bs-toggle="modal" data-bs-target="#color_graded_count_modal"
+                                 {{-- onclick="load_color_graded_count({{$summery['pss_id']}})" --}}
+                                 >
                                     <i class="fa fa-eye"></i>
                                 </button>
                                 </td>
