@@ -23,6 +23,7 @@ class PurchasesheetExport implements FromCollection, WithHeadings
         $data = DB::table('orders')
         ->leftJoin('customer', 'orders.customer_id', '=', 'customer.id')
         ->leftJoin('order_items', 'orders.id', '=', 'order_items.order_id')
+        ->leftJoin('vendor_grade', 'order_items.reference_id', '=', 'vendor_grade.id')
         ->leftJoin('stock', 'order_items.stock_id', '=', 'stock.id')
         ->leftJoin('variation', 'order_items.variation_id', '=', 'variation.id')
         ->leftJoin('products', 'variation.product_id', '=', 'products.id')
@@ -37,6 +38,7 @@ class PurchasesheetExport implements FromCollection, WithHeadings
         ->leftJoin('orders as s_orders', 's_item.order_id', '=', 's_orders.id')
         ->leftJoin('process_stock', 'stock.id', '=', 'process_stock.stock_id')
         ->leftJoin('process', 'process_stock.process_id', '=', 'process.id')
+
         ->leftJoin('stock_operations', function ($join) {
             $join->on('stock.id', '=', 'stock_operations.stock_id')
                  ->where('stock_operations.new_variation_id', '=', DB::raw('variation.id'))
