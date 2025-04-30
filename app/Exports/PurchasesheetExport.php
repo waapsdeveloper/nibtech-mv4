@@ -113,9 +113,6 @@ class PurchasesheetExport implements FromCollection, WithHeadings
         ->where('s_orders.deleted_at', null)
         ->where('process_stock.deleted_at', null)
         ->where('process.deleted_at', null)
-        ->where('admin.deleted_at', null)
-        ->where('customer.deleted_at', null)
-        ->where('vendor_grade.deleted_at', null)
         ->orderBy('products.model', 'ASC')
         ->orderBy('storage.name', 'ASC')
         ->get();
