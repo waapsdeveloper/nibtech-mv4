@@ -307,7 +307,7 @@
                 <h4 class="card-title">Repair Received Stock History</h4>
                 <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$received_stocks->firstItem()}} {{ __('locale.To') }} {{$received_stocks->lastItem()}} {{ __('locale.Out Of') }} {{$received_stocks->total()}} </h5>
                 <div class=" mg-b-0">
-                    <select name="perPage" class="form-select form-select-sm" id="per_page" onchange="this.form.submit()" form="search">
+                    <select name="per_page" class="form-select form-select-sm" id="per_page" onchange="this.form.submit()" form="search">
                         <option value="20" {{ Request::get('per_page') == 20 ? 'selected' : '' }}>20</option>
                         <option value="50" {{ Request::get('per_page') == 50 ? 'selected' : '' }}>50</option>
                         <option value="100" {{ Request::get('per_page') == 100 ? 'selected' : '' }}>100</option>
