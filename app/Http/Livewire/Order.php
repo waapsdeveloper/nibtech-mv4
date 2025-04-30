@@ -1433,13 +1433,20 @@ class Order extends Component
 
         return response()->json($data);
     }
-    public function purchase_model_graded_count($order_id, $pss_id){
+    public function purchase_model_graded_count($order_id, $pss_id, $s_type = null){
         $pss = Product_storage_sort_model::find($pss_id);
         $stocks = $pss->stocks->where('order_id',$order_id);
         $grades = Grade_model::pluck('name','id');
+        if($s_type == 'rtg'){
+            $grades = Grade_model::whereIn('id',[1,2,3,4,5,7])->pluck('name','id');
+        }
+
         foreach($grades as $grade_id => $grade){
             $graded_variations = $pss->variations->where('grade',$grade_id);
             $data['graded_count'][$grade_id]['quantity'] = $stocks->whereIn('variation_id',$graded_variations->pluck('id'))->count();
+            if($s_type == 'sold'){
+                $data['graded_count'][$grade_id]['quantity'] = $stocks->whereIn('variation_id',$graded_variations->pluck('id'))->where('status',2)->count();
+            }
             $data['graded_count'][$grade_id]['grade'] = $grade;
             $data['graded_count'][$grade_id]['grade_id'] = $grade_id;
         }
