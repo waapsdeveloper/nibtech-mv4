@@ -1848,7 +1848,7 @@ class Order extends Component
         }
 
         if($variation == null){
-            session()->put('error', 'Variation Not Found'. $variation_id);
+            session()->put('error', 'Variation Not Found '. $variation_id);
             if($return == null){
                 return redirect()->back();
             }else{
@@ -2063,7 +2063,7 @@ class Order extends Component
                 foreach($issues as $issue){
                     $data = json_decode($issue->data);
                     // echo $variation." ".$data->imei." ".$data->cost;
-                    $gb = array_search($data->storage,$storages);
+                    $gb = array_search($data->storage,$storages) ?? 0;
                     if(isset($data->color)){
                         $clr = array_search($data->color,$colors) ?? null;
                     }else{
