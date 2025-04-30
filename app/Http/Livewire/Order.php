@@ -1440,12 +1440,22 @@ class Order extends Component
         if($s_type == 'rtg'){
             $grades = Grade_model::whereIn('id',[1,2,3,4,5,7])->pluck('name','id');
         }
+        if($s_type == 'sold' || $s_type == 'repair'){
+            $processes = Process_model::where('process_type_id', 9)->where('status', '<', 3)->pluck('id');
+            $process_stocks = Process_stock_model::whereIn('process_id', $processes)->where('status', 1)->whereIn('stock_id', $stocks->pluck('id'))->pluck('stock_id')->toArray();
+        }
 
         foreach($grades as $grade_id => $grade){
             $graded_variations = $pss->variations->where('grade',$grade_id);
-            $data['graded_count'][$grade_id]['quantity'] = $stocks->whereIn('variation_id',$graded_variations->pluck('id'))->count();
+
             if($s_type == 'sold'){
-                $data['graded_count'][$grade_id]['quantity'] = $stocks->whereIn('variation_id',$graded_variations->pluck('id'))->where('status',2)->count();
+                $data['graded_count'][$grade_id]['quantity'] = $stocks->whereIn('variation_id',$graded_variations->pluck('id'))->where('status',2)->whereNotIn('id',$process_stocks)->count();
+            }elseif($s_type == 'repair'){
+                $data['graded_count'][$grade_id]['quantity'] = $stocks->whereIn('variation_id',$graded_variations->pluck('id'))->where('status',2)->whereIn('id',$process_stocks)->count();
+            }elseif($s_type == 'available'){
+                $data['graded_count'][$grade_id]['quantity'] = $stocks->whereIn('variation_id',$graded_variations->pluck('id'))->where('status',1)->count();
+            }else{
+                $data['graded_count'][$grade_id]['quantity'] = $stocks->whereIn('variation_id',$graded_variations->pluck('id'))->count();
             }
             $data['graded_count'][$grade_id]['grade'] = $grade;
             $data['graded_count'][$grade_id]['grade_id'] = $grade_id;
