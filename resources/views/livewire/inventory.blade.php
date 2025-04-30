@@ -177,7 +177,7 @@
                     .then(products => {
                         const productMenu = document.getElementById('product-menu');
                         productMenu.innerHTML =
-                        '<option value="">Model</option>'; // Clear existing variation menu items
+                            '<option value="">Model</option>'; // Clear existing variation menu items
 
                         products.forEach(product => {
                             const productLink = document.createElement('option');
@@ -353,7 +353,8 @@
                                 @endphp
                                 <tr>
                                     <td>{{ ++$i }}</td>
-                                    <td><button class="btn py-0 btn-link" type="submit" form="search_summery"
+                                    <td>
+                                        <button class="btn py-0 btn-link" type="submit" form="search_summery"
                                             name="pss"
                                             value="{{ $summery['pss_id'] }}">{{ $summery['model'] }}</button>
                                         <button class="btn py-0 btn-link" type="button" data-bs-toggle="modal"
@@ -361,11 +362,13 @@
                                             <i class="fa fa-eye"></i>
                                         </button>
                                     </td>
-                                    <td title="{{ json_encode($summery['stock_ids']) }}"><a id="test{{ $i }}"
+                                    <td title="{{ json_encode($summery['stock_ids']) }}">
+                                        <a id="test{{ $i }}"
                                             href="javascript:void(0)">{{ $summery['quantity'] }}</a>
                                         @if ($duplicates)
                                             <span class="badge badge-danger">{{ $duplicate_count }} Duplicate</span>
                                         @endif
+                                    </td>
                                     <td title="{{ amount_formatter($summery['total_cost'] / $summery['quantity']) }}">
                                         {{ amount_formatter($summery['total_cost'], 2) }}</td>
                                 </tr>
@@ -393,7 +396,8 @@
                                 <td colspan="2"><b>Total</b></td>
                                 <td><b>{{ $total_quantity }}</b></td>
                                 <td title="{{ amount_formatter($total_cost / $total_quantity, 2) }}">
-                                    <b>{{ amount_formatter($total_cost, 2) }}</b></td>
+                                    <b>{{ amount_formatter($total_cost, 2) }}</b>
+                                </td>
                             </tr>
                         </tfoot>
 
@@ -425,12 +429,11 @@
                                             20</option>
                                         <option value="50" {{ Request::get('per_page') == 50 ? 'selected' : '' }}>
                                             50</option>
-                                        <option value="100"
-                                            {{ Request::get('per_page') == 100 ? 'selected' : '' }}>100</option>
+                                        <option value="100" {{ Request::get('per_page') == 100 ? 'selected' : '' }}>100
+                                        </option>
                                     </select>
                                     {{-- <button type="submit">Apply</button> --}}
-                                    <input type="hidden" name="replacement"
-                                        value="{{ Request::get('replacement') }}">
+                                    <input type="hidden" name="replacement" value="{{ Request::get('replacement') }}">
                                     <input type="hidden" name="category" value="{{ Request::get('category') }}">
                                     <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
                                     <input type="hidden" name="product" value="{{ Request::get('product') }}">
@@ -659,7 +662,7 @@
             mywindow.document.write('<html><head>');
             mywindow.document.write(
                 `<link rel="stylesheet" href="{{ asset('assets/plugins/bootstrap/css/bootstrap.min.css') }}" type="text/css" />`
-                );
+            );
             mywindow.document.write(
                 `<link rel="stylesheet" href="{{ asset('assets/css/style.css') }}" type="text/css" />`);
             mywindow.document.write('<title>' + document.title + '</title></head><body >');
@@ -727,7 +730,7 @@
                     data.vendor_average_cost.forEach(function(v_cost) {
                         total += v_cost.total_qty;
                         vendor_name = vendors[v_cost.customer_id] ??
-                        "Vendor Type Not Defined Correctly";
+                            "Vendor Type Not Defined Correctly";
                         vendorWiseAverage +=
                             `${vendor_name}: ${parseFloat(v_cost.average_price).toFixed(2)} x ${v_cost.total_qty} = ${parseFloat(v_cost.total_price).toFixed(2)} (${parseFloat((v_cost.total_qty / total_stocks) * 100).toFixed(2)}%) || `;
                     });
