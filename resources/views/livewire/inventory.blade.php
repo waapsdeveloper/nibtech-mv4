@@ -523,10 +523,10 @@
                                     <th><small><b>Cost</b></small></th>
                                 </tr>
                             </thead>
-                            <tbody id="count_data_2">
+                            <tbody id="color_graded_count_data">
                             </tbody>
 
-                            <tfoot id="color_graded_count_data">
+                            <tfoot id="color_graded_count_total">
                                 <tr>
                                     {{-- <th><small><b>No</b></small></th> --}}
                                     {{-- <th><b>Total</b></th>
@@ -586,7 +586,7 @@
 
                     const totals = productss['total_graded_count'];
 
-                    const productMenuFooter = document.getElementById('count_data_2_footer');
+                    const productMenuFooter = document.getElementById('color_graded_count_total');
                     productMenuFooter.innerHTML = ''; // Clear existing products
                     const productDiv2 = document.createElement('tr');
 
