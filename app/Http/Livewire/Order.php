@@ -2089,6 +2089,20 @@ class Order extends Component
         if(request('add_imei') == 1){
             $imei = request('imei');
             $variation = request('variation');
+            if($variation == null){
+                $product_id = Products_model::where('model', $data->name)->first()->id;
+                if($product_id == null){
+                    session()->put('error', 'Product Not Found');
+                    return redirect()->back();
+                }
+                $storage = Storage_model::where('name', $data->storage)->first()->id ?? 0;
+                $color = Color_model::where('name', $data->color)->first()->id ?? null;
+                $variation = Variation_model::firstOrNew(['product_id' => $product_id, 'grade' => 9, 'storage' => $storage, 'color' => $color]);
+                $variation->save();
+                $variation = $variation->id;
+
+            }
+
             $data = json_decode($issue->data);
             // echo $variation." ".$data->imei." ".$data->cost;
             if(isset($data->v_grade) && $data->v_grade){
