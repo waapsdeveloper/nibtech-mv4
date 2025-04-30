@@ -43,9 +43,6 @@
         <div class="row">
 
             <div class="col-md col-sm-2">
-                {{-- <div class="card-header">
-                        <h4 class="card-title mb-1">Category</h4>
-                    </div> --}}
                 <select name="category" class="form-control form-select" data-bs-placeholder="Select Category"
                     onchange="selectCategory(this.value)">
                     <option value="">Category</option>
@@ -56,9 +53,6 @@
                 </select>
             </div>
             <div class="col-md col-sm-2">
-                {{-- <div class="card-header">
-                        <h4 class="card-title mb-1">Brand</h4>
-                    </div> --}}
                 <select name="brand" class="form-control form-select" data-bs-placeholder="Select Brand"
                     onchange="selectBrand(this.value)">
                     <option value="">Brand</option>
@@ -69,9 +63,6 @@
                 </select>
             </div>
             <div class="col-md col-sm-3">
-                {{-- <div class="card-header">
-                        <h4 class="card-title mb-1">Model</h4>
-                    </div> --}}
                 <div class="form-floating">
                     <input type="text" name="product" value="{{ Request::get('product') }}" class="form-control"
                         data-bs-placeholder="Select Model" list="product-menu">
@@ -95,9 +86,6 @@
             </div>
 
             <div class="col-md col-sm-2">
-                {{-- <div class="card-header">
-                        <h4 class="card-title mb-1">Storage</h4>
-                    </div> --}}
                 <select name="storage" class="form-control form-select">
                     <option value="">Storage</option>
                     @foreach ($storages as $id => $name)
@@ -107,9 +95,6 @@
                 </select>
             </div>
             <div class="col-md col-sm-2">
-                {{-- <div class="card-header">
-                        <h4 class="card-title mb-1">Storage</h4>
-                    </div> --}}
                 <select name="color" class="form-control form-select">
                     <option value="">Color</option>
                     @foreach ($colors as $id => $name)
@@ -119,9 +104,6 @@
                 </select>
             </div>
             <div class="col-md-3 col-sm-2">
-                {{-- <div class="card-header">
-                        <h4 class="card-title mb-1">Grade</h4>
-                    </div> --}}
                 <select name="grade[]" class="form-control form-select select2" multiple>
                     <option value="">Grade</option>
                     @foreach ($grades as $id => $name)
@@ -160,19 +142,10 @@
                 document.addEventListener('DOMContentLoaded', function() {
                     selectBrand({{ request('brand') }})
                 })
-                // @if (request('product'))
-                //     document.addEventListener('DOMContentLoaded', function() {
-                //         selectProduct({{ request('product') }})
-                //     })
-                // @endif
             @endif
         @else
             let selectedCategoryId = null;
         @endif
-
-        // const colorData = {!! json_encode($colors) !!};
-        // const storageData = {!! json_encode($storages) !!};
-        // const gradeData = {!! json_encode($grades) !!};
 
         function selectCategory(categoryId) {
             selectedCategoryId = categoryId;
@@ -247,14 +220,6 @@
     @if (session('user')->hasPermission('view_inventory_summery') && request('summery') != 1)
         @if (session('user')->hasPermission('view_cost') && $stocks->count() > 0)
             <div class="" id="vendor_wise_average">
-                {{-- Vendor wise average:
-                @foreach ($vendor_average_cost as $v_cost)
-                    {{ $vendors[$v_cost->customer_id] ?? "Vendor Type Not Defined Correctly" }}:
-                    {{ amount_formatter($v_cost->average_price,2) }} x
-                    {{ $v_cost->total_qty }} =
-                    {{ amount_formatter($v_cost->total_price,2) }} ({{amount_formatter($v_cost->total_qty/$stocks->total()*100,2)}}%) ||
-
-                @endforeach --}}
             </div>
         @endif
     @endif
@@ -417,7 +382,6 @@
                     </table>
                 </div>
             </div>
-            
         @else
             <div class="">
                 <div>
@@ -595,7 +559,7 @@
                     </div>
                 </div>
             </div>
-
+            
 
     @endif
 @endsection
