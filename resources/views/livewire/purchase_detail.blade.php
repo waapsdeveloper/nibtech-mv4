@@ -1136,13 +1136,16 @@
                     // Iterate through the products and create menu items
                     for (const [key, product] of Object.entries(products)) {
                         const productDiv = document.createElement('tr');
-
+                        var qty = product.quantity;
+                        if (qty == 0) {
+                            qty = '-';
+                        }
                         const productLink = document.createElement('td');
                         productLink.innerHTML = `${product.grade}`;
 
                         productDiv.appendChild(productLink);
                         const productLink2 = document.createElement('td');
-                        productLink2.innerHTML = `${product.quantity}`;
+                        productLink2.innerHTML = `${qty}`;
 
                         productDiv.appendChild(productLink2);
 
