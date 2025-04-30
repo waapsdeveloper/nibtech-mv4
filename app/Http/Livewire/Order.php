@@ -20,6 +20,7 @@ namespace App\Http\Livewire;
     use App\Exports\LabelsExport;
     use App\Exports\DeliveryNotesExport;
     use App\Exports\OrdersheetExport;
+    use App\Exports\PurchasesheetExport;
 use Illuminate\Support\Facades\DB;
     use Maatwebsite\Excel\Facades\Excel;
     use TCPDF;
@@ -38,7 +39,7 @@ use App\Models\Stock_operations_model;
 use App\Models\Stock_movement_model;
 use App\Models\Vendor_grade_model;
 use Illuminate\Support\Facades\Mail;
-use TCPDF_FONTS;
+
 
 class Order extends Component
 {
@@ -1286,6 +1287,21 @@ class Order extends Component
 
     }
 
+    public function export_purchase_sheet($order_id, $invoice = null)
+    {
+        ini_set('memory_limit', '512M');
+        ini_set('max_execution_time', '300');
+
+
+        // Additional content from your view
+        if(request('packlist') == 1){
+        }elseif(request('sheet') == 2){
+
+            return Excel::download(new PurchasesheetExport, 'purchase.xlsx');
+
+        }
+
+    }
     public function purchase_model_color_graded_sale($order_id, $pss_id){
         $repair_ids = Process_model::where('process_type_id', 9)->pluck('id');
         $pss = Product_storage_sort_model::find($pss_id);
