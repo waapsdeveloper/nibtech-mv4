@@ -1433,13 +1433,20 @@ class Order extends Component
 
         return response()->json($data);
     }
-    public function purchase_model_graded_count($order_id, $pss_id){
+    public function purchase_model_graded_count($order_id, $pss_id, $s_type = null){
         $pss = Product_storage_sort_model::find($pss_id);
         $stocks = $pss->stocks->where('order_id',$order_id);
         $grades = Grade_model::pluck('name','id');
+        if($s_type == 'rtg'){
+            $grades = Grade_model::whereIn('id',[1,2,3,4,5,7])->pluck('name','id');
+        }
+
         foreach($grades as $grade_id => $grade){
             $graded_variations = $pss->variations->where('grade',$grade_id);
             $data['graded_count'][$grade_id]['quantity'] = $stocks->whereIn('variation_id',$graded_variations->pluck('id'))->count();
+            if($s_type == 'sold'){
+                $data['graded_count'][$grade_id]['quantity'] = $stocks->whereIn('variation_id',$graded_variations->pluck('id'))->where('status',2)->count();
+            }
             $data['graded_count'][$grade_id]['grade'] = $grade;
             $data['graded_count'][$grade_id]['grade_id'] = $grade_id;
         }
@@ -1848,7 +1855,7 @@ class Order extends Component
         }
 
         if($variation == null){
-            session()->put('error', 'Variation Not Found'. $variation_id);
+            session()->put('error', 'Variation Not Found '. $variation_id);
             if($return == null){
                 return redirect()->back();
             }else{
@@ -2063,7 +2070,7 @@ class Order extends Component
                 foreach($issues as $issue){
                     $data = json_decode($issue->data);
                     // echo $variation." ".$data->imei." ".$data->cost;
-                    $gb = array_search($data->storage,$storages);
+                    $gb = array_search($data->storage,$storages) ?? 0;
                     if(isset($data->color)){
                         $clr = array_search($data->color,$colors) ?? null;
                     }else{
@@ -2087,9 +2094,23 @@ class Order extends Component
             }
         }
         if(request('add_imei') == 1){
+            $data = json_decode($issue->data);
             $imei = request('imei');
             $variation = request('variation');
-            $data = json_decode($issue->data);
+            if($variation == null){
+                $product_id = Products_model::where('model', $data->name)->first()->id;
+                if($product_id == null){
+                    session()->put('error', 'Product Not Found');
+                    return redirect()->back();
+                }
+                $storage = Storage_model::where('name', $data->storage)->first()->id ?? 0;
+                $color = Color_model::where('name', $data->color)->first()->id ?? null;
+                $variation = Variation_model::firstOrNew(['product_id' => $product_id, 'grade' => 9, 'storage' => $storage, 'color' => $color]);
+                $variation->save();
+                $variation = $variation->id;
+
+            }
+
             // echo $variation." ".$data->imei." ".$data->cost;
             if(isset($data->v_grade) && $data->v_grade){
                 $v_grade = Vendor_grade_model::where('name',$data->v_grade)->first()->id ?? null;
