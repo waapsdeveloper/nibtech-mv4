@@ -55,7 +55,7 @@ class PurchasesheetExport implements FromCollection, WithHeadings
 
         ->select(
             // DB::raw('CONCAT(products.model, " ", COALESCE(storage.name, "")) as model_storage'),
-            'products.model',
+            'products.model ?? "" as model',
             'storage.name as storage',
             'color.name as color',
             'grade.name as grade_name',
