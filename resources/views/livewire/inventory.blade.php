@@ -544,7 +544,7 @@
 
     @section('scripts')
         <script>
-            function load_color_graded_count(orderId, productId) {
+            function load_color_graded_count(productId) {
 
                     fetch(`{{ url('inventory') }}/color_graded_count/${productId}`)
                 .then(response => response.json())
