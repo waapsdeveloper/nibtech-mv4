@@ -160,19 +160,10 @@
                 document.addEventListener('DOMContentLoaded', function() {
                     selectBrand({{ request('brand') }})
                 })
-                // @if (request('product'))
-                //     document.addEventListener('DOMContentLoaded', function() {
-                //         selectProduct({{ request('product') }})
-                //     })
-                // @endif
             @endif
         @else
             let selectedCategoryId = null;
         @endif
-
-        // const colorData = {!! json_encode($colors) !!};
-        // const storageData = {!! json_encode($storages) !!};
-        // const gradeData = {!! json_encode($grades) !!};
 
         function selectCategory(categoryId) {
             selectedCategoryId = categoryId;
@@ -352,13 +343,6 @@
                             @endphp
                             @foreach ($available_stock_summery as $summery)
                                 @php
-                                    // print_r($summery);
-                                    // continue;
-                                    // if($summery['storage'] > 0){
-                                    //     $storage = $storages[$summery['storage']];
-                                    // }else{
-                                    //     $storage = null;
-                                    // }
                                     $total_quantity += $summery['quantity'];
                                     $total_cost += $summery['total_cost'];
                                     $stock_imeis = array_merge($summery['stock_imeis'], $summery['stock_serials']);
@@ -368,13 +352,12 @@
 
                                 @endphp
                                 <tr>
-                                    <td>{{ ++$i }}</td>
-                                    {{-- <td>{{ $products[$summery['product_id']]." ".$storage }}</td> --}}
+                                    <td>{{ ++$i }}</text-md-right
                                     <td><button class="btn py-0 btn-link" type="submit" form="search_summery"
                                             name="pss"
                                             value="{{ $summery['pss_id'] }}">{{ $summery['model'] }}</button>
                                         <button class="btn py-0 btn-link" type="button" data-bs-toggle="modal"
-                                            data-bs-target="#color_graded_count_modal" {{-- onclick="load_color_graded_count({{$summery['pss_id']}})" --}}>
+                                            data-bs-target="#color_graded_count_modal">
                                             <i class="fa fa-eye"></i>
                                         </button>
                                     </td>
