@@ -160,10 +160,19 @@
                 document.addEventListener('DOMContentLoaded', function() {
                     selectBrand({{ request('brand') }})
                 })
+                // @if (request('product'))
+                //     document.addEventListener('DOMContentLoaded', function() {
+                //         selectProduct({{ request('product') }})
+                //     })
+                // @endif
             @endif
         @else
             let selectedCategoryId = null;
         @endif
+
+        // const colorData = {!! json_encode($colors) !!};
+        // const storageData = {!! json_encode($storages) !!};
+        // const gradeData = {!! json_encode($grades) !!};
 
         function selectCategory(categoryId) {
             selectedCategoryId = categoryId;
@@ -177,7 +186,7 @@
                     .then(products => {
                         const productMenu = document.getElementById('product-menu');
                         productMenu.innerHTML =
-                            '<option value="">Model</option>'; // Clear existing variation menu items
+                        '<option value="">Model</option>'; // Clear existing variation menu items
 
                         products.forEach(product => {
                             const productLink = document.createElement('option');
@@ -343,6 +352,13 @@
                             @endphp
                             @foreach ($available_stock_summery as $summery)
                                 @php
+                                    // print_r($summery);
+                                    // continue;
+                                    // if($summery['storage'] > 0){
+                                    //     $storage = $storages[$summery['storage']];
+                                    // }else{
+                                    //     $storage = null;
+                                    // }
                                     $total_quantity += $summery['quantity'];
                                     $total_cost += $summery['total_cost'];
                                     $stock_imeis = array_merge($summery['stock_imeis'], $summery['stock_serials']);
@@ -353,22 +369,20 @@
                                 @endphp
                                 <tr>
                                     <td>{{ ++$i }}</td>
-                                    <td>
-                                        <button class="btn py-0 btn-link" type="submit" form="search_summery"
+                                    {{-- <td>{{ $products[$summery['product_id']]." ".$storage }}</td> --}}
+                                    <td><button class="btn py-0 btn-link" type="submit" form="search_summery"
                                             name="pss"
                                             value="{{ $summery['pss_id'] }}">{{ $summery['model'] }}</button>
                                         <button class="btn py-0 btn-link" type="button" data-bs-toggle="modal"
-                                            data-bs-target="#color_graded_count_modal">
+                                            data-bs-target="#color_graded_count_modal" {{-- onclick="load_color_graded_count({{$summery['pss_id']}})" --}}>
                                             <i class="fa fa-eye"></i>
                                         </button>
                                     </td>
-                                    <td title="{{ json_encode($summery['stock_ids']) }}">
-                                        <a id="test{{ $i }}"
+                                    <td title="{{ json_encode($summery['stock_ids']) }}"><a id="test{{ $i }}"
                                             href="javascript:void(0)">{{ $summery['quantity'] }}</a>
                                         @if ($duplicates)
                                             <span class="badge badge-danger">{{ $duplicate_count }} Duplicate</span>
                                         @endif
-                                    </td>
                                     <td title="{{ amount_formatter($summery['total_cost'] / $summery['quantity']) }}">
                                         {{ amount_formatter($summery['total_cost'], 2) }}</td>
                                 </tr>
@@ -396,191 +410,191 @@
                                 <td colspan="2"><b>Total</b></td>
                                 <td><b>{{ $total_quantity }}</b></td>
                                 <td title="{{ amount_formatter($total_cost / $total_quantity, 2) }}">
-                                    <b>{{ amount_formatter($total_cost, 2) }}</b>
-                                </td>
+                                    <b>{{ amount_formatter($total_cost, 2) }}</b></td>
                             </tr>
                         </tfoot>
 
                     </table>
                 </div>
             </div>
-        </div>
-    @else
-        <div class="">
-            <div>
-                <div class="card">
-                    <div class="card-header pb-0">
-                        <div class="d-flex justify-content-between">
-                            <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{ $stocks->firstItem() }}
-                                {{ __('locale.To') }} {{ $stocks->lastItem() }} {{ __('locale.Out Of') }}
-                                {{ $stocks->total() }} </h5>
+            
+        @else
+            <div class="">
+                <div>
+                    <div class="card">
+                        <div class="card-header pb-0">
+                            <div class="d-flex justify-content-between">
+                                <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{ $stocks->firstItem() }}
+                                    {{ __('locale.To') }} {{ $stocks->lastItem() }} {{ __('locale.Out Of') }}
+                                    {{ $stocks->total() }} </h5>
 
-                            @if (session('user')->hasPermission('view_cost'))
-                                <h5 id="average_cost"></h5>
-                            @endif
-                            <div class=" mg-b-0">
-                                <form method="get" action="" class="row form-inline">
-                                    <label for="perPage" class="card-title inline">per page:</label>
-                                    <select name="per_page" class="form-select form-select-sm" id="perPage"
-                                        onchange="this.form.submit()">
-                                        <option value="10" {{ Request::get('per_page') == 10 ? 'selected' : '' }}>
-                                            10</option>
-                                        <option value="20" {{ Request::get('per_page') == 20 ? 'selected' : '' }}>
-                                            20</option>
-                                        <option value="50" {{ Request::get('per_page') == 50 ? 'selected' : '' }}>
-                                            50</option>
-                                        <option value="100" {{ Request::get('per_page') == 100 ? 'selected' : '' }}>100
-                                        </option>
-                                    </select>
-                                    {{-- <button type="submit">Apply</button> --}}
-                                    <input type="hidden" name="replacement" value="{{ Request::get('replacement') }}">
-                                    <input type="hidden" name="category" value="{{ Request::get('category') }}">
-                                    <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
-                                    <input type="hidden" name="product" value="{{ Request::get('product') }}">
-                                    <input type="hidden" name="storage" value="{{ Request::get('storage') }}">
-                                    <input type="hidden" name="vendor" value="{{ Request::get('vendor') }}">
-                                    @if (Request::get('grade'))
-                                        @foreach (Request::get('grade') as $grd)
-                                            <input type="hidden" name="grade[]" value="{{ $grd }}">
+                                @if (session('user')->hasPermission('view_cost'))
+                                    <h5 id="average_cost"></h5>
+                                @endif
+                                <div class=" mg-b-0">
+                                    <form method="get" action="" class="row form-inline">
+                                        <label for="perPage" class="card-title inline">per page:</label>
+                                        <select name="per_page" class="form-select form-select-sm" id="perPage"
+                                            onchange="this.form.submit()">
+                                            <option value="10" {{ Request::get('per_page') == 10 ? 'selected' : '' }}>
+                                                10</option>
+                                            <option value="20" {{ Request::get('per_page') == 20 ? 'selected' : '' }}>
+                                                20</option>
+                                            <option value="50" {{ Request::get('per_page') == 50 ? 'selected' : '' }}>
+                                                50</option>
+                                            <option value="100"
+                                                {{ Request::get('per_page') == 100 ? 'selected' : '' }}>100</option>
+                                        </select>
+                                        {{-- <button type="submit">Apply</button> --}}
+                                        <input type="hidden" name="replacement"
+                                            value="{{ Request::get('replacement') }}">
+                                        <input type="hidden" name="category" value="{{ Request::get('category') }}">
+                                        <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
+                                        <input type="hidden" name="product" value="{{ Request::get('product') }}">
+                                        <input type="hidden" name="storage" value="{{ Request::get('storage') }}">
+                                        <input type="hidden" name="vendor" value="{{ Request::get('vendor') }}">
+                                        @if (Request::get('grade'))
+                                            @foreach (Request::get('grade') as $grd)
+                                                <input type="hidden" name="grade[]" value="{{ $grd }}">
+                                            @endforeach
+                                        @endif
+                                        <input type="hidden" name="page" value="{{ Request::get('page') }}">
+                                        <input type="hidden" name="status" value="{{ Request::get('status') }}">
+                                    </form>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+
+
+
+                                <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                                    <thead>
+                                        <tr>
+                                            <th><small><b>No</b></small></th>
+                                            <th><small><b>Product</b></small></th>
+                                            <th><small><b>IMEI / Serial Number</b></small></th>
+                                            <th><small><b>Vendor</b></small></th>
+                                            <th><small><b>Reference</b></small></th>
+                                            @if (session('user')->hasPermission('view_cost'))
+                                                <th><small><b>Cost</b></small></th>
+                                            @endif
+                                            <th><small><b>Datetime</b></small></th>
+                                            <th><small><b>Added By</b></small></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @php
+                                            $i = $stocks->firstItem() - 1;
+                                        @endphp
+                                        @foreach ($stocks as $index => $stock)
+                                            <tr>
+                                                <td title="{{ $stock->id }}">{{ $i + 1 }}</td>
+                                                <td><a title="Filter this variation"
+                                                        href="{{ url('inventory') . '?product=' . $stock->variation->product_id . '&storage=' . $stock->variation->storage . '&grade[]=' . $stock->variation->grade }}">{{ (isset($stock->variation->product_id) ? $stock->variation->product->model . ' ' : null) .
+                                                            (isset($stock->variation->storage) ? $storages[$stock->variation->storage] . ' ' : null) .
+                                                            ' ' .
+                                                            (isset($stock->variation->color) ? $colors[$stock->variation->color] . ' ' : null) .
+                                                            ($grades[$stock->variation->grade] ?? 'Grade Issue') .
+                                                            (isset($stock->variation->sub_grade) ? ' ' . $grades[$stock->variation->sub_grade] : null) }}
+                                                    </a></td>
+                                                <td><a title="{{ $stock->id }} | Search Serial"
+                                                        href="{{ url('imei') . '?imei=' . $stock->imei . $stock->serial_number }}"
+                                                        target="_blank"> {{ $stock->imei . $stock->serial_number }} </a>
+                                                </td>
+                                                <td><a title="Vendor Profile"
+                                                        href="{{ url('edit-customer') . '/' . $stock->order->customer_id }}"
+                                                        target="_blank"> {{ $stock->order->customer->last_name ?? null }}
+                                                    </a></td>
+                                                <td>
+                                                    <a title="Purchase Order Details"
+                                                        href="{{ url('purchase/detail') . '/' . $stock->order_id }}?status=1"
+                                                        target="_blank"> {{ $stock->order->reference_id }} </a>
+                                                    @if ($stock->latest_return)
+                                                        &nbsp;<a title="Sales Return Details"
+                                                            href="{{ url('return/detail') . '/' . $stock->latest_return->order->id }}"
+                                                            target="_blank">
+                                                            {{ $stock->latest_return->order->reference_id }} </a>
+                                                    @endif
+                                                    @if ($stock->latest_repair)
+                                                        &nbsp; {{ $stock->latest_repair->process->reference_id }}
+                                                    @endif
+                                                    @if ($stock->latest_verification)
+                                                        &nbsp; {{ $stock->latest_verification->process->reference_id }}
+                                                    @endif
+                                                </td>
+                                                @if (session('user')->hasPermission('view_cost'))
+                                                    <td>{{ $stock->order->currency_id->sign ?? null }}{{ amount_formatter($stock->purchase_item->price ?? null) }}
+                                                    </td>
+                                                @endif
+                                                <td>{{ $stock->updated_at }}</td>
+                                                @if ($stock->latest_operation)
+                                                    <td>{{ $stock->latest_operation->admin->first_name ?? null }}</td>
+                                                    <td>
+                                                        {{ $stock->latest_operation->description }}
+                                                    </td>
+                                                @else
+                                                    <td>{{ $stock->admin->first_name ?? null }}</td>
+                                                @endif
+                                            </tr>
+
+                                            @php
+                                                $i++;
+                                            @endphp
                                         @endforeach
-                                    @endif
-                                    <input type="hidden" name="page" value="{{ Request::get('page') }}">
-                                    <input type="hidden" name="status" value="{{ Request::get('status') }}">
-                                </form>
+                                    </tbody>
+                                </table>
+                                <br>
+                                {{ $stocks->onEachSide(5)->links() }} {{ __('locale.From') }}
+                                {{ $stocks->firstItem() }} {{ __('locale.To') }} {{ $stocks->lastItem() }}
+                                {{ __('locale.Out Of') }} {{ $stocks->total() }}
                             </div>
 
                         </div>
                     </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
+                </div>
+            </div>
 
 
-
+            <div class="modal" id="color_graded_count_modal">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-body pd-sm-40">
+                            <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
+                                type="button"><span aria-hidden="true">&times;</span></button>
+                            <h5 class="modal-title mg-b-5">Colored Graded Total</h5>
                             <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                                 <thead>
                                     <tr>
                                         <th><small><b>No</b></small></th>
-                                        <th><small><b>Product</b></small></th>
-                                        <th><small><b>IMEI / Serial Number</b></small></th>
-                                        <th><small><b>Vendor</b></small></th>
-                                        <th><small><b>Reference</b></small></th>
-                                        @if (session('user')->hasPermission('view_cost'))
-                                            <th><small><b>Cost</b></small></th>
-                                        @endif
-                                        <th><small><b>Datetime</b></small></th>
-                                        <th><small><b>Added By</b></small></th>
+                                        <th><small><b>Color</b></small></th>
+                                        <th><small><b>Grade</b></small></th>
+                                        <th><small><b>Quantity</b></small></th>
+                                        <th><small><b>Cost</b></small></th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    @php
-                                        $i = $stocks->firstItem() - 1;
-                                    @endphp
-                                    @foreach ($stocks as $index => $stock)
-                                        <tr>
-                                            <td title="{{ $stock->id }}">{{ $i + 1 }}</td>
-                                            <td><a title="Filter this variation"
-                                                    href="{{ url('inventory') . '?product=' . $stock->variation->product_id . '&storage=' . $stock->variation->storage . '&grade[]=' . $stock->variation->grade }}">{{ (isset($stock->variation->product_id) ? $stock->variation->product->model . ' ' : null) .
-                                                        (isset($stock->variation->storage) ? $storages[$stock->variation->storage] . ' ' : null) .
-                                                        ' ' .
-                                                        (isset($stock->variation->color) ? $colors[$stock->variation->color] . ' ' : null) .
-                                                        ($grades[$stock->variation->grade] ?? 'Grade Issue') .
-                                                        (isset($stock->variation->sub_grade) ? ' ' . $grades[$stock->variation->sub_grade] : null) }}
-                                                </a></td>
-                                            <td><a title="{{ $stock->id }} | Search Serial"
-                                                    href="{{ url('imei') . '?imei=' . $stock->imei . $stock->serial_number }}"
-                                                    target="_blank"> {{ $stock->imei . $stock->serial_number }} </a>
-                                            </td>
-                                            <td><a title="Vendor Profile"
-                                                    href="{{ url('edit-customer') . '/' . $stock->order->customer_id }}"
-                                                    target="_blank"> {{ $stock->order->customer->last_name ?? null }}
-                                                </a></td>
-                                            <td>
-                                                <a title="Purchase Order Details"
-                                                    href="{{ url('purchase/detail') . '/' . $stock->order_id }}?status=1"
-                                                    target="_blank"> {{ $stock->order->reference_id }} </a>
-                                                @if ($stock->latest_return)
-                                                    &nbsp;<a title="Sales Return Details"
-                                                        href="{{ url('return/detail') . '/' . $stock->latest_return->order->id }}"
-                                                        target="_blank">
-                                                        {{ $stock->latest_return->order->reference_id }} </a>
-                                                @endif
-                                                @if ($stock->latest_repair)
-                                                    &nbsp; {{ $stock->latest_repair->process->reference_id }}
-                                                @endif
-                                                @if ($stock->latest_verification)
-                                                    &nbsp; {{ $stock->latest_verification->process->reference_id }}
-                                                @endif
-                                            </td>
-                                            @if (session('user')->hasPermission('view_cost'))
-                                                <td>{{ $stock->order->currency_id->sign ?? null }}{{ amount_formatter($stock->purchase_item->price ?? null) }}
-                                                </td>
-                                            @endif
-                                            <td>{{ $stock->updated_at }}</td>
-                                            @if ($stock->latest_operation)
-                                                <td>{{ $stock->latest_operation->admin->first_name ?? null }}</td>
-                                                <td>
-                                                    {{ $stock->latest_operation->description }}
-                                                </td>
-                                            @else
-                                                <td>{{ $stock->admin->first_name ?? null }}</td>
-                                            @endif
-                                        </tr>
-
-                                        @php
-                                            $i++;
-                                        @endphp
-                                    @endforeach
+                                <tbody id="color_graded_count_data">
+                                    <tr>
+                                        {{-- <th><small><b>No</b></small></th> --}}
+                                        {{-- <th><b>Total</b></th>
+                                    <th><b>{{ $total }}</b></th> --}}
+                                    </tr>
                                 </tbody>
+
+                                <tfoot id="color_graded_count_total">
+                                    <tr>
+                                        {{-- <th><small><b>No</b></small></th> --}}
+                                        {{-- <th><b>Total</b></th>
+                                    <th><b>{{ $total }}</b></th> --}}
+                                    </tr>
+                                </tfoot>
                             </table>
-                            <br>
-                            {{ $stocks->onEachSide(5)->links() }} {{ __('locale.From') }}
-                            {{ $stocks->firstItem() }} {{ __('locale.To') }} {{ $stocks->lastItem() }}
-                            {{ __('locale.Out Of') }} {{ $stocks->total() }}
                         </div>
-
                     </div>
                 </div>
             </div>
-        </div>
-
-
-        <div class="modal" id="color_graded_count_modal">
-            <div class="modal-dialog modal-lg" role="document">
-                <div class="modal-content">
-                    <div class="modal-body pd-sm-40">
-                        <button aria-label="Close" class="close pos-absolute t-15 r-20 tx-26" data-bs-dismiss="modal"
-                            type="button"><span aria-hidden="true">&times;</span></button>
-                        <h5 class="modal-title mg-b-5">Colored Graded Total</h5>
-                        <table class="table table-bordered table-hover mb-0 text-md-nowrap">
-                            <thead>
-                                <tr>
-                                    <th><small><b>No</b></small></th>
-                                    <th><small><b>Color</b></small></th>
-                                    <th><small><b>Grade</b></small></th>
-                                    <th><small><b>Quantity</b></small></th>
-                                    <th><small><b>Cost</b></small></th>
-                                </tr>
-                            </thead>
-                            <tbody id="color_graded_count_data">
-                                <tr>
-                                    {{-- <th><small><b>No</b></small></th> --}}
-                                    {{-- <th><b>Total</b></th>
-                                <th><b>{{ $total }}</b></th> --}}
-                                </tr>
-                            </tbody>
-
-                            <tfoot id="color_graded_count_total">
-                                <tr>
-                                    {{-- <th><small><b>No</b></small></th> --}}
-                                    {{-- <th><b>Total</b></th>
-                                <th><b>{{ $total }}</b></th> --}}
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
 
 
     @endif
@@ -662,7 +676,7 @@
             mywindow.document.write('<html><head>');
             mywindow.document.write(
                 `<link rel="stylesheet" href="{{ asset('assets/plugins/bootstrap/css/bootstrap.min.css') }}" type="text/css" />`
-            );
+                );
             mywindow.document.write(
                 `<link rel="stylesheet" href="{{ asset('assets/css/style.css') }}" type="text/css" />`);
             mywindow.document.write('<title>' + document.title + '</title></head><body >');
@@ -730,7 +744,7 @@
                     data.vendor_average_cost.forEach(function(v_cost) {
                         total += v_cost.total_qty;
                         vendor_name = vendors[v_cost.customer_id] ??
-                            "Vendor Type Not Defined Correctly";
+                        "Vendor Type Not Defined Correctly";
                         vendorWiseAverage +=
                             `${vendor_name}: ${parseFloat(v_cost.average_price).toFixed(2)} x ${v_cost.total_qty} = ${parseFloat(v_cost.total_price).toFixed(2)} (${parseFloat((v_cost.total_qty / total_stocks) * 100).toFixed(2)}%) || `;
                     });
