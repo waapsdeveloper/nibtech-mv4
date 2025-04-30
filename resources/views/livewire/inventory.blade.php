@@ -331,7 +331,8 @@
                                             name="pss"
                                             value="{{ $summery['pss_id'] }}">{{ $summery['model'] }}</button>
                                         <button class="btn py-0 btn-link" type="button" data-bs-toggle="modal"
-                                            data-bs-target="#color_graded_count_modal">
+                                            data-bs-target="#color_graded_count_modal"
+                                            onclick="load_color_graded_count({{ $summery['pss_id'] }})">
                                             <i class="fa fa-eye"></i>
                                         </button>
                                     </td>
