@@ -528,7 +528,7 @@
                     <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                         <thead>
                             <tr>
-                                <th><small><b>No</b></small></th>
+                                {{-- <th><small><b>No</b></small></th> --}}
                                 <th><small><b>Color</b></small></th>
                                 <th><small><b>Grade</b></small></th>
                                 <th><small><b>Quantity</b></small></th>
