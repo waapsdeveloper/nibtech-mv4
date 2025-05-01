@@ -129,6 +129,7 @@ class PriceHandler extends Command
                 Log::info("Handler: No data for variation: " . $variation->sku. " - " . $json_data);
                 continue;
             }
+            echo $json_data;
             $breakeven_price = json_decode($json_data)->breakeven_price;
             
             $listings->where('variation_id', $variation->id)->where('min_price_limit', '<=', $breakeven_price)->where('price_limit', '>=', $breakeven_price)->update(['handler_status' => 3]);
