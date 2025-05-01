@@ -450,14 +450,18 @@
                                     @foreach ($stocks as $index => $stock)
                                         <tr>
                                             <td title="{{ $stock->id }}">{{ $i + 1 }}</td>
-                                            <td><a title="Filter this variation"
-                                                    href="{{ url('inventory') . '?product=' . $stock->variation->product_id . '&storage=' . $stock->variation->storage . '&grade[]=' . $stock->variation->grade }}">{{ (isset($stock->variation->product_id) ? $stock->variation->product->model . ' ' : null) .
+                                            <td>
+
+                                                <a title="Filter this variation"
+                                                    href="{{ url('inventory') . '?product=' . $stock->variation->product_id . '&storage=' . $stock->variation->storage . '&grade[]=' . $stock->variation->grade }}">
+                                                    {{ (isset($stock->variation->product_id) ? $stock->variation->product->model . ' ' : null) .
                                                         (isset($stock->variation->storage) ? $storages[$stock->variation->storage] . ' ' : null) .
                                                         ' ' .
                                                         (isset($stock->variation->color) ? $colors[$stock->variation->color] . ' ' : null) .
                                                         ($grades[$stock->variation->grade] ?? 'Grade Issue') .
                                                         (isset($stock->variation->sub_grade) ? ' ' . $grades[$stock->variation->sub_grade] : null) }}
-                                                </a></td>
+                                                </a>
+                                            </td>
                                             <td><a title="{{ $stock->id }} | Search Serial"
                                                     href="{{ url('imei') . '?imei=' . $stock->imei . $stock->serial_number }}"
                                                     target="_blank"> {{ $stock->imei . $stock->serial_number }} </a>
