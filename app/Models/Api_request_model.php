@@ -264,7 +264,7 @@ class Api_request_model extends Model
                         if(!$product->id){
                             $product->category = $p->category;
                             $product->brand = $p->brand;
-                            $product->model = $p->model.' Dual eSIM';
+                            // $product->model = $p->model.' Dual eSIM';
                             $product->save();
                         }
                         $p = $product;
@@ -308,7 +308,7 @@ class Api_request_model extends Model
                         if(!$product->id){
                             $product->category = $p->category;
                             $product->brand = $p->brand;
-                            $product->model = $p->model.' Dual Sim';
+                            // $product->model = $p->model.' Dual Sim';
                             $product->save();
                         }
                         $p = $product;
