@@ -43,7 +43,7 @@ class PurchasesheetExport implements FromCollection, WithHeadings
         // ->leftJoin('process_stock', 'stock.id', '=', 'process_stock.stock_id')
         ->leftJoin('process_stock', function($join) {
             $join->on('stock.id', '=', 'process_stock.stock_id')
-                 ->whereNotIn('process_stock.process_id', $this->process)
+                 ->whereIn('process_stock.process_id', $this->process)
                  ->orderBy('process_stock.id', 'DESC')
                  ->limit(1);
         })
