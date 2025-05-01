@@ -328,8 +328,10 @@ class ListingController extends Controller
             
             $breakeven_price = ($stock_costs->average()+20)/0.88;
 
-            $variation->breakeven_price = $breakeven_price;
-            $variation->save();
+            if($breakeven_price != $variation->breakeven_price){
+                $variation->breakeven_price = $breakeven_price;
+                $variation->save();
+            }
         }else{
             $breakeven_price = 0;
         }
