@@ -21,7 +21,6 @@ class PurchasesheetExport implements FromCollection, WithHeadings
     {
 
         $data = DB::table('orders')
-        ->leftJoin('customer', 'orders.customer_id', '=', 'customer.id')
         ->leftJoin('order_items', 'orders.id', '=', 'order_items.order_id')
         ->leftJoin('vendor_grade', 'order_items.reference_id', '=', 'vendor_grade.id')
         ->leftJoin('stock', 'order_items.stock_id', '=', 'stock.id')
@@ -33,12 +32,20 @@ class PurchasesheetExport implements FromCollection, WithHeadings
         ->leftJoin('grade as sub', 'variation.sub_grade', '=', 'sub.id')
         ->leftJoin('order_items as s_item', function($join) {
             $join->on('stock.id', '=', 's_item.stock_id')
-                 ->whereColumn('s_item.order_id', '!=', 'orders.id');
+                 ->whereColumn('s_item.order_id', '!=', 'orders.id')
+                 ->orderBy('s_item.id', 'DESC')
+                 ->limit(1);
         })
         ->leftJoin('orders as s_orders', 's_item.order_id', '=', 's_orders.id')
-        ->leftJoin('process_stock', 'stock.id', '=', 'process_stock.stock_id')
+        ->leftJoin('customer', 's_orders.customer_id', '=', 'customer.id')
+        // ->leftJoin('process_stock', 'stock.id', '=', 'process_stock.stock_id')
+        ->leftJoin('process_stock', function($join) {
+            $join->on('stock.id', '=', 'process_stock.stock_id')
+                 ->orderBy('process_stock.id', 'DESC')
+                 ->limit(1);
+        })
         ->leftJoin('process', 'process_stock.process_id', '=', 'process.id')
-
+        ->leftJoin('customer as process_customer', 'process.customer_id', '=', 'customer.id')
         ->leftJoin('stock_operations', function ($join) {
             $join->on('stock.id', '=', 'stock_operations.stock_id')
                  ->where('stock_operations.new_variation_id', '=', DB::raw('variation.id'))
@@ -62,10 +69,13 @@ class PurchasesheetExport implements FromCollection, WithHeadings
             'sub.name as sub_grade',
             'stock.imei as imei',
             'stock.serial_number as serial_number',
-            'orders.reference_id as po',
-            'orders.created_at as po_date',
+            's_orders.reference_id as po',
+            's_orders.created_at as po_date',
             'customer.first_name as vendor',
             'vendor_grade.name as vendor_grade',
+            'process.reference_id as process_reference_id',
+            'process.created_at as process_date',
+            'process_customer.first_name as process_vendor',
             // all s_orders reference_id separated by comma
             // DB::raw('GROUP_CONCAT(DISTINCT s_orders.reference_id SEPARATOR ", ") as orders'),
             // DB::raw('GROUP_CONCAT(DISTINCT process.reference_id SEPARATOR ", ") as process'),
