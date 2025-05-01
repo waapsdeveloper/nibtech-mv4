@@ -148,7 +148,7 @@ class ListingController extends Controller
                 $q->where('handler_status', request('handler_status'))->whereIn('country', [73, 199]);
             });
         })
-        ->when(request('handler_status') == 1, function ($q) {
+        ->when(request('handler_status') == 1 || request('handler_status') == 3, function ($q) {
             return $q->whereHas('listings', function ($q) {
                 $q->where('handler_status', request('handler_status'));
             });
