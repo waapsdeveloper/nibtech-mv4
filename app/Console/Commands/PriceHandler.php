@@ -124,7 +124,7 @@ class PriceHandler extends Command
         $listingController = new ListingController();
         foreach ($variations as $variation) {
             $json_data = $listingController->get_variation_available_stocks( $variation->id );
-            if ($json_data == null) {
+            if (json_decode($json_data) == null) {
                 $json_data = json_encode(['breakeven_price' => 0]);
                 Log::info("Handler: No data for variation: " . $variation->sku);
                 continue;
