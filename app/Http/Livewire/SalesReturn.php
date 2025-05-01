@@ -70,6 +70,8 @@ class SalesReturn extends Component
             return $q->where('orders.status', request('status'));
         })
         ->where('order_items.deleted_at',null)
+        ->where('stock.deleted_at',null)
+        ->where('purchase_item.deleted_at',null)
         ->groupBy('orders.id', 'orders.reference_id', 'orders.created_at')
         ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
         ->paginate($per_page)
