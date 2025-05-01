@@ -207,7 +207,7 @@
                                 <td>${item.qty_change}</td>
                                 <td>${item.qty_to}</td>
                                 <td>${item.admin}</td>
-                                <td>${new Date(item.created_at).toLocaleString('en-GB', { timeZone: 'Europe/London' })}}</td>
+                                <td>${new Date(item.created_at).toLocaleString('en-GB', { timeZone: 'Europe/London' })}</td>
                             </tr>`;
                     });
                     $('#variationHistoryTable').html(historyTable);
