@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Http\Controllers\BackMarketAPIController;
+use App\Http\Controllers\ListingController;
 use App\Http\Livewire\Order;
 use App\Models\Api_request_model;
 use App\Models\Color_model;
@@ -44,9 +45,12 @@ class PriceHandler extends Command
     {
 
         ini_set('max_execution_time', 1200);
+
+        $this->recheck_inactive_handlers();
+
         $error = '';
         $bm = new BackMarketAPIController();
-        $listings = Listing_model::where('handler_status', 1)->get();
+        $listings = Listing_model::whereIn('handler_status', [1,3])->get();
         $variation_ids = $listings->pluck('variation_id');
         $variations = Variation_model::whereIn('id', $variation_ids)->get();
 
@@ -112,5 +116,16 @@ class PriceHandler extends Command
         }
         return 0;
 
+    }
+    public function recheck_inactive_handlers(){
+        $listings = Listing_model::where('handler_status', 2)->get();
+        $variations = Variation_model::whereIn('id', $listings->pluck('variation_id'))->where('listed_stock','>',0)->get();
+        $listingController = new ListingController();
+        foreach ($variations as $variation) {
+            $json_data = $listingController->get_variation_available_stocks( $variation->id );
+            $breakeven_price = json_decode($json_data)->breakeven_price;
+            
+            $listings->where('variation_id', $variation->id)->where('min_price_limit', '<=', $breakeven_price)->where('price_limit', '>=', $breakeven_price)->update(['handler_status' => 3]);
+        }
     }
 }
