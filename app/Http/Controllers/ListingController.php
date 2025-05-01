@@ -324,11 +324,15 @@ class ListingController extends Controller
         $po = Order_model::where('order_type_id',1)->pluck('customer_id','id');
 
         $reference = Order_model::where('order_type_id',1)->pluck('reference_id','id');
+        if($stock_costs->count() > 0){
+            
+            $breakeven_price = ($stock_costs->average()+20)/0.88;
 
-        $breakeven_price = ($stock_costs->average()+20)/0.88;
-
-        $variation->breakeven_price = $breakeven_price;
-        $variation->save();
+            $variation->breakeven_price = $breakeven_price;
+            $variation->save();
+        }else{
+            $breakeven_price = 0;
+        }
 
         return response()->json(['stocks'=>$stocks, 'stock_costs'=>$stock_costs, 'vendors'=>$vendors, 'po'=>$po, 'reference'=>$reference, 'breakeven_price'=>$breakeven_price]);
 
