@@ -74,11 +74,11 @@ class PurchasesheetExport implements FromCollection, WithHeadings
             'stock.serial_number as serial_number',
             's_orders.reference_id as po',
             's_orders.created_at as po_date',
-            'customer.first_name as vendor',
+            'customer.company as vendor',
             'vendor_grade.name as vendor_grade',
             'process.reference_id as process_reference_id',
             'process.created_at as process_date',
-            'process_customer.first_name as process_vendor',
+            'process_customer.company as process_vendor',
             // all s_orders reference_id separated by comma
             // DB::raw('GROUP_CONCAT(DISTINCT s_orders.reference_id SEPARATOR ", ") as orders'),
             // DB::raw('GROUP_CONCAT(DISTINCT process.reference_id SEPARATOR ", ") as process'),
