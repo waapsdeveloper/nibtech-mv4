@@ -10,16 +10,17 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 class PurchasesheetExport implements FromCollection, WithHeadings
 {
     protected $invoice = null;
+    protected $process = null;
 
     // Constructor to accept invoice flag
     public function __construct($invoice = null)
     {
         $this->invoice = $invoice;
+        $this->process = Process_model::where('process_type_id', 9)->pluck('id');
     }
 
     public function collection()
     {
-        $repairs = Process_model::where('process_type_id', 9)->pluck('id');
 
         $data = DB::table('orders')
         ->leftJoin('order_items', 'orders.id', '=', 'order_items.order_id')
@@ -40,9 +41,9 @@ class PurchasesheetExport implements FromCollection, WithHeadings
         ->leftJoin('orders as s_orders', 's_item.order_id', '=', 's_orders.id')
         ->leftJoin('customer', 's_orders.customer_id', '=', 'customer.id')
         // ->leftJoin('process_stock', 'stock.id', '=', 'process_stock.stock_id')
-        ->leftJoin('process_stock', function($join) use ($repairs) {
+        ->leftJoin('process_stock', function($join) {
             $join->on('stock.id', '=', 'process_stock.stock_id')
-                 ->where('process_stock.process_id', '!=', $repairs)
+                 ->whereIn('process_stock.process_id', $this->process)
                  ->orderBy('process_stock.id', 'DESC')
                  ->limit(1);
         })
