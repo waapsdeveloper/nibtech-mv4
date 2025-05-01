@@ -255,7 +255,7 @@ class Api_request_model extends Model
 
             if($stock != null){
                 $p = $stock->variation->product;
-                if(str_contains(strtolower($datas->Comments), 'dual-esim')){
+                if((str_contains(strtolower($datas->Comments), 'dual-esim') || str_contains(strtolower($datas->Comments), 'dual esim') || str_contains(strtolower($datas->Comments), 'dual_esim') || str_contains(strtolower($datas->Comments), 'dual e-sim')) && $p->brand == 1){
                     $p = $stock->variation->product;
                     if(!str_contains($p->model, 'Dual eSIM')){
                         $product = Products_model::firstOrNew(['model'=>$p->model.' Dual eSIM']);
@@ -300,7 +300,7 @@ class Api_request_model extends Model
 
                 }
 
-                if(str_contains(strtolower($datas->Comments), 'dual-sim')){
+                if((str_contains(strtolower($datas->Comments), 'dual-esim') || str_contains(strtolower($datas->Comments), 'dual esim') || str_contains(strtolower($datas->Comments), 'dual_esim') || str_contains(strtolower($datas->Comments), 'dual sim')) && $p->brand == 2){
                     if(!str_contains($p->model, 'Dual Sim')){
                         $product = Products_model::firstOrNew(['model'=>$p->model.' Dual Sim']);
                         if(!$product->id){
