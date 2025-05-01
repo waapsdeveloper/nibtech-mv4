@@ -108,6 +108,7 @@
                 <option value="">Price Handler</option>
                 <option value="1" @if(isset($_GET['handler_status']) && $_GET['handler_status'] == 1) {{'selected'}}@endif>Active</option>
                 <option value="2" @if(isset($_GET['handler_status']) && $_GET['handler_status'] == 2) {{'selected'}}@endif>Inactive</option>
+                <option value="3" @if(isset($_GET['handler_status']) && $_GET['handler_status'] == 3) {{'selected'}}@endif>ReActived</option>
 
             </select>
         </div>
