@@ -79,9 +79,6 @@ class PurchasesheetExport implements FromCollection, WithHeadings
             'process.reference_id as process_reference_id',
             'process.created_at as process_date',
             'process_customer.company as process_vendor',
-            // all s_orders reference_id separated by comma
-            // DB::raw('GROUP_CONCAT(DISTINCT s_orders.reference_id SEPARATOR ", ") as orders'),
-            // DB::raw('GROUP_CONCAT(DISTINCT process.reference_id SEPARATOR ", ") as process'),
             DB::raw('TRIM(BOTH " " FROM UPPER(
                 TRIM(LEADING "Battery | " FROM TRIM(LEADING " | " FROM REPLACE(
                     REPLACE(
