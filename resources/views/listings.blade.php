@@ -201,7 +201,7 @@
                     data.listed_stock_verifications.forEach(function(item) {
                         historyTable += `
                             <tr>
-                                <td>${item.process_ref}</td>
+                                <td>${item.process_ref ?? ''}</td>
                                 <td>${item.pending_orders}</td>
                                 <td>${item.qty_from}</td>
                                 <td>${item.qty_change}</td>
