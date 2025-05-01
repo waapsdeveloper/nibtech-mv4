@@ -207,7 +207,7 @@
                                 <td>${item.qty_change}</td>
                                 <td>${item.qty_to}</td>
                                 <td>${item.admin}</td>
-                                <td>${new Date(item.created_at).toLocaleString('en-GB', { timeZone: 'Europe/London' })}</td>
+                                <td>${new Date(item.created_at).toLocaleString('en-GB', { timeZone: 'Europe/London', hour12: true })}</td>
                             </tr>`;
                     });
                     $('#variationHistoryTable').html(historyTable);
@@ -707,7 +707,7 @@
                                     </div>
                                     ${p_append}
                                 </td>
-                                <td>${new Date(listing.updated_at).toLocaleString('en-GB', { timeZone: 'Europe/London' })}</td>
+                                <td>${new Date(listing.updated_at).toLocaleString('en-GB', { timeZone: 'Europe/London', hour12: true })}</td>
                                 <td>
                                     <div class="form-floating">
                                         <input type="number" class="form-control" id="target_${listing.id}" name="target" step="0.01" value="${listing.target_price}" form="change_target_${listing.id}">
@@ -997,7 +997,7 @@
                                         </div>
                                         ${p_append}
                                     </td>
-                                    <td>${new Date(listing.updated_at).toLocaleString('en-GB', { timeZone: 'Europe/London' })}}</td>
+                                    <td>${new Date(listing.updated_at).toLocaleString('en-GB', { timeZone: 'Europe/London', hour12: true })}}</td>
                                     <td>
                                         <div class="form-floating">
                                             <input type="number" class="form-control" id="target_${listing.id}" name="target" step="0.01" value="${listing.target_price}" form="change_target_${listing.id}">
