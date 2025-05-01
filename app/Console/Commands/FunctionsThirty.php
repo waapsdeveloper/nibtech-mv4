@@ -38,6 +38,8 @@ class FunctionsThirty extends Command
         ini_set('max_execution_time', 1200);
         $this->get_listings();
         $this->get_listingsBi();
+
+        return 0;
     }
     public function get_listings(){
         $bm = new BackMarketAPIController();
