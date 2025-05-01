@@ -125,7 +125,7 @@ class PriceHandler extends Command
             $json_data = $listingController->get_variation_available_stocks( $variation->id );
             $breakeven_price = json_decode($json_data)->breakeven_price;
             
-            $listings->where('variation_id', $variation->id)->where('min_price_limit', '<=', $breakeven_price)->where('price_limit', '>=', $breakeven_price)->update(['handler_status' => 3]);
+            $listings->where('variation_id', $variation->id)->where('min_price_limit', '<=', $breakeven_price)->where('price_limit', '>=', $breakeven_price)->where('min_price_limit', '!=', 0)->where('min_price_limit', '!=', null)->where('min_price_limit', '<=', 'buybox_price')->update(['handler_status' => 3]);
         }
     }
 }
