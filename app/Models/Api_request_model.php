@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Google\Service\MyBusinessAccountManagement\Admin;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class Api_request_model extends Model
 {
@@ -258,6 +259,7 @@ class Api_request_model extends Model
                 if((str_contains(strtolower($datas->Comments), 'dual-esim') || str_contains(strtolower($datas->Comments), 'dual esim') || str_contains(strtolower($datas->Comments), 'dual_esim') || str_contains(strtolower($datas->Comments), 'dual e-sim')) && $p->brand == 1){
                     $p = $stock->variation->product;
                     if(!str_contains($p->model, 'Dual eSIM')){
+                        Log::info($p->model.' '.$datas->Comments);
                         $product = Products_model::firstOrNew(['model'=>$p->model.' Dual eSIM']);
                         if(!$product->id){
                             $product->category = $p->category;
