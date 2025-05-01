@@ -18,6 +18,7 @@ use Illuminate\Console\Command;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PriceHandler extends Command
 {
@@ -123,6 +124,13 @@ class PriceHandler extends Command
         $listingController = new ListingController();
         foreach ($variations as $variation) {
             $json_data = $listingController->get_variation_available_stocks( $variation->id );
+            if ($json_data) {
+                $json_data = json_encode($json_data);
+            } else {
+                $json_data = json_encode(['breakeven_price' => 0]);
+                Log::info("Handler: No data for variation: " . $variation->sku);
+                continue;
+            }
             $breakeven_price = json_decode($json_data)->breakeven_price;
             
             $listings->where('variation_id', $variation->id)->where('min_price_limit', '<=', $breakeven_price)->where('price_limit', '>=', $breakeven_price)->where('min_price_limit', '!=', 0)->where('min_price_limit', '!=', null)->where('min_price_limit', '<=', 'buybox_price')->where('min_price_limit', '<=', 'min_price')->update(['handler_status' => 3]);
