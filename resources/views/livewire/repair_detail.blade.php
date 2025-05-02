@@ -123,7 +123,9 @@
             <h5>Reference: {{ $process->reference_id }} | Repairer: {{ $process->customer->first_name ?? null }} | Total Items: {{ $process->process_stocks->count() }} | Total Price: {{ $currency.amount_formatter($process->process_stocks->sum('price'),2) }}</h5>
             @if ($process->status == 1)
             <div class="p-1">
-                <form class="form-inline" action="{{ url('delete_repair_item') }}" method="POST" id="repair_item" onSubmit="return confirm('Are you sure you want to remove this item?');">
+                <form class="form-inline" action="{{ url('delete_repair_item') }}" method="POST" id="repair_item"
+                 {{-- onSubmit="return confirm('Are you sure you want to remove this item?');" --}}
+                 >
                     @csrf
                     <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
                     <input type="text" class="form-control form-control-sm" name="imei" @if (request('remove') == 1) id="imei" @endif placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
