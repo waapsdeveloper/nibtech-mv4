@@ -293,7 +293,7 @@
                             <td title="{{ amount_formatter($total_cost/($total_verified+$total_remaining),2) }}"><b>{{ amount_formatter($total_cost,2) }}</b></td>
                             @else
                             <td><b>{{ $total_quantity }}</b></td>
-                            <td title="{{ amount_formatter(($total_cost/$total_quantity) ?? 0,2) }}"><b>{{ amount_formatter($total_cost,2) }}</b></td>
+                            <td title="{{ amount_formatter($total_quantity>0 ? $total_cost/$total_quantity:0,2) }}"><b>{{ amount_formatter($total_cost,2) }}</b></td>
                             @endif
                         </tr>
                     </tfoot>
