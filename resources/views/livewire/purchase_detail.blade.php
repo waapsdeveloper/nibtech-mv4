@@ -204,6 +204,8 @@
         </div>
         <div id="print_inv">
         @if (session('user')->hasPermission('view_purchase_summery') && request('summery') && request('summery') == 1)
+            @if ($sold_stock_summery && count($sold_stock_summery)>0)
+
             <div class="card">
                 <div class="card-header pb-0">
                     Sold Stock Summery
@@ -257,6 +259,8 @@
                     </table>
                 </div>
             </div>
+            @endif
+            @if ($available_stock_summery && count($available_stock_summery)>0)
             <div class="card">
                 <div class="card-header pb-0">
                     Available Stock Summery
@@ -296,6 +300,8 @@
                     </table>
                 </div>
             </div>
+            @endif
+            @if ($repair_sent_stock_summery && count($repair_sent_stock_summery)>0)
             <div class="card">
                 <div class="card-header pb-0">
                     Repair Sent Stock Summery
@@ -336,6 +342,7 @@
                     </table>
                 </div>
             </div>
+            @endif
         @elseif (session('user')->hasPermission('view_purchase_summery') && request('summery') && request('summery') == 2)
             <div class="card">
                 <div class="card-header pb-0">
