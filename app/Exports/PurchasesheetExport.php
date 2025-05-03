@@ -78,7 +78,7 @@ class PurchasesheetExport implements FromCollection, WithHeadings
             'vendor_grade.name as vendor_grade',
             'process.reference_id as process_reference_id',
             'process.created_at as process_date',
-            'process_customer.company as process_vendor' ?? 'process.customer_id',
+            'process_customer.first_name as process_vendor' ?? 'process.customer_id',
             DB::raw('TRIM(BOTH " " FROM UPPER(
                 TRIM(LEADING "Battery | " FROM TRIM(LEADING " | " FROM REPLACE(
                     REPLACE(
