@@ -293,7 +293,7 @@
                             <td title="{{ amount_formatter($total_cost/($total_verified+$total_remaining),2) }}"><b>{{ amount_formatter($total_cost,2) }}</b></td>
                             @else
                             <td><b>{{ $total_quantity }}</b></td>
-                            <td title="{{ amount_formatter($total_cost/$total_quantity,2) }}"><b>{{ amount_formatter($total_cost,2) }}</b></td>
+                            <td title="{{ amount_formatter(($total_cost/$total_quantity) ?? 0,2) }}"><b>{{ amount_formatter($total_cost,2) }}</b></td>
                             @endif
                         </tr>
                     </tfoot>
@@ -314,7 +314,7 @@
                         <option value="200" {{ Request::get('per_page') == 200 ? 'selected' : '' }}>200</option>
                     </select>
                 </div>
-                        
+
             </div>
             <div class="card-body"><div class="table-responsive">
                 <table class="table table-bordered table-hover mb-0 text-md-nowrap">
