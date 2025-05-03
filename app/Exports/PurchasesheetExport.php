@@ -48,7 +48,7 @@ class PurchasesheetExport implements FromCollection, WithHeadings
                  ->limit(1);
         })
         ->leftJoin('process', 'process_stock.process_id', '=', 'process.id')
-        ->leftJoin('customer as process_customer', 'process.customer_id', '=', 'customer.id')
+        ->leftJoin('customer as process_customer', 'process.customer_id', '=', 'process_customer.id')
         ->leftJoin('stock_operations', function ($join) {
             $join->on('stock.id', '=', 'stock_operations.stock_id')
                  ->where('stock_operations.new_variation_id', '=', DB::raw('variation.id'))
