@@ -246,7 +246,7 @@
                                 <th></th>
                                 <th><b>Total</b></th>
                                 <th><b>{{ $sold_total['total_quantity'] }}</b></th>
-                                <th title="{{ $sold_total['total_cost']/$sold_total['total_quantity'] }}" ><b>€{{ amount_formatter($sold_total['total_cost'],2) }}</b></th>
+                                <th title="{{ $sold_total['total_cost']/($sold_total['total_quantity'] ?? 1) }}" ><b>€{{ amount_formatter($sold_total['total_cost'],2) }}</b></th>
                                 <th title="{{ $sold_total['total_repair']/$sold_total['total_quantity'] }}"><b>€{{ amount_formatter($sold_total['total_repair'],2) }}</b></th>
                                 <th title="{{ $sold_total['total_charge']/$sold_total['total_quantity'] }}"><b>€{{ amount_formatter($sold_total['total_charge'],2) }}</b></th>
                                 <th title="{{ $sold_total['total_price']/$sold_total['total_quantity'] }}"><b>€{{ amount_formatter($sold_total['total_price'],2) }}</b></th>
