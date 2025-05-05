@@ -1077,7 +1077,7 @@
                         });
 
                         if (variation.duplicate_skus) {
-                            console.log(variation.duplicate_skus);
+                            console.log(variation);
                         }
 
                         variationsContainer.append(`
