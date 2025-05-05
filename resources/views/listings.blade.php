@@ -1127,7 +1127,7 @@
                                         <h6 class="d-inline">Without&nbsp;Buybox</h6>
                                         ${withoutBuybox}
                                     </div>
-                                    <div class="pt-4">
+                                    <div class="pt-6">
                                         <h6 class="badge bg-light text-dark">
                                             ${state}
                                         </h6>
