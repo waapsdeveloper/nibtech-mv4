@@ -572,6 +572,12 @@ class Inventory extends Component
             ->groupBy('orders.customer_id')
             ->get();
 
+        $data['vendor_average_cost'] = $data['vendor_average_cost']->map(function ($item) {
+            $item->total_price = amount_formatter($item->total_price);
+            $item->average_price = amount_formatter($item->average_price);
+            return $item;
+        });
+
         return response()->json($data);
     }
 
@@ -651,6 +657,12 @@ class Inventory extends Component
             ->selectRaw('SUM(order_items.price) as total_price')
             // ->pluck('average_price')
             ->first();
+
+        $data['average_cost'] = $data['average_cost']->map(function ($item) {
+            $item->total_price = amount_formatter($item->total_price);
+            $item->average_price = amount_formatter($item->average_price);
+            return $item;
+        });
 
         return response()->json($data);
     }
