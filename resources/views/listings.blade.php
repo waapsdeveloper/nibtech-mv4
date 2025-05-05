@@ -1076,7 +1076,7 @@
 
                         });
 
-                        if (variation.duplicate_skus.length > 0) {
+                        if (variation.duplicate_skus) {
                             console.log(variation.duplicate_skus);
                         }
 
