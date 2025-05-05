@@ -57,7 +57,7 @@
     <!-- Breadcrumb -->
     <div class="breadcrumb-header justify-content-between">
         <div class="left-content">
-            <h4>Listings</h4>
+            <h4>{{ $title_page }}</h4>
         </div>
         <div class="justify-content-center mt-2">
             <ol class="breadcrumb">
