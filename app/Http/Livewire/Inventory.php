@@ -661,6 +661,7 @@ class Inventory extends Component
         $data['average_cost']->total_price = amount_formatter($data['average_cost']->total_price);
         $data['average_cost']->average_price = amount_formatter($data['average_cost']->average_price);
 
+
         return response()->json($data);
     }
 
