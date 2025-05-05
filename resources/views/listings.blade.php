@@ -656,8 +656,8 @@
                         let classs = '';
                         let cost = 0;
                         if (listing.currency_id == 5) {
-                            p_append = 'France: £'+(parseFloat(m_price)*parseFloat(eurToGbp)).toFixed(2);
-                            pm_append = 'France: £'+(parseFloat(m_min_price)*parseFloat(eurToGbp)).toFixed(2);
+                            // p_append = 'France: £'+(parseFloat(m_price)*parseFloat(eurToGbp)).toFixed(2);
+                            // pm_append = 'France: £'+(parseFloat(m_min_price)*parseFloat(eurToGbp)).toFixed(2);
                         }
                         if (listing.currency_id != 4) {
                             let rates = exchange_rates[currencies[listing.currency_id]];
