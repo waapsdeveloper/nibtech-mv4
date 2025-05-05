@@ -673,9 +673,7 @@
                 type: 'GET',
                 success: function(data) {
                     console.log(data);
-                    $('#average_cost').html('Average Cost: ' + parseFloat(data.average_cost.average_price)
-                        .toFixed(2) + ' | Total Cost: ' + parseFloat(data.average_cost.total_price).toFixed(
-                            2));
+                    $('#average_cost').html('Average Cost: ' + data.average_cost.average_price + ' | Total Cost: ' + data.average_cost.total_price);
                     $('#average_cost').attr('title', 'Total Stocks: ' + data.average_cost.total_qty);
                 }
             });
