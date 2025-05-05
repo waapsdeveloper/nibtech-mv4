@@ -1076,7 +1076,7 @@
 
                         });
 
-                        if (variation.duplicate_skus) {
+                        if (variation.duplicates) {
                             console.log(variation);
                         }
 
