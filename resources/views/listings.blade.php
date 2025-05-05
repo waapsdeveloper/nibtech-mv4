@@ -1093,8 +1093,7 @@
                                 </div>
                                 <div class="d-flex justify-content-between">
 
-                                    @if (request('special') != 'verify_listing')
-                                    <div class="p-2">
+                                    <div class="pt-2">
                                         <h6 class="d-inline">Change&nbsp;All&nbsp;€&nbsp;handlers</h6>
                                         <form class="form-inline" method="POST" id="change_all_handler_${variation.id}">
                                             @csrf
@@ -1109,7 +1108,7 @@
                                             <input type="submit" class="btn btn-light" value="Change">
                                         </form>
                                     </div>
-                                    <div class="p-2">
+                                    <div class="pt-2">
                                         <h6 class="d-inline">Change&nbsp;All&nbsp;€&nbsp;prices</h6>
                                         <form class="form-inline" method="POST" id="change_all_price_${variation.id}">
                                             @csrf
@@ -1124,18 +1123,17 @@
                                             <input type="submit" class="btn btn-light" value="Push">
                                         </form>
                                     </div>
-                                    <div class="pt-2">
+                                    <div class="pt-4">
                                         <h6 class="d-inline">Without&nbsp;Buybox</h6>
                                         ${withoutBuybox}
                                     </div>
-                                    @endif
-                                    <div class="pt-2">
+                                    <div class="pt-4">
                                         <h6 class="badge bg-light text-dark">
                                             ${state}
                                         </h6>
                                     </div>
                                 </div>
-                                <div class="card-body pt-4 collapse multi_collapse" id="details_${variation.id}">
+                                <div class="card-body p-2 collapse multi_collapse" id="details_${variation.id}">
                                     <div class="col-md-auto">
                                         <div class="table-responsive">
                                             <table class="table table-bordered table-hover mb-0 text-md-nowrap">
