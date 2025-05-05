@@ -1076,6 +1076,10 @@
 
                         });
 
+                        if (variation.duplicate_skus.length > 0) {
+                            console.log(variation.duplicate_skus);
+                        }
+
                         variationsContainer.append(`
                             <div class="card">
                                 <div class="card-header py-0 d-flex justify-content-between">
