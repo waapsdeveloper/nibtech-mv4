@@ -28,6 +28,17 @@ class ListingController extends Controller
     {
 
         $data['title_page'] = "Listings";
+        if(request('process_id') != null){
+            $process = Process_model::where('id', request('process_id'))->where('process_type_id', 22)->first();
+            if($process != null){
+                $data['process_id'] = $process->id;
+                $data['title_page'] = "Listings - Topup - ".$process->reference_id;
+            }else{
+                $data['process_id'] = null;
+            }
+        }else{
+            $data['process_id'] = null;
+        }
         session()->put('page_title', $data['title_page']);
         $data['bm'] = new BackMarketAPIController();
         $data['storages'] = Storage_model::pluck('name','id');
@@ -492,6 +503,14 @@ class ListingController extends Controller
     public function add_quantity($id, $stock = 'no', $process_id = null){
         if($stock == 'no'){
             $stock = request('stock');
+        }
+        if($process_id == null && request('process_id') != null){
+            $process = Process_model::where('process_type_id',22)->where('id', request('process_id'))->first();
+            if($process != null){
+                $process_id = $process->id;
+            }else{
+                $process_id = null;
+            }
         }
         $variation = Variation_model::find($id);
         $bm = new BackMarketAPIController();
