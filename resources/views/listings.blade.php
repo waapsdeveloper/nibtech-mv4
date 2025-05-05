@@ -1076,9 +1076,9 @@
 
                         });
 
-                        if (variation.duplicates) {
-                            console.log(variation);
-                        }
+                        // if (variation.duplicates) {
+                        //     console.log(variation);
+                        // }
 
                         variationsContainer.append(`
                             <div class="card">
