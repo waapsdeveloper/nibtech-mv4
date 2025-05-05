@@ -36,6 +36,9 @@
                         </div>
                         <button type="submit" class="btn btn-success" name="approve" value="1">Push & Close</button>
                         <a class="btn btn-danger" href="{{url('topup/delete') . "/" . $process->id }}" onclick="return confirm('Are you sure you want to delete this topup?');">Delete</a>
+                        @if (session('user')->hasPermission('topup_list_stock'))
+                            <a href="{{url('listings').'?process_id='.$process->id}}" class="btn btn-link">List Stock</a>
+                        @endif
                     </form>
 
                     <script>
@@ -58,9 +61,6 @@
 
                     </script>
 
-                    @if (session('user')->hasPermission('topup_list_stock'))
-                        <a href="{{url('listings').'?process_id='.$process->id}}" class="btn btn-link">List Stock</a>
-                    @endif
                 @else
                     <br>
                     {{ $process->description }}
