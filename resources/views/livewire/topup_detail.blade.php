@@ -57,6 +57,10 @@
                         }
 
                     </script>
+
+                    @if (session('user')->hasPermission('topup_list_stock'))
+                        <a href="{{url('listings').'?process_id='.$process->id}}" class="btn btn-link">List Stock</a>
+                    @endif
                 @else
                     <br>
                     {{ $process->description }}
