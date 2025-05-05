@@ -52,6 +52,7 @@ class Functions extends Command
         $this->misc();
         echo 5;
         $this->push_testing_api();
+        return 0;
     }
     private function refund_currency(){
 
