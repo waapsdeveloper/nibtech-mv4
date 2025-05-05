@@ -1093,7 +1093,7 @@
                                 </div>
                                 <div class="d-flex justify-content-between">
 
-                                    <div class="pt-2">
+                                    <div class="pt-1">
                                         <h6 class="d-inline">Change&nbsp;All&nbsp;€&nbsp;handlers</h6>
                                         <form class="form-inline" method="POST" id="change_all_handler_${variation.id}">
                                             @csrf
@@ -1108,7 +1108,7 @@
                                             <input type="submit" class="btn btn-light" value="Change">
                                         </form>
                                     </div>
-                                    <div class="pt-2">
+                                    <div class="pt-1">
                                         <h6 class="d-inline">Change&nbsp;All&nbsp;€&nbsp;prices</h6>
                                         <form class="form-inline" method="POST" id="change_all_price_${variation.id}">
                                             @csrf
@@ -1123,11 +1123,11 @@
                                             <input type="submit" class="btn btn-light" value="Push">
                                         </form>
                                     </div>
-                                    <div class="pt-4">
+                                    <div class="pt-3">
                                         <h6 class="d-inline">Without&nbsp;Buybox</h6>
                                         ${withoutBuybox}
                                     </div>
-                                    <div class="pt-5">
+                                    <div class="pt-4">
                                         <h6 class="badge bg-light text-dark">
                                             ${state}
                                         </h6>
