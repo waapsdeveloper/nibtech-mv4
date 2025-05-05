@@ -1124,18 +1124,18 @@
                                             <input type="submit" class="btn btn-light" value="Push">
                                         </form>
                                     </div>
-                                    <div class="p-2">
+                                    <div class="pt-2">
                                         <h6 class="d-inline">Without&nbsp;Buybox</h6>
                                         ${withoutBuybox}
                                     </div>
                                     @endif
-                                    <div class="p-2">
+                                    <div class="pt-2">
                                         <h6 class="badge bg-light text-dark">
                                             ${state}
                                         </h6>
                                     </div>
                                 </div>
-                                <div class="card-body p-2 collapse multi_collapse" id="details_${variation.id}">
+                                <div class="card-body pt-4 collapse multi_collapse" id="details_${variation.id}">
                                     <div class="col-md-auto">
                                         <div class="table-responsive">
                                             <table class="table table-bordered table-hover mb-0 text-md-nowrap">
