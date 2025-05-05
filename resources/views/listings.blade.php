@@ -187,6 +187,13 @@
 @section('scripts')
     <script>
 
+        function moveToNextInput(currentInput, prefix) {
+            const inputs = document.querySelectorAll(`input[id^="${prefix}"]`);
+            const currentIndex = Array.from(inputs).indexOf(currentInput);
+            if (currentIndex !== -1 && currentIndex < inputs.length - 1) {
+                inputs[currentIndex + 1].focus();
+            }
+        }
         function show_variation_history(variationId, variationName) {
             $('#variationHistoryModal').modal('show');
 
@@ -809,13 +816,6 @@
                 });
             }
 
-            function moveToNextInput(currentInput, prefix) {
-                const inputs = document.querySelectorAll(`input[id^="${prefix}"]`);
-                const currentIndex = Array.from(inputs).indexOf(currentInput);
-                if (currentIndex !== -1 && currentIndex < inputs.length - 1) {
-                    inputs[currentIndex + 1].focus();
-                }
-            }
             function updatePagination(response) {
                 let paginationContainer = $('#pagination-container');
                 paginationContainer.empty(); // Clear existing pagination
