@@ -451,9 +451,8 @@
                                         <tr>
                                             <td title="{{ $stock->id }}">{{ $i + 1 }}</td>
                                             <td>
-
                                                 <a title="Filter this variation"
-                                                    href="{{ url('inventory') . '?product=' . $stock->variation->product_id . '&storage=' . $stock->variation->storage . '&grade[]=' . $stock->variation->grade }}">
+                                                href="{{ url('inventory') . '?product=' . (isset($stock->variation->product_id) ? $stock->variation->product_id : '') . '&storage=' . (isset($stock->variation->storage) ? $stock->variation->storage : '') . '&grade[]=' . (isset($stock->variation->grade) ? $stock->variation->grade : '') }}">
                                                     {{ (isset($stock->variation->product_id) ? $stock->variation->product->model . ' ' : null) .
                                                         (isset($stock->variation->storage) ? $storages[$stock->variation->storage] . ' ' : null) .
                                                         ' ' .
