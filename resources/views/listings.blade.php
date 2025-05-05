@@ -1085,12 +1085,10 @@
                                         </h6>
                                         <h6 class="mb-0">Difference: ${variation.available_stocks.length - variation.pending_orders.length}</h6>
                                     </div>
-                                    @if (request('special') != 'verify_listing')
 
                                     <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#details_${variation.id}" aria-expanded="false" aria-controls="details_${variation.id}" onClick="getVariationDetails(${variation.id}, ${eurToGbp}, ${m_min_price}, ${m_price})">
                                         <i class="fas fa-chevron-down"></i>
                                     </button>
-                                    @endif
 
                                 </div>
                                 <div class="d-flex justify-content-between">
@@ -1101,11 +1099,11 @@
                                         <form class="form-inline" method="POST" id="change_all_handler_${variation.id}">
                                             @csrf
                                             <div class="form-floating d-inline">
-                                                <input type="number" class="form-control" id="all_min_handler_${variation.id}" name="all_min_handler" step="0.01" value="" style="width:80px;">
+                                                <input type="number" class="form-control" id="all_min_handler_${variation.id}" name="all_min_handler" step="0.01" value="" style="width:80px;" onkeydown="if(event.ctrlKey && event.key === 'ArrowDown') { event.preventDefault(); moveToNextInput(this, 'all_min_handler_'); } else if(event.ctrlKey && event.key === 'ArrowUp') { event.preventDefault(); moveToNextInput(this, 'all_min_handler_', true); }">
                                                 <label for="">Min&nbsp;Handler</label>
                                             </div>
                                             <div class="form-floating d-inline">
-                                                <input type="number" class="form-control" id="all_handler_${variation.id}" name="all_handler" step="0.01" value="" style="width:80px;">
+                                                <input type="number" class="form-control" id="all_handler_${variation.id}" name="all_handler" step="0.01" value="" style="width:80px;" onkeydown="if(event.ctrlKey && event.key === 'ArrowDown') { event.preventDefault(); moveToNextInput(this, 'all_handler_'); } else if(event.ctrlKey && event.key === 'ArrowUp') { event.preventDefault(); moveToNextInput(this, 'all_handler_', true); }">
                                                 <label for="">Handler</label>
                                             </div>
                                             <input type="submit" class="btn btn-light" value="Change">
@@ -1116,11 +1114,11 @@
                                         <form class="form-inline" method="POST" id="change_all_price_${variation.id}">
                                             @csrf
                                             <div class="form-floating d-inline">
-                                                <input type="number" class="form-control" id="all_min_price_${variation.id}" name="all_min_price" step="0.01" value="" style="width:80px;">
+                                                <input type="number" class="form-control" id="all_min_price_${variation.id}" name="all_min_price" step="0.01" value="" style="width:80px;" onkeydown="if(event.ctrlKey && event.key === 'ArrowDown') { event.preventDefault(); moveToNextInput(this, 'all_min_price_'); } else if(event.ctrlKey && event.key === 'ArrowUp') { event.preventDefault(); moveToNextInput(this, 'all_min_price_', true); }">
                                                 <label for="">Min&nbsp;Price</label>
                                             </div>
                                             <div class="form-floating d-inline">
-                                                <input type="number" class="form-control" id="all_price_${variation.id}" name="all_price" step="0.01" value="" style="width:80px;">
+                                                <input type="number" class="form-control" id="all_price_${variation.id}" name="all_price" step="0.01" value="" style="width:80px;" onkeydown="if(event.ctrlKey && event.key === 'ArrowDown') { event.preventDefault(); moveToNextInput(this, 'all_price_'); } else if(event.ctrlKey && event.key === 'ArrowUp') { event.preventDefault(); moveToNextInput(this, 'all_price_', true); }">
                                                 <label for="">Price</label>
                                             </div>
                                             <input type="submit" class="btn btn-light" value="Push">
