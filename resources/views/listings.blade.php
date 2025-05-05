@@ -906,6 +906,9 @@
                         let listedStock = fetchUpdatedQuantity(variation.id);
                         let m_min_price = Math.min(...variation.listings.filter(listing => listing.country === 73).map(listing => listing.min_price));
                         let m_price = Math.min(...variation.listings.filter(listing => listing.country === 73).map(listing => listing.price));
+                        let exchange_rates = {!! json_encode($exchange_rates) !!};
+                        let currencies = {!! json_encode($currencies) !!};
+                        let currency_sign = {!! json_encode($currency_sign) !!};
 
                         switch (variation.state) {
                             case 0:
@@ -932,14 +935,23 @@
                         //     getVariationDetails(variation.id, eurToGbp, m_min_price, m_price, 1)
                         // });
                         variation.listings.forEach(function(listing) {
+                            let exchange_rates_2 = exchange_rates;
+                            let currencies_2 = currencies;
+                            let currency_sign_2 = currency_sign;
                             let p_append = '';
                             let pm_append = '';
                             let possible = 0;
                             let classs = '';
                             let cost = 0;
-                            if (listing.currency_id == 5) {
-                                p_append = 'France: £'+(m_price*eurToGbp).toFixed(2);
-                                pm_append = 'France: £'+(m_min_price*eurToGbp).toFixed(2);
+                            // if (listing.currency_id == 5) {
+                            //     p_append = 'France: £'+(m_price*eurToGbp).toFixed(2);
+                            //     pm_append = 'France: £'+(m_min_price*eurToGbp).toFixed(2);
+                            if (listing.currency_id != 4) {
+
+                                let rates = exchange_rates_2[currencies_2[listing.currency_id]];
+                                p_append = 'France: '+currency_sign_2[listing.currency_id]+(parseFloat(m_price)*parseFloat(rates)).toFixed(2);
+                                pm_append = 'France: '+currency_sign_2[listing.currency_id]+(parseFloat(m_min_price)*parseFloat(rates)).toFixed(2);
+
                             }else{
                                 eur_listings[variation.id] = eur_listings[variation.id] || [];
                                 eur_listings[variation.id].push(listing);
