@@ -637,6 +637,8 @@
 
             let listingsTable = '';
             let countries = {!! json_encode($countries) !!};
+            let exchange_rates = {!! json_encode($exchange_rates) !!};
+            let currencies = {!! json_encode($currencies) !!};
             let params = {
                 csrf: "{{ csrf_token() }}"
             };
@@ -656,6 +658,11 @@
                         if (listing.currency_id == 5) {
                             p_append = 'France: £'+(parseFloat(m_price)*parseFloat(eurToGbp)).toFixed(2);
                             pm_append = 'France: £'+(parseFloat(m_min_price)*parseFloat(eurToGbp)).toFixed(2);
+                        }
+                        if (listing.currency_id != 4) {
+                            let rates = exchange_rates[currencies[listing.currency_id]];
+                            p_append = 'France: £'+(parseFloat(m_price)*parseFloat(rates)).toFixed(2);
+                            pm_append = 'France: £'+(parseFloat(m_min_price)*parseFloat(rates)).toFixed(2);
                         }
                         if(listing.target_price > 0 && listing.target_percentage > 0){
                             cost = $('#average_cost_'+variationId).text().replace('€', '');
