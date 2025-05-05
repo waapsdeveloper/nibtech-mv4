@@ -457,7 +457,7 @@
                                                         (isset($stock->variation->storage) ? $storages[$stock->variation->storage] . ' ' : null) .
                                                         ' ' .
                                                         (isset($stock->variation->color) ? $colors[$stock->variation->color] . ' ' : null) .
-                                                        ($grades[$stock->variation->grade] ?? 'Grade Issue') .
+                                                        (isset($stock->variation->grade) ? $grades[$stock->variation->grade] . ' ' : null) .
                                                         (isset($stock->variation->sub_grade) ? ' ' . $grades[$stock->variation->sub_grade] : null) }}
                                                 </a>
                                             </td>
