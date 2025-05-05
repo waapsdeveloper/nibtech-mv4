@@ -720,7 +720,9 @@
                                         <input type="number" class="form-control" id="min_price_${listing.id}" name="min_price" step="0.01" value="${listing.min_price}" form="change_min_price_${listing.id}">
                                         <label for="">Min Price</label>
                                     </div>
+                                    <span id="pm_append_${listing.id}">
                                     ${pm_append}
+                                    </span>
                                 </td>
                                 <td>
                                     <div class="form-floating">
@@ -935,11 +937,13 @@
                         //     getVariationDetails(variation.id, eurToGbp, m_min_price, m_price, 1)
                         // });
                         variation.listings.forEach(function(listing) {
+                            let best_price = $('#best_price_'+variation.id).text().replace('€', '');
                             let exchange_rates_2 = exchange_rates;
                             let currencies_2 = currencies;
                             let currency_sign_2 = currency_sign;
                             let p_append = '';
                             let pm_append = '';
+                            let pm_append_title = '';
                             let possible = 0;
                             let classs = '';
                             let cost = 0;
@@ -951,6 +955,7 @@
                                 let rates = exchange_rates_2[currencies_2[listing.currency_id]];
                                 p_append = 'France: '+currency_sign_2[listing.currency_id]+(parseFloat(m_price)*parseFloat(rates)).toFixed(2);
                                 pm_append = 'France: '+currency_sign_2[listing.currency_id]+(parseFloat(m_min_price)*parseFloat(rates)).toFixed(2);
+                                pm_append_title = 'Break Even: '+currency_sign_2[listing.currency_id]+(parseFloat(best_price)*parseFloat(rates)).toFixed(2);
 
                             }else{
                                 eur_listings[variation.id] = eur_listings[variation.id] || [];
@@ -1022,9 +1027,9 @@
                                             <input type="number" class="form-control" id="min_price_${listing.id}" name="min_price" step="0.01" value="${listing.min_price}" form="change_min_price_${listing.id}">
                                             <label for="">Min Price</label>
                                         </div>
-                                        <strong id="pm_append_${listing.id}">
-                                        ${pm_append}
-                                        </strong>
+                                        <span id="pm_append_${listing.id}" title="${pm_append_title}">
+                                            ${pm_append}
+                                        </span>
                                     </td>
                                     <td>
                                         <div class="form-floating">
