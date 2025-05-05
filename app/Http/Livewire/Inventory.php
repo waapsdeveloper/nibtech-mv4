@@ -658,11 +658,8 @@ class Inventory extends Component
             // ->pluck('average_price')
             ->first();
 
-        $data['average_cost'] = $data['average_cost']->map(function ($item) {
-            $item->total_price = amount_formatter($item->total_price);
-            $item->average_price = amount_formatter($item->average_price);
-            return $item;
-        });
+        $data['average_cost']->total_price = amount_formatter($data['average_cost']->total_price);
+        $data['average_cost']->average_price = amount_formatter($data['average_cost']->average_price);
 
         return response()->json($data);
     }
