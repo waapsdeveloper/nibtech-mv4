@@ -1056,9 +1056,18 @@
                                             <label for="">Stock</label>
                                         </div>
                                         <div class="form-floating">
-                                            <input type="number" class="form-control" name="stock" id="add_${variation.id}" value="" style="width:60px;" oninput="toggleButtonOnChange(${variation.id}, this)">
+                                            <input type="number" class="form-control" name="stock" id="add_${variation.id}" value="" style="width:60px;" oninput="toggleButtonOnChange(${variation.id}, this)" onkeydown="if(event.ctrlKey && event.key === 'ArrowDown') { event.preventDefault(); moveToNextInput(this, 'add_'); }">
                                             <label for="">Add</label>
                                         </div>
+                                        <script>
+                                            function moveToNextInput(currentInput, prefix) {
+                                                const inputs = document.querySelectorAll(`input[id^="${prefix}"]`);
+                                                const currentIndex = Array.from(inputs).indexOf(currentInput);
+                                                if (currentIndex !== -1 && currentIndex < inputs.length - 1) {
+                                                    inputs[currentIndex + 1].focus();
+                                                }
+                                            }
+                                        </script>
                                         <button id="send_${variation.id}" class="btn btn-light d-none" onclick="submitForm1(event, ${variation.id})">Push</button>
                                         <span class="text-success" id="success_${variation.id}"></span>
                                     </form>
