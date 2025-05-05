@@ -1022,7 +1022,9 @@
                                             <input type="number" class="form-control" id="min_price_${listing.id}" name="min_price" step="0.01" value="${listing.min_price}" form="change_min_price_${listing.id}">
                                             <label for="">Min Price</label>
                                         </div>
+                                        <strong id="pm_append_${listing.id}">
                                         ${pm_append}
+                                        </strong>
                                     </td>
                                     <td>
                                         <div class="form-floating">
