@@ -639,6 +639,7 @@
             let countries = {!! json_encode($countries) !!};
             let exchange_rates = {!! json_encode($exchange_rates) !!};
             let currencies = {!! json_encode($currencies) !!};
+            let currency_sign = {!! json_encode($currency_sign) !!};
             let params = {
                 csrf: "{{ csrf_token() }}"
             };
@@ -662,8 +663,8 @@
                         if (listing.currency_id != 4) {
                             let rates = exchange_rates[currencies[listing.currency_id]];
                             console.log(rates);
-                            p_append = 'France: £'+(parseFloat(m_price)*parseFloat(rates)).toFixed(2);
-                            pm_append = 'France: £'+(parseFloat(m_min_price)*parseFloat(rates)).toFixed(2);
+                            p_append = 'France: '+currency_sign[listing.currency_id]+(parseFloat(m_price)*parseFloat(rates)).toFixed(2);
+                            pm_append = 'France: '+currency_sign[listing.currency_id]+(parseFloat(m_min_price)*parseFloat(rates)).toFixed(2);
                         }
                         if(listing.target_price > 0 && listing.target_percentage > 0){
                             cost = $('#average_cost_'+variationId).text().replace('€', '');

@@ -48,6 +48,7 @@ class ListingController extends Controller
         $data['eur_gbp'] = ExchangeRate::where('target_currency','GBP')->first()->rate;
         $data['exchange_rates'] = ExchangeRate::pluck('rate','target_currency');
         $data['currencies'] = Currency_model::pluck('code','id');
+        $data['currency_sign'] = Currency_model::pluck('sign','id');
         $countries = Country_model::all();
         foreach($countries as $country){
             $data['countries'][$country->id] = $country;
