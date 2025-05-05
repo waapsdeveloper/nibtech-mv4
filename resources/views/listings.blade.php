@@ -651,6 +651,9 @@
                 success: function(data) {
                     listingsTable += data.error ? `<tr><td colspan="6">${data.error}</td></tr>` : '';
                     data.listings.forEach(function(listing) {
+                        let exchange_rates_2 = exchange_rates;
+                        let currencies_2 = currencies;
+                        let currency_sign_2 = currency_sign;
                         let p_append = '';
                         let pm_append = '';
                         let possible = 0;
@@ -662,10 +665,10 @@
                         }
                         if (listing.currency_id != 4) {
 
-                            let rates = exchange_rates[currencies[listing.currency_id]];
-                            console.log(rates, listing.currency_id, currencies[listing.currency_id]);
-                            p_append = 'France: '+currency_sign[listing.currency_id]+(parseFloat(m_price)*parseFloat(rates)).toFixed(2);
-                            pm_append = 'France: '+currency_sign[listing.currency_id]+(parseFloat(m_min_price)*parseFloat(rates)).toFixed(2);
+                            let rates = exchange_rates_2[currencies_2[listing.currency_id]];
+                            console.log(rates, listing.currency_id, currencies_2[listing.currency_id]);
+                            p_append = 'France: '+currency_sign_2[listing.currency_id]+(parseFloat(m_price)*parseFloat(rates)).toFixed(2);
+                            pm_append = 'France: '+currency_sign_2[listing.currency_id]+(parseFloat(m_min_price)*parseFloat(rates)).toFixed(2);
                         }
                         if(listing.target_price > 0 && listing.target_percentage > 0){
                             cost = $('#average_cost_'+variationId).text().replace('€', '');
