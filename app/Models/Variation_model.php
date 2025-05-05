@@ -44,6 +44,15 @@ class Variation_model extends Model
                     // ->whereNotNull('sku')
                     ->where('id', '!=', $this->id);
     }
+    public function duplicate_skus(){
+        return $this->hasMany(Variation_model::class, 'product_id', 'product_id')
+                    ->where('storage', $this->storage)
+                    ->where('color', $this->color)
+                    ->where('grade', $this->grade)
+                    // ->where('sub_grade', $this->sub_grade)
+                    ->whereNotNull('sku')
+                    ->where('id', '!=', $this->id);
+    }
     public function hasDuplicate()
     {
         return $this->duplicates()->exists();
