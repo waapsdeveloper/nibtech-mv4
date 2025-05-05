@@ -661,6 +661,7 @@
                         }
                         if (listing.currency_id != 4) {
                             let rates = exchange_rates[currencies[listing.currency_id]];
+                            console.log(rates);
                             p_append = 'France: £'+(parseFloat(m_price)*parseFloat(rates)).toFixed(2);
                             pm_append = 'France: £'+(parseFloat(m_min_price)*parseFloat(rates)).toFixed(2);
                         }
