@@ -666,7 +666,6 @@
                         if (listing.currency_id != 4) {
 
                             let rates = exchange_rates_2[currencies_2[listing.currency_id]];
-                            console.log(rates, listing.currency_id, currencies_2[listing.currency_id]);
                             p_append = 'France: '+currency_sign_2[listing.currency_id]+(parseFloat(m_price)*parseFloat(rates)).toFixed(2);
                             pm_append = 'France: '+currency_sign_2[listing.currency_id]+(parseFloat(m_min_price)*parseFloat(rates)).toFixed(2);
                         }
