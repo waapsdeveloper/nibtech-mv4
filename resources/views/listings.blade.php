@@ -1061,6 +1061,7 @@
 
                                     <form class="form-inline wd-150" method="POST" id="add_qty_${variation.id}" action="{{url('listing/add_quantity')}}/${variation.id}">
                                         @csrf
+                                        <input type="hidden" name="process_id" value="{{$process_id}}">
                                         <div class="form-floating">
                                             <input type="text" class="form-control" name="stock" id="quantity_${variation.id}" value="${listedStock || 0}" style="width:50px;" disabled>
                                             <label for="">Stock</label>
