@@ -706,7 +706,7 @@
                         vendor_name = vendors[v_cost.customer_id] ??
                             "Vendor Type Not Defined Correctly";
                         vendorWiseAverage +=
-                            `${vendor_name}: ${parseFloat(v_cost.average_price).toFixed(2)} x ${v_cost.total_qty} = ${parseFloat(v_cost.total_price).toFixed(2)} (${parseFloat((v_cost.total_qty / total_stocks) * 100).toFixed(2)}%) || `;
+                            `${vendor_name}: ${v_cost.average_price} x ${v_cost.total_qty} = ${v_cost.total_price} (${(v_cost.total_qty / total_stocks) * 100}%) || `;
                     });
                     $('#vendor_wise_average').html('Vendor wise average: ' + vendorWiseAverage + 'Total: ' +
                         total);
