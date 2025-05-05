@@ -325,7 +325,7 @@ class ListingController extends Controller
 
         $reference = Order_model::where('order_type_id',1)->pluck('reference_id','id');
         if($stock_costs->count() > 0){
-            
+
             $breakeven_price = ($stock_costs->average()+20)/0.88;
 
             if($breakeven_price != $variation->breakeven_price){
@@ -437,7 +437,7 @@ class ListingController extends Controller
             if(is_string($responses) || is_int($responses) || is_null($responses)){
                 $error = $responses;
                 $error .= " - ".$variation->reference_uuid;
-                Log::error($error);
+                // Log::error($error);
                 return response()->json(['error'=>$error]);
             }
             foreach($responses as $list){
