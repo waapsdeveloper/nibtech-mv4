@@ -90,7 +90,7 @@ class ListingController extends Controller
         }
         // dd($product_search, $storage_search);
 
-        return Variation_model::with('listings', 'listings.country_id', 'listings.currency', 'product', 'available_stocks', 'pending_orders', 'duplicate_skus')
+        return Variation_model::with('listings', 'listings.country_id', 'listings.currency', 'product', 'available_stocks', 'pending_orders', 'duplicates')
         ->when(request('reference_id') != '', function ($q) {
             return $q->where('reference_id', request('reference_id'));
         })
