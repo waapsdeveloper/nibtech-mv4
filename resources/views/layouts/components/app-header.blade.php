@@ -15,7 +15,7 @@
             <div class="app-sidebar__toggle" data-bs-toggle="sidebar">
                 <a class="open-toggle" id="sb_toggle" href="javascript:void(0);"><i class="header-icon fe fe-align-left" ></i></a>
                 <a class="close-toggle" href="javascript:void(0);"><i class="header-icon fe fe-x"></i></a>
-                <a href="{{url('index/clear_cache')}}" class="btn btn-secondary" style="margin-left: 10px;">Clear Cache</a>
+
             </div>
             <div class="logo-horizontal">
                 <a href="{{url('index')}}" class="header-logo">
@@ -23,6 +23,9 @@
                     <img src="{{asset('assets/img/brand/logo-white1.png')}}" class="mobile-logo dark-logo-1" alt="logo"  >
                 </a>
             </div>
+        </div>
+        <div class="main-header-center">
+            <a href="{{url('index/clear_cache')}}" class="btn btn-secondary" style="margin-left: 10px;">Clear Cache</a>
         </div>
         <div class="main-header-right">
             <button class="navbar-toggler navresponsive-toggler d-md-none ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent-4" aria-controls="navbarSupportedContent-4" aria-expanded="false" aria-label="Toggle navigation">
