@@ -176,6 +176,12 @@
                         <option value="2" @if(isset($_GET['with_stock']) && $_GET['with_stock'] == 2) {{'selected'}}@endif>Without Stock</option>
                     </select>
                 </div>
+                <div class="col-lg-2 col-xl-2 col-md-3 col-sm-6">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="invoice" name="invoice" value="1" required @if (session('invoice') == "1") {{'checked'}} @endif>
+                        <label class="form-check-label" for="invoice">Invoice Mode</label>
+                    </div>
+                </div>
                 <input type="hidden" name="page" value="{{ Request::get('page') }}">
                 <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
                 <input type="hidden" name="sort" value="{{ Request::get('sort') }}">
