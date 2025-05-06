@@ -37,10 +37,17 @@ class ApiRequestController extends Controller
     {
 
         if($request->Serial != '' || $request->Imei != '' || $request->Imei2 != ''){
-
+            $datas = $request->getContent();
+            $datas = json_decode($datas);
+            $datas = json_decode($datas);
+            // echo "Hello";
+            unset($datas->OEMData);
+            // dd($datas);
+            $datas = json_encode($datas);
             // Create or update the resource
             $api_request = Api_request_model::firstOrNew([
-                'request' => json_encode($request->getContent()),
+                'request' => $datas,
+                'json' => 1,
             ]);
             $api_request->save();
             // Return response
