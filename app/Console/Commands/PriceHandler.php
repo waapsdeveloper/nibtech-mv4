@@ -98,7 +98,7 @@ class PriceHandler extends Command
                         $new_price = $listing->price;
                     }
                     $response = $bm->updateOneListing($listing->variation->reference_id,json_encode(['min_price'=>$new_min_price, 'price'=>$new_price]), $listing->country_id->market_code);
-                    // echo $response;
+                    echo $response;
                     $listing->price = $new_price;
                     $listing->min_price = $new_min_price;
                 }elseif($listing->handler_status == 1 && $listing->bybox !== 1 && ($listing->buybox_price < $listing->min_price_limit || $listing->buybox_price > $listing->price_limit)){
@@ -131,7 +131,7 @@ class PriceHandler extends Command
             }
             echo $json_data;
             $breakeven_price = json_decode($json_data)->breakeven_price;
-            
+
             $listings->where('variation_id', $variation->id)->where('min_price_limit', '<=', $breakeven_price)->where('price_limit', '>=', $breakeven_price)->update(['handler_status' => 3]);
         }
     }
