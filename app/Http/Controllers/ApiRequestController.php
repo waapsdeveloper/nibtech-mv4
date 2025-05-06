@@ -38,8 +38,8 @@ class ApiRequestController extends Controller
 
         if($request->Serial != '' || $request->Imei != '' || $request->Imei2 != ''){
             $datas = $request->getContent();
-            $datas = json_decode($datas);
-            $datas = json_decode($datas);
+            // $datas = json_decode($datas);
+            // $datas = json_decode($datas);
             // echo "Hello";
             unset($datas->OEMData);
             // dd($datas);
