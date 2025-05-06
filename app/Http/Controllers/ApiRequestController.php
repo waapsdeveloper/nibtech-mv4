@@ -38,6 +38,20 @@ class ApiRequestController extends Controller
 
         if($request->Serial != '' || $request->Imei != '' || $request->Imei2 != ''){
             $datas = $request->getContent();
+            $data = json_encode($datas);
+            if (strpos($data, '{') !== false && strpos($data, '}') !== false) {
+                $datas = preg_split('/(?<=\}),(?=\{)/', $data)[0];
+            }
+            if (is_string($datas)) {
+                $datas = json_decode($datas);
+            }
+            if (is_string($datas)) {
+                $datas = json_decode($datas);
+            }
+            // echo "Hell2o";
+            unset($datas->OEMData);
+            // dd($datas);
+            $request->request = json_encode($datas);
             // $datas = json_decode($datas);
             // $datas = json_decode($datas);
             // echo "Hello";
