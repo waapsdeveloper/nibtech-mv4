@@ -29,6 +29,8 @@ use App\Models\Variation_model;
 use App\Models\Stock_model;
 use App\Models\Stock_operations_model;
 use App\Models\Product_color_merge_model;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 
 class Index extends Component
 {
@@ -1091,6 +1093,19 @@ class Index extends Component
 
     }
 
+    public function clear_cache(){
+        // Clear various caches and optimize the application
+        Cache::flush();
+        Artisan::call('optimize:clear');
+        Artisan::call('cache:clear');
+        Artisan::call('config:clear');
+        Artisan::call('view:clear');
+        Artisan::call('route:clear');
+        Artisan::call('config:cache');
+        Artisan::call('route:cache');
+        Artisan::call('optimize');
+        return redirect()->back();
+    }
     public function test(){
 
         $bm = new BackMarketAPIController();

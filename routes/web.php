@@ -73,6 +73,7 @@ Route::get('error501', Error501::class)->name('error');
 Route::middleware(['2fa'])->group(function () {
     Route::get('/', Index::class)->name('index');
     Route::get('index', Index::class)->name('index');
+    Route::get('index/clear_cache', [Index::class,'clear_cache'])->name('index');
     Route::get('enable_2fa', [Profile::class, 'enable2FA'])->name('enable2fa');
     Route::get('disable_2fa', [Profile::class, 'disable2FA'])->name('disable2fa');
 
