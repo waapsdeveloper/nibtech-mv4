@@ -22,6 +22,7 @@
                     <img src="{{asset('assets/img/brand/logo-white1.png')}}" class="mobile-logo dark-logo-1" alt="logo"  >
                 </a>
             </div>
+            <a href="{{url('index/clear_cache')}}" class="btn btn-secondary" style="margin-left: 10px;">Clear Cache</a>
         </div>
         <div class="main-header-right">
             <button class="navbar-toggler navresponsive-toggler d-md-none ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent-4" aria-controls="navbarSupportedContent-4" aria-expanded="false" aria-label="Toggle navigation">
