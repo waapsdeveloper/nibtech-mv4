@@ -628,7 +628,7 @@
                                                             @csrf
                                                             <input type="hidden" name="sort" value="{{request('sort')}}">
                                                             <div class="input-group">
-                                                                <input type="text" id="tester{{++$t}}" name="tester[]" placeholder="Tester" list="tester_list" class="form-control form-control-sm" style="max-width: 55px" maxlength="3">
+                                                                <input type="text" id="tester{{++$t}}" name="tester[]" placeholder="Tester" list="tester_list" class="form-control form-control-sm" style="max-width: 55px" maxlength="3" onkeydown="if(event.ctrlKey && event.key === 'ArrowDown') { event.preventDefault(); moveToNextInput(this, 'tester'); } else if(event.ctrlKey && event.key === 'ArrowUp') { event.preventDefault(); moveToNextInput(this, 'tester', true); }">
                                                                 <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm">
 
                                                                 <input type="hidden" name="sku[]" value="{{ $variation->sku ?? "Variation Issue" }}">
@@ -649,7 +649,7 @@
                                                             @for ($in = 1; $in <= $item->quantity; $in ++)
 
                                                                 <div class="input-group">
-                                                                    <input type="text" id="tester{{++$t}}" name="tester[]" placeholder="Tester" list="tester_list" class="form-control form-control-sm" style="max-width: 55px">
+                                                                    <input type="text" id="tester{{++$t}}" name="tester[]" placeholder="Tester" list="tester_list" class="form-control form-control-sm" style="max-width: 55px" onkeydown="if(event.ctrlKey && event.key === 'ArrowDown') { event.preventDefault(); moveToNextInput(this, 'tester'); } else if(event.ctrlKey && event.key === 'ArrowUp') { event.preventDefault(); moveToNextInput(this, 'tester', true); }">
                                                                     <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm" required>
                                                                 </div>
                                                             <input type="hidden" name="sku[]" value="{{ $variation->sku }}">
@@ -668,7 +668,7 @@
 
                                                                 @for ($in = 1; $in <= $itm->quantity; $in++)
                                                                     <div class="input-group">
-                                                                        <input type="text" id="tester{{++$t}}" name="tester[]" list="tester_list" placeholder="Tester" class="form-control form-control-sm" style="max-width: 55px">
+                                                                        <input type="text" id="tester{{++$t}}" name="tester[]" list="tester_list" placeholder="Tester" class="form-control form-control-sm" style="max-width: 55px" onkeydown="if(event.ctrlKey && event.key === 'ArrowDown') { event.preventDefault(); moveToNextInput(this, 'tester'); } else if(event.ctrlKey && event.key === 'ArrowUp') { event.preventDefault(); moveToNextInput(this, 'tester', true); }">
                                                                         <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm" required title="for SKU:{{ $itm->variation->sku }}">
                                                                     </div>
                                                                     <input type="hidden" name="sku[]" value="{{ $itm->variation->sku }}">
@@ -1149,6 +1149,17 @@
 
     <script>
 
+        function moveToNextInput(currentInput, prefix, moveUp = false) {
+            const inputs = document.querySelectorAll(`input[id^="${prefix}"]`);
+            const currentIndex = Array.from(inputs).indexOf(currentInput);
+            if (currentIndex !== -1) {
+                if (moveUp && currentIndex > 0) {
+                    inputs[currentIndex - 1].focus();
+                } else if (!moveUp && currentIndex < inputs.length - 1) {
+                    inputs[currentIndex + 1].focus();
+                }
+            }
+        }
         @if (request('invoice'))
 
             var id = `tester{{$t}}`;
