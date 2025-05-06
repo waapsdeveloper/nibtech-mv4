@@ -1102,7 +1102,7 @@ class Index extends Component
         Artisan::call('view:clear');
         Artisan::call('route:clear');
         Artisan::call('config:cache');
-        Artisan::call('route:cache');
+        // Artisan::call('route:cache');
         Artisan::call('optimize');
         return redirect()->back();
     }
