@@ -112,6 +112,10 @@ class Variation extends Component
 
     public function update_product($id){
         $update = request('update');
+        if(!ctype_digit($update['product_id'])){
+            session()->put('error', 'Product ID is not valid');
+            return redirect()->back();
+        }
         $variation = Variation_model::find($id);
         if($update['product_id'] != null && $update['product_id'] != $variation->product_id){
             $variation->update_product($update['product_id']);
