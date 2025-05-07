@@ -200,8 +200,9 @@
                                                 @foreach ($variations as $index => $product)
                                                     <form action="javascript:void(0)" method="post" class="row form-inline" onsubmit="return validateProductId(this)" id="update_product_{{ $i }}">
                                                         @csrf
+                                                    </form>
                                                      {{-- class="row form-inline" onsubmit="return validateProductId(this)" id="update_product_{{ $i }}"> --}}
-                                                        @csrf
+                                                        {{-- @csrf --}}
                                                     @php
                                                         $name = explode(' - ', $product->name);
                                                         $name = $name[0];
@@ -250,7 +251,7 @@
                                                             <input type="submit" value="Update" class="btn btn-success" form="update_product_{{ $i }}">
                                                         </td>
                                                     </tr>
-                                                    </form>
+                                                    {{-- </form> --}}
 
                                                     @php
                                                         $i ++;
