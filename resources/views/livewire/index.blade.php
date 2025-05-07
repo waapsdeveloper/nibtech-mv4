@@ -198,8 +198,9 @@
                                                     $i = 0;
                                                 @endphp
                                                 @foreach ($variations as $index => $product)
-                                                    <form
-                                                     class="row form-inline" onsubmit="return validateProductId(this)" id="update_product_{{ $i }}">
+                                                    <form action="javascript:void(0)" method="post" class="row form-inline" onsubmit="return validateProductId(this)" id="update_product_{{ $i }}">
+                                                        @csrf
+                                                     {{-- class="row form-inline" onsubmit="return validateProductId(this)" id="update_product_{{ $i }}"> --}}
                                                         @csrf
                                                     @php
                                                         $name = explode(' - ', $product->name);
