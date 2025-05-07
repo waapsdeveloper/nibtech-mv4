@@ -683,7 +683,7 @@
 
             function validateProductId(form) {
                 const productIdInput = form.querySelector('input[name="update[product_id]"]');
-                console.log(productIdInput.value);
+                console.log(productIdInput);
                 if (isNaN(productIdInput.value) || productIdInput.value.trim() === '') {
                     alert('Product ID must be a valid number.');
                     return false;
