@@ -86,7 +86,7 @@ class PriceHandler extends Command
                 $listing->buybox_winner_price = $list->winner_price->amount;
                 $listing->save();
 
-                if($listing->handler_status == 1 && $listing->buybox !== 1 && $listing->buybox_price > $listing->min_price_limit && ($listing->buybox_price < $listing->price_limit || $listing->price_limit == 0)){
+                if($listing->handler_status == 1 && $listing->buybox !== 1 && $listing->buybox_price >= $listing->min_price_limit && ($listing->buybox_price <= $listing->price_limit || $listing->price_limit == 0)){
                     $new_min_price = $listing->buybox_price - 2;
                     if($new_min_price < $listing->min_price_limit){
                         $new_min_price = $listing->min_price_limit;
