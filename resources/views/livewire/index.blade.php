@@ -189,7 +189,6 @@
                                                     <th><small><b>Color</b></small></th>
                                                     <th><small><b>Storage</b></small></th>
                                                     <th><small><b>Grade</b></small></th>
-                                                    <th></th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -197,7 +196,7 @@
                                                     $i = 0;
                                                 @endphp
                                                 @foreach ($variations as $index => $product)
-                                                    <form method="post" action="{{url('variation/update_product')}}/{{ $product->id }}" class="row form-inline">
+                                                    <form method="post" action="{{url('variation/update_product')}}/{{ $product->id }}" class="row form-inline" onsubmit="return validateProductId(this)">
                                                         @csrf
                                                     @php
                                                         $name = explode(' - ', $product->name);
@@ -678,6 +677,14 @@
 
         <script>
 
+            function validateProductId(form) {
+                const productIdInput = form.querySelector('input[name="update[product_id]"]');
+                if (isNaN(productIdInput.value) || productIdInput.value.trim() === '') {
+                    alert('Product ID must be a valid number.');
+                    return false;
+                }
+                return true;
+            }
             function load_data(url){
                 let data = [];
                 $.ajax({
