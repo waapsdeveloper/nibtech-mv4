@@ -51,7 +51,14 @@ class PriceHandler extends Command
 
         $error = '';
         $bm = new BackMarketAPIController();
-        $listings = Listing_model::whereIn('handler_status', [1,3])->get();
+        $listings = Listing_model::whereIn('handler_status', [1,3])
+        ->whereNull('buybox')
+        ->where('min_price_limit', '>', 0)
+        ->where('min_price_limit', '<=', 'buybox_price')
+        ->where('min_price_limit', '<=', 'min_price')
+        ->where('buybox_price', '<=', 'price_limit')
+        ->where('buybox_price', '<=', 'price')
+        ->get();
         $variation_ids = $listings->pluck('variation_id');
         $variations = Variation_model::whereIn('id', $variation_ids)->get();
 
