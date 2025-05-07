@@ -65,6 +65,7 @@ class FunctionsThirty extends Command
                 }
                 if($variation->reference_uuid == null){
                     $variation->reference_uuid = $list->id;
+                    echo $list->id." ";
                 }
                 if($variation->state != $list->publication_state){
                     $variation->state = $list->publication_state;
