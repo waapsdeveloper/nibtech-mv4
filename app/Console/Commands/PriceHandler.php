@@ -106,10 +106,10 @@ class PriceHandler extends Command
                 }
                 $listing->save();
                 if ($error != '') {
-                    return 1; // Return 1 to indicate an error occurred
+                    // return 1; // Return 1 to indicate an error occurred
                 }
 
-                return 0; // Return 0 to indicate success
+                // return 0; // Return 0 to indicate success
             }
         }
         if($error != ''){
