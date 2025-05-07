@@ -189,20 +189,16 @@
                                                     <th><small><b>Color</b></small></th>
                                                     <th><small><b>Storage</b></small></th>
                                                     <th><small><b>Grade</b></small></th>
+                                                    <th></th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                    {{-- method="post" --}}
-                                                     {{-- action="{{url('variation/update_product')}}/{{ $product->id }}"  --}}
                                                 @php
                                                     $i = 0;
                                                 @endphp
                                                 @foreach ($variations as $index => $product)
-                                                    <form action="javascript:void(0)" method="post" class="row form-inline" onsubmit="return validateProductId(this)" id="update_product_{{ $i }}">
+                                                    <form method="post" action="{{url('variation/update_product')}}/{{ $product->id }}" class="row form-inline">
                                                         @csrf
-                                                    </form>
-                                                     {{-- class="row form-inline" onsubmit="return validateProductId(this)" id="update_product_{{ $i }}"> --}}
-                                                        {{-- @csrf --}}
                                                     @php
                                                         $name = explode(' - ', $product->name);
                                                         $name = $name[0];
@@ -213,7 +209,7 @@
                                                     <tr>
                                                         <td>{{ $i + 1 }}</td>
                                                         <td>
-                                                            <input type="text" name="update[product_id]" list="models" class="form-select form-select-sm" value="{{ $name }}" required form="update_product_{{ $i }}">
+                                                            <input type="text" name="update[product_id]" list="models" class="form-select form-select-sm" value="{{ $name }}" required>
                                                             <datalist id="models">
                                                                 <option value="">None</option>
                                                                 @foreach ($products as $id => $prod)
@@ -224,7 +220,7 @@
                                                         <td>{{ $product->name }}</td>
                                                         <td>{{ $product->sku }}</td>
                                                         <td>
-                                                            <select name="update[color]" class="form-select form-select-sm" form="update_product_{{ $i }}">
+                                                            <select name="update[color]" class="form-select form-select-sm">
                                                                 <option value="">None</option>
                                                                 @foreach ($colors as $id => $name)
                                                                     <option value="{{ $id }}" {{ $product->color == $id ? 'selected' : '' }}>{{ $name }}</option>
@@ -232,7 +228,7 @@
                                                             </select>
                                                         </td>
                                                         <td>
-                                                            <select name="update[storage]" class="form-select form-select-sm" form="update_product_{{ $i }}">
+                                                            <select name="update[storage]" class="form-select form-select-sm">
                                                                 <option value="">None</option>
                                                                 @foreach ($storages as $id => $name)
                                                                     <option value="{{ $id }}" {{ $product->storage == $id ? 'selected' : '' }}>{{ $name }}</option>
@@ -240,7 +236,7 @@
                                                             </select>
                                                         </td>
                                                         <td>
-                                                            <select name="update[grade]" class="form-select form-select-sm" form="update_product_{{ $i }}">
+                                                            <select name="update[grade]" class="form-select form-select-sm">
                                                                 <option value="">None</option>
                                                                 @foreach ($grades as  $id => $name)
                                                                     <option value="{{ $id }}" {{ $product->grade == $id ? 'selected' : '' }}>{{ $name }}</option>
@@ -248,10 +244,10 @@
                                                             </select>
                                                         </td>
                                                         <td>
-                                                            <input type="submit" value="Update" class="btn btn-success" form="update_product_{{ $i }}">
+                                                            <input type="submit" value="Update" class="btn btn-success">
                                                         </td>
                                                     </tr>
-                                                    {{-- </form> --}}
+                                                    </form>
 
                                                     @php
                                                         $i ++;
@@ -682,15 +678,6 @@
 
         <script>
 
-            function validateProductId(form) {
-                const productIdInput = form.querySelector('input[name="update[product_id]"]');
-                console.log(form);
-                if (isNaN(productIdInput.value) || productIdInput.value.trim() === '') {
-                    alert('Product ID must be a valid number.');
-                    return false;
-                }
-                return true;
-            }
             function load_data(url){
                 let data = [];
                 $.ajax({
