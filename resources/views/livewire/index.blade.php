@@ -196,7 +196,8 @@
                                                     $i = 0;
                                                 @endphp
                                                 @foreach ($variations as $index => $product)
-                                                    <form method="post"
+                                                    <form
+                                                    {{-- method="post" --}}
                                                      {{-- action="{{url('variation/update_product')}}/{{ $product->id }}"  --}}
                                                      class="row form-inline" onsubmit="return validateProductId(this)">
                                                         @csrf
