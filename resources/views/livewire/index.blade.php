@@ -196,7 +196,9 @@
                                                     $i = 0;
                                                 @endphp
                                                 @foreach ($variations as $index => $product)
-                                                    <form method="post" action="{{url('variation/update_product')}}/{{ $product->id }}" class="row form-inline" onsubmit="return validateProductId(this)">
+                                                    <form method="post"
+                                                     {{-- action="{{url('variation/update_product')}}/{{ $product->id }}"  --}}
+                                                     class="row form-inline" onsubmit="return validateProductId(this)">
                                                         @csrf
                                                     @php
                                                         $name = explode(' - ', $product->name);
@@ -679,6 +681,7 @@
 
             function validateProductId(form) {
                 const productIdInput = form.querySelector('input[name="update[product_id]"]');
+                console.log(productIdInput.value);
                 if (isNaN(productIdInput.value) || productIdInput.value.trim() === '') {
                     alert('Product ID must be a valid number.');
                     return false;
