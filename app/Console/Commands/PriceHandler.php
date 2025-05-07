@@ -113,7 +113,7 @@ class PriceHandler extends Command
             }
         }
         if($error != ''){
-            $this->info($error);
+            Log::info($error);
         }
         return 0;
 
