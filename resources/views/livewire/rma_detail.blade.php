@@ -368,13 +368,13 @@
                         @php
                             $varss = $vars->toArray();
                             if (array_key_first($varss) != null) {
-                                $key = array_key_first($varss);
+                                $k = $storages[array_key_first($varss)];
                             }else{
-                                $key = 0;
+                                $k = null;
                             }
                         @endphp
 
-                        {{ $products[$key]." ".$storages[$key] }}
+                        {{ $products[$key]." ".$k }}
             {{-- <div class="col-md-4">
                 <div class="card">
                     <div class="card-header pb-0">
