@@ -6,8 +6,8 @@
             <h1>Reports</h1>
             <div class="panel panel-default">
                 <div class="panel-heading">Reports</div>
-                <div class="panel-body" wire:poll>
-                    {{ now() }}
+                <div class="panel-body" x-data="{ time: '{{ now() }}' }" x-init="setInterval(() => time = new Date().toLocaleString(), 1000)">
+                    <span x-text="time"></span>
                 </div>
             </div>
         </div>
