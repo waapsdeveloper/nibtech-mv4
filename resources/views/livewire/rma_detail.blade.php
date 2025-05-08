@@ -367,8 +367,14 @@
                     <div class="card-header pb-0">
                         @php
                             $varss = $vars->toArray();
+                            if (array_key_first($varss) != null) {
+                                $key = array_key_first($varss);
+                            }else{
+                                $key = 0;
+                            }
                         @endphp
-                        {{ $products[$key]." ".$storages[array_key_first($varss) ?? 0] }}
+
+                        {{ $products[$key]." ".$storages[$key] }}
             {{-- <div class="col-md-4">
                 <div class="card">
                     <div class="card-header pb-0">
