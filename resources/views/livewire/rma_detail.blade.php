@@ -368,7 +368,7 @@
                         @php
                             $varss = $vars->toArray();
                         @endphp
-                        {{ $products[$key]." ".$storages[array_key_first($varss)] }}
+                        {{ $products[$key]." ".$storages[array_key_first($varss) ?? 0] }}
             {{-- <div class="col-md-4">
                 <div class="card">
                     <div class="card-header pb-0">
