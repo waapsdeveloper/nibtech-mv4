@@ -6,7 +6,7 @@
             <h1>Reports</h1>
             <div class="panel panel-default">
                 <div class="panel-heading">Reports</div>
-                <div class="panel-body" x-data="{ time: '{{ now() }}' }" x-init="setInterval(() => time = new Date().toLocaleString(), 10000)">
+                <div class="panel-body" x-data="{ time: '{{ now() }}' }" x-init="setInterval(() => time = new Date().toLocaleString(), 5000)">
                     <span x-text="time"></span>
                 </div>
             </div>
