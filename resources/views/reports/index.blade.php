@@ -19,19 +19,25 @@
     </div>
 
     {{-- Load each Livewire component on page load --}}
-    <div id="livewire-components">
+    {{-- <div id="livewire-components">
         @livewire('sales-report')
-        @livewire('batch-grade-report')
+        @livewire('batch-grade-report') --}}
         {{-- @livewire('weekly-ecommerce-sales-graph') --}}
-    </div>
+    {{-- </div> --}}
     <!-- Blade Template with Alpine.js -->
-    {{-- <div x-data="{ load: false }" x-init="load = true">
+    <div x-data="{ load: false }" x-init="load = true">
         <div x-show="!load">Loading reports...</div>
         <div x-show="load">
             @livewire('sales-report')
         </div>
-    </div> --}}
+    </div>
 
+    <div x-data="{ load: false }" x-init="load = true">
+        <div x-show="!load">Loading reports...</div>
+        <div x-show="load">
+            @livewire('batch-grade-report')
+        </div>
+    </div>
     @livewire('test-component')
 
 @endsection
