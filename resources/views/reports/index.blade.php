@@ -25,12 +25,27 @@
         {{-- @livewire('weekly-ecommerce-sales-graph') --}}
     {{-- </div> --}}
     <!-- Blade Template with Alpine.js -->
-    <div x-data="{ load: false }" x-init="load = true">
+    <div x-data="{ load: false }" x-init="setTimeout(() => load = true, 0)">
         <div x-show="!load">Loading reports...</div>
         <div x-show="load">
             @livewire('sales-report')
         </div>
     </div>
+    <div>
+        {{ now() }}
+    </div>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('autoRefresh', () => ({
+                init() {
+                    setInterval(() => {
+                        Livewire.emit('refreshComponent');
+                    }, 5000); // Refresh every 5 seconds
+                }
+            }));
+        });
+    </script>
 
     <div x-data="{ load: false }" x-init="load = true">
         <div x-show="!load">Loading reports...</div>

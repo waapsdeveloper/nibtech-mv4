@@ -543,6 +543,127 @@ class Index extends Component
 
         }
     }
+
+    public function get_most_profittable(){
+
+        if(session('user')->hasPermission('dashboard_most_profittable')){
+
+            if(request('days') != null){
+                $days = request('days');
+            }else{
+                $days = 15;
+            }
+            if(request('difference') != null){
+                $difference = request('difference')/100;
+            }else{
+                $difference = 0.2;
+            }
+            if(request('min_sales') != null){
+                $min_sale = request('min_sales');
+            }else{
+                $min_sale = 100;
+            }
+            if(request('max_stock') != null){
+                $max_stock = request('max_stock');
+            }else{
+                $max_stock = 100;
+            }
+
+            $start_date = now()->subDays($days)->startOfDay()->format('Y-m-d');
+            $products = Products_model::orderBy('model','asc')->pluck('model','id');
+            $storages = Storage_model::pluck('name','id');
+
+            if(request('per_page_2') != null){
+                $per_page_2 = request('per_page_2');
+            }else{
+                $per_page_2 = 10;
+            }
+            $variation_ids = [];
+            if(request('data') == 1){
+
+                $variation_ids = Variation_model::select('id')
+                ->when(request('product') != '', function ($q) {
+                    return $q->where('product_id', '=', request('product'));
+                })
+                ->when(request('sku') != '', function ($q) {
+                    return $q->where('sku', 'LIKE', '%'.request('sku').'%');
+                })
+                ->when(request('category') != '', function ($q) {
+                    return $q->whereHas('product', function ($qu) {
+                        $qu->where('category', '=', request('category'));
+                    });
+                })
+                ->when(request('brand') != '', function ($q) {
+                    return $q->whereHas('product', function ($qu) {
+                        $qu->where('brand', '=', request('brand'));
+                    });
+                })
+                ->when(request('storage') != '', function ($q) {
+                    return $q->where('variation.storage', request('storage'));
+                })
+                ->when(request('color') != '', function ($q) {
+                    return $q->where('variation.color', request('color'));
+                })
+                ->when(request('grade') != '', function ($q) {
+                    return $q->where('variation.grade', request('grade'));
+                })->pluck('id')->toArray();
+            }
+
+            $variation_sales = Order_item_model::when(request('data') == 1, function($q) use ($variation_ids){
+                return $q->whereIn('variation_id', $variation_ids);
+            })
+            ->whereHas('order', function ($q) use ($start_date) {
+                $q->where(['order_type_id'=>3])
+                ->where('created_at', '>=', $start_date);
+            })
+            ->select('variation_id', DB::raw('SUM(quantity) as total_quantity_sold'), DB::raw('AVG(price) as average_price'))
+            ->groupBy('variation_id')
+            ->orderByDesc('total_quantity_sold')
+            // ->take($per_page_2)
+            ->get()
+            ->keyBy('variation_id');
+
+            $variation_stock = Stock_model::whereIn('variation_id', $variation_sales->pluck('variation_id')->toArray())
+            ->where('status',1)
+            ->select('variation_id', DB::raw('COUNT(*) as total_quantity_stocked'))
+            ->groupBy('variation_id')
+            ->orderBy('total_quantity_stocked')
+            ->get()
+            ->keyBy('variation_id');
+
+            $variations = Variation_model::whereIn('id', $variation_sales->pluck('variation_id')->toArray())->get();
+            $merged_data = [];
+            foreach($variations as $variation){
+                $model = $products[$variation->product_id] ?? 'Model not found';
+                $storage = $storages[$variation->storage] ?? '';
+                $color = $colors[$variation->color] ?? '';
+                $grade = $grades[$variation->grade] ?? '';
+
+                $sale = $variation_sales[$variation->id]->total_quantity_sold ?? 0;
+                $stock = $variation_stock[$variation->id]->total_quantity_stocked ?? 0;
+
+
+                if($stock < $sale*$difference && $sale >= $min_sale && $stock <= $max_stock){
+                    $merged_data[] = [
+                        'variation_id' => $variation->id,
+                        'product_id' => $variation->product_id,
+                        'storage' => $variation->storage,
+                        'color' => $variation->color,
+                        'grade' => $variation->grade,
+                        'sku' => $variation->sku,
+                        'variation' => $model . ' ' . $storage . ' ' . $color . ' ' . $grade,
+                        'total_quantity_sold' => $variation_sales[$variation->id]->total_quantity_sold ?? 0,
+                        'average_price' => amount_formatter($variation_sales[$variation->id]->average_price) ?? 0,
+                        'total_quantity_stocked' => $variation_stock[$variation->id]->total_quantity_stocked ?? 0,
+                        'start_date' => $start_date,
+                    ];
+                }
+            }
+
+            return response()->json($merged_data);
+
+        }
+    }
     public function get_price_changes(){
 
         if(session('user')->hasPermission('dashboard_price_changes')){

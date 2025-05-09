@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use App\Services\ExchangeRateService;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class FetchExchangeRates extends Command
 {
@@ -25,7 +26,7 @@ class FetchExchangeRates extends Command
             $this->exchangeRateService->getRates();
             $this->info('Exchange rates updated successfully.');
         } catch (\Exception $e) {
-            $this->error('Failed to update exchange rates: ' . $e->getMessage());
+            Log::error('Failed to update exchange rates: ' . $e->getMessage());
         }
     }
 }
