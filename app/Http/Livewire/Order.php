@@ -1192,7 +1192,7 @@ class Order extends Component
             $data['order_issues'] = $order_issues;
             // dd($data['missing_stock']);
 
-            if($data['order']->created_at >= now()->subDays(7)){
+            if($data['order']->created_at >= now()->subDays(7) && $data['order']->created_at <= now()->subHours(3){
 
                 $testings = Api_request_model::whereNull('status')
                 ->where('request->BatchID', 'LIKE', '%'.$data['order']->reference_id.'%')
@@ -3468,6 +3468,7 @@ class Order extends Component
         // dd(request('ids'));
         $pdfExport = new LabelsExport();
         $pdfExport->generatePdf();
+        echo "<script>window.close();</script>";
     }
     public function export_note()
     {
