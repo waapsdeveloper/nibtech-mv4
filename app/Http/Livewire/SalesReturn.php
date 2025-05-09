@@ -341,62 +341,67 @@ class SalesReturn extends Component
             $variation->save();
 
             $stock = Stock_model::find($return['stock_id']);
+            $last_order = $stock->last_item()->order;
+            if($last_order->order_type_id == 3 || ($last_order->order_type_id == 5 && $last_order->reference_id == 999)){
 
-            if($stock->id){
-                $item = Order_item_model::where(['order_id'=>$order_id, 'stock_id' => $stock->id])->first();
-                // print_r($stock);
-                if($item == null){
+                if($stock->id){
+                    $item = Order_item_model::where(['order_id'=>$order_id, 'stock_id' => $stock->id])->first();
+                    // print_r($stock);
+                    if($item == null){
 
 
 
-                    $order_item = new Order_item_model();
-                    $order_item->order_id = $order_id;
-                    $order_item->reference_id = $return['reference_id'];
-                    $order_item->variation_id = $variation->id;
-                    $order_item->stock_id = $stock->id;
-                    $order_item->quantity = 1;
-                    $order_item->price = $return['price'];
-                    $order_item->currency = $stock->last_item()->order->currency;
-                    $order_item->status = 1;
-                    $order_item->linked_id = $return['linked_id'];
-                    $order_item->admin_id = session('user_id');
-                    $order_item->save();
+                        $order_item = new Order_item_model();
+                        $order_item->order_id = $order_id;
+                        $order_item->reference_id = $return['reference_id'];
+                        $order_item->variation_id = $variation->id;
+                        $order_item->stock_id = $stock->id;
+                        $order_item->quantity = 1;
+                        $order_item->price = $return['price'];
+                        $order_item->currency = $stock->last_item()->order->currency;
+                        $order_item->status = 1;
+                        $order_item->linked_id = $return['linked_id'];
+                        $order_item->admin_id = session('user_id');
+                        $order_item->save();
 
-                    print_r($order_item);
+                        print_r($order_item);
 
-                    if(isset($return['battery'])){
-                        $return['description'] .= " || B: ".$return['battery'];
+                        if(isset($return['battery'])){
+                            $return['description'] .= " || B: ".$return['battery'];
+                        }
+
+                        if(isset($return['locked'])){
+                            $return['description'] .= " || L: ".$return['locked'];
+                        }
+
+                        $stock_operation = Stock_operations_model::create([
+                            'stock_id' => $stock->id,
+                            'old_variation_id' => $stock->variation_id,
+                            'new_variation_id' => $variation->id,
+                            'description' => $return['description'],
+                            'admin_id' => session('user_id'),
+                        ]);
+
+                        $stock->variation_id = $variation->id;
+                        $stock->status = 1;
+                        $stock->save();
+
+                        if (session()->has('counter')) {
+                            // Increment the counter
+                            session()->increment('counter');
+                        } else {
+                            // Initialize the counter if it doesn't exist
+                            session()->put('counter', 1);
+                        }
+                        session()->put('success','Item added');
+                    }else{
+                        session()->put('error','Item already added');
                     }
-
-                    if(isset($return['locked'])){
-                        $return['description'] .= " || L: ".$return['locked'];
-                    }
-
-                    $stock_operation = Stock_operations_model::create([
-                        'stock_id' => $stock->id,
-                        'old_variation_id' => $stock->variation_id,
-                        'new_variation_id' => $variation->id,
-                        'description' => $return['description'],
-                        'admin_id' => session('user_id'),
-                    ]);
-
-                    $stock->variation_id = $variation->id;
-                    $stock->status = 1;
-                    $stock->save();
-
-                    if (session()->has('counter')) {
-                        // Increment the counter
-                        session()->increment('counter');
-                    } else {
-                        // Initialize the counter if it doesn't exist
-                        session()->put('counter', 1);
-                    }
-                    session()->put('success','Item added');
                 }else{
-                    session()->put('error','Item already added');
+                    session()->put('error','Stock Not Found');
                 }
             }else{
-                session()->put('error','Stock Not Found');
+                session()->put('error','Not Eligible for return');
             }
 
         }else{
