@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Http\Livewire\IMEI;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -153,11 +154,18 @@ class Stock_model extends Model
     public function last_item(){
 
         $last_item = $this->purchase_item;
+        $ids = [];
         if($last_item != null){
 
             while(Order_item_model::where(['linked_id'=>$last_item->id, 'stock_id'=>$this->id])->first()){
                 $last_item = Order_item_model::where(['linked_id'=>$last_item->id, 'stock_id'=>$this->id])->first();
                 // print_r($last_item);
+                if(in_array($last_item->id, $ids)){
+                    $imei = new IMEI();
+                    $imei->rearrange($this->id);
+                }else{
+                    $ids[] = $last_item->id;
+                }
             }
         }
         return $last_item;
