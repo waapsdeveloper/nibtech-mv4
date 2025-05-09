@@ -117,6 +117,10 @@ Route::get('purchase/export/{id}', [Order::class,'export_purchase_sheet'])->name
 
 Route::get('report_new', [ReportController::class, 'index'])->name('view_report');
 
+Route::get('/labels/print', function () {
+    return view('print-labels');
+})->name('labels.print');
+
 Route::get('report', Report::class)->name('view_report');
 Route::get('report/sales_and_returns_total', [Report::class,'sales_and_returns_total'])->name('view_report');
 Route::get('report/b2c_orders', [Report::class,'b2c_orders_report'])->name('view_report');
