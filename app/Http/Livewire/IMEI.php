@@ -270,63 +270,6 @@ class IMEI extends Component
 
     }
 
-    // public function rearrange($stock_id){
-    //     $stock = Stock_model::find($stock_id);
-    //     if(!$stock){
-    //         session()->put('error', 'Stock not found');
-    //         return redirect()->back();
-    //     }
-    //     $order = [];
-    //     $new_order = [];
-    //     $i = 1;
-    //     $order_items = Order_item_model::where('stock_id', $stock_id)->orderBy('id','asc')->get();
-    //     foreach($order_items as $item){
-    //         $item->linked_id = null;
-    //         $item->save();
-    //         if($item->order->order_type_id == 1){
-    //             $order[0] = $item->id;
-    //         }else{
-    //             $order[$i] = $item->id;
-    //             $i++;
-    //         }
-    //     }
-    //     $even = [];
-    //     $odd = [];
-    //     foreach($order as $key => $item_id){
-    //         if($key == 0){
-    //             continue;
-    //         }
-    //         if($key % 2 == 0){
-    //             $even[] = $key;
-    //         }else{
-    //             $odd[] = $key;
-    //         }
-    //     }
-
-    //     foreach($order as $key => $item_id){
-    //         if($key == 0){
-    //             continue;
-    //         }
-    //         $item = Order_item_model::find($item_id);
-    //         if(in_array($item->order->order_type_id, [2,3,5])){
-
-    //             $new_order[] = $item_id;
-    //         }else{
-
-    //         }
-
-    //     }
-    //     foreach($new_order as $key => $item_id){
-    //         if($key == 0){
-    //             continue;
-    //         }
-    //         $item = Order_item_model::find($item_id);
-    //         $item->linked_id = $new_order[$key-1];
-    //         $item->save();
-    //     }
-    //     session()->put('success', 'Rearranged Successfully');
-    //     return redirect()->back();
-    // }
     public function delete_order_item($item_id){
         $item = Order_item_model::find($item_id);
         if(!$item){
