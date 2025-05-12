@@ -67,7 +67,7 @@ class PriceHandler extends Command
         foreach ($variations as $variation) {
 
             // $responses = $bm->getListingCompetitors($variation->reference_uuid);
-            $responses = $listingController->get_competitors($variation->id, 1);
+            $responses = $listingController->getCompetitors($variation->id, 1);
             if ($responses == null) {
                 $error .= "No response for variation: " . $variation->sku . "\n";
                 continue;
