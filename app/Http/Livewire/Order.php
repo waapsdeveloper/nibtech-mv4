@@ -559,6 +559,9 @@ class Order extends Component
         ->when(request('order_id'), function ($q) {
             return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
         })
+        ->when(request('customer_id'), function ($q) {
+            return $q->where('orders.customer_id', request('customer_id'));
+        })
         ->when(request('status'), function ($q) {
             return $q->where('orders.status', request('status'));
         })
