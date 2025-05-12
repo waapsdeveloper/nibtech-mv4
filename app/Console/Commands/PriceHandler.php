@@ -77,7 +77,7 @@ class PriceHandler extends Command
                 }
                 if(is_array($list)){
                     $error .= json_encode($list);
-                    echo $error;
+                    // echo $error;
                     continue;
                 }
                 $country = Country_model::where('code',$list->market)->first();
