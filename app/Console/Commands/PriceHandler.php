@@ -54,8 +54,8 @@ class PriceHandler extends Command
         $listings = Listing_model::whereIn('handler_status', [1,3])
         ->where('buybox',  '!=', 1)
         ->where('min_price_limit', '>', 0)
-        ->where('min_price_limit', '<=', 'buybox_price')
-        ->where('min_price_limit', '<=', 'min_price')
+        ->whereColumn('min_price_limit', '<=', 'buybox_price')
+        ->whereColumn('min_price_limit', '<=', 'min_price')
         ->get();
         $variation_ids = $listings->pluck('variation_id');
         $variations = Variation_model::whereIn('id', $variation_ids)->get();
