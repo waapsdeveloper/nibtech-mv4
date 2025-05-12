@@ -51,6 +51,7 @@ class PriceHandler extends Command
 
         $error = '';
         $bm = new BackMarketAPIController();
+        $listingController = new ListingController();
         $listings = Listing_model::whereIn('handler_status', [1,3])
         ->where('buybox',  '!=', 1)
         ->where('min_price_limit', '>', 0)
@@ -65,7 +66,8 @@ class PriceHandler extends Command
         // print_r($listings);
         foreach ($variations as $variation) {
 
-            $responses = $bm->getListingCompetitors($variation->reference_uuid);
+            // $responses = $bm->getListingCompetitors($variation->reference_uuid);
+            $responses = $listingController->get_competitors($variation->id, 1);
             if ($responses == null) {
                 $error .= "No response for variation: " . $variation->sku . "\n";
                 continue;
