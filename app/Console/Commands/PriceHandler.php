@@ -62,7 +62,7 @@ class PriceHandler extends Command
 
             echo "Hello";
 
-        print_r($listings);
+        // print_r($listings);
         foreach ($variations as $variation) {
 
             $responses = $bm->getListingCompetitors($variation->reference_uuid);
@@ -104,6 +104,8 @@ class PriceHandler extends Command
                     }else{
                         $new_price = $listing->price;
                     }
+                    $new_min_price = round($new_min_price, 2);
+                    $new_price = round($new_price, 2);
                     $response = $bm->updateOneListing($listing->variation->reference_id,json_encode(['min_price'=>$new_min_price, 'price'=>$new_price]), $listing->country_id->market_code);
                     print_r($response);
                     $listing->price = $new_price;
