@@ -62,7 +62,7 @@ class PriceHandler extends Command
 
             echo "Hello";
 
-        print_r($listings);
+        // print_r($listings);
         foreach ($variations as $variation) {
 
             $responses = $bm->getListingCompetitors($variation->reference_uuid);
@@ -94,6 +94,7 @@ class PriceHandler extends Command
                 $listing->buybox_winner_price = $list->winner_price->amount;
                 $listing->save();
 
+                print_r($listing);
                 if($listing->handler_status == 1 && $listing->buybox !== 1 && $listing->buybox_price >= $listing->min_price_limit && ($listing->buybox_price <= $listing->price_limit || $listing->price_limit == 0)){
                     $new_min_price = $listing->buybox_price - 2;
                     if($new_min_price < $listing->min_price_limit){
