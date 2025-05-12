@@ -77,8 +77,10 @@ class PriceHandler extends Command
                 }
                 if(is_array($list)){
                     $error .= json_encode($list);
+                    $error .= "\n";
+                    $error .= "Error in response for variation: " . $variation->sku . "\n";
                     // echo $error;
-                    // continue;
+                    continue;
                 }
                 $country = Country_model::where('code',$list->market)->first();
                 $listing = Listing_model::firstOrNew(['variation_id'=>$variation->id, 'country'=>$country->id]);
