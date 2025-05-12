@@ -52,7 +52,7 @@ class PriceHandler extends Command
         $error = '';
         $bm = new BackMarketAPIController();
         $listings = Listing_model::whereIn('handler_status', [1,3])
-        ->where('buybox',  0)
+        ->where('buybox',  '!=', 1)
         ->where('min_price_limit', '>', 0)
         ->where('min_price_limit', '<=', 'buybox_price')
         ->where('min_price_limit', '<=', 'min_price')
