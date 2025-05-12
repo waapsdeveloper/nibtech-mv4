@@ -578,7 +578,7 @@ class Repair extends Component
             }
         }
         if($process_stock->status == 2){
-            session()->put('error', "Stock already added");
+            session()->put('error', "Stock already received");
             if($back != 1){
                 return redirect()->back();
             }else{
