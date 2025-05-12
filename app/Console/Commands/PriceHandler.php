@@ -62,7 +62,7 @@ class PriceHandler extends Command
 
             echo "Hello";
 
-        // print_r($listings);
+        print_r($listings);
         foreach ($variations as $variation) {
 
             $responses = $bm->getListingCompetitors($variation->reference_uuid);
@@ -77,6 +77,7 @@ class PriceHandler extends Command
                 }
                 if(is_array($list)){
                     $error .= json_encode($list);
+                    echo $error;
                     continue;
                 }
                 $country = Country_model::where('code',$list->market)->first();
