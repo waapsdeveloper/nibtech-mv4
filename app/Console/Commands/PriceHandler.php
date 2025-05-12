@@ -71,6 +71,7 @@ class PriceHandler extends Command
                 continue;
             }
             foreach($responses as $list){
+                print_r($list);
                 if(is_string($list) || is_int($list)){
                     $error .= $list;
                     continue;
