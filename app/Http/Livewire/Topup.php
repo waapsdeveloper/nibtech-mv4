@@ -223,7 +223,7 @@ class Topup extends Component
             $stock->availability();
 
 
-            if(request('copy') == 1){
+            if(request('copy') == 1 || request('copy_grade') == 1){
                 $variation = $stock->variation;
                 if(request('product') != null){
                     $product_id = request('product');
@@ -241,11 +241,33 @@ class Topup extends Component
                 }else{
                     $storage_id = $variation->storage;
                 }
-                if(request('color') != null){
+                if(request('color') != null && request('copy') == 1){
                     $color_id = request('color');
                 }else{
                     $color_id = $variation->color;
                 }
+                if(request('dual-esim') != null){
+                    $product = Products_model::find($product_id);
+                    if(!str_contains($product->model, 'Dual eSIM')){
+                        $new_product = Products_model::firstOrNew(['model' => $product->model.' Dual eSIM']);
+                        $new_product->category = $product->category;
+                        $new_product->brand = $product->brand;
+                        $new_product->save();
+                        $product_id = $new_product->id;
+                    }
+                }
+                if(request('dual-sim') != null){
+                    $product = Products_model::find($product_id);
+                    if(!str_contains($product->model, 'Dual Sim')){
+                        $new_product = Products_model::firstOrNew(['model' => $product->model.' Dual SIM']);
+                        $new_product->category = $product->category;
+                        $new_product->brand = $product->brand;
+                        $new_product->save();
+                        $product_id = $new_product->id;
+                    }
+                }
+
+
                 if(request('grade') != null){
                     $grade_id = request('grade');
                     if($variation->grade != $grade_id && request('copy_grade') != 1){
