@@ -356,8 +356,25 @@ class Wholesale extends Component
         }
         $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
 
-        if($stock == null){
-            session()->put('error', 'Stock Not Found');
+        if($stock == null && strlen($i) >= 5){
+            $stock = Stock_model::where('imei', 'LIKE', '%'.$i)->with(['variation'])->get();
+            if($stock->count() == 1){
+                $stock = $stock->first();
+            }elseif($stock->count() > 1){
+                $imeis = $stock->pluck('imei')->toArray();
+                $error = "Did you mean: ".implode(", ", $imeis);
+                $stock = null;
+            }else{
+                $stock = null;
+            }
+        }
+
+        if (request('imei') == '' || !$stock || $stock->status == null) {
+            if(isset($error)){
+                session()->put('error', $error);
+            }else{
+                session()->put('error', 'IMEI Invalid / Not Found');
+            }
             if($back != 1){
                 return redirect()->back();
             }else{
