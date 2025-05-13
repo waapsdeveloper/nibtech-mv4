@@ -298,7 +298,11 @@ class Topup extends Component
                     $stock->variation_id = $new_variation->id;
                     $stock->save();
                 }
-                    session()->put('copy', 1);
+                if(request('copy') == 1){
+                        session()->put('copy', 1);
+                }else{
+                        session()->put('copy', 0);
+                }
                     if(request('copy_grade') == 1){
                         session()->put('copy_grade', 1);
                     }else{
