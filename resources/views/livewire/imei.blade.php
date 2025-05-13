@@ -477,6 +477,90 @@
         </div>
 
         @endif
+        @if (isset($topups) && $topups->count() > 0)
+
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-header pb-0">
+                        <div class="d-flex justify-content-between">
+                            <h4 class="card-title mg-b-0">
+                                Topup History
+                            </h4>
+
+                            <div class=" mg-b-0">
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="card-body"><div class="table-responsive">
+
+                        <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                            <thead>
+                                <tr>
+                                    <th><small><b>No</b></small></th>
+                                    <th><small><b>Reference ID</b></small></th>
+                                    <th><small><b>IMEI</b></small></th>
+                                    {{-- <th><small><b>Status</b></small></th> --}}
+                                    <th><small><b>Creation Date | TN</b></small></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php
+                                    $i = 0;
+                                    $id = [];
+                                @endphp
+                                @foreach ($topups as $index => $p_stock)
+                                    @php
+                                        $process = $p_stock->process;
+                                        $j = 0;
+                                    @endphp
+
+                                        <tr>
+                                            <td title="{{ $p_stock->id }}">{{ $i + 1 }}</td>
+                                            <td><a href="{{url('repair/detail/'.$process->id)}}?status=1">{{ $process->reference_id }}</a></td>
+                                            {{-- <td>@if ($process->customer)
+                                                {{ $process->customer->first_name." ".$process->customer->last_name }}
+                                            @endif</td> --}}
+                                            {{-- <td>
+                                                {{ $process->currency_id->sign.amount_formatter($p_stock->price,2) }}
+                                            </td> --}}
+                                            <td style="width:240px" class="text-success text-uppercase" title="{{ $p_stock->stock_id }}" id="copy_imei_{{ $process->id }}">
+                                                @isset($p_stock->stock->imei) {{ $p_stock->stock->imei }}&nbsp; @endisset
+                                                @isset($p_stock->stock->serial_number) {{ $p_stock->stock->serial_number }}&nbsp; @endisset
+                                                @isset($p_stock->admin_id) | {{ $p_stock->admin->first_name }} |
+                                                @else
+                                                @isset($process->processed_by) | {{ $process->admin->first_name }} | @endisset
+                                                @endisset
+                                            </td>
+                                            <td>
+                                                {{ $p_stock->description }}
+                                            </td>
+                                            {{-- <td>@if ($p_stock->status == 1)
+                                                Sent
+                                                @else
+                                                Received
+                                            @endif</td> --}}
+                                            <td style="width:220px">{{ $p_stock->created_at}} <br> {{ $process->tracking_number }}</td>
+                                            <td>
+                                                <a href="{{ url('inventory/delete_verification_item').'/'.$p_stock->id }}" class="btn btn-link" onclick="return confirm('Are you sure you want to delete this item?');" title="Delete" style="color: red;"><i class="fa fa-trash"></i></a>
+                                            </td>
+                                        </tr>
+                                    @php
+                                        $i ++;
+                                    @endphp
+                                @endforeach
+                            </tbody>
+                        </table>
+                        <br>
+                    </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @endif
 
         @if (isset($stocks))
 
