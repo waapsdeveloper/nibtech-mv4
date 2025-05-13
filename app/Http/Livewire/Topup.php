@@ -294,7 +294,7 @@ class Topup extends Component
                 session()->put('color', $stock->variation->color);
                 session()->put('grade', $stock->variation->grade);
             }
-
+            $stock = Stock_model::find($stock->id);
             if($stock->variation->sku == null){
                 session()->put('error', 'SKU Not Found');
                 return redirect()->back();
