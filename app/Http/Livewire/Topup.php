@@ -248,7 +248,7 @@ class Topup extends Component
                 }
                 if(request('dual-esim') != null){
                     $product = Products_model::find($product_id);
-                    if(!str_contains($product->model, 'Dual eSIM')){
+                    if(!str_contains(strtolower($product->model), 'dual esim')){
                         $new_product = Products_model::firstOrNew(['model' => $product->model.' Dual eSIM']);
                         $new_product->category = $product->category;
                         $new_product->brand = $product->brand;
@@ -258,8 +258,8 @@ class Topup extends Component
                 }
                 if(request('dual-sim') != null){
                     $product = Products_model::find($product_id);
-                    if(!str_contains($product->model, 'Dual Sim')){
-                        $new_product = Products_model::firstOrNew(['model' => $product->model.' Dual SIM']);
+                    if(!str_contains(strtolower($product->model), 'dual sim')){
+                        $new_product = Products_model::firstOrNew(['model' => $product->model.' Dual Sim']);
                         $new_product->category = $product->category;
                         $new_product->brand = $product->brand;
                         $new_product->save();
