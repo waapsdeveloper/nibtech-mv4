@@ -226,6 +226,7 @@
                         <thead>
                             <tr>
                                 <th><small><b>No</b></small></th>
+                                <th><small><b>SKU</b></small></th>
                                 <th><small><b>Variation</b></small></th>
                                 <th><small><b>IMEI | Serial Number</b></small></th>
                                 <th><small><b>Reference</b></small></th>
@@ -255,6 +256,9 @@
                                     @endphp
                                     <td>{{ $i + 1 }}</td>
                                     <td>{{ $variation->sku ?? null }}</td>
+                                    <td>
+                                        {{ ($products[$variation->product_id] ?? "Product not found").' '.$storages[$variation->storage] ?? null.' '.$colors[$variation->color] ?? null.' '.$grades[$variation->grade] ?? "Grade not added" }} {{$grades[$variation->sub_grade] ?? '' }}
+                                    </td>
                                     <td>{{ $stock->imei.$stock->serial_number }}</td>
                                     <td>{{ $item->description }}</td>
                                     <td>{{ $stock->latest_operation->description ?? null }}</td>
