@@ -257,7 +257,7 @@
                                     <td>{{ $i + 1 }}</td>
                                     <td>{{ $variation->sku ?? null }}</td>
                                     <td>
-                                        {{ ($products[$variation->product_id] ?? "Product not found").' '.$storages[$variation->storage] ?? null.' '.$colors[$variation->color] ?? null.' '.$grades[$variation->grade] ?? "Grade not added" }} {{$grades[$variation->sub_grade] ?? '' }}
+                                        {{ ($products[$variation->product_id] ?? "Product not found").' '.($storages[$variation->storage] ?? null).' '.($colors[$variation->color] ?? null).' '.($grades[$variation->grade] ?? "Grade not added") }} {{$grades[$variation->sub_grade] ?? '' }}
                                     </td>
                                     <td>{{ $stock->imei.$stock->serial_number }}</td>
                                     <td>{{ $item->description }}</td>
