@@ -187,7 +187,7 @@ class Topup extends Component
             $stocks = Stock_model::whereIn('id',$data['process']->process_stocks->pluck('stock_id')->toArray())->get();
             // $variations = Variation_model::whereIn('id',$stocks->pluck('variation_id')->toArray())->get();
             $variation_ids = Process_stock_model::where('process_id', $process_id)->pluck('variation_id')->unique();
-            $variations = Variation_model::whereIn('id', $variation_ids)
+            $variations = Variation_model::whereIn('variation.id', $variation_ids)
             ->join('products', 'products.id', '=', 'variations.product_id')
             ->orderBy('products.model', 'asc')
             ->select('variation.*')
