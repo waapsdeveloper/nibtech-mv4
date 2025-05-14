@@ -34,7 +34,12 @@
                             <input type="text" class="form-control" id="description" name="description" placeholder="Enter Description" value="{{$process->description}}" required>
                             <label for="description">Description</label>
                         </div>
-                        <button type="submit" class="btn btn-success" name="approve" value="1">Push & Close</button>
+                        @if ($process->status == 1)
+                            <button type="submit" class="btn btn-primary" name="approve" value="1">Send</button>
+                        @elseif ($process->status == 2)
+                            <button type="submit" class="btn btn-primary" name="push" value="1">Push & Close</button>
+
+                        @endif
                         <a class="btn btn-danger" href="{{url('topup/delete') . "/" . $process->id }}" onclick="return confirm('Are you sure you want to delete this topup?');">Delete</a>
                         @if (session('user')->hasPermission('topup_list_stock'))
                             <a href="{{url('listing').'?process_id='.$process->id}}" class="btn btn-link">List Stock</a>
