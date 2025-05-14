@@ -280,6 +280,13 @@
                                     <td>{{ $stock->latest_operation->description ?? null }}</td>
                                     <td>{{ $customer->first_name ?? "Purchase Entry Error" }}</td>
                                     <td style="width:220px">{{ $item->created_at }}</td>
+                                    <td>
+                                        @if (session('user')->hasPermission('delete_topup_item') && $process->status == 1)
+                                            <a href="{{ url('topup/delete_topup_item').'/'.$item->id }}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this item?');">
+                                                <i class="fa fa-trash"></i>
+                                            </a>
+                                        @endif
+                                    </td>
                                 </tr>
                                 @php
                                     $i ++;
