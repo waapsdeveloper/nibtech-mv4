@@ -38,6 +38,8 @@ class Variation_model extends Model
     public function duplicates(){
         return $this->hasMany(Variation_model::class, 'product_id', 'product_id')
                     ->where('storage', $this->storage)
+                    ->orWhere(['storage'=> null, $this->storage => 0])
+                    ->orWhere(['storage'=> 0, $this->storage => null])
                     ->where('color', $this->color)
                     ->where('grade', $this->grade)
                     // ->where('sub_grade', $this->sub_grade)
@@ -47,6 +49,8 @@ class Variation_model extends Model
     public function duplicate_skus(){
         return $this->hasMany(Variation_model::class, 'product_id', 'product_id')
                     ->where('storage', $this->storage)
+                    ->orWhere(['storage'=> null, $this->storage => 0])
+                    ->orWhere(['storage'=> 0, $this->storage => null])
                     ->where('color', $this->color)
                     ->where('grade', $this->grade)
                     // ->where('sub_grade', $this->sub_grade)
