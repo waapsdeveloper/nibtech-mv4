@@ -193,6 +193,9 @@ class Topup extends Component
             $variations = Variation_model::whereIn('variation.id', $variation_ids)
             ->join('products', 'products.id', '=', 'variation.product_id')
             ->orderBy('products.model', 'asc')
+            ->orderBy('variation.storage', 'asc')
+            ->orderBy('variation.color', 'asc')
+            ->orderBy('variation.grade', 'asc')
             ->select('variation.*')
             ->get();
             $data['variations'] = $variations
@@ -239,7 +242,7 @@ class Topup extends Component
 
             }
 
-            // $stock->availability();
+            $stock->availability();
 
 
             if(request('copy') == 1 || request('copy_grade') == 1 || request('dual-esim') == 1 || request('dual-sim') == 1){
