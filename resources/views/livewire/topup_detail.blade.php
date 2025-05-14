@@ -452,6 +452,12 @@
                                                     </tr>
                                                 @endforeach
                                             </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <td colspan="3" class="text-center"><b>Total</b></td>
+                                                    <td><b>{{ $stocks->count() }}</b></td>
+                                                    <td></td>
+                                                </tr>
                                         </table>
                                     </td>
                                 </tr>
