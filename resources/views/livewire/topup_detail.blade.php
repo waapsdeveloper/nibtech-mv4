@@ -216,7 +216,7 @@
         session()->forget('error');
         @endphp
         @endif
-        @if ($process->status == 1)
+        @if ($process->status <= 2)
 
             <div class="card">
                 <div class="card-header pb-0">
@@ -225,6 +225,10 @@
                         <h4 class="card-title mg-b-0">Counter: {{ session('counter') }} <a href="{{ url('stock_room/reset_counter') }}">Reset</a></h4>
 
                         <h4 class="card-title mg-b-0">Total Scanned: {{$scanned_total}}</h4>
+                        @if ($process->status == 2)
+                            <h4 class="card-title mg-b-0">Total Verified: {{$verified_total}}</h4>
+
+                        @endif
                         <form method="get" action="" class="row form-inline">
                             <label for="perPage" class="card-title inline">per page:</label>
                             <select name="per_page" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">

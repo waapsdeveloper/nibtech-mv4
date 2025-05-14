@@ -179,6 +179,9 @@ class Topup extends Component
         $process = Process_model::with(['process_stocks'])->find($process_id);
         $data['process'] = $process;
         $data['scanned_total'] = Process_stock_model::where('process_id',$process_id)->where('admin_id',session('user_id'))->count();
+        if($process->status == 2){
+            $data['verified_total'] = Process_stock_model::where('process_id',$process_id)->where('verified_by',session('user_id'))->count();
+        }
         $data['process_id'] = $process_id;
 
         $data['products'] = Products_model::orderBy('model','asc')->pluck('model','id');
