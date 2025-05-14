@@ -78,7 +78,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
                         " | DrPhone", ""),
                     "BCC", "Battery Cycle Count")))
                 )) as issue'),
-                // 'admin2.first_name as admin_name',
+                'admin2.first_name as admin_name',
                 'p_stock.status as status',
                 'p_stock.created_at as created_at',
                 'order_items.price as price',
