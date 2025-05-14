@@ -239,7 +239,7 @@ class Topup extends Component
 
             }
 
-            $stock->availability();
+            // $stock->availability();
 
 
             if(request('copy') == 1 || request('copy_grade') == 1 || request('dual-esim') == 1 || request('dual-sim') == 1){
