@@ -274,6 +274,7 @@ class Topup extends Component
                         if(request('copy') == 1){
                             session()->put('error', 'Grade ID does not match with the stock variation');
                             $grade_id = $variation->grade;
+                            session()->put('grade', $stock->variation->grade);
                         }else{
                             return redirect()->back()->with('error', 'Grade ID does not match with the stock variation');
                         }
