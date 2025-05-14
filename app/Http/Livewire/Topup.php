@@ -404,7 +404,15 @@ class Topup extends Component
                 return redirect()->back();
             }
 
-            $process_stock = Process_stock_model::where(['process_id'=>$process_id, 'stock_id'=>$stock->id]);
+            $process_stock = Process_stock_model::where(['process_id'=>$process_id, 'stock_id'=>$stock->id])->first();
+            if($process_stock == null){
+                session()->put('error', 'Stock Not Found');
+                return redirect()->back();
+            }
+            if($process_stock->status == 2){
+                session()->put('error', 'Stock already Verified SKU:'.$stock->variation->sku);
+                return redirect()->back();
+            }
             $process_stock->verified_by = session('user_id');
             $process_stock->status = 2;
             $process_stock->save();
