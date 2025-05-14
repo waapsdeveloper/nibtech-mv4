@@ -404,7 +404,7 @@ class Topup extends Component
                 return redirect()->back();
             }
 
-            $process_stock = Process_stock_model::wher(['process_id'=>$process_id, 'stock_id'=>$stock->id]);
+            $process_stock = Process_stock_model::where(['process_id'=>$process_id, 'stock_id'=>$stock->id]);
             $process_stock->verified_by = session('user_id');
             $process_stock->status = 2;
             $process_stock->save();
