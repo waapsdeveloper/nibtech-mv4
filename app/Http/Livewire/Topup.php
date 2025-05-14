@@ -223,7 +223,7 @@ class Topup extends Component
             $stock->availability();
 
 
-            if(request('copy') == 1 || request('copy_grade') == 1){
+            if(request('copy') == 1 || request('copy_grade') == 1 || request('dual-esim') == 1 || request('dual-sim') == 1){
                 $variation = $stock->variation;
                 if(request('product') != null){
                     $product_id = request('product');
@@ -268,7 +268,7 @@ class Topup extends Component
                 }
 
 
-                if(request('grade') != null){
+                if(request('grade') != null && request('copy_grade') == 1){
                     $grade_id = request('grade');
                     if($variation->grade != $grade_id && request('copy_grade') != 1){
                         if(request('copy') == 1){
