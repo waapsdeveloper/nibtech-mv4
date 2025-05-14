@@ -190,7 +190,7 @@ class Topup extends Component
             $variations = Variation_model::whereIn('id', $variation_ids)
             ->join('products', 'products.id', '=', 'variations.product_id')
             ->orderBy('products.model', 'asc')
-            ->select('variations.*')
+            ->select('variation.*')
             ->get();
             $data['variations'] = $variations
             // ->sortBy(function ($variation) use ($process_id) {
