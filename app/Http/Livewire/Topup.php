@@ -347,6 +347,8 @@ class Topup extends Component
             }else{
                 session()->put('copy', 0);
                 session()->put('copy_grade', 0);
+                session()->put('dual-esim', 0);
+                session()->put('dual-sim', 0);
                 session()->put('product', $stock->variation->product_id);
                 session()->put('storage', $stock->variation->storage);
                 session()->put('color', $stock->variation->color);
