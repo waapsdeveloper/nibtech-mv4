@@ -239,7 +239,7 @@ class Topup extends Component
                         return redirect()->back()->with('error', 'Storage ID does not match with the stock variation');
                     }
                 }else{
-                    $storage_id = $variation->storage;
+                    $storage_id = $variation->storage ?? 0;
                 }
                 if(request('color') != null && request('copy') == 1){
                     $color_id = request('color');
