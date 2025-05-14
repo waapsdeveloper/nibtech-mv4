@@ -400,12 +400,12 @@
                                 $i = 0;
                             @endphp
                             @foreach ($variations as $variation)
-                                <tr @if ($variation->listed_stock < 0 && $variation->listed_stock + $stock->where('variation_id', $variation->id)->count() < 0)
+                                <tr @if ($variation->listed_stock < 0 && $variation->listed_stock + $stocks->where('variation_id', $variation->id)->count() < 0)
                                     class="bg-danger"
                                 @endif>
                                     <td>{{ $i + 1 }}</td>
                                     <td>{{ $variation->sku ?? "Variation SKU Not added"}}
-                                        @if ($variation->listed_stock < 0 && $variation->listed_stock + $stock->where('variation_id', $variation->id)->count() < 0)
+                                        @if ($variation->listed_stock < 0 && $variation->listed_stock + $stocks->where('variation_id', $variation->id)->count() < 0)
                                             {{ $variation->listed_stock }}
                                         @endif
                                     </td>
