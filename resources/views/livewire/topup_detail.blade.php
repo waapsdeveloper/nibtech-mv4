@@ -23,7 +23,7 @@
         <!-- breadcrumb -->
             <div class="breadcrumb-header justify-content-between mt-0">
                 <div class="left-content">
-                @if ($process->status == 1)
+                @if ($process->status < 3)
                     <form class="form-inline" id="approveform" method="POST" action="{{url('topup/close').'/'.$process->id}}">
                         @csrf
                         <div class="form-floating">
@@ -60,6 +60,8 @@
                         }
 
                     </script>
+                    {{-- @if($process->status == 2) --}}
+
 
                 @else
                     <br>
