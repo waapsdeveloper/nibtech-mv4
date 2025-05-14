@@ -319,11 +319,21 @@ class Topup extends Component
                 }else{
                         session()->put('copy', 0);
                 }
-                    if(request('copy_grade') == 1){
-                        session()->put('copy_grade', 1);
-                    }else{
-                        session()->put('copy_grade', 0);
-                    }
+                if(request('copy_grade') == 1){
+                    session()->put('copy_grade', 1);
+                }else{
+                    session()->put('copy_grade', 0);
+                }
+                if(request('dual-esim') == 1){
+                    session()->put('dual-esim', 1);
+                }else{
+                    session()->put('dual-esim', 0);
+                }
+                if(request('dual-sim') == 1){
+                    session()->put('dual-sim', 1);
+                }else{
+                    session()->put('dual-sim', 0);
+                }
                     session()->put('product', request('product'));
                     session()->put('storage', request('storage'));
                     session()->put('color', request('color'));
