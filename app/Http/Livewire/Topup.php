@@ -89,8 +89,9 @@ class Topup extends Component
         $process->description = request('description');
         $process->quantity = request('quantity');
 
-        if(request('approve') == 1){
-            $process->status = 2;
+        $process->status = 2;
+
+        if(request('push') == 1){
             $variation_qty = Process_stock_model::where('process_id', $process_id)
             ->when(!request('all'), function ($q) {
                 return $q->where('status', 2);
@@ -120,6 +121,11 @@ class Topup extends Component
                 }
             }
 
+            $scanned_total = Process_stock_model::where('process_id', $process_id)->count();
+            $pushed_total = Listed_stock_verification_model::where('process_id', $process_id)->sum('qty_change');
+            if($scanned_total == $pushed_total){
+                $process->status = 3;
+            }
 
         }
 
@@ -366,6 +372,54 @@ class Topup extends Component
                     session()->put('error', 'Stock already Added SKU:'.$stock->variation->sku);
                 }
             }
+        }
+        return redirect()->back();
+    }
+
+    public function verify_topup_item($process_id){
+
+        $imei = request('imei');
+        $imeis = explode("\n", $imei);
+        foreach($imeis as $imei){
+            if (ctype_digit($imei)) {
+                $i = $imei;
+                $stock = Stock_model::where(['imei' => $i])->first();
+            } else {
+                $s = $imei;
+                $t = mb_substr($imei,1);
+                $stock = Stock_model::whereIn('serial_number', [$s, $t])->first();
+            }
+
+            if($stock == null){
+                session()->put('error', 'IMEI Invalid / Not Found');
+                return redirect()->back();
+
+            }
+
+            $stock->availability();
+
+            $stock = Stock_model::find($stock->id);
+            if($stock->variation->sku == null){
+                session()->put('error', 'SKU Not Found');
+                return redirect()->back();
+            }
+
+            $process_stock = Process_stock_model::wher(['process_id'=>$process_id, 'stock_id'=>$stock->id]);
+            $process_stock->verified_by = session('user_id');
+            $process_stock->status = 2;
+            $process_stock->save();
+
+            // Check if the session variable 'counter' is set
+            if (session()->has('counter')) {
+                // Increment the counter
+                session()->increment('counter');
+            } else {
+                // Initialize the counter if it doesn't exist
+                session()->put('counter', 1);
+            }
+
+            session()->put('success', 'Stock Verified successfully SKU:'.$stock->variation->sku);
+
         }
         return redirect()->back();
     }

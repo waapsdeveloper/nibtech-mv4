@@ -159,6 +159,22 @@
                 <button class="btn btn-primary pd-x-20" type="submit">Insert</button>
             </form>
         </div>
+        @elseif ($process->status == 2)
+
+        <div class="p-2">
+
+
+            <form class="form-inline" action="{{ url('topup/verify_topup_item').'/'.$process->id }}" method="POST" id="">
+                @csrf
+                <div class="form-floating">
+                    <input type="text" class="form-control" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
+                    <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
+
+                </div>
+
+                <button class="btn btn-primary pd-x-20" type="submit">Verify</button>
+            </form>
+        </div>
         @endif
         <script>
             window.onload = function() {
