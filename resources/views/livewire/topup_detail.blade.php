@@ -458,6 +458,7 @@
                                                     <td><b>{{ $stocks->count() }}</b></td>
                                                     <td></td>
                                                 </tr>
+                                            </tfoot>
                                         </table>
                                     </td>
                                 </tr>
