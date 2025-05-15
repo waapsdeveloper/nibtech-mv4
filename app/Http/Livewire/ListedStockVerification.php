@@ -88,23 +88,23 @@ class ListedStockVerification extends Component
             $process->status = 2;
         }
 
-        $variation_qty = Process_stock_model::where('process_id', $process_id)->where('status', 1)->groupBy('variation_id')->selectRaw('variation_id, Count(*) as total')->get();
+        // $variation_qty = Process_stock_model::where('process_id', $process_id)->where('status', 1)->groupBy('variation_id')->selectRaw('variation_id, Count(*) as total')->get();
 
-        $wrong_variations = Variation_model::whereIn('id', $variation_qty->pluck('variation_id')->toArray())->whereNull('sku')->where('grade', '<', 6)->get();
-        if($wrong_variations->count() > 0){
-            $error = 'Please add SKU for the following variations:';
-            // session()->put('error', 'Please add SKU for the following variations:');
-            foreach($wrong_variations as $variation){
-                $error .= ' '.$variation->product->model.' - '.$variation->storage_id->name.' - '.$variation->color_id->name.' - '.$variation->grade_id->name;
-                // session()->put('error', $variation->product->model.' - '.$variation->storage_id->name.' - '.$variation->color_id->name.' - '.$variation->grade_id->name);
-            }
-            session()->put('error', $error);
-            return redirect()->back();
-        }
-        echo "<pre>";
-        print_r($variation_qty->toArray());
-        echo "</pre>";
-        die;
+        // $wrong_variations = Variation_model::whereIn('id', $variation_qty->pluck('variation_id')->toArray())->whereNull('sku')->where('grade', '<', 6)->get();
+        // if($wrong_variations->count() > 0){
+        //     $error = 'Please add SKU for the following variations:';
+        //     // session()->put('error', 'Please add SKU for the following variations:');
+        //     foreach($wrong_variations as $variation){
+        //         $error .= ' '.$variation->product->model.' - '.$variation->storage_id->name.' - '.$variation->color_id->name.' - '.$variation->grade_id->name;
+        //         // session()->put('error', $variation->product->model.' - '.$variation->storage_id->name.' - '.$variation->color_id->name.' - '.$variation->grade_id->name);
+        //     }
+        //     session()->put('error', $error);
+        //     return redirect()->back();
+        // }
+        // echo "<pre>";
+        // print_r($variation_qty->toArray());
+        // echo "</pre>";
+        // die;
         $bm = new BackMarketAPIController();
         $variations = Variation_model::where('listed_stock','>',0)->whereNotNull('reference_id')->get();
 
@@ -125,18 +125,10 @@ class ListedStockVerification extends Component
 
         Artisan::call('refresh:new');
 
-        $process_stocks = Process_stock_model::where('process_id', $process_id)->get();
-        $sold_stocks = Process_stock_model::where('process_id', $process_id)
-            ->whereHas('stock', function ($query) {
-                $query->where('status', 2);
-            })
-            ->pluck('stock_id')
-            ->toArray();
-
-        $process_stocks = $process_stocks->whereNotIn('stock_id', $sold_stocks);
+        $process_stocks = Process_stock_model::where('process_id', $process_id)->where('status',1)->get();
         if($process_stocks->count() > 0){
 
-                $variation_qty = Process_stock_model::where('process_id', $process_id)->whereNotIn('stock_id', $sold_stocks)->groupBy('variation_id')->selectRaw('variation_id, Count(*) as total')->get();
+                $variation_qty = Process_stock_model::where('process_id', $process_id)->where('status',1)->groupBy('variation_id')->selectRaw('variation_id, Count(*) as total')->get();
 
                 $wrong_variations = Variation_model::whereIn('id', $variation_qty->pluck('variation_id')->toArray())->whereNull('sku')->where('grade', '<', 6)->get();
                 if($wrong_variations->count() > 0){
@@ -155,20 +147,15 @@ class ListedStockVerification extends Component
                 // die;
                 $listingController = new ListingController();
                 foreach($variation_qty as $variation){
-                    $listed_stock = Listed_stock_verification_model::where('process_id', $process->id)->where('variation_id', $variation->variation_id)->first();
-                    if($listed_stock == null){
+                    // $listed_stock = Listed_stock_verification_model::where('process_id', $process->id)->where('variation_id', $variation->variation_id)->first();
+                    // if($listed_stock == null){
                         echo $listingController->add_quantity($variation->variation_id, $variation->total, $process->id);
-                    }elseif($listed_stock->qty_change != $variation->total){
-                        $new_qty = $variation->total - $listed_stock->qty_change;
-                        echo $listingController->add_quantity($variation->variation_id, $new_qty, $process->id);
-                    }
+                    // }elseif($listed_stock->qty_change != $variation->total){
+                    //     $new_qty = $variation->total - $listed_stock->qty_change;
+                    //     echo $listingController->add_quantity($variation->variation_id, $new_qty, $process->id);
+                    // }
                 }
 
-                $scanned_total = Process_stock_model::where('process_id', $process_id)->count();
-                $pushed_total = Listed_stock_verification_model::where('process_id', $process_id)->sum('qty_change');
-                if($scanned_total == $pushed_total){
-                    $process->status = 3;
-                }
 
         }
         $process->save();
