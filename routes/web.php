@@ -333,7 +333,7 @@ Route::get('listing/start_listing_verification', [ListingController::class,'star
 Route::get('listed_stock_verification', ListedStockVerification::class)->name('view_listed_stock_verification');
 Route::get('listed_stock_verification/detail/{id}', [ListedStockVerification::class,'verification_detail'])->name('listed_stock_verification_detail');
 Route::get('listed_stock_verification/undo/{id}', [ListedStockVerification::class,'undo_verification'])->name('listed_stock_verification_undo');
-Route::get('listed_stock_verification/ship/{id}', [ListedStockVerification::class,'close_verification'])->name('listed_stock_verification_push');
+Route::post('listed_stock_verification/ship/{id}', [ListedStockVerification::class,'close_verification'])->name('listed_stock_verification_push');
 
 
 Route::get('topup', Topup::class)->name('view_topup');
