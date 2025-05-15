@@ -291,6 +291,103 @@
                 </table>
             </div>
         </div>
+
+        @if (request('show') == 1)
+
+        <div class="card" id="topup_variations">
+            <div class="card-header d-flex justify-content-between pb-0">
+                <h4 class="card-title mg-b-0">Topup Variations</h4>
+                <h5 class="card-title mg-b-0">Created: {{ $process->created_at }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                        <thead>
+                            <tr>
+                                <th><small><b>No</b></small></th>
+                                <th><small><b>SKU</b></small></th>
+                                <th><small><b>Variation</b></small></th>
+                                <th><small><b>Qty</b></small></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                                $i = 0;
+                            @endphp
+                            @foreach ($variations as $variation)
+                                <tr @if ($variation->listed_stock < 0 && $variation->listed_stock + $stocks->where('variation_id', $variation->id)->count() < 0)
+                                    class="bg-danger"
+                                @endif>
+                                    <td>{{ $i + 1 }}</td>
+                                    <td>{{ $variation->sku ?? "Variation SKU Not added"}}
+                                        @if ($variation->listed_stock < 0 && $variation->listed_stock + $stocks->where('variation_id', $variation->id)->count() < 0)
+                                            {{ $variation->listed_stock }}
+                                        @endif
+                                    </td>
+                                    <td>{{ $products[$variation->product_id] ?? "Variation Model Not added"}} {{$storages[$variation->storage] ?? null}} {{$colors[$variation->color] ?? null}} {{$grades[$variation->grade] ?? "Variation Grade Not added" }}</td>
+                                    <td>
+                                        <a href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#stocks-{{ $variation->id }}" aria-expanded="false" aria-controls="stocks-{{ $variation->id }}">
+                                            {{ $stocks->where('variation_id', $variation->id)->count() }}
+                                        </a>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr class="collapse bg-lightgreen" id="stocks-{{ $variation->id }}">
+                                    <td colspan="5">
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th><small><b>#</b></small></th>
+                                                    <th><small><b>IMEI | Serial Number</b></small></th>
+                                                    <th><small><b>Operation</b></small></th>
+                                                    <th><small><b>Creation Date</b></small></th>
+                                                    <th></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @php
+                                                    $j = 0;
+                                                @endphp
+                                                @foreach ($stocks->where('variation_id', $variation->id) as $stock)
+                                                    <tr>
+                                                        <td>{{ ++$j }}</td>
+                                                        <td>{{ $stock->imei }}{{ $stock->serial_number }}</td>
+                                                        <td>
+                                                            {{ $stock->latest_operation->description ?? null }}
+                                                        </td>
+                                                        <td style="width:220px">{{ $stock->process_stock($process_id)->created_at }}</td>
+                                                        <td>
+                                                            @if (session('user')->hasPermission('delete_topup_item') && $process->status == 1)
+                                                                <a href="{{ url('topup/delete_topup_item').'/'.$stock->process_stock($process_id)->id }}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this item?');">
+                                                                    <i class="fa fa-trash"></i>
+                                                                </a>
+
+                                                            @endif
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                                @php
+                                    $i ++;
+                                @endphp
+                            @endforeach
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-center"><b>Total</b></td>
+                                <td><b>{{ $stocks->count() }}</b></td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+        @endif
     @endsection
 
     @section('scripts')
