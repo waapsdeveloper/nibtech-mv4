@@ -121,8 +121,8 @@ class Topup extends Component
                 }
             }
 
-            $scanned_total = Process_stock_model::where('process_id', $process_id)->count();
-            $pushed_total = Listed_stock_verification_model::where('process_id', $process_id)->sum('qty_change');
+            echo $scanned_total = Process_stock_model::where('process_id', $process_id)->count();
+            echo $pushed_total = Listed_stock_verification_model::where('process_id', $process_id)->sum('qty_change');
             if($scanned_total == $pushed_total){
                 $process->status = 3;
             }
@@ -132,7 +132,7 @@ class Topup extends Component
         $process->save();
 
         if(request('push') == 1){
-            return redirect()->back();
+            // return redirect()->back();
         }else{
             return "Updated";
         }
