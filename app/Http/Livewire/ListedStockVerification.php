@@ -11,6 +11,7 @@ use App\Models\Customer_model;
 use App\Models\Currency_model;
 use App\Models\Storage_model;
 use App\Exports\RepairsheetExport;
+use App\Http\Controllers\BackMarketAPIController;
 use App\Http\Controllers\ListingController;
 use Maatwebsite\Excel\Facades\Excel;
 use TCPDF;
@@ -27,6 +28,7 @@ use App\Models\Process_stock_model;
 use App\Models\Product_storage_sort_model;
 use App\Models\Stock_operations_model;
 use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 
 
@@ -75,6 +77,10 @@ class ListedStockVerification extends Component
         return view('livewire.listed_stock_verification')->with($data);
     }
     public function close_verification($process_id){
+
+        ini_set('memory_limit', '2048M');
+        ini_set('max_execution_time', 3000);
+        ini_set('pdo_mysql.max_input_vars', '10000');
         $process = Process_model::find($process_id);
         $process->description = request('description');
 
@@ -82,6 +88,25 @@ class ListedStockVerification extends Component
             $process->status = 2;
         }
 
+        $bm = new BackMarketAPIController();
+        $variations = Variation_model::where('listed_stock','>',0)->whereNotNull('reference_id')->get();
+
+        foreach($variations as $variation){
+            $updatedQuantity = $variation->update_qty($bm);
+            $listed_stock_verification = Listed_stock_verification_model::firstOrNew(['process_id'=>$process->id, 'variation_id'=>$variation->id]);
+            $listed_stock_verification->qty_from = $updatedQuantity;
+            $listed_stock_verification->admin_id = session('user_id');
+            $listed_stock_verification->save();
+
+            $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>0]));
+
+            if($response->quantity != null){
+                $variation->listed_stock = $response->quantity;
+                $variation->save();
+            }
+        }
+
+        Artisan::call('refresh:new');
 
         $process_stocks = Process_stock_model::where('process_id', $process_id)->get();
         $sold_stocks = Process_stock_model::where('process_id', $process_id)
@@ -107,10 +132,10 @@ class ListedStockVerification extends Component
                     session()->put('error', $error);
                     return redirect()->back();
                 }
-                echo "<pre>";
-                print_r($variation_qty->toArray());
-                echo "</pre>";
-                die;
+                // echo "<pre>";
+                // print_r($variation_qty->toArray());
+                // echo "</pre>";
+                // die;
                 $listingController = new ListingController();
                 foreach($variation_qty as $variation){
                     $listed_stock = Listed_stock_verification_model::where('process_id', $process->id)->where('variation_id', $variation->variation_id)->first();
@@ -179,6 +204,12 @@ class ListedStockVerification extends Component
 
         $data['process_id'] = $process_id;
 
+        foreach($data['process']->process_stocks as $process_stock){
+            if($process_stock->stock->status == 2){
+                $process_stock->status = 2;
+                $process_stock->save();
+            }
+        }
 
         if(request('show') != null){
             $stocks = Stock_model::whereIn('id',$data['process']->process_stocks->pluck('stock_id')->toArray())->where('status',1)->get();
