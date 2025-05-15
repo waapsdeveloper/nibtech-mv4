@@ -122,6 +122,7 @@ class Topup extends Component
             }
 
             echo $scanned_total = Process_stock_model::where('process_id', $process_id)->count();
+            echo ' ';
             echo $pushed_total = Listed_stock_verification_model::where('process_id', $process_id)->sum('qty_change');
             if($scanned_total == $pushed_total){
                 $process->status = 3;
