@@ -108,7 +108,7 @@ class ListedStockVerification extends Component
                     return redirect()->back();
                 }
 
-                print_r($variation_qty);
+                print_r($variation_qty->toArray());
                 die;
                 $listingController = new ListingController();
                 foreach($variation_qty as $variation){
