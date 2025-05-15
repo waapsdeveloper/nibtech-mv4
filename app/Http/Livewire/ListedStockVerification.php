@@ -88,6 +88,23 @@ class ListedStockVerification extends Component
             $process->status = 2;
         }
 
+        $variation_qty = Process_stock_model::where('process_id', $process_id)->where('status', 1)->groupBy('variation_id')->selectRaw('variation_id, Count(*) as total')->get();
+
+        $wrong_variations = Variation_model::whereIn('id', $variation_qty->pluck('variation_id')->toArray())->whereNull('sku')->where('grade', '<', 6)->get();
+        if($wrong_variations->count() > 0){
+            $error = 'Please add SKU for the following variations:';
+            // session()->put('error', 'Please add SKU for the following variations:');
+            foreach($wrong_variations as $variation){
+                $error .= ' '.$variation->product->model.' - '.$variation->storage_id->name.' - '.$variation->color_id->name.' - '.$variation->grade_id->name;
+                // session()->put('error', $variation->product->model.' - '.$variation->storage_id->name.' - '.$variation->color_id->name.' - '.$variation->grade_id->name);
+            }
+            session()->put('error', $error);
+            return redirect()->back();
+        }
+        echo "<pre>";
+        print_r($variation_qty->toArray());
+        echo "</pre>";
+        die;
         $bm = new BackMarketAPIController();
         $variations = Variation_model::where('listed_stock','>',0)->whereNotNull('reference_id')->get();
 
