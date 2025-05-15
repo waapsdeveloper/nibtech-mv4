@@ -132,6 +132,24 @@ class ListedStockVerification extends Component
 
         $data['process_id'] = $process_id;
 
+
+        if(request('show') != null){
+            $stocks = Stock_model::whereIn('id',$data['process']->process_stocks->pluck('stock_id')->toArray())->where('status',1)->get();
+            // $variations = Variation_model::whereIn('id',$stocks->pluck('variation_id')->toArray())->get();
+            $variation_ids = Process_stock_model::where('process_id', $process_id)->pluck('variation_id')->unique();
+            $variations = Variation_model::whereIn('variation.id', $variation_ids)
+            ->join('products', 'products.id', '=', 'variation.product_id')
+            ->orderBy('products.model', 'asc')
+            ->orderBy('variation.storage', 'asc')
+            ->orderBy('variation.color', 'asc')
+            ->orderBy('variation.grade', 'asc')
+            ->select('variation.*')
+            ->get();
+            $data['variations'] = $variations;
+            $data['stocks'] = $stocks;
+
+        }
+
         return view('livewire.listed_stock_verification_detail')->with($data);
 
     }
