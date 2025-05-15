@@ -123,7 +123,7 @@ class ListedStockVerification extends Component
             }
         }
 
-        Artisan::call('refresh:new');
+        // Artisan::call('refresh:new');
 
         $process_stocks = Process_stock_model::where('process_id', $process_id)->where('status',1)->get();
         if($process_stocks->count() > 0){
