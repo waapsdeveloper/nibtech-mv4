@@ -107,8 +107,9 @@ class ListedStockVerification extends Component
                     session()->put('error', $error);
                     return redirect()->back();
                 }
-
+                echo "<pre>";
                 print_r($variation_qty->toArray());
+                echo "</pre>";
                 die;
                 $listingController = new ListingController();
                 foreach($variation_qty as $variation){
