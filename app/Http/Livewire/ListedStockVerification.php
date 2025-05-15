@@ -84,7 +84,12 @@ class ListedStockVerification extends Component
 
 
         $process_stocks = Process_stock_model::where('process_id', $process_id)->get();
-        $sold_stocks = $process_stocks->stocks()->where('status', 2)->pluck('id')->toArray();
+        $sold_stocks = Process_stock_model::where('process_id', $process_id)
+            ->whereHas('stock', function ($query) {
+                $query->where('status', 2);
+            })
+            ->pluck('stock_id')
+            ->toArray();
 
         $process_stocks = $process_stocks->whereNotIn('stock_id', $sold_stocks);
         if($process_stocks->count() > 0){
