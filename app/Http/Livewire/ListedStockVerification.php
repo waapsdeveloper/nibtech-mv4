@@ -108,7 +108,8 @@ class ListedStockVerification extends Component
                     return redirect()->back();
                 }
 
-                dd($variation_qty);
+                print_r($variation_qty);
+                die;
                 $listingController = new ListingController();
                 foreach($variation_qty as $variation){
                     $listed_stock = Listed_stock_verification_model::where('process_id', $process->id)->where('variation_id', $variation->variation_id)->first();
