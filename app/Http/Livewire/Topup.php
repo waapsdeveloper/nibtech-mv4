@@ -486,13 +486,29 @@ class Topup extends Component
 
 
     public function undo_topup($id){
+        $variation_change = [];
+        $variation_listing = [];
         // $listed_stocks = Process_stock_model::where('process_id', $id)->get();
         $listed_stocks = Listed_stock_verification_model::where('process_id', $id)->get();
         $listingController = new ListingController();
         foreach($listed_stocks as $listed_stock){
-            if($listed_stock->variation_id != null){
-                $listingController->add_quantity($listed_stock->variation_id, -$listed_stock->qty_change, $id);
+            // if($listed_stock->variation_id != null){
+            //     $listingController->add_quantity($listed_stock->variation_id, -$listed_stock->qty_change, $id);
+            // }
+            $change = $listed_stock->qty_to - $listed_stock->qty_from;
+            if($change == 0){
+                continue;
             }
+            if($variation_change[$listed_stock->variation_id] == null){
+                $variation_change[$listed_stock->variation_id] = $change;
+                $variation_listing[$listed_stock->variation_id] = $listed_stock->id;
+            }else{
+                if($variation_change[$listed_stock->variation_id] == $change){
+                    $listed_stock->delete();
+                    Listed_stock_verification_model::where('id', $variation_listing[$listed_stock->variation_id])->delete();
+                }
+            }
+
         }
         session()->put('success', 'Topup Undoned');
         return redirect()->back();
