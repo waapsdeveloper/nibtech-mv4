@@ -486,7 +486,8 @@ class Topup extends Component
 
 
     public function undo_topup($id){
-        $listed_stocks = Process_stock_model::where('process_id', $id)->get();
+        // $listed_stocks = Process_stock_model::where('process_id', $id)->get();
+        $listed_stocks = Listed_stock_verification_model::where('process_id', $id)->get();
         $listingController = new ListingController();
         foreach($listed_stocks as $listed_stock){
             if($listed_stock->variation_id != null){
