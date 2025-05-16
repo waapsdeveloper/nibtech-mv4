@@ -132,7 +132,10 @@ class Topup extends Component
                     }
                     $count = $count_plus + $count_minus;
                     $new_qty = $variation->total - $count;
-                    $listingController->add_quantity($variation->variation_id, $new_qty, $process->id);
+                    if($new_qty != 0){
+                        $listingController->add_quantity($variation->variation_id, $new_qty, $process->id);
+                    }
+                    // $listingController->add_quantity($variation->variation_id, $new_qty, $process->id);
                 }else{
                     $listingController->add_quantity($variation->variation_id, $variation->total, $process->id);
                 }
