@@ -343,7 +343,7 @@ Route::post('topup/add_topup_item/{id}', [Topup::class,'add_topup_item'])->name(
 Route::post('topup/verify_topup_item/{id}', [Topup::class,'verify_topup_item'])->name('verify_topup_item');
 Route::get('topup/delete_topup_item/{id}', [Topup::class,'delete_topup_item'])->name('delete_topup_item');
 Route::get('topup/delete/{id}', [Topup::class,'delete_topup'])->name('delete_topup');
-Route::post('topup/close/{id}', [Topup::class,'close_topup'])->name('close_topup');
+Route::post('topup/close/{id}', [Topup::class,'undo_topup'])->name('close_topup');
 
 
 Route::get('process', Process::class)->name('view_process');
