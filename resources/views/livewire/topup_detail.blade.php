@@ -347,7 +347,11 @@
                             @endphp
                             <tr>
                                 <td>{{ $i + 1 }}</td>
-                                <td title="{{ $variation->id }}">{{ $products[$variation->product_id]}} {{$storages[$variation->storage] ?? null}} {{$colors[$variation->color] ?? null}} {{$grades[$variation->grade] ?? "Grade not added" }} {{$grades[$variation->sub_grade] ?? '' }}</td>
+                                <td title="{{ $variation->id }}">
+                                    <a href="{{ url('listing').'?variation_id='.$variation->id }}" target="_blank">
+                                    {{ $products[$variation->product_id]}} {{$storages[$variation->storage] ?? null}} {{$colors[$variation->color] ?? null}} {{$grades[$variation->grade] ?? "Grade not added" }} {{$grades[$variation->sub_grade] ?? '' }}
+                                    </a>
+                                </td>
                                 <td>{{ $item->pending_orders }}</td>
                                 <td>{{ $item->qty_from }}</td>
                                 <td>{{ $item->qty_change }}</td>
