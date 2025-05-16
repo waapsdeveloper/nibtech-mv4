@@ -132,11 +132,11 @@ class Topup extends Component
 
         $process->save();
 
-        if(request('push') == 1){
-            // return redirect()->back();
-        }else{
-            return "Updated";
-        }
+        // if(request('push') == 1){
+            return redirect()->back();
+        // }else{
+        //     return "Updated";
+        // }
         // return redirect()->back();
     }
 
