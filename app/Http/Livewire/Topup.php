@@ -214,7 +214,7 @@ class Topup extends Component
 
         }
         // if($process->status == 2){
-            $data['listed_stocks'] = Listed_stock_verification_model::where('process_id', $process_id)->get();
+            $data['listed_stocks'] = Listed_stock_verification_model::where('process_id', $process_id)->orWhere('created_at','>', $process->updated_at)->get();
         // }
 
         return view('livewire.topup_detail')->with($data);
@@ -490,7 +490,7 @@ class Topup extends Component
         $listingController = new ListingController();
         foreach($listed_stocks as $listed_stock){
             if($listed_stock->variation_id != null){
-                $listingController->add_quantity($listed_stock->variation_id, -$listed_stock->qty_change);
+                $listingController->add_quantity($listed_stock->variation_id, -$listed_stock->qty_change, $id);
             }
         }
         session()->put('success', 'Topup Undoned');
