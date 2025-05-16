@@ -411,7 +411,10 @@
                                     class="bg-danger"
                                 @endif>
                                     <td>{{ $i + 1 }}</td>
-                                    <td>{{ $variation->sku ?? "Variation SKU Not added"}}
+                                    <td>
+                                        <a href="{{ url('listing').'?sku='.$variation->sku.'&process_id='.$process->id }}" target="_blank">
+                                        {{ $variation->sku ?? "Variation SKU Not added"}}
+                                        </a>
                                         @if ($variation->listed_stock < 0 && $variation->listed_stock + $stocks->where('variation_id', $variation->id)->count() < 0)
                                             {{ $variation->listed_stock }}
                                         @endif
