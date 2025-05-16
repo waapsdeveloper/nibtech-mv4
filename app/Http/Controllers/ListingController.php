@@ -526,7 +526,7 @@ class ListingController extends Controller
             $new_quantity = $stock - $pending_orders;
             // $new_quantity = $stock;
         }else{
-            if($process_id != null && $updatedQuantity < 0){
+            if($process_id != null && $updatedQuantity <= 0){
                 $new_quantity = $stock - $pending_orders;
             }else{
                 $new_quantity = $stock + $updatedQuantity;
