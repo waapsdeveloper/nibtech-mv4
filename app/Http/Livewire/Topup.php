@@ -112,13 +112,36 @@ class Topup extends Component
 
             $listingController = new ListingController();
             foreach($variation_qty as $variation){
-                $listed_stock = Listed_stock_verification_model::where('process_id', $process->id)->where('variation_id', $variation->variation_id)->first();
-                if($listed_stock == null){
-                    echo $listingController->add_quantity($variation->variation_id, $variation->total, $process->id);
-                }elseif($listed_stock->qty_change != $variation->total){
-                    $new_qty = $variation->total - $listed_stock->qty_change;
-                    echo $listingController->add_quantity($variation->variation_id, $new_qty, $process->id);
+                // $listed_stock = Listed_stock_verification_model::where('process_id', $process->id)->where('variation_id', $variation->variation_id)->first();
+                // if($listed_stock == null){
+                //     echo $listingController->add_quantity($variation->variation_id, $variation->total, $process->id);
+                // }elseif($listed_stock->qty_change != $variation->total){
+                //     $new_qty = $variation->total - $listed_stock->qty_change;
+                //     echo $listingController->add_quantity($variation->variation_id, $new_qty, $process->id);
+                // }
+                $listed_stock = Listed_stock_verification_model::where('process_id', $process->id)->where('variation_id', $variation->variation_id)->get();
+                if($listed_stock->count() > 0){
+                    $count_plus = 0;
+                    $count_minus = 0;
+                    foreach($listed_stock as $ls){
+                        if($ls->qty_change > 0){
+                            $count_plus += $ls->qty_to-$ls->qty_from;
+                        }else{
+                            $count_minus += $ls->qty_to-$ls->qty_from;
+                        }
+                    }
+                    $count = $count_plus + $count_minus;
+                    $new_qty = $variation->total - $count;
+                    $listingController->add_quantity($variation->variation_id, $new_qty, $process->id);
+                }else{
+                    $listingController->add_quantity($variation->variation_id, $variation->total, $process->id);
                 }
+                // if($listed_stock == null){
+                //     echo $listingController->add_quantity($variation->variation_id, $variation->total, $process->id);
+                // }elseif($listed_stock->qty_change != $variation->total){
+                //     $new_qty = $variation->total - $listed_stock->qty_change;
+                //     echo $listingController->add_quantity($variation->variation_id, $new_qty, $process->id);
+                // }
             }
 
             echo $scanned_total = Process_stock_model::where('process_id', $process_id)->count();
@@ -511,6 +534,10 @@ class Topup extends Component
                     Listed_stock_verification_model::where('id', $variation_listing[$listed_stock->variation_id])->delete();
                     unset($variation_change[$listed_stock->variation_id]);
                     unset($variation_listing[$listed_stock->variation_id]);
+                }else{
+                    $varification_changed = Listed_stock_verification_model::where('id', $variation_listing[$listed_stock->variation_id])->first();
+                    if($varification_changed){
+                        $variation_changed->qty_to -= $varification_changed->qty_from;
                 }
             }
 
