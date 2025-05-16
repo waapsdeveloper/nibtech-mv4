@@ -504,9 +504,11 @@ class Topup extends Component
                 $variation_change[$listed_stock->variation_id] = $change;
                 $variation_listing[$listed_stock->variation_id] = $listed_stock->id;
             }else{
-                if($variation_change[$listed_stock->variation_id] == $change){
+                if($variation_change[$listed_stock->variation_id] + $change == 0){
                     $listed_stock->delete();
                     Listed_stock_verification_model::where('id', $variation_listing[$listed_stock->variation_id])->delete();
+                    unset($variation_change[$listed_stock->variation_id]);
+                    unset($variation_listing[$listed_stock->variation_id]);
                 }
             }
 
