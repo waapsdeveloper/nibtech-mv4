@@ -497,6 +497,7 @@ class Topup extends Component
             // }
             $change = $listed_stock->qty_to - $listed_stock->qty_from;
             if($change == 0){
+                $listed_stock->delete();
                 continue;
             }
             if(!isset($variation_change[$listed_stock->variation_id])){
