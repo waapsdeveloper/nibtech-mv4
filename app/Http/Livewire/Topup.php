@@ -209,8 +209,8 @@ class Topup extends Component
             ;
             $data['stocks'] = $stocks;
 
-            if($process->status == 2){
-                $unverified_stock
+            // if($process->status == 2){
+            //     $unverified_stock
 
         }
         // if($process->status == 2){
