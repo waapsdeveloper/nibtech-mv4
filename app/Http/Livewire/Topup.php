@@ -209,6 +209,9 @@ class Topup extends Component
             ;
             $data['stocks'] = $stocks;
 
+            if($process->status == 2){
+                $unverified_stock
+
         }
         // if($process->status == 2){
             $data['listed_stocks'] = Listed_stock_verification_model::where('process_id', $process_id)->get();
@@ -487,7 +490,7 @@ class Topup extends Component
         $listingController = new ListingController();
         foreach($listed_stocks as $listed_stock){
             if($listed_stock->variation_id != null){
-                $listingController->add_quantity($listed_stock->variation_id, $listed_stock->qty_from);
+                $listingController->add_quantity($listed_stock->variation_id, -$listed_stock->qty_change);
             }
         }
         session()->put('success', 'Topup Undoned');
