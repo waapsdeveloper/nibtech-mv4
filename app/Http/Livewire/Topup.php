@@ -499,7 +499,7 @@ class Topup extends Component
             if($change == 0){
                 continue;
             }
-            if(isset($variation_change[$listed_stock->variation_id])){
+            if(!isset($variation_change[$listed_stock->variation_id])){
                 $variation_change[$listed_stock->variation_id] = $change;
                 $variation_listing[$listed_stock->variation_id] = $listed_stock->id;
             }else{
