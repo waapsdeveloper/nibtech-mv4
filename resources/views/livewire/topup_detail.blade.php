@@ -45,7 +45,7 @@
                             </div>
 
                             @endif
-                            <button type="submit" class="btn btn-primary" name="push" value="1">Push & Close</button>
+                            <button type="submit" class="btn btn-primary" name="push" value="1" onclick="this.disabled=true;this.form.submit();">Push & Close</button>
 
                         @endif
                         <a class="btn btn-danger" href="{{url('topup/delete') . "/" . $process->id }}" onclick="return confirm('Are you sure you want to delete this topup?');">Delete</a>
