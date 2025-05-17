@@ -37,6 +37,14 @@
                         @if ($process->status == 1)
                             <button type="submit" class="btn btn-primary" name="approve" value="1">Send</button>
                         @elseif ($process->status == 2)
+                            @if (session('user')->hasPermission('topup_push_without_verification'))
+
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="com" name="all" value="1">
+                                <label class="form-check-label" for="com">Push Without Verification</label>
+                            </div>
+
+                            @endif
                             <button type="submit" class="btn btn-primary" name="push" value="1">Push & Close</button>
 
                         @endif
