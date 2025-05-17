@@ -73,6 +73,8 @@ class PriceHandler extends Command
                 $error .= "No response for variation: " . $variation->sku . "\n";
                 continue;
             }
+            echo "SKU: " . $variation->sku . "\n";
+            echo "Response: \n";
             foreach($responses as $list){
                 print_r($list);
                 if(is_string($list) || is_int($list)){
@@ -100,7 +102,7 @@ class PriceHandler extends Command
                 $listing->buybox_winner_price = $list->winner_price->amount;
                 $listing->save();
 
-                print_r($listing);
+                // print_r($listing);
                 if($listing->handler_status == 1 && $listing->buybox !== 1 && $listing->buybox_price >= $listing->min_price_limit && ($listing->buybox_price <= $listing->price_limit || $listing->price_limit == 0)){
                     $new_min_price = $listing->buybox_price - 2;
                     if($new_min_price < $listing->min_price_limit){
