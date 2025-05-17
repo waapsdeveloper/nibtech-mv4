@@ -2417,9 +2417,9 @@ class Order extends Component
         $bm = new BackMarketAPIController();
         // $orderObj = $bm->getOneOrder($order->reference_id);
         $orderObj = $this->updateBMOrder($order->reference_id, false, null, true);
-        if(session('user_id') == 1){
-            dd("Hello");
-        }
+        // if(session('user_id') == 1){
+        //     dd("Hello");
+        // }
         if($orderObj == null){
 
             session()->put('error', "Order Not Found");
@@ -2540,25 +2540,27 @@ class Order extends Component
                 }else{
                     $color = null;
                 }
-                if(($stock[$i]->variation->product_id == $variant->product_id) || ($variant->product_id == 144 && $stock[$i]->variation->product_id == 229) || ($variant->product_id == 142 && $stock[$i]->variation->product_id == 143) || ($variant->product_id == 54 && $stock[$i]->variation->product_id == 55) || ($variant->product_id == 55 && $stock[$i]->variation->product_id == 54) || ($variant->product_id == 58 && $stock[$i]->variation->product_id == 59) || ($variant->product_id == 59 && $stock[$i]->variation->product_id == 58) || ($variant->product_id == 200 && $stock[$i]->variation->product_id == 160)){
-                }else{
+                // if(($stock[$i]->variation->product_id == $variant->product_id) || ($variant->product_id == 144 && $stock[$i]->variation->product_id == 229) || ($variant->product_id == 142 && $stock[$i]->variation->product_id == 143) || ($variant->product_id == 54 && $stock[$i]->variation->product_id == 55) || ($variant->product_id == 55 && $stock[$i]->variation->product_id == 54) || ($variant->product_id == 58 && $stock[$i]->variation->product_id == 59) || ($variant->product_id == 59 && $stock[$i]->variation->product_id == 58) || ($variant->product_id == 200 && $stock[$i]->variation->product_id == 160)){
+                // }else{
+                if($stock[$i]->variation->product_id != $variant->product_id) {
                     session()->put('error', "Product Model not matched");
                     return redirect()->back();
                 }
-                if(($stock[$i]->variation->storage == $variant->storage) || ($variant->storage == 5 && in_array($stock[$i]->variation->storage,[0,6]) && $variant->product->brand == 2) || (in_array($variant->product_id, [78,58,59]) && $variant->storage == 4 && in_array($stock[$i]->variation->storage,[0,5]))){
-                }else{
+                // if(($stock[$i]->variation->storage == $variant->storage) || ($variant->storage == 5 && in_array($stock[$i]->variation->storage,[0,6]) && $variant->product->brand == 2) || (in_array($variant->product_id, [78,58,59]) && $variant->storage == 4 && in_array($stock[$i]->variation->storage,[0,5]))){
+                // }else{
+                if($stock[$i]->variation->storage != $variant->storage) {
                     session()->put('error', "Product Storage not matched");
                     return redirect()->back();
                 }
-                if($stock[$i]->variation->grade != $variant->grade){
+                if($stock[$i]->variation->grade != $variant->grade) {
                     session()->put('error', "Product Grade not matched");
                     return redirect()->back();
 
                 }
-                // if($stock[$i]->variation->color != $variant->color && session('user_id') == 36){
-                //     session()->put('error', "Product Color not matched");
-                //     return redirect()->back();
-                // }
+                if($stock[$i]->variation->color != $variant->color && !session('user')->hasPermission('allow_change_color_dispatch')){
+                    session()->put('error', "Product Color not matched");
+                    return redirect()->back();
+                }
 
                 if($stock[$i]->variation_id != $variant->id){
                     echo "<script>
