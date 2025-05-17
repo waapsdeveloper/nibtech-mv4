@@ -59,7 +59,7 @@ class PriceHandler extends Command
         ->whereColumn('min_price_limit', '<=', 'min_price')
         ->get();
         $variation_ids = $listings->pluck('variation_id');
-        $variations = Variation_model::whereIn('id', $variation_ids)->get();
+        $variations = Variation_model::whereIn('id', $variation_ids)->where('listed_stock', '>',0)->get();
 
             echo "Hello";
 
