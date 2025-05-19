@@ -510,7 +510,7 @@
                                     $i = 0;
                                     $id = [];
                                 @endphp
-                                @foreach ($topups->withTrashed() as $index => $p_stock)
+                                @foreach ($topups as $index => $p_stock)
                                     @php
                                         $process = $p_stock->process;
                                         $j = 0;
