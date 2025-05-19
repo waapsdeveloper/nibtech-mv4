@@ -99,11 +99,18 @@ class Stock_model extends Model
             $q->where('process_type_id', 20);
         })->where('status',1)->orderByDesc('id');
     }
+    public function latest_topup()
+    {
+        return $this->hasOne(Process_stock_model::class, 'stock_id', 'id')->whereHas('process', function ($q) {
+            $q->where('process_type_id', 22);
+        })->orderByDesc('id');
+    }
     public function process_stock($process_id)
     {
         // Define a custom method to retrieve only one order item
         return $this->hasOne(Process_stock_model::class, 'stock_id', 'id')->where('process_id', $process_id)->orderBy('id','desc')->first();
     }
+
     public function multi_process_stocks($process_ids)
     {
         return $this->hasMany(Process_stock_model::class, 'stock_id', 'id')->whereIn('process_id', $process_ids);
