@@ -462,7 +462,7 @@
                                                         </td>
                                                         <td style="width:220px">{{ $stock->process_stock($process_id)->created_at }}</td>
                                                         <td>
-                                                            @if (session('user')->hasPermission('delete_topup_item') && $process->status == 1)
+                                                            @if (session('user')->hasPermission('delete_topup_item') && $process->status <= 2)
                                                                 <a href="{{ url('topup/delete_topup_item').'/'.$stock->process_stock($process_id)->id }}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this item?');">
                                                                     <i class="fa fa-trash"></i>
                                                                 </a>
