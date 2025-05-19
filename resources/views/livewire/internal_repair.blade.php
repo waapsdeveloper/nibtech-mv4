@@ -51,7 +51,7 @@
                     input.select();
                 });
             </script>
-            @if (session('user')->hasPermission('internal_repair') && isset($stock) && $stock->variation->grade == 8)
+            @if (session('user')->hasPermission('internal_repair') && isset($stock) && in_array($stock->variation->grade, [8,21]))
                 <div class="p-2">
                     <form action="{{ url('add_internal_repair_item')}}" method="POST" class="form-inline">
                         @csrf
