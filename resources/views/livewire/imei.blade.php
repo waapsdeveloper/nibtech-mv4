@@ -510,13 +510,17 @@
                                     $i = 0;
                                     $id = [];
                                 @endphp
-                                @foreach ($topups as $index => $p_stock)
+                                @foreach ($topups->withTrashed() as $index => $p_stock)
                                     @php
                                         $process = $p_stock->process;
                                         $j = 0;
                                     @endphp
 
-                                        <tr>
+                                        <tr
+                                            @if ($p_stock->deleted_at != null)
+                                                class="table-warning"
+                                            @endif
+                                        >
                                             <td title="{{ $p_stock->id }}">{{ $i + 1 }}</td>
                                             <td><a href="{{url('repair/detail/'.$process->id)}}?status=1">{{ $process->reference_id }}</a></td>
                                             {{-- <td>@if ($process->customer)
