@@ -653,8 +653,13 @@
                                                                     }else{
                                                                         $storage = null;
                                                                     }
+                                                                    if($variation != null && $variation->color){
+                                                                        $color = $colors[$variation->color];
+                                                                    }else{
+                                                                        $color = null;
+                                                                    }
                                                                 @endphp
-                                                                <td title="{{ $key }}">{{$variation->product->model ?? $value}} {{$storage}}</td>
+                                                                <td title="{{ $key }}">{{$variation->product->model ?? $value}} {{$storage}} {{$color}}</td>
                                                             @else
                                                                 <td title="{{ $key }}">{{ $value }}</td>
 
