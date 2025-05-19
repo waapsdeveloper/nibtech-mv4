@@ -485,6 +485,9 @@
                                                 @if ($stock->latest_verification)
                                                     &nbsp; {{ $stock->latest_verification->process->reference_id }}
                                                 @endif
+                                                @if ($stock->latest_topup)
+                                                    &nbsp; {{ $stock->latest_topup->process->reference_id }}
+                                                @endif
                                             </td>
                                             @if (session('user')->hasPermission('view_cost'))
                                                 <td>{{ $stock->order->currency_id->sign ?? null }}{{ amount_formatter($stock->purchase_item->price ?? null) }}
