@@ -99,6 +99,12 @@ class Stock_model extends Model
             $q->where('process_type_id', 20);
         })->where('status',1)->orderByDesc('id');
     }
+    public function latest_listing()
+    {
+        return $this->hasOne(Process_stock_model::class, 'stock_id', 'id')->whereHas('process', function ($q) {
+            $q->where('process_type_id', 21);
+        })->orderByDesc('id');
+    }
     public function latest_topup()
     {
         return $this->hasOne(Process_stock_model::class, 'stock_id', 'id')->whereHas('process', function ($q) {

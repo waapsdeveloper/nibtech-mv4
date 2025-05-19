@@ -485,6 +485,9 @@
                                                 @if ($stock->latest_verification)
                                                     &nbsp; {{ $stock->latest_verification->process->reference_id }}
                                                 @endif
+                                                @if ($stock->latest_listing)
+                                                    &nbsp; {{ $stock->latest_listing->process->reference_id }}
+                                                @endif
                                                 @if ($stock->latest_topup)
                                                     &nbsp; {{ $stock->latest_topup->process->reference_id }}
                                                 @endif
