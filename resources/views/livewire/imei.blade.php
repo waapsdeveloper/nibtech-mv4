@@ -522,7 +522,7 @@
                                             @endif
                                         >
                                             <td title="{{ $p_stock->id }}">{{ $i + 1 }}</td>
-                                            <td><a href="{{url('repair/detail/'.$process->id)}}?status=1">{{ $process->reference_id }}</a></td>
+                                            <td><a href="{{url('topup/detail/'.$process->id)}}?status=1">{{ $process->reference_id }}</a></td>
                                             {{-- <td>@if ($process->customer)
                                                 {{ $process->customer->first_name." ".$process->customer->last_name }}
                                             @endif</td> --}}
