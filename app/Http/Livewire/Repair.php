@@ -1119,7 +1119,7 @@ class Repair extends Component
 
         $repair_stocks = Stock_model::
         whereHas('variation', function ($query) {
-            $query->where('grade', 8);
+            $query->whereIn('grade', [8,21]);
         })
         ->whereDoesntHave('sale_order', function ($query) {
             $query->where('customer_id', 3955);
