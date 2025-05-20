@@ -146,7 +146,9 @@
                                         <th><small><b>No</b></small></th>
                                         <th><small><b>Batch ID</b></small></th>
                                         <th><small><b>Description</b></small></th>
+                                        <th><small><b>Total Qty</b></small></th>
                                         <th><small><b>Qty Scanned</b></small></th>
+                                        <th><small><b>Qty Verified</b></small></th>
                                         <th><small><b>Qty Before</b></small></th>
                                         <th><small><b>Qty Added</b></small></th>
                                         <th><small><b>Qty After</b></small></th>
@@ -180,7 +182,9 @@
                                                 <td>{{ $i + 1 }}</td>
                                                 <td><a href="{{url('topup/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a></td>
                                                 <td>{{ $batch->description }}</td>
+                                                <td>{{ $batch->qwantity }}</td>
                                                 <td>{{ $batch->process_stocks->count() }}</td>
+                                                <td>{{ $batch->process_stocks->where('status',2)->count() }}</td>
                                                 <td>{{ $batch->listed_stocks_verification->sum('qty_from') }}</td>
                                                 <td>{{ $batch->listed_stocks_verification->sum('qty_change') }}</td>
                                                 <td>{{ $batch->listed_stocks_verification->sum('qty_to') }}</td>
