@@ -512,7 +512,7 @@
                                 @endphp
                                 @foreach ($topups as $index => $p_stock)
                                     @php
-                                        $process = $p_stock->process;
+                                        $process = $p_stock->process->withTrashed();
                                         $j = 0;
                                     @endphp
 
