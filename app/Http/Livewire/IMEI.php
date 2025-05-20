@@ -11,6 +11,7 @@ use App\Models\Stock_model;
 use App\Models\Order_item_model;
 use App\Models\Grade_model;
 use App\Models\Order_model;
+use App\Models\Process_model;
 use App\Models\Process_stock_model;
 use App\Models\Products_model;
 use App\Models\Stock_movement_model;
@@ -172,6 +173,7 @@ class IMEI extends Component
             })->orderBy('id','desc')->withTrashed()->get();
             $data['topups'] = $topups;
 
+            $data['topup_batches'] = Process_model::where('process_type_id', 22)->withTrashed()->get();
 
             $data['stock_room'] = Stock_movement_model::where(['stock_id'=>$stock_id])
             ->orderBy('exit_at', 'desc')->get();
