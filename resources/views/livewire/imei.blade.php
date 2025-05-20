@@ -512,8 +512,8 @@
                                 @endphp
                                 @foreach ($topups as $index => $p_stock)
                                     @php
-                                        $process = $topup_batches->where('id',$p_stock->process_id);
-                                        dd($process);
+                                        $process = $topup_batches->where('id',$p_stock->process_id)->first();
+                                        // dd($process);
                                         $j = 0;
                                     @endphp
 
