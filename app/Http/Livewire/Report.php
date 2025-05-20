@@ -305,6 +305,29 @@ class Report extends Component
         $pdf->generatePdf();
     }
 
+    public function purchase_report(){
+
+        $start_date = Carbon::now()->subMonths(3);
+        $end_date = date('Y-m-d 23:59:59');
+
+        if (request('start_date') != NULL) {
+            $start_date = request('start_date') . " 00:00:00";
+        }
+        if (request('end_date') != NULL) {
+            $end_date = request('end_date') . " 23:59:59";
+        }
+
+        // dd($start_date, $end_date);
+
+        $data['start_date'] = date('Y-m-d', strtotime($start_date));
+        $data['end_date'] = date("Y-m-d", strtotime($end_date));
+
+
+
+
+
+    }
+
     public function sales_and_returns_total(){
 
         $start_date = Carbon::now()->startOfMonth()->format('Y-m-d');
