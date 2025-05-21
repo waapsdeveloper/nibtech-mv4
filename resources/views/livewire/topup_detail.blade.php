@@ -477,7 +477,11 @@
                                                     @php
                                                         $process_stock = $stock->process_stock($process->id);
                                                     @endphp
-                                                    <tr>
+                                                    <tr
+                                                        @if ($process->status == 2 && $process_stock->status == 1)
+                                                            class="table-danger"
+                                                        @endif
+                                                    >
                                                         <td>{{ ++$j }}</td>
                                                         <td>{{ $stock->imei }}{{ $stock->serial_number }}</td>
                                                         <td>
