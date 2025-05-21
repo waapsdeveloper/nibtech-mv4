@@ -450,24 +450,29 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
+
                                                 @php
                                                     $j = 0;
+                                                    if($process->status = 2){
                                                         // Check if any stock in this variation has status 1
-                                                    $has_status_1 = $stocks->where('variation_id', $variation->id)->contains(function($s) use ($process) {
-                                                        $ps = $s->process_stock($process->id);
-                                                        return $ps && $ps->status == 1;
-                                                    });
-                                                @endphp
-                                                @if ($loop->first && $has_status_1)
-                                                    <script>
-                                                        document.addEventListener('DOMContentLoaded', function() {
-                                                            var collapse = document.getElementById('stocks-{{ $variation->id }}');
-                                                            if (collapse && !collapse.classList.contains('show')) {
-                                                                new bootstrap.Collapse(collapse, {toggle: true});
-                                                            }
+                                                        $has_status_1 = $stocks->where('variation_id', $variation->id)->contains(function($s) use ($process) {
+                                                            $ps = $s->process_stock($process->id);
+                                                            return $ps && $ps->status == 1;
                                                         });
-                                                    </script>
-                                                @endif
+                                                        if ($loop->first && $has_status_1) {
+                                                            echo `
+                                                            <script>
+                                                                document.addEventListener('DOMContentLoaded', function() {
+                                                                    var collapse = document.getElementById('stocks-{{ $variation->id }}');
+                                                                    if (collapse && !collapse.classList.contains('show')) {
+                                                                        new bootstrap.Collapse(collapse, {toggle: true});
+                                                                    }
+                                                                });
+                                                            </script>
+                                                            `;
+                                                        }
+                                                    }
+                                                @endphp
                                                 @foreach ($stocks->where('variation_id', $variation->id) as $stock)
                                                     @php
                                                         $process_stock = $stock->process_stock($process->id);
