@@ -238,13 +238,13 @@
                                     <td>Qty:</td>
                                     <td align="right"> <strong>{{$totalQty}} </strong></td>
                                 </tr>
-                                @if ($totalDiscount > 0)
+                                {{-- @if ($totalDiscount > 0) --}}
 
                                 <tr>
                                     <td>Discount:</td>
                                     <td align="right"> <strong>{{$totalDiscount}} </strong></td>
                                 </tr>
-                                @endif
+                                {{-- @endif --}}
 
                                     <br>
                                     <hr>
