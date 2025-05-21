@@ -839,7 +839,8 @@ class Wholesale extends Component
                 // 'variation.grade',
                 DB::raw('AVG(order_items.price) as average_price'),
                 DB::raw('SUM(order_items.quantity) as total_quantity'),
-                DB::raw('SUM(order_items.price) as total_price')
+                DB::raw('SUM(order_items.price) as total_price'),
+                DB::raw('SUM(order_items.discount) as total_discount'),
             )
             ->where('order_items.order_id',$order_id)
             ->where('order_items.deleted_at',null)
@@ -862,7 +863,8 @@ class Wholesale extends Component
                 'variation.grade',
                 DB::raw('AVG(order_items.price) as average_price'),
                 DB::raw('SUM(order_items.quantity) as total_quantity'),
-                DB::raw('SUM(order_items.price) as total_price')
+                DB::raw('SUM(order_items.price) as total_price'),
+                DB::raw('SUM(order_items.discount) as total_discount'),
             )
             ->where('order_items.order_id',$order_id)
             ->where('order_items.deleted_at',null)
