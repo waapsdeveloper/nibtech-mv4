@@ -183,7 +183,7 @@
                             // $itemTotal = $item->quantity * $item->price;
                             $totalAmount += $item->total_price;
                             $totalQty += $item->total_quantity;
-                            $totalDiscount += $item->discount;
+                            $totalDiscount += $item->total_discount;
 
                             if($item->storage){
                                 $storage = $storages[$item->storage];
