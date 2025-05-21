@@ -417,6 +417,27 @@
                                 $i = 0;
                             @endphp
                             @foreach ($variations as $variation)
+                                @php
+                                    if($process->status = 2){
+                                        // Check if any stock in this variation has status 1
+                                        $has_status_1 = $stocks->where('variation_id', $variation->id)->contains(function($s) use ($process) {
+                                            $ps = $s->process_stock($process->id);
+                                            return $ps && $ps->status == 1;
+                                        });
+                                        if ($loop->first && $has_status_1) {
+                                            echo `
+                                            <script>
+                                                document.addEventListener('DOMContentLoaded', function() {
+                                                    var collapse = document.getElementById('stocks-{{ $variation->id }}');
+                                                    if (collapse && !collapse.classList.contains('show')) {
+                                                        new bootstrap.Collapse(collapse, {toggle: true});
+                                                    }
+                                                });
+                                            </script>
+                                            `;
+                                        }
+                                    }
+                                @endphp
                                 <tr @if ($variation->listed_stock < 0 && $variation->listed_stock + $stocks->where('variation_id', $variation->id)->count() < 0)
                                     class="bg-danger"
                                 @endif>
