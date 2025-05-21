@@ -242,7 +242,7 @@
 
                                 <tr>
                                     <td>Discount:</td>
-                                    <td align="right"> <strong>{{$totalDiscount}} </strong></td>
+                                    <td align="right"> <strong>€{{amount_formatter($totalDiscount)}} </strong></td>
                                 </tr>
                                 {{-- @endif --}}
 
