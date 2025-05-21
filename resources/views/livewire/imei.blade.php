@@ -171,7 +171,7 @@
                                             {{-- <input type="text" class="form-control" name="repair[imei]" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset"> --}}
                                             <label for="">Reason</label>
                                         </div>
-                                        <input type="hidden" name="imei" value="{{ request('imei') }}">
+                                        <input type="hidden" name="imei" value="{{ $stock->imei.$stock->serial_number }}">
                                         <button class="btn btn-secondary" type="submit">Move</button>
                                     </form>
                                 @endif

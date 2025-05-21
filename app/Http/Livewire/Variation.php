@@ -140,10 +140,13 @@ class Variation extends Component
 
         return redirect()->back();
     }
-    public function merge($id){
-        if(request('variation')){
+    public function merge($id, $variation_id = null){
+        if($variation_id == null){
+            $variation_id = request('variation');
+        }
+        if($variation_id != null){
             $duplicate = Variation_model::find($id);
-            $new = Variation_model::find(request('variation'));
+            $new = Variation_model::find($variation_id);
             if($duplicate != null && $new != null){
 
                 // Update related records to point to the original variation
