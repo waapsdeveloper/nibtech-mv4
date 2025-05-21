@@ -452,15 +452,33 @@
                                             <tbody>
                                                 @php
                                                     $j = 0;
+                                                        // Check if any stock in this variation has status 1
+                                                    $has_status_1 = $stocks->where('variation_id', $variation->id)->contains(function($s) use ($process) {
+                                                        $ps = $s->process_stock($process->id);
+                                                        return $ps && $ps->status == 1;
+                                                    });
                                                 @endphp
+                                                @if ($loop->first && $has_status_1)
+                                                    <script>
+                                                        document.addEventListener('DOMContentLoaded', function() {
+                                                            var collapse = document.getElementById('stocks-{{ $variation->id }}');
+                                                            if (collapse && !collapse.classList.contains('show')) {
+                                                                new bootstrap.Collapse(collapse, {toggle: true});
+                                                            }
+                                                        });
+                                                    </script>
+                                                @endif
                                                 @foreach ($stocks->where('variation_id', $variation->id) as $stock)
+                                                    @php
+                                                        $process_stock = $stock->process_stock($process->id);
+                                                    @endphp
                                                     <tr>
                                                         <td>{{ ++$j }}</td>
                                                         <td>{{ $stock->imei }}{{ $stock->serial_number }}</td>
                                                         <td>
                                                             {{ $stock->latest_operation->description ?? null }}
                                                         </td>
-                                                        <td style="width:220px">{{ $stock->process_stock($process_id)->created_at }}</td>
+                                                        <td style="width:220px">{{ $process_stock->created_at }}</td>
                                                         <td>
                                                             @if (session('user')->hasPermission('delete_topup_item') && $process->status <= 2)
                                                                 <a href="{{ url('topup/delete_topup_item').'/'.$stock->process_stock($process_id)->id }}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this item?');">
