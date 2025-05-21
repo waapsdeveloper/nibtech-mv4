@@ -613,10 +613,10 @@ class Index extends Component
                 return $q->whereIn('variation_id', $variation_ids);
             })
             ->whereHas('order', function ($q) use ($start_date) {
-                $q->where(['order_type_id'=>3])
+                $q->whereIn('order_type_id', [3,5])
                 ->where('created_at', '>=', $start_date);
             })
-            ->select('variation_id', DB::raw('SUM(quantity) as total_quantity_sold'), DB::raw('AVG(price) as average_price'))
+            ->select('variation_id', DB::raw('SUM(quantity) as total_quantity_sold'), DB::raw('AVG(price) as average_price'), DB::raw('SUM(price) as total_price'))
             ->groupBy('variation_id')
             ->orderByDesc('total_quantity_sold')
             // ->take($per_page_2)
