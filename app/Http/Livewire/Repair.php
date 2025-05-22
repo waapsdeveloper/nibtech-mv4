@@ -488,6 +488,26 @@ class Repair extends Component
         }
         return view('livewire.external_repair_receive_new')->with($data);
     }
+    public function external_not_repair_receive(){
+        if(request('per_page') != null){
+            $per_page = request('per_page');
+        }else{
+            $per_page = 20;
+        }
+        $data['repairers'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
+        $data['storages'] = Storage_model::pluck('name','id');
+        $data['products'] = Products_model::pluck('model','id');
+        $data['grades'] = Grade_model::pluck('name','id');
+        $data['colors'] = Color_model::pluck('name','id');
+        if(request('show') == 1){
+            if(session('process_stock_ids') != []){
+                $processed_stocks = Process_stock_model::whereIn('id', session('process_stock_ids'))->where('status',3)->with(['process','stock'])->orderByDesc('updated_at')->get();
+                $data['processed_stocks'] = $processed_stocks;
+
+            }
+        }
+        return view('livewire.external_not_repair_receive_new')->with($data);
+    }
     public function receive_repair_items(){
         if(request('repairer_id') != null){
             $repairer_id = request('repairer_id');

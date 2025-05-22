@@ -156,6 +156,9 @@ Route::post('check_repair_item/{id}', [Repair::class,'check_repair_item'])->name
 Route::get('external_repair_receive', [Repair::class,'external_repair_receive'])->name('receive_repair_item');
 Route::post('receive_repair_items', [Repair::class,'receive_repair_items'])->name('receive_repair_item');
 Route::post('receive_repair_item/{id}', [Repair::class,'receive_repair_item'])->name('receive_repair_item');
+Route::get('external_not_repair_receive', [Repair::class,'external_not_repair_receive'])->name('receive_not_repair_item');
+Route::post('receive_not_repair_items', [Repair::class,'receive_not_repair_items'])->name('receive_not_repair_item');
+Route::post('receive_not_repair_item/{id}', [Repair::class,'receive_not_repair_item'])->name('receive_not_repair_item');
 Route::post('add_repair_item/{id}', [Repair::class,'add_repair_item'])->name('add_repair_item');
 Route::post('repair/add_repair_sheet/{id}', [Repair::class,'add_repair_sheet'])->name('add_repair_item');
 Route::get('delete_repair/{id}', [Repair::class,'delete_repair'])->name('delete_repair');
