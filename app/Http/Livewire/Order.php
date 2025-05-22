@@ -1139,8 +1139,11 @@ class Order extends Component
                 },
                 'stocks.stock_operations'
                 ])
-                ->whereHas('stocks', function ($query) use ($order_id) {
-                    $query->where(['order_id'=> $order_id, 'status'=>1]);
+                ->whereHas('stocks', function ($query) use ($order_id, $deleted) {
+                    $query->where(['order_id'=> $order_id, 'status'=>1])
+                    ->when($deleted == 1, function ($q) {
+                        return $q->onlyTrashed();
+                    });
                 })
                 ->orderBy('grade', 'asc')
                 ->get();
@@ -1152,6 +1155,9 @@ class Order extends Component
                 $data['sold_stocks'] = Stock_model::with('order_items')
                 ->where(['order_id'=> $order_id, 'status'=>2])
                 ->orderBy('variation_id', 'asc')
+                ->when($deleted == 1, function ($q) {
+                    return $q->onlyTrashed();
+                })
                 ->get();
 
                 // $data['sold_stock_order_items'] = Order_item_model::whereHas('stock', function($q) use ($order_id){
