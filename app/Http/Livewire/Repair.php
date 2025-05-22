@@ -330,7 +330,7 @@ class Repair extends Component
 
                 if($process_stock == null){
                     session()->put('error', "Stock not in this list");
-                    return redirect()->back();
+                    // return redirect()->back();
                 }
                 // Access the variation through process_stock->stock->variation
                 $variation = $process_stock->stock->variation;
