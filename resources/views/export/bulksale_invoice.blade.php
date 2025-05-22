@@ -82,7 +82,7 @@
                         <h4>Cromac Square,</h4>
                         <h4>Forsyth House,</h4>
                         <h4>Belfast, BT2 8LA</h4>
-                        <h4>invoice@nibritaintech.com</h4>
+                        <h4>{{ env('APP_EMAIL') }}</h4>
 
                 </td>
 
@@ -176,12 +176,14 @@
                     @php
                         $totalAmount = 0;
                         $totalQty = 0;
+                        $totalDiscount = 0;
                     @endphp
                     @foreach ($order_items as $item)
                         @php
                             // $itemTotal = $item->quantity * $item->price;
                             $totalAmount += $item->total_price;
                             $totalQty += $item->total_quantity;
+                            $totalDiscount += $item->total_discount;
 
                             if($item->storage){
                                 $storage = $storages[$item->storage];
@@ -236,12 +238,20 @@
                                     <td>Qty:</td>
                                     <td align="right"> <strong>{{$totalQty}} </strong></td>
                                 </tr>
+                                {{-- @if ($totalDiscount > 0) --}}
+
+                                <tr>
+                                    <td>Discount:</td>
+                                    <td align="right"> <strong>€{{amount_formatter($totalDiscount)}} </strong></td>
+                                </tr>
+                                {{-- @endif --}}
+
                                     <br>
                                     <hr>
                                     <tr>
                                         <td>Amount Due:</td>
                                     @if ($invoice != 1)
-                                    <td align="right"> <strong> €{{amount_formatter( $totalAmount,2) }}</strong></td>
+                                    <td align="right"> <strong> €{{amount_formatter( $totalAmount-$totalDiscount,2) }}</strong></td>
                                     @else
                                     <td align="right"> <strong>{{ $order->currency_id->sign }}{{amount_formatter( $totalAmount*$order->exchange_rate,2) }}</strong></td>
                                     @endif

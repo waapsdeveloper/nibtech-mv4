@@ -316,32 +316,38 @@ class Repair extends Component
         }
         if(request('imei') != null){
             $imei = trim(request('imei'));
-            $stock = Stock_model::where('imei', $imei)->orWhere('serial_number', $imei)->first();
+            $imeis = $imei;
+            $imeis = explode(" ",$imeis);
+            foreach($imeis as $imei){
 
-            if($stock == null){
-                session()->put('error', "IMEI Invalid / Not Found");
-                return redirect()->back();
+                $stock = Stock_model::where('imei', $imei)->orWhere('serial_number', $imei)->first();
+
+                if($stock == null){
+                    session()->put('error', "IMEI Invalid / Not Found");
+                    // return redirect()->back();
+                }
+                $process_stock = Process_stock_model::where('stock_id', $stock->id)->where('process_id', request('process_id'))->first();
+
+                if($process_stock == null){
+                    session()->put('error', "Stock not in this list");
+                    // return redirect()->back();
+                }
+                // Access the variation through process_stock->stock->variation
+                $variation = $process_stock->stock->variation;
+
+                $process_stock->stock->status = 1;
+                $process_stock->stock->save();
+
+                $variation->stock += 1;
+                $variation->save();
+
+                // No variation record found or product_id and sku are both null, delete the order item
+
+                // $process_stock->stock->delete();
+                $process_stock->delete();
             }
-            $process_stock = Process_stock_model::where('stock_id', $stock->id)->where('process_id', request('process_id'))->first();
         }
 
-        if($process_stock == null){
-            session()->put('error', "Stock not in this list");
-            return redirect()->back();
-        }
-        // Access the variation through process_stock->stock->variation
-        $variation = $process_stock->stock->variation;
-
-        $process_stock->stock->status = 1;
-        $process_stock->stock->save();
-
-        $variation->stock += 1;
-        $variation->save();
-
-        // No variation record found or product_id and sku are both null, delete the order item
-
-        // $process_stock->stock->delete();
-        $process_stock->delete();
         // $orderItem->forceDelete();
 
         session()->put('success', 'Stock deleted successfully');
@@ -614,6 +620,165 @@ class Repair extends Component
             'admin_id' => session('user_id'),
         ]);
         $stock->variation_id = $new_variation->id;
+
+        $stock->status = 1;
+        $stock->save();
+
+
+        if($back != 1){
+            return redirect(url('repair/detail').'/'.$process_id);
+        }else{
+            return 1;
+        }
+    }
+    public function receive_not_repair_items(){
+        if(request('repairer_id') != null){
+            $repairer_id = request('repairer_id');
+            session()->put('repairer_id', $repairer_id);
+        }else{
+            $repairer_id = session('repairer_id');
+        }
+
+        if(request('check_testing_days') > 0){
+            session()->put('check_testing_days',request('check_testing_days'));
+        }
+        $error = "";
+        if(session('process_stock_ids') == null){
+            $process_stock_ids = [];
+        }else{
+            $process_stock_ids = session('process_stock_ids');
+        }
+        $imeis = request('imei');
+        $imeis = explode(" ",$imeis);
+        // echo "<pre>";
+        foreach($imeis as $imei){
+            $stock = Stock_model::where('imei',$imei)->orWhere('serial_number',$imei)->first();
+            if($stock == null){
+                $error .= "IMEI ".$imei." not found<br>";
+                continue;
+            }
+            if(session('check_testing_days') > 0){
+                session()->put('check_testing_days',request('check_testing_days'));
+                $api_requests = Api_request_model::where('stock_id',$stock->id)->where('created_at','>=',now()->subDays(request('check_testing_days')))->get();
+                $operations = Stock_operations_model::where('stock_id',$stock->id)->pluck('api_request_id')->toArray();
+                foreach($api_requests as $api_request){
+                    // if(Stock_operations_model::where('api_request_id',$api_request->id)->count() == 0){
+                    if(!in_array($api_request->id,$operations)){
+                        $api_request->status = null;
+                        $api_request->save();
+                    }
+                }
+            }
+            $process_stock = Process_stock_model::whereHas('process', function ($q) use ($repairer_id) {
+                $q->where('process_type_id', 9)
+                ->when($repairer_id, function ($q) use ($repairer_id) {
+                    $q->where('customer_id', $repairer_id);
+                });
+
+            })->where('stock_id',$stock->id)->where('status',1)->orderBy('id','desc')->first();
+            if($process_stock == null){
+                $error .= "IMEI ".$imei." not found in any list | ";
+                continue;
+            }
+            // echo $process_stock->process_id;
+            // echo $imei;
+
+            $this->receive_not_repair_item($process_stock->process_id,$imei,1);
+            $process_stock_ids[] = $process_stock->id;
+            // print_r(session()->all());
+            // echo "<br>";
+        }
+        if($error != ""){
+            session()->put('error', $error);
+        }else{
+            session()->put('success', 'Stocks added successfully');
+        }
+        session()->put('process_stock_ids', $process_stock_ids);
+        // echo "</pre>";
+        return redirect()->back();
+    }
+    public function receive_not_repair_item($process_id, $imei = null, $back = null){
+
+        if($imei == null && request('imei')){
+            $imei = request('imei');
+        }
+        if(ctype_digit($imei)){
+            $i = $imei;
+            $s = null;
+        }else{
+            $i = null;
+            $s = $imei;
+        }
+        $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
+
+        if($imei == '' || !$stock || $stock->status == null){
+            session()->put('error', 'IMEI Invalid / Not Found');
+            if($back != 1){
+                return redirect()->back();
+            }else{
+                return 1;
+            }
+        }
+        $process_stock = Process_stock_model::where(['process_id'=>$process_id,'stock_id'=>$stock->id])->first();
+        if(!$process_stock){
+            session()->put('error', "Stock not found in this sheet");
+            if($back != 1){
+                return redirect()->back();
+            }else{
+                return 1;
+            }
+        }
+        if($process_stock->status != 1){
+            session()->put('error', "Stock already received");
+            if($back != 1){
+                return redirect()->back();
+            }else{
+                return 1;
+            }
+        }
+        $process_stock->status = 3;
+        $process_stock->save();
+
+
+        // $product_id = $stock->variation->product_id;
+        // $storage = $stock->variation->storage;
+        // $color = $stock->variation->color;
+        // $grade = 9;
+
+        // $new_variation = Variation_model::firstOrNew([
+        //     'product_id' => $product_id,
+        //     'storage' => $storage,
+        //     'color' => $color,
+        //     'grade' => $grade,
+        // ]);
+        // if($new_variation->id == null){
+        //     $new_variation->status = 1;
+        // }
+
+        // $new_variation->save();
+
+        // $stock_operation = Stock_operations_model::create([
+        //     'stock_id' => $stock->id,
+        //     'old_variation_id' => $stock->variation_id,
+        //     'new_variation_id' => $new_variation->id,
+        //     'description' => "Repaired Externally",
+        //     'admin_id' => session('user_id'),
+        // ]);
+        // $stock->variation_id = $new_variation->id;
+
+        $operation = $stock->latest_operation;
+        if($operation != null){
+            $operation->description .= " | Not Repaired";
+            $operation->save();
+        }else{
+            $operation = Stock_operations_model::create([
+                'stock_id' => $stock->id,
+                'old_variation_id' => $stock->variation_id,
+                'new_variation_id' => $stock->variation_id,
+                'description' => "Not Repaired",
+                'admin_id' => session('user_id'),
+            ]);
+        }
 
         $stock->status = 1;
         $stock->save();
