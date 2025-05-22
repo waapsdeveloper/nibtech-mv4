@@ -582,6 +582,9 @@ class Order extends Component
         //     }
         // })
 
+        ->when(request('deleted') == 1, function ($q) {
+            return $q->onlyTrashed();
+        })
         // ->groupBy('orders.id', 'orders.reference_id', 'orders.customer_id', 'orders.status', 'orders.created_at')
         ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
         ->paginate($per_page)
