@@ -95,7 +95,7 @@
                 <a href="{{url('purchase')}}" class="btn btn-link @if (!request('status')) bg-white @endif " >All</a>
                 @if (session('user')->hasPermission('view_deleted_purchase'))
 
-                <a href="{{url('purchase')}}?deleted=1" class="btn btn-link @if (request('deleted')) bg-white @endif " >Deleted</a>
+                <a href="{{url('purchase')}}?deleted=1" class="btn btn-link danger @if (request('deleted')) bg-white @endif " >Deleted</a>
                 @endif
             </div>
             <div class="">

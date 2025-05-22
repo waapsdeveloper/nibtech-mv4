@@ -756,7 +756,7 @@ class Order extends Component
 
         return redirect()->back();
     }
-    public function purchase_detail($order_id){
+    public function purchase_detail($order_id, $deleted = null){
         // if previous url contains url('purchase') then set session previous to url()->previous()
         if(str_contains(url()->previous(),url('purchase')) && !str_contains(url()->previous(),'detail')){
             session()->put('previous', url()->previous());
@@ -772,7 +772,9 @@ class Order extends Component
         $data['colors'] = Color_model::pluck('name','id');
         $data['grades'] = Grade_model::pluck('name','id');
 
-        $data['order'] = Order_model::find($order_id);
+        $data['order'] = Order_model::find($order_id)->when($deleted == 1, function ($q) {
+            return $q->onlyTrashed();
+        });
 
         if(request('summery') == 1){
             $sold_total = [
