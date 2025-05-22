@@ -93,6 +93,10 @@
                 <a href="{{url('purchase')}}?status=3&stock=1" class="btn btn-link @if (request('status') == 3 && request('stock') == 1) bg-white @endif " >Active</a>
                 <a href="{{url('purchase')}}?status=3&stock=0" class="btn btn-link @if (request('status') == 3 && request('stock') == 0) bg-white @endif " >Closed</a>
                 <a href="{{url('purchase')}}" class="btn btn-link @if (!request('status')) bg-white @endif " >All</a>
+                @if (session('user')->hasPermission('view_deleted_purchase'))
+
+                <a href="{{url('purchase')}}?deleted=1" class="btn btn-link @if (request('deleted')) bg-white @endif " >Deleted</a>
+                @endif
             </div>
             <div class="">
             </div>
