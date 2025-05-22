@@ -316,32 +316,38 @@ class Repair extends Component
         }
         if(request('imei') != null){
             $imei = trim(request('imei'));
-            $stock = Stock_model::where('imei', $imei)->orWhere('serial_number', $imei)->first();
+            $imeis = $imei;
+            $imeis = explode(" ",$imeis);
+            foreach($imeis as $imei){
 
-            if($stock == null){
-                session()->put('error', "IMEI Invalid / Not Found");
-                return redirect()->back();
+                $stock = Stock_model::where('imei', $imei)->orWhere('serial_number', $imei)->first();
+
+                if($stock == null){
+                    session()->put('error', "IMEI Invalid / Not Found");
+                    // return redirect()->back();
+                }
+                $process_stock = Process_stock_model::where('stock_id', $stock->id)->where('process_id', request('process_id'))->first();
+
+                if($process_stock == null){
+                    session()->put('error', "Stock not in this list");
+                    return redirect()->back();
+                }
+                // Access the variation through process_stock->stock->variation
+                $variation = $process_stock->stock->variation;
+
+                $process_stock->stock->status = 1;
+                $process_stock->stock->save();
+
+                $variation->stock += 1;
+                $variation->save();
+
+                // No variation record found or product_id and sku are both null, delete the order item
+
+                // $process_stock->stock->delete();
+                $process_stock->delete();
             }
-            $process_stock = Process_stock_model::where('stock_id', $stock->id)->where('process_id', request('process_id'))->first();
         }
 
-        if($process_stock == null){
-            session()->put('error', "Stock not in this list");
-            return redirect()->back();
-        }
-        // Access the variation through process_stock->stock->variation
-        $variation = $process_stock->stock->variation;
-
-        $process_stock->stock->status = 1;
-        $process_stock->stock->save();
-
-        $variation->stock += 1;
-        $variation->save();
-
-        // No variation record found or product_id and sku are both null, delete the order item
-
-        // $process_stock->stock->delete();
-        $process_stock->delete();
         // $orderItem->forceDelete();
 
         session()->put('success', 'Stock deleted successfully');
