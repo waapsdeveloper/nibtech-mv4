@@ -773,8 +773,8 @@ class Order extends Component
         $data['grades'] = Grade_model::pluck('name','id');
 
         $data['order'] = Order_model::when($deleted == 1, function ($q) {
-            return $q->onlyTrashed();
-        })->where('id',$order_id)->with(['order_items','order_items.variation', 'order_items.variation.grade_id', 'order_items.stock'])->first();
+            return $q->withTrashed();
+        })->where('id',$order_id)->first();
 
         if(request('summery') == 1){
             $sold_total = [
