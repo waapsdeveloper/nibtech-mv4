@@ -353,7 +353,7 @@ class Repair extends Component
         // $orderItem->forceDelete();
 
         session()->put('success', 'Stock deleted successfully');
-        return redirect()->back()->withInput(['remove'=> 1]);
+        return redirect(url('repair/detail').'/'.request('process_id').'?remove=1');
 
     }
     public function revert_repair_item($process_stock_id = null){
