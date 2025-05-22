@@ -772,9 +772,9 @@ class Order extends Component
         $data['colors'] = Color_model::pluck('name','id');
         $data['grades'] = Grade_model::pluck('name','id');
 
-        $data['order'] = Order_model::find($order_id)->when($deleted == 1, function ($q) {
+        $data['order'] = Order_model::when($deleted == 1, function ($q) {
             return $q->onlyTrashed();
-        });
+        })->where('id',$order_id)->with(['order_items','order_items.variation', 'order_items.variation.grade_id', 'order_items.stock'])->first();
 
         if(request('summery') == 1){
             $sold_total = [
