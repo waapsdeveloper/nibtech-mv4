@@ -534,7 +534,7 @@
                                                     input.type = 'number';
                                                     input.step = '0.01';
                                                     input.value = currentPrice;
-                                                    input.style.width = '80px';
+                                                    input.style.width = '90px';
                                                     input.onblur = function() { savePrice(span, itemId, input.value); };
                                                     input.onkeydown = function(e) {
                                                         if (e.key === 'Enter') {
@@ -552,6 +552,7 @@
                                                 }
 
                                                 function savePrice(span, itemId, newPrice) {
+                                                    console.log('Saving price for item ID:', itemId, 'New Price:', newPrice);
                                                     // AJAX call to update price
                                                     $.ajax({
                                                         url: "{{ url('wholesale/update_prices') }}",
