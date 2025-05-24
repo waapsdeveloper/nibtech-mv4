@@ -362,8 +362,6 @@ class Report extends Component
 
             $sellable_variation_ids = $product_storage_sort->variations->whereIn('grade', [1,2,3,4,5,7,9])->pluck('id')->toArray();
 
-            $not_sellable_variation_ids = $product_storage_sort->variations->whereNotIn('grade', [1,2,3,4,5,7,9])->pluck('id')->toArray();
-
             $item_count = $variation_items->count();
             $item_sum = $variation_items->sum('price');
 
@@ -391,7 +389,8 @@ class Report extends Component
                 $list[$product_storage_sort->id]['vendors'][$vendor_id] = [
                     'item_count' => $vendor_order_items->count(),
                     'item_sum'   => $vendor_order_items->sum('price'),
-                    'item_average' => round($vendor_order_items->sum('price') / $vendor_order_items->count(), 2)
+                    'item_average' => round($vendor_order_items->sum('price') / $vendor_order_items->count(), 2),
+                    'sellable_percentage' => count(array_intersect($sellable_variation_ids, $vendor_order_items->pluck('variation_id')->toArray())) / count($variation_ids) * 100
                 ];
             }
 
@@ -423,7 +422,7 @@ class Report extends Component
                     continue;
                 }
                 $vendor_data = $row['vendors'][$vendor_id] ?? ['item_count' => null, 'item_sum' => null, 'item_average' => null];
-                echo '<td>(' . htmlspecialchars($vendor_data['item_count']) . ') ' . htmlspecialchars($vendor_data['item_average']) . '</td>';
+                echo '<td>' . htmlspecialchars($vendor_data['item_count']) . ' | ' . htmlspecialchars($vendor_data['item_average']) . ' | ' . $vendor_data['sellable_percentage'] . '%</td>';
             }
             echo '</tr>';
         }
