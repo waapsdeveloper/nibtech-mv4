@@ -559,8 +559,8 @@
                                                         method: "POST",
                                                         data: {
                                                             _token: "{{ csrf_token() }}",
-                                                            item_id: itemId,
-                                                            price: newPrice
+                                                            item_ids: itemId,
+                                                            unit_price: newPrice
                                                         },
                                                         success: function(response) {
                                                             // Optionally update the display with new price
