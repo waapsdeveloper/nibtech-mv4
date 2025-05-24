@@ -357,7 +357,7 @@ class Report extends Component
             }
             $list[$product_storage_sort->id] = [
                 'product_id' => $product_storage_sort->product_id,
-                'product_name' => $product_storage_sort->product->name,
+                'product_name' => $product_storage_sort->product->model,
                 'storage_id' => $product_storage_sort->storage,
                 'storage_name' => $product_storage_sort->storage_id->name,
                 'variation_ids' => $variation_ids,
