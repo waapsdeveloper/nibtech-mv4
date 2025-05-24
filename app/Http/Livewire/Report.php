@@ -346,7 +346,11 @@ class Report extends Component
 
         $product_storage_sort_ids = Variation_model::whereIn('id', $variation_ids)->pluck( 'product_storage_sort_id', 'id')->toArray();
 
-        $product_storage_sorts = Product_storage_sort_model::with(['product:id,model', 'storage_id:id,name', 'variations:id,product_storage_sort_id,grade'])->whereIn('id', $product_storage_sort_ids)->get();
+        $product_storage_sorts = Product_storage_sort_model::with(['product:id,model', 'storage_id:id,name', 'variations:id,product_storage_sort_id,grade'])->whereIn('id', $product_storage_sort_ids)
+        ->leftJoin('products', 'product_storage_sort.product_id', '=', 'products.id')
+        ->orderBy('products.model', 'asc')
+        ->select('product_storage_sort.id', 'product_storage_sort.product_id', 'product_storage_sort.storage', 'products.model')
+        ->get();
 
         $items_by_order = $purchase_order_items->groupBy('order_id');
 
@@ -368,7 +372,7 @@ class Report extends Component
 
             $list[$product_storage_sort->id] = [
                 'product_id' => $product_storage_sort->product_id,
-                'product_name' => optional($product_storage_sort->product)->model,
+                'product_name' => $product_storage_sort->model,
                 'storage_id' => $product_storage_sort->storage,
                 'storage_name' => optional($product_storage_sort->storage_id)->name,
                 'variation_ids' => $variation_ids,
