@@ -335,7 +335,7 @@ class Report extends Component
         })
         ->get();
 
-        $product_storage_sorts = Product_storage_sort_model::with(['product', 'storage_id'])->all();
+        $product_storage_sorts = Product_storage_sort_model::with(['product', 'storage_id'])->get();
 
         $list = [];
 
