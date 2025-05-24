@@ -339,8 +339,12 @@ class Report extends Component
         //         ->whereBetween('created_at', [$start_date, $end_date]);
         // })
         whereIn('order_id', $purchase_order_ids)
-        ->select('order_id', 'variation_id', 'price')
+        ->select('order_id', 'stock_id', 'variation_id', 'price')
         ->get();
+
+        $stock_ids = $purchase_order_items->pluck('stock_id')->unique()->toArray();
+        $stock_costs = Stock_model::whereIn('id', $stock_ids)->pluck('cost', 'id')->toArray();
+
 
         $variation_ids = $purchase_order_items->pluck('variation_id')->unique()->toArray();
 
@@ -360,7 +364,7 @@ class Report extends Component
             $variation_ids = $product_storage_sort->variations->pluck('id')->toArray();
             $variation_items = $purchase_order_items->whereIn('variation_id', $variation_ids);
 
-            $sellable_variation_ids = $product_storage_sort->variations->whereIn('grade', [1,2,3,4,5,7,9])->pluck('id')->toArray();
+            // $sellable_variation_ids = $product_storage_sort->variations->whereIn('grade', [1,2,3,4,5,7,9])->pluck('id')->toArray();
 
             $item_count = $variation_items->count();
             $item_sum = $variation_items->sum('price');
@@ -384,6 +388,9 @@ class Report extends Component
                 $vendor_order_ids = $purchase_orders->where('customer_id', $vendor_id)->pluck('id')->toArray();
                 $vendor_order_items = $purchase_order_items->whereIn('order_id', $vendor_order_ids)->whereIn('variation_id', $variation_ids);
 
+                $stock_ids = $vendor_order_items->pluck('stock_id')->unique()->toArray();
+                $stock_variation_ids = Stock_model::whereIn('id', $stock_ids)->pluck('variation_id', 'id')->toArray();
+                $sellable_variation_ids = Variation_model::whereIn('id', $stock_variation_ids)->whereIn('grade', [1,2,3,4,5,7,9])->pluck('id')->toArray();
                 $sellable_items = $purchase_order_items->whereIn('order_id', $vendor_order_ids)->whereIn('variation_id', $sellable_variation_ids);
 
                 if ($vendor_order_items->isEmpty()) continue; // Skip if no items found for this vendor
