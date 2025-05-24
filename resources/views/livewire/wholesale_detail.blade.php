@@ -565,7 +565,7 @@
                                                         success: function(response) {
                                                             // console.log('Price updated successfully:', response);
                                                             // Optionally update the display with new price
-                                                            span.innerHTML = response.customer_name + " €" + parseFloat(unit_price).toFixed(2);
+                                                            span.innerHTML = response.customer_name + " €" + parseFloat(newPrice).toFixed(2);
                                                         },
                                                         error: function() {
                                                             span.innerHTML = span.dataset.original;
