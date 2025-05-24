@@ -552,7 +552,7 @@
                                                 }
 
                                                 function savePrice(span, itemId, newPrice) {
-                                                    console.log('Saving price for item ID:', itemId, 'New Price:', newPrice);
+                                                    // console.log('Saving price for item ID:', itemId, 'New Price:', newPrice);
                                                     // AJAX call to update price
                                                     $.ajax({
                                                         url: "{{ url('wholesale/update_prices') }}",
@@ -563,9 +563,9 @@
                                                             unit_price: newPrice
                                                         },
                                                         success: function(response) {
-                                                            console.log('Price updated successfully:', response);
+                                                            // console.log('Price updated successfully:', response);
                                                             // Optionally update the display with new price
-                                                            span.innerHTML = response.customer_name + " €" + parseFloat(response.price).toFixed(2);
+                                                            span.innerHTML = response.customer_name + " €" + parseFloat(unit_price).toFixed(2);
                                                         },
                                                         error: function() {
                                                             span.innerHTML = span.dataset.original;
