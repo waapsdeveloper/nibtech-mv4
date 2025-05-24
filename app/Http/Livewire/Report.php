@@ -390,7 +390,7 @@ class Report extends Component
                     'item_count' => $vendor_order_items->count(),
                     'item_sum'   => $vendor_order_items->sum('price'),
                     'item_average' => round($vendor_order_items->sum('price') / $vendor_order_items->count(), 2),
-                    'sellable_percentage' => count(array_intersect($sellable_variation_ids, $vendor_order_items->pluck('variation_id')->toArray())) / count($variation_ids) * 100
+                    'sellable_percentage' => round(count(array_intersect($sellable_variation_ids, $vendor_order_items->pluck('variation_id')->toArray())) / count($variation_ids) * 100,2)
                 ];
             }
 
@@ -403,7 +403,6 @@ class Report extends Component
             <th>No</th>
             <th>Product Name</th>
             <th>Item Count</th>
-            <th>Item Sum</th>
             <th>Item Average</th>';
         foreach ($vendors as $vendor_id => $vendor_name) {
             echo '<th>' . htmlspecialchars($vendor_name) . '</th>';
@@ -414,7 +413,7 @@ class Report extends Component
             echo '<td>' . ++$i . '</td>';
             echo '<td>' . htmlspecialchars($row['product_name']) . ' ' . htmlspecialchars($row['storage_name']) . '</td>';
             echo '<td>' . htmlspecialchars($row['item_count']) . '</td>';
-            echo '<td>' . htmlspecialchars($row['item_sum']) . '</td>';
+            // echo '<td>' . htmlspecialchars($row['item_sum']) . '</td>';
             echo '<td>' . htmlspecialchars($row['item_average']) . '</td>';
             foreach ($vendors as $vendor_id => $vendor_name) {
                 if (!isset($row['vendors'][$vendor_id])) {
