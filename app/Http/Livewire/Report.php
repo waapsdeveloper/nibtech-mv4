@@ -352,7 +352,9 @@ class Report extends Component
             $item_count = $purchase_order_items->whereIn('variation_id', $variation_ids)->count();
             $item_sum = $purchase_order_items->whereIn('variation_id', $variation_ids)->sum('price');
 
-
+            if ($item_count == 0) {
+                continue; // Skip if no items found for this product_storage_sort
+            }
             $list[$product_storage_sort->id] = [
                 'product_id' => $product_storage_sort->product_id,
                 'product_name' => $product_storage_sort->product->name,
