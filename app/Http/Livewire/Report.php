@@ -307,6 +307,8 @@ class Report extends Component
 
     public function purchase_report(){
 
+        ini_set('max_execution_time', 1200);
+
         $start_date = Carbon::now()->subMonths(1)->startOfMonth()->format('Y-m-d');
         $end_date = date('Y-m-d 23:59:59');
 
