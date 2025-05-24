@@ -414,14 +414,14 @@ class Report extends Component
             echo '<td>' . htmlspecialchars($row['product_name']) . ' ' . htmlspecialchars($row['storage_name']) . '</td>';
             echo '<td>' . htmlspecialchars($row['item_count']) . '</td>';
             // echo '<td>' . htmlspecialchars($row['item_sum']) . '</td>';
-            echo '<td>' . htmlspecialchars($row['item_average']) . '</td>';
+            echo '<td>€' . htmlspecialchars($row['item_average']) . '</td>';
             foreach ($vendors as $vendor_id => $vendor_name) {
                 if (!isset($row['vendors'][$vendor_id])) {
                     echo '<td></td>';
                     continue;
                 }
                 $vendor_data = $row['vendors'][$vendor_id] ?? ['item_count' => null, 'item_sum' => null, 'item_average' => null];
-                echo '<td>' . htmlspecialchars($vendor_data['item_count']) . ' | ' . htmlspecialchars($vendor_data['item_average']) . ' | ' . $vendor_data['sellable_percentage'] . '%</td>';
+                echo '<td>' . htmlspecialchars($vendor_data['item_count']) . ' | €' . htmlspecialchars($vendor_data['item_average']) . ' | ' . $vendor_data['sellable_percentage'] . '%</td>';
             }
             echo '</tr>';
         }
