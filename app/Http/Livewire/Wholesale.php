@@ -544,7 +544,7 @@ class Wholesale extends Component
 
         $variation = Variation_model::where(['id' => $stock->variation_id])->first();
 
-        if($stock->variation->grade != 11 && $stock->variation->grade > 6){
+        if($stock->variation->grade != 11 && $stock->variation->grade > 6 && !request('bypass_check')){
             $new_variation = Variation_model::firstOrNew(['product_id'=>$variation->product_id, 'storage'=>$variation->storage, 'color'=>$variation->color, 'grade'=>11]);
             $new_variation->status = 1;
             $new_variation->save();
