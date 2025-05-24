@@ -343,7 +343,7 @@ class Report extends Component
         ->get();
 
         $stock_ids = $purchase_order_items->pluck('stock_id')->unique()->toArray();
-        $stock_costs = Stock_model::whereIn('id', $stock_ids)->pluck('cost', 'id')->toArray();
+        // $stock_costs = Stock_model::whereIn('id', $stock_ids)->pluck('cost', 'id')->toArray();
 
 
         $variation_ids = $purchase_order_items->pluck('variation_id')->unique()->toArray();
