@@ -398,7 +398,6 @@ class Report extends Component
         echo '<thead><tr>
             <th>No</th>
             <th>Product Name</th>
-            <th>Storage Name</th>
             <th>Item Count</th>
             <th>Item Sum</th>
             <th>Item Average</th>';
@@ -409,8 +408,7 @@ class Report extends Component
         foreach ($list as $pss_id => $row) {
             echo '<tr>';
             echo '<td>' . ++$i . '</td>';
-            echo '<td>' . htmlspecialchars($row['product_name']) . '</td>';
-            echo '<td>' . htmlspecialchars($row['storage_name']) . '</td>';
+            echo '<td>' . htmlspecialchars($row['product_name']) . ' ' . htmlspecialchars($row['storage_name']) . '</td>';
             echo '<td>' . htmlspecialchars($row['item_count']) . '</td>';
             echo '<td>' . htmlspecialchars($row['item_sum']) . '</td>';
             echo '<td>' . htmlspecialchars($row['item_average']) . '</td>';
