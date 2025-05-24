@@ -272,304 +272,6 @@
         session()->forget('error');
         @endphp
         @endif
-        @if (count($order_issues)>0 && 1 == 2)
-
-        <div class="row">
-            <div class="col-xl-12">
-                <div class="card">
-                    <div class="card-header pb-0">
-                        <div class="d-flex justify-content-between">
-                            <h4 class="card-title mg-b-0">Order Issues List</h4>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive" style="max-height: 500px">
-                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
-                                @php
-                                    $col = 4;
-                                @endphp
-                                <thead>
-                                    <tr>
-                                        <th><small><b>No</b></small></th>
-                                        {{-- @foreach (json_decode($order_issues[0]->all_rows)[0]->data as $key => $value) --}}
-                                        @foreach (json_decode(json_decode(preg_split('/(?<=\}),(?=\{)/', $order_issues[0]->all_rows)[0])->data) as $key => $value)
-
-                                        @php
-                                            $col ++;
-                                        @endphp
-                                        <th><small><b>{{ $key }}</b></small></th>
-                                        @endforeach
-                                        <th><small><b>Message</b></small></th>
-                                        <th><small><b>Creation Date</b></small></th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @php
-                                        $i = 0;
-                                        $j = 0;
-                                    @endphp
-                                    @foreach ($order_issues as $grouped_issue)
-                                        @php
-                                            // $array = explode('},{',$grouped_issue->all_rows);
-                                            // Split the JSON string into individual JSON objects
-                                            $all_rows = preg_split('/(?<=\}),(?=\{)/', $grouped_issue->all_rows);
-
-                                            // $array[0][0] = '';
-                                            // print_r($array);
-                                            // echo "<br>";
-                                            // echo "<br>";
-                                        @endphp
-                                        <tr class="bg-light tx-center">
-                                            <td colspan="3" >{{ $grouped_issue->name }}</td>
-                                            <td colspan="{{ $col-5 }}">{{ $grouped_issue->message }}</td>
-                                            <td colspan="2">
-                                                <form id="order_issues_{{$j+=1}}" method="POST" action="{{ url('wholesale/remove_issues') }}">
-                                                    @csrf
-                                                @switch($grouped_issue->message)
-                                                @case("Item Already added in this order")
-                                                <button class="btn btn-sm btn-danger m-0" name="remove_entries" value="1">Remove Entries</button>
-
-                                                    @break
-                                                @case("Product Name Not Found")
-
-                                                <div class="form-floating">
-                                                    <input type="text" list="variations" id="variation" name="variation" class="form-control" value="{{ $grouped_issue->name }}" required>
-                                                    <datalist id="variations">
-                                                        <option value="">Select</option>
-                                                        @foreach ($all_variations as $variation)
-                                                            @php
-                                                                if($variation->storage){
-                                                                    $storage = $storages[$variation->storage];
-                                                                }else{
-                                                                    $storage = null;
-                                                                }
-                                                            @endphp
-                                                            <option value="{{$variation->id}}" @if(isset($_GET['variation']) && $variation->id == $_GET['variation']) {{'selected'}}@endif>{{$variation->product->model." ".$storage}}</option>
-                                                        @endforeach
-                                                    </datalist>
-                                                    <label for="variation">Variation</label>
-                                                </div>
-                                                <button class="btn btn-primary m-0" name="insert_variation" value="1">Insert Variation</button>
-
-                                                        @break
-
-                                                    @default
-
-                                                @endswitch
-                                                </form>
-                                            </td>
-                                        </tr>
-                                        @foreach ($all_rows as $row)
-                                            @php
-                                                $row = json_decode($row);
-                                            // print_r($row);
-                                            @endphp
-                                            @if ($row != null)
-                                            @php
-                                            // echo "<br>";
-                                            // echo "<br>";
-                                                $data = json_decode($row->data);
-                                            @endphp
-
-                                        {{-- @if (json_decode($grouped_issue->all_rows) != null) --}}
-
-                                        {{-- @foreach (json_decode($grouped_issue->all_rows) as $key => $issue) --}}
-                                        {{-- @foreach ($grouped_issue->all_rows ? json_decode($grouped_issue->all_rows) : [] as $issue)
-                                        @foreach ($grouped_issue->all_rows ? json_decode($grouped_issue->all_rows) : [] as $issue) --}}
-                                            <input type="hidden" name="ids[]" value="{{$row->id}}" form="order_issues_{{$j}}">
-                                            <tr>
-                                                <td>{{ $i + 1 }}</td>
-                                                @foreach ($data as $key => $value)
-                                                    <td title="{{ $key }}">{{ $value }}</td>
-                                                @endforeach
-                                                <td>{{ $row->message }}</td>
-                                                <td>{{ $row->created_at }}</td>
-                                                <td>
-                                                    <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
-                                                    <div class="dropdown-menu">
-                                                        <a class="dropdown-item" href="">link</a>
-                                                        <a class="dropdown-item" href="" target="_blank">link</a>
-                                                    </div>
-                                                </td>
-                                            </tr>
-
-                                            @php
-                                            // print_r($issue);
-                                            // echo " | ";
-                                                $i++;
-                                            @endphp
-                                            @endif
-                                            {{-- @endforeach --}}
-                                        {{-- @endif --}}
-                                        @endforeach
-                                    @endforeach
-                                </tbody>
-                            </table>
-                            <br>
-                        </div>
-                    </div>
-
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        @endif
-        @if (session('user')->hasPermission('view_issues'))
-        @if (count($order_issues)>0)
-
-        <div class="row">
-            <div class="col-xl-12">
-                <div class="card">
-                    <div class="card-header pb-0">
-                        <div class="d-flex justify-content-between">
-                            <h4 class="card-title mg-b-0">Order Issues List</h4>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive" style="max-height: 500px">
-                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
-                                @php
-                                    $col = 3;
-                                @endphp
-                                <thead>
-                                    <tr>
-                                        <th><small><b>No</b></small></th>
-                                        {{-- @foreach (json_decode($order_issues[0]->all_rows)[0]->data as $key => $value) --}}
-                                        @foreach (json_decode(json_decode(preg_split('/(?<=\}),(?=\{)/', $order_issues[0]->all_rows)[0])->data) as $key => $value)
-
-                                        @php
-                                            $col ++;
-                                        @endphp
-                                        <th><small><b>{{ $key }}</b></small></th>
-                                        @endforeach
-                                        <th><small><b>Message</b></small></th>
-                                        <th><small><b>Creation Date</b></small></th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @php
-                                        $i = 0;
-                                        $j = 0;
-                                    @endphp
-                                    @foreach ($order_issues as $grouped_issue)
-                                        @php
-                                            $j += 1;
-                                            // $array = explode('},{',$grouped_issue->all_rows);
-                                            // Split the JSON string into individual JSON objects
-                                            $all_rows = preg_split('/(?<=\}),(?=\{)/', $grouped_issue->all_rows);
-
-                                            // $array[0][0] = '';
-                                            // print_r($array);
-                                            // echo "<br>";
-                                            // echo "<br>";
-                                        @endphp
-                                        <tr class="bg-light tx-center">
-                                            <td colspan="3" >{{ $grouped_issue->name }}</td>
-                                            <td colspan="{{ $col-5 }}">{{ $grouped_issue->message }}</td>
-                                            <td colspan="2">
-                                                <form id="order_issues_{{$j}}" method="POST" action="{{ url('purchase/remove_issues') }}" class="form-inline">
-                                                    @csrf
-                                                </form>
-                                                @switch($grouped_issue->message)
-                                                    @case("Product Name Not Found")
-                                                    <div class="form-floating">
-                                                        <input type="text" list="variations" id="variation" name="variation" class="form-control" value="{{ $grouped_issue->name }}" form="order_issues_{{$j}}" required>
-                                                        <datalist id="variations">
-                                                            <option value="">Select</option>
-                                                            @foreach ($all_variations as $variation)
-                                                                @php
-                                                                    if($variation->storage){
-                                                                        $storage = $storages[$variation->storage];
-                                                                    }else{
-                                                                        $storage = null;
-                                                                    }
-                                                                @endphp
-                                                                <option value="{{$variation->id}}" @if(isset($_GET['variation']) && $variation->id == $_GET['variation']) {{'selected'}}@endif>{{$variation->product->model." ".$storage}}</option>
-                                                            @endforeach
-                                                        </datalist>
-                                                        <label for="variation">Variation</label>
-                                                    </div>
-                                                    <button class="btn btn-primary m-0" name="insert_variation" value="1" form="order_issues_{{$j}}">Insert Variation</button>
-
-                                                        @break
-
-                                                    @default
-
-                                                    <button class="btn btn-sm btn-danger m-0" name="remove_entries" value="1" form="order_issues_{{$j}}">Remove Entries</button>
-
-                                                        @break
-                                                @endswitch
-                                                </form>
-                                            </td>
-                                        </tr>
-                                        @foreach ($all_rows as $row)
-                                            @php
-                                                $row = json_decode($row);
-                                            // print_r($row);
-                                            @endphp
-                                            @if ($row != null)
-                                            @php
-                                            // echo "<br>";
-                                            // echo "<br>";
-                                                $data = json_decode($row->data);
-                                            // print_r($data);
-                                            @endphp
-
-
-                                        {{-- @if (json_decode($grouped_issue->all_rows) != null) --}}
-
-                                        {{-- @foreach (json_decode($grouped_issue->all_rows) as $key => $issue) --}}
-                                        {{-- @foreach ($grouped_issue->all_rows ? json_decode($grouped_issue->all_rows) : [] as $issue)
-                                        @foreach ($grouped_issue->all_rows ? json_decode($grouped_issue->all_rows) : [] as $issue) --}}
-                                            <input type="hidden" name="ids[]" value="{{$row->id}}" form="order_issues_{{$j}}">
-                                            <tr>
-                                                <td>{{ $i + 1 }}</td>
-                                                @foreach ($data as $key => $value)
-                                                    @if ($key == 'variation')
-                                                        @php
-                                                            $variation = $all_variations->where('id',$value)->first();
-                                                            if($variation->storage){
-                                                                $storage = $storages[$variation->storage];
-                                                            }else{
-                                                                $storage = null;
-                                                            }
-                                                        @endphp
-                                                        <td title="{{ $key }}">{{$variation->product->model." ".$storage}}</td>
-                                                    @else
-                                                        <td title="{{ $key }}">{{ $value }}</td>
-
-                                                    @endif
-                                                @endforeach
-                                                <td>{{ $row->message }}</td>
-                                                <td>{{ $row->created_at }}</td>
-                                            </tr>
-
-                                            @php
-                                            // print_r($issue);
-                                            // echo " | ";
-                                                $i++;
-
-                                            @endphp
-                                            @endif
-                                            {{-- @endforeach --}}
-                                        {{-- @endif --}}
-                                        @endforeach
-                                    @endforeach
-                                </tbody>
-                            </table>
-                            <br>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-
-        @endif
-        @endif
         <br>
 
         <div class="row">
@@ -743,7 +445,9 @@
                                             @endif
                                             @if (session('user')->hasPermission('view_price'))
                                             <td @if (session('user')->hasPermission('view_cost')) title="Cost Price: €{{ $cost ?? null }}" @endif>
-                                                {{ $item->order->customer->first_name ?? null }} €{{ amount_formatter($price,2) }}
+                                                <span ondblclick="editPrice(this, {{ $sale_item->id }}, {{ $price }})" style="cursor:pointer;">
+                                                    {{ $item->order->customer->first_name ?? null }} €{{ amount_formatter($price,2) }}
+                                                </span>
                                             </td>
                                             @endif
                                             @if (session('user')->hasPermission('delete_wholesale_item') && $order->status == 2)
@@ -822,6 +526,51 @@
                 }
             });
         });
+                                                function editPrice(span, itemId, currentPrice) {
+                                                    // Prevent multiple input boxes
+                                                    if (span.querySelector('input')) return;
+
+                                                    var input = document.createElement('input');
+                                                    input.type = 'number';
+                                                    input.step = '0.01';
+                                                    input.value = currentPrice;
+                                                    input.style.width = '80px';
+                                                    input.onblur = function() { savePrice(span, itemId, input.value); };
+                                                    input.onkeydown = function(e) {
+                                                        if (e.key === 'Enter') {
+                                                            input.blur();
+                                                        }
+                                                        if (e.key === 'Escape') {
+                                                            span.innerHTML = span.dataset.original;
+                                                        }
+                                                    };
+                                                    span.dataset.original = span.innerHTML;
+                                                    span.innerHTML = '';
+                                                    span.appendChild(input);
+                                                    input.focus();
+                                                    input.select();
+                                                }
+
+                                                function savePrice(span, itemId, newPrice) {
+                                                    // AJAX call to update price
+                                                    $.ajax({
+                                                        url: "{{ url('wholesale/update_prices') }}",
+                                                        method: "POST",
+                                                        data: {
+                                                            _token: "{{ csrf_token() }}",
+                                                            item_id: itemId,
+                                                            price: newPrice
+                                                        },
+                                                        success: function(response) {
+                                                            // Optionally update the display with new price
+                                                            span.innerHTML = response.customer_name + " €" + parseFloat(response.price).toFixed(2);
+                                                        },
+                                                        error: function() {
+                                                            span.innerHTML = span.dataset.original;
+                                                            alert('Failed to update price');
+                                                        }
+                                                    });
+                                                }
     </script>
 		<!--Internal Sparkline js -->
 		<script src="{{asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js')}}"></script>
