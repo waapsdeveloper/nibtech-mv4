@@ -130,20 +130,20 @@
                                                 </div>
                                                 <div class="col-md-9 mg-t-5 mg-md-t-0">
                                                     <div class="form-check-inline">
-                                                        <input class="form-check-input" name="customer[is_vendor]" value="" type="radio" id="customer">
-                                                        <label class="form-check-label" for="customer">Customer</label>
-                                                    </div>
-                                                    <div class="form-check-inline">
                                                         <input class="form-check-input" name="customer[is_vendor]" value="1" type="radio" id="vendor" checked>
                                                         <label class="form-check-label" for="vendor">Vendor</label>
                                                     </div>
                                                     <div class="form-check-inline">
                                                         <input class="form-check-input" name="customer[is_vendor]" value="2" type="radio" id="purchaser">
-                                                        <label class="form-check-label" for="purchaser">BulkSale Purchaser</label>
+                                                        <label class="form-check-label" for="purchaser">B2B Customer</label>
                                                     </div>
                                                     <div class="form-check-inline">
                                                         <input class="form-check-input" name="customer[is_vendor]" value="3" type="radio" id="repairer">
                                                         <label class="form-check-label" for="repairer">Repairer</label>
+                                                    </div>
+                                                    <div class="form-check-inline">
+                                                        <input class="form-check-input" name="customer[is_vendor]" value="" type="radio" id="customer">
+                                                        <label class="form-check-label" for="customer">B2C Customer</label>
                                                     </div>
                                                 </div>
                                             </div>
