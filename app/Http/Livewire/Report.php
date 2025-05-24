@@ -307,7 +307,7 @@ class Report extends Component
 
     public function purchase_report(){
 
-        $start_date = Carbon::now()->subMonths(3);
+        $start_date = Carbon::now()->subMonths(1)->startOfMonth()->format('Y-m-d');
         $end_date = date('Y-m-d 23:59:59');
 
         if (request('start_date') != NULL) {
@@ -323,7 +323,66 @@ class Report extends Component
         $data['end_date'] = date("Y-m-d", strtotime($end_date));
 
 
+        $purchase_orders = Order_model::where('order_type_id',1)
+            ->whereBetween('created_at', [$start_date, $end_date])
+            ->get();
 
+        $vendor_ids = $purchase_orders->pluck('customer_id')->unique()->toArray();
+
+        $purchase_order_items = Order_item_model::whereHas('order', function ($q) use ($start_date, $end_date) {
+            $q->where('order_type_id',1)
+                ->whereBetween('created_at', [$start_date, $end_date]);
+        })
+        ->get();
+
+        $product_storage_sorts = Product_storage_sort_model::with(['product', 'storage_id'])->all();
+
+        $list = [];
+
+        foreach ($product_storage_sorts as $product_storage_sort) {
+            $variations = $product_storage_sort->variations;
+            $variation_ids = $variations->pluck('id')->toArray();
+
+            $item_count = $purchase_order_items->whereIn('variation_id', $variation_ids)->count();
+            $item_sum = $purchase_order_items->whereIn('variation_id', $variation_ids)->sum('price');
+
+
+            $list[$product_storage_sort->id] = [
+                'product_id' => $product_storage_sort->product_id,
+                'product_name' => $product_storage_sort->product->name,
+                'storage_id' => $product_storage_sort->storage,
+                'storage_name' => $product_storage_sort->storage_id->name,
+                'variation_ids' => $variation_ids,
+                'item_count'=> $item_count,
+                'item_sum'=> $item_sum,
+                'item_average' => $item_count > 0 ? $item_sum / $item_count : 0,
+
+            ];
+
+            foreach ($vendor_ids as $vendor_id) {
+                $vendor_orders = $purchase_orders->where('customer_id', $vendor_id);
+                $vendor_order_items = $purchase_order_items->whereIn('order_id', $vendor_orders->pluck('id')->toArray());
+
+                $vendor_item_count = $vendor_order_items->whereIn('variation_id', $variation_ids)->count();
+                $vendor_item_sum = $vendor_order_items->whereIn('variation_id', $variation_ids)->sum('price');
+
+                if (!isset($list[$product_storage_sort->id]['vendors'])) {
+                    $list[$product_storage_sort->id]['vendors'] = [];
+                }
+                if (!isset($list[$product_storage_sort->id]['vendors'][$vendor_id])) {
+                    $list[$product_storage_sort->id]['vendors'][$vendor_id] = [
+                        'item_count' => 0,
+                        'item_sum' => 0
+                    ];
+                }
+
+                $list[$product_storage_sort->id]['vendors'][$vendor_id]['item_count'] += $vendor_item_count;
+                $list[$product_storage_sort->id]['vendors'][$vendor_id]['item_sum'] += $vendor_item_sum;
+            }
+
+        }
+
+        print_r($list);
 
 
     }
