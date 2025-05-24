@@ -384,7 +384,7 @@ class Report extends Component
                 $vendor_order_ids = $purchase_orders->where('customer_id', $vendor_id)->pluck('id')->toArray();
                 $vendor_order_items = $purchase_order_items->whereIn('order_id', $vendor_order_ids)->whereIn('variation_id', $variation_ids);
 
-                $sellable_items = $vendor_order_items->whereIn('variation_id', $sellable_variation_ids);
+                $sellable_items = $purchase_order_items->whereIn('order_id', $vendor_order_ids)->whereIn('variation_id', $sellable_variation_ids);
 
                 if ($vendor_order_items->isEmpty()) continue; // Skip if no items found for this vendor
 
