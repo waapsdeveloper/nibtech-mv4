@@ -381,9 +381,38 @@ class Report extends Component
             }
 
         }
-        echo "<pre>";
-        print_r($list);
-        echo "</pre>";
+
+        $vendors = Customer_model::whereIn('id', $vendor_ids)->pluck('company', 'id')->toArray();
+        // Output as HTML table
+        echo '<table border="1" cellpadding="5" cellspacing="0">';
+        echo '<thead><tr>
+            <th>Product Storage Sort ID</th>
+            <th>Product Name</th>
+            <th>Storage Name</th>
+            <th>Item Count</th>
+            <th>Item Sum</th>
+            <th>Item Average</th>';
+        foreach ($vendors as $vendor_id => $vendor_name) {
+            echo '<th>' . htmlspecialchars($vendor_name) . ' (Count)</th>';
+            echo '<th>' . htmlspecialchars($vendor_name) . ' (Sum)</th>';
+        }
+        echo '</tr></thead><tbody>';
+        foreach ($list as $pss_id => $row) {
+            echo '<tr>';
+            echo '<td>' . htmlspecialchars($pss_id) . '</td>';
+            echo '<td>' . htmlspecialchars($row['product_name']) . '</td>';
+            echo '<td>' . htmlspecialchars($row['storage_name']) . '</td>';
+            echo '<td>' . htmlspecialchars($row['item_count']) . '</td>';
+            echo '<td>' . htmlspecialchars($row['item_sum']) . '</td>';
+            echo '<td>' . htmlspecialchars($row['item_average']) . '</td>';
+            foreach ($vendors as $vendor_id => $vendor_name) {
+            $vendor_data = $row['vendors'][$vendor_id] ?? ['item_count' => 0, 'item_sum' => 0];
+            echo '<td>' . htmlspecialchars($vendor_data['item_count']) . '</td>';
+            echo '<td>' . htmlspecialchars($vendor_data['item_sum']) . '</td>';
+            }
+            echo '</tr>';
+        }
+        echo '</tbody></table>';
 
     }
 
