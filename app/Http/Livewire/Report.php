@@ -342,7 +342,10 @@ class Report extends Component
         ->select('order_id', 'variation_id', 'price')
         ->get();
 
-        $product_storage_sorts = Product_storage_sort_model::with(['product:id,model', 'storage_id:id,name', 'variations:id,product_storage_sort_id'])->get();
+
+
+
+        $product_storage_sorts = Product_storage_sort_model::with(['product:id,model', 'storage_id:id,name', 'variations:id,product_storage_sort_id,grade'])->get();
 
         $items_by_order = $purchase_order_items->groupBy('order_id');
 
@@ -351,6 +354,10 @@ class Report extends Component
         foreach ($product_storage_sorts as $product_storage_sort) {
             $variation_ids = $product_storage_sort->variations->pluck('id')->toArray();
             $variation_items = $purchase_order_items->whereIn('variation_id', $variation_ids);
+
+            $sellable_variation_ids = $product_storage_sort->variations->whereIn('grade', [1,2,3,4,5,7,9])->pluck('id')->toArray();
+
+            $not_sellable_variation_ids = $product_storage_sort->variations->whereNotIn('grade', [1,2,3,4,5,7,9])->pluck('id')->toArray();
 
             $item_count = $variation_items->count();
             $item_sum = $variation_items->sum('price');
@@ -384,12 +391,12 @@ class Report extends Component
             }
 
         }
-
+        $i = 0;
         $vendors = Customer_model::whereIn('id', $vendor_ids)->pluck('company', 'id')->toArray();
         // Output as HTML table
         echo '<table border="1" cellpadding="5" cellspacing="0">';
         echo '<thead><tr>
-            <th>Product Storage Sort ID</th>
+            <th>No</th>
             <th>Product Name</th>
             <th>Storage Name</th>
             <th>Item Count</th>
@@ -401,15 +408,19 @@ class Report extends Component
         echo '</tr></thead><tbody>';
         foreach ($list as $pss_id => $row) {
             echo '<tr>';
-            echo '<td>' . htmlspecialchars($pss_id) . '</td>';
+            echo '<td>' . ++$i . '</td>';
             echo '<td>' . htmlspecialchars($row['product_name']) . '</td>';
             echo '<td>' . htmlspecialchars($row['storage_name']) . '</td>';
             echo '<td>' . htmlspecialchars($row['item_count']) . '</td>';
             echo '<td>' . htmlspecialchars($row['item_sum']) . '</td>';
             echo '<td>' . htmlspecialchars($row['item_average']) . '</td>';
             foreach ($vendors as $vendor_id => $vendor_name) {
-            $vendor_data = $row['vendors'][$vendor_id] ?? ['item_count' => null, 'item_sum' => null, 'item_average' => null];
-            echo '<td>(' . htmlspecialchars($vendor_data['item_count']) . ') ' . htmlspecialchars($vendor_data['item_average']) . '</td>';
+                if (!isset($row['vendors'][$vendor_id])) {
+                    echo '<td></td>';
+                    continue;
+                }
+                $vendor_data = $row['vendors'][$vendor_id] ?? ['item_count' => null, 'item_sum' => null, 'item_average' => null];
+                echo '<td>(' . htmlspecialchars($vendor_data['item_count']) . ') ' . htmlspecialchars($vendor_data['item_average']) . '</td>';
             }
             echo '</tr>';
         }
