@@ -344,7 +344,7 @@ class Report extends Component
 
         $variation_ids = $purchase_order_items->pluck('variation_id')->unique()->toArray();
 
-        $product_storage_sort_ids = Variation_model::whereIn('id', $variation_ids)->pluck('id', 'product_storage_sort_id')->toArray();
+        $product_storage_sort_ids = Variation_model::whereIn('id', $variation_ids)->pluck( 'product_storage_sort_id', 'id')->toArray();
 
         $product_storage_sorts = Product_storage_sort_model::with(['product:id,model', 'storage_id:id,name', 'variations:id,product_storage_sort_id,grade'])->whereIn('id', $product_storage_sort_ids)->get();
 
@@ -393,7 +393,7 @@ class Report extends Component
 
         }
         $i = 0;
-        $vendors = Customer_model::whereIn('id', $vendor_ids)->pluck('company', 'id')->toArray();
+        $vendors = Customer_model::whereIn('id', $vendor_ids)->pluck('last_name', 'id')->toArray();
         // Output as HTML table
         echo '<table border="1" cellpadding="5" cellspacing="0">';
         echo '<thead><tr>
