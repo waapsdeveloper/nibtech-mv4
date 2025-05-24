@@ -169,11 +169,11 @@ class IMEI extends Component
             })->orderBy('id','desc')->get();
             $data['inventory_verifications'] = $inventory_verifications;
             $topups = Process_stock_model::where('stock_id', $stock_id)->whereHas('process', function ($query) {
-                $query->where('process_type_id', 22)->withTrashed();
+                $query->whereIn('process_type_id', [21,22])->withTrashed();
             })->orderBy('id','desc')->withTrashed()->get();
             $data['topups'] = $topups;
 
-            $data['topup_batches'] = Process_model::where('process_type_id', 22)->withTrashed()->get();
+            $data['topup_batches'] = Process_model::whereIn('process_type_id', [21,22])->withTrashed()->get();
 
             $data['stock_room'] = Stock_movement_model::where(['stock_id'=>$stock_id])
             ->orderBy('exit_at', 'desc')->get();
