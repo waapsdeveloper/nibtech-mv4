@@ -559,7 +559,7 @@
                                                         method: "POST",
                                                         data: {
                                                             _token: "{{ csrf_token() }}",
-                                                            item_ids: itemId,
+                                                            'item_ids[]': [itemId],
                                                             unit_price: newPrice
                                                         },
                                                         success: function(response) {
