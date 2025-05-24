@@ -384,13 +384,15 @@ class Report extends Component
                 $vendor_order_ids = $purchase_orders->where('customer_id', $vendor_id)->pluck('id')->toArray();
                 $vendor_order_items = $purchase_order_items->whereIn('order_id', $vendor_order_ids)->whereIn('variation_id', $variation_ids);
 
+                $sellable_items = $vendor_order_items->whereIn('variation_id', $sellable_variation_ids);
+
                 if ($vendor_order_items->isEmpty()) continue; // Skip if no items found for this vendor
 
                 $list[$product_storage_sort->id]['vendors'][$vendor_id] = [
                     'item_count' => $vendor_order_items->count(),
                     'item_sum'   => $vendor_order_items->sum('price'),
                     'item_average' => round($vendor_order_items->sum('price') / $vendor_order_items->count(), 2),
-                    'sellable_percentage' => round(count(array_intersect($sellable_variation_ids, $vendor_order_items->pluck('variation_id')->toArray())) / count($variation_ids) * 100,2)
+                    'sellable_percentage' => round($sellable_items->count() / $vendor_order_items->count() * 100,2)
                 ];
             }
 
