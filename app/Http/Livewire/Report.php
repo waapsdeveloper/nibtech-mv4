@@ -374,9 +374,12 @@ class Report extends Component
                 $vendor_order_ids = $purchase_orders->where('customer_id', $vendor_id)->pluck('id')->toArray();
                 $vendor_order_items = $purchase_order_items->whereIn('order_id', $vendor_order_ids)->whereIn('variation_id', $variation_ids);
 
+                if ($vendor_order_items->isEmpty()) continue; // Skip if no items found for this vendor
+
                 $list[$product_storage_sort->id]['vendors'][$vendor_id] = [
                     'item_count' => $vendor_order_items->count(),
-                    'item_sum'   => $vendor_order_items->sum('price')
+                    'item_sum'   => $vendor_order_items->sum('price'),
+                    'item_average' => round($vendor_order_items->sum('price') / $vendor_order_items->count(), 2)
                 ];
             }
 
@@ -393,8 +396,7 @@ class Report extends Component
             <th>Item Sum</th>
             <th>Item Average</th>';
         foreach ($vendors as $vendor_id => $vendor_name) {
-            echo '<th>' . htmlspecialchars($vendor_name) . ' (Count)</th>';
-            echo '<th>' . htmlspecialchars($vendor_name) . ' (Sum)</th>';
+            echo '<th>' . htmlspecialchars($vendor_name) . '</th>';
         }
         echo '</tr></thead><tbody>';
         foreach ($list as $pss_id => $row) {
@@ -406,9 +408,8 @@ class Report extends Component
             echo '<td>' . htmlspecialchars($row['item_sum']) . '</td>';
             echo '<td>' . htmlspecialchars($row['item_average']) . '</td>';
             foreach ($vendors as $vendor_id => $vendor_name) {
-            $vendor_data = $row['vendors'][$vendor_id] ?? ['item_count' => 0, 'item_sum' => 0];
-            echo '<td>' . htmlspecialchars($vendor_data['item_count']) . '</td>';
-            echo '<td>' . htmlspecialchars($vendor_data['item_sum']) . '</td>';
+            $vendor_data = $row['vendors'][$vendor_id] ?? ['item_count' => null, 'item_sum' => null, 'item_average' => null];
+            echo '<td>(' . htmlspecialchars($vendor_data['item_count']) . ') ' . htmlspecialchars($vendor_data['item_average']) . '</td>';
             }
             echo '</tr>';
         }
