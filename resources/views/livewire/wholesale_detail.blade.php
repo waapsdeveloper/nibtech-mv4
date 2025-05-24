@@ -563,6 +563,7 @@
                                                             unit_price: newPrice
                                                         },
                                                         success: function(response) {
+                                                            console.log('Price updated successfully:', response);
                                                             // Optionally update the display with new price
                                                             span.innerHTML = response.customer_name + " €" + parseFloat(response.price).toFixed(2);
                                                         },
