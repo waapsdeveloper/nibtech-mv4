@@ -329,12 +329,16 @@ class Report extends Component
             ->whereBetween('created_at', [$start_date, $end_date])
             ->get();
 
+        $purchase_order_ids = $purchase_orders->pluck('id')->toArray();
+
         $vendor_ids = $purchase_orders->pluck('customer_id')->unique()->toArray();
 
-        $purchase_order_items = Order_item_model::whereHas('order', function ($q) use ($start_date, $end_date) {
-            $q->where('order_type_id',1)
-                ->whereBetween('created_at', [$start_date, $end_date]);
-        })
+        $purchase_order_items = Order_item_model::
+        // whereHas('order', function ($q) use ($start_date, $end_date) {
+        //     $q->where('order_type_id',1)
+        //         ->whereBetween('created_at', [$start_date, $end_date]);
+        // })
+        whereIn('order_id', $purchase_order_ids)
         ->get();
 
         $product_storage_sorts = Product_storage_sort_model::with(['product', 'storage_id'])->get();
