@@ -346,7 +346,10 @@ class Report extends Component
                 ->whereBetween('processed_at', [request('start_date') . " 00:00:00", request('end_date') . " 23:59:59"]);
         })
         // Exclude items that have childs (count should be 0 for childs)
-        ->whereDoesntHave('childs')
+        // ->whereDoesntHave('childs')
+        ->whereHas('stock', function ($q) {
+            $q->where('status', 2);
+        })
         ->get();
 
 
