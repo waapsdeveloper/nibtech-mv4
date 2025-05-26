@@ -3483,7 +3483,9 @@ class Order extends Component
 
         if(request('missing') == 'scan') {
 
-            Order_model::where('scanned',null)->where('order_type_id',3)->where('tracking_number', '!=', null)->where('created_at', '>', Carbon::now()->subDays(30))->orderByDesc('id')->each(function($order){
+            ini_set('max_execution_time', 300); // 5 minutes
+
+            Order_model::where('scanned',null)->where('status',3)->where('order_type_id',3)->where('tracking_number', '!=', null)->where('created_at', '>', Carbon::now()->subDays(10))->orderByDesc('id')->each(function($order){
                     $this->getLabel($order->reference_id, false, true);
                 });
 
