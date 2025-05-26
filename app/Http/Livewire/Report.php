@@ -345,7 +345,8 @@ class Report extends Component
                 ->whereIn('status', [3,6])
                 ->whereBetween('processed_at', [request('start_date') . " 00:00:00", request('end_date') . " 23:59:59"]);
         })
-        ->whereDoesntHave('linked_child')
+        // Exclude items that have childs (count should be 0 for childs)
+        ->whereDoesntHave('childs')
         ->get();
 
 
