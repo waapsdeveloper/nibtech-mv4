@@ -24,8 +24,11 @@
                             <tr>
                                 <th>No</th>
                                 <th>Product Name</th>
-                                <th>Item Count</th>
-                                <th>Item Average</th>
+                                <th title="Total Purchase">Prchs</th>
+                                <th title="Average Cost">Cost</th>
+                                <th title="Total Sales">Sales</th>
+                                <th title="Average Sales Price">Price</th>
+                                <th title="Available Sellable Stock">Sellable</th>
                                 @foreach ($vendors as $vendor_id => $vendor_name)
                                     <th>{{ $vendor_name }}</th>
                                 @endforeach
@@ -38,6 +41,10 @@
                                     <td>{{ $row['product_name'] }} {{ $row['storage_name'] }}</td>
                                     <td>{{ $row['item_count'] }}</td>
                                     <td>€{{ $row['item_average'] }}</td>
+                                    <td>{{ $row['sold_item_count'] }}</td>
+                                    <td>€{{ $row['sold_item_average'] }}</td>
+                                    <td>{{ $row['available_sellable_stock_count'] }}</td>
+
                                     @foreach ($vendors as $vendor_id => $vendor_name)
                                         @if (!isset($row['vendors'][$vendor_id]))
                                             <td></td>
