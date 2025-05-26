@@ -356,8 +356,6 @@ class Report extends Component
         ->select('product_storage_sort.id', 'product_storage_sort.product_id', 'product_storage_sort.storage', 'products.model')
         ->get();
 
-        $items_by_order = $purchase_order_items->groupBy('order_id');
-
         $list = [];
 
     foreach ($product_storage_sorts as $product_storage_sort) {
