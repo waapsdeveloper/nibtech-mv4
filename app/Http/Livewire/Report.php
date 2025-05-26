@@ -388,9 +388,9 @@ class Report extends Component
                 $vendor_order_ids = $purchase_orders->where('customer_id', $vendor_id)->pluck('id')->toArray();
                 $vendor_order_items = $purchase_order_items->whereIn('order_id', $vendor_order_ids)->whereIn('variation_id', $variation_ids);
 
-                $stock_ids = $vendor_order_items->pluck('stock_id')->unique()->toArray();
+                $stock_ids = $vendor_order_items->unique()->pluck('stock_id')->toArray();
                 $stock_variation_ids = Stock_model::whereIn('id', $stock_ids)->pluck('variation_id', 'id')->toArray();
-                $sellable_variation_ids = Variation_model::whereIn('id', $stock_variation_ids)->whereIn('grade', [1,2,3,4,5,7,9])->pluck('id')->unique()->toArray();
+                $sellable_variation_ids = Variation_model::whereIn('id', $stock_variation_ids)->whereIn('grade', [1,2,3,4,5,7,9])->unique()->pluck('id')->toArray();
                 $sellable_stock_ids = Stock_model::whereIn('variation_id', $sellable_variation_ids)->pluck('id')->toArray();
                 $sellable_items = $purchase_order_items->whereIn('order_id', $vendor_order_ids)->whereIn('stock_id', $sellable_stock_ids);
 
