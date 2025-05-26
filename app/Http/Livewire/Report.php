@@ -333,22 +333,22 @@ class Report extends Component
         $purchase_order_ids = $purchase_orders->pluck('id')->toArray();
         $vendor_ids = $purchase_orders->pluck('customer_id')->unique()->toArray();
 
-        $purchase_order_items = Order_item_model::
-        // whereHas('order', function ($q) use ($start_date, $end_date) {
-        //     $q->where('order_type_id',1)
-        //         ->whereBetween('created_at', [$start_date, $end_date]);
-        // })
-        whereIn('order_id', $purchase_order_ids)
+        $purchase_order_items = Order_item_model::whereIn('order_id', $purchase_order_ids)
         ->select('order_id', 'stock_id', 'variation_id', 'price')
         ->get();
 
-        $stock_ids = $purchase_order_items->pluck('stock_id')->unique()->toArray();
+        // $stock_ids = $purchase_order_items->pluck('stock_id')->unique()->toArray();
         // $stock_costs = Stock_model::whereIn('id', $stock_ids)->pluck('cost', 'id')->toArray();
 
+        $sold_order_items = Order_item_model::whereHas('order', function ($q) {
+            $q->whereIn('order_type_id', [3,5])
+                ->whereIn('status', [3,6])
+                ->whereBetween('processed_at', [request('start_date') . " 00:00:00", request('end_date') . " 23:59:59"]);
+        })
+        ->whereDoesntHave('childs')
+        ->get();
 
-        $variation_ids = $purchase_order_items->pluck('variation_id')->unique()->toArray();
 
-        $product_storage_sort_ids = Variation_model::whereIn('id', $variation_ids)->pluck( 'product_storage_sort_id', 'id')->toArray();
 
         $product_storage_sorts = Product_storage_sort_model::with(['storage_id:id,name', 'variations:id,product_storage_sort_id,grade'])
         // ->whereIn('product_storage_sort.id', $product_storage_sort_ids)
@@ -365,13 +365,19 @@ class Report extends Component
             // $variation_ids = $product_storage_sort->variations->pluck('id')->toArray();
             $variation_items = $purchase_order_items->whereIn('variation_id', $variation_ids);
 
-            // $sellable_variation_ids = $product_storage_sort->variations->whereIn('grade', [1,2,3,4,5,7,9])->pluck('id')->toArray();
+            $sellable_variation_ids = Variation_model::where('product_storage_sort_id', $product_storage_sort->id)
+                ->whereIn('grade', [1,2,3,4,5,7,9])
+                ->pluck('id')->toArray();
 
             $item_count = $variation_items->count();
             $item_sum = $variation_items->sum('price');
 
-            if ($item_count === 0) continue; // Skip if no items found for this product_storage_sort
+            $available_sellable_stock_count = Stock_model::whereIn('variation_id', $sellable_variation_ids)
+                ->where('status', 1)
+                ->count();
+            // if ($item_count === 0) continue; // Skip if no items found for this product_storage_sort
 
+            $sold_items = $sold_order_items->whereIn('variation_id', $variation_ids);
 
             $list[$product_storage_sort->id] = [
                 'product_id' => $product_storage_sort->product_id,
@@ -381,7 +387,11 @@ class Report extends Component
                 'variation_ids' => $variation_ids,
                 'item_count'=> $item_count,
                 'item_sum'=> $item_sum,
-                'item_average' => round($item_sum / $item_count, 2),
+                'item_average' => $item_count > 0 ? round($item_sum / $item_count, 2) : 0,
+                'sold_item_count' => $sold_items->count(),
+                'sold_item_sum' => $sold_items->sum('price'),
+                'sold_item_average' => $sold_items->count() > 0 ? round($sold_items->sum('price') / $sold_items->count(), 2) : 0,
+                'available_sellable_stock_count' => $available_sellable_stock_count,
                 'vendors' => []
             ];
 
