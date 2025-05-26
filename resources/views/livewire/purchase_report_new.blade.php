@@ -45,7 +45,13 @@
                                             @php
                                                 $vendor_data = $row['vendors'][$vendor_id] ?? ['item_count' => null, 'item_sum' => null, 'item_average' => null, 'sellable_percentage' => null];
                                             @endphp
-                                            <td>
+                                            <td
+                                                @if ($vendor_data['sellable_percentage'] > 100)
+                                                    class="text-danger"
+                                                @elseif ($vendor_data['sellable_percentage'] < 50)
+                                                    class="text-warning"
+                                                @endif
+                                                >
                                                 {{ $vendor_data['item_count'] }} |
                                                 €{{ $vendor_data['item_average'] }} |
                                                 {{ $vendor_data['sellable_percentage'] }}%
