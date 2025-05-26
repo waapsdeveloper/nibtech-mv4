@@ -47,9 +47,9 @@
                                             @endphp
                                             <td
                                                 @if ($vendor_data['sellable_percentage'] > 100)
-                                                    class="text-danger"
+                                                    class="table-danger"
                                                 @elseif ($vendor_data['sellable_percentage'] < 50)
-                                                    class="text-warning"
+                                                    class="table-warning"
                                                 @endif
                                                 >
                                                 <a href="javascript:void(0);" onclick="load_imeis({{ json_encode($vendor_data['imeis']) }})">
