@@ -3480,6 +3480,15 @@ class Order extends Component
     }
     public function export_label()
     {
+
+        if(request('missing') == 'scan') {
+
+            Order_model::where('scanned',null)->where('order_type_id',3)->where('tracking_number', '!=', null)->where('created_at', '>', Carbon::now()->subDays(30))->orderByDesc('id')->each(function($order){
+                    $this->getLabel($order->reference_id, false, true);
+                });
+
+        }
+
         // return Excel::download(new OrdersExport, 'your_export_file.xlsx');
         // dd(request('ids'));
         $pdfExport = new LabelsExport();
