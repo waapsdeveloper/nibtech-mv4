@@ -3525,6 +3525,7 @@ class Order extends Component
                     // return $order->delivered_at;
                 }
                 $order->save();
+                echo 'Order Scanned';
             }
         }
         if($data == true){
