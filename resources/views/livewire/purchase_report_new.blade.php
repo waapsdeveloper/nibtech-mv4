@@ -53,11 +53,15 @@
                                                 @endif
                                                 title="{{ $vendor_data['sellable_stock_count'] }}"
                                                 >
-                                                <a href="javascript:void(0);" onclick="load_imeis({{ json_encode($vendor_data['imeis']) }})">
+                                                <a href="javascript:void(0);" onclick="load_imeis({{ json_encode($vendor_data['imeis']) }})"
+                                                title="Stocks: {{ implode(',', $vendor_data['imeis']) }}"
+                                                >
                                                     {{ $vendor_data['item_count'] }} |
                                                     €{{ $vendor_data['item_average'] }} |
                                                 </a>
-                                                <a href="javascript:void(0);" onclick="load_imeis({{ json_encode($vendor_data['sellable_imeis']) }})">
+                                                <a href="javascript:void(0);" onclick="load_imeis({{ json_encode($vendor_data['sellable_imeis']) }})"
+                                                title="Sellable Stocks: {{ implode(',', $vendor_data['sellable_imeis']) }}"
+                                                >
                                                     {{ $vendor_data['sellable_percentage'] }}%
                                                 </a>
                                             </td>
