@@ -51,6 +51,7 @@
                                                 @elseif ($vendor_data['sellable_percentage'] < 50)
                                                     class="table-warning"
                                                 @endif
+                                                title="{{ $vendor_data['sellable_stock_count'] }}"
                                                 >
                                                 <a href="javascript:void(0);" onclick="load_imeis({{ json_encode($vendor_data['imeis']) }})">
                                                     {{ $vendor_data['item_count'] }} |
