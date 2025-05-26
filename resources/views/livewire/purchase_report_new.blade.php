@@ -56,7 +56,7 @@
                                                     {{ $vendor_data['item_count'] }} |
                                                     €{{ $vendor_data['item_average'] }} |
                                                 </a>
-                                                <a href="javascript:void(0);" onclick="load_imeis({{ json_encode($vendor_data['sellable_imeis']) }})">
+                                                <a href="javascript:void(0);" onclick="load_imeis({{ json_encode($vendor_data['imei_difference']) }})">
                                                     {{ $vendor_data['sellable_percentage'] }}%
                                                 </a>
                                             </td>
