@@ -340,16 +340,16 @@ class Report extends Component
         // $stock_ids = $purchase_order_items->pluck('stock_id')->unique()->toArray();
         // $stock_costs = Stock_model::whereIn('id', $stock_ids)->pluck('cost', 'id')->toArray();
 
-        $sold_order_items = Order_item_model::whereHas('order', function ($q) {
+        $sold_order_items = Order_item_model::whereHas('order', function ($q) use ($start_date, $end_date) {
             $q->whereIn('order_type_id', [3,5])
                 ->whereIn('status', [3,6])
-                ->whereBetween('processed_at', [request('start_date') . " 00:00:00", request('end_date') . " 23:59:59"]);
+                ->whereBetween('processed_at', [$start_date, $end_date]);
         })
         // Exclude items that have childs (count should be 0 for childs)
-        // ->whereDoesntHave('childs')
-        ->whereHas('stock', function ($q) {
-            $q->where('status', 2);
-        })
+        ->whereDoesntHave('childs')
+        // ->whereHas('stock', function ($q) {
+        //     $q->where('status', 2);
+        // })
         ->get();
 
 
