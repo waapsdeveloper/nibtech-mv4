@@ -406,6 +406,7 @@ class Report extends Component
                     'imeis' => $stocks->pluck('imei')->filter()->unique()->toArray() + $stocks->pluck('serial_numbers')->filter()->unique()->toArray(),
                     'sellable_imeis' => $sellable_stocks->pluck('imei')->filter()->unique()->toArray() + $sellable_stocks->pluck('serial_numbers')->filter()->unique()->toArray()
                 ];
+                $list[$product_storage_sort->id]['vendors'][$vendor_id]['imei_difference'] = array_diff($list[$product_storage_sort->id]['vendors'][$vendor_id]['imeis'], $list[$product_storage_sort->id]['vendors'][$vendor_id]['sellable_imeis']);
             }
 
         }
