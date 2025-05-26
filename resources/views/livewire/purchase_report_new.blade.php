@@ -19,7 +19,7 @@
                         // Output as HTML table using Blade syntax
                         $i = 0;
                     @endphp
-                    <table class="table table-bordered table-hover text-md-nowrap">
+                    <table class="table table-sm table-bordered table-hover text-md-nowrap">
                         <thead>
                             <tr>
                                 <th>No</th>
