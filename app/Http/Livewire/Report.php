@@ -391,7 +391,7 @@ class Report extends Component
                 $stock_ids = $vendor_order_items->pluck('stock_id')->unique()->toArray();
                 $stock_variation_ids = Stock_model::whereIn('id', $stock_ids)->pluck('variation_id')->unique()->toArray();
                 $sellable_variation_ids = Variation_model::whereIn('id', $stock_variation_ids)->whereIn('grade', [1,2,3,4,5,7,9])->pluck('id')->unique()->toArray();
-                $sellable_stock_ids = Stock_model::whereIn('variation_id', $sellable_variation_ids)->whereIn('order_id', $vendor_order_ids)->pluck('id');
+                $sellable_stock_ids = Stock_model::whereIn('variation_id', $sellable_variation_ids)->whereIn('order_id', $vendor_order_ids)->pluck('id')->unique();
                 // $sellable_items = $purchase_order_items->whereIn('order_id', $vendor_order_ids)->whereIn('stock_id', $sellable_stock_ids);
 
                 if ($vendor_order_items->isEmpty()) continue; // Skip if no items found for this vendor
