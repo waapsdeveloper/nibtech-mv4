@@ -350,7 +350,8 @@ class Report extends Component
 
         $product_storage_sort_ids = Variation_model::whereIn('id', $variation_ids)->pluck( 'product_storage_sort_id', 'id')->toArray();
 
-        $product_storage_sorts = Product_storage_sort_model::with(['storage_id:id,name', 'variations:id,product_storage_sort_id,grade'])->whereIn('product_storage_sort.id', $product_storage_sort_ids)
+        $product_storage_sorts = Product_storage_sort_model::with(['storage_id:id,name', 'variations:id,product_storage_sort_id,grade'])
+        // ->whereIn('product_storage_sort.id', $product_storage_sort_ids)
         ->leftJoin('products', 'product_storage_sort.product_id', '=', 'products.id')
         ->orderBy('products.model', 'asc')
         ->select('product_storage_sort.id', 'product_storage_sort.product_id', 'product_storage_sort.storage', 'products.model')
