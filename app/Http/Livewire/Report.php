@@ -361,7 +361,9 @@ class Report extends Component
         $list = [];
 
     foreach ($product_storage_sorts as $product_storage_sort) {
-            $variation_ids = $product_storage_sort->variations->pluck('id')->toArray();
+            $variation_ids = Variation_model::where('product_storage_sort_id', $product_storage_sort->id)
+                ->pluck('id')->toArray();
+            // $variation_ids = $product_storage_sort->variations->pluck('id')->toArray();
             $variation_items = $purchase_order_items->whereIn('variation_id', $variation_ids);
 
             // $sellable_variation_ids = $product_storage_sort->variations->whereIn('grade', [1,2,3,4,5,7,9])->pluck('id')->toArray();
