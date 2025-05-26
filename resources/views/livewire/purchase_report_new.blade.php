@@ -52,9 +52,11 @@
                                                     class="text-warning"
                                                 @endif
                                                 >
-                                                {{ $vendor_data['item_count'] }} |
-                                                €{{ $vendor_data['item_average'] }} |
-                                                {{ $vendor_data['sellable_percentage'] }}%
+                                                <a href="javascript:void(0);" onclick="load_imeis({{ json_encode($vendor_data['imeis']) }})">
+                                                    {{ $vendor_data['item_count'] }} |
+                                                    €{{ $vendor_data['item_average'] }} |
+                                                    {{ $vendor_data['sellable_percentage'] }}%
+                                                </a>
                                             </td>
                                         @endif
                                     @endforeach
@@ -69,5 +71,14 @@
     @endsection
 
     @section('scripts')
-
+        <script>
+            function load_imeis(imeis) {
+                if (imeis.length > 0) {
+                    for (let i = 0; i < imeis.length; i++) {
+                        let imei = imeis[i];
+                        window.open("{{ url('imei') }}?imei=" + imei, '_blank');
+                    }
+                }
+            }
+        </script>
     @endsection
