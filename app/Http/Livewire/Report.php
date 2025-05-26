@@ -358,7 +358,7 @@ class Report extends Component
 
         $list = [];
 
-    foreach ($product_storage_sorts as $product_storage_sort) {
+        foreach ($product_storage_sorts as $product_storage_sort) {
             $variation_ids = Variation_model::where('product_storage_sort_id', $product_storage_sort->id)
                 ->pluck('id')->toArray();
             // $variation_ids = $product_storage_sort->variations->pluck('id')->toArray();
@@ -407,36 +407,12 @@ class Report extends Component
         }
         $i = 0;
         $vendors = Customer_model::whereIn('id', $vendor_ids)->pluck('last_name', 'id')->toArray();
-        // Output as HTML table
-        echo '<table border="1" cellpadding="5" cellspacing="0">';
-        echo '<thead><tr>
-            <th>No</th>
-            <th>Product Name</th>
-            <th>Item Count</th>
-            <th>Item Average</th>';
-        foreach ($vendors as $vendor_id => $vendor_name) {
-            echo '<th>' . htmlspecialchars($vendor_name) . '</th>';
-        }
-        echo '</tr></thead><tbody>';
-        foreach ($list as $pss_id => $row) {
-            echo '<tr>';
-            echo '<td>' . ++$i . '</td>';
-            echo '<td>' . htmlspecialchars($row['product_name']) . ' ' . htmlspecialchars($row['storage_name']) . '</td>';
-            echo '<td>' . htmlspecialchars($row['item_count']) . '</td>';
-            // echo '<td>' . htmlspecialchars($row['item_sum']) . '</td>';
-            echo '<td>€' . htmlspecialchars($row['item_average']) . '</td>';
-            foreach ($vendors as $vendor_id => $vendor_name) {
-                if (!isset($row['vendors'][$vendor_id])) {
-                    echo '<td></td>';
-                    continue;
-                }
-                $vendor_data = $row['vendors'][$vendor_id] ?? ['item_count' => null, 'item_sum' => null, 'item_average' => null];
-                echo '<td>' . htmlspecialchars($vendor_data['item_count']) . ' | €' . htmlspecialchars($vendor_data['item_average']) . ' | ' . $vendor_data['sellable_percentage'] . '%</td>';
-            }
-            echo '</tr>';
-        }
-        echo '</tbody></table>';
 
+        $data['purchase_report'] = [];
+        $data['list'] = $list;
+        $data['vendors'] = $vendors;
+
+        return view('livewire.purchase_report_new')->with($data);
     }
 
     public function sales_and_returns_total(){
