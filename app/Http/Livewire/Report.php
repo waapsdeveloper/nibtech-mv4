@@ -342,9 +342,10 @@ class Report extends Component
 
         $sold_order_items = Order_item_model::whereHas('order', function ($q) use ($start_date, $end_date) {
             $q->whereIn('order_type_id', [3,5])
-                ->whereIn('status', [3,6])
+                ->whereIn('status', [2,3])
                 ->whereBetween('processed_at', [$start_date, $end_date]);
         })
+        ->where('stock_id', '!=', null)
         // Exclude items that have childs (count should be 0 for childs)
         ->whereDoesntHave('childs')
         // ->whereHas('stock', function ($q) {
