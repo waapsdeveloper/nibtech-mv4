@@ -407,7 +407,7 @@ class Report extends Component
                     'item_average' => round($vendor_order_items->sum('price') / $vendor_order_items->count(), 2),
                     'sellable_percentage' => round($sellable_stock_ids->count() / $vendor_order_items->count() * 100,2),
                     'imeis' => $stocks->pluck('imei')->toArray() + $stocks->pluck('serial_numbers')->toArray(),
-                    'sellable_imeis' => $sellable_stocks->pluck('imei')->toArray() + $sellable_stocks->pluck('serial_numbers')->toArray(),
+                    'sellable_imeis' => $sellable_stocks->orderBy('imei')->pluck('imei')->toArray() + $sellable_stocks->pluck('serial_numbers')->toArray(),
                     'sellable_stock_count' => $sellable_stock_ids->count()
                 ];
                 $list[$product_storage_sort->id]['vendors'][$vendor_id]['imei_difference'] = array_diff($list[$product_storage_sort->id]['vendors'][$vendor_id]['imeis'], $list[$product_storage_sort->id]['vendors'][$vendor_id]['sellable_imeis']);
