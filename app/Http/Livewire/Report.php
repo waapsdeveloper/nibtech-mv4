@@ -392,7 +392,8 @@ class Report extends Component
                 $stocks = Stock_model::whereIn('id', $stock_ids)->get();
                 $stock_variation_ids = $stocks->pluck('variation_id')->unique()->toArray();
                 $sellable_variation_ids = Variation_model::whereIn('id', $stock_variation_ids)->whereIn('grade', [1,2,3,4,5,7,9])->pluck('id')->unique()->toArray();
-                $sellable_stock_ids = Stock_model::whereIn('variation_id', $sellable_variation_ids)->whereIn('order_id', $vendor_order_ids)->pluck('id')->unique();
+                $sellable_stocks = Stock_model::whereIn('variation_id', $sellable_variation_ids)->whereIn('order_id', $vendor_order_ids)->get();
+                $sellable_stock_ids = $sellable_stocks->pluck('id')->unique();
                 // $sellable_items = $purchase_order_items->whereIn('order_id', $vendor_order_ids)->whereIn('stock_id', $sellable_stock_ids);
 
                 if ($vendor_order_items->isEmpty()) continue; // Skip if no items found for this vendor
@@ -402,7 +403,8 @@ class Report extends Component
                     'item_sum'   => $vendor_order_items->sum('price'),
                     'item_average' => round($vendor_order_items->sum('price') / $vendor_order_items->count(), 2),
                     'sellable_percentage' => round($sellable_stock_ids->count() / $vendor_order_items->count() * 100,2),
-                    'imeis' => $stocks->pluck('imei')->filter()->unique()->toArray() + $stocks->pluck('serial_numbers')->filter()->unique()->toArray()
+                    'imeis' => $stocks->pluck('imei')->filter()->unique()->toArray() + $stocks->pluck('serial_numbers')->filter()->unique()->toArray(),
+                    'sellable_imeis' => $sellable_stocks->pluck('imei')->filter()->unique()->toArray() + $sellable_stocks->pluck('serial_numbers')->filter()->unique()->toArray()
                 ];
             }
 
