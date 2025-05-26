@@ -396,6 +396,9 @@ class Report extends Component
                 $sellable_stock_ids = $sellable_stocks->pluck('id')->unique();
                 // $sellable_items = $purchase_order_items->whereIn('order_id', $vendor_order_ids)->whereIn('stock_id', $sellable_stock_ids);
 
+
+
+
                 if ($vendor_order_items->isEmpty()) continue; // Skip if no items found for this vendor
 
                 $list[$product_storage_sort->id]['vendors'][$vendor_id] = [
@@ -403,8 +406,8 @@ class Report extends Component
                     'item_sum'   => $vendor_order_items->sum('price'),
                     'item_average' => round($vendor_order_items->sum('price') / $vendor_order_items->count(), 2),
                     'sellable_percentage' => round($sellable_stock_ids->count() / $vendor_order_items->count() * 100,2),
-                    'imeis' => $stocks->pluck('imei')->filter()->unique()->toArray() + $stocks->pluck('serial_numbers')->filter()->unique()->toArray(),
-                    'sellable_imeis' => $sellable_stocks->pluck('imei')->filter()->unique()->toArray() + $sellable_stocks->pluck('serial_numbers')->filter()->unique()->toArray()
+                    'imeis' => $stocks->pluck('imei')->toArray() + $stocks->pluck('serial_numbers')->toArray(),
+                    'sellable_imeis' => $sellable_stocks->pluck('imei')->toArray() + $sellable_stocks->pluck('serial_numbers')->toArray()
                 ];
                 $list[$product_storage_sort->id]['vendors'][$vendor_id]['imei_difference'] = array_diff($list[$product_storage_sort->id]['vendors'][$vendor_id]['imeis'], $list[$product_storage_sort->id]['vendors'][$vendor_id]['sellable_imeis']);
             }
