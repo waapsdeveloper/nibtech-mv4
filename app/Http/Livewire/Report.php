@@ -345,7 +345,7 @@ class Report extends Component
                 ->whereIn('status', [3,6])
                 ->whereBetween('processed_at', [request('start_date') . " 00:00:00", request('end_date') . " 23:59:59"]);
         })
-        ->whereDoesntHave('childs')
+        ->whereDoesntHave('linked_child')
         ->get();
 
 
@@ -375,9 +375,13 @@ class Report extends Component
             $available_sellable_stock_count = Stock_model::whereIn('variation_id', $sellable_variation_ids)
                 ->where('status', 1)
                 ->count();
-            // if ($item_count === 0) continue; // Skip if no items found for this product_storage_sort
 
             $sold_items = $sold_order_items->whereIn('variation_id', $variation_ids);
+
+            if ($item_count === 0 && $available_sellable_stock_count === 0 && $sold_items->count() === 0) {
+                continue; // Skip if no items or available sellable stock
+            }
+
 
             $list[$product_storage_sort->id] = [
                 'product_id' => $product_storage_sort->product_id,
