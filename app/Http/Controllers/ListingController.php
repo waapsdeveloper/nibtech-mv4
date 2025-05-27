@@ -143,9 +143,17 @@ class ListingController extends Controller
         })
         ->when(request('available_stock') != '', function ($q) {
             if (request('available_stock') == 1) {
-                return $q->whereHas('available_stocks');
+                // Only include variations where available_stocks count minus pending_orders count is greater than zero
+                return $q->whereHas('available_stocks', function ($query) {
+                        // No additional constraints on available_stocks itself
+                    })
+                    ->withCount(['available_stocks', 'pending_orders'])
+                    ->havingRaw('(available_stocks_count - pending_orders_count) > 0');
             } elseif (request('available_stock') == 2) {
-                return $q->whereDoesntHave('available_stocks');
+                return $q->whereDoesntHave('available_stocks')->orWhereHas('available_stocks', function ($query) {
+                        $query->withCount(['available_stocks', 'pending_orders'])
+                        ->havingRaw('(available_stocks_count - pending_orders_count) <= 0');
+                    });
             }
         })
         ->when(request('state') == '', function ($q) {
