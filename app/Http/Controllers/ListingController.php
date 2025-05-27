@@ -321,15 +321,17 @@ class ListingController extends Controller
     }
     public function get_variation_available_stocks($id){
         $variation = Variation_model::find($id);
-        if ($variation->product->brand == 2) {
-            $variation_ids = Variation_model::where('product_storage_sort_id', $variation->product_storage_sort_id)->whereIn('grade',[1,2,3,4,5,7,9])->pluck('id');
-            $stocks = Stock_model::whereIn('variation_id', $variation_ids)->where('status', 1)->whereHas('active_order')->get();
-        } elseif (in_array($variation->product->category, [3, 6])) {
-            $variation_ids = Variation_model::where('product_storage_sort_id', $variation->product_storage_sort_id)->whereIn('grade',[1,2,3,4,5,7,9])->pluck('id');
-            $stocks = Stock_model::whereIn('variation_id', $variation_ids)->where('status', 1)->whereHas('active_order')->get();
-        } else {
-            $stocks = Stock_model::where('variation_id', $id)->where('status', 1)->get();
-        }
+        // if ($variation->product->brand == 2) {
+        //     $variation_ids = Variation_model::where('product_storage_sort_id', $variation->product_storage_sort_id)->whereIn('grade',[1,2,3,4,5,7,9])->pluck('id');
+        //     $stocks = Stock_model::whereIn('variation_id', $variation_ids)->where('status', 1)->whereHas('active_order')->get();
+        // } elseif (in_array($variation->product->category, [3, 6])) {
+        //     $variation_ids = Variation_model::where('product_storage_sort_id', $variation->product_storage_sort_id)->whereIn('grade',[1,2,3,4,5,7,9])->pluck('id');
+        //     $stocks = Stock_model::whereIn('variation_id', $variation_ids)->where('status', 1)->whereHas('active_order')->get();
+        // } else {
+            $stocks = Stock_model::where('variation_id', $id)->where('status', 1)
+            ->whereHas('latest_topup')->orWhereHas('latest_listing')
+            ->get();
+        // }
 
         $stock_costs = Order_item_model::whereHas('order', function($q){
             $q->where('order_type_id',1);
