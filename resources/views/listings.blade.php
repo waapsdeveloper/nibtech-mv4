@@ -606,7 +606,7 @@
                         let price = data.stock_costs[item.id];
                         let vendor = data.vendors[data.po[item.order_id]];
                         let reference_id = data.reference[item.order_id];
-                        let topup_ref = data.topup_reference[latest_topup_items[item.id]];
+                        let topup_ref = data.topup_reference[data.latest_topup_items[item.id]];
                         stockPrices.push(price);
                         // Load stock cost via AJAX
                         datass += `
