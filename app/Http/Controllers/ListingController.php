@@ -329,7 +329,10 @@ class ListingController extends Controller
         //     $stocks = Stock_model::whereIn('variation_id', $variation_ids)->where('status', 1)->whereHas('active_order')->get();
         // } else {
             $stocks = Stock_model::where('variation_id', $id)->where('status', 1)
-            ->whereHas('latest_topup')->orWhereHas('latest_listing')
+            ->where(function($query) {
+                $query->whereHas('latest_topup')
+                      ->orWhereHas('latest_listing');
+            })
             ->get();
         // }
 
