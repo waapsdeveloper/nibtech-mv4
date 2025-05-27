@@ -329,10 +329,7 @@ class ListingController extends Controller
         //     $stocks = Stock_model::whereIn('variation_id', $variation_ids)->where('status', 1)->whereHas('active_order')->get();
         // } else {
             $stocks = Stock_model::where('variation_id', $id)->where('status', 1)
-            ->where(function($query) {
-                $query->whereHas('latest_topup')
-                      ->orWhereHas('latest_listing');
-            })
+            ->whereHas('latest_listing_or_topup')
             ->get();
         // }
 
@@ -346,7 +343,7 @@ class ListingController extends Controller
 
         $reference = Order_model::where('order_type_id',1)->pluck('reference_id','id');
 
-        $topup_reference = Process_model::where('process_type_id',22)->pluck('reference_id','id');
+        $topup_reference = Process_model::whereIn('process_type_id',[21,22])->pluck('reference_id','id');
 
         $latest_topup_items = Process_stock_model::whereIn('process_id', $topup_reference->keys())->whereIn('stock_id',$stocks->pluck('id'))->pluck('process_id','stock_id');
 
