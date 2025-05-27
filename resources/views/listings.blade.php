@@ -606,12 +606,13 @@
                         let price = data.stock_costs[item.id];
                         let vendor = data.vendors[data.po[item.order_id]];
                         let reference_id = data.reference[item.order_id];
+                        let topup_ref = data.topup_reference[latest_topup_items[item.id]];
                         stockPrices.push(price);
                         // Load stock cost via AJAX
                         datass += `
                             <tr>
                                 <td>${index + 1}</td>
-                                <td data-stock="${item.id}" title="${item.latest_topup.process.reference_id}">
+                                <td data-stock="${item.id}" title="${topup_ref}">
                                     <a href="{{ url('imei?imei=') }}${item.imei ?? item.serial_number}" target="_blank">
                                         ${item.imei ?? item.serial_number ?? ''}
                                     </a>
