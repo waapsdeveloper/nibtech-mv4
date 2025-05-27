@@ -14,6 +14,7 @@ use App\Models\Listing_model;
 use App\Models\Order_item_model;
 use App\Models\Order_model;
 use App\Models\Process_model;
+use App\Models\Process_stock_model;
 use App\Models\Products_model;
 use App\Models\Stock_model;
 use App\Models\Storage_model;
@@ -339,6 +340,11 @@ class ListingController extends Controller
         $po = Order_model::where('order_type_id',1)->pluck('customer_id','id');
 
         $reference = Order_model::where('order_type_id',1)->pluck('reference_id','id');
+
+        $topup_reference = Process_model::where('process_type_id',22)->pluck('reference_id','id');
+
+        $latest_topup_items = Process_stock_model::whereIn('process_id', $topup_reference->keys())->whereIn('stock_id',$stocks->pluck('id'))->pluck('process_id','stock_id');
+
         if($stock_costs->count() > 0){
 
             $breakeven_price = ($stock_costs->average()+20)/0.88;
@@ -351,7 +357,7 @@ class ListingController extends Controller
             $breakeven_price = 0;
         }
 
-        return response()->json(['stocks'=>$stocks, 'stock_costs'=>$stock_costs, 'vendors'=>$vendors, 'po'=>$po, 'reference'=>$reference, 'breakeven_price'=>$breakeven_price]);
+        return response()->json(['stocks'=>$stocks, 'stock_costs'=>$stock_costs, 'vendors'=>$vendors, 'po'=>$po, 'reference'=>$reference, 'breakeven_price'=>$breakeven_price, 'latest_topup_items'=>$latest_topup_items, 'topup_reference'=>$topup_reference]);
 
     }
 
