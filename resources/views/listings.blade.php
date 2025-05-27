@@ -611,7 +611,7 @@
                         datass += `
                             <tr>
                                 <td>${index + 1}</td>
-                                <td data-stock="${item.id}">
+                                <td data-stock="${item.id}" title="${item.latest_topup.process.reference_id}">
                                     <a href="{{ url('imei?imei=') }}${item.imei ?? item.serial_number}" target="_blank">
                                         ${item.imei ?? item.serial_number ?? ''}
                                     </a>
