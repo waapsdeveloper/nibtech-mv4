@@ -546,12 +546,13 @@ class ListingController extends Controller
             if($process_id != null && $previous_qty < 0 && $pending_orders == 0){
                 $new_quantity = $stock;
             }else{
-                if($previous_qty <= 0){
-                    $change = $variation->available_stocks->count() - $pending_orders;
-                    $new_quantity = $stock + $change;
-                }else{
+                // if($previous_qty <= 0){
+                //     $change = $variation->available_stocks->count() - $pending_orders;
+
+                //     $new_quantity = $stock - $pending_orders;
+                // }else{
                     $new_quantity = $stock + $previous_qty;
-                }
+                // }
             }
         }
         $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>$new_quantity]));
