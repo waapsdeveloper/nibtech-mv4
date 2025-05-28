@@ -307,6 +307,10 @@ class Report extends Component
 
     public function purchase_report(){
 
+        $data['title_page'] = "Purchase Report";
+        session()->put('page_title', $data['title_page']);
+
+
         ini_set('max_execution_time', 1200);
 
         $start_date = Carbon::now()->subMonths(1);
