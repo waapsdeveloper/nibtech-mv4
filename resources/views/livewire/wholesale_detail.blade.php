@@ -484,15 +484,15 @@
                                 step="0.01"
                                 class="w-50 border-0"
                                 placeholder="Input {{$order->currency_id->sign}} Unit price"
-                                form="update_prices_{{ $key."_".$key2 }}"
+                                {{-- form="update_prices_{{ $key."_".$key2 }}" --}}
                                 onblur="this.value = parseFloat(this.value).toFixed(2)"
                                 onchange="
                                     var rate = {{ $order->exchange_rate ?? 1 }};
                                     if(rate && rate != 0){
-                                        $('#unit_price_{{ $key.`_`.$key2 }}').val((parseFloat(this.value) * rate).toFixed(2));
+                                        $(`#unit_price_{{ $key.'_'.$key2 }}`).val((parseFloat(this.value) * rate).toFixed(2));
                                         {{-- this.value = (parseFloat(this.value) / rate).toFixed(2); --}}
                                     }
-                                    document.getElementById('update_prices_{{ $key.`_`.$key2 }}').submit();
+                                    document.getElementById(`update_prices_{{ $key.'_'.$key2 }}`).submit();
                                 "
                             >
                         </div>
