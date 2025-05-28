@@ -397,6 +397,10 @@ class Topup extends Component
                 session()->put('error', 'SKU Not Found');
                 return redirect()->back();
             }
+            if(!in_array($stock->variation->state, [1,2])){
+                session()->put('error', 'Ad State is not valid for Topup: '.$stock->variation->state);
+                return redirect()->back();
+            }
 
             $process_stock = Process_stock_model::firstOrNew(['process_id'=>$process_id, 'stock_id'=>$stock->id]);
             $process_stock->admin_id = session('user_id');
