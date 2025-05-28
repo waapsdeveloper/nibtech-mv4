@@ -492,7 +492,7 @@
                                         $(`#unit_price_{{ $key.'_'.$key2 }}`).val((parseFloat(this.value) * rate).toFixed(2));
                                         {{-- this.value = (parseFloat(this.value) / rate).toFixed(2); --}}
                                     }
-                                    document.getElementById(`update_prices_{{ $key.'_'.$key2 }}`).submit();
+                                    // document.getElementById(`update_prices_`).submit();
                                 "
                             >
                         </div>
