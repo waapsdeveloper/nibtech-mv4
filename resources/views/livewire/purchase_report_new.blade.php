@@ -81,8 +81,10 @@
                                             <td
                                                 @if ($vendor_data['sellable_percentage'] > 100)
                                                     class="table-danger"
-                                                @elseif ($vendor_data['sellable_percentage'] < 50)
+                                                @elseif ($vendor_data['sellable_percentage'] < 70)
                                                     class="table-warning"
+                                                @elseif ($vendor_data['sellable_percentage'] < 50)
+                                                    class="table-danger"
                                                 @endif
                                                 title="{{ $vendor_data['sellable_stock_count'] }}"
                                                 >
