@@ -475,7 +475,6 @@
                         </div>
 
                         @if ($order->exchange_rate != null)
-                        <a href="{{url('export_bulksale_invoice')}}/{{ $order->id }}/1" target="_blank"><button class="btn-sm btn-secondary"> Invoice</button></a>
                         <div>
                             <label for="unit-price" class="">Change {{$order->currency_id->sign}} Unit Price: </label>
                             <input
@@ -498,7 +497,7 @@
                         </div>
                         @endif
                         <div title="Average Cost: {{amount_formatter($total_cost/$quantity,2)}}">Average: {{amount_formatter($total/$quantity,2) }}</div>
-                        @endif292
+                        @endif
                         <div>Total: {{$quantity }}</div>
                     </div>
                         <script>
