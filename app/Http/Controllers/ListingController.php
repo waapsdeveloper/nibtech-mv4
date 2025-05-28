@@ -536,6 +536,13 @@ class ListingController extends Controller
         $variation = Variation_model::find($id);
         $bm = new BackMarketAPIController();
         $previous_qty = $variation->update_qty($bm);
+
+        $variation = Variation_model::find($id);
+
+        if(!in_array($variation->state, [1,2])){
+            session()->put('error', 'Ad State is not valid for Topup: '.$variation->state);
+            return redirect()->back();
+        }
         $pending_orders = $variation->pending_orders->sum('quantity');
 
         $check_active_verification = Process_model::where('process_type_id',21)->where('status',1)->first();
