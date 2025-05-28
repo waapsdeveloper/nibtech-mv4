@@ -44,7 +44,7 @@
                                     <td>{{ $row['sold_item_count'] }}</td>
                                     <td>€{{ $row['sold_item_average'] }}</td>
                                     <td>
-                                        <a href="{{ url('inventory') }}?product_id={{ $row['product_id'] }}&storage={{ $row['storage_id'] }}" title="View Inventory">
+                                        <a href="{{ url('inventory') }}?product={{ $row['product_id'] }}&storage={{ $row['storage_id'] }}" title="View Inventory" target="_blank">
                                         {{ $row['available_sellable_stock_count'] }}
                                         </a>
                                     </td>
