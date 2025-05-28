@@ -147,7 +147,7 @@ class Variation extends Component
         if($variation_id != null){
             $duplicate = Variation_model::find($id);
             $new = Variation_model::find($variation_id);
-            if($duplicate != null && $new != null){
+            if($duplicate != null && $new != null && in_array($new->state, [1,2,3]){
 
                 // Update related records to point to the original variation
                 Listing_model::where('variation_id', $duplicate->id)->update(['variation_id' => $new->id]);
