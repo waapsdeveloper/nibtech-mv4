@@ -11,7 +11,7 @@
     @section('content')
 
             <div class="card m-0">
-                <div class="card-header m-0">
+                <div class="card-header m-0 d-flex justify-content-between">
                     <h4 class="card-title mb-0">Purchase Report</h4>
                     <div class="mb-0">
 
