@@ -548,7 +548,8 @@ class ListingController extends Controller
             }else{
                 if($previous_qty <= 0){
                     $change = $variation->available_stocks->count() - $pending_orders;
-                    $new_quantity = $stock + $change;
+
+                    $new_quantity = $stock - $pending_orders;
                 }else{
                     $new_quantity = $stock + $previous_qty;
                 }
