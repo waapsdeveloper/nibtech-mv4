@@ -271,11 +271,9 @@ class Topup extends Component
             if($stock == null){
                 session()->put('error', 'IMEI Invalid / Not Found');
                 return redirect()->back();
-
             }
 
             $stock->availability();
-
 
             if(request('copy') == 1 || request('copy_grade') == 1 || request('dual-esim') == 1 || request('dual-sim') == 1){
                 $variation = $stock->variation;
