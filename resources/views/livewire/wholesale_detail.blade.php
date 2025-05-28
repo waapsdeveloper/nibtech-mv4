@@ -489,7 +489,7 @@
                                 onchange="
                                     var rate = {{ $order->exchange_rate ?? 1 }};
                                     if(rate && rate != 0){
-                                        $(`#unit_price_{{ $key.'_'.$key2 }}`).val((parseFloat(this.value) * rate).toFixed(2));
+                                        $(`#unit_price_{{ $key.'_'.$key2 }}`).val((parseFloat(this.value) / rate).toFixed(2));
                                         {{-- this.value = (parseFloat(this.value) / rate).toFixed(2); --}}
                                     }
                                     // document.getElementById(`update_prices_`).submit();
