@@ -473,6 +473,34 @@
                             <label for="unit-price" class="">Change Unit Price: </label>
                             <input type="number" name="unit_price" id="unit_price_{{ $key."_".$key2 }}" step="0.01" class="w-50 border-0" placeholder="Input Unit price" form="update_prices_{{ $key."_".$key2 }}" onblur="this.value = parseFloat(this.value).toFixed(2)">
                         </div>
+
+                        @if ($order->exchange_rate != null)
+                        <a href="{{url('export_bulksale_invoice')}}/{{ $order->id }}/1" target="_blank"><button class="btn-sm btn-secondary"> Invoice</button></a>
+                        <div>
+                            <label for="unit-price" class="">Change {{$order->currency_id->sign}} Unit Price: </label>
+                            <input
+                                type="number"
+                                name="unit_price"
+                                id="unit_price_{{ $key."_".$key2 }}"
+                                step="0.01"
+                                class="w-50 border-0"
+                                placeholder="Input {{$order->currency_id->sign}} Unit price"
+                                form="update_prices_{{ $key."_".$key2 }}"
+                                onblur="this.value = parseFloat(this.value).toFixed(2)"
+                                onchange="
+                                    var rate = {{ $order->exchange_rate ?? 1 }};
+                                    if(rate && rate != 0){
+                                        this.value = (parseFloat(this.value) / rate).toFixed(2);
+                                    }
+                                    document.getElementById('update_prices_{{ $key.`_`.$key2 }}').submit();
+                                "
+                            >
+                        </div>
+                        @endif
+                        <div title="Average Cost: {{amount_formatter($total_cost/$quantity,2)}}">Average: {{amount_formatter($total/$quantity,2) }}</div>
+                        @endif292
+                        <div>Total: {{$quantity }}</div>
+                    </div>
                         <script>
                             $('#update_prices_{{ $key."_".$key2 }}').on('submit', function(e) {
                                 e.preventDefault();
@@ -494,10 +522,6 @@
                                 });
                             });
                         </script>
-                        <div title="Average Cost: {{amount_formatter($total_cost/$quantity,2)}}">Average: {{amount_formatter($total/$quantity,2) }}</div>
-                        @endif
-                        <div>Total: {{$quantity }}</div>
-                    </div>
                     </div>
                 </div>
             </div>
