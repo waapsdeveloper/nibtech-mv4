@@ -471,7 +471,7 @@
 
                         <div>
                             <label for="unit-price" class="">Change Unit Price: </label>
-                            <input type="number" name="unit_price" id="unit_price_{{ $key."_".$key2 }}" step="0.01" class="w-50 border-0" placeholder="Input Unit price" form="update_prices_{{ $key."_".$key2 }}">
+                            <input type="number" name="unit_price" id="unit_price_{{ $key."_".$key2 }}" step="0.01" class="w-50 border-0" placeholder="Input Unit price" form="update_prices_{{ $key."_".$key2 }}" onblur="this.value = parseFloat(this.value).toFixed(2)">
                         </div>
                         <script>
                             $('#update_prices_{{ $key."_".$key2 }}').on('submit', function(e) {
