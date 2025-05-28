@@ -13,6 +13,28 @@
             <div class="card m-0">
                 <div class="card-header m-0">
                     <h4 class="card-title mb-0">Purchase Report</h4>
+                    <div class="mb-0">
+
+                        <form action="" method="GET" id="index" class="mb-0">
+                            <div class="row">
+                                <div class="col-xl-5 col-lg-5 col-md-5 col-xs-5">
+                                    <div class="form-floating">
+                                        <input class="form-control" id="datetimepicker" type="date" id="start" name="start_date" value="{{$start_date}}">
+                                        <label for="start">{{ __('locale.Start Date') }}</label>
+                                    </div>
+                                </div>
+                                <div class="col-xl-5 col-lg-5 col-md-5 col-xs-5">
+                                    <div class="form-floating">
+                                        <input class="form-control" id="datetimepicker" type="date" id="end" name="end_date" value="{{$end_date}}">
+                                        <label for="end">{{ __('locale.End Date') }}</label>
+                                    </div>
+                                </div>
+                                <div class="col-xl-2 col-lg-2 col-md-2 col-xs-2">
+                                    <button type="submit" class="btn btn-icon  btn-success me-1"><i class="fe fe-search"></i></button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
                 <div class="card-body m-0 p-2">
                     @php
