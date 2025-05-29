@@ -46,6 +46,9 @@ class Variation_model extends Model
                     })
                     ->where('color', $this->color)
                     ->where('grade', $this->grade)
+                    ->when($this->grade > 5, function ($query) {
+                        return $query->where('sub_grade', $this->sub_grade);
+                    })
                     // ->where('sub_grade', $this->sub_grade)
                     // ->whereNotNull('sku')
                     ->where('id', '!=', $this->id);

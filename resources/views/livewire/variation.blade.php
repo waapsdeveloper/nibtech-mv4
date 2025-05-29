@@ -242,7 +242,7 @@
                                       <td>{{ $product->name }}</td>
                                       <td>{{ $product->sku }}
                                           {{-- @if ($product->grade < 6) --}}
-                                              @if ($product->duplicates->count() > 1)
+                                              @if ($product->duplicates->count() > 1 || $product->sku != null)
                                               Merge With Available SKUs:
                                                   <div class="input-group">
                                                       <select name="variation" class="form-control form-select" form="merge_{{$product->id}}" required>
