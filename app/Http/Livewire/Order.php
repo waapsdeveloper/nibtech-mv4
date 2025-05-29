@@ -1206,7 +1206,7 @@ class Order extends Component
             $data['order_issues'] = $order_issues;
             // dd($data['missing_stock']);
 
-            if($data['order']->created_at >= now()->subDays(7) && $data['order']->created_at <= now()->subHours(3)){
+            if($data['order']->created_at >= now()->subDays(7) && $data['order']->created_at <= now()->subHours(1)){
 
                 $testings = Api_request_model::whereNull('status')
                 ->where('request->BatchID', 'LIKE', '%'.$data['order']->reference_id.'%')
