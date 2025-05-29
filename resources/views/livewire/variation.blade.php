@@ -233,7 +233,7 @@
                                   @endif>
                                       <td title="{{ $product->id }}">{{ $i + 1 }}</td>
                                       <td>
-                                        <a href="{{ url('listing').'?reference_id='.$product->reference_id }}" target="_blank" title="View Listing">
+                                        <a href="{{ url('listing').'?reference_id='.$product->reference_id }}&state=10" target="_blank" title="View Listing">
                                           {{ $product->reference_id }}
                                         </a>
                                          {{ $product->state }}</td>
