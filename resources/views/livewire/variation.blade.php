@@ -232,7 +232,11 @@
                                       class="table-warning"
                                   @endif>
                                       <td title="{{ $product->id }}">{{ $i + 1 }}</td>
-                                      <td>{{ $product->reference_id }} {{ $product->state }}</td>
+                                      <td>
+                                        <a href="{{ url('listing').'?reference_id='.$product->reference_id }}" target="_blank" title="View Listing">
+                                          {{ $product->reference_id }}
+                                        </a>
+                                         {{ $product->state }}</td>
                                       <td>
                                           <select name="update[product_id]" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
                                               <option value="">None</option>
@@ -242,7 +246,10 @@
                                           </select>
                                       </td>
                                       <td>{{ $product->name }}</td>
-                                      <td>{{ $product->sku }}
+                                      <td>
+                                        <a href="https://www.backmarket.fr/bo-seller/listings/active?sku={{ $product->sku }}" target="_blank" title="View on BackMarket">
+                                            {{ $product->sku }}
+                                        </a>
                                           {{-- @if ($product->grade < 6) --}}
                                               @if ($product->duplicates->count() > 1 || ($product->sku != null && $product->duplicates->count() > 0))
                                               Merge With Available SKUs:
