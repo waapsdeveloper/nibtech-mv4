@@ -160,6 +160,7 @@ class Variation_model extends Model
         $var = $bm->getOneListing($this->reference_id);
         Variation_model::where('id', $this->id)->update([
             'listed_stock' => $var->quantity,
+            'sku' => $var->sku,
             'state' => $var->publication_state
         ]);
         return $var->quantity;
