@@ -228,7 +228,7 @@
                                   </form>
                                   <form method="post" action="{{url('variation/update_product')}}/{{ $product->id }}" class="row form-inline">
                                       @csrf
-                                  <tr @if (!in_array($product->state,[2,3]))
+                                  <tr @if ($product->sku != null && !in_array($product->state,[2,3]))
                                       class="table-warning"
                                   @endif>
                                       <td title="{{ $product->id }}">{{ $i + 1 }}</td>
