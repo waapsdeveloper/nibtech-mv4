@@ -1195,17 +1195,22 @@ class Order extends Component
                 $testings = Api_request_model::whereNull('status')
                     ->where('request->BatchID', 'LIKE', '%'.$data['order']->reference_id.'%')
                     ->get()
-                    ->groupBy(function($item) {
-                        $request = json_decode($item->request);
-                        // Parent group: model|storage|color
-                        return strtolower(($request->ModelName ?? '') . '|' . ($request->Memory ?? '') . '|' . ($request->Color ?? ''));
-                    // })
-                    // ->map(function($group) {
-                    //     // Child group: IMEI
-                    //     return $group->groupBy(function($item) {
-                    //         $request = json_decode($item->request);
-                    //         return $request->Imei ?? $request->Serial ?? '';
-                    //     });
+                    ->groupBy(function($row) {
+                        // Group by product, storage, color
+                        return strtolower(($row['product'] ?? '') . '|' . ($row['storage'] ?? '') . '|' . ($row['color'] ?? ''));
+                    })
+                    ->map(function($group) {
+                        // Only get IMEI, serial_number, variation_id, product, storage, color from each row
+                        return $group->map(function($item) {
+                            return [
+                                'imei' => $item['imei'],
+                                'serial_number' => $item['serial_number'],
+                                'variation_id' => $item['variation_id'],
+                                'product' => $item['product'],
+                                'storage' => $item['storage'],
+                                'color' => $item['color'],
+                            ];
+                        })->values();
                     });
 
                 if($testings->count() > 0){
