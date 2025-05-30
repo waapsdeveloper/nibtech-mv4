@@ -1199,13 +1199,13 @@ class Order extends Component
                         $request = json_decode($item->request);
                         // Parent group: model|storage|color
                         return strtolower(($request->ModelName ?? '') . '|' . ($request->Memory ?? '') . '|' . ($request->Color ?? ''));
-                    })
-                    ->map(function($group) {
-                        // Child group: IMEI
-                        return $group->groupBy(function($item) {
-                            $request = json_decode($item->request);
-                            return $request->Imei ?? $request->Serial ?? '';
-                        });
+                    // })
+                    // ->map(function($group) {
+                    //     // Child group: IMEI
+                    //     return $group->groupBy(function($item) {
+                    //         $request = json_decode($item->request);
+                    //         return $request->Imei ?? $request->Serial ?? '';
+                    //     });
                     });
 
                 if($testings->count() > 0){
