@@ -1240,8 +1240,16 @@ class Order extends Component
                         return $row['variation_id'];
                     })
                     ->map(function($group) {
-                        // Only get IMEI, serial_number, variation_id, product, storage, color from each row
-                        return $group->map(function($item) {
+                        // Remove duplicate IMEI/serial_number entries per variation
+                        $unique = [];
+                        return $group->filter(function($item) use (&$unique) {
+                            $key = ($item['imei'] ?? '') . '|' . ($item['serial_number'] ?? '');
+                            if (!$key || isset($unique[$key])) {
+                                return false;
+                            }
+                            $unique[$key] = true;
+                            return true;
+                        })->map(function($item) {
                             return [
                                 'imei' => $item['imei'],
                                 'serial_number' => $item['serial_number'],
