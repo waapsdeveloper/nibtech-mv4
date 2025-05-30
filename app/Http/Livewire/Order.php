@@ -1253,10 +1253,10 @@ class Order extends Component
                         })->values();
                     });
 
-                if($testings->count() > 0){
-                    dd($testings);
-                }
-                $data['testings'] = $testings;
+                // if($testings->count() > 0){
+                //     dd($testings);
+                // }
+                $data['testing_list'] = $testings;
 
                 // if($testings->count() > 0){
                 //     $testing_list = [];
