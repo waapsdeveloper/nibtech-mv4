@@ -1191,10 +1191,27 @@ class Order extends Component
             // dd($data['missing_stock']);
 
             if($data['order']->created_at >= now()->subDays(7) && $data['order']->created_at <= now()->subHours(1)){
-
+                // Group testings by model, storage, and color (parent), and then by IMEI (child)
                 $testings = Api_request_model::whereNull('status')
-                ->where('request->BatchID', 'LIKE', '%'.$data['order']->reference_id.'%')
-                ->get();
+                    ->where('request->BatchID', 'LIKE', '%'.$data['order']->reference_id.'%')
+                    ->get()
+                    ->groupBy(function($item) {
+                        $request = json_decode($item->request);
+                        // Parent group: model|storage|color
+                        return strtolower(($request->ModelName ?? '') . '|' . ($request->Memory ?? '') . '|' . ($request->Color ?? ''));
+                    // })
+                    // ->map(function($group) {
+                    //     // Child group: IMEI
+                    //     return $group->groupBy(function($item) {
+                    //         $request = json_decode($item->request);
+                    //         return $request->Imei ?? $request->Serial ?? '';
+                    //     });
+                    });
+
+                if($testings->count() > 0){
+                    dd($testings);
+                }
+                $data['testings'] = $testings;
 
                 // if($testings->count() > 0){
                 //     $testing_list = [];
