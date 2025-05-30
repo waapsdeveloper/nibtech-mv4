@@ -1195,6 +1195,17 @@ class Order extends Component
                 $testings = Api_request_model::whereNull('status')
                     ->where('request->BatchID', 'LIKE', '%'.$data['order']->reference_id.'%')
                     ->get()
+                    ->map(function($item) {
+                        $request = json_decode($item->request);
+                        return [
+                            'imei' => $request->Imei ?? null,
+                            'serial_number' => $request->Serial ?? null,
+                            'variation_id' => null, // You can set this if you have logic to determine it
+                            'product' => $request->ModelName ?? null,
+                            'storage' => $request->Memory ?? null,
+                            'color' => $request->Color ?? null,
+                        ];
+                    })
                     ->groupBy(function($row) {
                         // Group by product, storage, color
                         return strtolower(($row['product'] ?? '') . '|' . ($row['storage'] ?? '') . '|' . ($row['color'] ?? ''));
