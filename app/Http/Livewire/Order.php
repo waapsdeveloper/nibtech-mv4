@@ -1193,83 +1193,83 @@ class Order extends Component
             if($data['order']->created_at >= now()->subDays(7) && $data['order']->created_at <= now()->subHours(1)){
 
                 $testings = Api_request_model::whereNull('status')
-                // ->where('request->BatchID', 'LIKE', '%'.$data['order']->reference_id.'%')
+                ->where('request->BatchID', 'LIKE', '%'.$data['order']->reference_id.'%')
                 ->get();
 
-                if($testings->count() > 0){
-                    $testing_list = [];
-                    $imei_list = [];
-                    $lower_products = array_map('strtolower', $data['products']->toArray());
-                    $lower_storages = array_map('strtolower', $data['storages']->toArray());
-                    $lower_colors = array_map('strtolower', $data['colors']->toArray());
-                    $lower_grades = array_map('strtolower', $data['grades']->toArray());
-                    // dd($testings);
-                    foreach($testings as $testing){
-                        $request = json_decode($testing->request);
-                        if(!str_contains($request->BatchID, $data['order']->reference_id)){
-                            continue;
-                        }
-                        if(in_array(strtolower($request->ModelName), $lower_products)){
-                            $product_id = array_search(strtolower($request->ModelName), $lower_products);
-                        }else{
-                            continue;
-                        }
-                        if(in_array(strtolower($request->Memory), $lower_storages)){
-                            $storage_id = array_search(strtolower($request->Memory), $lower_storages);
-                        }else{
-                            continue;
-                        }
-                        if(in_array(strtolower($request->Color), $lower_colors)){
-                            $color_id = array_search(strtolower($request->Color), $lower_colors);
-                        }else{
-                            $color_id = null;
-                        }
-                        // if(in_array(strtolower($request->Grade), $lower_grades)){
-                        //     $grade_id = array_search(strtolower($request->Grade), $lower_grades);
-                        // }else{
-                            $grade_id = 9;
-                        // }
+                // if($testings->count() > 0){
+                //     $testing_list = [];
+                //     $imei_list = [];
+                //     $lower_products = array_map('strtolower', $data['products']->toArray());
+                //     $lower_storages = array_map('strtolower', $data['storages']->toArray());
+                //     $lower_colors = array_map('strtolower', $data['colors']->toArray());
+                //     $lower_grades = array_map('strtolower', $data['grades']->toArray());
+                //     // dd($testings);
+                //     foreach($testings as $testing){
+                //         $request = json_decode($testing->request);
+                //         if(!str_contains($request->BatchID, $data['order']->reference_id)){
+                //             continue;
+                //         }
+                //         if(in_array(strtolower($request->ModelName), $lower_products)){
+                //             $product_id = array_search(strtolower($request->ModelName), $lower_products);
+                //         }else{
+                //             continue;
+                //         }
+                //         if(in_array(strtolower($request->Memory), $lower_storages)){
+                //             $storage_id = array_search(strtolower($request->Memory), $lower_storages);
+                //         }else{
+                //             continue;
+                //         }
+                //         if(in_array(strtolower($request->Color), $lower_colors)){
+                //             $color_id = array_search(strtolower($request->Color), $lower_colors);
+                //         }else{
+                //             $color_id = null;
+                //         }
+                //         // if(in_array(strtolower($request->Grade), $lower_grades)){
+                //         //     $grade_id = array_search(strtolower($request->Grade), $lower_grades);
+                //         // }else{
+                //             $grade_id = 9;
+                //         // }
 
-                        $variation = Variation_model::firstOrNew([
-                            'product_id'=>$product_id,
-                            'storage'=>$storage_id,
-                            'color'=>$color_id,
-                            'grade'=>$grade_id,
-                        ]);
-                        if($variation->id == null){
-                            $variation->save();
-                        }
+                //         $variation = Variation_model::firstOrNew([
+                //             'product_id'=>$product_id,
+                //             'storage'=>$storage_id,
+                //             'color'=>$color_id,
+                //             'grade'=>$grade_id,
+                //         ]);
+                //         if($variation->id == null){
+                //             $variation->save();
+                //         }
 
-                        if($request->Imei != null || $request->Serial != null){
-                            if(Stock_model::where('imei',$request->Imei)->orWhere('imei',$request->Imei2)->orWhere('serial_number',$request->Serial)->exists()){
-                                continue;
-                            }
-                            if($request->Imei != null){
-                                $imei = $request->Imei;
-                            }else{
-                                $imei = $request->Serial;
-                            }
-                            if(in_array($imei, $imei_list)){
-                                continue;
-                            }else{
-                                $imei_list[] = $imei;
-                            }
-                            $testing_list[$variation->id][] = [
-                                'imei' => $request->Imei,
-                                'serial_number' => $request->Serial,
-                                'variation_id' => $variation->id,
-                                'product' => $request->ModelName,
-                                'storage' => $request->Memory,
-                                'color' => $request->Color,
-                                // 'grade' => $request->Grade,
-                                'status' => 1,
-                            ];
-                        }
-                    }
-                    if(count($testing_list) > 0){
-                        // dd($testing_list);
-                        $data['testing_list'] = $testing_list;
-                    }
+                //         if($request->Imei != null || $request->Serial != null){
+                //             if(Stock_model::where('imei',$request->Imei)->orWhere('imei',$request->Imei2)->orWhere('serial_number',$request->Serial)->exists()){
+                //                 continue;
+                //             }
+                //             if($request->Imei != null){
+                //                 $imei = $request->Imei;
+                //             }else{
+                //                 $imei = $request->Serial;
+                //             }
+                //             if(in_array($imei, $imei_list)){
+                //                 continue;
+                //             }else{
+                //                 $imei_list[] = $imei;
+                //             }
+                //             $testing_list[$variation->id][] = [
+                //                 'imei' => $request->Imei,
+                //                 'serial_number' => $request->Serial,
+                //                 'variation_id' => $variation->id,
+                //                 'product' => $request->ModelName,
+                //                 'storage' => $request->Memory,
+                //                 'color' => $request->Color,
+                //                 // 'grade' => $request->Grade,
+                //                 'status' => 1,
+                //             ];
+                //         }
+                //     }
+                    // if(count($testing_list) > 0){
+                    //     // dd($testing_list);
+                    //     $data['testing_list'] = $testing_list;
+                    // }
                 }
             }
         }
