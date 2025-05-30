@@ -1270,7 +1270,7 @@ class Order extends Component
                     //     // dd($testing_list);
                     //     $data['testing_list'] = $testing_list;
                     // }
-                }
+                // }
             }
         }
         $data['all_variations'] = Variation_model::where('grade',9)->get();
