@@ -1160,13 +1160,6 @@ class Order extends Component
                 })
                 ->get();
 
-                // $data['sold_stock_order_items'] = Order_item_model::whereHas('stock', function($q) use ($order_id){
-                //     $q->where(['order_id'=> $order_id, 'status'=>2]);
-                // // })->whereHas('order', function($q){
-                // //     $q->whereIn('order_type_id', [2,3,5]);
-                // })->latest()->distinct('stock_id')->get();
-
-                // dd($data['sold_stock_order_items']);
             }
 
             $data['graded_count'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', DB::raw('COUNT(*) as quantity'))
@@ -1180,15 +1173,6 @@ class Order extends Component
             ->orderBy('grade_id')
             ->get();
 
-            // $sold_summery = Variation_model::withCount([
-            //     'stocks as quantity' => function ($query) use ($order_id) {
-            //         $query->where(['order_id'=> $order_id, 'status' => 2]);
-            //     }])
-            //     ->whereHas('stocks', function ($query) use ($order_id) {
-            //         $query->where(['order_id'=> $order_id, 'status'=>2]);
-            //     })->get();
-            // dd($sold_summery);
-            // $data['sold_summery'] = $sold_summery;
             $data['missing_stock'] = Order_item_model::where('order_id',$order_id)->whereHas('stock',function ($q) {
                 $q->where(['imei'=>null,'serial_number'=>null]);
             })->get();
@@ -1209,7 +1193,7 @@ class Order extends Component
             if($data['order']->created_at >= now()->subDays(7) && $data['order']->created_at <= now()->subHours(1)){
 
                 $testings = Api_request_model::whereNull('status')
-                ->where('request->BatchID', 'LIKE', '%'.$data['order']->reference_id.'%')
+                // ->where('request->BatchID', 'LIKE', '%'.$data['order']->reference_id.'%')
                 ->get();
 
                 if($testings->count() > 0){
@@ -1222,6 +1206,9 @@ class Order extends Component
                     // dd($testings);
                     foreach($testings as $testing){
                         $request = json_decode($testing->request);
+                        if(!str_contains($request->BatchID, $data['order']->reference_id)){
+                            continue;
+                        }
                         if(in_array(strtolower($request->ModelName), $lower_products)){
                             $product_id = array_search(strtolower($request->ModelName), $lower_products);
                         }else{
