@@ -45,6 +45,7 @@
                             </div>
 
                             @endif
+                            <button type="submit" class="btn btn-secondary" name="close" value="1">Close</button>
                             <button type="submit" class="btn btn-primary" name="push" value="1"
                              {{-- onclick="this.disabled=true;this.form.submit();" --}}
                              >Push & Close</button>
