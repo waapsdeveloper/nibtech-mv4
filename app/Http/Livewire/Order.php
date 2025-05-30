@@ -1198,31 +1198,24 @@ class Order extends Component
                 $testings = Api_request_model::whereNull('status')
                     ->where('request->BatchID', 'LIKE', '%'.$data['order']->reference_id.'%')
                     ->get()
-                    ->map(function($item) {
+                    ->map(function($item) use ($data, $lower_products, $lower_storages, $lower_colors) {
                         $request = json_decode($item->request);
-                        return [
-                            'imei' => $request->Imei ?? null,
-                            'serial_number' => $request->Serial ?? null,
-                            'variation_id' => null, // You can set this if you have logic to determine it
-                            'product' => $request->ModelName ?? null,
-                            'storage' => $request->Memory ?? null,
-                            'color' => $request->Color ?? null,
-                        ];
-                    })
-                    ->map(function($row) use ($data, $lower_products, $lower_storages, $lower_colors) {
-                        // Find variation_id based on product, storage, color, grade (grade=9)
+                        $product = $request->ModelName ?? null;
+                        $storage = $request->Memory ?? null;
+                        $color = $request->Color ?? null;
 
-                        $product_id = in_array(strtolower($row['product']), $lower_products)
-                            ? array_search(strtolower($row['product']), $lower_products)
+                        $product_id = in_array(strtolower($product), $lower_products)
+                            ? array_search(strtolower($product), $lower_products)
                             : null;
-                        $storage_id = in_array(strtolower($row['storage']), $lower_storages)
-                            ? array_search(strtolower($row['storage']), $lower_storages)
+                        $storage_id = in_array(strtolower($storage), $lower_storages)
+                            ? array_search(strtolower($storage), $lower_storages)
                             : null;
-                        $color_id = in_array(strtolower($row['color']), $lower_colors)
-                            ? array_search(strtolower($row['color']), $lower_colors)
+                        $color_id = in_array(strtolower($color), $lower_colors)
+                            ? array_search(strtolower($color), $lower_colors)
                             : null;
                         $grade_id = 9;
 
+                        $variation_id = null;
                         if ($product_id !== null && $storage_id !== null) {
                             $variation = Variation_model::firstOrCreate([
                                 'product_id' => $product_id,
@@ -1230,11 +1223,17 @@ class Order extends Component
                                 'color' => $color_id,
                                 'grade' => $grade_id,
                             ]);
-                            $row['variation_id'] = $variation->id;
-                        } else {
-                            $row['variation_id'] = null;
+                            $variation_id = $variation->id;
                         }
-                        return $row;
+
+                        return [
+                            'imei' => $request->Imei ?? null,
+                            'serial_number' => $request->Serial ?? null,
+                            'variation_id' => $variation_id,
+                            'product' => $product,
+                            'storage' => $storage,
+                            'color' => $color,
+                        ];
                     })
                     ->groupBy(function($row) {
                         // Group by variation_id
