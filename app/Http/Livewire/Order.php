@@ -1191,6 +1191,9 @@ class Order extends Component
             // dd($data['missing_stock']);
 
             if($data['order']->created_at >= now()->subDays(7) && $data['order']->created_at <= now()->subHours(1)){
+                $lower_products = array_map('strtolower', $data['products']->toArray());
+                $lower_storages = array_map('strtolower', $data['storages']->toArray());
+                $lower_colors = array_map('strtolower', $data['colors']->toArray());
                 // Group testings by model, storage, and color (parent), and then by IMEI (child)
                 $testings = Api_request_model::whereNull('status')
                     ->where('request->BatchID', 'LIKE', '%'.$data['order']->reference_id.'%')
@@ -1206,9 +1209,36 @@ class Order extends Component
                             'color' => $request->Color ?? null,
                         ];
                     })
+                    ->map(function($row) use ($data, $lower_products, $lower_storages, $lower_colors) {
+                        // Find variation_id based on product, storage, color, grade (grade=9)
+
+                        $product_id = in_array(strtolower($row['product']), $lower_products)
+                            ? array_search(strtolower($row['product']), $lower_products)
+                            : null;
+                        $storage_id = in_array(strtolower($row['storage']), $lower_storages)
+                            ? array_search(strtolower($row['storage']), $lower_storages)
+                            : null;
+                        $color_id = in_array(strtolower($row['color']), $lower_colors)
+                            ? array_search(strtolower($row['color']), $lower_colors)
+                            : null;
+                        $grade_id = 9;
+
+                        if ($product_id !== null && $storage_id !== null) {
+                            $variation = Variation_model::firstOrCreate([
+                                'product_id' => $product_id,
+                                'storage' => $storage_id,
+                                'color' => $color_id,
+                                'grade' => $grade_id,
+                            ]);
+                            $row['variation_id'] = $variation->id;
+                        } else {
+                            $row['variation_id'] = null;
+                        }
+                        return $row;
+                    })
                     ->groupBy(function($row) {
-                        // Group by product, storage, color
-                        return strtolower(($row['product'] ?? '') . '|' . ($row['storage'] ?? '') . '|' . ($row['color'] ?? ''));
+                        // Group by variation_id
+                        return $row['variation_id'];
                     })
                     ->map(function($group) {
                         // Only get IMEI, serial_number, variation_id, product, storage, color from each row
@@ -1224,9 +1254,9 @@ class Order extends Component
                         })->values();
                     });
 
-                if($testings->count() > 0){
-                    dd($testings);
-                }
+                // if($testings->count() > 0){
+                //     dd($testings);
+                // }
                 $data['testings'] = $testings;
 
                 // if($testings->count() > 0){
