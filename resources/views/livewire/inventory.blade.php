@@ -126,7 +126,7 @@
                     <option value="">Topup Batch</option>
                     <option value="0" @if (isset($_GET['listing_or_topup']) && $_GET['listing_or_topup'] == 0) {{ 'selected' }} @endif>
                         No Topup</option>
-                    @foreach ($listing_or_topups as $id => $name)
+                    @foreach ($listings_or_topups as $id => $name)
                         <option value="{{ $id }}" @if (isset($_GET['listing_or_topup']) && $id == $_GET['listing_or_topup']) {{ 'selected' }} @endif>
                             {{ $name }}</option>
                     @endforeach
