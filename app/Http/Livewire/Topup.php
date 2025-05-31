@@ -398,7 +398,7 @@ class Topup extends Component
                 session()->put('error', 'SKU Not Found');
                 return redirect()->back();
             }
-            if(!in_array($stock->variation->state, [1,2,3])){
+            if(!in_array($stock->variation->state, [0,1,2,3])){
                 session()->put('error', 'Ad State is not valid for Topup: '.$stock->variation->state);
                 return redirect()->back();
             }
