@@ -51,6 +51,7 @@ class Inventory extends Component
         $data['grades'] = Grade_model::pluck('name','id');
         $data['categories'] = Category_model::get();
         $data['brands'] = Brand_model::get();
+        $data['listings_or_topups'] = Process_model::whereIn('process_type_id',[21,22])->pluck('reference_id','id');
 
         if(request('replacement') == 1){
             $replacements = Order_item_model::where(['order_id'=>8974])->where('reference_id','!=',null)->pluck('reference_id')->toArray();
@@ -115,7 +116,12 @@ class Inventory extends Component
                 })
                 ->when(request('sub_grade') != [], function ($q) {
                     return $q->whereIn('sub_grade', request('sub_grade'));
-                })->pluck('id');
+                })
+
+
+                ->pluck('id');
+
+
             $order_ids = Order_model::when(request('vendor') != '', function ($q) {
                     $q->where('customer_id', request('vendor'));
                 })->when(request('status') != '', function ($q) {
@@ -192,22 +198,22 @@ class Inventory extends Component
             ->appends(request()->except('page'));
         }else{
 
-            // $repaired = Process_stock_model::whereHas('process', function ($q) {
-            //     $q->where('process_type_id', 9);
-            // })->where('status',2)->where('updated_at','>=',date('Y-m-01 00:00:00'))->pluck('stock_id')->toArray();
-            // $recent_operations = Stock_operations_model::where('created_at','>=',date('Y-m-01 00:00:00'))->pluck('stock_id')->toArray();
             $data['stocks'] = Stock_model::
-            with(['variation','variation.product','order','latest_operation','latest_return','admin'])
-            ->
-            whereNotIn('stock.id',$all_verified_stocks)
-            // ->whereNotIn('stock.id',$repaired)
-            // ->whereNotIn('stock.id',$recent_operations)
+            with(['variation','variation.product','order','latest_operation','latest_return','latest_listing_or_topup','admin'])
+            ->whereNotIn('stock.id',$all_verified_stocks)
             ->where('stock.status', 1)
 
             ->when(request('aftersale') != 1, function ($q) use ($aftersale) {
                 return $q->whereNotIn('stock.id',$aftersale);
             })
-
+            ->when(request('listing_or_topup') == 0, function ($q) {
+                return $q->whereDoesntHave('latest_listing_or_topup');
+            })
+            ->when(request('listing_or_topup') != '' && request('listing_or_topup') != 0, function ($q) {
+                return $q->whereHas('process_stocks', function ($q) {
+                    $q->where('process_id', request('listing_or_topup'));
+                });
+            })
             ->when(request('variation') != '', function ($q) {
                 return $q->where('variation_id', request('variation'));
             })
