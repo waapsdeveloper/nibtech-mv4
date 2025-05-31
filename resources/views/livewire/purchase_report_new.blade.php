@@ -86,7 +86,7 @@
                                                 @elseif ($vendor_data['sellable_percentage'] < 50)
                                                     class="table-danger"
                                                 @endif
-                                                title="{{ $vendor_data['sellable_stock_count'] }}"
+                                                title="{{ $vendor_name.': '.$vendor_data['sellable_stock_count'] }}"
                                                 >
                                                 <a href="javascript:void(0);" onclick="load_imeis({{ json_encode($vendor_data['imeis']) }})"
                                                 title="Stocks: {{ implode(',', $vendor_data['imeis']) }}"
