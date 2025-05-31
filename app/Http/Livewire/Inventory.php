@@ -51,7 +51,7 @@ class Inventory extends Component
         $data['grades'] = Grade_model::pluck('name','id');
         $data['categories'] = Category_model::get();
         $data['brands'] = Brand_model::get();
-        $data['listings_or_topups'] = Process_model::whereIn('process_type_id',[21,22])->pluck('reference_id','id');
+        $data['listings_or_topups'] = Process_model::whereIn('process_type_id',[21,22])->orderByDesc('id')->pluck('reference_id','id');
 
         if(request('replacement') == 1){
             $replacements = Order_item_model::where(['order_id'=>8974])->where('reference_id','!=',null)->pluck('reference_id')->toArray();
