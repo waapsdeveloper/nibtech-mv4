@@ -369,20 +369,18 @@ class Report extends Component
         ->select('product_storage_sort.id', 'product_storage_sort.product_id', 'product_storage_sort.storage', 'products.model')
         ->get()
         ->each(function ($product_storage_sort) use (&$list, $purchase_order_items, $purchase_stocks, $sold_order_items, $purchase_orders, $vendor_ids) {
-            $variation_ids = Variation_model::where('product_storage_sort_id', $product_storage_sort->id)
-            ->pluck('id')->toArray();
+            $variations = $product_storage_sort->variations;
+            $variation_ids = $variations->pluck('id')->toArray();
 
             if (empty($variation_ids)) {
-            return;
+                return;
             }
 
             $variation_stocks = $purchase_stocks->whereIn('variation_id', $variation_ids);
             $variation_stock_ids = $variation_stocks->pluck('id')->toArray();
             $variation_items = $purchase_order_items->whereIn('stock_id', $variation_stock_ids);
 
-            $sellable_variation_ids = Variation_model::where('product_storage_sort_id', $product_storage_sort->id)
-            ->whereIn('grade', [1,2,3,4,5,7,9])
-            ->pluck('id')->toArray();
+            $sellable_variation_ids = $variations->whereIn('grade', [1,2,3,4,5,7,9])->pluck('id')->toArray();
 
             $item_count = $variation_items->count();
             $item_sum = $variation_items->sum('price');
@@ -394,7 +392,7 @@ class Report extends Component
             $sold_items = $sold_order_items->whereIn('variation_id', $variation_ids);
 
             if ($item_count === 0 && $available_sellable_stock_count === 0 && $sold_items->count() === 0) {
-            return;
+                return;
             }
 
             $list[$product_storage_sort->id] = [
@@ -414,44 +412,45 @@ class Report extends Component
             ];
 
             foreach ($vendor_ids as $vendor_id) {
-            $vendor_order_ids = $purchase_orders->where('customer_id', $vendor_id)->pluck('id')->toArray();
-            $vendor_variation_stocks = $variation_stocks->whereIn('order_id', $vendor_order_ids);
-            $vendor_variation_stock_ids = $vendor_variation_stocks->pluck('id')->toArray();
-            $vendor_variation_items = $purchase_order_items->whereIn('stock_id', $vendor_variation_stock_ids);
+                $vendor_order_ids = $purchase_orders->where('customer_id', $vendor_id)->pluck('id')->toArray();
+                $vendor_variation_stocks = $variation_stocks->whereIn('order_id', $vendor_order_ids);
+                $vendor_variation_stock_ids = $vendor_variation_stocks->pluck('id')->toArray();
+                $vendor_variation_items = $purchase_order_items->whereIn('stock_id', $vendor_variation_stock_ids);
 
-            if ($vendor_variation_items->isEmpty()) {
-                continue;
-            }
+                if ($vendor_variation_items->isEmpty()) {
+                    continue;
+                }
 
-            $stock_variation_ids = $vendor_variation_stocks->pluck('variation_id')->unique()->toArray();
-            $sellable_variation_ids_vendor = Variation_model::whereIn('id', $stock_variation_ids)
-                ->whereIn('grade', [1,2,3,4,5,7,9])
-                ->pluck('id')->unique()->toArray();
+                $stock_variation_ids = $vendor_variation_stocks->pluck('variation_id')->unique()->toArray();
 
-            $sellable_stocks = $purchase_stocks->whereIn('variation_id', $sellable_variation_ids_vendor)
-                ->whereIn('order_id', $vendor_order_ids);
+                $sellable_variation_ids_vendor = $variations->whereIn('id', $stock_variation_ids)
+                    ->whereIn('grade', [1,2,3,4,5,7,9])
+                    ->pluck('id')->unique()->toArray();
 
-            $sellable_stock_ids = $sellable_stocks->pluck('id')->unique();
+                $sellable_stocks = $purchase_stocks->whereIn('variation_id', $sellable_variation_ids_vendor)
+                    ->whereIn('order_id', $vendor_order_ids);
 
-            $imeis = array_unique(array_merge(
-                $vendor_variation_stocks->pluck('imei')->filter()->toArray(),
-                $vendor_variation_stocks->pluck('serial_numbers')->filter()->toArray()
-            ));
-            $sellable_imeis = array_unique(array_merge(
-                $sellable_stocks->pluck('imei')->filter()->toArray(),
-                $sellable_stocks->pluck('serial_numbers')->filter()->toArray()
-            ));
+                $sellable_stock_ids = $sellable_stocks->pluck('id')->unique();
 
-            $list[$product_storage_sort->id]['vendors'][$vendor_id] = [
-                'item_count' => $vendor_variation_items->count(),
-                'item_sum'   => $vendor_variation_items->sum('price'),
-                'item_average' => round($vendor_variation_items->sum('price') / $vendor_variation_items->count(), 2),
-                'sellable_percentage' => $vendor_variation_items->count() > 0 ? round($sellable_stock_ids->count() / $vendor_variation_items->count() * 100, 2) : 0,
-                'imeis' => $imeis,
-                'sellable_imeis' => $sellable_imeis,
-                'sellable_stock_count' => $sellable_stock_ids->count(),
-                'imei_difference' => array_diff($imeis, $sellable_imeis)
-            ];
+                $imeis = array_unique(array_merge(
+                    $vendor_variation_stocks->pluck('imei')->filter()->toArray(),
+                    $vendor_variation_stocks->pluck('serial_numbers')->filter()->toArray()
+                ));
+                $sellable_imeis = array_unique(array_merge(
+                    $sellable_stocks->pluck('imei')->filter()->toArray(),
+                    $sellable_stocks->pluck('serial_numbers')->filter()->toArray()
+                ));
+
+                $list[$product_storage_sort->id]['vendors'][$vendor_id] = [
+                    'item_count' => $vendor_variation_items->count(),
+                    'item_sum'   => $vendor_variation_items->sum('price'),
+                    'item_average' => round($vendor_variation_items->sum('price') / $vendor_variation_items->count(), 2),
+                    'sellable_percentage' => $vendor_variation_items->count() > 0 ? round($sellable_stock_ids->count() / $vendor_variation_items->count() * 100, 2) : 0,
+                    'imeis' => $imeis,
+                    'sellable_imeis' => $sellable_imeis,
+                    'sellable_stock_count' => $sellable_stock_ids->count(),
+                    'imei_difference' => array_diff($imeis, $sellable_imeis)
+                ];
             }
         });
 
