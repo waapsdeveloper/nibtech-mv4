@@ -547,7 +547,7 @@ class Report extends Component
                 $vendor_stock_ids = $vendor_stocks->pluck('id');
 
                 $vendor_items = $purchase_order_items_by_variation->only(
-                    $vendor_stocks->pluck('variation_id')->unique()
+                    $vendor_stocks->pluck('variation_id')->unique()->toArray()
                 )->flatten();
 
                 if ($vendor_items->isEmpty()) return [$vendor_id => null];
