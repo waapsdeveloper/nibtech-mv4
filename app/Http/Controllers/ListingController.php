@@ -539,7 +539,7 @@ class ListingController extends Controller
 
         $variation = Variation_model::find($id);
 
-        if(!in_array($variation->state, [1,2,3])){
+        if(!in_array($variation->state, [0,1,2,3])){
             return 'Ad State is not valid for Topup: '.$variation->state;
         }
         $pending_orders = $variation->pending_orders->sum('quantity');
