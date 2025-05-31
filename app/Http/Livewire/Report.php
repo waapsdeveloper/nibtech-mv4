@@ -360,193 +360,120 @@ class Report extends Component
         ->get();
 
 
+        // Index purchase_order_items by stock_id
+        $purchase_order_items_by_stock_id = $purchase_order_items->groupBy('stock_id');
+
+        // Index purchase_stocks by variation_id
+        $purchase_stocks_by_variation_id = $purchase_stocks->groupBy('variation_id');
+
+        // Index sold_order_items by variation_id
+        $sold_items_by_variation_id = $sold_order_items->groupBy('variation_id');
+
+        // Group purchase orders by vendor
+        $vendor_orders = $purchase_orders->groupBy('customer_id');
+
 
         $list = [];
-        // $product_storage_sorts = Product_storage_sort_model::with(['storage_id:id,name', 'variations:id,product_storage_sort_id,grade'])
-        // // ->whereIn('product_storage_sort.id', $product_storage_sort_ids)
-        // ->leftJoin('products', 'product_storage_sort.product_id', '=', 'products.id')
-        // ->orderBy('products.model', 'asc')
-        // ->select('product_storage_sort.id', 'product_storage_sort.product_id', 'product_storage_sort.storage', 'products.model')
-        // ->get()
-        // ->each(function ($product_storage_sort) use (&$list, $purchase_order_items, $purchase_stocks, $sold_order_items, $purchase_orders, $vendor_ids) {
-        //     $variations = $product_storage_sort->variations;
-        //     $variation_ids = $variations->pluck('id')->toArray();
-
-        //     if (empty($variation_ids)) {
-        //         return;
-        //     }
-
-        //     $variation_stocks = $purchase_stocks->whereIn('variation_id', $variation_ids);
-        //     $variation_stock_ids = $variation_stocks->pluck('id')->toArray();
-        //     $variation_items = $purchase_order_items->whereIn('stock_id', $variation_stock_ids);
-
-        //     $sellable_variation_ids = $variations->whereIn('grade', [1,2,3,4,5,7,9])->pluck('id')->toArray();
-
-        //     $item_count = $variation_items->count();
-        //     $item_sum = $variation_items->sum('price');
-
-        //     $available_sellable_stock_count = $purchase_stocks->whereIn('variation_id', $sellable_variation_ids)
-        //     ->where('status', 1)
-        //     ->count();
-
-        //     $sold_items = $sold_order_items->whereIn('variation_id', $variation_ids);
-
-        //     if ($item_count === 0 && $available_sellable_stock_count === 0 && $sold_items->count() === 0) {
-        //         return;
-        //     }
-
-        //     $list[$product_storage_sort->id] = [
-        //     'product_id' => $product_storage_sort->product_id,
-        //     'product_name' => $product_storage_sort->model,
-        //     'storage_id' => $product_storage_sort->storage,
-        //     'storage_name' => optional($product_storage_sort->storage_id)->name,
-        //     'variation_ids' => $variation_ids,
-        //     'item_count'=> $item_count,
-        //     'item_sum'=> $item_sum,
-        //     'item_average' => $item_count > 0 ? round($item_sum / $item_count, 2) : 0,
-        //     'sold_item_count' => $sold_items->count(),
-        //     'sold_item_sum' => $sold_items->sum('price'),
-        //     'sold_item_average' => $sold_items->count() > 0 ? round($sold_items->sum('price') / $sold_items->count(), 2) : 0,
-        //     'available_sellable_stock_count' => $available_sellable_stock_count,
-        //     'vendors' => []
-        //     ];
-
-        //     foreach ($vendor_ids as $vendor_id) {
-        //         $vendor_order_ids = $purchase_orders->where('customer_id', $vendor_id)->pluck('id')->toArray();
-        //         $vendor_variation_stocks = $variation_stocks->whereIn('order_id', $vendor_order_ids);
-        //         $vendor_variation_stock_ids = $vendor_variation_stocks->pluck('id')->toArray();
-        //         $vendor_variation_items = $purchase_order_items->whereIn('stock_id', $vendor_variation_stock_ids);
-
-        //         if ($vendor_variation_items->isEmpty()) {
-        //             continue;
-        //         }
-
-        //         $stock_variation_ids = $vendor_variation_stocks->pluck('variation_id')->unique()->toArray();
-
-        //         $sellable_variation_ids_vendor = $variations->whereIn('id', $stock_variation_ids)
-        //             ->whereIn('grade', [1,2,3,4,5,7,9])
-        //             ->pluck('id')->unique()->toArray();
-
-        //         $sellable_stocks = $purchase_stocks->whereIn('variation_id', $sellable_variation_ids_vendor)
-        //             ->whereIn('order_id', $vendor_order_ids);
-
-        //         $sellable_stock_ids = $sellable_stocks->pluck('id')->unique();
-
-        //         $imeis = array_unique(array_merge(
-        //             $vendor_variation_stocks->pluck('imei')->filter()->toArray(),
-        //             $vendor_variation_stocks->pluck('serial_numbers')->filter()->toArray()
-        //         ));
-        //         $sellable_imeis = array_unique(array_merge(
-        //             $sellable_stocks->pluck('imei')->filter()->toArray(),
-        //             $sellable_stocks->pluck('serial_numbers')->filter()->toArray()
-        //         ));
-
-        //         $list[$product_storage_sort->id]['vendors'][$vendor_id] = [
-        //             'item_count' => $vendor_variation_items->count(),
-        //             'item_sum'   => $vendor_variation_items->sum('price'),
-        //             'item_average' => round($vendor_variation_items->sum('price') / $vendor_variation_items->count(), 2),
-        //             'sellable_percentage' => $vendor_variation_items->count() > 0 ? round($sellable_stock_ids->count() / $vendor_variation_items->count() * 100, 2) : 0,
-        //             'imeis' => $imeis,
-        //             'sellable_imeis' => $sellable_imeis,
-        //             'sellable_stock_count' => $sellable_stock_ids->count(),
-        //             'imei_difference' => array_diff($imeis, $sellable_imeis)
-        //         ];
-        //     }
-        // });
-
-        $product_storage_sorts = Product_storage_sort_model::with([
-            'storage_id:id,name',
-            'variations:id,product_storage_sort_id,grade'
-        ])
+        $product_storage_sorts = Product_storage_sort_model::with(['storage_id:id,name', 'variations:id,product_storage_sort_id,grade'])
+        // ->whereIn('product_storage_sort.id', $product_storage_sort_ids)
         ->leftJoin('products', 'product_storage_sort.product_id', '=', 'products.id')
         ->orderBy('products.model', 'asc')
         ->select('product_storage_sort.id', 'product_storage_sort.product_id', 'product_storage_sort.storage', 'products.model')
         ->get();
 
-        $purchase_order_ids_by_vendor = $purchase_orders->groupBy('customer_id')->map(fn($orders) => $orders->pluck('id'));
+        // Index purchase_order_items by stock_id
+        $purchase_order_items_by_stock_id = $purchase_order_items->groupBy('stock_id');
 
-        $list = [];
+        // Index purchase_stocks by variation_id
+        $purchase_stocks_by_variation_id = $purchase_stocks->groupBy('variation_id');
 
-        $product_storage_sorts->each(function ($sort) use (&$list, $purchase_order_items, $purchase_stocks, $sold_order_items, $purchase_order_ids_by_vendor) {
-            $variation_ids = $sort->variations->pluck('id');
-            if ($variation_ids->isEmpty()) return;
+        // Index sold_order_items by variation_id
+        $sold_items_by_variation_id = $sold_order_items->groupBy('variation_id');
 
-            $variation_stocks = $purchase_stocks->whereIn('variation_id', $variation_ids);
-            $variation_stock_ids = $variation_stocks->pluck('id');
-            $variation_items = $purchase_order_items->whereIn('stock_id', $variation_stock_ids);
+        // Group purchase orders by vendor
+        $vendor_orders = $purchase_orders->groupBy('customer_id');
 
-            $sellable_variation_ids = $sort->variations->whereIn('grade', [1,2,3,4,5,7,9])->pluck('id');
-            $available_sellable_stock_count = $purchase_stocks
-                ->whereIn('variation_id', $sellable_variation_ids)
-                ->where('status', 1)
-                ->count();
+        // List storage sort data
+        foreach ($product_storage_sorts as $product_storage_sort) {
+            $variations = $product_storage_sort->variations;
+            $variation_ids = $variations->pluck('id')->toArray();
 
-            $sold_items = $sold_order_items->whereIn('variation_id', $variation_ids);
-            $sold_item_count = $sold_items->count();
-            $sold_item_sum = $sold_items->sum('price');
+            if (empty($variation_ids)) continue;
+
+            // Get related stocks
+            $stocks = collect($variation_ids)->flatMap(fn($id) => $purchase_stocks_by_variation_id->get($id, collect()));
+
+            // Get related order items
+            $variation_items = $stocks->pluck('id')->flatMap(fn($id) => $purchase_order_items_by_stock_id->get($id, collect()));
 
             $item_count = $variation_items->count();
             $item_sum = $variation_items->sum('price');
 
-            if ($item_count === 0 && $available_sellable_stock_count === 0 && $sold_item_count === 0) return;
+            // Count available sellable stock
+            $sellable_variation_ids = $variations->whereIn('grade', [1,2,3,4,5,7,9])->pluck('id')->toArray();
+            $available_sellable_stock_count = collect($sellable_variation_ids)
+                ->flatMap(fn($id) => $purchase_stocks_by_variation_id->get($id, collect()))
+                ->where('status', 1)
+                ->count();
 
-            $list[$sort->id] = [
-                'product_id' => $sort->product_id,
-                'product_name' => $sort->model,
-                'storage_id' => $sort->storage,
-                'storage_name' => optional($sort->storage_id)->name,
-                'variation_ids' => $variation_ids->toArray(),
-                'item_count' => $item_count,
-                'item_sum' => $item_sum,
+            // Count sold items
+            $sold_items = collect($variation_ids)->flatMap(fn($id) => $sold_items_by_variation_id->get($id, collect()));
+
+            if ($item_count === 0 && $available_sellable_stock_count === 0 && $sold_items->count() === 0) continue;
+
+            $list[$product_storage_sort->id] = [
+                'product_id' => $product_storage_sort->product_id,
+                'product_name' => $product_storage_sort->product->model,
+                'storage_id' => $product_storage_sort->storage,
+                'storage_name' => optional($product_storage_sort->storage_id)->name,
+                'variation_ids' => $variation_ids,
+                'item_count'=> $item_count,
+                'item_sum'=> $item_sum,
                 'item_average' => $item_count > 0 ? round($item_sum / $item_count, 2) : 0,
-                'sold_item_count' => $sold_item_count,
-                'sold_item_sum' => $sold_item_sum,
-                'sold_item_average' => $sold_item_count > 0 ? round($sold_item_sum / $sold_item_count, 2) : 0,
+                'sold_item_count' => $sold_items->count(),
+                'sold_item_sum' => $sold_items->sum('price'),
+                'sold_item_average' => $sold_items->count() > 0 ? round($sold_items->sum('price') / $sold_items->count(), 2) : 0,
                 'available_sellable_stock_count' => $available_sellable_stock_count,
                 'vendors' => [],
             ];
 
-            foreach ($purchase_order_ids_by_vendor as $vendor_id => $vendor_order_ids) {
-                $vendor_variation_stocks = $variation_stocks->whereIn('order_id', $vendor_order_ids);
-                $vendor_variation_stock_ids = $vendor_variation_stocks->pluck('id');
-                $vendor_variation_items = $purchase_order_items->whereIn('stock_id', $vendor_variation_stock_ids);
+            // Vendor data
+            foreach ($vendor_orders as $vendor_id => $orders) {
+                $vendor_order_ids = $orders->pluck('id')->toArray();
+
+                $vendor_stocks = $stocks->whereIn('order_id', $vendor_order_ids);
+                $vendor_variation_items = $vendor_stocks->pluck('id')->flatMap(
+                    fn($stockId) => $purchase_order_items_by_stock_id->get($stockId, collect())
+                );
 
                 if ($vendor_variation_items->isEmpty()) continue;
 
-                $stock_variation_ids = $vendor_variation_stocks->pluck('variation_id')->unique();
-                $sellable_variation_ids_vendor = $sort->variations
-                    ->whereIn('id', $stock_variation_ids)
-                    ->whereIn('grade', [1,2,3,4,5,7,9])
-                    ->pluck('id')
-                    ->unique();
+                $stock_variation_ids = $vendor_stocks->pluck('variation_id')->unique();
 
-                $sellable_stocks = $purchase_stocks->whereIn('variation_id', $sellable_variation_ids_vendor)
-                    ->whereIn('order_id', $vendor_order_ids);
+                $sellable_stocks = $stock_variation_ids->flatMap(
+                    fn($id) => $purchase_stocks_by_variation_id->get($id, collect())
+                )->whereIn('order_id', $vendor_order_ids)
+                ->whereIn('variation_id', $sellable_variation_ids);
+
                 $sellable_stock_ids = $sellable_stocks->pluck('id')->unique();
 
-                $imeis = collect(array_merge(
-                    $vendor_variation_stocks->pluck('imei')->filter()->toArray(),
-                    $vendor_variation_stocks->pluck('serial_numbers')->filter()->toArray()
-                ))->unique()->values()->toArray();
+                $imeis = $vendor_stocks->pluck('imei')->merge($vendor_stocks->pluck('serial_numbers'))->filter()->unique()->toArray();
+                $sellable_imeis = $sellable_stocks->pluck('imei')->merge($sellable_stocks->pluck('serial_numbers'))->filter()->unique()->toArray();
 
-                $sellable_imeis = collect(array_merge(
-                    $sellable_stocks->pluck('imei')->filter()->toArray(),
-                    $sellable_stocks->pluck('serial_numbers')->filter()->toArray()
-                ))->unique()->values()->toArray();
-
-                $list[$sort->id]['vendors'][$vendor_id] = [
+                $list[$product_storage_sort->id]['vendors'][$vendor_id] = [
                     'item_count' => $vendor_variation_items->count(),
-                    'item_sum' => $vendor_variation_items->sum('price'),
-                    'item_average' => round($vendor_variation_items->avg('price'), 2),
-                    'sellable_percentage' => $vendor_variation_items->count() > 0 ? round($sellable_stock_ids->count() / $vendor_variation_items->count() * 100, 2) : 0,
+                    'item_sum'   => $vendor_variation_items->sum('price'),
+                    'item_average' => round($vendor_variation_items->sum('price') / $vendor_variation_items->count(), 2),
+                    'sellable_percentage' => $vendor_variation_items->count() > 0
+                        ? round($sellable_stock_ids->count() / $vendor_variation_items->count() * 100, 2)
+                        : 0,
                     'imeis' => $imeis,
                     'sellable_imeis' => $sellable_imeis,
                     'sellable_stock_count' => $sellable_stock_ids->count(),
-                    'imei_difference' => array_values(array_diff($imeis, $sellable_imeis)),
+                    'imei_difference' => array_diff($imeis, $sellable_imeis)
                 ];
             }
-        });
-
+        }
 
 
         // foreach ($product_storage_sorts as $product_storage_sort) {
