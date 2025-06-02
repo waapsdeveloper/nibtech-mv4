@@ -359,7 +359,7 @@
                             <tr>
                                 <td>{{ $i + 1 }}</td>
                                 <td title="{{ $variation->id }}">
-                                    <a href="{{ url('listing').'?variation_id='.$variation->id }}" target="_blank">
+                                    <a href="{{ url('listing').'?sku='.$variation->sku }}" target="_blank">
                                     {{ $products[$variation->product_id]}} {{$storages[$variation->storage] ?? null}} {{$colors[$variation->color] ?? null}} {{$grades[$variation->grade] ?? "Grade not added" }} {{$grades[$variation->sub_grade] ?? '' }}
                                     </a>
                                 </td>
