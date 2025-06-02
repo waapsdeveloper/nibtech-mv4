@@ -117,6 +117,12 @@ class Stock_model extends Model
             $q->whereIn('process_type_id', [21,22]);
         })->orderByDesc('id');
     }
+    public function all_listings_or_topups()
+    {
+        return $this->hasMany(Process_stock_model::class, 'stock_id', 'id')->whereHas('process', function ($q) {
+            $q->whereIn('process_type_id', [21,22]);
+        });
+    }
     public function process_stock($process_id)
     {
         // Define a custom method to retrieve only one order item

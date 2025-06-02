@@ -2654,6 +2654,10 @@ class Order extends Component
                 $stock[$i]->status = 2;
                 $stock[$i]->save();
 
+                $stock[$i]->all_listings_or_topups()->update([
+                    'status' => 2,
+                ]);
+
                 // $orderObj = $this->updateBMOrder($order->reference_id, true, $tester[$i], true);
             }
             // $order = Order_model::find($order->id);
