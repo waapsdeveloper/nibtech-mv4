@@ -714,9 +714,25 @@ class Report extends Component
             // ->whereIn('status', [3,6])
             ->get();
 
+        if ($b2c_returns->where('currency', null)->count() > 0) {
+            $b2c_returns->where('currency', null)->each(function ($item) {
+                $item->currency = $item->order->currency;
+                $item->save();
+            });
+            $b2c_returns = Order_item_model::whereIn('variation_id', $variation_ids)
+                ->whereHas('order', function ($q) {
+                    $q->where('order_type_id',4);
+                })
+                ->whereBetween('created_at', [$start_date, $end_date])
+                // ->whereIn('status', [3,6])
+                ->get();
+        }
+
+
         $b2c_return_prices_by_currency = $b2c_returns->groupBy('currency')->map(function ($items) {
             return $items->sum('price');
         });
+
         $b2c_return_total = $b2c_return_prices_by_currency->toArray();
         $b2c_return_price = $b2c_return_prices_by_currency->toArray();
         $b2c_return_prices_by_currency =  $b2c_return_prices_by_currency->map(function ($items) {
