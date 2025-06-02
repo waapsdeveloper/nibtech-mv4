@@ -521,6 +521,9 @@
                                             @if ($p_stock->deleted_at != null)
                                                 class="table-warning"
                                             @endif
+                                            @if ($p_stock->status == 2)
+                                                class="table-success"
+                                            @endif
                                         >
                                             <td title="{{ $p_stock->id }}">{{ $i + 1 }}</td>
                                             <td><a href="{{url('topup/detail/'.$process->id)}}?status=1">{{ $process->reference_id }}</a></td>
