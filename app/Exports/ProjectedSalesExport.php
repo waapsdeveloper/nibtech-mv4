@@ -25,7 +25,10 @@ class ProjectedSalesExport
         $grade_names = Grade_model::whereIn('id', $grades)->pluck('name','id');
         $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q){
             $q->where('stock.status',1);
-        })->orderBy('product_id')->orderBy('storage')->get();
+        })
+        ->leftJoin('products', 'product_storage_sort.product_id', '=', 'products.id')
+        ->select()
+        ->orderBy('products.model')->orderBy('storage.name')->get();
         $months = [];
         $months[] = date('M-Y');
         $result = [];
