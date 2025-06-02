@@ -28,7 +28,7 @@ class ProjectedSalesExport
         })
         ->leftJoin('products', 'product_storage_sort.product_id', '=', 'products.id')
         ->select()
-        ->orderBy('products.model')->orderBy('storage.name')->get();
+        ->orderBy('products.model')->orderBy('storage')->get();
         $months = [];
         $months[] = date('M-Y');
         $result = [];
