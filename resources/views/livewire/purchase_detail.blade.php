@@ -282,7 +282,7 @@
                             @foreach ($available_stock_summery as $summery)
                                 <tr>
                                     <td>{{ ++$i }}</td>
-                                    <td>{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</td>
+                                    <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#color_graded_count_modal" onclick="loadProductAvailableDetails({{$order_id}},{{$summery['pss_id']}})">{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</a></td>
                                     <td>{{ $summery['quantity'] }}</td>
                                     <td title="{{ $summery['average_cost'] }}">€{{ amount_formatter($summery['total_cost'],2) }}</td>
                                 </tr>
@@ -1177,6 +1177,110 @@
             function loadProductSaleDetails(orderId, productId) {
 
                 fetch(`{{ url('purchase') }}/purchase_model_color_graded_sale/${orderId}/${productId}`)
+                .then(response => response.json())
+                .then(productss => {
+                    console.log(productss);
+                    // Render the product details
+                    products = productss['graded_count'];
+
+                    const productMenu = document.getElementById('count_data_2');
+                    productMenu.innerHTML = ''; // Clear existing products
+
+                    // Iterate through the products and create menu items
+                    for (const [key, product] of Object.entries(products)) {
+                        const productDiv = document.createElement('tr');
+                        // console.log(product);
+                        const productLink1 = document.createElement('td');
+                        productLink1.innerHTML = `${product.color}`;
+                        productDiv.appendChild(productLink1);
+
+                        const productLink = document.createElement('td');
+                        productLink.innerHTML = `${product.grade}`;
+                        productDiv.appendChild(productLink);
+
+
+                        const productLink2 = document.createElement('td');
+                        productLink2.innerHTML = `${product.quantity}`;
+                        productDiv.appendChild(productLink2);
+
+                        const productLink3 = document.createElement('td');
+                        productLink3.title = "Average : " + product.average_cost;
+                        productLink3.innerHTML = `${product.total_cost}`;
+                        productDiv.appendChild(productLink3);
+
+                        const productLink4 = document.createElement('td');
+                        productLink4.title = "Average : " + product.average_repair;
+                        productLink4.innerHTML = `${product.total_repair}`;
+                        productDiv.appendChild(productLink4);
+
+                        const productLink5 = document.createElement('td');
+                        productLink5.title = "Average : " + product.average_charge;
+                        productLink5.innerHTML = `${product.total_charge}`;
+                        productDiv.appendChild(productLink5);
+
+                        const productLink6 = document.createElement('td');
+                        productLink6.title = "Average : " + product.average_price;
+                        productLink6.innerHTML = `${product.total_price}`;
+                        productDiv.appendChild(productLink6);
+
+                        const productLink7 = document.createElement('td');
+                        productLink7.title = "Average : " + product.average_profit;
+                        productLink7.innerHTML = `${product.profit}`;
+                        productDiv.appendChild(productLink7);
+
+                        productMenu.appendChild(productDiv);
+                    };
+
+                    // Calculate totals
+
+                    const totals = productss['total_graded_count'];
+
+                    const productMenuFooter = document.getElementById('count_data_2_footer');
+                    productMenuFooter.innerHTML = ''; // Clear existing products
+                    const productDiv2 = document.createElement('tr');
+
+                    const productLink1 = document.createElement('th');
+                    productLink1.setAttribute('colspan', '2');
+                    productLink1.innerHTML = `Total`;
+                    productDiv2.appendChild(productLink1);
+
+                    const productLink2 = document.createElement('th');
+                    productLink2.innerHTML = `${totals.quantity}`;
+                    productDiv2.appendChild(productLink2);
+
+                    const productLink3 = document.createElement('th');
+                    productLink3.title = "Average : " + totals.average_cost;
+                    productLink3.innerHTML = `${totals.total_cost}`;
+                    productDiv2.appendChild(productLink3);
+
+                    const productLink4 = document.createElement('th');
+                    productLink4.title = "Average : " + totals.average_repair;
+                    productLink4.innerHTML = `${totals.total_repair}`;
+                    productDiv2.appendChild(productLink4);
+
+                    const productLink5 = document.createElement('th');
+                    productLink5.title = "Average : " + totals.average_charge;
+                    productLink5.innerHTML = `${totals.total_charge}`;
+                    productDiv2.appendChild(productLink5);
+
+                    const productLink6 = document.createElement('th');
+                    productLink6.title = "Average : " + totals.average_price;
+                    productLink6.innerHTML = `${totals.total_price}`;
+                    productDiv2.appendChild(productLink6);
+
+                    const productLink7 = document.createElement('th');
+                    productLink7.title = "Average : " + totals.average_profit;
+                    productLink7.innerHTML = `${totals.profit}`;
+                    productDiv2.appendChild(productLink7);
+                    productMenuFooter.appendChild(productDiv2);
+
+
+                })
+                .catch(error => console.error('Error fetching product details:', error));
+            }
+            function loadProductAvailableDetails(orderId, productId) {
+
+                fetch(`{{ url('purchase') }}/purchase_model_color_graded_available/${orderId}/${productId}`)
                 .then(response => response.json())
                 .then(productss => {
                     console.log(productss);
