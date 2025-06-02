@@ -716,7 +716,7 @@ class Report extends Component
 
         if ($b2c_returns->where('currency', null)->count() > 0) {
             $b2c_returns->where('currency', null)->each(function ($item) {
-                $item->currency = $item->order->currency;
+                $item->currency = $item->linked->order->currency;
                 $item->save();
             });
             $b2c_returns = Order_item_model::whereIn('variation_id', $variation_ids)
