@@ -954,11 +954,13 @@ class Report extends Component
                 $total['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id] + $b2b_total) . ' - ' . amount_formatter($b2c_return_totals[$currency_id] + $b2b_return_totals);
                 $net['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id] + $b2b_total - $b2c_return_totals[$currency_id] - $b2b_return_totals);
             }else{
+                $return = isset($b2c_return_price[$currency_id]) ? $b2c_return_price[$currency_id] : 0;
+
                 $total['orders_sum'][$currency_id] =
                 amount_formatter($b2c_price[$currency_id]) . ' - ' .
-                amount_formatter($b2c_return_price[$currency_id] ?? 0);
+                amount_formatter($return);
 
-                $net['orders_sum'][$currency_id] = amount_formatter($b2c_price[$currency_id] - $b2c_return_price[$currency_id]);
+                $net['orders_sum'][$currency_id] = amount_formatter($b2c_price[$currency_id] - $return);
 
                 $total['charges_sum'][$currency_id] = amount_formatter($b2c_charge[$currency_id]) . ' - ' . amount_formatter($b2c_return_charges_by_currency[$currency_id]);
                 $net['charges_sum'][$currency_id] = amount_formatter($b2c_charge[$currency_id] - $b2c_return_charges_by_currency[$currency_id]);
