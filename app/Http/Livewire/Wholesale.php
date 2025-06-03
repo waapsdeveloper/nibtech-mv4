@@ -83,9 +83,15 @@ class Wholesale extends Component
                 return $q->where('orders.status', request('status'));
             })
             ->when(request('payment') != '', function ($q) {
-                return $q->whereHas('transaction', function ($query) {
-                    $query->where('status', request('payment'));
-                });
+                if(request('payment') == 3){
+                    return $q->whereHas('transaction', function ($query) {
+                        $query->where('status', request('payment'));
+                    });
+                }else{
+                    return $q->whereHas('transaction', function ($query) {
+                        $query->where('status', '!=', 3);
+                    });
+                }
             })
             // ->groupBy('orders.id', 'orders.reference_id', 'orders.customer_id', 'orders.currency', 'orders.created_at')
             ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
