@@ -339,7 +339,7 @@ class Report extends Component
         $data['start_date'] = date('Y-m-d', strtotime($start_date));
         $data['end_date'] = date("Y-m-d", strtotime($end_date));
 
-        $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('first_name','id');
+        $data['all_vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('first_name', 'id');
 
         $purchase_orders = Order_model::where('order_type_id',1)
             ->whereBetween('created_at', [$start_date, $end_date])
