@@ -956,7 +956,7 @@ class Report extends Component
             }else{
                 $total['orders_sum'][$currency_id] =
                 amount_formatter($b2c_price[$currency_id]) . ' - ' .
-                amount_formatter($b2c_return_price[$currency_id]);
+                amount_formatter($b2c_return_price[$currency_id] ?? 0);
 
                 $net['orders_sum'][$currency_id] = amount_formatter($b2c_price[$currency_id] - $b2c_return_price[$currency_id]);
 
