@@ -19,6 +19,17 @@
                             <div class="row">
                                 <div class="col-xl-5 col-lg-5 col-md-5 col-xs-5">
                                     <div class="form-floating">
+                                        <select class="form-select" name="vendor" id="vendor">
+                                            <option value="">All Vendors</option>
+                                            @foreach ($vendors as $vendor_id => $vendor_name)
+                                                <option value="{{ $vendor_id }}" {{ $vendor_id == request('vendor') ? 'selected' : '' }}>{{ $vendor_name }}</option>
+                                            @endforeach
+                                        </select>
+                                        <label for="vendor_id">Vendor</label>
+                                    </div>
+                                </div>
+                                <div class="col-xl-5 col-lg-5 col-md-5 col-xs-5">
+                                    <div class="form-floating">
                                         <input class="form-control" id="datetimepicker" type="date" id="start" name="start_date" value="{{$start_date}}">
                                         <label for="start">{{ __('locale.Start Date') }}</label>
                                     </div>
