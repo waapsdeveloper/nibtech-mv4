@@ -304,20 +304,14 @@ class Topup extends Component
                 if(request('dual-esim') != null){
                     $product = Products_model::find($product_id);
                     if(!str_contains(strtolower($product->model), 'dual esim')){
-                        $new_product = Products_model::firstOrNew(['model' => $product->model.' Dual eSIM']);
-                        $new_product->category = $product->category;
-                        $new_product->brand = $product->brand;
-                        $new_product->save();
+                        $new_product = Products_model::where(['model' => $product->model.' Dual eSIM']);
                         $product_id = $new_product->id;
                     }
                 }
                 if(request('dual-sim') != null){
                     $product = Products_model::find($product_id);
                     if(!str_contains(strtolower($product->model), 'dual sim')){
-                        $new_product = Products_model::firstOrNew(['model' => $product->model.' Dual Sim']);
-                        $new_product->category = $product->category;
-                        $new_product->brand = $product->brand;
-                        $new_product->save();
+                        $new_product = Products_model::where(['model' => $product->model.' Dual Sim']);
                         $product_id = $new_product->id;
                     }
                 }
@@ -344,7 +338,7 @@ class Topup extends Component
                     'grade' => $grade_id,
                 ]);
                 // dd($new_variation);
-                if($stock->variation_id != $new_variation->id){
+                if($stock->variation_id != $new_variation->id && $new_variation->sku != null){
                     $new_variation->status = 1;
                     $new_variation->stock += 1;
                     $new_variation->save();
