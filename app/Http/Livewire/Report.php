@@ -876,9 +876,10 @@ class Report extends Component
 
 
         $b2b_return_order_items = Order_item_model::whereIn('variation_id', $variation_ids)
-            ->whereHas('order', function ($q) {
-                $q->where('order_type_id', 6)
-                    ->whereIn('status', [3, 6]);
+            ->whereHas('order', function ($q) use ($start_date, $end_date) {
+                $q->whereBetween('created_at', [$start_date, $end_date])
+                    ->whereIn('status', [3, 6])
+                    ->where('order_type_id', 6);
             })
 
             ->when(request('vendor') != '', function ($q) {
