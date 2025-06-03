@@ -645,7 +645,11 @@ class Report extends Component
 
         $sale_data = [];
 
-        $all_po = Order_model::where('order_type_id',1)->pluck('id')->toArray();
+        $all_po = Order_model::where('order_type_id',1)
+        ->when(request('vendor') != '', function ($q) {
+            return $q->where('customer_id', request('vendor'));
+        })
+        ->pluck('id')->toArray();
 
         $b2c_orders = Order_model::where('order_type_id',3)
             ->whereBetween('processed_at', [$start_date, $end_date])
