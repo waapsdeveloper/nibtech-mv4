@@ -188,6 +188,7 @@
                                             $j = 0;
 
                                             $price = $order->order_items_sum_price;
+                                            $transaction = $order->transaction;
 
                                             // if($order->exchange_rate != null){
                                             //     $price = $price * $order->exchange_rate;
@@ -208,6 +209,11 @@
                                             <td>
                                                 <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                                 <div class="dropdown-menu">
+
+                                                    @if ($transaction != null && $transaction->payment_method_id == null && session('user')->hasPermission('record_payment'))
+
+                                                        <a href="javascript:void(0);"  data-bs-toggle="modal" data-bs-target="#record_payment" class="dropdown-item" data-transaction_id="{{ $transaction->id }}" data-transaction_ref="{{ $transaction->reference_id }}" data-customer_id="{{ $customer->id }}" data-type="1" data-amount="{{ $remaining }}" data-description="{{ $transaction->description }}" data-date="{{ $transaction->date }}"  data-currency="{{ $transaction->currency }}" data-exchange_rate="{{ $transaction->exchange_rate }}">Record Payment</a>
+                                                    @endif
                                                     <a class="dropdown-item" href="{{url('delete_wholesale') . "/" . $order->id }}" onclick="return confirm('Are you sure you want to delete this order?');"><i class="fe fe-arrows-rotate me-2 "></i>Delete</a>
                                                     {{-- <a class="dropdown-item" href="{{ $order->delivery_note_url }}" target="_blank"><i class="fe fe-arrows-rotate me-2 "></i>Delivery Note</a>
                                                     <a class="dropdown-item" href="https://backmarket.fr/bo-seller/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a> --}}
@@ -230,6 +236,92 @@
                     </div>
 
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="record_payment" tabindex="-1" role="dialog" aria-labelledby="record_payment" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <form method="POST" action="{{url('transaction/add_payment')}}" id="record_payment_form">
+                        @csrf
+                        <input type="hidden" name="customer_id" value="{{ $customer->id }}">
+                        <input type="hidden" name="type" value="1">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel2">Record Payment for {{ $customer->company }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">&times;</button>
+                        </div>
+                        <div class="modal-body pd-20">
+                        <input type="hidden" name="transaction_id" id="transaction_id">
+                            <div class="row hide-on-edit">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="type">Payment Type</label>
+                                        <select class="form-control form-select" name="type" id="type" required>
+                                            <option value="1">Receive</option>
+                                            <option value="2">Send</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="method">Payment Method</label>
+                                        <select class="form-control form-select" name="payment_method" id="method" required>
+                                            <option value="1">Bank Transfer</option>
+                                            <option value="2">Cash</option>
+                                            <option value="3">Credit Card</option>
+                                            <option value="4">Cheque</option>
+                                            <option value="5">Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+
+                                    <div class="form-group">
+                                        <label for="currency">Currency</label>
+                                        <select class="form-control form-select" name="currency" id="currency" required>
+                                            @foreach ($currencies as $currency)
+                                                <option value="{{ $currency->id }}" @if ($currency->id == 4) selected @endif>{{ $currency->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="exchange_rate">Exchange Rate</label>
+                                        <input type="number" class="form-control" name="exchange_rate" value="1" id="exchange_rate" step="0.0001" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+
+                                    <div class="form-group">
+                                        <label for="amount">Amount</label>
+                                        <input type="number" class="form-control" name="amount" id="amount" step="0.01" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="date">Date</label>
+                                        <input type="date" class="form-control" name="date" id="date" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="description">Description</label>
+                                <textarea class="form-control" name="description" id="description" required></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Record Payment</button>
+
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -271,6 +363,46 @@
     @endsection
 
     @section('scripts')
+
+        <script>
+            $(document).ready(function(){
+                $('#record_payment').on('show.bs.modal', function (event) {
+
+                    var button = $(event.relatedTarget);
+                    var amount = button.data('amount');
+                    var description = button.data('description');
+                    var date = button.data('date');
+                    var currency = button.data('currency');
+                    var exchange_rate = button.data('exchange_rate');
+                    var transaction_id = button.data('transaction_id');
+                    var transaction_ref = button.data('transaction_ref');
+                    var modal = $(this);
+                    modal.find('.modal-body #transaction_id').val(transaction_id);
+                    modal.find('.modal-body #amount').val(amount);
+                    modal.find('.modal-body #description').val(description);
+                    modal.find('.modal-body #date').val(date.split(' ')[0]);
+                    modal.find('.modal-body #currency').val(currency).change();
+                    modal.find('.modal-body #exchange_rate').val(exchange_rate);
+
+                    if(button.data('func') == 'edit'){
+                        modal.find('.modal-title').text('Edit Transaction ' + transaction_ref);
+                        modal.find('.modal-body .hide-on-edit').hide();
+                        modal.find('.modal-content #record_payment_form').attr('action', "{{url('transaction/update/')}}/"+transaction_id);
+                    }else {
+
+                        var type = button.data('type');
+                        var customer_id = button.data('customer_id');
+                        modal.find('.modal-title').text('Record Payment for ' + transaction_ref);
+                        modal.find('.modal-body #type').val(type);
+                        modal.find('.modal-body #customer_id').val(customer_id);
+                    }
+
+                });
+
+
+
+            })
+        </script>
 		<!--Internal Sparkline js -->
 		<script src="{{asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js')}}"></script>
 
