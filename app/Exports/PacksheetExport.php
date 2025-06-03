@@ -63,8 +63,8 @@ class PacksheetExport implements FromCollection, WithHeadings
             'stock.serial_number as serial_number',
             'p_orders.reference_id as po',
             'p_orders.created_at as po_date',
-            'customer.first_name as vendor',
-            'vendor_grade.name as vendor_grade',
+            // 'customer.first_name as vendor',
+            // 'vendor_grade.name as vendor_grade',
             DB::raw('TRIM(BOTH " " FROM UPPER(
                 TRIM(LEADING "Battery | " FROM TRIM(LEADING " | " FROM REPLACE(
                     REPLACE(
@@ -122,8 +122,8 @@ class PacksheetExport implements FromCollection, WithHeadings
             'Serial Number',
             'PO',
             'PO Date',
-            'Vendor',
-            'Vendor Grade',
+            // 'Vendor',
+            // 'Vendor Grade',
             'Issue',
             'Old Issue',
             'Admin',
