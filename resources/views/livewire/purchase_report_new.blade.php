@@ -55,7 +55,39 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @php
+                                $total_item_count = 0;
+                                $total_item_sum = 0;
+                                $total_item_average = 0;
+                                $total_sold_item_count = 0;
+                                $total_sold_item_sum = 0;
+                                $total_sold_item_average = 0;
+                                $total_available_sellable_stock_count = 0;
+                                $total_vendor_item_count = [];
+                                $total_vendor_item_sum = [];
+                                $total_vendor_item_average = [];
+                                $total_vendor_sellable_percentage = [];
+                                $total_vendor_sellable_stock_count = [];
+                                foreach ($vendors as $vendor_id => $vendor_name) {
+                                    $total_vendor_item_count[$vendor_id] = 0;
+                                    $total_vendor_item_sum[$vendor_id] = 0;
+                                    $total_vendor_item_average[$vendor_id] = 0;
+                                    $total_vendor_sellable_percentage[$vendor_id] = 0;
+                                    $total_vendor_sellable_stock_count[$vendor_id] = 0;
+                                }
+                            @endphp
                             @foreach ($list as $pss_id => $row)
+                                @php
+
+                                    $total_item_count += $row['item_count'];
+                                    $total_item_sum += $row['item_sum'];
+                                    $total_item_average += $row['item_average'];
+                                    $total_sold_item_count += $row['sold_item_count'];
+                                    $total_sold_item_sum += $row['sold_item_sum'];
+                                    $total_sold_item_average += $row['sold_item_average'];
+                                    $total_available_sellable_stock_count += $row['available_sellable_stock_count'];
+
+                                @endphp
                                 <tr>
                                     <td>{{ ++$i }}</td>
                                     <td>{{ $row['product_name'] }} {{ $row['storage_name'] }}</td>
@@ -70,6 +102,16 @@
                                     </td>
 
                                     @foreach ($vendors as $vendor_id => $vendor_name)
+                                        @php
+                                            if (isset($row['vendors'][$vendor_id])) {
+                                                $vendor_data = $row['vendors'][$vendor_id];
+                                                $total_vendor_item_count[$vendor_id] += $vendor_data['item_count'];
+                                                $total_vendor_item_sum[$vendor_id] += $vendor_data['item_sum'];
+                                                $total_vendor_item_average[$vendor_id] += $vendor_data['item_average'];
+                                                $total_vendor_sellable_percentage[$vendor_id] += $vendor_data['sellable_percentage'];
+                                                $total_vendor_sellable_stock_count[$vendor_id] += $vendor_data['sellable_stock_count'];
+                                            }
+                                        @endphp
                                         @if (!isset($row['vendors'][$vendor_id]))
                                             <td></td>
                                         @else
@@ -103,6 +145,31 @@
                                 </tr>
                             @endforeach
                         </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="2" class="text-end">Total</td>
+                                <td>{{ $total_item_count }}</td>
+                                <td>€{{ $total_item_average }}</td>
+                                <td>{{ $total_sold_item_count }}</td>
+                                <td>€{{ $total_sold_item_average }}</td>
+                                <td>{{ $total_available_sellable_stock_count }}</td>
+                                @foreach ($vendors as $vendor_id => $vendor_name)
+                                    <td
+                                        @if ($total_vendor_sellable_percentage[$vendor_id] > 100)
+                                            class="table-danger"
+                                        @elseif ($total_vendor_sellable_percentage[$vendor_id] < 70)
+                                            class="table-warning"
+                                        @elseif ($total_vendor_sellable_percentage[$vendor_id] < 50)
+                                            class="table-danger"
+                                        @endif
+                                    >
+                                        {{ $total_vendor_item_count[$vendor_id] }} |
+                                        €{{ $total_vendor_item_average[$vendor_id] }} |
+                                        {{ $total_vendor_sellable_percentage[$vendor_id] }}%
+                                    </td>
+                                @endforeach
+                            </tr>
+                        </tfoot>
                     </table>
 
                 </div>
