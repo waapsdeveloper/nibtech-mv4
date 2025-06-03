@@ -58,22 +58,9 @@
                     </form>
 
                     <script>
-                        function submitForm() {
-                            var form = $("#approveform");
-                            var actionUrl = form.attr('action');
-
-                            $.ajax({
-                                type: "POST",
-                                url: actionUrl,
-                                data: form.serialize(), // serializes the form's elements.
-                                success: function(data) {
-                                    alert("Success: " + data); // show response from the PHP script.
-                                },
-                                error: function(jqXHR, textStatus, errorThrown) {
-                                    alert("Error: " + textStatus + " - " + errorThrown);
-                                }
-                            });
-                        }
+                        $('form').submit(function(){
+                            $('input[type=submit]', this).attr('disabled', 'disabled');
+                        });
 
                     </script>
                     {{-- @if($process->status == 2) --}}
