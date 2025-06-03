@@ -18,7 +18,7 @@
                         <div>
                         <select class="form-select" name="vendor" id="vendor">
                             <option value="">All Vendors</option>
-                            @foreach ($vendors as $vendor_id => $vendor_name)
+                            @foreach ($all_vendors as $vendor_id => $vendor_name)
                                 <option value="{{ $vendor_id }}" {{ $vendor_id == request('vendor') ? 'selected' : '' }}>{{ $vendor_name }}</option>
                             @endforeach
                         </select>
