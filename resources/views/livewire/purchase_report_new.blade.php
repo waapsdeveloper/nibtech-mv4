@@ -15,12 +15,14 @@
                     <h4 class="card-title mb-0">Purchase Report</h4>
 
                     <form action="" method="GET" id="index" class="mb-0 form-inline">
+                        <div>
                         <select class="form-select" name="vendor" id="vendor">
                             <option value="">All Vendors</option>
                             @foreach ($vendors as $vendor_id => $vendor_name)
                                 <option value="{{ $vendor_id }}" {{ $vendor_id == request('vendor') ? 'selected' : '' }}>{{ $vendor_name }}</option>
                             @endforeach
                         </select>
+                        </div>
                         <div class="form-floating">
                             <input class="form-control" id="datetimepicker" type="date" id="start" name="start_date" value="{{$start_date}}">
                             <label for="start">{{ __('locale.Start Date') }}</label>
