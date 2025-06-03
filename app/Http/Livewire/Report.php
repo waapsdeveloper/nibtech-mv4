@@ -250,6 +250,9 @@ class Report extends Component
                 return $q->whereIn('variation.id', $variation_ids);
             })
             // ->whereIn('variation.id', $variation_ids)
+            ->when(request('vendor') != '', function ($q) {
+                return $q->where('orders.customer_id', request('vendor'));
+            })
             ->whereIn('orders.order_type_id', [4,6])
             ->Where('orders.deleted_at',null)
             ->Where('order_items.deleted_at',null)
@@ -281,6 +284,9 @@ class Report extends Component
         ->join('variation', 'stock.variation_id', '=', 'variation.id')
         ->join('orders', 'stock.order_id', '=', 'orders.id')
         ->join('customer', 'orders.customer_id', '=', 'customer.id')
+        ->when(request('vendor') != '', function ($q) {
+            return $q->where('orders.customer_id', request('vendor'));
+        })
         ->groupBy('variation.grade', 'orders.id', 'orders.reference_id', 'orders.reference', 'customer.first_name')
         ->orderByDesc('order_id')
         ->get();
