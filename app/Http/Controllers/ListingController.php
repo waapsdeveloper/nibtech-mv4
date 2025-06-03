@@ -30,6 +30,9 @@ class ListingController extends Controller
     {
 
         $data['title_page'] = "Listings";
+        session()->put('page_title', $data['title_page']);
+
+
         if(request('process_id') != null){
             $process = Process_model::where('id', request('process_id'))->where('process_type_id', 22)->first();
             if($process != null){
