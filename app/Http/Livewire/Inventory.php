@@ -203,9 +203,9 @@ class Inventory extends Component
             // ->whereNotIn('stock.id',$all_verified_stocks)
             ->where('stock.status', 1)
 
-            ->when(request('aftersale') != 1, function ($q) use ($aftersale) {
-                return $q->whereNotIn('stock.id',$aftersale);
-            })
+            // ->when(request('aftersale') != 1, function ($q) use ($aftersale) {
+            //     return $q->whereNotIn('stock.id',$aftersale);
+            // })
             ->when(request('listing_or_topup') == 0, function ($q) {
                 return $q->whereDoesntHave('latest_listing_or_topup');
             })
