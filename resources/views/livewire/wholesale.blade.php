@@ -90,12 +90,12 @@
 
         <div class="d-flex justify-content-between">
             <div>
-                <a href="{{url('wholesale')}}?status=1" class="btn btn-link @if (request('status') == 1) bg-white @endif ">Pending POS</a>
-                <a href="{{url('wholesale')}}?status=2" class="btn btn-link @if (request('status') == 2) bg-white @endif ">Pending</a>
-                <a href="{{url('wholesale')}}?status=3" class="btn btn-link @if (request('status') == 3) bg-white @endif ">Shipped</a>
-                <a href="{{url('wholesale')}}" class="btn btn-link @if (!request('status')) bg-white @endif ">All</a>
-                <a href="{{url('wholesale')}}?payment=2" class="btn btn-link @if (request('payment') == 2) bg-white @endif ">UnPaid</a>
-                <a href="{{url('wholesale')}}?payment=3" class="btn btn-link @if (request('payment') == 3) bg-white @endif ">Paid</a>
+                <button type="submit" name="status" value="1" form="search" class="btn btn-link @if (request('status') == 1) bg-white @endif">Pending POS</button>
+                <button type="submit" name="status" value="2" form="search" class="btn btn-link @if (request('status') == 2) bg-white @endif">Pending</button>
+                <button type="submit" name="status" value="3" form="search" class="btn btn-link @if (request('status') == 3) bg-white @endif">Shipped</button>
+                <button type="submit" name="status" value="" form="search" class="btn btn-link @if (!request('status')) bg-white @endif">All</button>
+                <button type="submit" name="payment" value="2" form="search" class="btn btn-link @if (request('payment') == 2) bg-white @endif">UnPaid</button>
+                <button type="submit" name="payment" value="3" form="search" class="btn btn-link @if (request('payment') == 3) bg-white @endif">Paid</button>
             </div>
             <div class="">
             </div>
