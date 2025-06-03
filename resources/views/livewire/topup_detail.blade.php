@@ -74,7 +74,7 @@
                 @if ($process->status > 1)
                     @if (session('user')->hasPermission('topup_revert_status'))
                         <br>
-                        <a href="{{url('topup/revert_status').'/'.$process->id}}">Revert Back to Pending</a>
+                        <a href="{{url('repair/revert_status').'/'.$process->id}}">Revert Back to Pending</a>
                     @endif
                 @endif
                 </div>
