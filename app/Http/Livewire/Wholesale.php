@@ -55,6 +55,8 @@ class Wholesale extends Component
         }else{
             $per_page = 10;
         }
+
+        $data['currencies'] = Currency_model::all();
         $data['orders'] = Order_model::withCount('order_items')->withSum('order_items','price')
             // select(
             //     'orders.id',
