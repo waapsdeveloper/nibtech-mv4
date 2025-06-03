@@ -280,11 +280,23 @@ class Topup extends Component
 
             if(request('copy') == 1 || request('copy_grade') == 1 || request('dual-esim') == 1 || request('dual-sim') == 1){
                 $variation = $stock->variation;
-                if(request('product') != null){
-                    $product_id = request('product');
+
+                if(session()->has('product') && session()->has('storage'))
+                {
+                    $product_id = session('product');
+                    $storage_id = session('storage');
                     if($variation->product_id != $product_id){
+                        session()->forget('product');
                         return redirect()->back()->with('error', 'Product ID does not match with the stock variation');
                     }
+                    if($variation->storage != $storage_id){
+                        session()->forget('storage');
+                        return redirect()->back()->with('error', 'Storage ID does not match with the stock variation');
+                    }
+                }
+
+                if(request('product') != null){
+                    $product_id = request('product');
                 }else{
                     $product_id = $variation->product_id;
                 }
