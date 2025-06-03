@@ -206,7 +206,7 @@ class Inventory extends Component
             // ->when(request('aftersale') != 1, function ($q) use ($aftersale) {
             //     return $q->whereNotIn('stock.id',$aftersale);
             // })
-            ->when(request('listing_or_topup') == 0, function ($q) {
+            ->when(request('listing_or_topup') != '' && request('listing_or_topup') == 0, function ($q) {
                 return $q->whereDoesntHave('latest_listing_or_topup');
             })
             ->when(request('listing_or_topup') != '' && request('listing_or_topup') != 0, function ($q) {
