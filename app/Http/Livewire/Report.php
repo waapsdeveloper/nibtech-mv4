@@ -339,9 +339,13 @@ class Report extends Component
         $data['start_date'] = date('Y-m-d', strtotime($start_date));
         $data['end_date'] = date("Y-m-d", strtotime($end_date));
 
+        $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('first_name','id');
 
         $purchase_orders = Order_model::where('order_type_id',1)
             ->whereBetween('created_at', [$start_date, $end_date])
+            ->when(request('vendor') != '', function ($q) {
+                return $q->where('customer_id', request('vendor'));
+            })
             ->select('id', 'customer_id')
             ->get();
 
@@ -365,9 +369,11 @@ class Report extends Component
         ->where('stock_id', '!=', null)
         // Exclude items that have childs (count should be 0 for childs)
         ->whereDoesntHave('childs')
-        // ->whereHas('stock', function ($q) {
-        //     $q->where('status', 2);
-        // })
+        ->when(request('vendor') != '', function ($q) {
+            return $q->whereHas('stock.order', function ($qu) {
+                return $qu->where('customer_id', request('vendor'));
+            });
+        })
         ->get();
 
 
