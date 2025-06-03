@@ -29,6 +29,10 @@ class Order_model extends Model
     {
         return $this->hasMany(Account_transaction_model::class, 'order_id', 'id');
     }
+    public function transaction()
+    {
+        return $this->hasOne(Account_transaction_model::class, 'order_id', 'id');
+    }
     public function order_charges()
     {
         return $this->hasMany(Order_charge_model::class, 'order_id', 'id');
