@@ -15,35 +15,25 @@
                     <h4 class="card-title mb-0">Purchase Report</h4>
                     <div class="mb-0">
 
-                        <form action="" method="GET" id="index" class="mb-0">
-                            <div class="row">
-                                <div class="col-xl-5 col-lg-5 col-md-5 col-xs-5">
-                                    <div class="form-floating">
-                                        <select class="form-select" name="vendor" id="vendor">
-                                            <option value="">All Vendors</option>
-                                            @foreach ($vendors as $vendor_id => $vendor_name)
-                                                <option value="{{ $vendor_id }}" {{ $vendor_id == request('vendor') ? 'selected' : '' }}>{{ $vendor_name }}</option>
-                                            @endforeach
-                                        </select>
-                                        <label for="vendor_id">Vendor</label>
-                                    </div>
-                                </div>
-                                <div class="col-xl-5 col-lg-5 col-md-5 col-xs-5">
-                                    <div class="form-floating">
-                                        <input class="form-control" id="datetimepicker" type="date" id="start" name="start_date" value="{{$start_date}}">
-                                        <label for="start">{{ __('locale.Start Date') }}</label>
-                                    </div>
-                                </div>
-                                <div class="col-xl-5 col-lg-5 col-md-5 col-xs-5">
-                                    <div class="form-floating">
-                                        <input class="form-control" id="datetimepicker" type="date" id="end" name="end_date" value="{{$end_date}}">
-                                        <label for="end">{{ __('locale.End Date') }}</label>
-                                    </div>
-                                </div>
-                                <div class="col-xl-2 col-lg-2 col-md-2 col-xs-2">
-                                    <button type="submit" class="btn btn-icon  btn-success me-1"><i class="fe fe-search"></i></button>
-                                </div>
+                        <form action="" method="GET" id="index" class="mb-0 form-inline">
+                            <div class="form-floating">
+                                <select class="form-select" name="vendor" id="vendor">
+                                    <option value="">All Vendors</option>
+                                    @foreach ($vendors as $vendor_id => $vendor_name)
+                                        <option value="{{ $vendor_id }}" {{ $vendor_id == request('vendor') ? 'selected' : '' }}>{{ $vendor_name }}</option>
+                                    @endforeach
+                                </select>
+                                <label for="vendor_id">Vendor</label>
                             </div>
+                            <div class="form-floating">
+                                <input class="form-control" id="datetimepicker" type="date" id="start" name="start_date" value="{{$start_date}}">
+                                <label for="start">{{ __('locale.Start Date') }}</label>
+                            </div>
+                            <div class="form-floating">
+                                <input class="form-control" id="datetimepicker" type="date" id="end" name="end_date" value="{{$end_date}}">
+                                <label for="end">{{ __('locale.End Date') }}</label>
+                            </div>
+                            <button type="submit" class="btn btn-icon  btn-success me-1"><i class="fe fe-search"></i></button>
                         </form>
                     </div>
                 </div>
