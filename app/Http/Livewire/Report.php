@@ -757,13 +757,13 @@ class Report extends Component
         $b2c_return_charges_by_currency = $b2c_returns->groupBy('currency')->map(function ($items) {
             return $items->sum('charges');
         });
-        $b2c_return_charge = $b2c_return_charges_by_currency->toArray();
-        foreach ($b2c_return_charges_by_currency->toArray() as $key => $value) {
-            if (!isset($b2c_return_total[$key])) {
-                $b2c_return_total[$key] = 0;
-            }
-            $b2c_return_total[$key] -= $value;
-        }
+        // $b2c_return_charge = $b2c_return_charges_by_currency->toArray();
+        // foreach ($b2c_return_charges_by_currency->toArray() as $key => $value) {
+        //     if (!isset($b2c_return_total[$key])) {
+        //         $b2c_return_total[$key] = 0;
+        //     }
+        //     $b2c_return_total[$key] -= $value;
+        // }
         // $b2c_return_charges_by_currency = $b2c_return_charges_by_currency->map(function ($items) {
         //     return amount_formatter($items);
         // });
