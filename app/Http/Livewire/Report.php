@@ -962,8 +962,8 @@ class Report extends Component
 
                 $net['orders_sum'][$currency_id] = amount_formatter($b2c_price[$currency_id] - $return);
 
-                $total['charges_sum'][$currency_id] = amount_formatter($b2c_charge[$currency_id]) . ' - ' . amount_formatter($b2c_return_charges_by_currency[$currency_id]);
-                $net['charges_sum'][$currency_id] = amount_formatter($b2c_charge[$currency_id] - $b2c_return_charges_by_currency[$currency_id]);
+                $total['charges_sum'][$currency_id] = amount_formatter($b2c_charge[$currency_id]);
+                $net['charges_sum'][$currency_id] = amount_formatter($b2c_charge[$currency_id]);
 
                 $total['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id]) . ' - ' . amount_formatter($b2c_return_totals[$currency_id]);
                 $net['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id] - $b2c_return_totals[$currency_id]);
