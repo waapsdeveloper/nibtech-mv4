@@ -316,14 +316,23 @@ class Topup extends Component
                 if(request('dual-esim') != null){
                     $product = Products_model::find($product_id);
                     if(!str_contains(strtolower($product->model), 'dual esim')){
-                        $new_product = Products_model::where(['model' => $product->model.' Dual eSIM']);
+                        $new_product = Products_model::where(['model' => $product->model.' Dual eSIM'])->first();
+                        if($new_product == null){
+                            session()->put('error', 'Dual eSIM Product Not Found');
+                            return redirect()->back();
+                        }
+
                         $product_id = $new_product->id;
                     }
                 }
                 if(request('dual-sim') != null){
                     $product = Products_model::find($product_id);
                     if(!str_contains(strtolower($product->model), 'dual sim')){
-                        $new_product = Products_model::where(['model' => $product->model.' Dual Sim']);
+                        $new_product = Products_model::where(['model' => $product->model.' Dual Sim'])->first();
+                        if($new_product == null){
+                            session()->put('error', 'Dual SIM Product Not Found');
+                            return redirect()->back();
+                        }
                         $product_id = $new_product->id;
                     }
                 }
@@ -343,13 +352,17 @@ class Topup extends Component
                 }else{
                     $grade_id = $variation->grade;
                 }
-                $new_variation = Variation_model::firstOrNew([
+                $new_variation = Variation_model::where([
                     'product_id' => $product_id,
                     'storage' => $storage_id,
                     'color' => $color_id,
                     'grade' => $grade_id,
-                ]);
+                ])->first();
                 // dd($new_variation);
+                if($new_variation->sku == null){
+                    session()->put('error', 'SKU Not Found for the new variation');
+                    return redirect()->back();
+                }
                 if($stock->variation_id != $new_variation->id && $new_variation->sku != null){
                     $new_variation->status = 1;
                     $new_variation->stock += 1;
