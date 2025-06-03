@@ -732,6 +732,11 @@ class Report extends Component
             })
             ->whereBetween('created_at', [$start_date, $end_date])
             // ->whereIn('status', [3,6])
+            ->when(request('vendor') != '', function ($q) {
+                return $q->whereHas('stock.order', function ($qu) {
+                    return $qu->where('customer_id', request('vendor'));
+                });
+            })
             ->get();
 
         if ($b2c_returns->where('currency', null)->count() > 0) {
@@ -745,6 +750,11 @@ class Report extends Component
                 })
                 ->whereBetween('created_at', [$start_date, $end_date])
                 // ->whereIn('status', [3,6])
+                ->when(request('vendor') != '', function ($q) {
+                    return $q->whereHas('stock.order', function ($qu) {
+                        return $qu->where('customer_id', request('vendor'));
+                    });
+                })
                 ->get();
         }
 
@@ -804,15 +814,18 @@ class Report extends Component
         $return_data['b2c_return_stock_cost'] = amount_formatter($b2c_return_stock_cost);
         $return_data['b2c_return_total'] = $b2c_return_total;
 
-        $b2b_orders = Order_model::where('order_type_id',5)
-            ->whereBetween('created_at', [$start_date, $end_date])
-            ->whereIn('status', [3,6])
-            ->get();
-
-        $b2b_order_ids = $b2b_orders->pluck('id')->toArray();
         $b2b_order_items = Order_item_model::whereIn('variation_id', $variation_ids)
-            ->whereIn('order_id', $b2b_order_ids)
+            ->whereHas('order', function ($q) use ($start_date, $end_date) {
+                $q->whereBetween('created_at', [$start_date, $end_date])
+                    ->whereIn('status', [3, 6])
+                    ->where('order_type_id', 5);
+            })
             ->whereIn('status', [3,6])
+            ->when(request('vendor') != '', function ($q) {
+                return $q->whereHas('stock.order', function ($qu) {
+                    return $qu->where('customer_id', request('vendor'));
+                });
+            })
             ->get();
         $b2b_prices_by_currency = Order_item_model::whereIn('id', $b2b_order_items->pluck('id')->toArray())->sum('price');
             // ->select('currency', DB::raw('SUM(price) as total_price'))
@@ -847,7 +860,7 @@ class Report extends Component
 
         $b2b_total = $b2b_prices_by_currency - $b2b_charges_by_currency - $b2b_stock_cost - $b2b_stock_repair_cost;
 
-        $b2b_data['b2b_orders'] = $b2b_orders->count();
+        $b2b_data['b2b_orders'] = $b2b_order_items->pluck('order_id')->unique()->count();
         $b2b_data['b2b_order_items'] = $b2b_order_items->count();
         $b2b_data['b2b_orders_sum'] = amount_formatter($b2b_prices_by_currency);
         $b2b_data['b2b_charges_sum'] = amount_formatter($b2b_charges_by_currency);
@@ -856,14 +869,17 @@ class Report extends Component
         $b2b_data['b2b_total'] = amount_formatter($b2b_total);
 
 
-        $b2b_returns = Order_model::where('order_type_id',6)
-            ->whereBetween('created_at', [$start_date, $end_date])
-            ->whereIn('status', [3,6])
-            ->get();
-
-        $b2b_return_order_ids = $b2b_returns->pluck('id')->toArray();
         $b2b_return_order_items = Order_item_model::whereIn('variation_id', $variation_ids)
-            ->whereIn('order_id', $b2b_return_order_ids)
+            ->whereHas('order', function ($q) {
+                $q->where('order_type_id', 6)
+                    ->whereIn('status', [3, 6]);
+            })
+
+            ->when(request('vendor') != '', function ($q) {
+                return $q->whereHas('stock.order', function ($qu) {
+                    return $qu->where('customer_id', request('vendor'));
+                });
+            })
             // ->whereIn('status', [3,6])
             ->get();
         $b2b_return_prices_by_currency = Order_item_model::whereIn('id', $b2b_return_order_items->pluck('id')->toArray())
@@ -900,7 +916,7 @@ class Report extends Component
 
         $b2b_return_totals = -($b2b_return_prices_by_currency - $b2b_return_charges_by_currency - $b2b_return_stock_cost - $b2b_return_stock_repair_cost);
 
-        $b2b_return_data['b2b_returns'] = $b2b_returns->count();
+        $b2b_return_data['b2b_returns'] = $b2b_return_order_items->pluck('order_id')->unique()->count();
         $b2b_return_data['b2b_return_items'] = $b2b_return_order_items->count();
         $b2b_return_data['b2b_return_sum'] = amount_formatter($b2b_return_prices_by_currency);
         $b2b_return_data['b2b_return_charges_sum'] = amount_formatter($b2b_return_charges_by_currency);
