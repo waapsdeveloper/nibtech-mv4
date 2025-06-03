@@ -325,15 +325,15 @@ class Topup extends Component
 
                 if(request('grade') != null && request('copy_grade') == 1){
                     $grade_id = request('grade');
-                    if($variation->grade != $grade_id && request('copy_grade') != 1){
-                        if(request('copy') == 1){
-                            session()->put('error', 'Grade ID does not match with the stock variation');
-                            $grade_id = $variation->grade;
-                            session()->put('grade', $stock->variation->grade);
-                        }else{
-                            return redirect()->back()->with('error', 'Grade ID does not match with the stock variation');
-                        }
-                    }
+                    // if($variation->grade != $grade_id && request('copy_grade') != 1){
+                    //     if(request('copy') == 1){
+                    //         session()->put('error', 'Grade ID does not match with the stock variation');
+                    //         $grade_id = $variation->grade;
+                    //         session()->put('grade', $stock->variation->grade);
+                    //     }else{
+                    //         return redirect()->back()->with('error', 'Grade ID does not match with the stock variation');
+                    //     }
+                    // }
                 }else{
                     $grade_id = $variation->grade;
                 }
@@ -360,14 +360,18 @@ class Topup extends Component
                     $stock->save();
                 }
                 if(request('copy') == 1){
-                        session()->put('copy', 1);
+                    session()->put('copy', 1);
+                    session()->put('color', request('color'));
                 }else{
-                        session()->put('copy', 0);
+                    session()->put('copy', 0);
+                    session()->put('color', $stock->variation->color);
                 }
                 if(request('copy_grade') == 1){
                     session()->put('copy_grade', 1);
+                    session()->put('grade', request('grade'));
                 }else{
                     session()->put('copy_grade', 0);
+                    session()->put('grade', $stock->variation->grade);
                 }
                 if(request('dual-esim') == 1){
                     session()->put('dual-esim', 1);
@@ -381,8 +385,6 @@ class Topup extends Component
                 }
                     session()->put('product', request('product'));
                     session()->put('storage', request('storage'));
-                    session()->put('color', request('color'));
-                    session()->put('grade', request('grade'));
             }else{
                 session()->put('copy', 0);
                 session()->put('copy_grade', 0);
