@@ -16,7 +16,7 @@
 
                     <form action="" method="GET" id="index" class="mb-0 form-inline">
                         <div class="form-floating">
-                            <select class="form-select" name="vendor" id="vendor">
+                            <select class="form-select" name="vendor" id="vendor" class="wd-150">
                                 <option value="">All Vendors</option>
                                 @foreach ($vendors as $vendor_id => $vendor_name)
                                     <option value="{{ $vendor_id }}" {{ $vendor_id == request('vendor') ? 'selected' : '' }}>{{ $vendor_name }}</option>
