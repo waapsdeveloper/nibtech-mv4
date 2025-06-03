@@ -30,6 +30,9 @@ class Testing extends Component
     public function render()
     {
 
+        $data['title_page'] = "Testing";
+        session()->put('page_title', $data['title_page']);
+
         $testing = new Api_request_model();
         $requests = $testing->push_testing();
         // $this->remove_extra_variations();
