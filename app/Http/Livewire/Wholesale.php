@@ -908,7 +908,7 @@ class Wholesale extends Component
             $html = view('export.bulksale_packlist', $data)->render();
         }elseif(request('packlist') == 2){
 
-            return Excel::download(new PacksheetExport, 'IMEI '.$order->customer->company.' '.$order_items_2->sum('total_quantity').' pcs Ref:'.$order->reference_id.'.xlsx');
+            return Excel::download(new PacksheetExport, 'SO'.$order->reference_id.' '.$order->customer->company.' '.$order_items_2->sum('total_quantity').' pcs.xlsx');
 
 
         }else{
