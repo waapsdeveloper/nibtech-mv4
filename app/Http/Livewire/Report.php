@@ -161,11 +161,15 @@ class Report extends Component
             ->join('order_items', 'variation.id', '=', 'order_items.variation_id')
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->leftJoin('stock', 'order_items.stock_id', '=', 'stock.id')
+            ->leftJoin('orders as p_order', 'stock.order_id', '=', 'p_order.id')
             ->leftJoin('process_stock', 'stock.id', '=', 'process_stock.stock_id')
             ->leftJoin('process', 'process_stock.process_id', '=', 'process.id')
             // ->whereBetween('orders.processed_at', [$start_date, $end_date])
             ->when($query == 1, function ($q) use ($variation_ids) {
                 return $q->whereIn('variation.id', $variation_ids);
+            })
+            ->when(request('vendor') != '', function ($q) {
+                return $q->where('p_order.customer_id', request('vendor'));
             })
             // ->whereIn('orders.id', $sale_orders)
             // ->whereBetween('orders.processed_at', [$start_date, $end_date])
@@ -234,6 +238,7 @@ class Report extends Component
             ->join('order_items', 'variation.id', '=', 'order_items.variation_id')
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->leftJoin('stock', 'order_items.stock_id', '=', 'stock.id')
+            ->leftJoin('orders as p_order', 'stock.order_id', '=', 'p_order.id')
             ->leftJoin('process_stock', 'stock.id', '=', 'process_stock.stock_id')
             ->leftJoin('process', 'process_stock.process_id', '=', 'process.id')
             ->select(
@@ -251,7 +256,7 @@ class Report extends Component
             })
             // ->whereIn('variation.id', $variation_ids)
             ->when(request('vendor') != '', function ($q) {
-                return $q->where('orders.customer_id', request('vendor'));
+                return $q->where('p_order.customer_id', request('vendor'));
             })
             ->whereIn('orders.order_type_id', [4,6])
             ->Where('orders.deleted_at',null)
