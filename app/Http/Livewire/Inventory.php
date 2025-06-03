@@ -200,12 +200,12 @@ class Inventory extends Component
 
             $data['stocks'] = Stock_model::
             with(['variation','variation.product','order','latest_operation','latest_return','admin'])
-            // ->whereNotIn('stock.id',$all_verified_stocks)
+            ->whereNotIn('stock.id',$all_verified_stocks)
             ->where('stock.status', 1)
 
-            // ->when(request('aftersale') != 1, function ($q) use ($aftersale) {
-            //     return $q->whereNotIn('stock.id',$aftersale);
-            // })
+            ->when(request('aftersale') != 1, function ($q) use ($aftersale) {
+                return $q->whereNotIn('stock.id',$aftersale);
+            })
             ->when(request('listing_or_topup') != '' && request('listing_or_topup') == 0, function ($q) {
                 return $q->whereDoesntHave('latest_listing_or_topup');
             })
