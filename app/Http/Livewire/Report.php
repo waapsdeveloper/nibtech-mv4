@@ -22,6 +22,7 @@ use App\Models\Customer_model;
 use App\Models\Storage_model;
 use App\Models\Grade_model;
 use App\Models\Multi_type_model;
+use App\Models\Process_model;
 use App\Models\Process_stock_model;
 use App\Models\Product_storage_sort_model;
 use App\Models\Variation_model;
@@ -208,6 +209,8 @@ class Report extends Component
         // $costs = Category_model::select(
         //     'category.'
         // )
+
+        $repair_process_ids = Process_model::where('process_type_id', 9)->pluck('id')->toArray();
         $subquery = DB::table('order_items')
             ->join('variation', 'variation.id', '=', 'order_items.variation_id')
             ->join('products', 'products.id', '=', 'variation.product_id')
@@ -215,8 +218,11 @@ class Report extends Component
             ->join('orders', 'orders.id', '=', 'order_items.order_id')
             ->leftJoin('stock', 'stock.id', '=', 'order_items.stock_id')
             ->leftJoin('orders as p_order', 'p_order.id', '=', 'stock.order_id')
-            ->leftJoin('process_stock', 'process_stock.stock_id', '=', 'stock.id')
-            ->leftJoin('process', 'process.id', '=', 'process_stock.process_id')
+            ->leftJoin('process_stock', function ($join) use ($repair_process_ids) {
+                $join->on('process_stock.stock_id', '=', 'stock.id')
+                     ->whereIn('process_stock.process_id', $repair_process_ids);
+            })
+            // ->leftJoin('process', 'process.id', '=', 'process_stock.process_id')
             ->whereIn('orders.order_type_id', [2,3,5])
             ->whereNull('orders.deleted_at')
             ->whereNull('order_items.deleted_at')
@@ -243,7 +249,6 @@ class Report extends Component
                 orders.currency,
                 orders.order_type_id,
                 stock.id as stock_id,
-                process.process_type_id,
                 process_stock.price as repair_price
             ');
         $aggregates = DB::table(DB::raw("({$subquery->toSql()}) as sub"))
@@ -255,7 +260,7 @@ class Report extends Component
                 DB::raw('SUM(CASE WHEN sub.currency = 4 OR sub.order_type_id = 5 THEN sub.order_item_price ELSE 0 END) as eur_items_sum'),
                 DB::raw('SUM(CASE WHEN sub.currency = 5 AND sub.order_type_id = 3 THEN sub.order_price ELSE 0 END) as gbp_items_sum'),
                 DB::raw('GROUP_CONCAT(DISTINCT sub.stock_id) as stock_ids'),
-                DB::raw('SUM(CASE WHEN sub.process_type_id = 9 THEN sub.repair_price ELSE 0 END) as items_repair_sum')
+                DB::raw('SUM(repair_price) as items_repair_sum')
             )
             ->groupBy('sub.category_id')
             ->get();
