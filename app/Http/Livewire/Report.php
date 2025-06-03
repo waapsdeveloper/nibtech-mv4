@@ -651,18 +651,23 @@ class Report extends Component
         })
         ->pluck('id')->toArray();
 
-        $b2c_orders = Order_model::where('order_type_id',3)
-            ->whereBetween('processed_at', [$start_date, $end_date])
-            ->whereIn('status', [3,6])
-            ->get();
-        $b2c_order_ids = $b2c_orders->pluck('id')->toArray();
+        // $b2c_orders = Order_model::where('order_type_id',3)
+        //     ->whereBetween('processed_at', [$start_date, $end_date])
+        //     ->whereIn('status', [3,6])
+        //     ->get();
+        // $b2c_order_ids = $b2c_orders->pluck('id')->toArray();
         $b2c_order_items = Order_item_model::when($query == 1, function ($q) use ($variation_ids) {
-            return $q->whereIn('variation_id', $variation_ids);
+                return $q->whereIn('variation_id', $variation_ids);
             })
             ->whereHas('order', function ($q) use ($start_date, $end_date) {
-            $q->whereBetween('processed_at', [$start_date, $end_date])
-                ->whereIn('status', [3, 6])
-                ->where('order_type_id', 3);
+                $q->whereBetween('processed_at', [$start_date, $end_date])
+                    ->whereIn('status', [3, 6])
+                    ->where('order_type_id', 3);
+            })
+            ->when(request('vendor') != '', function ($q) {
+                return $q->whereHas('stock.order', function ($qu) {
+                    return $qu->where('customer_id', request('vendor'));
+                });
             })
             ->get();
 
@@ -711,7 +716,7 @@ class Report extends Component
         });
 
         // dd($b2c_total);
-        $sale_data['b2c_orders'] = $b2c_orders->count();
+        $sale_data['b2c_orders'] = $b2c_order_items->pluck('order_id')->unique()->count();
         $sale_data['b2c_order_items'] = $b2c_order_items->count();
         $sale_data['b2c_orders_sum'] = $b2c_prices_by_currency;
         $sale_data['b2c_charges_sum'] = $b2c_charges_by_currency;
