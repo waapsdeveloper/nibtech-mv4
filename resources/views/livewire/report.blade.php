@@ -507,6 +507,8 @@
 
                 let currencies = @json($currencies);
 
+                let vendor = "{{ Request::get('vendor') }}";
+
                 var start_date = $('#start_date').val();
                 var end_date = $('#end_date').val();
                 var start_time = $('#start_time').val();
@@ -517,6 +519,7 @@
                     url: "{{ url('report/sales_and_returns_total') }}",
                     type: 'GET',
                     data: {
+                        vendor: vendor,
                         start_date: start_date,
                         end_date: end_date,
                         start_time: start_time,
