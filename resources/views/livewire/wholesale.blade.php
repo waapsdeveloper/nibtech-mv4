@@ -189,7 +189,7 @@
 
                                             $price = $order->order_items_sum_price;
                                             $transaction = $order->transaction;
-
+                                            $customer = $order->customer;
                                             // if($order->exchange_rate != null){
                                             //     $price = $price * $order->exchange_rate;
                                             // }
