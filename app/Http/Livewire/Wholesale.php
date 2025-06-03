@@ -50,12 +50,12 @@ class Wholesale extends Component
         session()->put('page_title', $data['title_page']);
         $data['latest_reference'] = Order_model::where('order_type_id',5)->orderBy('reference_id','DESC')->first()->reference_id ?? 998;
         $data['order_statuses'] = Order_status_model::get();
-            if(request('per_page') != null){
-                $per_page = request('per_page');
-            }else{
-                $per_page = 10;
-            }
-            $data['orders'] = Order_model::withCount('order_items')->withSum('order_items','price')
+        if(request('per_page') != null){
+            $per_page = request('per_page');
+        }else{
+            $per_page = 10;
+        }
+        $data['orders'] = Order_model::withCount('order_items')->withSum('order_items','price')
             // select(
             //     'orders.id',
             //     'orders.reference_id',
@@ -81,6 +81,11 @@ class Wholesale extends Component
             })
             ->when(request('status') != '', function ($q) {
                 return $q->where('orders.status', request('status'));
+            })
+            ->when(request('payment') != '', function ($q) {
+                return $q->whereHas('transaction', function ($query) {
+                    $query->where('status', request('payment'));
+                });
             })
             // ->groupBy('orders.id', 'orders.reference_id', 'orders.customer_id', 'orders.currency', 'orders.created_at')
             ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
