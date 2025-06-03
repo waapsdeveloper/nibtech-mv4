@@ -190,6 +190,8 @@
                                             $price = $order->order_items_sum_price;
                                             $transaction = $order->transaction;
                                             $customer = $order->customer;
+
+
                                             // if($order->exchange_rate != null){
                                             //     $price = $price * $order->exchange_rate;
                                             // }
@@ -211,7 +213,14 @@
                                                 <div class="dropdown-menu">
 
                                                     @if ($transaction != null && $transaction->payment_method_id == null && session('user')->hasPermission('record_payment'))
+                                                        @php
 
+                                                            if ($transaction->has('children')) {
+                                                                $remaining = $transaction->amount-$transaction->children->sum('amount');
+                                                            }else {
+                                                                $remaining = $transaction->amount;
+                                                            }
+                                                        @endphp
                                                         <a href="javascript:void(0);"  data-bs-toggle="modal" data-bs-target="#record_payment" class="dropdown-item" data-transaction_id="{{ $transaction->id }}" data-transaction_ref="{{ $transaction->reference_id }}" data-customer_id="{{ $customer->id }}" data-type="1" data-amount="{{ $remaining }}" data-description="{{ $transaction->description }}" data-date="{{ $transaction->date }}"  data-currency="{{ $transaction->currency }}" data-exchange_rate="{{ $transaction->exchange_rate }}">Record Payment</a>
                                                     @endif
                                                     <a class="dropdown-item" href="{{url('delete_wholesale') . "/" . $order->id }}" onclick="return confirm('Are you sure you want to delete this order?');"><i class="fe fe-arrows-rotate me-2 "></i>Delete</a>
