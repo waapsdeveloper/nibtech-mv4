@@ -244,6 +244,7 @@ class Report extends Component
             ->select(
                 'category.id as category_id',
                 DB::raw('COUNT(DISTINCT order_items.id) as orders_qty'),
+                DB::raw('COUNT(DISTINCT orders.id) as orders_qty'),
                 DB::raw('SUM(CASE WHEN orders.status = 3 THEN 1 ELSE 0 END) as approved_orders_qty'),
                 DB::raw('SUM(CASE WHEN order_items.currency is null OR order_items.currency = 4 THEN order_items.price ELSE 0 END) as eur_items_sum'),
                 DB::raw('SUM(CASE WHEN order_items.currency = 5 THEN order_items.price ELSE 0 END) as gbp_items_sum'),
