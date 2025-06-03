@@ -252,6 +252,46 @@ class Api_request_model extends Model
                 continue;
 
             }
+            if(config('app.url') == 'https://sdpos.nibritaintech.com' && $stock == null && in_array($datas->PCName, ['PC12', 'PC13', 'PC14', 'PC15'])){
+
+                // $curl = curl_init();
+
+                // curl_setopt_array($curl, array(
+                //   CURLOPT_URL => 'https://egpos.nibritaintech.com/api/request',
+                //   CURLOPT_RETURNTRANSFER => true,
+                //   CURLOPT_ENCODING => '',
+                //   CURLOPT_MAXREDIRS => 10,
+                //   CURLOPT_TIMEOUT => 0,
+                //   CURLOPT_FOLLOWLOCATION => true,
+                //   CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                //   CURLOPT_CUSTOMREQUEST => 'POST',
+                //   CURLOPT_POSTFIELDS => json_encode($datas),
+                //   CURLOPT_HTTPHEADER => array(
+                //     'Accept: application/json',
+                //     'Content-Type: application/json',
+                //     'Authorization: Bearer 2|otpLfHymDGDscNuKjk9CQMx620avGG0aWgMpuPAp5d1d27d2'
+                //   ),
+                // ));
+
+                // $response = curl_exec($curl);
+
+                // curl_close($curl);
+                // echo $response;
+
+
+                // if($response){
+                //     echo "<pre>";
+                //     print_r($response);
+                //     echo "</pre>";
+                //     echo "<br><br><br>Hello<br><br><br>";
+                // }
+
+                // $request->status = 3;
+                // $request->save();
+                $request->send_to_yk();
+                continue;
+
+            }
 
 
             if($stock != null){
@@ -526,6 +566,52 @@ class Api_request_model extends Model
 
             curl_setopt_array($curl, array(
                 CURLOPT_URL => 'https://egpos.nibritaintech.com/api/request',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POSTFIELDS => json_encode($datas),
+                CURLOPT_HTTPHEADER => array(
+                'Accept: application/json',
+                'Content-Type: application/json',
+                'Authorization: Bearer 2|otpLfHymDGDscNuKjk9CQMx620avGG0aWgMpuPAp5d1d27d2'
+                ),
+            ));
+
+            $response = curl_exec($curl);
+
+            curl_close($curl);
+            echo $response;
+
+
+            if($response){
+                echo "<pre>";
+                print_r($response);
+                echo "</pre>";
+                echo "<br><br><br>Hello<br><br><br>";
+            }
+
+            $request->status = 3;
+            $request->save();
+
+        }
+    }
+    public function send_to_yk(){
+        $request = $this;
+        $datas = json_decode($request->request);
+        $stock = $this->stock;
+
+        // dd($datas, $stock, $request);
+            // if domain = sdpos.nibritaintech.com
+        if(config('app.url') == 'https://sdpos.nibritaintech.com'){
+
+            $curl = curl_init();
+
+            curl_setopt_array($curl, array(
+                CURLOPT_URL => 'https://ykpos.nibritaintech.com/api/request',
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_ENCODING => '',
                 CURLOPT_MAXREDIRS => 10,
