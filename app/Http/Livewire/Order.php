@@ -2728,7 +2728,7 @@ class Order extends Component
                 $stock[$i]->save();
 
                 $stock[$i]->all_listings_or_topups()->update([
-                    'status' => 2,
+                    'status' => 3,
                 ]);
 
                 // $orderObj = $this->updateBMOrder($order->reference_id, true, $tester[$i], true);
@@ -2996,6 +2996,11 @@ class Order extends Component
                 $stock[$i]->sale_order_id = $id;
                 $stock[$i]->status = 2;
                 $stock[$i]->save();
+
+                $stock[$i]->all_listings_or_topups()->update([
+                    'status' => 3,
+                ]);
+
                 $stock_movement = Stock_movement_model::where(['stock_id'=>$stock[$i]->id, 'received_at'=>null])->first();
                 if($stock_movement != null){
                     Stock_movement_model::where(['stock_id'=>$stock[$i]->id, 'received_at'=>null])->update([
@@ -3468,6 +3473,10 @@ class Order extends Component
             $stock->added_by = session('user_id');
             if($stock->status == 1){
                 $stock->status = 2;
+
+                $stock->all_listings_or_topups()->update([
+                    'status' => 3,
+                ]);
             }
             $stock->save();
 
