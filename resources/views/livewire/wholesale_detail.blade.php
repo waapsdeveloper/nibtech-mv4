@@ -116,9 +116,8 @@
 
                 </div>
                 <div class="text-center">
-                        <h4>BulkSale Order Detail</h4>
-                        <h5>Reference: {{ $order->reference_id }} | Purchaser: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->sum('quantity') }} @if (session('user')->hasPermission('view_price')) | Total Price: {{ $order->currency_id->sign.amount_formatter($order->order_items->sum('price'),2) }} @endif</h5>
-
+                    <h4>BulkSale Order Detail</h4>
+                    <h5>Reference: {{ $order->reference_id }} | Purchaser: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->sum('quantity') }} @if (session('user')->hasPermission('view_price')) | Total Price: €{{ amount_formatter($order->order_items->sum('price'),2) }} @endif</h5>
                 </div>
                 <div class="">
                     <ol class="breadcrumb">

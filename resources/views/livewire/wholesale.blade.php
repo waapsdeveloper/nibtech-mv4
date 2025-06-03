@@ -93,6 +93,8 @@
                 <a href="{{url('wholesale')}}?status=2" class="btn btn-link @if (request('status') == 2) bg-white @endif ">Pending</a>
                 <a href="{{url('wholesale')}}?status=3" class="btn btn-link @if (request('status') == 3) bg-white @endif ">Shipped</a>
                 <a href="{{url('wholesale')}}" class="btn btn-link @if (!request('status')) bg-white @endif ">All</a>
+                <a href="{{url('wholesale')}}?payment=2" class="btn btn-link @if (request('payment') == 2) bg-white @endif ">UnPaid</a>
+                <a href="{{url('wholesale')}}?payment=3" class="btn btn-link @if (request('payment') == 3) bg-white @endif ">Paid</a>
             </div>
             <div class="">
             </div>
@@ -191,25 +193,25 @@
                                         @endphp
 
                                         {{-- @foreach ($items as $itemIndex => $item) --}}
-                                            <tr>
-                                                    <td>{{ $i + 1 }}</td>
-                                                    <td><a href="{{url('wholesale/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
-                                                <td>{{ $vendors[$order->customer_id] ?? "Walk In Customer" }}</td>
-                                                @if (session('user')->hasPermission('view_price'))
-                                                <td>€{{ amount_formatter($price,2) }}</td>
-                                                @endif
-                                                <td>{{ $order->order_items_count }}</td>
-                                                <td style="width:220px">{{ $order->created_at }}</td>
-                                                <td>
-                                                    <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
-                                                    <div class="dropdown-menu">
-                                                        <a class="dropdown-item" href="{{url('delete_wholesale') . "/" . $order->id }}" onclick="return confirm('Are you sure you want to delete this order?');"><i class="fe fe-arrows-rotate me-2 "></i>Delete</a>
-                                                        {{-- <a class="dropdown-item" href="{{ $order->delivery_note_url }}" target="_blank"><i class="fe fe-arrows-rotate me-2 "></i>Delivery Note</a>
-                                                        <a class="dropdown-item" href="https://backmarket.fr/bo-seller/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a> --}}
-                                                        {{-- <a class="dropdown-item" href="javascript:void(0);"><i class="fe fe-trash-2 me-2"></i>Delete</a> --}}
-                                                    </div>
-                                                </td>
-                                            </tr>
+                                        <tr>
+                                            <td>{{ $i + 1 }}</td>
+                                            <td><a href="{{url('wholesale/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
+                                            <td>{{ $vendors[$order->customer_id] ?? "Walk In Customer" }}</td>
+                                            @if (session('user')->hasPermission('view_price'))
+                                            <td>€{{ amount_formatter($price,2) }}</td>
+                                            @endif
+                                            <td>{{ $order->order_items_count }}</td>
+                                            <td style="width:220px">{{ $order->created_at }}</td>
+                                            <td>
+                                                <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
+                                                <div class="dropdown-menu">
+                                                    <a class="dropdown-item" href="{{url('delete_wholesale') . "/" . $order->id }}" onclick="return confirm('Are you sure you want to delete this order?');"><i class="fe fe-arrows-rotate me-2 "></i>Delete</a>
+                                                    {{-- <a class="dropdown-item" href="{{ $order->delivery_note_url }}" target="_blank"><i class="fe fe-arrows-rotate me-2 "></i>Delivery Note</a>
+                                                    <a class="dropdown-item" href="https://backmarket.fr/bo-seller/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank"><i class="fe fe-caret me-2"></i>View in Backmarket</a> --}}
+                                                    {{-- <a class="dropdown-item" href="javascript:void(0);"><i class="fe fe-trash-2 me-2"></i>Delete</a> --}}
+                                                </div>
+                                            </td>
+                                        </tr>
                                             {{-- @php
                                                 $j++;
                                             @endphp
