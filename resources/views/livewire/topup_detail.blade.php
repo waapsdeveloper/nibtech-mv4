@@ -70,13 +70,12 @@
                     <br>
                     {{ $process->description }}
 
-
-
+                @endif
+                @if ($process->status > 1)
                     @if (session('user')->hasPermission('topup_revert_status'))
                         <br>
                         <a href="{{url('topup/revert_status').'/'.$process->id}}">Revert Back to Pending</a>
                     @endif
-
                 @endif
                 </div>
                 <div class="justify-content-center mt-2">
