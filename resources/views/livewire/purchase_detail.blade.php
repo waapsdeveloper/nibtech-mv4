@@ -137,7 +137,6 @@
                             function validateIMEIOrSerial(input) {
 
                                 const value = input.value.trim();
-                                console.log(value);
                                 // If only digits and length 15, treat as IMEI and validate
                                 // Check if value contains only digits (IMEI of any length)
                                 if (/^\d+$/.test(value)) {
@@ -149,6 +148,7 @@
                                 } else if (value.length === 0) {
                                     input.setCustomValidity('This field is required');
                                 } else {
+                                    console.log(value);
                                     // Allow any non-empty string for serial numbers
                                     input.setCustomValidity('');
                                 }
