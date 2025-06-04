@@ -414,7 +414,7 @@ class Wholesale_return extends Component
             $s_variation = $stock->variation;
             $grade = request('grade');
             if($grade == 0){
-                $grade = $stock->latest_operation->old_variation->grade;
+                $grade = $stock->latest_operation->old_variation->grade ?? 11;
             }
 
 
