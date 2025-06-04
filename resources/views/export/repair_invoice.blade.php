@@ -256,8 +256,8 @@
         <!-- Total Amount -->
         <div class="total-amount" style="padding:0; margin:0; line-height:6px">
 
-            @if ($order->reference)
-            <h5>Ref: {{ $order->reference }}</h5>
+            @if ($process->description)
+            <h5>Ref: {{ $process->description }}</h5>
             <br>
             @endif
             <h3>Store Policy</h3>
