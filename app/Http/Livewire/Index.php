@@ -1245,7 +1245,7 @@ class Index extends Component
         $pss_array = $product_storage_sort->toArray();
 
         foreach($pss_array as $key => $pss){
-            $cat = str_pad($pss['category'] ?? 0, 2, '0', STR_PAD_LEFT);
+            $cat = $pss['category'] ?? 0;
             $brand = str_pad($pss['brand'] ?? 0, 2, '0', STR_PAD_LEFT);
             $pro = str_pad($pss['product_id'] ?? 0, 5, '0', STR_PAD_LEFT);
             $storage = str_pad($pss['storage'] ?? 0, 2, '0', STR_PAD_LEFT);
