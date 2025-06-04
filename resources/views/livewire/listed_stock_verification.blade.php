@@ -21,8 +21,7 @@
             <div class="breadcrumb-header justify-content-between">
                 <div class="left-content">
                 {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">BulkSale</span> --}}
-                <a href="{{url('listed_stock_verification/start_listing_verification')}}" class="btn btn-success float-right" data-bs-target="#modaldemo"
-                data-bs-toggle="modal"><i class="mdi mdi-plus"></i> New Listed Stock Verification </a>
+                <a href="{{url('listed_stock_verification/start_listing_verification')}}" class="btn btn-success float-right"><i class="mdi mdi-plus"></i> New Listed Stock Verification </a>
 
                 </div>
                 <div class="justify-content-center mt-2">
