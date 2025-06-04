@@ -51,8 +51,8 @@ class RMA extends Component
         $data['orders'] = Order_model::withCount('order_items')->withSum('order_items','price')
             ->where('orders.order_type_id',2)
             // ->join('order_items', 'orders.id', '=', 'order_items.order_id')
-            ->when(request('vendor') != '', function ($q) {
-                return $q->where('orders.customer_id', request('vendor'));
+            ->when(request('customer_id') != '', function ($q) {
+                return $q->where('orders.customer_id', request('customer_id'));
             })
             ->when(request('start_date') != '', function ($q) {
                 return $q->where('orders.created_at', '>=', request('start_date', 0));
