@@ -222,6 +222,10 @@
                                         $duplicate = $product->duplicates->first();
                                         $product->merge($duplicate->id);
                                     }
+                                    if ($product->duplicates->count() == 1 && $product->sku != null && $product->state == 4) {
+                                        $duplicate = $product->duplicates->first();
+                                        $product->merge($duplicate->id);
+                                    }
                                 @endphp
                                   <form class="form-inline" method="POST" action="{{ url('variation/merge').'/'.$product->id }}" id="merge_{{$product->id}}">
                                       @csrf
