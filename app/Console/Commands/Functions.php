@@ -141,6 +141,12 @@ class Functions extends Command
                 $storage = $variation->storage ?? 0;
                 $pss = Product_storage_sort_model::firstOrNew(['product_id'=>$variation->product_id,'storage'=>$storage]);
                 if($pss->id == null){
+                    $product = $variation->product;
+                    $cat = $product->category ?? 0;
+                    $br = str_pad($product->brand ?? 0, 2, '0', STR_PAD_LEFT);
+                    $pro = str_pad($product->id ?? 0, 5, '0', STR_PAD_LEFT);
+                    $stor = str_pad($storage ?? 0, 2, '0', STR_PAD_LEFT);
+                    $pss->sort = $cat . $br . $pro . $stor;
                     $pss->save();
                 }
                 $variation->product_storage_sort_id = $pss->id;
