@@ -34,6 +34,7 @@
                         <input type="text" class="form-control" id="description" name="description" placeholder="Enter Description" value="{{$process->description}}" required>
                         <label for="description">Description</label>
                     </div>
+                    <a href="{{url('listed_stock_verification/zero_listing_verification').'/'.$process->id}}" class="btn btn-warning" onclick="return confirm('Are you sure you want to zero listing this batch?');">Zero Listing</a>
                     <button type="submit" class="btn btn-success" name="approve" value="1">Ship</button>
                     <a class="btn btn-danger" href="{{url('delete_verification') . "/" . $process->id }}" onclick="return confirm('Are you sure you want to delete this item?');">Delete</a>
                 </form>
