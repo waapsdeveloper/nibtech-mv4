@@ -24,6 +24,7 @@ use App\Models\Grade_model;
 use App\Models\Ip_address_model;
 use App\Models\Order_charge_model;
 use App\Models\Process_model;
+use App\Models\Process_stock_model;
 use App\Models\Product_storage_sort_model;
 use App\Models\Variation_model;
 use App\Models\Stock_model;
@@ -1231,11 +1232,13 @@ class Index extends Component
 
 
 
-        $listings_and_topups = Process_model::where('status', 3)
-            ->whereIn('process_type_id', [21,22])
-            ->get();
+        // $listings_and_topups = Process_model::where('status', 3)
+        //     ->whereIn('process_type_id', [21,22])
+        //     ->get();
 
-        $topup_items = Process_stock_model
+        // $topup_items = Process_stock_model::whereIn('process_id', $listings_and_topups->pluck('id')->toArray())
+        //     ->where('status', '!=', 3)
+        //     ->get();
 
 
         // $bm = new BackMarketAPIController();
@@ -1301,7 +1304,7 @@ class Index extends Component
         // echo "All Charges: ".$all_charges->count()."<br>";
         // echo "Total Payment Charges: ".array_sum($all_charges->toArray())."<br>";
 
-        ini_set('max_execution_time', 1200);
+        // ini_set('max_execution_time', 1200);
         // Variation_model::where('product_storage_sort_id',null)->each(function($variation){
         //     $pss = Product_storage_sort_model::firstOrNew(['product_id'=>$variation->product_id,'storage'=>$variation->storage]);
         //     if($pss->id == null){
