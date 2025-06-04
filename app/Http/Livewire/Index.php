@@ -1253,7 +1253,7 @@ class Index extends Component
         }
 
         echo "<pre>";
-        print_r($product_storage_sort->toArray());
+        print_r($pss_array);
         echo "</pre>";
 
 
