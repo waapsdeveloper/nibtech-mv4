@@ -240,8 +240,14 @@ class ListedStockVerification extends Component
         $data['grades'] = Grade_model::pluck('name','id');
         $data['colors'] = Color_model::pluck('name','id');
 
+        $process = Process_model::with(['process_stocks'])->find($process_id);
         $last_ten = Listed_stock_verification_model::where('process_id',$process_id)->orderBy('id','desc')->limit($per_page)->get();
         $data['last_ten'] = $last_ten;
+
+        $data['scanned_total'] = Process_stock_model::where('process_id',$process_id)->where('admin_id',session('user_id'))->count();
+        if($process->status == 2){
+            $data['verified_total'] = Process_stock_model::where('process_id',$process_id)->where('verified_by',session('user_id'))->count();
+        }
 
         $changed_listed_stocks = Listed_stock_verification_model::where(['process_id'=>$process_id])
         ->whereColumn('qty_from', '!=', 'qty_to')
