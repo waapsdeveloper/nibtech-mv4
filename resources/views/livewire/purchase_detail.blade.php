@@ -137,7 +137,8 @@
                             function validateIMEIOrSerial(input) {
                                 const value = input.value.trim();
                                 // If only digits and length 15, treat as IMEI and validate
-                                if (/^\d{15}$/.test(value)) {
+                                // Check if value contains only digits (IMEI of any length)
+                                if (/^\d+$/.test(value)) {
                                     if (!isValidIMEI(value)) {
                                         input.setCustomValidity('Invalid IMEI: checksum failed.');
                                     } else {
