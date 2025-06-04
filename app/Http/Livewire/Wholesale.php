@@ -58,6 +58,7 @@ class Wholesale extends Component
 
         $data['currencies'] = Currency_model::all();
         $data['orders'] = Order_model::withCount('order_items')->withSum('order_items','price')
+            ->with(['customer', 'transaction'])
             // select(
             //     'orders.id',
             //     'orders.reference_id',
