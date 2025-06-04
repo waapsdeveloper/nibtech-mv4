@@ -97,30 +97,60 @@
 
         <br>
 
-        {{-- <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
+
+        @if ($process->status == 1)
+
+        <div class="p-2">
 
 
-            <div class="p-2">
-                <h4>Receive External Repair Item</h4>
+            <form class="form-inline" action="{{ url('topup/add_topup_item').'/'.$process->id }}" method="POST" id="">
+                @csrf
+                <div class="form-floating">
+                    <input type="text" class="form-control form-control-sm" name="reference" id="reference" placeholder="Enter Reference" value="{{ session('reference') }}">
+                    <label for="reference" class="">Reference: &nbsp;</label>
+                </div>
+                <div class="form-floating">
+                    <input type="text" class="form-control" name="imei" id="imei" placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
+                    <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
 
-            </div>
+                </div>
 
-            <div class="btn-group p-1" role="group">
-                <a href="{{url('repair_email')}}/{{ $process->id }}" target="_blank"><button class="btn btn-secondary">Send Email</button></a>
-                <a href="{{url('export_repair_invoice')}}/{{ $process->id }}" target="_blank"><button class="btn btn-secondary">Invoice</button></a>
-                @if ($process->exchange_rate != null)
-                <a href="{{url('export_repair_invoice')}}/{{ $process->id }}/1" target="_blank"><button class="btn btn-secondary">{{$process->currency_id->sign}} Invoice</button></a>
+                <select name="color" class="form-control form-select" style="width: 150px;">
+                    <option value="">Color</option>
+                    @foreach ($colors as $id => $name)
+                        <option value="{{ $id }}"@if($id == session('color')) {{'selected'}}@endif>{{ $name }}</option>
+                    @endforeach
+                </select>
+                <select name="grade" class="form-control form-select">
+                    <option value="">Grade</option>
+                    @foreach ($grades as $id => $name)
+                        <option value="{{ $id }}" @if ($id == session('grade')) {{'selected'}}@endif>{{ $name }}</option>
+                    @endforeach
+                </select>
 
-                @endif
-                <button type="button" class="btn btn-secondary dropdown-toggle" id="pack_sheet" data-bs-toggle="dropdown" aria-expanded="false">
-                Pack Sheet
-                </button>
-                <ul class="dropdown-menu" aria-labelledby="pack_sheet">
-                    <li><a class="dropdown-item" href="{{url('export_repair_invoice')}}/{{ $process->id }}?packlist=2&id={{ $process->id }}">.xlsx</a></li>
-                    <li><a class="dropdown-item" href="{{url('export_repair_invoice')}}/{{ $process->id }}?packlist=1" target="_blank">.pdf</a></li>
-                </ul>
-            </div>
-        </div> --}}
+                <div>
+                <div class="input-group form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="com" name="copy" value="1" @if (session('copy') == 1) {{'checked'}} @endif>&nbsp;&nbsp;
+                    <label class="form-check-label" for="com">Copy Color</label>
+                </div>
+                <div class="input-group form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="com" name="copy_grade" value="1" @if (session('copy_grade') == 1) {{'checked'}} @endif>&nbsp;&nbsp;
+                    <label class="form-check-label" for="com">Copy Grade</label>
+                </div>
+                <div class="input-group form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="com" name="dual-esim" value="1" @if (session('dual-esim') == 1) {{'checked'}} @endif>&nbsp;&nbsp;
+                    <label class="form-check-label" for="com">Mark Dual eSIM</label>
+                </div>
+                <div class="input-group form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="com" name="dual-sim" value="1" @if (session('dual-sim') == 1) {{'checked'}} @endif>&nbsp;&nbsp;
+                    <label class="form-check-label" for="com">Mark Dual Sim</label>
+                </div>
+                </div>
+                <button class="btn btn-primary pd-x-20" type="submit">Insert</button>
+            </form>
+        </div>
+
+        @endif
             <script>
                 window.onload = function() {
                     document.getElementById('imei').focus();
