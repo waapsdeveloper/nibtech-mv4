@@ -470,6 +470,7 @@ class Wholesale_return extends Component
                         </script>';
                     }else{
                         session()->put('bypass_print_label',1);
+                        return redirect()->back();
                     }
                 }else{
                     session()->put('error','Item already added');
