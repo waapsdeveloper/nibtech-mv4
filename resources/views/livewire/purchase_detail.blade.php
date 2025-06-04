@@ -135,7 +135,9 @@
                         <input type="text" class="form-control" id="imei" name="imei" placeholder="Enter IMEI or Serial" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" required maxlength="32" oninput="validateIMEIOrSerial(this)">
                         <script>
                             function validateIMEIOrSerial(input) {
+
                                 const value = input.value.trim();
+                                console.log(value);
                                 // If only digits and length 15, treat as IMEI and validate
                                 // Check if value contains only digits (IMEI of any length)
                                 if (/^\d+$/.test(value)) {
