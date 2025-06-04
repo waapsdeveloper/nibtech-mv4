@@ -1239,7 +1239,7 @@ class Index extends Component
             ->orderBy('products.brand')
             ->orderBy('products.model')
             ->orderBy('product_storage_sort.storage')
-            ->select('product_storage_sort.*, products.model', 'products.category', 'products.brand')
+            ->select('product_storage_sort.*', 'products.model', 'products.category', 'products.brand')
             ->get();
 
 
