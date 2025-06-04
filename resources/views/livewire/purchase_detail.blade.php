@@ -132,7 +132,39 @@
                 </script>
                 <div class="col-md col-sm-6">
                     <div class="form-floating">
-                        <input type="text" class="form-control" id="imei" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" required>
+                        <input type="text" class="form-control" id="imei" name="imei" placeholder="Enter IMEI or Serial" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" required maxlength="32" oninput="validateIMEIOrSerial(this)">
+                        <script>
+                            function validateIMEIOrSerial(input) {
+                                const value = input.value.trim();
+                                // If only digits and length 15, treat as IMEI and validate
+                                if (/^\d{15}$/.test(value)) {
+                                    if (!isValidIMEI(value)) {
+                                        input.setCustomValidity('Invalid IMEI: checksum failed.');
+                                    } else {
+                                        input.setCustomValidity('');
+                                    }
+                                } else if (value.length === 0) {
+                                    input.setCustomValidity('This field is required');
+                                } else {
+                                    // Allow any non-empty string for serial numbers
+                                    input.setCustomValidity('');
+                                }
+                            }
+
+                            function isValidIMEI(imei) {
+                                // Luhn algorithm for IMEI validation
+                                let sum = 0;
+                                for (let i = 0; i < 15; i++) {
+                                    let digit = parseInt(imei.charAt(i));
+                                    if (i % 2 === 1) {
+                                        digit *= 2;
+                                        if (digit > 9) digit -= 9;
+                                    }
+                                    sum += digit;
+                                }
+                                return sum % 10 === 0;
+                            }
+                        </script>
                         <label for="imei">IMEI</label>
                     </div>
                 </div>
