@@ -132,33 +132,40 @@
                 </script>
                 <div class="col-md col-sm-6">
                     <div class="form-floating">
-                        <input type="text" class="form-control" id="imei" name="imei" placeholder="Enter IMEI or Serial" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" required maxlength="32" oninput="validateIMEIOrSerial(this)">
+                        <input type="text" class="form-control" id="imei" name="imei"
+                            placeholder="Enter IMEI or Serial"
+                            value="{{ request('imei') }}"
+                            required maxlength="32"
+                            oninput="validateIMEIOrSerial(this)">
+
                         <script>
                             function validateIMEIOrSerial(input) {
-
                                 const value = input.value.trim();
-                                // If only digits and length 15, treat as IMEI and validate
-                                // Check if value contains only digits (IMEI of any length)
-                                if (/^\d+$/.test(value)) {
+
+                                // If the value is empty
+                                if (value.length === 0) {
+                                    input.setCustomValidity('This field is required');
+                                    return;
+                                }
+
+                                // Check if value is numeric and exactly 15 digits (IMEI)
+                                if (/^\d{15}$/.test(value)) {
                                     if (!isValidIMEI(value)) {
                                         input.setCustomValidity('Invalid IMEI: checksum failed.');
                                     } else {
-                                        input.setCustomValidity('Hello');
+                                        input.setCustomValidity('');
                                     }
-                                } else if (value.length === 0) {
-                                    input.setCustomValidity('This field is required');
                                 } else {
-                                    console.log(value);
-                                    // Allow any non-empty string for serial numbers
+                                    // If not 15-digit numeric, allow as serial number
                                     input.setCustomValidity('');
                                 }
                             }
 
                             function isValidIMEI(imei) {
-                                // Luhn algorithm for IMEI validation
+                                // Luhn algorithm
                                 let sum = 0;
                                 for (let i = 0; i < 15; i++) {
-                                    let digit = parseInt(imei.charAt(i));
+                                    let digit = parseInt(imei.charAt(i), 10);
                                     if (i % 2 === 1) {
                                         digit *= 2;
                                         if (digit > 9) digit -= 9;
@@ -168,6 +175,7 @@
                                 return sum % 10 === 0;
                             }
                         </script>
+
                         <label for="imei">IMEI</label>
                     </div>
                 </div>
