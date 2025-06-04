@@ -104,6 +104,23 @@
 
         <br>
 
+        <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
+
+            <h4>Listed Stock Verification Details</h4>
+
+
+            <div class="btn-group p-1" role="group">
+                {{-- JS Print to Print topup Variations DIv --}}
+                <button type="button" class="btn btn-primary" onclick="PrintElem('topup_variations');">Print</button>
+                @if (request('show') == 1)
+                    <a href="{{ url('listed_stock_verification/detail').'/'.$process->id }}" class="btn btn-secondary">Hide Topup</a>
+                @else
+                    <a href="{{ url('listed_stock_verification/detail').'/'.$process->id.'?show=1' }}" class="btn btn-secondary">Show Topup</a>
+                @endif
+            </div>
+        </div>
+        <br>
+
 
         @if ($process->status == 1)
 
