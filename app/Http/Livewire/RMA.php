@@ -234,6 +234,7 @@ class RMA extends Component
     }
     public function rma_approve($order_id){
         $order = Order_model::find($order_id);
+        $order->reference = request('reference');
         $order->tracking_number = request('tracking_number');
         $order->status = 3;
         $order->save();

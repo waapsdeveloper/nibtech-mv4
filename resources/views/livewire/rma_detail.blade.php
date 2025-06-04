@@ -74,6 +74,10 @@
                 <form class="form-inline" method="POST" action="{{url('rma/approve').'/'.$order->id}}" id="approveform">
                     @csrf
                     <div class="form-floating">
+                        <input type="text" class="form-control" id="reference" name="reference" placeholder="Enter Vendor Reference" value="{{$order->reference}}" onchange="submitForm()" required>
+                        <label for="reference">Vendor Reference</label>
+                    </div>
+                    <div class="form-floating">
                         <input type="text" class="form-control" id="tracking_number" name="tracking_number" placeholder="Enter Tracking Number" value="{{$order->tracking_number}}" required>
                         <label for="tracking_number">Tracking Number</label>
                     </div>
