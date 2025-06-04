@@ -1240,6 +1240,7 @@ class Index extends Component
             ->orderBy('products.model')
             ->orderBy('product_storage_sort.storage')
             ->select('product_storage_sort.*', 'products.model', 'products.category', 'products.brand')
+            ->whereNull('product_storage_sort.sort')
             ->get();
 
         $pss_array = $product_storage_sort->toArray();
