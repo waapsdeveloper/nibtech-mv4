@@ -137,20 +137,20 @@
 
                 <div>
                 <div class="input-group form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="com" name="copy" value="1" @if (session('copy') == 1) {{'checked'}} @endif>&nbsp;&nbsp;
-                    <label class="form-check-label" for="com">Copy Color</label>
+                    <input class="form-check-input" type="checkbox" id="cc" name="copy" value="1" @if (session('copy') == 1) {{'checked'}} @endif>&nbsp;&nbsp;
+                    <label class="form-check-label" for="cc">Copy Color</label>
                 </div>
                 <div class="input-group form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="com" name="copy_grade" value="1" @if (session('copy_grade') == 1) {{'checked'}} @endif>&nbsp;&nbsp;
-                    <label class="form-check-label" for="com">Copy Grade</label>
+                    <input class="form-check-input" type="checkbox" id="cg" name="copy_grade" value="1" @if (session('copy_grade') == 1) {{'checked'}} @endif>&nbsp;&nbsp;
+                    <label class="form-check-label" for="cg">Copy Grade</label>
                 </div>
                 <div class="input-group form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="com" name="dual-esim" value="1" @if (session('dual-esim') == 1) {{'checked'}} @endif>&nbsp;&nbsp;
-                    <label class="form-check-label" for="com">Mark Dual eSIM</label>
+                    <input class="form-check-input" type="checkbox" id="mde" name="dual-esim" value="1" @if (session('dual-esim') == 1) {{'checked'}} @endif>&nbsp;&nbsp;
+                    <label class="form-check-label" for="mde">Mark Dual eSIM</label>
                 </div>
                 <div class="input-group form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="com" name="dual-sim" value="1" @if (session('dual-sim') == 1) {{'checked'}} @endif>&nbsp;&nbsp;
-                    <label class="form-check-label" for="com">Mark Dual Sim</label>
+                    <input class="form-check-input" type="checkbox" id="mds" name="dual-sim" value="1" @if (session('dual-sim') == 1) {{'checked'}} @endif>&nbsp;&nbsp;
+                    <label class="form-check-label" for="mds">Mark Dual Sim</label>
                 </div>
                 </div>
                 <button class="btn btn-primary pd-x-20" type="submit">Insert</button>
@@ -288,6 +288,8 @@
                 </div>
             </div>
         @endif
+        @if ($changed_listed_stocks->count() > 0 || $same_listed_stocks->count() > 0)
+
         <div class="card" id="print_inv">
             <div class="card-header pb-0 d-flex justify-content-between">
                 <h4 class="card-title">Changed Stock</h4>
@@ -415,6 +417,7 @@
             </div>
         </div>
 
+        @endif
         @if (request('show') == 1)
 
         <div class="card" id="topup_variations">
