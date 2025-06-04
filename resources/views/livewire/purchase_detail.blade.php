@@ -148,9 +148,11 @@
                                     return;
                                 }
 
-                                // Check if value is numeric and exactly 15 digits (IMEI)
-                                if (/^\d{15}$/.test(value)) {
-                                    if (!isValidIMEI(value)) {
+                                if (/^\d+$/.test(value)) {
+                                    // If the value is numeric, check if it's a valid IMEI
+                                    if (value.length !== 15) {
+                                        input.setCustomValidity('IMEI must be exactly 15 digits.');
+                                    } else if (!isValidIMEI(value)) {
                                         input.setCustomValidity('Invalid IMEI: checksum failed.');
                                     } else {
                                         input.setCustomValidity('');
