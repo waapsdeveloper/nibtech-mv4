@@ -92,7 +92,7 @@ class Topup extends Component
         $process->status = 2;
 
         if(request('push') == 1){
-            $variation_qty = Process_stock_model::where('process_id', $process_id)
+            $variation_qty = Process_stock_model::where('process_id', $process_id)->where('status', '<', 3)
             ->when(!request('all'), function ($q) {
                 return $q->where('status', 2);
             })
