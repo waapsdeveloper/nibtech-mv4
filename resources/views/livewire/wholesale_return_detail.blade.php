@@ -114,11 +114,15 @@
                     @if (session('user')->hasPermission('bulksale_return_bypass_60_days_limit'))
 
                         <div class="form-check form-switch ms-4">
-                            <input type="checkbox" value="1" name="bypass_60_days_limit" class="form-check-input">
+                            <input type="checkbox" value="1" name="bypass_60_days_limit" id="bypass_60_days_limit" class="form-check-input" @if (session('bypass_60_days_limit') || request('bypass_60_days_limit')) checked @endif>
                             <label class="form-check-label" for="bypass_60_days_limit">Bypass 60 Days Limit</label>
                         </div>
                     @endif
 
+                        <div class="form-check form-switch ms-4">
+                            <input type="checkbox" value="1" name="bypass_print_label" id="bypass_print_label" class="form-check-input" @if (session('bypass_print_label') || request('bypass_print_label')) checked @endif>
+                            <label class="form-check-label" for="bypass_print_label">Bypass Print Label</label>
+                        </div>
                 </form>
                 <script>
 
