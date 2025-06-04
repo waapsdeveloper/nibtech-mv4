@@ -1250,6 +1250,9 @@ class Index extends Component
             $pro = str_pad($pss['product_id'] ?? 0, 6, '0', STR_PAD_LEFT);
             $storage = str_pad($pss['storage'] ?? 0, 2, '0', STR_PAD_LEFT);
             $pss_array[$key]['new_sort'] = $cat . $brand . $pro . $storage;
+
+            Product_storage_sort_model::where('id', $pss['id'])
+                ->update(['sort' => $pss_array[$key]['new_sort']]);
         }
 
         echo "<pre>";
