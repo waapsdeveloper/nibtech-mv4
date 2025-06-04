@@ -254,6 +254,7 @@ class ListedStockVerification extends Component
         ->where(function($query) {
             $query->whereColumn('qty_from', '!=', 'qty_change')
                   ->orWhereNull('qty_from')
+                  ->orWhereNull('qty_to');
         ->orderByDesc('updated_at')->get();
         $data['changed_listed_stocks'] = $changed_listed_stocks;
         $same_listed_stocks = Listed_stock_verification_model::where(['process_id'=>$process_id])
