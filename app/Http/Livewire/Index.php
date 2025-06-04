@@ -1232,6 +1232,22 @@ class Index extends Component
 
 
 
+        // Create a sort for products storage sort
+
+        $product_storage_sort = Product_storage_sort_model::leftJoin('products', 'product_storage_sort.product_id', '=', 'products.id')
+            ->orderBy('products.category')
+            ->orderBy('products.brand')
+            ->orderBy('products.model')
+            ->orderBy('product_storage_sort.storage')
+            ->get();
+
+
+        echo "<pre>";
+        print_r($product_storage_sort->toArray());
+        echo "</pre>";
+
+
+
         // $listings_and_topups = Process_model::where('status', 3)
         //     ->whereIn('process_type_id', [21,22])
         //     ->get();
