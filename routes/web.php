@@ -335,7 +335,7 @@ Route::post('listing/update_limit/{id}', [ListingController::class,'update_limit
 Route::post('listing/update_target/{id}', [ListingController::class,'update_target'])->name('update_listing_target');
 
 Route::get('listed_stock_verification', ListedStockVerification::class)->name('view_listed_stock_verification');
-Route::get('listed_stock_verification/start_listing_verification', [ListedStockVerification::class,'start_listing_verification'])->name('listing_verification');
+Route::get('listed_stock_verification/start_listing_verification', [ListedStockVerification::class,'start_listing_verification'])->name('start_listing_verification');
 Route::get('listed_stock_verification/detail/{id}', [ListedStockVerification::class,'verification_detail'])->name('listed_stock_verification_detail');
 Route::get('listed_stock_verification/undo/{id}', [ListedStockVerification::class,'undo_verification'])->name('listed_stock_verification_undo');
 Route::post('listed_stock_verification/ship/{id}', [ListedStockVerification::class,'close_verification'])->name('listed_stock_verification_push');
