@@ -76,6 +76,55 @@ class ListedStockVerification extends Component
         // dd($data['orders']);
         return view('livewire.listed_stock_verification')->with($data);
     }
+
+    public function start_listing_verification(){
+
+        $check_active_verification = Process_model::where('process_type_id',21)->where('status',1)->first();
+        if($check_active_verification != null){
+            session()->flash('error', 'There is already an active listing verification process.');
+            return redirect()->back();
+        }
+        $last_process = Process_model::where('process_type_id',21)->orderBy('reference_id','desc')->first();
+        if($last_process != null){
+            $last_process = $last_process->reference_id;
+        }else{
+            $last_process = 9000;
+        }
+        $listing_verification = new Process_model();
+        $listing_verification->description = "Listing verification";
+        $listing_verification->process_type_id = 21;
+        $listing_verification->reference_id = $last_process + 1;
+        $listing_verification->admin_id = session('user_id');
+        $listing_verification->status = 1;
+        $listing_verification->save();
+
+
+        return redirect()->to(url('listed_stock_verification/detail/'.$listing_verification->id))->with('success', 'Listing verification process started successfully.');
+    }
+    public function zero_listing_verification($id){
+
+        $bm = new BackMarketAPIController();
+        $variations = Variation_model::where('listed_stock','>',0)->whereNotNull('reference_id')->get();
+        $listing_verification = Process_model::find($id);
+
+        foreach($variations as $variation){
+            $updatedQuantity = $variation->update_qty($bm);
+            $listed_stock_verification = Listed_stock_verification_model::firstOrNew(['process_id'=>$listing_verification->id, 'variation_id'=>$variation->id]);
+            $listed_stock_verification->qty_from = $updatedQuantity;
+            $listed_stock_verification->admin_id = session('user_id');
+            $listed_stock_verification->save();
+
+            $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>0]));
+
+            if($response->quantity != null){
+                $variation->listed_stock = $response->quantity;
+                $variation->save();
+            }
+        }
+
+
+        return redirect()->back()->with('success', 'Listed stock quantities set to zero successfully.');
+    }
     public function close_verification($process_id){
 
         ini_set('memory_limit', '2048M');
@@ -106,22 +155,22 @@ class ListedStockVerification extends Component
         // echo "</pre>";
         // die;
         $bm = new BackMarketAPIController();
-        $variations = Variation_model::where('listed_stock','>',0)->whereNotNull('reference_id')->get();
+        // $variations = Variation_model::where('listed_stock','>',0)->whereNotNull('reference_id')->get();
 
-        foreach($variations as $variation){
-            $updatedQuantity = $variation->update_qty($bm);
-            $listed_stock_verification = Listed_stock_verification_model::firstOrNew(['process_id'=>$process->id, 'variation_id'=>$variation->id]);
-            $listed_stock_verification->qty_from = $updatedQuantity;
-            $listed_stock_verification->admin_id = session('user_id');
-            $listed_stock_verification->save();
+        // foreach($variations as $variation){
+        //     $updatedQuantity = $variation->update_qty($bm);
+        //     $listed_stock_verification = Listed_stock_verification_model::firstOrNew(['process_id'=>$process->id, 'variation_id'=>$variation->id]);
+        //     $listed_stock_verification->qty_from = $updatedQuantity;
+        //     $listed_stock_verification->admin_id = session('user_id');
+        //     $listed_stock_verification->save();
 
-            $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>0]));
+        //     $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>0]));
 
-            if($response->quantity != null){
-                $variation->listed_stock = $response->quantity;
-                $variation->save();
-            }
-        }
+        //     if($response->quantity != null){
+        //         $variation->listed_stock = $response->quantity;
+        //         $variation->save();
+        //     }
+        // }
 
         // Artisan::call('refresh:new');
 
