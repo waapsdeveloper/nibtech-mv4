@@ -195,6 +195,92 @@
     </div>
         <br>
 
+        @if ($process->status <= 2)
+
+            <div class="card">
+                <div class="card-header pb-0">
+                    <div class="d-flex justify-content-between">
+                        <h4 class="card-title mg-b-0">Latest Scanned</h4>
+                        <h4 class="card-title mg-b-0">Counter: {{ session('counter') }} <a href="{{ url('stock_room/reset_counter') }}">Reset</a></h4>
+
+                        <h4 class="card-title mg-b-0">Total Scanned: {{$scanned_total}}</h4>
+                        @if ($process->status == 2)
+                            <h4 class="card-title mg-b-0">Total Verified: {{$verified_total}}</h4>
+
+                        @endif
+                        <form method="get" action="" class="row form-inline">
+                            <label for="perPage" class="card-title inline">per page:</label>
+                            <select name="per_page" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
+                                <option value="5" {{ Request::get('per_page') == 5 ? 'selected' : '' }}>10</option>
+                                <option value="10" {{ Request::get('per_page') == 10 ? 'selected' : '' }}>10</option>
+                                <option value="20" {{ Request::get('per_page') == 20 ? 'selected' : '' }}>20</option>
+                                <option value="50" {{ Request::get('per_page') == 50 ? 'selected' : '' }}>50</option>
+                                <option value="100" {{ Request::get('per_page') == 100 ? 'selected' : '' }}>100</option>
+                            </select>
+                        </form>
+                    </div>
+                </div>
+                <div class="card-body"><div class="table-responsive">
+                    <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                        <thead>
+                            <tr>
+                                <th><small><b>No</b></small></th>
+                                <th><small><b>SKU</b></small></th>
+                                <th><small><b>Variation</b></small></th>
+                                <th><small><b>IMEI | Serial Number</b></small></th>
+                                <th><small><b>Reference</b></small></th>
+                                <th><small><b>Operation</b></small></th>
+                                <th><small><b>Vendor</b></small></th>
+                                <th><small><b>Creation Date</b></small></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                                $i = 0;
+                            @endphp
+                            @foreach ($last_ten as $item)
+                                <tr>
+                                    @if ($item->stock == null)
+                                        {{$item->stock_id}}
+                                        @continue
+                                    @endif
+                                    @if ($item->stock->order == null)
+                                        {{$item->stock_id}}
+                                        @continue
+                                    @endif
+                                    @php
+                                        $stock = $item->stock;
+                                        $variation = $stock->variation;
+                                        $customer = $stock->order->customer;
+                                    @endphp
+                                    <td>{{ $i + 1 }}</td>
+                                    <td>{{ $variation->sku ?? null }}</td>
+                                    <td>
+                                        {{ ($products[$variation->product_id] ?? "Product not found").' '.($storages[$variation->storage] ?? null).' '.($colors[$variation->color] ?? null).' '.($grades[$variation->grade] ?? "Grade not added") }} {{$grades[$variation->sub_grade] ?? '' }}
+                                    </td>
+                                    <td>{{ $stock->imei.$stock->serial_number }}</td>
+                                    <td>{{ $item->description }}</td>
+                                    <td>{{ $stock->latest_operation->description ?? null }}</td>
+                                    <td>{{ $customer->first_name ?? "Purchase Entry Error" }}</td>
+                                    <td style="width:220px">{{ $item->created_at }}</td>
+                                    <td>
+                                        @if (session('user')->hasPermission('delete_topup_item') && $process->status == 1)
+                                            <a href="{{ url('topup/delete_topup_item').'/'.$item->id }}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this item?');">
+                                                <i class="fa fa-trash"></i>
+                                            </a>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @php
+                                    $i ++;
+                                @endphp
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                </div>
+            </div>
+        @endif
         <div class="card" id="print_inv">
             <div class="card-header pb-0 d-flex justify-content-between">
                 <h4 class="card-title">Changed Stock</h4>
