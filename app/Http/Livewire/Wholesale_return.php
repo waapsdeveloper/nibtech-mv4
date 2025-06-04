@@ -322,6 +322,11 @@ class Wholesale_return extends Component
         if(request('grade')){
             session()->put('grade',request('grade'));
         }
+        if(request('bypass_60_days_limit')){
+            session()->put('bypass_60_days_limit',request('bypass_60_days_limit'));
+        }else{
+            session()->forget('bypass_60_days_limit');
+        }
         session()->put('description',request('description'));
         $order = Order_model::find($order_id);
         // print_r($wholesale_return);
@@ -453,14 +458,18 @@ class Wholesale_return extends Component
                     $stock->save();
 
                     session()->put('success','Item added');
-                    $label_url = url('imei/print_label')."?stock_id=".$stock->id;
-                    echo '<script>
-                        var newTab2 = window.open("'.$label_url.'", "_blank");
-                        newTab2.onload = function() {
-                            newTab2.print();
-                        };
-                        window.location.href = document.referrer;
-                    </script>';
+                    if(!request('bypass_print_label')){
+                        session()->forget('bypass_print_label');
+                        $label_url = url('imei/print_label')."?stock_id=".$stock->id;
+                        echo '<script>
+                            var newTab2 = window.open("'.$label_url.'", "_blank");
+                            newTab2.onload = function() {
+                                newTab2.print();
+                            };
+                            window.location.href = document.referrer;
+                        </script>';
+                    }else{
+                        session()->put('bypass_print_label',1);
                 }else{
                     session()->put('error','Item already added');
                 }
