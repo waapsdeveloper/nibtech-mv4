@@ -74,7 +74,7 @@
                 <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
                 <a href="{{url('order')}}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
             </div>
-
+            <input type="hidden" name="status" value="{{ Request::get('status') }}">
             <input type="hidden" name="page" value="{{ Request::get('page') }}">
             <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
             <input type="hidden" name="sort" value="{{ Request::get('sort') }}">
