@@ -143,7 +143,7 @@
                                     if (!isValidIMEI(value)) {
                                         input.setCustomValidity('Invalid IMEI: checksum failed.');
                                     } else {
-                                        input.setCustomValidity('');
+                                        input.setCustomValidity('Hello');
                                     }
                                 } else if (value.length === 0) {
                                     input.setCustomValidity('This field is required');
