@@ -281,7 +281,7 @@ class ListedStockVerification extends Component
 
         }
 
-        return view('livewire.topup_detail')->with($data);
+        return view('livewire.listed_stock_verification_detail')->with($data);
 
     }
 
