@@ -1575,51 +1575,6 @@ class Order extends Component
             $total_charge = 0;
             $total_quantity = 0;
 
-            foreach ($sold_stock['stock_ids'] as $stock_id) {
-                $stock = Stock_model::find($stock_id);
-                $last_item = $stock->last_item();
-                $last_order = $last_item->order;
-
-                if (in_array($last_item->order->order_type_id, [2, 3, 5])) {
-
-                    if($last_order->order_type_id == 3 && $last_item->currency != 4 && $last_item->currency != null){
-                        $currency = Currency_model::find($last_item->currency);
-                        $exchange_rate = ExchangeRate::where('target_currency',$currency->code)->first();
-
-                        $total_price += $last_item->price / $exchange_rate->rate;
-                        if (!in_array($last_item->order_id, $s_orders)) {
-                            $s_orders[] = $last_item->order_id;
-                            $total_charge += $last_item->order->charges / $exchange_rate->rate ?? 0;
-                        }
-                    }else{
-                        $total_price += $last_item->price;
-                        if (!in_array($last_item->order_id, $s_orders)) {
-                            $s_orders[] = $last_item->order_id;
-                            $total_charge += $last_item->order->charges ?? 0;
-                        }
-                    }
-                    // $total_price += $last_item->price;
-                    $total_quantity++;
-                }
-
-            }
-
-            $average_price = $total_quantity ? $total_price / $total_quantity : "Issue";
-            $average_charge = $total_quantity ? $total_charge / $total_quantity : "Issue";
-            $average_profit = $total_quantity ? ($total_price - $total_cost - $total_charge - $total_repair) / $total_quantity : "Issue";
-            $graded_count[$key]['average_price'] = is_numeric($average_price) ? amount_formatter($average_price) : $average_price;
-            $graded_count[$key]['total_price'] = is_numeric($total_price) ? amount_formatter($total_price) : $total_price;
-            $graded_count[$key]['average_charge'] = is_numeric($average_charge) ? amount_formatter($average_charge) : $average_charge;
-            $graded_count[$key]['total_charge'] = is_numeric($total_charge) ? amount_formatter($total_charge) : $total_charge;
-            $graded_count[$key]['profit'] = is_numeric($total_price - $total_cost - $total_charge - $total_repair) ? amount_formatter($total_price - $total_cost - $total_charge - $total_repair) : $total_price - $total_cost - $total_charge - $total_repair;
-            $graded_count[$key]['average_profit'] = is_numeric($average_profit) ? amount_formatter($average_profit) : $average_profit;
-
-            $total_graded_count['total_price'] += $total_price;
-            $total_graded_count['total_charge'] += $total_charge;
-            $total_graded_count['profit'] += $total_price - $total_cost - $total_charge - $total_repair;
-            $total_graded_count['average_price'] += $average_price;
-            $total_graded_count['average_charge'] += $average_charge;
-            $total_graded_count['average_profit'] += $average_profit;
         }
 
         $data['graded_count'] = $graded_count;
