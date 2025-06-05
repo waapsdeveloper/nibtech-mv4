@@ -447,6 +447,11 @@ class Topup extends Component
 
                 session()->put('success', 'Stock Added successfully: SKU:'.$stock->variation->sku.' - '.$model.' - '.$storage.' - '.$color.' - '.$grade);
             }else{
+                if($process->status != 1 && $process_stock->id == null){
+                    session()->put('error', 'Topup is not in progress, please start a new Topup');
+                    return redirect()->back();
+                }
+
                 if(request('copy') == 1){
                     $process_stock->status = 1;
                     $process_stock->save();
