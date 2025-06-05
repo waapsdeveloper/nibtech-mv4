@@ -387,7 +387,7 @@
             let price = $('#price_' + listingId);
             let min_val = min.val();
             let price_val = price.val();
-            if (min_val > price_val || min_val < price_val*0.92) {
+            if (min_val > price_val || min_val*1.08 < price_val) {
                 min.addClass('bg-red');
                 min.removeClass('bg-green');
                 price.addClass('bg-red');
