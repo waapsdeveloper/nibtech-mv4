@@ -214,7 +214,7 @@
                                 <tr>
                                     <td>{{ $s+1 }}</td>
                                     @if (request('bp') == 1)
-                                    <td>{{ $products[$returns->product_id] ." ". $storages[$returns->storage] }}</td>
+                                    <td>{{ $products[$returns->product_id] ." ". $storages[$returns->storage ?? 0] }}</td>
                                     @endif
                                     @if (request('bc') == 1)
                                     <td>{{ $customers[$returns->customer_id] }}</td>
