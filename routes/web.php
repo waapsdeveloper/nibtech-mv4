@@ -111,6 +111,7 @@ Route::get('purchase/detail/{id}', [Order::class,'purchase_detail'])->name('purc
 Route::get('purchase/purchase_model_graded_count/{order_id}/{pss_id}/{s_type?}', [Order::class,'purchase_model_graded_count'])->name('purchase_detail');
 Route::get('purchase/purchase_model_color_graded_sale/{order_id}/{pss_id}', [Order::class,'purchase_model_color_graded_sale'])->name('purchase_detail');
 Route::get('purchase/purchase_model_color_graded_available/{order_id}/{pss_id}', [Order::class,'purchase_model_color_graded_available'])->name('purchase_detail');
+Route::get('purchase/purchase_model_color_graded_repair/{order_id}/{pss_id}', [Order::class,'purchase_model_color_graded_repair'])->name('purchase_detail');
 Route::post('purchase/approve/{id}', [Order::class,'purchase_approve'])->name('purchase_approve');
 Route::get('purchase/revert_status/{id}', [Order::class,'purchase_revert_status'])->name('purchase_revert_status');
 Route::post('purchase/remove_issues', [Order::class,'remove_issues'])->name('remove_purchase_issues');
