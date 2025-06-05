@@ -252,6 +252,7 @@ class Topup extends Component
 
     }
     public function add_topup_item($process_id){
+        $process = Process_model::find($process_id);
         if(request('reference') != null){
             session()->put('reference', request('reference'));
             $reference = request('reference');
@@ -428,7 +429,7 @@ class Topup extends Component
             $process_stock->admin_id = session('user_id');
             $process_stock->variation_id = $stock->variation_id;
             $process_stock->description = $reference;
-            if($process_stock->id == null){
+            if($process_stock->id == null && $process->status == 1){
                 $process_stock->status = 1;
                 $process_stock->save();
                 // Check if the session variable 'counter' is set
