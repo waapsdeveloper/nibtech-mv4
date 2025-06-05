@@ -2336,7 +2336,7 @@ class Order extends Component
         }
         if(request('repurchase') == 1){
             $data = json_decode($issue->data);
-            if($this->add_purchase_item($issue->order_id, $data->imei, $data->variation, $data->cost, 1) == 1){
+            if($this->add_purchase_item($issue->order_id, $data->imei, $data->variation, $data->cost, 1) != null){
                 if($data->imei){
                     $stock = Stock_model::where('imei',$data->imei)->orWhere('serial_number', $data->imei)->where('status','!=',null)->first();
                     $stock_operation = new Stock_operations_model();
