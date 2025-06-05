@@ -133,7 +133,8 @@
                 <button class="btn btn-primary pd-x-20" type="submit">Verify</button>
             </form>
         </div>
-        @elseif ($process->status <= 2)
+        @endif
+        @if ($process->status <= 2)
 
         <div class="p-2">
 
