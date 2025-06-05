@@ -1506,6 +1506,138 @@ class Order extends Component
 
         return response()->json($data);
     }
+
+    public function purchase_model_color_graded_repair($order_id, $pss_id){
+        $repair_ids = Process_model::where('process_type_id', 9)->pluck('id');
+        $pss = Product_storage_sort_model::find($pss_id);
+        $variations = $pss->variations;
+        $stocks = $pss->stocks->where('order_id', $order_id)->where('status', 2);
+        $sent_repair = Process_stock_model::whereIn('stock_id', $stocks->pluck('id'))->where('status', 1)->whereIn('process_id', $repair_ids)->pluck('stock_id')->toArray();
+        $stocks = $stocks->whereIn('id', $sent_repair);
+        $grades = Grade_model::pluck('name', 'id');
+        $colors = Color_model::whereIn('id', $variations->pluck('color'))->pluck('name', 'id');
+        $graded_count = [];
+        $s_orders = [];
+        $sold_stocks_2 = [];
+
+        $total_graded_count = [
+            'quantity' => 0,
+            'total_cost' => 0,
+            'average_cost' => 0,
+            'total_repair' => 0,
+            'average_repair' => 0,
+            'total_price' => 0,
+            'total_charge' => 0,
+            'profit' => 0,
+            'average_price' => 0,
+            'average_charge' => 0,
+            'average_profit' => 0,
+        ];
+
+        foreach ($colors as $color_id => $color) {
+            foreach ($grades as $grade_id => $grade) {
+                $graded_variations = $variations->where('grade', $grade_id)->where('color', $color_id);
+                $graded_stock_ids = $stocks->whereIn('variation_id', $graded_variations->pluck('id'))->pluck('id')->toArray();
+                $total_cost = Order_item_model::whereIn('stock_id', $graded_stock_ids)->where('order_id', $order_id)->sum('price');
+                $average_cost = $graded_stock_ids ? $total_cost / count($graded_stock_ids) : 0;
+                $total_repair = Process_stock_model::whereIn('stock_id', $graded_stock_ids)->where('status', 2)->whereIn('process_id', $repair_ids)->sum('price');
+                $average_repair = $graded_stock_ids ? $total_repair / count($graded_stock_ids) : 0;
+
+                if (count($graded_stock_ids) == 0) {
+                    continue;
+                }
+                $graded_count[$color_id . '.' . $grade_id] = [
+                    'quantity' => count($graded_stock_ids),
+                    'grade' => $grade,
+                    'grade_id' => $grade_id,
+                    'color' => $color,
+                    'color_id' => $color_id,
+                    'stock_ids' => $graded_stock_ids,
+                    'total_cost' => $total_cost,
+                    'average_cost' => $average_cost,
+                    'total_repair' => $total_repair,
+                    'average_repair' => $average_repair,
+                ];
+                $total_graded_count['quantity'] += count($graded_stock_ids);
+                $total_graded_count['total_cost'] += $total_cost;
+                $total_graded_count['average_cost'] += $average_cost;
+                $total_graded_count['total_repair'] += $total_repair;
+                $total_graded_count['average_repair'] += $average_repair;
+            }
+        }
+
+        foreach ($graded_count as $key => $sold_stock) {
+            $total_cost = $sold_stock['total_cost'];
+            $total_repair = $sold_stock['total_repair'];
+            $total_price = 0;
+            $total_charge = 0;
+            $total_quantity = 0;
+
+            foreach ($sold_stock['stock_ids'] as $stock_id) {
+                $stock = Stock_model::find($stock_id);
+                $last_item = $stock->last_item();
+                $last_order = $last_item->order;
+
+                if (in_array($last_item->order->order_type_id, [2, 3, 5])) {
+
+                    if($last_order->order_type_id == 3 && $last_item->currency != 4 && $last_item->currency != null){
+                        $currency = Currency_model::find($last_item->currency);
+                        $exchange_rate = ExchangeRate::where('target_currency',$currency->code)->first();
+
+                        $total_price += $last_item->price / $exchange_rate->rate;
+                        if (!in_array($last_item->order_id, $s_orders)) {
+                            $s_orders[] = $last_item->order_id;
+                            $total_charge += $last_item->order->charges / $exchange_rate->rate ?? 0;
+                        }
+                    }else{
+                        $total_price += $last_item->price;
+                        if (!in_array($last_item->order_id, $s_orders)) {
+                            $s_orders[] = $last_item->order_id;
+                            $total_charge += $last_item->order->charges ?? 0;
+                        }
+                    }
+                    // $total_price += $last_item->price;
+                    $total_quantity++;
+                }
+
+            }
+
+            $average_price = $total_quantity ? $total_price / $total_quantity : "Issue";
+            $average_charge = $total_quantity ? $total_charge / $total_quantity : "Issue";
+            $average_profit = $total_quantity ? ($total_price - $total_cost - $total_charge - $total_repair) / $total_quantity : "Issue";
+            $graded_count[$key]['average_price'] = is_numeric($average_price) ? amount_formatter($average_price) : $average_price;
+            $graded_count[$key]['total_price'] = is_numeric($total_price) ? amount_formatter($total_price) : $total_price;
+            $graded_count[$key]['average_charge'] = is_numeric($average_charge) ? amount_formatter($average_charge) : $average_charge;
+            $graded_count[$key]['total_charge'] = is_numeric($total_charge) ? amount_formatter($total_charge) : $total_charge;
+            $graded_count[$key]['profit'] = is_numeric($total_price - $total_cost - $total_charge - $total_repair) ? amount_formatter($total_price - $total_cost - $total_charge - $total_repair) : $total_price - $total_cost - $total_charge - $total_repair;
+            $graded_count[$key]['average_profit'] = is_numeric($average_profit) ? amount_formatter($average_profit) : $average_profit;
+
+            $total_graded_count['total_price'] += $total_price;
+            $total_graded_count['total_charge'] += $total_charge;
+            $total_graded_count['profit'] += $total_price - $total_cost - $total_charge - $total_repair;
+            $total_graded_count['average_price'] += $average_price;
+            $total_graded_count['average_charge'] += $average_charge;
+            $total_graded_count['average_profit'] += $average_profit;
+        }
+
+        $data['graded_count'] = $graded_count;
+
+        $data['total_graded_count'] = [
+            'quantity' => $total_graded_count['quantity'],
+            'total_cost' => amount_formatter($total_graded_count['total_cost']),
+            'average_cost' => amount_formatter($total_graded_count['average_cost']),
+            'total_repair' => amount_formatter($total_graded_count['total_repair']),
+            'average_repair' => amount_formatter($total_graded_count['average_repair']),
+            'total_price' => amount_formatter($total_graded_count['total_price']),
+            'total_charge' => amount_formatter($total_graded_count['total_charge']),
+            'profit' => amount_formatter($total_graded_count['profit']),
+            'average_price' => amount_formatter($total_graded_count['average_price']),
+            'average_charge' => amount_formatter($total_graded_count['average_charge']),
+            'average_profit' => amount_formatter($total_graded_count['average_profit']),
+        ];
+
+        return response()->json($data);
+    }
     public function purchase_model_color_graded_available($order_id, $pss_id){
         $repair_ids = Process_model::where('process_type_id', 9)->pluck('id');
         $pss = Product_storage_sort_model::find($pss_id);
