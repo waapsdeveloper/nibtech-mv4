@@ -1439,7 +1439,7 @@ class Report extends Component
         $stocks = Stock_model::whereIn('id',explode(',',request('stock_ids')))->with('variation','order_items','order')->get();
         $data['stocks'] = $stocks;
 
-        dd(request('stock_ids'));
+        // dd(request('stock_ids'));
         // $aggregates = DB::table('variation')
         //     ->join('order_items', 'variation.id', '=', 'order_items.variation_id')
         //     ->join('orders', 'order_items.order_id', '=', 'orders.id')
@@ -1530,7 +1530,7 @@ class Report extends Component
         // $data['aggregated_returns'] = $aggregate_returns;
         // $data['aggregated_return_cost'] = $aggregated_return_cost;
 
-        return Excel::download(new StockHistorysheetExport, 'Stock_History_Report.xlsx');
+        // return Excel::download(new StockHistorysheetExport, 'Stock_History_Report.xlsx');
         return view('livewire.stock_report_new')->with($data);
     }
     public function pnl(){
