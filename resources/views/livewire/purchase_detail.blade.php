@@ -277,7 +277,7 @@
                                 <tr>
                                     <td>{{ $i++ }}</td>
 
-                                    <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#color_graded_count_modal" onclick="loadProductSaleDetails({{$order_id}},{{$summery['pss_id']}})">{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</a></td>
+                                    <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#color_graded_count_modal" onclick="loadProductSaleDetails({{$order_id}},{{$summery['pss_id']}})">{{ $products[$summery['product_id']]." ".($storages[$summery['storage']] ?? null) }}</a></td>
                                     <td>{{ $summery['quantity'] }}</td>
                                     <td title="{{ $summery['average_cost'] }}">€{{ amount_formatter($summery['total_cost'],2) }}</td>
                                     <td>€{{ amount_formatter($summery['total_repair']) }}</td>
