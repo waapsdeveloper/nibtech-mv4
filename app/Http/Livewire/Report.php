@@ -345,10 +345,15 @@ class Report extends Component
         $data['aggregated_return_cost'] = $aggregated_return_cost;
 
 
-        $data['batch_grade_reports'] = Stock_model::select('variation.grade as grade', 'orders.id as order_id', 'orders.reference_id as reference_id', 'orders.reference as reference', 'customer.first_name as vendor', DB::raw('COUNT(*) as quantity'))
+        $data['batch_grade_reports'] = Stock_model::select('variation.grade as grade', 'orders.id as order_id', 'orders.reference_id as reference_id', 'orders.reference as reference', 'customer.first_name as vendor', DB::raw('COUNT(*) as quantity'), DB::raw('AVG(order_items.price) as average_cost'))
         ->join('variation', 'stock.variation_id', '=', 'variation.id')
         ->join('orders', 'stock.order_id', '=', 'orders.id')
         ->join('customer', 'orders.customer_id', '=', 'customer.id')
+        ->leftJoin('order_items', function ($join) {
+            $join->on('stock.id', '=', 'order_items.stock_id')
+                ->where('order_items.order_id', '=', 'stock.order_id')
+                ->whereNull('order_items.deleted_at');
+        })
         ->when(request('vendor') != '', function ($q) {
             return $q->where('orders.customer_id', request('vendor'));
         })
