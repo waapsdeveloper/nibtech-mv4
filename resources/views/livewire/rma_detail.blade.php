@@ -425,17 +425,18 @@
                                         @php
                                             $i ++;
                                             $sale_order = $item->sale_item($order_id);
+                                            $purchase_item = $item->purchase_item;
                                         @endphp
                                         <tr>
                                             <td>{{ $i }}</td>
-                                            <td>{{ $colors[$variation->color] ?? null }} - {{ $grades[$variation->grade] ?? null }} - {{ $vendor_grades[$item->reference_id ?? 0] }}</td>
+                                            <td>{{ $colors[$variation->color] ?? null }} - {{ $grades[$variation->grade] ?? null }} - {{ $vendor_grades[$purchase_item->reference_id ?? 0] }}</td>
                                             <td><a title="{{$item->id}} | Search Serial" href="{{url('imei')."?imei=".$item->imei.$item->serial_number}}" target="_blank"> {{$item->imei.$item->serial_number }} </a></td>
-                                            <td @if (session('user')->hasPermission('view_cost') && $item->purchase_item != null) title="Cost Price: €{{ amount_formatter($item->purchase_item->price,2) }}" @endif>
+                                            <td @if (session('user')->hasPermission('view_cost') && $purchase_item != null) title="Cost Price: €{{ amount_formatter($purchase_item->price,2) }}" @endif>
                                                 {{ $item->order->customer->first_name }}
                                                 @if (session('user')->hasPermission('view_cost'))
                                                 €{{ amount_formatter($sale_order->price,2) }}
                                                 @endif
-                                                @if ($item->purchase_item == null)
+                                                @if ($purchase_item == null)
                                                     Missing Purchase Entry
                                                 @endif
                                             </td>
