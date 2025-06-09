@@ -20,6 +20,7 @@ use App\Models\ExchangeRate;
 use App\Models\Grade_model;
 use App\Models\Stock_operations_model;
 use App\Models\Storage_model;
+use App\Models\Vendor_grade_model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
@@ -43,6 +44,7 @@ class RMA extends Component
         $data['latest_reference'] = Order_model::where('order_type_id',2)->orderBy('reference_id','DESC')->first()->reference_id ?? 2000;
         $data['currencies'] = Currency_model::pluck('sign','id');
         $data['order_statuses'] = Order_status_model::get();
+        $data['vendor_grades'] = Vendor_grade_model::pluck('name','id');
         if(request('per_page') != null){
             $per_page = request('per_page');
         }else{
