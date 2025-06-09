@@ -349,10 +349,11 @@ class Report extends Component
         ->join('variation', 'stock.variation_id', '=', 'variation.id')
         ->join('orders', 'stock.order_id', '=', 'orders.id')
         ->join('customer', 'orders.customer_id', '=', 'customer.id')
-        ->leftJoin('order_items', function ($join) {
-            $join->on('order_items.stock_id', '=', 'stock.id')
-                ->where('order_items.order_id', '=', 'stock.order_id')
-                ->whereNull('order_items.deleted_at');
+        ->join('order_items', function ($join) {
+            $join->on('stock.id', '=', 'order_items.stock_id')
+                ->where('order_items.deleted_at', null)
+                ->whereRaw('order_items.order_id = stock.order_id')
+                ->limit(1);
         })
         ->when(request('vendor') != '', function ($q) {
             return $q->where('orders.customer_id', request('vendor'));
