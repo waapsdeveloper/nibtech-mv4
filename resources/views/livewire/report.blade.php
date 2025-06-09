@@ -427,9 +427,9 @@
                                     @php
                                         $gradeReport = $orderReports->firstWhere('grade', $g_id);
                                     @endphp
-                                    <td title="{{ $grade }}">{{ $gradeReport ? ($gradeReport->quantity." (".amount_formatter($gradeReport->quantity/$total * 100,1) .'%)' ) : '-' }}</td>
+                                    <td title="{{ $grade }}">{{ $gradeReport ? ($gradeReport->quantity." (".amount_formatter($gradeReport->quantity/$total * 100,1) .'%) €' . amount_formatter($gradeReport->average_cost) ) : '-' }}</td>
                                 @endforeach
-                            </tr>
+                            </tr>z
                         @endforeach
                     </tbody>
                 </table>
