@@ -429,7 +429,7 @@
                                     @endphp
                                     <td title="{{ $grade }}">{{ $gradeReport ? ($gradeReport->quantity." (".amount_formatter($gradeReport->quantity/$total * 100,1) .'%) €' . amount_formatter($gradeReport->average_cost) ) : '-' }}</td>
                                 @endforeach
-                            </tr>z
+                            </tr>
                         @endforeach
                     </tbody>
                 </table>
