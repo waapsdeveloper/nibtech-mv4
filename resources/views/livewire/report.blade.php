@@ -383,7 +383,7 @@
                             <th><small><b>Reference</b></small></th>
                             <th><small><b>Vendor</b></small></th>
                             <th><small><b>Total</b></small></th>
-                            @foreach ($grades as $id=>$grade)
+                            @foreach ($batch_grades as $id=>$grade)
                                 @php
                                     if (strlen($grade) >= 5) {
                                         $gr = substr($grade, 0, 3). " ..
@@ -423,7 +423,7 @@
                                         </ul>
                                     </div>
                                 </td>
-                                @foreach ($grades as $g_id => $grade)
+                                @foreach ($batch_grades as $g_id => $grade)
                                     @php
                                         $gradeReport = $orderReports->firstWhere('grade', $g_id);
                                     @endphp
