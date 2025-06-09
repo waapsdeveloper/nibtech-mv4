@@ -231,6 +231,9 @@ class Report extends Component
             ->when(request('vendor'), function ($q) {
                 return $q->where('p_order.customer_id', request('vendor'));
             })
+            ->when($query == 1, function ($q) use ($variation_ids) {
+                return $q->whereIn('variation.id', $variation_ids);
+            })
             ->where(function ($query) use ($start_date, $end_date) {
                 $query->where(function ($subQuery) use ($start_date, $end_date) {
                     $subQuery->where('orders.order_type_id', 3)
