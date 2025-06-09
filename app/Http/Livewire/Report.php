@@ -97,62 +97,62 @@ class Report extends Component
 
         $variation_ids = Variation_model::select('id')
             ->whereHas('product', function ($q) use (&$query) {
-            $q->when(request('category') != '', function ($qu) use (&$query) {
-                $query = 1;
-                return $qu->where('category', '=', request('category'));
-            })
-            ->when(request('brand') != '', function ($qu) use (&$query) {
-                $query = 1;
-                return $qu->where('brand', '=', request('brand'));
-            });
+                $q->when(request('category') != '', function ($qu) use (&$query) {
+                    $query = 1;
+                    return $qu->where('category', '=', request('category'));
+                })
+                ->when(request('brand') != '', function ($qu) use (&$query) {
+                    $query = 1;
+                    return $qu->where('brand', '=', request('brand'));
+                });
             })
             ->when(request('vendor') != '' || request('batch') != '', function ($que) use (&$query) {
-            $query = 1;
-            return $que->whereHas('stocks.order', function ($q) {
-                $q->when(request('vendor') != '', function ($qu) {
-                return $qu->where('customer_id', '=', request('vendor'));
-                })
-                ->when(request('batch') != '', function ($qu) {
-                return $qu->where('reference_id', '=', request('batch'));
+                $query = 1;
+                return $que->whereHas('stocks.order', function ($q) {
+                    $q->when(request('vendor') != '', function ($qu) {
+                    return $qu->where('customer_id', '=', request('vendor'));
+                    })
+                    ->when(request('batch') != '', function ($qu) {
+                    return $qu->where('reference_id', '=', request('batch'));
+                    });
                 });
-            });
             })
             ->when(request('product') != '', function ($q) use (&$query) {
-            $query = 1;
-            return $q->where('product_id', '=', request('product'));
+                $query = 1;
+                return $q->where('product_id', '=', request('product'));
             })
             ->when(request('storage') != '', function ($q) use (&$query) {
-            $query = 1;
-            return $q->where('storage', request('storage'));
+                $query = 1;
+                return $q->where('storage', request('storage'));
             })
             ->when(request('color') != '', function ($q) use (&$query) {
-            $query = 1;
-            return $q->where('color', request('color'));
+                $query = 1;
+                return $q->where('color', request('color'));
             })
             ->when(request('grade') != '', function ($q) use (&$query) {
-            $query = 1;
-            return $q->where('grade', request('grade'));
+                $query = 1;
+                return $q->where('grade', request('grade'));
             })
             ->pluck('id')->toArray();
 
 
-        $sale_orders = Order_model::whereIn('order_type_id', [2,3,5])
-            ->whereBetween('processed_at', [$start_date, $end_date])
-            ->whereIN('status', [3,6])
-            ->pluck('id')->toArray();
-        $sale_items = Order_item_model::when($query == 1, function ($q) use ($variation_ids) {
-                return $q->whereIn('variation_id', $variation_ids);
-            })
+        // $sale_orders = Order_model::whereIn('order_type_id', [2,3,5])
+        //     ->whereBetween('processed_at', [$start_date, $end_date])
+        //     ->whereIN('status', [3,6])
+        //     ->pluck('id')->toArray();
+        // $sale_items = Order_item_model::when($query == 1, function ($q) use ($variation_ids) {
+        //         return $q->whereIn('variation_id', $variation_ids);
+        //     })
 
-        // whereIn('variation_id', $variation_ids)
-            // ->whereIn('order_id', $sale_orders)
-            ->whereHas('order', function ($q) use ($start_date, $end_date) {
-                $q->whereBetween('processed_at', [$start_date, $end_date])
-                    ->whereIn('status', [3,6])
-                    ->whereIn('order_type_id', [2,3,5]);
-            })
-            ->whereIN('status', [3,6])
-            ->pluck('id')->toArray();
+        // // whereIn('variation_id', $variation_ids)
+        //     // ->whereIn('order_id', $sale_orders)
+        //     ->whereHas('order', function ($q) use ($start_date, $end_date) {
+        //         $q->whereBetween('processed_at', [$start_date, $end_date])
+        //             ->whereIn('status', [3,6])
+        //             ->whereIn('order_type_id', [2,3,5]);
+        //     })
+        //     ->whereIN('status', [3,6])
+        //     ->pluck('id')->toArray();
 
 
         // $aggregates = DB::table('category')
@@ -364,7 +364,8 @@ class Report extends Component
 
         // dd($data['Vendor_grade_report']);
 
-
+        $data['batch_grades'] = Grade_model::whereIn('id', $data['batch_grade_reports']->pluck('grade')->unique()->toArray())
+            ->pluck('name', 'id');
 
 
 
@@ -672,45 +673,44 @@ class Report extends Component
         $query = 0;
 
         $variation_ids = Variation_model::select('id')
-            ->whereHas('product', function ($q) {
-                $q->when(request('category') != '', function ($qu) {
-                    $query = 1;
-                    return $qu->where('category', '=', request('category'));
+            ->whereHas('product', function ($q) use (&$query) {
+            $q->when(request('category') != '', function ($qu) use (&$query) {
+                $query = 1;
+                return $qu->where('category', '=', request('category'));
+            })
+            ->when(request('brand') != '', function ($qu) use (&$query) {
+                $query = 1;
+                return $qu->where('brand', '=', request('brand'));
+            });
+            })
+            ->when(request('vendor') != '' || request('batch') != '', function ($que) use (&$query) {
+            $query = 1;
+            return $que->whereHas('stocks.order', function ($q) {
+                $q->when(request('vendor') != '', function ($qu) {
+                return $qu->where('customer_id', '=', request('vendor'));
                 })
-                ->when(request('brand') != '', function ($qu) {
-                    $query = 1;
-                    return $qu->where('brand', '=', request('brand'));
+                ->when(request('batch') != '', function ($qu) {
+                return $qu->where('reference_id', '=', request('batch'));
                 });
+            });
             })
-            ->when(request('vendor') != '' || request('batch') != '', function ($que) {
-                $query = 1;
-                return $que->whereHas('stocks.order', function ($q) {
-                    $q->when(request('vendor') != '', function ($qu) {
-                        return $qu->where('customer_id', '=', request('vendor'));
-                    })
-                    ->when(request('batch') != '', function ($qu) {
-                        return $qu->where('reference_id', '=', request('batch'));
-                    });
-                });
+            ->when(request('product') != '', function ($q) use (&$query) {
+            $query = 1;
+            return $q->where('product_id', '=', request('product'));
             })
-            ->when(request('product') != '', function ($q) {
-                $query = 1;
-                return $q->where('product_id', '=', request('product'));
+            ->when(request('storage') != '', function ($q) use (&$query) {
+            $query = 1;
+            return $q->where('storage', request('storage'));
             })
-            ->when(request('storage') != '', function ($q) {
-                $query = 1;
-                return $q->where('storage', request('storage'));
+            ->when(request('color') != '', function ($q) use (&$query) {
+            $query = 1;
+            return $q->where('color', request('color'));
             })
-            ->when(request('color') != '', function ($q) {
-                $query = 1;
-                return $q->where('color', request('color'));
-            })
-            ->when(request('grade') != '', function ($q) {
-                $query = 1;
-                return $q->where('grade', request('grade'));
+            ->when(request('grade') != '', function ($q) use (&$query) {
+            $query = 1;
+            return $q->where('grade', request('grade'));
             })
             ->pluck('id')->toArray();
-
 
         $sale_data = [];
 
