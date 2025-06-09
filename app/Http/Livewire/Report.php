@@ -352,6 +352,9 @@ class Report extends Component
         ->when(request('vendor') != '', function ($q) {
             return $q->where('orders.customer_id', request('vendor'));
         })
+        ->when($query == 1, function ($q) use ($variation_ids) {
+            return $q->whereIn('variation.id', $variation_ids);
+        })
         ->groupBy('variation.grade', 'orders.id', 'orders.reference_id', 'orders.reference', 'customer.first_name')
         ->orderByDesc('order_id')
         ->get();
