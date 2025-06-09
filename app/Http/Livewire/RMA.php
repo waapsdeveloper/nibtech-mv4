@@ -44,7 +44,6 @@ class RMA extends Component
         $data['latest_reference'] = Order_model::where('order_type_id',2)->orderBy('reference_id','DESC')->first()->reference_id ?? 2000;
         $data['currencies'] = Currency_model::pluck('sign','id');
         $data['order_statuses'] = Order_status_model::get();
-        $data['vendor_grades'] = Vendor_grade_model::pluck('name','id');
         if(request('per_page') != null){
             $per_page = request('per_page');
         }else{
@@ -289,6 +288,7 @@ class RMA extends Component
         $data['products'] = Products_model::pluck('model','id');
         $data['grades'] = Grade_model::pluck('name','id');
         $data['colors'] = Color_model::pluck('name','id');
+        $data['vendor_grades'] = Vendor_grade_model::pluck('name','id');
         if(request('per_page') != null){
             $per_page = request('per_page');
         }else{
