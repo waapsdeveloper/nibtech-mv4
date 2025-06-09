@@ -395,7 +395,7 @@
                                 <thead>
                                     <tr>
                                         <th><small><b>#</b></small></th>
-                                        <th><small><b>Color - Grade</b></small></th>
+                                        <th><small><b>Color - Grade - V Grade</b></small></th>
                                         <th><small><b>IMEI/Serial</b></small></th>
                                         {{-- @if (session('user')->hasPermission('view_cost')) --}}
                                         <th><small><b>Vendor Price</b></small></th>
@@ -428,7 +428,7 @@
                                         @endphp
                                         <tr>
                                             <td>{{ $i }}</td>
-                                            <td>{{ $colors[$variation->color] ?? null }} - {{ $grades[$variation->grade] ?? null }}</td>
+                                            <td>{{ $colors[$variation->color] ?? null }} - {{ $grades[$variation->grade] ?? null }} - {{ $vendor_grades[$item->reference_id ?? 0] }}</td>
                                             <td><a title="{{$item->id}} | Search Serial" href="{{url('imei')."?imei=".$item->imei.$item->serial_number}}" target="_blank"> {{$item->imei.$item->serial_number }} </a></td>
                                             <td @if (session('user')->hasPermission('view_cost') && $item->purchase_item != null) title="Cost Price: €{{ amount_formatter($item->purchase_item->price,2) }}" @endif>
                                                 {{ $item->order->customer->first_name }}
