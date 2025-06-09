@@ -90,49 +90,48 @@ class Report extends Component
 
         $start_date = $start_date . " " . $start_time;
         $end_date = $end_date . " " . $end_time;
-
         $query = 0;
 
         $variation_ids = [];
         // if(request('data') == 1){
 
         $variation_ids = Variation_model::select('id')
-            ->whereHas('product', function ($q) {
-                $q->when(request('category') != '', function ($qu) {
-                    $query = 1;
-                    return $qu->where('category', '=', request('category'));
+            ->whereHas('product', function ($q) use (&$query) {
+            $q->when(request('category') != '', function ($qu) use (&$query) {
+                $query = 1;
+                return $qu->where('category', '=', request('category'));
+            })
+            ->when(request('brand') != '', function ($qu) use (&$query) {
+                $query = 1;
+                return $qu->where('brand', '=', request('brand'));
+            });
+            })
+            ->when(request('vendor') != '' || request('batch') != '', function ($que) use (&$query) {
+            $query = 1;
+            return $que->whereHas('stocks.order', function ($q) {
+                $q->when(request('vendor') != '', function ($qu) {
+                return $qu->where('customer_id', '=', request('vendor'));
                 })
-                ->when(request('brand') != '', function ($qu) {
-                    $query = 1;
-                    return $qu->where('brand', '=', request('brand'));
+                ->when(request('batch') != '', function ($qu) {
+                return $qu->where('reference_id', '=', request('batch'));
                 });
+            });
             })
-            ->when(request('vendor') != '' || request('batch') != '', function ($que) {
-                $query = 1;
-                return $que->whereHas('stocks.order', function ($q) {
-                    $q->when(request('vendor') != '', function ($qu) {
-                        return $qu->where('customer_id', '=', request('vendor'));
-                    })
-                    ->when(request('batch') != '', function ($qu) {
-                        return $qu->where('reference_id', '=', request('batch'));
-                    });
-                });
+            ->when(request('product') != '', function ($q) use (&$query) {
+            $query = 1;
+            return $q->where('product_id', '=', request('product'));
             })
-            ->when(request('product') != '', function ($q) {
-                $query = 1;
-                return $q->where('product_id', '=', request('product'));
+            ->when(request('storage') != '', function ($q) use (&$query) {
+            $query = 1;
+            return $q->where('storage', request('storage'));
             })
-            ->when(request('storage') != '', function ($q) {
-                $query = 1;
-                return $q->where('storage', request('storage'));
+            ->when(request('color') != '', function ($q) use (&$query) {
+            $query = 1;
+            return $q->where('color', request('color'));
             })
-            ->when(request('color') != '', function ($q) {
-                $query = 1;
-                return $q->where('color', request('color'));
-            })
-            ->when(request('grade') != '', function ($q) {
-                $query = 1;
-                return $q->where('grade', request('grade'));
+            ->when(request('grade') != '', function ($q) use (&$query) {
+            $query = 1;
+            return $q->where('grade', request('grade'));
             })
             ->pluck('id')->toArray();
 
