@@ -375,7 +375,7 @@
                 </div>
             </div>
             <div class="card-body mt-0">
-                <table class="table table-bordered table-hover text-md-nowrap">
+                <table class="table table-sm table-bordered table-hover text-md-nowrap">
                     <thead>
                         <tr>
                             <th><small><b>No</b></small></th>
