@@ -486,9 +486,6 @@ class Report extends Component
                     'quantity' => $sale->quantity ?? 0,
                 ];
             }
-            if(!in_array($day_start->format('l'), $headings)) {
-                $headings[] = $day_start->format('l'); // Add the day name to headings
-            }
             if (!in_array($sale->currency, $currency_ids)) {
                 $currency_ids[] = $sale->currency; // Collect unique currency_ids
             }
@@ -524,9 +521,6 @@ class Report extends Component
                     'total_sales' => amount_formatter($sale->total_sales ?? 0),
                     'quantity' => $sale->quantity ?? 0,
                 ];
-            }
-            if(!in_array($day_start->format('F Y'), $headings)) {
-                $headings[] = $day_start->format('F Y'); // Add the day name to headings
             }
             if (!in_array($sale->currency, $currency_ids)) {
                 $currency_ids[] = $sale->currency; // Collect unique currencies
@@ -565,9 +559,6 @@ class Report extends Component
                     'quantity' => $sale->quantity ?? 0,
                 ];
             }
-            if(!in_array($day_start->format('l'), $headings)) {
-                $headings[] = $day_start->format('l'); // Add the day name to headings
-            }
             if (!in_array($sale->currency, $currency_ids)) {
                 $currency_ids[] = $sale->currency; // Collect unique currency_ids
             }
@@ -604,14 +595,27 @@ class Report extends Component
                     'quantity' => $sale->quantity ?? 0,
                 ];
             }
-            if(!in_array($day_start->format('F Y'), $headings)) {
-                $headings[] = $day_start->format('F Y'); // Add the day name to headings
-            }
             if (!in_array($sale->currency, $currency_ids)) {
                 $currency_ids[] = $sale->currency; // Collect unique currencies
             }
         }
         // $monthly_sales is for current month, $monthly_sales_last_6 is an array for each of the past 6 months
+
+        // Dynamically generate headings for the sales history report
+        $headings = [];
+
+        // Collect all unique periods (days and months) from both B2C and B2B data
+        $periods = [];
+        // Last 7 days (including today)
+        for ($i = 0; $i <= 6; $i++) {
+            $periods[] = Carbon::now()->subDays($i)->startOfDay()->format('l');
+        }
+        // Last 6 months (including current month)
+        for ($i = 0; $i <= 5; $i++) {
+            $periods[] = Carbon::now()->subMonths($i)->startOfMonth()->format('F Y');
+        }
+        $headings = array_unique($periods);
+        $headings = array_values($headings);
 
         $currencies = Currency_model::whereIn('id', $currency_ids)->pluck('sign', 'id')->toArray();
 
