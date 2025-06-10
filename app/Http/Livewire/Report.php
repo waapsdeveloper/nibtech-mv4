@@ -456,12 +456,12 @@ class Report extends Component
         $headings = [];
         $currency_ids = [];
         // Get sales for each day in the last 7 days (including today)
-        $sales_data = [];
+        $b2c_sales_data = [];
         for ($i = 0; $i <= 6; $i++) {
             $day_start = Carbon::now()->subDays($i)->startOfDay();
             $day_end = Carbon::now()->subDays($i)->endOfDay();
             $sales = Order_item_model::whereHas('order', function ($q) use ($day_start, $day_end) {
-                    $q->whereIn('order_type_id', [2,3,5])
+                    $q->whereIn('order_type_id', [3])
                         ->whereIn('status', [3,6])
                         ->whereBetween('processed_at', [$day_start, $day_end]);
                 })
@@ -477,10 +477,10 @@ class Report extends Component
                 ->select('currency',DB::raw('AVG(price) as average_price'), DB::raw('SUM(price) as total_sales'), DB::raw('COUNT(*) as quantity'))
                 ->get();
             // $sales is a collection of sales for that day, grouped by currency
-            $sales_data[$day_start->format('l')] = [];
+            $b2c_sales_data[$day_start->format('l')] = [];
 
             foreach ($sales as $sale) {
-                $sales_data[$day_start->format('l')][$sale->currency] = [
+                $b2c_sales_data[$day_start->format('l')][$sale->currency] = [
                     'average_price' => amount_formatter($sale->average_price ?? 0),
                     'total_sales' => amount_formatter($sale->total_sales ?? 0),
                     'quantity' => $sale->quantity ?? 0,
@@ -500,7 +500,7 @@ class Report extends Component
             $end = Carbon::now()->subMonths($i)->endOfMonth();
 
             $sales = Order_item_model::whereHas('order', function ($q) use ($start, $end) {
-                    $q->whereIn('order_type_id', [2,3,5])
+                    $q->whereIn('order_type_id', [3])
                         ->whereIn('status', [3,6])
                         ->whereBetween('processed_at', [$start, $end]);
                 })
@@ -515,9 +515,84 @@ class Report extends Component
                 ->groupBy('currency')
                 ->select('currency', DB::raw('AVG(price) as average_price'), DB::raw('SUM(price) as total_sales'), DB::raw('COUNT(*) as quantity'))
                 ->get();
-            $sales_data[$start->format('F Y')] = [];
+            $b2c_sales_data[$start->format('F Y')] = [];
             foreach ($sales as $sale) {
-                $sales_data[$start->format('F Y')][$sale->currency] = [
+                $b2c_sales_data[$start->format('F Y')][$sale->currency] = [
+                    'average_price' => amount_formatter($sale->average_price ?? 0),
+                    'total_sales' => amount_formatter($sale->total_sales ?? 0),
+                    'quantity' => $sale->quantity ?? 0,
+                ];
+            }
+            $headings[] = $start->format('F Y'); // Add the month name to headings
+            if (!in_array($sale->currency, $currency_ids)) {
+                $currency_ids[] = $sale->currency; // Collect unique currencies
+            }
+        }
+
+
+        // Get sales for each day in the last 7 days (including today)
+        $b2b_sales_data = [];
+        for ($i = 0; $i <= 6; $i++) {
+            $day_start = Carbon::now()->subDays($i)->startOfDay();
+            $day_end = Carbon::now()->subDays($i)->endOfDay();
+            $sales = Order_item_model::whereHas('order', function ($q) use ($day_start, $day_end) {
+                    $q->whereIn('order_type_id', [2,5])
+                        ->whereIn('status', [3,6])
+                        ->whereBetween('processed_at', [$day_start, $day_end]);
+                })
+                ->when(request('vendor') != '', function ($q) {
+                    return $q->whereHas('stock.order', function ($qu) {
+                        return $qu->where('customer_id', request('vendor'));
+                    });
+                })
+                ->when($query == 1, function ($q) use ($variation_ids) {
+                    return $q->whereIn('variation_id', $variation_ids);
+                })
+                ->groupBy('currency')
+                ->select('currency',DB::raw('AVG(price) as average_price'), DB::raw('SUM(price) as total_sales'), DB::raw('COUNT(*) as quantity'))
+                ->get();
+            // $sales is a collection of sales for that day, grouped by currency
+            $b2b_sales_data[$day_start->format('l')] = [];
+
+            foreach ($sales as $sale) {
+                $b2b_sales_data[$day_start->format('l')][$sale->currency] = [
+                    'average_price' => amount_formatter($sale->average_price ?? 0),
+                    'total_sales' => amount_formatter($sale->total_sales ?? 0),
+                    'quantity' => $sale->quantity ?? 0,
+                ];
+            }
+            $headings[] = $day_start->format('l'); // Add the day name to headings
+            if (!in_array($sale->currency, $currency_ids)) {
+                $currency_ids[] = $sale->currency; // Collect unique currency_ids
+            }
+        }
+        // $daily_sales_last_week is an array with keys as date (Y-m-d) and values as sales collection for that day
+
+
+        // Get sales for each of the past 6 months (excluding current month)
+        for ($i = 0; $i <= 5; $i++) {
+            $start = Carbon::now()->subMonths($i)->startOfMonth();
+            $end = Carbon::now()->subMonths($i)->endOfMonth();
+
+            $sales = Order_item_model::whereHas('order', function ($q) use ($start, $end) {
+                    $q->whereIn('order_type_id', [2,5])
+                        ->whereIn('status', [3,6])
+                        ->whereBetween('processed_at', [$start, $end]);
+                })
+                ->when(request('vendor') != '', function ($q) {
+                    return $q->whereHas('stock.order', function ($qu) {
+                        return $qu->where('customer_id', request('vendor'));
+                    });
+                })
+                ->when($query == 1, function ($q) use ($variation_ids) {
+                    return $q->whereIn('variation_id', $variation_ids);
+                })
+                ->groupBy('currency')
+                ->select('currency', DB::raw('AVG(price) as average_price'), DB::raw('SUM(price) as total_sales'), DB::raw('COUNT(*) as quantity'))
+                ->get();
+            $b2b_sales_data[$start->format('F Y')] = [];
+            foreach ($sales as $sale) {
+                $b2b_sales_data[$start->format('F Y')][$sale->currency] = [
                     'average_price' => amount_formatter($sale->average_price ?? 0),
                     'total_sales' => amount_formatter($sale->total_sales ?? 0),
                     'quantity' => $sale->quantity ?? 0,
@@ -533,7 +608,8 @@ class Report extends Component
         $currencies = Currency_model::whereIn('id', $currency_ids)->pluck('sign', 'id')->toArray();
 
         return response()->json([
-            'sales_data' => $sales_data,
+            'b2b_sales_data' => $b2b_sales_data,
+            'b2c_sales_data' => $b2c_sales_data,
             'headings' => $headings,
             'currency_ids' => $currency_ids,
             'currencies' => $currencies,
