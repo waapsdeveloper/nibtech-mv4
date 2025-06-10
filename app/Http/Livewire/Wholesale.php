@@ -1015,6 +1015,9 @@ class Wholesale extends Component
         $data['title_page'] = "Point of Sale";
         session()->put('page_title', $data['title_page']);
 
+        if(request('order_id') != null){
+            session()->forget('cart');
+        }
         $data['categories'] = Category_model::orderBy('name')->pluck('name','id');
         $data['brands'] = Brand_model::orderBy('name')->pluck('name','id');
         $data['currencies'] = Currency_model::all();
