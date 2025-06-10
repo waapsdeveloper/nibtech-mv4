@@ -140,8 +140,12 @@
                                 <div class="d-flex">
                                     <input type="radio" class="btn-check" name="mode" id="3option" value="1">
                                     <label class="btn btn-outline-dark m-0" for="3option">Purchase</label>
+                                    <input type="radio" class="btn-check" name="mode" id="4option" value="2">
+                                    <label class="btn btn-outline-dark m-0" for="4option">RMA</label>
                                     <input type="radio" class="btn-check" name="mode" id="2option" checked value="5">
                                     <label class="btn btn-outline-dark m-0" for="2option">Sale</label>
+                                    <input type="radio" class="btn-check" name="mode" id="5option" checked value="6">
+                                    <label class="btn btn-outline-dark m-0" for="5option">CN</label>
                                 </div>
                             </div>
                             {{-- <div class="form-floating">
