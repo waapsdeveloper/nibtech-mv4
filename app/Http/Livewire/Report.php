@@ -474,7 +474,7 @@ class Report extends Component
                     return $q->whereIn('variation_id', $variation_ids);
                 })
                 ->groupBy(DB::raw('COALESCE(currency, 4)'))
-                ->select('currency',DB::raw('AVG(price) as average_price'), DB::raw('SUM(price) as total_sales'), DB::raw('COUNT(*) as quantity'))
+                ->selectRaw('COALESCE(currency, 4) as currency, AVG(price) as average_price, SUM(price) as total_sales, COUNT(*) as quantity')
                 ->get();
             // $sales is a collection of sales for that day, grouped by currency
             $b2c_sales_data[$day_start->format('l')] = [];
