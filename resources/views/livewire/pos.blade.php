@@ -144,7 +144,7 @@
                                     <label class="btn btn-outline-dark m-0" for="4option">RMA</label>
                                     <input type="radio" class="btn-check" name="mode" id="2option" checked value="5">
                                     <label class="btn btn-outline-dark m-0" for="2option">Sale</label>
-                                    <input type="radio" class="btn-check" name="mode" id="5option" checked value="6">
+                                    <input type="radio" class="btn-check" name="mode" id="5option" value="6">
                                     <label class="btn btn-outline-dark m-0" for="5option">CN</label>
                                 </div>
                             </div>
@@ -297,6 +297,9 @@
                         console.log(data);
 
                         window.location.reload();
+                    }
+                    else {
+                        alert(data.message);
                     }
                 });
             };
