@@ -758,7 +758,11 @@ class Report extends Component
 
         $b2c_total = $b2c_prices_by_currency->toArray();
         $b2c_price = $b2c_total;
-        $b2c_prices_by_currency = $b2c_prices_by_currency->map('amount_formatter');
+        $b2c_prices_by_currency = $b2c_prices_by_currency->map(
+            function ($items) {
+                return amount_formatter($items);
+            }
+        );
 
         $b2c_charges_by_currency = Order_model::whereIn('id', $b2c_order_items->pluck('order_id')->toArray())
             ->groupBy('currency')
