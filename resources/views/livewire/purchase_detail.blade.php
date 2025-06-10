@@ -23,7 +23,7 @@
             <div class="breadcrumb-header justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
                 <div class="left-content">
                 {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">Purchase</span> --}}
-                    @if ($order->status == 2)
+                    @if ($order->status <= 2)
                     <form class="form-inline" method="POST" id="approveform" action="{{url('purchase/approve').'/'.$order->id}}">
                         @csrf
                         <div class="">
