@@ -486,7 +486,9 @@ class Report extends Component
                     'quantity' => $sale->quantity ?? 0,
                 ];
             }
-            $headings[] = $day_start->format('l'); // Add the day name to headings
+            if(!in_array($day_start->format('l'), $headings)) {
+                $headings[] = $day_start->format('l'); // Add the day name to headings
+            }
             if (!in_array($sale->currency, $currency_ids)) {
                 $currency_ids[] = $sale->currency; // Collect unique currency_ids
             }
@@ -523,7 +525,9 @@ class Report extends Component
                     'quantity' => $sale->quantity ?? 0,
                 ];
             }
-            $headings[] = $start->format('F Y'); // Add the month name to headings
+            if(!in_array($day_start->format('F Y'), $headings)) {
+                $headings[] = $day_start->format('F Y'); // Add the day name to headings
+            }
             if (!in_array($sale->currency, $currency_ids)) {
                 $currency_ids[] = $sale->currency; // Collect unique currencies
             }
@@ -561,7 +565,9 @@ class Report extends Component
                     'quantity' => $sale->quantity ?? 0,
                 ];
             }
-            $headings[] = $day_start->format('l'); // Add the day name to headings
+            if(!in_array($day_start->format('l'), $headings)) {
+                $headings[] = $day_start->format('l'); // Add the day name to headings
+            }
             if (!in_array($sale->currency, $currency_ids)) {
                 $currency_ids[] = $sale->currency; // Collect unique currency_ids
             }
@@ -598,7 +604,9 @@ class Report extends Component
                     'quantity' => $sale->quantity ?? 0,
                 ];
             }
-            $headings[] = $start->format('F Y'); // Add the month name to headings
+            if(!in_array($day_start->format('F Y'), $headings)) {
+                $headings[] = $day_start->format('F Y'); // Add the day name to headings
+            }
             if (!in_array($sale->currency, $currency_ids)) {
                 $currency_ids[] = $sale->currency; // Collect unique currencies
             }
