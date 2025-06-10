@@ -236,7 +236,7 @@
         @endif
 
 
-        @if (isset($graded_stocks))
+        {{-- @if (isset($graded_stocks))
 
         <div class="row">
             <div class="col-xl-12">
@@ -317,7 +317,6 @@
                             {{ $graded_stock->name}}
 
                         </div>
-                                {{-- {{ $stock_operation }} --}}
                         <div class="card-body"><div class="table-responsive">
 
                                 <table class="table table-bordered table-hover mb-0 text-md-nowrap">
@@ -358,12 +357,12 @@
                                 isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
                             @endphp
 
-                                        {{-- @foreach ($variation->stocks->sortByDesc('stocks.updated_at') as $stock) --}}
+                                        @foreach ($variation->stocks->sortByDesc('stocks.updated_at') as $stock)
 
                                         @foreach ($order_items->where('variation_id',$variation->id) as $sale_item)
 
-                                            {{-- @dd($item->sale_item) --}}
-                                            {{-- @if($item->sale_item($order_id)->order_id == $order_id) --}}
+                                            @dd($item->sale_item)
+                                            @if($item->sale_item($order_id)->order_id == $order_id)
                                             @php
                                                 $i ++;
                                                 // $sale_item = $item->sale_item($order_id);
@@ -393,7 +392,7 @@
                                                 <td><a href="{{ url('delete_wholesale_return_item').'/'.$sale_item->id }}" onclick="return confirm('Are you sure you want to delete this item?');"><i class="fa fa-trash"></i></a></td>
                                                 @endif
                                             </tr>
-                                            {{-- @endif --}}
+                                            @endif
                                         @endforeach
                                         @endforeach
                                     </tbody>
@@ -406,7 +405,267 @@
                 @endforeach
             </div>
 
+        @endif --}}
+
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-header pb-0">
+                        <div class="d-flex justify-content-between">
+                            <h4 class="card-title mg-b-0">Latest Added Items</h4>
+                            @if (request('hide') == 'all')
+                                <a href="{{ url('wholesale/detail').'/'.$order_id }}" class="btn btn-sm btn-link">Show All</a>
+                            @else
+                                <a href="{{ url('wholesale/detail').'/'.$order_id.'?hide=all' }}" class="btn btn-sm btn-link">Hide All</a>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="card-body"><div class="table-responsive" style="max-height: 250px">
+                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th><small><b>No</b></small></th>
+                                        <th><small><b>Variation</b></small></th>
+                                        <th><small><b>IMEI | Serial Number</b></small></th>
+                                        <th><small><b>Vendor</b></small></th>
+                                        @if (session('user')->hasPermission('view_price'))
+                                        <th><small><b>Price</b></small></th>
+                                        @endif
+                                        <th><small><b>Creation Date</b></small></th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @php
+                                        $i = 0;
+                                    @endphp
+                                    @foreach ($last_ten as $item)
+
+                                        @php
+                                            $i ++;
+                                            $variation = $item->variation;
+                                            $stock = $item->stock;
+                                            $customer = $item->stock->order->customer ?? null;
+
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $i }}</td>
+                                            <td>{{ $products[$variation->product_id]}} {{$storages[$variation->storage] ?? null}} {{$colors[$variation->color] ?? null}} {{$grades[$variation->grade] ?? null }} {{$grades[$variation->sub_grade] ?? '' }}</td>
+                                            @if ($item->stock == null)
+                                                <td>{{ $item->quantity }} Items</td>
+                                            @else
+                                                @if ($stock->imei != null)
+                                                    <td>{{ $stock->imei }}</td>
+                                                @else
+                                                    <td>{{ $stock->serial_number }}</td>
+                                                @endif
+
+                                            @endif
+                                            <td>{{ $customer->first_name ?? null }}</td>
+                                            @if (session('user')->hasPermission('view_price'))
+                                            <td>€{{ amount_formatter($item->price,2) }}</td>
+                                            @endif
+                                            <td style="width:220px">{{ $item->created_at }}</td>
+                                            @if (session('user')->hasPermission('delete_wholesale_item') && $order->status == 2)
+                                            <td><a href="{{ url('delete_wholesale_item').'/'.$item->id }}" onclick="return confirm('Are you sure you want to delete this item?');"><i class="fa fa-trash"></i></a></td>
+                                            @endif
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        <br>
+                    </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br>
+        @if (request('hide') != 'all')
+
+        <div class="row">
+
+            @foreach ($variations as $key=>$vars)
+            @foreach ($vars as $key2=>$var)
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header pb-0">
+                        @php
+                            $varss = $vars->toArray();
+                        @endphp
+                        {{ $products[$key] }} {{ $storages[$key2] ?? null }}
+                        {{-- @dd($vars) --}}
+                        {{-- @php
+                            isset($variation->color_id)?$color = $variation->color_id->name:$color = null;
+                            isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
+                        @endphp
+                        {{ $products[$key]." ".$storage." ".$color." ".$variation->grade_id->name }} --}}
+                    </div>
+                            {{-- {{ $variation }} --}}
+                    <div class="card-body"><div class="table-responsive" style="max-height: 400px">
+
+                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th><small><b>#</b></small></th>
+                                        {{-- <th><small><b>Vendor</b></small></th> --}}
+                                        <th><small><b>Color - Grade</b></small></th>
+                                        <th><small><b>IMEI/Serial</b></small></th>
+                                        @if (session('user')->hasPermission('view_price'))
+                                        <th><small><b>Vendor Price</b></small></th>
+                                        @endif
+                                        @if (session('user')->hasPermission('delete_wholesale_item') && $order->status == 2)
+                                        <th></th>
+                                        @endif
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @php
+                                        $i = 0;
+                                        $total = 0;
+                                        $total_cost = 0;
+                                        $quantity = 0;
+                                    @endphp
+                                    <form method="POST" action="{{url('wholesale')}}/update_prices" id="update_prices_{{ $key."_".$key2 }}">
+                                        @csrf
+                                    @foreach ($var as $variation)
+                                    {{-- @dd($variation) --}}
+                                    @php
+                                            # code...
+                                        // $stocks = $variation->stocks;
+                                        // $items = $stocks->order_item;
+                                        // print_r($variation);
+                                    @endphp
+
+                                    {{-- @foreach ($stocks as $item) --}}
+                                    @foreach ($order_items->where('variation_id',$variation->id) as $sale_item)
+
+                                        {{-- @dd($item->sale_item) --}}
+                                        {{-- @if($item->sale_item($order_id)->order_id == $order_id) --}}
+                                        @php
+                                            $i ++;
+                                            // $sale_item = $item->sale_item($order_id);
+                                            $item = $sale_item->stock ?? null;
+                                            $purchase_item = $item->purchase_item ?? null;
+                                            $cost = $purchase_item->price ?? 0;
+                                            $price = $sale_item->price;
+                                            if($order->exchange_rate != null){
+                                                $ex_price = $price * $order->exchange_rate;
+                                            }
+                                            $total += $price;
+                                            $total_cost += $cost ?? 0;
+                                            $quantity += $sale_item->quantity;
+
+                                        @endphp
+                                        <tr @if($cost != $price) style="background: LightGreen" @endif>
+                                            <td>{{ $i }}</td>
+                                            <td>{{ $colors[$variation->color] ?? null }} - {{ $grades[$variation->grade] ?? null }} {{ $grades[$variation->sub_grade] ?? null }}</td>
+                                            {{-- <td>{{ $item->order->customer->first_name }}</td> --}}
+                                            @if ($sale_item->stock == null)
+                                                <td>
+                                                    @if ($order->status == 1)
+                                                        <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#add_item_stock_modal" onclick="add_item_stock({{ $sale_item->id }})"><i class="fa fa-plus"></i></a>
+                                                    @endif
+                                                    {{ $sale_item->quantity }} Items
+                                                </td>
+                                            @else
+                                                @if ($item->imei != null)
+                                                    <td>{{ $item->imei }}</td>
+                                                @else
+                                                    <td>{{ $item->serial_number }}</td>
+                                                @endif
+
+                                            @endif
+                                            @if (session('user')->hasPermission('view_price'))
+                                            <td @if (session('user')->hasPermission('view_cost')) title="Cost Price: €{{ $cost ?? null }}" @endif>
+                                                <span ondblclick="editPrice(this, {{ $sale_item->id }}, {{ $price }})" style="cursor:pointer;">
+                                                    {{ $item->order->customer->first_name ?? null }} €{{ amount_formatter($price,2) }}
+                                                </span>
+                                            </td>
+                                            @endif
+                                            @if (session('user')->hasPermission('delete_wholesale_item') && $order->status == 2)
+                                            <td><a href="{{ url('delete_wholesale_item').'/'.$sale_item->id }}" onclick="return confirm('Are you sure you want to delete this item?');"><i class="fa fa-trash"></i></a></td>
+                                            @endif
+                                            @if ($order->status == 3 && $sale_item->check_return != null)
+                                                <td><a href="{{ url('imei').'?imei='.($item->imei ?? null).($item->serial_number ?? null) }}" target="_blank"><i class="fa fa-link"></i></a></td>
+                                            @endif
+                                            <input type="hidden" name="item_ids[]" value="{{ $sale_item->id }}">
+                                        </tr>
+                                        {{-- @endif --}}
+                                    @endforeach
+                                    @endforeach
+                                    </form>
+                                </tbody>
+                            </table>
+                        <br>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        @if (session('user')->hasPermission('view_price'))
+
+                        <div>
+                            <label for="unit-price" class="">Change Unit Price: </label>
+                            <input type="number" name="unit_price" id="unit_price_{{ $key."_".$key2 }}" step="0.01" class="w-50 border-0" placeholder="Input Unit price" form="update_prices_{{ $key."_".$key2 }}" onblur="this.value = parseFloat(this.value).toFixed(2)">
+                        </div>
+
+                        @if ($order->exchange_rate != null)
+                        <div>
+                            <label for="unit-price" class="">Change {{$order->currency_id->sign}} Unit Price: </label>
+                            <input
+                                type="number"
+                                name="unit_change_price"
+                                id="unit_change_price_{{ $key."_".$key2 }}"
+                                step="0.01"
+                                class="w-50 border-0"
+                                placeholder="Input {{$order->currency_id->sign}} Unit price"
+                                {{-- form="update_prices_{{ $key."_".$key2 }}" --}}
+                                onblur="this.value = parseFloat(this.value).toFixed(2)"
+                                onchange="
+                                    var rate = {{ $order->exchange_rate ?? 1 }};
+                                    if(rate && rate != 0){
+                                        $(`#unit_price_{{ $key.'_'.$key2 }}`).val((parseFloat(this.value) / rate).toFixed(2));
+                                        {{-- this.value = (parseFloat(this.value) / rate).toFixed(2); --}}
+                                    }
+                                    // document.getElementById(`update_prices_`).submit();
+                                "
+                            >
+                        </div>
+                        @endif
+                        <div title="Average Cost: {{amount_formatter($total_cost/$quantity,2)}}">Average: {{amount_formatter($total/$quantity,2) }}</div>
+                        @endif
+                        <div>Total: {{$quantity }}</div>
+                    </div>
+                        <script>
+                            $('#update_prices_{{ $key."_".$key2 }}').on('submit', function(e) {
+                                e.preventDefault();
+                                var id = "{{ $key."_".$key2 }}";
+                                var form = $("#update_prices_" + id);
+                                var actionUrl = "{{ url('wholesale/update_prices') }}";
+
+                                $.ajax({
+                                    type: "POST",
+                                    url: actionUrl,
+                                    data: form.serialize(), // serializes the form's elements.
+                                    success: function(data) {
+                                        // alert("Success: " + data); // show response from the PHP script.
+                                        $('#unit_price_' + id).addClass('bg-lightgreen');
+                                    },
+                                    error: function(jqXHR, textStatus, errorThrown) {
+                                        alert("Error: " + textStatus + " - " + errorThrown);
+                                    }
+                                });
+                            });
+                        </script>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+            @endforeach
+        </div>
+
         @endif
+
+        <div class="modal" id="add_item_stock_modal">
+        </div>
 
 
 
