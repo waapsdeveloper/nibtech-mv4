@@ -789,7 +789,9 @@ class Report extends Component
         $b2c_total[4] = $b2c_total[4] - $b2c_stock_cost;
 
         $b2c_stock_repair_cost = Process_stock_model::whereIn('stock_id', $b2c_stock_ids)
-            ->where('process_id', 9)
+            ->whereHas('process', function ($q) {
+                $q->where('process_type_id', 9);
+            })
             ->sum('price');
 
         $b2c_total[4] = $b2c_total[4] - $b2c_stock_repair_cost;
@@ -879,7 +881,9 @@ class Report extends Component
         $b2c_return_total[4] = $b2c_return_total[4] - $b2c_return_stock_cost;
 
         $b2c_return_stock_repair_cost = Process_stock_model::whereIn('stock_id', $b2c_return_stock_ids)
-            ->where('process_id', 9)
+            ->whereHas('process', function ($q) {
+                $q->where('process_type_id', 9);
+            })
             ->sum('price');
 
         $b2c_return_total[4] = $b2c_return_total[4] - $b2c_return_stock_repair_cost;
@@ -938,7 +942,9 @@ class Report extends Component
 
         // dd($b2b_stock_cost);
         $b2b_stock_repair_cost = Process_stock_model::whereIn('stock_id', $b2b_stock_ids)
-            ->where('process_id', 9)
+            ->whereHas('process', function ($q) {
+                $q->where('process_type_id', 9);
+            })
             ->sum('price');
 
         $b2b_total = $b2b_prices_by_currency - $b2b_charges_by_currency - $b2b_stock_cost - $b2b_stock_repair_cost;
@@ -995,7 +1001,9 @@ class Report extends Component
             ->sum();
 
         $b2b_return_stock_repair_cost = Process_stock_model::whereIn('stock_id', $b2b_return_stock_ids)
-            ->where('process_id', 9)
+            ->whereHas('process', function ($q) {
+                $q->where('process_type_id', 9);
+            })
             ->sum('price');
 
         $b2b_return_totals = -($b2b_return_prices_by_currency - $b2b_return_charges_by_currency - $b2b_return_stock_cost - $b2b_return_stock_repair_cost);
