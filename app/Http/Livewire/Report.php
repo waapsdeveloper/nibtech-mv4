@@ -381,6 +381,99 @@ class Report extends Component
         $data['end_date'] = date("Y-m-d", strtotime($end_date));
         return view('livewire.report')->with($data);
     }
+
+    public function batch_grade_report_detail($order_id){
+
+        $start_date = Carbon::now()->startOfMonth()->format('Y-m-d');
+        $end_date = date('Y-m-d');
+        $start_time = '00:00:00';
+        $end_time = '23:59:59';
+
+        if (request('start_date') != NULL) {
+            $start_date = request('start_date');
+        }
+        if (request('end_date') != NULL) {
+            $end_date = request('end_date');
+        }
+        if (request('start_time') != NULL) {
+            $start_time = request('start_time');
+        }
+        if (request('end_time') != NULL) {
+            $end_time = request('end_time');
+        }
+        $data['start_date'] = $start_date;
+        $data['end_date'] = $end_date;
+        $data['start_time'] = $start_time;
+        $data['end_time'] = $end_time;
+
+        $start_date = $start_date . " " . $start_time;
+        $end_date = $end_date . " " . $end_time;
+        $query = 0;
+
+        $variation_ids = [];
+        // if(request('data') == 1){
+
+        $variation_ids = Variation_model::select('id')
+            ->whereHas('product', function ($q) use (&$query) {
+                $q->when(request('category') != '', function ($qu) use (&$query) {
+                    $query = 1;
+                    return $qu->where('category', '=', request('category'));
+                })
+                ->when(request('brand') != '', function ($qu) use (&$query) {
+                    $query = 1;
+                    return $qu->where('brand', '=', request('brand'));
+                });
+            })
+            ->when(request('vendor') != '' || request('batch') != '', function ($que) use (&$query) {
+                $query = 1;
+                return $que->whereHas('stocks.order', function ($q) {
+                    $q->when(request('vendor') != '', function ($qu) {
+                    return $qu->where('customer_id', '=', request('vendor'));
+                    })
+                    ->when(request('batch') != '', function ($qu) {
+                    return $qu->where('reference_id', '=', request('batch'));
+                    });
+                });
+            })
+            ->when(request('product') != '', function ($q) use (&$query) {
+                $query = 1;
+                return $q->where('product_id', '=', request('product'));
+            })
+            ->when(request('storage') != '', function ($q) use (&$query) {
+                $query = 1;
+                return $q->where('storage', request('storage'));
+            })
+            ->when(request('color') != '', function ($q) use (&$query) {
+                $query = 1;
+                return $q->where('color', request('color'));
+            })
+            ->when(request('grade') != '', function ($q) use (&$query) {
+                $query = 1;
+                return $q->where('grade', request('grade'));
+            })
+            ->pluck('id')->toArray();
+
+        $data['batch_grade_reports'] = Stock_model::select('variation.grade as grade', 'order_items.id as order_item_id', 'order_items.reference_id as reference_id', 'order_items.reference as reference', 'orders.reference as reference', DB::raw('COUNT(*) as quantity'), DB::raw('AVG(order_items.price) as average_cost'))
+        ->join('variation', 'stock.variation_id', '=', 'variation.id')
+        ->join('order_items', function ($join) {
+            $join->on('stock.id', '=', 'order_items.stock_id')
+                ->where('order_items.deleted_at', null)
+                ->whereRaw('order_items.order_id = stock.order_id')
+                ->limit(1);
+        })
+        ->join('vendor_grade', 'order_items.reference_id', '=', 'vendor_grade.id')
+        ->when($query == 1, function ($q) use ($variation_ids) {
+            return $q->whereIn('variation.id', $variation_ids);
+        })
+        ->where('stock.order_id', $order_id)
+        ->groupBy('variation.grade', 'order_items.reference_id', 'order_items.reference')
+        ->orderByDesc('reference_id')
+        ->get();
+
+
+
+
+    }
     public function projected_sales(){
         $pdf = new ProjectedSalesExport();
         $pdf->generatePdf();
