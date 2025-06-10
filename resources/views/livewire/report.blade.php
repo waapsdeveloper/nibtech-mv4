@@ -574,7 +574,7 @@
                             table += `<td>`;
                             Object.values(data.currency_ids).forEach((key) => {
                                 if (sales_data[heading] && sales_data[heading][key]) {
-                                    table += `${currency}${sales_data[heading][key]['average_price']} `;
+                                    table += `${currencies[key]}${sales_data[heading][key]['average_price']} `;
                                 }
                             });
                             table += `</td>`;
@@ -587,7 +587,7 @@
                             table += `<td>`;
                             Object.values(data.currency_ids).forEach((key) => {
                                 if (sales_data[heading] && sales_data[heading][key]) {
-                                    table += `${currency}${sales_data[heading][key]['total_sales']} `;
+                                    table += `${currencies[key]}${sales_data[heading][key]['total_sales']} `;
                                 }
                             });
                             table += `</td>`;
