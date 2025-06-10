@@ -454,7 +454,7 @@ class Report extends Component
             ->pluck('id')->toArray();
 
         $headings = [];
-        $currencies = [];
+        $currency_ids = [];
         // Get sales for each day in the last 7 days (including today)
         $sales_data = [];
         for ($i = 0; $i <= 6; $i++) {
@@ -487,8 +487,8 @@ class Report extends Component
                 ];
             }
             $headings[] = $day_start->format('l'); // Add the day name to headings
-            if (!in_array($sale->currency, $currencies)) {
-                $currencies[] = $sale->currency; // Collect unique currencies
+            if (!in_array($sale->currency, $currency_ids)) {
+                $currency_ids[] = $sale->currency; // Collect unique currency_ids
             }
         }
         // $daily_sales_last_week is an array with keys as date (Y-m-d) and values as sales collection for that day
@@ -524,18 +524,20 @@ class Report extends Component
                 ];
             }
             $headings[] = $start->format('F Y'); // Add the month name to headings
-            if (!in_array($sale->currency, $currencies)) {
-                $currencies[] = $sale->currency; // Collect unique currencies
+            if (!in_array($sale->currency, $currency_ids)) {
+                $currency_ids[] = $sale->currency; // Collect unique currencies
             }
         }
         // $monthly_sales is for current month, $monthly_sales_last_6 is an array for each of the past 6 months
 
-        $currencies = Currency_model::whereIn('id', $currencies)->pluck('sign', 'id')->toArray();
+        $currencies = Currency_model::whereIn('id', $currency_ids)->pluck('sign', 'id')->toArray();
 
         return response()->json([
             'sales_data' => $sales_data,
             'headings' => $headings,
+            'currency_ids' => $currency_ids,
             'currencies' => $currencies,
+
         ]);
     }
 
