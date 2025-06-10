@@ -556,6 +556,7 @@
                                 </thead>
                                 <tbody>
                                     <tr>
+                                        <th><small><b>Qty</b></small></th>
                                         `;
                         headings.forEach((heading) => {
                             table += `<td>`;
@@ -573,6 +574,7 @@
                         table += `
                                     </tr>
                                     <tr>
+                                        <th><small><b>Avg</b></small></th>
                                         `;
                         headings.forEach((heading) => {
                             table += `<td>`;
@@ -586,6 +588,7 @@
                         table += `
                                     </tr>
                                     <tr>
+                                        <th><small><b>Ttl</b></small></th>
                                         `;
                         headings.forEach((heading) => {
                             table += `<td>`;
