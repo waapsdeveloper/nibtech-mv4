@@ -547,6 +547,7 @@
                             <table class="table table-bordered table-hover text-md-nowrap">
                                 <thead>
                                     <tr>
+                                        <th></th>
                                         `;
                         headings.forEach((heading) => {
                             table += `<th><small><b>${heading}</b></small></th>`;
