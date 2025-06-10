@@ -200,7 +200,7 @@
                     Pack Sheet
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="pack_sheet">
-                        <li><a class="dropdown-item" href="{{url('export_bulksale_invoice')}}/{{ $order->id }}?packlist=2&id={{ $order->id }}">.xlsx</a></li>
+                        <li><a class="dropdown-item" href="{{url('export_bulksale_invoice')}}/{{ $order->id }}?packlist=2&id={{ $order->id }}&return=1">.xlsx</a></li>
                         <li><a class="dropdown-item" href="{{url('export_bulksale_invoice')}}/{{ $order->id }}?packlist=1" target="_blank">.pdf</a></li>
                     </ul>
                 </div>
