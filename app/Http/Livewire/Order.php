@@ -603,7 +603,7 @@ class Order extends Component
             $order->customer_id = request('customer_id');
         }
         if(request('approve') == 1){
-            $order->status = 3;
+            $order->status += 1;
             $order->processed_at = now()->format('Y-m-d H:i:s');
         }
         $order->save();
