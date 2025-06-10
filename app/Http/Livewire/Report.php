@@ -455,7 +455,7 @@ class Report extends Component
 
         // Get sales for each day in the last 7 days (including today)
         $daily_sales_last_week = [];
-        for ($i = 6; $i >= 0; $i--) {
+        for ($i = 0; $i <= 6; $i++) {
             $day_start = Carbon::now()->subDays($i)->startOfDay();
             $day_end = Carbon::now()->subDays($i)->endOfDay();
             $sales = Order_item_model::whereHas('order', function ($q) use ($day_start, $day_end) {
