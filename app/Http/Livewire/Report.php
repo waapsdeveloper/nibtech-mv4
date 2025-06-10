@@ -474,7 +474,10 @@ class Report extends Component
                     return $q->whereIn('variation_id', $variation_ids);
                 })
                 ->groupBy('currency')
-                ->select('currency',DB::raw('AVG(price) as average_price'), DB::raw('SUM(price) as total_sales'), DB::raw('COUNT(*) as quantity'))
+                ->select('currency',
+                    DB::raw('AVG(price - charges) as average_price'),
+                    DB::raw('SUM(price - charges) as total_sales'),
+                    DB::raw('COUNT(*) as quantity'))
                 ->get();
             // $sales is a collection of sales for that day, grouped by currency
             $sales_data[$day_start->format('l')] = [];
@@ -513,7 +516,10 @@ class Report extends Component
                     return $q->whereIn('variation_id', $variation_ids);
                 })
                 ->groupBy('currency')
-                ->select('currency', DB::raw('AVG(price) as average_price'), DB::raw('SUM(price) as total_sales'), DB::raw('COUNT(*) as quantity'))
+                ->select('currency',
+                    DB::raw('AVG(price - charges) as average_price'),
+                    DB::raw('SUM(price - charges) as total_sales'),
+                    DB::raw('COUNT(*) as quantity'))
                 ->get();
             $sales_data[$start->format('F Y')] = [];
             foreach ($sales as $sale) {
