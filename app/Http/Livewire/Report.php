@@ -514,8 +514,8 @@ class Report extends Component
                 ->when($query == 1, function ($q) use ($variation_ids) {
                     return $q->whereIn('variation_id', $variation_ids);
                 })
-                ->groupBy('currency')
-                ->select('currency', DB::raw('AVG(price) as average_price'), DB::raw('SUM(price) as total_sales'), DB::raw('COUNT(*) as quantity'))
+                ->groupBy(DB::raw('COALESCE(currency, 4)'))
+                ->selectRaw('COALESCE(currency, 4) as currency, AVG(price) as average_price, SUM(price) as total_sales, COUNT(*) as quantity')
                 ->get();
             $b2c_sales_data[$start->format('F Y')] = [];
             foreach ($sales as $sale) {
@@ -549,8 +549,8 @@ class Report extends Component
                 ->when($query == 1, function ($q) use ($variation_ids) {
                     return $q->whereIn('variation_id', $variation_ids);
                 })
-                ->groupBy('currency')
-                ->select('currency',DB::raw('AVG(price) as average_price'), DB::raw('SUM(price) as total_sales'), DB::raw('COUNT(*) as quantity'))
+                ->groupBy(DB::raw('COALESCE(currency, 4)'))
+                ->selectRaw('COALESCE(currency, 4) as currency, AVG(price) as average_price, SUM(price) as total_sales, COUNT(*) as quantity')
                 ->get();
             // $sales is a collection of sales for that day, grouped by currency
             $b2b_sales_data[$day_start->format('l')] = [];
@@ -587,8 +587,8 @@ class Report extends Component
                 ->when($query == 1, function ($q) use ($variation_ids) {
                     return $q->whereIn('variation_id', $variation_ids);
                 })
-                ->groupBy('currency')
-                ->select('currency', DB::raw('AVG(price) as average_price'), DB::raw('SUM(price) as total_sales'), DB::raw('COUNT(*) as quantity'))
+                ->groupBy(DB::raw('COALESCE(currency, 4)'))
+                ->selectRaw('COALESCE(currency, 4) as currency, AVG(price) as average_price, SUM(price) as total_sales, COUNT(*) as quantity')
                 ->get();
             $b2b_sales_data[$start->format('F Y')] = [];
             foreach ($sales as $sale) {
