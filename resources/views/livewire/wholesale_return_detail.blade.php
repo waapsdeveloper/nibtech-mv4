@@ -390,7 +390,7 @@
                                                 <td>{{ $row->admin->first_name ?? null }}</td>
                                                 <td>{{ $row->updated_at ?? null }}</td>
                                                 @if (session('user')->hasPermission('delete_wholesale_return_item') && $order->status != 3)
-                                                <td><a href="{{ url('delete_wholesale_return_item').'/'.$stock->sale_item($order_id)->id }}" onclick="return confirm('Are you sure you want to delete this item?');"><i class="fa fa-trash"></i></a></td>
+                                                <td><a href="{{ url('delete_wholesale_return_item').'/'.$sale_item->id }}" onclick="return confirm('Are you sure you want to delete this item?');"><i class="fa fa-trash"></i></a></td>
                                                 @endif
                                             </tr>
                                             {{-- @endif --}}
