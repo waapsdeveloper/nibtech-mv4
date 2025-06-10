@@ -553,6 +553,8 @@
                             table += `<th><small><b>${heading}</b></small></th>`;
                         });
                         table += `
+
+
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -568,6 +570,8 @@
                             table += `</td>`;
                         });
                         table += `
+
+
                                     </tr>
                                     <tr>
                                         `;
