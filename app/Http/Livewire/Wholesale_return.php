@@ -276,6 +276,16 @@ class Wholesale_return extends Component
         // dd($graded_stock);
         $data['graded_stocks'] = $graded_stocks;
 
+        $variations = Variation_model::whereHas('order_items', function ($query) use ($order_id) {
+            $query->where('order_id', $order_id);
+        })
+        ->orderBy('product_id', 'desc')
+        ->get();
+        if(request('hide') != 'all'){
+
+            $variations = $variations->groupBy(['product_id', 'storage']);
+            $data['variations'] = $variations;
+        }
         $order_items = Order_item_model::with(['stock','stock.order'])->where('order_id',$order_id)->get();
         $data['order_items'] = $order_items;
         $last_ten = Order_item_model::where('order_id',$order_id)->orderBy('id','desc')->limit(10)->get();
