@@ -276,6 +276,8 @@ class Wholesale_return extends Component
         // dd($graded_stock);
         $data['graded_stocks'] = $graded_stocks;
 
+        $order_items = Order_item_model::with(['stock','stock.order'])->where('order_id',$order_id)->get();
+        $data['order_items'] = $order_items;
         $last_ten = Order_item_model::where('order_id',$order_id)->orderBy('id','desc')->limit(10)->get();
         $data['last_ten'] = $last_ten;
 
