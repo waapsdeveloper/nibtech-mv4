@@ -559,12 +559,16 @@
                                         `;
                         headings.forEach((heading) => {
                             table += `<td>`;
+                            let qty = 0;
                             Object.values(data.currency_ids).forEach((key) => {
                                 if (sales_data[heading] && sales_data[heading][key]) {
-                                    table += `${sales_data[heading][key]['quantity']} `;
+                                    qty += sales_data[heading][key]['quantity'];
                                 }
+
                             });
-                            table += `</td>`;
+                            table += `
+                                ${qty}
+                            </td>`;
                         });
                         table += `
                                     </tr>
