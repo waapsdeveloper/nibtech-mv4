@@ -473,8 +473,11 @@ class Report extends Component
                 })
                 ->select(DB::raw('AVG(price) as average_price'), DB::raw('SUM(price) as total_sales'), DB::raw('COUNT(*) as quantity'))
                 ->first();
-
-            $daily_sales_last_week[$day_start->format('Y-m-d')] = $sales;
+            $daily_sales_last_week[$day_start->format('Y-m-d')] = [
+                'average_price' => amount_formatter($sales->average_price ?? 0),
+                'total_sales' => amount_formatter($sales->total_sales ?? 0),
+                'quantity' => $sales->quantity ?? 0,
+            ];
         }
         // $daily_sales_last_week is an array with keys as date (Y-m-d) and values as sales collection for that day
 
@@ -500,10 +503,14 @@ class Report extends Component
                 })
                 ->select(DB::raw('AVG(price) as average_price'), DB::raw('SUM(price) as total_sales'), DB::raw('COUNT(*) as quantity'))
                 ->first();
-
-            $monthly_sales_last_6[$start->format('Y-m')] = $sales;
+                $monthly_sales_last_6[$start->format('Y-m')] = [
+                    'average_price' => amount_formatter($sales->average_price ?? 0),
+                    'total_sales' => amount_formatter($sales->total_sales ?? 0),
+                    'quantity' => $sales->quantity ?? 0,
+                ];
         }
         // $monthly_sales is for current month, $monthly_sales_last_6 is an array for each of the past 6 months
+
 
         return response()->json([
             'daily_sales_last_week' => $daily_sales_last_week,
