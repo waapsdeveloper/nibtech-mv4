@@ -562,7 +562,7 @@
                             table += `<td>`;
                             Object.values(data.currency_ids).forEach((key) => {
                                 if (daily_data[heading] && daily_data[heading][key]) {
-                                    table += `${daily_data[heading][currency]['quantity']} `;
+                                    table += `${daily_data[heading][key]['quantity']} `;
                                 }
                             });
                             table += `</td>`;
@@ -575,7 +575,7 @@
                             table += `<td>`;
                             Object.values(data.currency_ids).forEach((key) => {
                                 if (daily_data[heading] && daily_data[heading][key]) {
-                                    table += `${currency}${daily_data[heading][currency]['average_price']} `;
+                                    table += `${currency}${daily_data[heading][key]['average_price']} `;
                                 }
                             });
                             table += `</td>`;
@@ -588,7 +588,7 @@
                             table += `<td>`;
                             Object.values(data.currency_ids).forEach((key) => {
                                 if (daily_data[heading] && daily_data[heading][key]) {
-                                    table += `${currency}${daily_data[heading][currency]['total_sales']} `;
+                                    table += `${currency}${daily_data[heading][key]['total_sales']} `;
                                 }
                             });
                             table += `</td>`;
