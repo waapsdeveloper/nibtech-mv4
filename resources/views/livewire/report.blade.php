@@ -538,7 +538,8 @@
                     data: params,
                     success: function (data) {
 
-                        let sales_data = data.sales_data;
+                        let b2b_sales_data = data.b2b_sales_data;
+                        let b2c_sales_data = data.b2c_sales_data;
                         let headings = data.headings;
                         let currencies = data.currencies;
 
@@ -557,14 +558,14 @@
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <th><small><b>Qty</b></small></th>
+                                        <th><small><b>B2B Qty</b></small></th>
                                         `;
                         headings.forEach((heading) => {
                             table += `<td>`;
                             let qty = 0;
                             Object.values(data.currency_ids).forEach((key) => {
-                                if (sales_data[heading] && sales_data[heading][key]) {
-                                    qty += sales_data[heading][key]['quantity'];
+                                if (b2b_sales_data[heading] && b2b_sales_data[heading][key]) {
+                                    qty += b2b_sales_data[heading][key]['quantity'];
                                 }
 
                             });
@@ -575,13 +576,13 @@
                         table += `
                                     </tr>
                                     <tr>
-                                        <th><small><b>Avg</b></small></th>
+                                        <th><small><b>B2B Avg</b></small></th>
                                         `;
                         headings.forEach((heading) => {
                             table += `<td>`;
                             Object.values(data.currency_ids).forEach((key) => {
-                                if (sales_data[heading] && sales_data[heading][key]) {
-                                    table += `${currencies[key]}${sales_data[heading][key]['average_price']} `;
+                                if (b2b_sales_data[heading] && b2b_sales_data[heading][key]) {
+                                    table += `${currencies[key]}${b2b_sales_data[heading][key]['average_price']} `;
                                 }
                             });
                             table += `</td>`;
@@ -589,13 +590,59 @@
                         table += `
                                     </tr>
                                     <tr>
-                                        <th><small><b>Ttl</b></small></th>
+                                        <th><small><b>B2B Ttl</b></small></th>
                                         `;
                         headings.forEach((heading) => {
                             table += `<td>`;
                             Object.values(data.currency_ids).forEach((key) => {
-                                if (sales_data[heading] && sales_data[heading][key]) {
-                                    table += `${currencies[key]}${sales_data[heading][key]['total_sales']} `;
+                                if (b2b_sales_data[heading] && b2b_sales_data[heading][key]) {
+                                    table += `${currencies[key]}${b2b_sales_data[heading][key]['total_sales']} `;
+                                }
+                            });
+                            table += `</td>`;
+                        });
+                        table += `
+                                    </tr>
+                                    <tr>
+                                        <th><small><b>B2C Qty</b></small></th>
+                                        `;
+                        headings.forEach((heading) => {
+                            table += `<td>`;
+                            let qty = 0;
+                            Object.values(data.currency_ids).forEach((key) => {
+                                if (b2c_sales_data[heading] && b2c_sales_data[heading][key]) {
+                                    qty += b2c_sales_data[heading][key]['quantity'];
+                                }
+
+                            });
+                            table += `
+                                ${qty}
+                            </td>`;
+                        });
+                        table += `
+                                    </tr>
+                                    <tr>
+                                        <th><small><b>B2C Avg</b></small></th>
+                                        `;
+                        headings.forEach((heading) => {
+                            table += `<td>`;
+                            Object.values(data.currency_ids).forEach((key) => {
+                                if (b2c_sales_data[heading] && b2c_sales_data[heading][key]) {
+                                    table += `${currencies[key]}${b2c_sales_data[heading][key]['average_price']} `;
+                                }
+                            });
+                            table += `</td>`;
+                        });
+                        table += `
+                                    </tr>
+                                    <tr>
+                                        <th><small><b>B2C Ttl</b></small></th>
+                                        `;
+                        headings.forEach((heading) => {
+                            table += `<td>`;
+                            Object.values(data.currency_ids).forEach((key) => {
+                                if (b2c_sales_data[heading] && b2c_sales_data[heading][key]) {
+                                    table += `${currencies[key]}${b2c_sales_data[heading][key]['total_sales']} `;
                                 }
                             });
                             table += `</td>`;
