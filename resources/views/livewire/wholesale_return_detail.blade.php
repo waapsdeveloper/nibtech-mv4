@@ -358,17 +358,26 @@
                                 isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
                             @endphp
 
-                                        @foreach ($variation->stocks->sortByDesc('stocks.updated_at') as $stock)
-                                            @php
-                                            $row = $stock->latest_operation;
-                                            $i ++;
-                                            if(str_contains($row->description, "Replacement")){
-                                                if($stock->status != 2){
+                                        {{-- @foreach ($variation->stocks->sortByDesc('stocks.updated_at') as $stock) --}}
 
-                                                    $stock->availability();
+                                        @foreach ($order_items->where('variation_id',$variation->id) as $sale_item)
+
+                                            {{-- @dd($item->sale_item) --}}
+                                            {{-- @if($item->sale_item($order_id)->order_id == $order_id) --}}
+                                            @php
+                                                $i ++;
+                                                // $sale_item = $item->sale_item($order_id);
+                                                $stock = $sale_item->stock ?? null;
+                                                // @php
+                                                $row = $stock->latest_operation;
+                                                $i ++;
+                                                if(str_contains($row->description, "Replacement")){
+                                                    if($stock->status != 2){
+
+                                                        $stock->availability();
+                                                    }
                                                 }
-                                            }
-                                        @endphp
+                                            @endphp
                                             <tr>
                                                 <td>{{ $i }}</td>
                                                 <td>{{ $variation->product->model." ".$storage." ".$color." ".$variation->grade_id->name ?? "Not Given" }}</td>
