@@ -453,8 +453,10 @@ class Report extends Component
             })
             ->pluck('id')->toArray();
 
+        $headings = [];
+        $currencies = [];
         // Get sales for each day in the last 7 days (including today)
-        $daily_sales_last_week = [];
+        $sales_data = [];
         for ($i = 0; $i <= 6; $i++) {
             $day_start = Carbon::now()->subDays($i)->startOfDay();
             $day_end = Carbon::now()->subDays($i)->endOfDay();
@@ -471,19 +473,28 @@ class Report extends Component
                 ->when($query == 1, function ($q) use ($variation_ids) {
                     return $q->whereIn('variation_id', $variation_ids);
                 })
-                ->select(DB::raw('AVG(price) as average_price'), DB::raw('SUM(price) as total_sales'), DB::raw('COUNT(*) as quantity'))
-                ->first();
-            $daily_sales_last_week[$day_start->format('l')] = [
-                'average_price' => amount_formatter($sales->average_price ?? 0),
-                'total_sales' => amount_formatter($sales->total_sales ?? 0),
-                'quantity' => $sales->quantity ?? 0,
-            ];
+                ->groupBy('currency')
+                ->select('currency',DB::raw('AVG(price) as average_price'), DB::raw('SUM(price) as total_sales'), DB::raw('COUNT(*) as quantity'))
+                ->get();
+            // $sales is a collection of sales for that day, grouped by currency
+            $sales_data[$day_start->format('l')] = [];
+
+            foreach ($sales as $sale) {
+                $sales_data[$day_start->format('l')][$sale->currency] = [
+                    'average_price' => amount_formatter($sale->average_price ?? 0),
+                    'total_sales' => amount_formatter($sale->total_sales ?? 0),
+                    'quantity' => $sale->quantity ?? 0,
+                ];
+            }
+            $headings[] = $day_start->format('l'); // Add the day name to headings
+            if (!in_array($sale->currency, $currencies)) {
+                $currencies[] = $sale->currency; // Collect unique currencies
+            }
         }
         // $daily_sales_last_week is an array with keys as date (Y-m-d) and values as sales collection for that day
 
 
         // Get sales for each of the past 6 months (excluding current month)
-        $monthly_sales_last_6 = [];
         for ($i = 0; $i <= 5; $i++) {
             $start = Carbon::now()->subMonths($i)->startOfMonth();
             $end = Carbon::now()->subMonths($i)->endOfMonth();
@@ -501,20 +512,30 @@ class Report extends Component
                 ->when($query == 1, function ($q) use ($variation_ids) {
                     return $q->whereIn('variation_id', $variation_ids);
                 })
-                ->select(DB::raw('AVG(price) as average_price'), DB::raw('SUM(price) as total_sales'), DB::raw('COUNT(*) as quantity'))
-                ->first();
-                $monthly_sales_last_6[$start->format('F Y')] = [
-                    'average_price' => amount_formatter($sales->average_price ?? 0),
-                    'total_sales' => amount_formatter($sales->total_sales ?? 0),
-                    'quantity' => $sales->quantity ?? 0,
+                ->groupBy('currency')
+                ->select('currency', DB::raw('AVG(price) as average_price'), DB::raw('SUM(price) as total_sales'), DB::raw('COUNT(*) as quantity'))
+                ->get();
+            $sales_data[$start->format('F Y')] = [];
+            foreach ($sales as $sale) {
+                $sales_data[$start->format('F Y')][$sale->currency] = [
+                    'average_price' => amount_formatter($sale->average_price ?? 0),
+                    'total_sales' => amount_formatter($sale->total_sales ?? 0),
+                    'quantity' => $sale->quantity ?? 0,
                 ];
+            }
+            $headings[] = $start->format('F Y'); // Add the month name to headings
+            if (!in_array($sale->currency, $currencies)) {
+                $currencies[] = $sale->currency; // Collect unique currencies
+            }
         }
         // $monthly_sales is for current month, $monthly_sales_last_6 is an array for each of the past 6 months
 
+        $currencies = Currency_model::whereIn('id', $currencies)->pluck('sign', 'id')->toArray();
 
         return response()->json([
-            'daily_sales_last_week' => $daily_sales_last_week,
-            'monthly_sales_last_6' => $monthly_sales_last_6,
+            'sales_data' => $sales_data,
+            'headings' => $headings,
+            'currencies' => $currencies,
         ]);
     }
 
