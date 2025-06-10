@@ -486,9 +486,7 @@ class Report extends Component
                     'quantity' => $sale->quantity ?? 0,
                 ];
             }
-            if (!in_array($sale->currency, $currency_ids)) {
-                $currency_ids[] = $sale->currency; // Collect unique currency_ids
-            }
+            $currency_ids[$sale->currency] = $sale->currency; // Collect unique currencies
         }
         // $daily_sales_last_week is an array with keys as date (Y-m-d) and values as sales collection for that day
 
@@ -559,9 +557,7 @@ class Report extends Component
                     'quantity' => $sale->quantity ?? 0,
                 ];
             }
-            if (!in_array($sale->currency, $currency_ids)) {
-                $currency_ids[] = $sale->currency; // Collect unique currency_ids
-            }
+            $currency_ids[$sale->currency] = $sale->currency; // Collect unique currencies
         }
         // $daily_sales_last_week is an array with keys as date (Y-m-d) and values as sales collection for that day
 
