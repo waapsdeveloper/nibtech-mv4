@@ -254,7 +254,7 @@ class Wholesale_return extends Component
         $data['currency'] = $data['order']->currency_id->sign;
 
         $graded_stocks = Grade_model::with([
-            'variations.stocks' => function ($query) use ($order_id) {
+            'variations' => function ($query) use ($order_id) {
                 $query->whereHas('order_items', function ($query) use ($order_id) {
                     $query->where('order_id', $order_id)->where('status','!=',2);
                 })->when(request('status') != '', function ($q) {
