@@ -773,7 +773,11 @@ class Report extends Component
         foreach ($b2c_charges_by_currency as $key => $value) {
             $b2c_total[$key] = ($b2c_total[$key] ?? 0) - $value;
         }
-        $b2c_charges_by_currency = $b2c_charges_by_currency->map('amount_formatter');
+        $b2c_charges_by_currency = $b2c_charges_by_currency->map(
+            function ($items) {
+                return amount_formatter($items);
+            }
+        );
 
         $b2c_stock_ids = $b2c_order_items->pluck('stock_id')->toArray();
         $b2c_stock_cost = Order_item_model::whereIn('stock_id', $b2c_stock_ids)
