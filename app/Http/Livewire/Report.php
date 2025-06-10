@@ -623,7 +623,7 @@ class Report extends Component
             'b2b_sales_data' => $b2b_sales_data,
             'b2c_sales_data' => $b2c_sales_data,
             'headings' => $headings,
-            'currency_ids' => array_values($currency_ids),
+            'currency_ids' => $currency_ids,
             'currencies' => $currencies,
 
         ]);
