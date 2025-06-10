@@ -22,6 +22,10 @@ class PacksheetExport implements FromCollection, WithHeadings
 
         $data = DB::table('orders')
         ->leftJoin('order_items', 'orders.id', '=', 'order_items.order_id')
+        ->when(request('return') == 1, function ($query) {
+            return $query->leftJoin('order_items as sales_items', 'order_items.linked_id', '=', 'sales_items.id')
+                ->leftJoin('orders as sales_orders', 'sales_items.order_id', '=', 'sales_orders.id');
+        })
         ->leftJoin('stock', 'order_items.stock_id', '=', 'stock.id')
         ->leftJoin('orders as p_orders', 'stock.order_id', '=', 'p_orders.id')
         ->leftJoin('order_items as p_item', function($join) {
@@ -63,6 +67,11 @@ class PacksheetExport implements FromCollection, WithHeadings
             'stock.serial_number as serial_number',
             'p_orders.reference_id as po',
             'p_orders.created_at as po_date',
+            // Only include SO and SO Date if return = 1
+            ...(request('return') == 1 ? [
+                'sales_orders.reference_id as so',
+                'sales_orders.created_at as so_date',
+            ] : []),
             // 'customer.first_name as vendor',
             // 'vendor_grade.name as vendor_grade',
             DB::raw('TRIM(BOTH " " FROM UPPER(
@@ -112,7 +121,7 @@ class PacksheetExport implements FromCollection, WithHeadings
 
     public function headings(): array
     {
-        return [
+        $headings = [
             'Name',
             // 'Storage',
             'Color',
@@ -124,11 +133,21 @@ class PacksheetExport implements FromCollection, WithHeadings
             'PO Date',
             // 'Vendor',
             // 'Vendor Grade',
+        ];
+
+        if (request('return') == 1) {
+            $headings[] = 'SO';
+            $headings[] = 'SO Date';
+        }
+
+        $headings = array_merge($headings, [
             'Issue',
             'Old Issue',
             'Admin',
             // 'Price'
             $this->invoice == 1 ? 'Price (Multiplied by Exchange Rate)' : 'Price'
-        ];
+        ]);
+
+        return $headings;
     }
 }
