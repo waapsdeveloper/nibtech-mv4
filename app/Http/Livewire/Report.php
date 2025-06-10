@@ -382,6 +382,139 @@ class Report extends Component
         return view('livewire.report')->with($data);
     }
 
+    public function sales_history(){
+
+        $start_date = Carbon::now()->startOfMonth()->format('Y-m-d');
+        $end_date = date('Y-m-d');
+        $start_time = '00:00:00';
+        $end_time = '23:59:59';
+
+        if (request('start_date') != NULL) {
+            $start_date = request('start_date');
+        }
+        if (request('end_date') != NULL) {
+            $end_date = request('end_date');
+        }
+        if (request('start_time') != NULL) {
+            $start_time = request('start_time');
+        }
+        if (request('end_time') != NULL) {
+            $end_time = request('end_time');
+        }
+        $data['start_date'] = $start_date;
+        $data['end_date'] = $end_date;
+        $data['start_time'] = $start_time;
+        $data['end_time'] = $end_time;
+
+        $start_date = $start_date . " " . $start_time;
+        $end_date = $end_date . " " . $end_time;
+        $query = 0;
+
+        $variation_ids = [];
+        // if(request('data') == 1){
+
+        $variation_ids = Variation_model::select('id')
+            ->whereHas('product', function ($q) use (&$query) {
+                $q->when(request('category') != '', function ($qu) use (&$query) {
+                    $query = 1;
+                    return $qu->where('category', '=', request('category'));
+                })
+                ->when(request('brand') != '', function ($qu) use (&$query) {
+                    $query = 1;
+                    return $qu->where('brand', '=', request('brand'));
+                });
+            })
+            ->when(request('vendor') != '' || request('batch') != '', function ($que) use (&$query) {
+                $query = 1;
+                return $que->whereHas('stocks.order', function ($q) {
+                    $q->when(request('vendor') != '', function ($qu) {
+                    return $qu->where('customer_id', '=', request('vendor'));
+                    })
+                    ->when(request('batch') != '', function ($qu) {
+                    return $qu->where('reference_id', '=', request('batch'));
+                    });
+                });
+            })
+            ->when(request('product') != '', function ($q) use (&$query) {
+                $query = 1;
+                return $q->where('product_id', '=', request('product'));
+            })
+            ->when(request('storage') != '', function ($q) use (&$query) {
+                $query = 1;
+                return $q->where('storage', request('storage'));
+            })
+            ->when(request('color') != '', function ($q) use (&$query) {
+                $query = 1;
+                return $q->where('color', request('color'));
+            })
+            ->when(request('grade') != '', function ($q) use (&$query) {
+                $query = 1;
+                return $q->where('grade', request('grade'));
+            })
+            ->pluck('id')->toArray();
+
+        // Get sales for each day in the last 7 days (including today)
+        $daily_sales_last_week = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $day_start = Carbon::now()->subDays($i)->startOfDay();
+            $day_end = Carbon::now()->subDays($i)->endOfDay();
+
+            $sales = Order_item_model::whereHas('order', function ($q) use ($day_start, $day_end) {
+                    $q->whereIn('order_type_id', [2,3,5])
+                        ->whereIn('status', [3,6])
+                        ->whereBetween('processed_at', [$day_start, $day_end]);
+                })
+                ->when(request('vendor') != '', function ($q) {
+                    return $q->whereHas('stock.order', function ($qu) {
+                        return $qu->where('customer_id', request('vendor'));
+                    });
+                })
+                ->when($query == 1, function ($q) use ($variation_ids) {
+                    return $q->whereIn('variation_id', $variation_ids);
+                })
+                ->groupBy('variation_id')
+                ->select('variation_id', DB::raw('AVG(price) as average_price'), DB::raw('SUM(price) as total_sales'), DB::raw('COUNT(*) as quantity'))
+                ->get();
+
+            $daily_sales_last_week[$day_start->format('Y-m-d')] = $sales;
+        }
+        // $daily_sales_last_week is an array with keys as date (Y-m-d) and values as sales collection for that day
+
+
+        // Get sales for each of the past 6 months (excluding current month)
+        $monthly_sales_last_6 = [];
+        for ($i = 0; $i <= 5; $i++) {
+            $start = Carbon::now()->subMonths($i)->startOfMonth();
+            $end = Carbon::now()->subMonths($i)->endOfMonth();
+
+            $sales = Order_item_model::whereHas('order', function ($q) use ($start, $end) {
+                    $q->whereIn('order_type_id', [2,3,5])
+                        ->whereIn('status', [3,6])
+                        ->whereBetween('processed_at', [$start, $end]);
+                })
+                ->when(request('vendor') != '', function ($q) {
+                    return $q->whereHas('stock.order', function ($qu) {
+                        return $qu->where('customer_id', request('vendor'));
+                    });
+                })
+                ->when($query == 1, function ($q) use ($variation_ids) {
+                    return $q->whereIn('variation_id', $variation_ids);
+                })
+                ->groupBy('variation_id')
+                ->select('variation_id', DB::raw('AVG(price) as average_price'), DB::raw('SUM(price) as total_sales'), DB::raw('COUNT(*) as quantity'))
+                ->get();
+
+            $monthly_sales_last_6[$start->format('Y-m')] = $sales;
+        }
+        // $monthly_sales is for current month, $monthly_sales_last_6 is an array for each of the past 6 months
+
+        return response()->json([
+            'daily_sales_last_week' => $daily_sales_last_week,
+            'monthly_sales_last_6' => $monthly_sales_last_6,
+        ]);
+    }
+
+
     public function batch_grade_report_detail($order_id){
 
         $start_date = Carbon::now()->startOfMonth()->format('Y-m-d');

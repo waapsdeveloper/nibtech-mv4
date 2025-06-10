@@ -140,6 +140,7 @@ Route::get('vendor_purchase_report/{vendor_id}', [Report::class,'vendor_purchase
 Route::get('vendor_rma_report/{vendor_id}', [Report::class,'vendor_rma_report'])->name('vendor_rma_report');
 Route::get('vendor_repair_report/{vendor_id}', [Report::class,'vendor_repair_report'])->name('vendor_repair_report');
 Route::get('report/purchase_report', [Report::class,'purchase_report'])->name('purchase_report');
+Route::get('report/sales_history', [Report::class,'sales_history'])->name('sales_history_report');
 
 
 Route::get('return', SalesReturn::class)->name('view_return');
