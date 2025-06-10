@@ -458,7 +458,6 @@ class Report extends Component
         for ($i = 6; $i >= 0; $i--) {
             $day_start = Carbon::now()->subDays($i)->startOfDay();
             $day_end = Carbon::now()->subDays($i)->endOfDay();
-
             $sales = Order_item_model::whereHas('order', function ($q) use ($day_start, $day_end) {
                     $q->whereIn('order_type_id', [2,3,5])
                         ->whereIn('status', [3,6])
@@ -472,9 +471,8 @@ class Report extends Component
                 ->when($query == 1, function ($q) use ($variation_ids) {
                     return $q->whereIn('variation_id', $variation_ids);
                 })
-                ->groupBy('variation_id')
-                ->select('variation_id', DB::raw('AVG(price) as average_price'), DB::raw('SUM(price) as total_sales'), DB::raw('COUNT(*) as quantity'))
-                ->get();
+                ->select(DB::raw('AVG(price) as average_price'), DB::raw('SUM(price) as total_sales'), DB::raw('COUNT(*) as quantity'))
+                ->first();
 
             $daily_sales_last_week[$day_start->format('Y-m-d')] = $sales;
         }
@@ -500,9 +498,8 @@ class Report extends Component
                 ->when($query == 1, function ($q) use ($variation_ids) {
                     return $q->whereIn('variation_id', $variation_ids);
                 })
-                ->groupBy('variation_id')
-                ->select('variation_id', DB::raw('AVG(price) as average_price'), DB::raw('SUM(price) as total_sales'), DB::raw('COUNT(*) as quantity'))
-                ->get();
+                ->select(DB::raw('AVG(price) as average_price'), DB::raw('SUM(price) as total_sales'), DB::raw('COUNT(*) as quantity'))
+                ->first();
 
             $monthly_sales_last_6[$start->format('Y-m')] = $sales;
         }
