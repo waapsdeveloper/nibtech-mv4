@@ -362,6 +362,16 @@
         <div class="card">
             <div class="card-header mb-0 d-flex justify-content-between">
                 <div class="mb-0">
+                    <h4 class="card-title mb-0">Sales History</h4>
+                </div>
+            </div>
+            <div class="card-body mt-0" id="sales_history"></div>
+        </div>
+
+
+        <div class="card">
+            <div class="card-header mb-0 d-flex justify-content-between">
+                <div class="mb-0">
                     <h4 class="card-title mb-0">Sales & Returns by Orders</h4>
                 </div>
             </div>
@@ -502,29 +512,108 @@
     @section('scripts')
 		<!-- Internal Chart.Bundle js-->
         <script>
+            // The original code is using PHP array syntax, which is invalid in JavaScript.
+            // Use a plain JavaScript object instead:
+            let params = {
+                vendor: "{{ Request::get('vendor') }}",
+                batch: "{{ Request::get('batch') }}",
+                product: "{{ Request::get('product') }}",
+                storage: "{{ Request::get('storage') }}",
+                color: "{{ Request::get('color') }}",
+                grade: "{{ Request::get('grade') }}",
+                category: "{{ Request::get('category') }}",
+                brand: "{{ Request::get('brand') }}",
+                start_date: "{{ $start_date }}",
+                end_date: "{{ $end_date }}",
+                start_time: "{{ $start_time }}",
+                end_time: "{{ $end_time }}"
+            };
+
+            function view_sales_history () {
+
+
+                $.ajax({
+                    url: "{{ url('report/sales_history') }}",
+                    type: 'GET',
+                    data: params,
+                    success: function (data) {
+
+                        let daily_data = data.daily_sales_last_week;
+                        let monthly_data = data.monthly_sales_last_6;
+                        let headings = data.headings;
+                        let currencies = data.currencies;
+
+                        console.log(data);
+                        let table = `
+                            <table class="table table-bordered table-hover text-md-nowrap">
+                                <thead>
+                                    <tr>
+                                        `;
+                        headings.forEach((heading) => {
+                            table += `<th><small><b>${heading}</b></small></th>`;
+                        });
+                        table += `
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        `;
+                        headings.forEach((heading) => {
+                            table += `<td>`;
+                            currencies.forEach((currency) => {
+                                if (daily_data[heading] && daily_data[heading][currency]) {
+                                    table += `${daily_data[heading][currency]['quantity']} `;
+                                }
+                            });
+                            table += `</td>`;
+                        });
+                        table += `
+                                    </tr>
+                                    <tr>
+                                        `;
+                        headings.forEach((heading) => {
+                            table += `<td>`;
+                            currencies.forEach((currency) => {
+                                if (daily_data[heading] && daily_data[heading][currency]) {
+                                    table += `${currency}${daily_data[heading][currency]['average_price']} `;
+                                }
+                            });
+                            table += `</td>`;
+                        });
+                        table += `
+                                    </tr>
+                                    <tr>
+                                        `;
+                        headings.forEach((heading) => {
+                            table += `<td>`;
+                            currencies.forEach((currency) => {
+                                if (daily_data[heading] && daily_data[heading][currency]) {
+                                    table += `${currency}${daily_data[heading][currency]['total_sales']} `;
+                                }
+                            });
+                            table += `</td>`;
+                        });
+                        table += `
+                                    </tr>
+                                </tbody>
+                            </table>
+                        `;
+                        $('#sales_history').html(table);
+
+                    }
+                })
+
+            }
 
             function view_sales_and_returns_total () {
 
                 let currencies = @json($currencies);
 
-                let vendor = "{{ Request::get('vendor') }}";
-
-                var start_date = $('#start_date').val();
-                var end_date = $('#end_date').val();
-                var start_time = $('#start_time').val();
-                var end_time = $('#end_time').val();
-
 
                 $.ajax({
                     url: "{{ url('report/sales_and_returns_total') }}",
                     type: 'GET',
-                    data: {
-                        vendor: vendor,
-                        start_date: start_date,
-                        end_date: end_date,
-                        start_time: start_time,
-                        end_time: end_time
-                    },
+                    data: params,
                     success: function (data) {
 
                         b2bSale = data.b2b_data;
@@ -668,6 +757,7 @@
             }
             $(document).ready(function(){
                 view_sales_and_returns_total();
+                view_sales_history();
 
             })
 
