@@ -473,7 +473,7 @@ class Report extends Component
                 })
                 ->select(DB::raw('AVG(price) as average_price'), DB::raw('SUM(price) as total_sales'), DB::raw('COUNT(*) as quantity'))
                 ->first();
-            $daily_sales_last_week[$day_start->format('Y-m-d')] = [
+            $daily_sales_last_week[$day_start->format('I')] = [
                 'average_price' => amount_formatter($sales->average_price ?? 0),
                 'total_sales' => amount_formatter($sales->total_sales ?? 0),
                 'quantity' => $sales->quantity ?? 0,
@@ -503,7 +503,7 @@ class Report extends Component
                 })
                 ->select(DB::raw('AVG(price) as average_price'), DB::raw('SUM(price) as total_sales'), DB::raw('COUNT(*) as quantity'))
                 ->first();
-                $monthly_sales_last_6[$start->format('Y-m')] = [
+                $monthly_sales_last_6[$start->format('F Y')] = [
                     'average_price' => amount_formatter($sales->average_price ?? 0),
                     'total_sales' => amount_formatter($sales->total_sales ?? 0),
                     'quantity' => $sales->quantity ?? 0,
