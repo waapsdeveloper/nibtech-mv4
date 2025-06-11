@@ -1055,6 +1055,10 @@ class Wholesale extends Component
         }else{
             $new_reference_id = Order_model::where('order_type_id', 5)->orderByDesc('reference_id')->first()->reference_id+1;
             $data['new_reference_id'] = $new_reference_id;
+
+            $data['new_po_reference_id'] = Order_model::where('order_type_id', 1)->orderByDesc('reference_id')->first()->reference_id+1;
+            $data['new_rma_reference_id'] = Order_model::where('order_type_id', 2)->orderByDesc('reference_id')->first()->reference_id+1;
+            $data['new_cn_reference_id'] = Order_model::where('order_type_id', 6)->orderByDesc('reference_id')->first()->reference_id+1;
         }
 
         return view('livewire.pos')->with($data);
