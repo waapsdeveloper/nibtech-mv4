@@ -276,7 +276,8 @@
 
             // Checkout cart
             function checkoutCart() {
-                let order_id = {{ request('order_id') ? request('order_id') : null }};
+                let order_id = "{{ request('order_id') }}";
+                if (order_id === "") order_id = null;
                 fetch(`{{ url('pos') }}/checkout`, {
                     method: 'POST',
                     headers: {
