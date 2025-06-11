@@ -423,7 +423,7 @@
                                     </a>
                                 </td>
                                 <td>{{ $order->reference }}</td>
-                                <td>{{ $order->vendor }}</td>
+                                <td><a href="{{ url('customer/profile') }}/{{ $order->customer_id }}" target="_blank">{{ $order->vendor }}</a></td>
                                 <td>
 
                                     <div class="btn-group p-1" role="group">
