@@ -418,7 +418,7 @@
                             <tr>
                                 <td>{{ $i += 1 }}</td>
                                 <td>
-                                    <a href="{{ url('purchase/detail') }}/{{ $order->id }}" target="_blank">
+                                    <a href="{{ url('purchase/detail') }}/{{ $order->order_id }}" target="_blank">
                                     {{ $order->reference_id }}
                                     </a>
                                 </td>
