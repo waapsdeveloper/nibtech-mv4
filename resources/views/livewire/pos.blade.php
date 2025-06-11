@@ -288,7 +288,7 @@
                         mode: document.querySelector('input[name="mode"]:checked').value,
                         customer_id: $('#customer_id').val(),
                         reference_id: document.getElementById('reference_id').value,
-                        order_id: {{ request('order_id', null) }},
+                        order_id: {{ request('order_id') ?? null }}
                     })
                 })
                 .then(response => response.json())
