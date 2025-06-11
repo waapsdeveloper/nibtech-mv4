@@ -82,6 +82,9 @@ class PriceHandler extends Command
                     continue;
                 }
                 if(is_array($list)){
+                    if($list['code'] == 'unknown-competitor'){
+                        continue;
+                    }
                     $error .= json_encode($list);
                     $error .= "\n";
                     $error .= "Error in response for variation: " . $variation->sku . "\n";
