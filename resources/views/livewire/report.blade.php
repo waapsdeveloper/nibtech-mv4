@@ -581,7 +581,7 @@
                         headings.forEach((heading) => {
                             table += `<td>`;
                             Object.values(data.currency_ids).forEach((key) => {
-                                if (b2b_sales_data[heading] && b2b_sales_data[heading][key]) {
+                                if (b2b_sales_data[heading] && b2b_sales_data[heading][key] && b2b_sales_data[heading][key]['average_price']) {
                                     table += `${currencies[key]}${b2b_sales_data[heading][key]['average_price']} `;
                                 }
                             });
@@ -595,7 +595,7 @@
                         headings.forEach((heading) => {
                             table += `<td>`;
                             Object.values(data.currency_ids).forEach((key) => {
-                                if (b2b_sales_data[heading] && b2b_sales_data[heading][key]) {
+                                if (b2b_sales_data[heading] && b2b_sales_data[heading][key] && b2b_sales_data[heading][key]['total_sales']) {
                                     table += `${currencies[key]}${b2b_sales_data[heading][key]['total_sales']} `;
                                 }
                             });
@@ -627,7 +627,7 @@
                         headings.forEach((heading) => {
                             table += `<td>`;
                             Object.values(data.currency_ids).forEach((key) => {
-                                if (b2c_sales_data[heading] && b2c_sales_data[heading][key]) {
+                                if (b2c_sales_data[heading] && b2c_sales_data[heading][key] && b2c_sales_data[heading][key]['average_price']) {
                                     table += `${currencies[key]}${b2c_sales_data[heading][key]['average_price']} `;
                                 }
                             });
@@ -641,7 +641,7 @@
                         headings.forEach((heading) => {
                             table += `<td>`;
                             Object.values(data.currency_ids).forEach((key) => {
-                                if (b2c_sales_data[heading] && b2c_sales_data[heading][key]) {
+                                if (b2c_sales_data[heading] && b2c_sales_data[heading][key] && b2c_sales_data[heading][key]['total_sales']) {
                                     table += `${currencies[key]}${b2c_sales_data[heading][key]['total_sales']} `;
                                 }
                             });
