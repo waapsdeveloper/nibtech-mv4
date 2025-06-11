@@ -555,8 +555,8 @@ class Report extends Component
             $b2b_sales_data[$day_start->format('l')] = [];
 
             $b2b_sales_data[$day_start->format('l')][4] = [
-                'average_price' => $sales->average_price ? amount_formatter($sales->average_price) : null,
-                'total_sales' => $sales->total_sales ? amount_formatter($sales->total_sales) : null,
+                'average_price' => amount_formatter($sales->average_price ?? 0),
+                'total_sales' => amount_formatter($sales->total_sales ?? 0),
                 'quantity' => $sales->quantity ?? 0,
             ];
 
@@ -592,7 +592,7 @@ class Report extends Component
             // foreach ($sales as $sale) {
             $b2b_sales_data[$start->format('F Y')][4] = [
                 'average_price' => $sales->average_price ? amount_formatter($sales->average_price) : null,
-                'total_sales' => $sales->total_sales ? amount_formatter($sales->total_sales) : null,
+                'total_sales' => $sales->total_sales ? amount_formatter($sales->total_sales) : ,
                 'quantity' => $sales->quantity ?? 0,
             ];
             // }
