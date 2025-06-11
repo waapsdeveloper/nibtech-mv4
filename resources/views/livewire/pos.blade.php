@@ -276,6 +276,7 @@
 
             // Checkout cart
             function checkoutCart() {
+                let order_id = {{ request('order_id') ?? null }};
                 fetch(`{{ url('pos') }}/checkout`, {
                     method: 'POST',
                     headers: {
@@ -288,7 +289,7 @@
                         mode: document.querySelector('input[name="mode"]:checked').value,
                         customer_id: $('#customer_id').val(),
                         reference_id: document.getElementById('reference_id').value,
-                        order_id: {{ request('order_id') ?? null }}
+                        order_id: order_id
                     })
                 })
                 .then(response => response.json())
