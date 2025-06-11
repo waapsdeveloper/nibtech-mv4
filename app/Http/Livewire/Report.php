@@ -549,21 +549,19 @@ class Report extends Component
                 ->when($query == 1, function ($q) use ($variation_ids) {
                     return $q->whereIn('variation_id', $variation_ids);
                 })
-                ->groupBy(DB::raw('COALESCE(currency, 4)'))
-                ->selectRaw('COALESCE(currency, 4) as currency, AVG(price) as average_price, SUM(price) as total_sales, COUNT(*) as quantity')
-                ->get();
+                ->selectRaw('AVG(price) as average_price, SUM(price) as total_sales, COUNT(*) as quantity')
+                ->first();
             // $sales is a collection of sales for that day, grouped by currency
             $b2b_sales_data[$day_start->format('l')] = [];
 
-            foreach ($sales as $sale) {
-                $b2b_sales_data[$day_start->format('l')][$sale->currency] = [
-                    'average_price' => amount_formatter($sale->average_price ?? 0),
-                    'total_sales' => amount_formatter($sale->total_sales ?? 0),
-                    'quantity' => $sale->quantity ?? 0,
-                ];
-            }
-            if (!in_array($sale->currency, $currency_ids)) {
-                $currency_ids[] = $sale->currency; // Collect unique currency_ids
+            $b2b_sales_data[$day_start->format('l')][4] = [
+                'average_price' => amount_formatter($sales->average_price ?? 0),
+                'total_sales' => amount_formatter($sales->total_sales ?? 0),
+                'quantity' => $sales->quantity ?? 0,
+            ];
+
+            if (!in_array(4, $currency_ids)) {
+                $currency_ids[] = 4; // Collect unique currency_ids
             }
         }
         // $daily_sales_last_week is an array with keys as date (Y-m-d) and values as sales collection for that day
@@ -587,19 +585,19 @@ class Report extends Component
                 ->when($query == 1, function ($q) use ($variation_ids) {
                     return $q->whereIn('variation_id', $variation_ids);
                 })
-                ->groupBy(DB::raw('COALESCE(currency, 4)'))
-                ->selectRaw('COALESCE(currency, 4) as currency, AVG(price) as average_price, SUM(price) as total_sales, COUNT(*) as quantity')
-                ->get();
+                // ->groupBy(DB::raw('COALESCE(currency, 4)'))
+                ->selectRaw('AVG(price) as average_price, SUM(price) as total_sales, COUNT(*) as quantity')
+                ->first();
             $b2b_sales_data[$start->format('F Y')] = [];
-            foreach ($sales as $sale) {
-                $b2b_sales_data[$start->format('F Y')][$sale->currency] = [
-                    'average_price' => amount_formatter($sale->average_price ?? 0),
-                    'total_sales' => amount_formatter($sale->total_sales ?? 0),
-                    'quantity' => $sale->quantity ?? 0,
-                ];
-            }
-            if (!in_array($sale->currency, $currency_ids)) {
-                $currency_ids[] = $sale->currency; // Collect unique currencies
+            // foreach ($sales as $sale) {
+            $b2b_sales_data[$start->format('F Y')][4] = [
+                'average_price' => amount_formatter($sales->average_price ?? 0),
+                'total_sales' => amount_formatter($sales->total_sales ?? 0),
+                'quantity' => $sales->quantity ?? 0,
+            ];
+            // }
+            if (!in_array(4, $currency_ids)) {
+                $currency_ids[] = 4; // Collect unique currencies
             }
         }
         // $monthly_sales is for current month, $monthly_sales_last_6 is an array for each of the past 6 months
