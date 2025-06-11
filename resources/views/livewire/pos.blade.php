@@ -138,15 +138,49 @@
                                     <label for="reference_id">Reference ID</label>
                                 </div>
                                 <div class="d-flex">
-                                    <input type="radio" class="btn-check" name="mode" id="3option" value="1">
+                                    <input type="radio" class="btn-check" name="mode" id="3option" value="1"
+                                        @if(old('mode', request('mode')) == 1) checked @endif
+                                        onclick="document.getElementById('reference_id').value = '{{ $new_po_reference_id }}'">
                                     <label class="btn btn-outline-dark m-0" for="3option">Purchase</label>
-                                    <input type="radio" class="btn-check" name="mode" id="4option" value="2">
+
+                                    <input type="radio" class="btn-check" name="mode" id="4option" value="2"
+                                        @if(old('mode', request('mode')) == 2) checked @endif
+                                        onclick="document.getElementById('reference_id').value = '{{ $new_rma_reference_id }}'">
                                     <label class="btn btn-outline-dark m-0" for="4option">RMA</label>
-                                    <input type="radio" class="btn-check" name="mode" id="2option" checked value="5">
+
+                                    <input type="radio" class="btn-check" name="mode" id="2option" value="5"
+                                        @if(old('mode', request('mode')) == 5 || (!old('mode') && !request('mode'))) checked @endif
+                                        onclick="document.getElementById('reference_id').value = '{{ $new_reference_id }}'">
                                     <label class="btn btn-outline-dark m-0" for="2option">Sale</label>
-                                    <input type="radio" class="btn-check" name="mode" id="5option" value="6">
+
+                                    <input type="radio" class="btn-check" name="mode" id="5option" value="6"
+                                        @if(old('mode', request('mode')) == 6) checked @endif
+                                        onclick="document.getElementById('reference_id').value = '{{ $new_cn_reference_id }}'">
                                     <label class="btn btn-outline-dark m-0" for="5option">CN</label>
-                                </div>
+                                    </div>
+                                    <script>
+                                        // Set reference_id on mode select
+                                        document.getElementById('3option').addEventListener('change', function() {
+                                            if(this.checked) {
+                                                document.getElementById('reference_id').value = @json($new_po_reference_id);
+                                            }
+                                        });
+                                        document.getElementById('4option').addEventListener('change', function() {
+                                            if(this.checked) {
+                                                document.getElementById('reference_id').value = @json($new_rma_reference_id);
+                                            }
+                                        });
+                                        document.getElementById('2option').addEventListener('change', function() {
+                                            if(this.checked) {
+                                                document.getElementById('reference_id').value = @json($new_reference_id);
+                                            }
+                                        });
+                                        document.getElementById('5option').addEventListener('change', function() {
+                                            if(this.checked) {
+                                                document.getElementById('reference_id').value = @json($new_cn_reference_id);
+                                            }
+                                        });
+                                    </script>
                             </div>
                             {{-- <div class="form-floating">
                                 <input type="text" class="form-control" id="customer_name" placeholder="Customer Name">
