@@ -282,14 +282,14 @@
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     },
-                    body: JSON.stringify({
+                    body: JSON.stringify(
                         cart: {!! json_encode($cart) !!},
                         currency: $("#currency").val(),
                         mode: document.querySelector('input[name="mode"]:checked').value,
                         customer_id: $('#customer_id').val(),
                         reference_id: document.getElementById('reference_id').value,
                         order_id: {{ request('order_id', null) }}
-                    })
+                    )
                 })
                 .then(response => response.json())
                 .then(data => {
