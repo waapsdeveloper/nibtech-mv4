@@ -51,7 +51,13 @@ class ApiRequestController extends Controller
             // echo "Hell2o";
             unset($datas->OEMData);
             // dd($datas);
-            $request->request = json_encode($datas);
+            // dd($datas);
+            $datas = json_encode($datas);
+            // Create or update the resource
+            $api_request = Api_request_model::firstOrNew([
+                'request' => $datas,
+            ]);
+            $api_request->save();
             // $datas = json_decode($datas);
             // $datas = json_decode($datas);
             // echo "Hello";
