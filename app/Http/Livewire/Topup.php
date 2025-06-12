@@ -96,7 +96,9 @@ class Topup extends Component
             ->when(!request('all'), function ($q) {
                 return $q->where('status', 2);
             })
-            ->groupBy('variation_id')->selectRaw('variation_id, Count(*) as total')->get();
+            ->groupBy('variation_id')
+            ->selectRaw('variation_id, COUNT(*) as total, GROUP_CONCAT(id) as ps_ids')
+            ->get();
 
             $wrong_variations = Variation_model::whereIn('id', $variation_qty->pluck('variation_id')->toArray())->whereNull('sku')->where('grade', '<', 6)->get();
             if($wrong_variations->count() > 0){
@@ -109,10 +111,12 @@ class Topup extends Component
                 session()->put('error', $error);
                 return redirect()->back();
             }
-
+            dd($variation_qty);
             $listingController = new ListingController();
             foreach($variation_qty as $variation){
                 $listed_stock = Listed_stock_verification_model::where('process_id', $process->id)->where('variation_id', $variation->variation_id)->first();
+                // change status of all ids to 3
+                $process_stocks = Process_stock_model::whereIn('id', explode(',', $variation->ps_ids))->update(['status' => 3, 'verified_by' => session('user_id')]);
                 if($listed_stock == null){
                     echo $listingController->add_quantity($variation->variation_id, $variation->total, $process->id);
                 }elseif($listed_stock->qty_change < $variation->total){
