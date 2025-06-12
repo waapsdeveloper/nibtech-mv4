@@ -291,101 +291,101 @@ class Report extends Component
         $data['aggregated_sales'] = $aggregates;
         $data['aggregated_sales_cost'] = $aggregated_cost;
 
-        // $aggregate_returns = DB::table('category')
-        //     ->join('products', 'category.id', '=', 'products.category')
-        //     ->join('variation', 'products.id', '=', 'variation.product_id')
-        //     ->join('order_items', 'variation.id', '=', 'order_items.variation_id')
-        //     ->join('orders', 'order_items.order_id', '=', 'orders.id')
-        //     ->leftJoin('stock', 'order_items.stock_id', '=', 'stock.id')
-        //     ->leftJoin('orders as p_order', 'stock.order_id', '=', 'p_order.id')
-        //     ->leftJoin('process_stock', 'stock.id', '=', 'process_stock.stock_id')
-        //     ->leftJoin('process', 'process_stock.process_id', '=', 'process.id')
-        //     ->select(
-        //         'category.id as category_id',
-        //         DB::raw('COUNT(DISTINCT order_items.id) as orders_qty'),
-        //         // DB::raw('COUNT(DISTINCT orders.id) as orders_qty'),
-        //         DB::raw('SUM(CASE WHEN orders.status = 3 THEN 1 ELSE 0 END) as approved_orders_qty'),
-        //         DB::raw('SUM(CASE WHEN order_items.currency is null OR order_items.currency = 4 THEN order_items.price ELSE 0 END) as eur_items_sum'),
-        //         DB::raw('SUM(CASE WHEN order_items.currency = 5 THEN order_items.price ELSE 0 END) as gbp_items_sum'),
-        //         DB::raw('GROUP_CONCAT(stock.id) as stock_ids'),
-        //         DB::raw('SUM(CASE WHEN process.process_type_id = 9 THEN process_stock.price ELSE 0 END) as items_repair_sum')
-        //     )
-        //     ->whereBetween('order_items.created_at', [$start_date, $end_date])
-        //     ->when($query == 1, function ($q) use ($variation_ids) {
-        //         return $q->whereIn('variation.id', $variation_ids);
-        //     })
-        //     // ->whereIn('variation.id', $variation_ids)
-        //     ->when(request('vendor') != '', function ($q) {
-        //         return $q->where('p_order.customer_id', request('vendor'));
-        //     })
-        //     ->whereIn('orders.order_type_id', [4,6])
-        //     ->Where('orders.deleted_at',null)
-        //     ->Where('order_items.deleted_at',null)
-        //     ->Where('stock.deleted_at',null)
-        //     ->Where('process_stock.deleted_at',null)
-        //     // ->whereIn('orders.status', [3,6])
-        //     ->groupBy('category.id')
-        //     ->get();
+        $aggregate_returns = DB::table('category')
+            ->join('products', 'category.id', '=', 'products.category')
+            ->join('variation', 'products.id', '=', 'variation.product_id')
+            ->join('order_items', 'variation.id', '=', 'order_items.variation_id')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->leftJoin('stock', 'order_items.stock_id', '=', 'stock.id')
+            ->leftJoin('orders as p_order', 'stock.order_id', '=', 'p_order.id')
+            ->leftJoin('process_stock', 'stock.id', '=', 'process_stock.stock_id')
+            ->leftJoin('process', 'process_stock.process_id', '=', 'process.id')
+            ->select(
+                'category.id as category_id',
+                DB::raw('COUNT(DISTINCT order_items.id) as orders_qty'),
+                // DB::raw('COUNT(DISTINCT orders.id) as orders_qty'),
+                DB::raw('SUM(CASE WHEN orders.status = 3 THEN 1 ELSE 0 END) as approved_orders_qty'),
+                DB::raw('SUM(CASE WHEN order_items.currency is null OR order_items.currency = 4 THEN order_items.price ELSE 0 END) as eur_items_sum'),
+                DB::raw('SUM(CASE WHEN order_items.currency = 5 THEN order_items.price ELSE 0 END) as gbp_items_sum'),
+                DB::raw('GROUP_CONCAT(stock.id) as stock_ids'),
+                DB::raw('SUM(CASE WHEN process.process_type_id = 9 THEN process_stock.price ELSE 0 END) as items_repair_sum')
+            )
+            ->whereBetween('order_items.created_at', [$start_date, $end_date])
+            ->when($query == 1, function ($q) use ($variation_ids) {
+                return $q->whereIn('variation.id', $variation_ids);
+            })
+            // ->whereIn('variation.id', $variation_ids)
+            ->when(request('vendor') != '', function ($q) {
+                return $q->where('p_order.customer_id', request('vendor'));
+            })
+            ->whereIn('orders.order_type_id', [4,6])
+            ->Where('orders.deleted_at',null)
+            ->Where('order_items.deleted_at',null)
+            ->Where('stock.deleted_at',null)
+            ->Where('process_stock.deleted_at',null)
+            // ->whereIn('orders.status', [3,6])
+            ->groupBy('category.id')
+            ->get();
         // $costs = Category_model::select(
         //     'category.'
         // )
 
-        $return_subquery = DB::table('order_items')
-            ->join('variation', 'variation.id', '=', 'order_items.variation_id')
-            ->join('products', 'products.id', '=', 'variation.product_id')
-            ->join('category', 'category.id', '=', 'products.category')
-            ->join('orders', 'orders.id', '=', 'order_items.order_id')
-            ->leftJoin('stock', 'stock.id', '=', 'order_items.stock_id')
-            ->leftJoin('orders as p_order', 'p_order.id', '=', 'stock.order_id')
-            ->leftJoin('process_stock', function ($join) use ($repair_process_ids) {
-                $join->on('process_stock.stock_id', '=', 'stock.id')
-                     ->whereIn('process_stock.process_id', $repair_process_ids);
-            })
-            // ->leftJoin('process', 'process.id', '=', 'process_stock.process_id')
-            ->whereIn('orders.order_type_id', [4,6])
-            ->whereNull('orders.deleted_at')
-            ->whereNull('order_items.deleted_at')
-            ->whereIn('orders.status', [3,6])
-            ->whereIn('order_items.status', [3,6])
-            ->when(request('vendor'), function ($q) {
-                return $q->where('p_order.customer_id', request('vendor'));
-            })
-            ->when($query == 1, function ($q) use ($variation_ids) {
-                return $q->whereIn('variation.id', $variation_ids);
-            })
-            ->where(function ($query) use ($start_date, $end_date) {
-                $query->where(function ($subQuery) use ($start_date, $end_date) {
-                    $subQuery->where('orders.order_type_id', 3)
-                            ->whereBetween('orders.processed_at', [$start_date, $end_date]);
-                })->orWhere(function ($subQuery) use ($start_date, $end_date) {
-                    $subQuery->where('orders.order_type_id', '!=', 3)
-                            ->whereBetween('order_items.created_at', [$start_date, $end_date]);
-                });
-            })
-            ->selectRaw('
-                category.id as category_id,
-                order_items.id as order_item_id,
-                order_items.price as order_item_price,
-                orders.price as order_price,
-                orders.charges as order_charges,
-                orders.currency,
-                orders.order_type_id,
-                stock.id as stock_id,
-                process_stock.price as repair_price
-            ');
-        $aggregate_returns = DB::table(DB::raw("({$return_subquery->toSql()}) as sub"))
-            ->mergeBindings($subquery)
-            ->select(
-                'sub.category_id',
-                DB::raw('COUNT(DISTINCT sub.order_item_id) as orders_qty'),
-                DB::raw('SUM(sub.order_charges) as charges'),
-                DB::raw('SUM(CASE WHEN sub.currency = 4 OR sub.order_type_id = 5 THEN sub.order_item_price ELSE 0 END) as eur_items_sum'),
-                DB::raw('SUM(CASE WHEN sub.currency = 5 AND sub.order_type_id = 3 THEN sub.order_price ELSE 0 END) as gbp_items_sum'),
-                DB::raw('GROUP_CONCAT(DISTINCT sub.stock_id) as stock_ids'),
-                DB::raw('SUM(repair_price) as items_repair_sum')
-            )
-            ->groupBy('sub.category_id')
-            ->get();
+        // $return_subquery = DB::table('order_items')
+        //     ->join('variation', 'variation.id', '=', 'order_items.variation_id')
+        //     ->join('products', 'products.id', '=', 'variation.product_id')
+        //     ->join('category', 'category.id', '=', 'products.category')
+        //     ->join('orders', 'orders.id', '=', 'order_items.order_id')
+        //     ->leftJoin('stock', 'stock.id', '=', 'order_items.stock_id')
+        //     ->leftJoin('orders as p_order', 'p_order.id', '=', 'stock.order_id')
+        //     ->leftJoin('process_stock', function ($join) use ($repair_process_ids) {
+        //         $join->on('process_stock.stock_id', '=', 'stock.id')
+        //              ->whereIn('process_stock.process_id', $repair_process_ids);
+        //     })
+        //     // ->leftJoin('process', 'process.id', '=', 'process_stock.process_id')
+        //     ->whereIn('orders.order_type_id', [4,6])
+        //     ->whereNull('orders.deleted_at')
+        //     ->whereNull('order_items.deleted_at')
+        //     ->whereIn('orders.status', [3,6])
+        //     ->whereIn('order_items.status', [3,6])
+        //     ->when(request('vendor'), function ($q) {
+        //         return $q->where('p_order.customer_id', request('vendor'));
+        //     })
+        //     ->when($query == 1, function ($q) use ($variation_ids) {
+        //         return $q->whereIn('variation.id', $variation_ids);
+        //     })
+        //     ->where(function ($query) use ($start_date, $end_date) {
+        //         $query->where(function ($subQuery) use ($start_date, $end_date) {
+        //             $subQuery->where('orders.order_type_id', 3)
+        //                     ->whereBetween('orders.processed_at', [$start_date, $end_date]);
+        //         })->orWhere(function ($subQuery) use ($start_date, $end_date) {
+        //             $subQuery->where('orders.order_type_id', '!=', 3)
+        //                     ->whereBetween('order_items.created_at', [$start_date, $end_date]);
+        //         });
+        //     })
+        //     ->selectRaw('
+        //         category.id as category_id,
+        //         order_items.id as order_item_id,
+        //         order_items.price as order_item_price,
+        //         orders.price as order_price,
+        //         orders.charges as order_charges,
+        //         orders.currency,
+        //         orders.order_type_id,
+        //         stock.id as stock_id,
+        //         process_stock.price as repair_price
+        //     ');
+        // $aggregate_returns = DB::table(DB::raw("({$return_subquery->toSql()}) as sub"))
+        //     ->mergeBindings($subquery)
+        //     ->select(
+        //         'sub.category_id',
+        //         DB::raw('COUNT(DISTINCT sub.order_item_id) as orders_qty'),
+        //         DB::raw('SUM(sub.order_charges) as charges'),
+        //         DB::raw('SUM(CASE WHEN sub.currency = 4 OR sub.order_type_id = 5 THEN sub.order_item_price ELSE 0 END) as eur_items_sum'),
+        //         DB::raw('SUM(CASE WHEN sub.currency = 5 AND sub.order_type_id = 3 THEN sub.order_price ELSE 0 END) as gbp_items_sum'),
+        //         DB::raw('GROUP_CONCAT(DISTINCT sub.stock_id) as stock_ids'),
+        //         DB::raw('SUM(repair_price) as items_repair_sum')
+        //     )
+        //     ->groupBy('sub.category_id')
+        //     ->get();
         $aggregated_return_cost = [];
         foreach ($aggregate_returns as $agg) {
 
