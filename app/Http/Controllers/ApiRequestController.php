@@ -123,18 +123,17 @@ class ApiRequestController extends Controller
                 'message' => 'Missing IMEI',
             ], 400);
         }
-
         $curl = curl_init();
         curl_setopt_array($curl, [
             CURLOPT_URL => $drfones_url,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS => json_encode([
-                'USERID' => $user_id,
-                'IMEI' => $imei,
+            CURLOPT_POSTFIELDS => http_build_query([
+            'USERID' => $user_id,
+            'IMEI' => $imei,
             ]),
             CURLOPT_HTTPHEADER => [
-                'Content-Type: application/json',
+            'Content-Type: application/x-www-form-urlencoded',
             ],
         ]);
         $response = curl_exec($curl);
