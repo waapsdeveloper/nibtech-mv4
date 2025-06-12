@@ -518,7 +518,7 @@
                                             @else
                                                 <td>{{ $stock->admin->first_name ?? null }}</td>
                                                 <td>
-                                                    <a href="{{ url('request_drfones?imei='.$item->imei.$item->serial_number) }}" class="text-danger" title="Check DRFones" target="_blank"><i class="fa fa-search"></i></a>
+                                                    <a href="{{ url('request_drfones?imei='.$stock->imei.$stock->serial_number) }}" class="text-danger" title="Check DRFones" target="_blank"><i class="fa fa-search"></i></a>
                                                 </td>
                                             @endif
                                         </tr>
