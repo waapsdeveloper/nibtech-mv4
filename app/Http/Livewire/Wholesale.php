@@ -655,13 +655,13 @@ class Wholesale extends Component
         unset($data[0]);
         $arrayLower = array_map('strtolower', $dh);
         // Search for the lowercase version of the search value in the lowercase array
-        $name = array_search('name', $arrayLower);
-        if(!$name){
-            print_r($dh);
-            session()->put('error', "Heading not Found(name, imei)");
-            return redirect()->back();
+        // $name = array_search('name', $arrayLower);
+        // if(!$name){
+        //     print_r($dh);
+        //     session()->put('error', "Heading not Found(name, imei)");
+        //     return redirect()->back();
             // die;
-        }
+        // }
         // echo $name;
         $imei = array_search('imei', $arrayLower);
         // echo $imei;
@@ -671,7 +671,11 @@ class Wholesale extends Component
             // $name = ;
             // echo $dr." ";
             // print_r($d);
-            $n = trim($d[$name]);
+            // $n = trim($d[$name]);
+
+            $this->check_wholesale_item($order_id, $d[$imei], null, 1);
+            continue;
+
             if(ctype_digit($d[$imei])){
                 $i = $d[$imei];
                 $s = null;
@@ -679,6 +683,9 @@ class Wholesale extends Component
                 $i = null;
                 $s = $d[$imei];
             }
+
+
+
             if(trim($d[$imei]) == ''){
                 continue;
             }
@@ -819,15 +826,15 @@ class Wholesale extends Component
         }
 
 
-        if($issue != []){
-            foreach($issue as $row => $datas){
-                Order_issue_model::create([
-                    'order_id' => $order_id,
-                    'data' => json_encode($datas['data']),
-                    'message' => $datas['message'],
-                ]);
-            }
-        }
+        // if($issue != []){
+        //     foreach($issue as $row => $datas){
+        //         Order_issue_model::create([
+        //             'order_id' => $order_id,
+        //             'data' => json_encode($datas['data']),
+        //             'message' => $datas['message'],
+        //         ]);
+        //     }
+        // }
 
         return redirect()->back();
     }
