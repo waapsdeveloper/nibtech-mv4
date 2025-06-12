@@ -379,6 +379,82 @@
         </div>
 
 
+        @elseif (session('user')->hasPermission('view_repair_history') && request('history') && request('history') == 2)
+        <div class="card" id="print_inv">
+            <div class="card-header pb-0 d-flex justify-content-between">
+                <h4 class="card-title">Not Repair Received Stock History</h4>
+                <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$received_stocks->firstItem()}} {{ __('locale.To') }} {{$received_stocks->lastItem()}} {{ __('locale.Out Of') }} {{$received_stocks->total()}} </h5>
+                <div class=" mg-b-0">
+                    <select name="per_page" class="form-select form-select-sm" id="per_page" onchange="this.form.submit()" form="search">
+                        <option value="20" {{ Request::get('per_page') == 20 ? 'selected' : '' }}>20</option>
+                        <option value="50" {{ Request::get('per_page') == 50 ? 'selected' : '' }}>50</option>
+                        <option value="100" {{ Request::get('per_page') == 100 ? 'selected' : '' }}>100</option>
+                        <option value="200" {{ Request::get('per_page') == 200 ? 'selected' : '' }}>200</option>
+                    </select>
+                </div>
+
+            </div>
+            <div class="card-body"><div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                    <thead>
+                        <tr>
+                            <th><small><b>No</b></small></th>
+                            <th><small><b>Model</b></small></th>
+                            <th><small><b>IMEI</b></small></th>
+                            <th><small><b>Cost</b></small></th>
+                            <th><small><b>Charge</b></small></th>
+                            <th><small><b>Repairer</b></small></th>
+                            <th><small><b>Creation Date</b></small></th>
+                            <th><small><b>Update Date</b></small></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                            $i = 0;
+                            $total_cost = 0;
+                        @endphp
+                        @foreach ($received_stocks as $p_stock)
+                            @php
+                                $stock = $p_stock->stock;
+                                $variation = $stock->variation;
+                                $product = $variation->product->model ?? null;
+                                $storage = $variation->storage_id->name ?? null;
+                                $color = $variation->color_id->name ?? null;
+                                $grade = $variation->grade_id->name ?? null;
+
+                                $cost = $stock->purchase_item->price ?? null;
+                                $total_cost += $cost;
+                            @endphp
+
+                            <tr>
+                                <td>{{ ++$i }}</td>
+                                <td>{{ $product." ".$storage." ".$color." ".$grade }}</td>
+                                <td>{{ $stock->imei.$stock->serial_number }}</td>
+                                <td>{{ amount_formatter($cost,2) }}</td>
+                                <td>{{ amount_formatter($p_stock->price,2) }}</td>
+                                <td>{{ $repairers[$p_stock->process->customer_id] ?? null }}</td>
+                                <td>{{ $p_stock->created_at }}</td>
+                                <td>{{ $p_stock->updated_at }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3"><b>Total</b></td>
+                            <td><b>{{ amount_formatter($total_cost,2) }}</b></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                </table>
+                <br>
+                {{ $received_stocks->onEachSide(1)->links() }} {{ __('locale.From') }} {{$received_stocks->firstItem()}} {{ __('locale.To') }} {{$received_stocks->lastItem()}} {{ __('locale.Out Of') }} {{$received_stocks->total()}}
+
+            </div>
+        </div>
+
+
         @else
                 <div class="card">
                     <div class="card-header pb-0">
