@@ -151,7 +151,7 @@ class ApiRequestController extends Controller
         if (!empty($responseData['Data']) && is_array($responseData['Data'])) {
             $data = is_array($responseData['Data'][0] ?? null) ? $responseData['Data'][0] : $responseData['Data'];
             $request = new Request($data);
-            $this->store($request);
+            echo $this->store($request);
             return response()->json([
                 'status' => 'Success',
                 'message' => 'Data processed',
