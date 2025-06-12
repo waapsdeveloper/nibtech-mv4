@@ -893,7 +893,12 @@
                                                 @endphp
                                                     <tr>
                                                         <td>{{ $i }}</td>
-                                                        <td data-stock="{{ $item->id }}" class="{{$class}}">{{ $item->imei.$item->serial_number }}</td>
+                                                        <td data-stock="{{ $item->id }}" class="{{$class}}">{{ $item->imei.$item->serial_number }}
+                                                            @if ($class != "")
+                                                                <a href="{{ url('request_drfones?imei='.$item->imei.$item->serial_number) }}" class="text-danger" title="Check DRFones"><i class="fa fa-search"></i></a>
+
+                                                            @endif
+                                                        </td>
                                                         @if (session('user')->hasPermission('view_cost'))
                                                         <td>{{ $currency}}{{ $price }}</td>
                                                         @endif
