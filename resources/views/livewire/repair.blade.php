@@ -103,9 +103,10 @@
                 @endif
                 @if (session('user')->hasPermission('view_repair_history'))
                 {{-- <a href="{{url('repair')}}?history=1" class="btn btn-link @if (request('history') == 1) bg-white @endif ">History</a> --}}
-                <button class="btn btn-link  @if (request('history') == 1) bg-white @endif" type="submit" form="history">History</button>
+                <button class="btn btn-link  @if (request('history') == 1) bg-white @endif" type="submit" form="history" name="history" value="1">History</button>
+                <button class="btn btn-link  @if (request('history') == 2) bg-white @endif" type="submit" form="history" name="history" value="2">NR History</button>
                 <form method="GET" action="" id="history">
-                    <input type="hidden" name="history" value="1">
+                    {{-- <input type="hidden" name="history" value="1"> --}}
                     <input type="hidden" name="repairer_id" value="{{ Request::get('repairer_id') }}">
                     <input type="hidden" name="start_date" value="{{ Request::get('start_date') }}">
                     <input type="hidden" name="end_date" value="{{ Request::get('end_date') }}">
