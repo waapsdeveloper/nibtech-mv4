@@ -545,7 +545,7 @@ class Wholesale extends Component
 
     }
     public function add_wholesale_item($order_id, $imei = null, $variation_id = null, $back = null){
-        if(request('imei')){
+        if(request('imei') && $imei == null){
             $imei = request('imei');
         }
         if(request('variation')){
