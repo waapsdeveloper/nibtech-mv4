@@ -361,152 +361,186 @@ class Wholesale extends Component
         if(request('imei')){
             $imei = request('imei');
         }
-        if(ctype_digit($imei)){
-            $i = $imei;
-            $s = null;
-        }else{
-            $i = null;
-            $s = $imei;
-        }
-        $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
+        $imeis = explode(" ", $imei);
+        $errors = '';
+        foreach($imeis as $imei){
 
-        if($stock == null && strlen($i) >= 5){
-            $stock = Stock_model::where('imei', 'LIKE', '%'.$i)->with(['variation'])->get();
-            if($stock->count() == 1){
-                $stock = $stock->first();
-            }elseif($stock->count() > 1){
-                $imeis = $stock->pluck('imei')->toArray();
-                $error = "Did you mean: ".implode(", ", $imeis);
-                $stock = null;
+            if(ctype_digit($imei)){
+                $i = $imei;
+                $s = null;
             }else{
-                $stock = null;
+                $i = null;
+                $s = $imei;
             }
-        }
+            $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
 
-        if (request('imei') == '' || !$stock || $stock->status == null) {
-            if(isset($error)){
-                session()->put('error', $error);
-            }else{
-                session()->put('error', 'IMEI Invalid / Not Found');
-            }
-            if($back != 1){
-                return redirect()->back();
-            }else{
-                return 1;
-            }
-        }
-        if(request('variation')){
-            $variation_id = request('variation');
-        }
-        if($variation_id > 0){}else{
-            $variation_id = $stock->variation_id;
-        }
-        $variation = Variation_model::find($variation_id);
-
-        if($variation == null){
-            session()->put('error', 'Variation Not Found');
-            if($back != 1){
-                return redirect()->back();
-            }else{
-                return 1;
-            }
-        }
-
-        if($imei == '' || !$stock || $stock->status == null){
-            session()->put('error', 'IMEI Invalid / Not Found');
-            if($back != 1){
-                return redirect()->back();
-            }else{
-                return 1;
+            if($stock == null && strlen($i) >= 5){
+                $stock = Stock_model::where('imei', 'LIKE', '%'.$i)->with(['variation'])->get();
+                if($stock->count() == 1){
+                    $stock = $stock->first();
+                }elseif($stock->count() > 1){
+                    $imeis = $stock->pluck('imei')->toArray();
+                    $error = "Did you mean: ".implode(", ", $imeis);
+                    $stock = null;
+                }else{
+                    $stock = null;
+                }
             }
 
-        }
-
-        if($stock->variation->grade == 17){
-            session()->put('error', "IMEI Flagged | Contact Admin");
-            if($back != 1){
-                return redirect()->back();
-            }else{
-                return 1;
-            }
-        }
-
-        if($stock->status != 1){
-            session()->put('error', "Stock Already Sold");
-            if($back != 1){
-                return redirect()->back();
-            }else{
-                return 1;
-            }
-        }
-        if($stock->order->status == 2){
-            session()->put('error', "Stock List Awaiting Approval");
-            if($back != 1){
-                return redirect()->back();
-            }else{
-                return 1;
-            }
-        }
-        if(request('exclude_vendors') != null){
-            if(in_array($stock->order->customer_id, request('exclude_vendors'))){
-                session()->put('error', 'Stock belongs to the Excluded Vendor');
+            if (request('imei') == '' || !$stock || $stock->status == null) {
+                if(isset($error)){
+                    // session()->put('error', $error);
+                    $errors .= $error . "<br>";
+                    continue;
+                }else{
+                    // session()->put('error', 'IMEI Invalid / Not Found');
+                    $errors .= 'IMEI Invalid / Not Found' . "<br>";
+                    continue;
+                }
                 if($back != 1){
-                    return redirect()->back();
+                    // return redirect()->back();
+                    continue;
                 }else{
                     return 1;
                 }
             }
-            session()->put('exclude_vendors', request('exclude_vendors'));
-        }else{
-            session()->forget('exclude_vendors');
-        }
-        $variation = Variation_model::where(['id' => $stock->variation_id])->first();
-        if($stock->status != 1){
-            session()->put('error', 'Stock already sold');
-            if($back != 1){
-                return redirect()->back();
-            }else{
-                return 1;
+            if(request('variation')){
+                $variation_id = request('variation');
             }
-        }
-
-        if(request('bypass_check') == 1){
-
-            $this->add_wholesale_item($order_id, $imei, $variation_id, $back);
-            session()->put('bypass_check', 1);
-            request()->merge(['bypass_check'=> 1]);
-            if($back != 1){
-                return redirect()->back();
-            }else{
-                return 1;
+            if($variation_id > 0){}else{
+                $variation_id = $stock->variation_id;
             }
-        }else{
-            session()->forget('bypass_check');
-            // request()->merge(['bypass_check' => null]);
-            if($variation->grade != 11){
-                echo "<p>This IMEI does not belong to Wholesale. Do you want to continue?</p>";
-                echo "<form id='continueForm' action='" . url('add_wholesale_item') . "/" . $order_id . "' method='POST'>";
-                echo "<input type='hidden' name='_token' value='" . csrf_token() . "'>";
-                echo "<input type='hidden' name='order_id' value='" . $order_id . "'>";
-                echo "<input type='hidden' name='imei' value='" . $imei . "'>";
-                echo "</form>";
-                echo "<a href='javascript:history.back()'>Cancel</a> ";
-                echo "<button onclick='submitForm()'>Continue</button>";
-                echo "<script>
-                    function submitForm() {
-                        document.getElementById('continueForm').submit();
+            $variation = Variation_model::find($variation_id);
+
+            if($variation == null){
+                // session()->put('error', 'Variation Not Found');
+                $errors .= 'Variation Not Found' . "<br>";
+                if($back != 1){
+                    // return redirect()->back();
+                    continue;
+                }else{
+                    return 1;
+                }
+            }
+
+            if($imei == '' || !$stock || $stock->status == null){
+                // session()->put('error', 'IMEI Invalid / Not Found');
+                $errors .= 'IMEI Invalid / Not Found' . $imei . "<br>";
+                if($back != 1){
+                    // return redirect()->back();
+                    continue;
+                }else{
+                    return 1;
+                }
+
+            }
+
+            if($stock->variation->grade == 17){
+                // session()->put('error', "IMEI Flagged | Contact Admin");
+                $errors .= "IMEI Flagged | Contact Admin" . $imei . "<br>";
+                if($back != 1){
+                    // return redirect()->back();
+                    continue;
+                }else{
+                    return 1;
+                }
+            }
+
+            if($stock->status != 1){
+                // session()->put('error', "Stock Already Sold");
+                $errors .= "Stock Already Sold" . $imei . "<br>";
+                if($back != 1){
+                    // return redirect()->back();
+                    continue;
+                }else{
+                    return 1;
+                }
+            }
+            if($stock->order->status == 2){
+                // session()->put('error', "Stock List Awaiting Approval");
+                $errors .= "Stock List Awaiting Approval" . $imei . "<br>";
+                if($back != 1){
+                    // return redirect()->back();
+                    continue;
+                }else{
+                    return 1;
+                }
+            }
+            if(request('exclude_vendors') != null){
+                if(in_array($stock->order->customer_id, request('exclude_vendors'))){
+                    // session()->put('error', 'Stock belongs to the Excluded Vendor');
+                    $errors .= 'Stock belongs to the Excluded Vendor' . $imei . "<br>";
+                    if($back != 1){
+                        // return redirect()->back();
+                        continue;
+                    }else{
+                        return 1;
                     }
-                </script>";
-                exit;
+                }
+                session()->put('exclude_vendors', request('exclude_vendors'));
             }else{
-                $this->add_wholesale_item($order_id, $imei, $variation_id, $back);
+                session()->forget('exclude_vendors');
+            }
+            $variation = Variation_model::where(['id' => $stock->variation_id])->first();
+            if($stock->status != 1){
+                // session()->put('error', 'Stock already sold');
+                $errors .= 'Stock already sold' . $imei . "<br>";
                 if($back != 1){
-                    return redirect()->back();
+                    // return redirect()->back();
+                    continue;
                 }else{
                     return 1;
                 }
-
             }
+
+            if(request('bypass_check') == 1){
+
+                $this->add_wholesale_item($order_id, $imei, $variation_id, 1);
+                session()->put('bypass_check', 1);
+                request()->merge(['bypass_check'=> 1]);
+                if($back != 1){
+                    // return redirect()->back();
+                    continue;
+                }else{
+                    return 1;
+                }
+            }else{
+                session()->forget('bypass_check');
+                // request()->merge(['bypass_check' => null]);
+                if($variation->grade != 11){
+                    echo "<p>This IMEI does not belong to Wholesale. Do you want to continue?</p>";
+                    echo "<form id='continueForm' action='" . url('add_wholesale_item') . "/" . $order_id . "' method='POST'>";
+                    echo "<input type='hidden' name='_token' value='" . csrf_token() . "'>";
+                    echo "<input type='hidden' name='order_id' value='" . $order_id . "'>";
+                    echo "<input type='hidden' name='imei' value='" . $imei . "'>";
+                    echo "</form>";
+                    echo "<a href='javascript:history.back()'>Cancel</a> ";
+                    echo "<button onclick='submitForm()'>Continue</button>";
+                    echo "<script>
+                        function submitForm() {
+                            document.getElementById('continueForm').submit();
+                        }
+                    </script>";
+                    exit;
+                }else{
+                    $this->add_wholesale_item($order_id, $imei, $variation_id, 1);
+                    if($back != 1){
+                        // return redirect()->back();
+                        continue;
+                    }else{
+                        return 1;
+                    }
+
+                }
+            }
+        }
+        if($errors != ''){
+            session()->put('error', $errors);
+        }
+        if($back != 1){
+            return redirect()->back();
+        }else{
+            return 1;
         }
 
     }
@@ -655,13 +689,13 @@ class Wholesale extends Component
         unset($data[0]);
         $arrayLower = array_map('strtolower', $dh);
         // Search for the lowercase version of the search value in the lowercase array
-        // $name = array_search('name', $arrayLower);
-        // if(!$name){
-        //     print_r($dh);
-        //     session()->put('error', "Heading not Found(name, imei)");
-        //     return redirect()->back();
+        $name = array_search('name', $arrayLower);
+        if(!$name){
+            print_r($dh);
+            session()->put('error', "Heading not Found(name, imei)");
+            return redirect()->back();
             // die;
-        // }
+        }
         // echo $name;
         $imei = array_search('imei', $arrayLower);
         // echo $imei;
@@ -671,11 +705,7 @@ class Wholesale extends Component
             // $name = ;
             // echo $dr." ";
             // print_r($d);
-            // $n = trim($d[$name]);
-
-            $this->check_wholesale_item($order_id, $d[$imei], null, 1);
-            continue;
-
+            $n = trim($d[$name]);
             if(ctype_digit($d[$imei])){
                 $i = $d[$imei];
                 $s = null;
@@ -683,9 +713,6 @@ class Wholesale extends Component
                 $i = null;
                 $s = $d[$imei];
             }
-
-
-
             if(trim($d[$imei]) == ''){
                 continue;
             }
@@ -826,15 +853,15 @@ class Wholesale extends Component
         }
 
 
-        // if($issue != []){
-        //     foreach($issue as $row => $datas){
-        //         Order_issue_model::create([
-        //             'order_id' => $order_id,
-        //             'data' => json_encode($datas['data']),
-        //             'message' => $datas['message'],
-        //         ]);
-        //     }
-        // }
+        if($issue != []){
+            foreach($issue as $row => $datas){
+                Order_issue_model::create([
+                    'order_id' => $order_id,
+                    'data' => json_encode($datas['data']),
+                    'message' => $datas['message'],
+                ]);
+            }
+        }
 
         return redirect()->back();
     }
