@@ -151,9 +151,9 @@ class ApiRequestController extends Controller
         if ($responseData['Data'] != null) {
             $request = new Request();
             $request->replace(is_array($responseData['Data']) ? $responseData['Data'] : []);
-            $this->store($request);
+            $this->store($request[0]);
         }
-        dd($request);
+        dd($request[0]);
 
     }
 
