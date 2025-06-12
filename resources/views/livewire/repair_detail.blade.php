@@ -632,6 +632,93 @@
                         <div>Total: {{$i }}</div>
                     </div>
                 </div>
+
+                @if ($non_processed_stocks->count() > 0)
+
+                <div class="card">
+                    <div class="card-header pb-0">
+                        Received Not Repaired Items
+                    </div>
+                            {{-- {{ $variation }} --}}
+                    <div class="card-body"><div class="table-responsive" style="max-height: 400px">
+
+                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th><small><b>#</b></small></th>
+                                        {{-- <th><small><b>Vendor</b></small></th> --}}
+                                        <th><small><b>IMEI/Serial</b></small></th>
+                                        {{-- @if (session('user')->hasPermission('view_cost')) --}}
+                                        <th><small><b>Name</b></small></th>
+                                        {{-- @endif --}}
+                                        @if ($process->status == 3 && session('user')->hasPermission('view_cost'))
+                                        <th><small><b>Cost</b></small></th>
+                                        @endif
+                                        <th><small><b>Last Updated</b></small></th>
+
+                                        @if (session('user')->hasPermission('revert_repair_item'))
+                                        <th></th>
+                                        @endif
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{-- <form method="POST" action="{{url('repair')}}/update_prices" id="update_prices_{{ $variation->id }}"> --}}
+                                        @csrf
+                                    @php
+                                        $i = 0;
+                                        $id = [];
+                                    @endphp
+                                    @php
+                                        // $items = $stocks->order_item;
+                                        $j = 0;
+                                        $total = 0;
+                                        // print_r($variation);
+                                    @endphp
+
+                                    @foreach ($non_processed_stocks as $processed_stock)
+                                        {{-- @dd($item->sale_item) --}}
+                                        @php
+                                            $item = $processed_stock->stock;
+                                            $variation = $item->variation;
+                                            $i ++;
+
+                                            isset($variation->product)?$product = $products[$variation->product_id]:$product = null;
+                                            isset($variation->storage)?$storage = $storages[$variation->storage]:$storage = null;
+                                            isset($variation->color)?$color = $colors[$variation->color]:$color = null;
+                                            isset($variation->grade)?$grade = $grades[$variation->grade]:$grade = null;
+                                            isset($variation->sub_grade)?$sub_grade = $grades[$variation->sub_grade]:$sub_grade = null;
+
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $i }}</td>
+                                            {{-- <td>{{ $item->order->customer->first_name }}</td> --}}
+                                            <td>{{ $item->imei.$item->serial_number }}</td>
+                                            <td>
+                                                {{ $product." ".$storage." ".$color." ".$grade." ".$sub_grade }}
+                                            </td>
+
+                                            @if ($process->status == 3 && session('user')->hasPermission('view_cost'))
+                                            <td>{{ amount_formatter($processed_stock->price,2) }}</td>
+                                            @endif
+                                            <td>{{$processed_stock->updated_at}}</td>
+                                            @if (session('user')->hasPermission('revert_repair_item') && $process->status == 2 && $processed_stock->updated_at->diffInDays() < 1)
+                                            <td><a href="{{ url('revert_repair_item').'/'.$item->process_stock($process_id)->id }}" title="Revert Item" onclick="return confirm('Are you sure you want to revert this item?');"><i class="fa fa-undo"></i></a></td>
+                                            @endif
+                                            <input type="hidden" name="item_ids[]" value="{{ $item->process_stock($process_id)->id }}">
+                                        </tr>
+                                    @endforeach
+                                    </form>
+                                </tbody>
+                            </table>
+                        <br>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <div>Total: {{$i }}</div>
+                    </div>
+                </div>
+
+                @endif
+
             </div>
 
             @endif
