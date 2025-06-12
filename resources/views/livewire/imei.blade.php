@@ -67,6 +67,12 @@
             </div>
             @if(isset($stock))
             <div class="p-2 d-flex justify-content-between">
+                @if (!isset($test_results) || $test_results->count() == 0)
+
+                    <a href="{{ url('request_drfones?imei='.$stock->imei.$stock->serial_number) }}" class="text-danger" title="Check DRFones" target="_blank"><i class="fa fa-search"></i></a>
+
+                @endif
+
                 <a href="{{ url('imei/print_label').'?stock_id='.$stock->id}}" target="_blank" class="btn btn-secondary"><i class="fa fa-print"></i></a>
                 @if (session('user')->hasPermission('rearrange_imei_order'))
                     <a href="{{ url('imei/rearrange').'/'.$stock->id}}" class="btn btn-secondary mx-1">Rearrange</a>
