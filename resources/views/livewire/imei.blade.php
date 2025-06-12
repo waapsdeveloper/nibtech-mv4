@@ -69,7 +69,7 @@
             <div class="p-2 d-flex justify-content-between">
                 @if (!isset($test_results) || $test_results->count() == 0)
 
-                    <a href="{{ url('request_drfones?imei='.$stock->imei.$stock->serial_number) }}" class="text-danger" title="Check DRFones" target="_blank"><i class="fa fa-search"></i></a>
+                    <a href="{{ url('request_drfones?imei='.$stock->imei.$stock->serial_number) }}" class="text-danger btn btn-link" title="Check DRFones" target="_blank"><i class="fa fa-search"></i></a>
 
                 @endif
 
