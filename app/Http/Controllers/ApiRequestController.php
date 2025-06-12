@@ -148,12 +148,20 @@ class ApiRequestController extends Controller
         $responseData = json_decode($response, true);
 
 
-        if ($responseData['Data'] != null) {
-            $request = new Request();
-            $data = is_array($responseData['Data']) ? ($responseData['Data'][0] ?? []) : [];
-            $request->replace(is_array($data) ? $data : []);
+        if (!empty($responseData['Data']) && is_array($responseData['Data'])) {
+            $data = is_array($responseData['Data'][0] ?? null) ? $responseData['Data'][0] : $responseData['Data'];
+            $request = new Request($data);
             $this->store($request);
-            dd($request->all());
+            return response()->json([
+                'status' => 'Success',
+                'message' => 'Data processed',
+                'data' => $data,
+            ], 200);
+        } else {
+            return response()->json([
+                'status' => 'Failed',
+                'message' => 'No valid data received from DRFones',
+            ], 400);
         }
 
     }
