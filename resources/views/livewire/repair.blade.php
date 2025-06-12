@@ -410,7 +410,7 @@
                     </thead>
                     <tbody>
                         @php
-                            $i = 0;
+                            $i = $received_stocks->firstItem() - 1;
                             $total_cost = 0;
                         @endphp
                         @foreach ($received_stocks as $p_stock)
