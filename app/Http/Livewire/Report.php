@@ -342,7 +342,7 @@ class Report extends Component
                      ->whereIn('process_stock.process_id', $repair_process_ids);
             })
             // ->leftJoin('process', 'process.id', '=', 'process_stock.process_id')
-            ->whereIn('orders.order_type_id', [2,3,5])
+            ->whereIn('orders.order_type_id', [4,6])
             ->whereNull('orders.deleted_at')
             ->whereNull('order_items.deleted_at')
             ->whereIn('orders.status', [3,6])
