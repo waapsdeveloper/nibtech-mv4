@@ -152,7 +152,7 @@ class ApiRequestController extends Controller
             $request = new Request();
             $data = is_array($responseData['Data']) ? ($responseData['Data'][0] ?? []) : [];
             $request->replace(is_array($data) ? $data : []);
-            $this->store($request->all());
+            $this->store($request);
             dd($request->all());
         }
 
