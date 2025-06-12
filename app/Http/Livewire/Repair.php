@@ -453,6 +453,9 @@ class Repair extends Component
         $processed_stocks = Process_stock_model::where(['process_id'=>$process_id,'status'=>2])->orderByDesc('updated_at')->get();
         $data['processed_stocks'] = $processed_stocks;
 
+        $non_processed_stocks = Process_stock_model::where(['process_id'=>$process_id,'status'=>3])->orderByDesc('updated_at')->get();
+        $data['non_processed_stocks'] = $non_processed_stocks;
+
         $data['all_variations'] = Variation_model::where('grade',9)->get();
         $data['currency'] = $data['process']->currency_id->sign ?? 4;
 
@@ -488,6 +491,10 @@ class Repair extends Component
     }
 
     public function external_repair_receive(){
+
+        $data['title_page'] = "External Repair Receive";
+        session()->put('page_title', $data['title_page']);
+
         if(request('per_page') != null){
             $per_page = request('per_page');
         }else{
@@ -508,6 +515,10 @@ class Repair extends Component
         return view('livewire.external_repair_receive_new')->with($data);
     }
     public function external_not_repair_receive(){
+
+        $data['title_page'] = "External Not Repair Receive";
+        session()->put('page_title', $data['title_page']);
+
         if(request('per_page') != null){
             $per_page = request('per_page');
         }else{
