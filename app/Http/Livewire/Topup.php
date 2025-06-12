@@ -364,6 +364,10 @@ class Topup extends Component
                     'grade' => $grade_id,
                 ])->first();
                 // dd($new_variation);
+                if($new_variation == null){
+                    session()->put('error', 'Variation Not Found for the given Product, Storage, Color and Grade');
+                    return redirect()->back();
+                }
                 if($new_variation->sku == null){
                     session()->put('error', 'SKU Not Found for the new variation');
                     return redirect()->back();
