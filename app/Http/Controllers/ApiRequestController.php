@@ -85,6 +85,7 @@ class ApiRequestController extends Controller
 
         // echo "Hell2o";
         unset($datas->OEMData);
+        unset($datas->Extras);
         // dd($datas);
         $datas = json_encode($datas);
         // Create or update the resource
