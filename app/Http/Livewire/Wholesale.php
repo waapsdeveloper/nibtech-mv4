@@ -494,7 +494,7 @@ class Wholesale extends Component
             }
 
             if(request('bypass_check') == 1){
-
+                $errors .= 'Bypass check enabled for ' . $imei . "<br>";
                 $this->add_wholesale_item($order_id, $imei, $variation_id, 1);
                 session()->put('bypass_check', 1);
                 request()->merge(['bypass_check'=> 1]);
