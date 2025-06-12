@@ -1086,6 +1086,7 @@ class Wholesale extends Component
                 session()->put('cart', $data['cart']);
             }
             $data['order'] = $order;
+            $data['new_reference_id'] = $data['new_po_reference_id'] = $data['new_rma_reference_id'] = $data['new_cn_reference_id'] = $order->reference_id;
         }else{
             $new_reference_id = Order_model::where('order_type_id', 5)->orderByDesc('reference_id')->first()->reference_id+1;
             $data['new_reference_id'] = $new_reference_id;
