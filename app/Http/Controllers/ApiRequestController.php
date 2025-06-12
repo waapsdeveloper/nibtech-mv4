@@ -173,7 +173,7 @@ class ApiRequestController extends Controller
             }
         }
 
-        return redirect()->to('testing')->with('success', 'Data requested from DRFones successfully');
+        return redirect()->to('testing')->with('success', 'Data requested from DRFones successfully '.$responseData['Total'].' records found');
     }
 
     /**
