@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ApiRequestController;
 use App\Http\Livewire\Change;
 use App\Http\Livewire\Charge;
 use App\Http\Livewire\Customer;
@@ -441,6 +442,8 @@ Route::get('oauth2/callback', [GoogleController::class, 'handleGoogleCallback'])
 
 
 Route::get('/exchange-rates', [ExchangeRateController::class, 'index']);
+
+Route::get('request_drfones', [ApiRequestController::class, 'request_drfones'])->name('request_drfones');
 
 });
 // });

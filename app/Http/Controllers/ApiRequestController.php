@@ -109,9 +109,49 @@ class ApiRequestController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function request_drfones()
     {
         //
+
+        $drfones_url = 'http://3.138.251.239:8080/CloudLookup';
+        $user_id = $_ENV['DRFONES_USER_ID'];
+
+        $imei = request('imei');
+        if (!$imei) {
+            return response()->json([
+                'status' => 'Failed',
+                'message' => 'Missing IMEI',
+            ], 400);
+        }
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $drfones_url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => json_encode([
+                'user_id' => $user_id,
+                'imei' => $imei,
+            ]),
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+            ],
+        ]);
+        $response = curl_exec($curl);
+        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        curl_close($curl);
+        if ($httpCode !== 200) {
+            return response()->json([
+                'status' => 'Failed',
+                'message' => 'Error sending data to DRFones',
+            ], $httpCode);
+        }
+        $responseData = json_decode($response, true);
+
+        dd($responseData);
+
+
+
     }
 
     /**
