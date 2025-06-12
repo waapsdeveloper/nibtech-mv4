@@ -119,13 +119,6 @@ class ApiRequestController extends Controller
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function request_drfones()
     {
         //
@@ -166,13 +159,15 @@ class ApiRequestController extends Controller
 
 
         if (!empty($responseData['Data']) && is_array($responseData['Data'])) {
-            $data = (object) $responseData['Data'][0];
-
-            $result = $this->save($data);
-
-            dd($result);
+            $datas = $responseData['Data'];
+            foreach ($datas as $data) {
+                $data = (object) $data;
+                $result = $this->save($data);
+                // dd($result);
+            }
         }
 
+        return redirect()->back()->with('success', 'Data requested from DRFones successfully');
     }
 
     /**
