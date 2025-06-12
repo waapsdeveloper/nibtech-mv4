@@ -208,6 +208,17 @@
             });
         </script>
         <br>
+        @if (session('warning'))
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <span class="alert-inner--icon"><i class="fe fe-info"></i></span>
+                <span class="alert-inner--text"><strong>{{session('warning')}}</strong></span>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <br>
+            @php
+            session()->forget('success');
+            @endphp
+        @endif
         @if (session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <span class="alert-inner--icon"><i class="fe fe-thumbs-up"></i></span>
