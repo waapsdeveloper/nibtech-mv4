@@ -55,14 +55,15 @@ class ApiRequestController extends Controller
             // $datas = json_decode($datas);
             // $datas = json_decode($datas);
             // echo "Hello";
-            unset($datas->OEMData);
-            // dd($datas);
-            $datas = json_encode($datas);
-            // Create or update the resource
-            $api_request = Api_request_model::firstOrNew([
-                'request' => $datas,
-            ]);
-            $api_request->save();
+            // unset($datas->OEMData);
+            // // dd($datas);
+            // $datas = json_encode($datas);
+            // // Create or update the resource
+            // $api_request = Api_request_model::firstOrNew([
+            //     'request' => $datas,
+            // ]);
+            // $api_request->save();
+            $api_request = $this->save($datas);
             // Return response
             return response()->json([
                 'status' => 'Success',
@@ -78,6 +79,21 @@ class ApiRequestController extends Controller
 
         }
 
+    }
+
+    public function save($datas){
+
+        // echo "Hell2o";
+        unset($datas->OEMData);
+        // dd($datas);
+        $datas = json_encode($datas);
+        // Create or update the resource
+        $api_request = Api_request_model::firstOrNew([
+            'request' => $datas,
+        ]);
+        $api_request->save();
+
+        return $api_request;
     }
 
     /**
@@ -149,19 +165,11 @@ class ApiRequestController extends Controller
 
 
         if (!empty($responseData['Data']) && is_array($responseData['Data'])) {
-            $data = is_array($responseData['Data'][0] ?? null) ? $responseData['Data'][0] : $responseData['Data'];
-            $request = new Request($data);
-            echo $this->store($request);
-            return response()->json([
-                'status' => 'Success',
-                'message' => 'Data processed',
-                'data' => $data,
-            ], 200);
-        } else {
-            return response()->json([
-                'status' => 'Failed',
-                'message' => 'No valid data received from DRFones',
-            ], 400);
+            $data = (object) $responseData['Data'][0];
+
+            $result = $this->save($data);
+
+            dd($result);
         }
 
     }
