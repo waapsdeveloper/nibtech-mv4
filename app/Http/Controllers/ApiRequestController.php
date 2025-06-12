@@ -130,8 +130,8 @@ class ApiRequestController extends Controller
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_CUSTOMREQUEST => 'POST',
             CURLOPT_POSTFIELDS => json_encode([
-                'user_id' => $user_id,
-                'imei' => $imei,
+                'USERID' => $user_id,
+                'IMEI' => $imei,
             ]),
             CURLOPT_HTTPHEADER => [
                 'Content-Type: application/json',
