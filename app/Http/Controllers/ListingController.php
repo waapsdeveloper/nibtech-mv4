@@ -565,6 +565,10 @@ class ListingController extends Controller
             }
         }
         $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>$new_quantity]));
+        if(is_string($response) || is_int($response) || is_null($response)){
+            Log::error("Error updating quantity for variation ID $id: $response");
+            return $response;
+        }
         if($response->quantity != null){
             $variation->listed_stock = $response->quantity;
             $variation->save();
