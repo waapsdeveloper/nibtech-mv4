@@ -148,9 +148,11 @@ class ApiRequestController extends Controller
         }
         $responseData = json_decode($response, true);
 
+
+        if ($responseData['Data'] != null) {
+            $this->store($responseData['Data']);
+        }
         dd($responseData);
-
-
 
     }
 
