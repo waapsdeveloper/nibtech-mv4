@@ -506,7 +506,7 @@
                                 var id = "{{ $key."_".$key2 }}";
                                 var form = $("#update_prices_" + id);
                                 var actionUrl = "{{ url('wholesale/update_prices') }}";
-
+                                console.log(form.serialize());
                                 $.ajax({
                                     type: "POST",
                                     url: actionUrl,
