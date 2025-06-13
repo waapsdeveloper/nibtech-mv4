@@ -319,6 +319,8 @@ class Wholesale extends Component
                     $item->price = request('unit_price');
                 }
                 $item->save();
+
+                echo "<p>Updated item ID: $item_id with price: {$item->price}</p>";
             }
         }
 
