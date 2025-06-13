@@ -309,6 +309,7 @@ class Wholesale extends Component
         // print_r(request('item_ids'));
         // echo request('unit_price');
 
+            echo "<p>Updating prices for items...</p>";
 
         if(request('unit_price') > 0){
             echo "<p>Updating prices for items...</p>";
