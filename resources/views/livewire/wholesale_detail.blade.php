@@ -509,7 +509,7 @@
                                 var formData = form.serializeArray();
 
                                 // If there are a lot of item_ids, use FormData for better handling
-                                if (form.find('input[name="item_ids[]"]').length > 500) {
+                                if (form.find('input[name="item_ids[]"]').length > 300) {
                                     // Submit via normal form POST if over 500 items
                                     form.off('submit'); // Remove this handler to avoid recursion
                                     form[0].submit();
