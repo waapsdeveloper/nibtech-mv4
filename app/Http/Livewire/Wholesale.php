@@ -310,7 +310,7 @@ class Wholesale extends Component
         // echo request('unit_price');
 
             echo "<p>Updating prices for items...</p>";
-
+        dd(request()->all());
         if(request('unit_price') > 0){
             echo "<p>Updating prices for items...</p>";
             foreach(request('item_ids') as $item_id){
