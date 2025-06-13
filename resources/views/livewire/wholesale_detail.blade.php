@@ -512,7 +512,7 @@
                                     url: actionUrl,
                                     data: form.serialize(), // serializes the form's elements.
                                     success: function(data) {
-                                        // alert("Success: " + data); // show response from the PHP script.
+                                        alert("Success: " + data); // show response from the PHP script.
                                         $('#unit_price_' + id).addClass('bg-lightgreen');
                                     },
                                     error: function(jqXHR, textStatus, errorThrown) {
