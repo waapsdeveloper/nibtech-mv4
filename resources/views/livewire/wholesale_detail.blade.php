@@ -507,7 +507,7 @@
                                 var form = $("#update_prices_" + id);
                                 var actionUrl = "{{ url('wholesale/update_prices') }}";
                                 var formData = form.serializeArray();
-
+                                console.log(formData);
                                 // If there are a lot of item_ids, use FormData for better handling
                                 if (form.find('input[name="item_ids[]"]').length > 300) {
                                     // Submit via normal form POST if over 500 items
