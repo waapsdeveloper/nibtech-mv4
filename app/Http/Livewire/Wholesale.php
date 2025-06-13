@@ -311,6 +311,7 @@ class Wholesale extends Component
 
 
         if(request('unit_price') > 0){
+            echo "<p>Updating prices for items...</p>";
             foreach(request('item_ids') as $item_id){
                 $item = Order_item_model::find($item_id);
                 if($item->stock == null && $item->quantity > 1){
