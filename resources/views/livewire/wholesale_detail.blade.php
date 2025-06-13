@@ -394,7 +394,9 @@
                                     @endphp
                                     <form method="POST" action="{{url('wholesale')}}/update_prices" id="update_prices_{{ $key."_".$key2 }}">
                                         @csrf
+                                        <input type="hidden" name="order_id" value="{{ $order->id }}">
                                     @foreach ($var as $variation)
+                                        <input type="hidden" name="variation_ids[]" value="{{ $variation->id }}" id="variation_id_{{ $key."_".$key2 }}">
                                     {{-- @dd($variation) --}}
                                     @php
                                             # code...
@@ -455,7 +457,8 @@
                                             @if ($order->status == 3 && $sale_item->check_return != null)
                                                 <td><a href="{{ url('imei').'?imei='.($item->imei ?? null).($item->serial_number ?? null) }}" target="_blank"><i class="fa fa-link"></i></a></td>
                                             @endif
-                                            <input type="hidden" name="item_ids[]" value="{{ $sale_item->id }}">
+                                            {{-- <input type="hidden" name="item_ids[]" value="{{ $sale_item->id }}"> --}}
+
                                         </tr>
                                         {{-- @endif --}}
                                     @endforeach
@@ -509,13 +512,13 @@
                                 var formData = form.serializeArray();
 
                                 // If there are a lot of item_ids, use FormData for better handling
-                                if (formData.length > 500) {
-                                    form.append('<input type="hidden" name="unit_price" value="' + $('#unit_price_' + id).val() + '">');
-                                    form.append('<input type="hidden" name="php" value="1">');
-                                    form.unbind('submit');
-                                    form[0].submit();
+                                // if (formData.length > 500) {
+                                //     form.append('<input type="hidden" name="unit_price" value="' + $('#unit_price_' + id).val() + '">');
+                                //     form.append('<input type="hidden" name="php" value="1">');
+                                //     form.unbind('submit');
+                                //     form[0].submit();
 
-                                } else {
+                                // } else {
                                     $.ajax({
                                         type: "POST",
                                         url: actionUrl,
@@ -528,7 +531,7 @@
                                             alert("Error: " + textStatus + " - " + errorThrown);
                                         }
                                     });
-                                }
+                                // }
                             });
                         </script>
                     </div>
