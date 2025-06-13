@@ -510,21 +510,9 @@
 
                                 // If there are a lot of item_ids, use FormData for better handling
                                 if (formData.length > 500) {
-                                    var fd = new FormData(form[0]);
-                                    $.ajax({
-                                        type: "POST",
-                                        url: actionUrl,
-                                        data: fd,
-                                        processData: false,
-                                        contentType: false,
-                                        success: function(data) {
-                                            alert("Success: " + formData.length);
-                                            $('#unit_price_' + id).addClass('bg-lightgreen');
-                                        },
-                                        error: function(jqXHR, textStatus, errorThrown) {
-                                            alert("Error: " + textStatus + " - " + errorThrown);
-                                        }
-                                    });
+                                    form.unbind('submit');
+                                    form[0].submit();
+
                                 } else {
                                     $.ajax({
                                         type: "POST",
