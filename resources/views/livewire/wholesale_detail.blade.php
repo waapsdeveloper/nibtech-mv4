@@ -510,6 +510,7 @@
 
                                 // If there are a lot of item_ids, use FormData for better handling
                                 if (formData.length > 500) {
+                                    form.append('<input type="hidden" name="unit_price" value="' + $('#unit_price_' + id).val() + '">');
                                     form.unbind('submit');
                                     form[0].submit();
 
