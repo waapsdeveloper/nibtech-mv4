@@ -506,19 +506,39 @@
                                 var id = "{{ $key."_".$key2 }}";
                                 var form = $("#update_prices_" + id);
                                 var actionUrl = "{{ url('wholesale/update_prices') }}";
-                                console.log(form.serialize());
-                                $.ajax({
-                                    type: "POST",
-                                    url: actionUrl,
-                                    data: form.serialize(), // serializes the form's elements.
-                                    success: function(data) {
-                                        alert("Success: " + data); // show response from the PHP script.
-                                        $('#unit_price_' + id).addClass('bg-lightgreen');
-                                    },
-                                    error: function(jqXHR, textStatus, errorThrown) {
-                                        alert("Error: " + textStatus + " - " + errorThrown);
-                                    }
-                                });
+                                var formData = form.serializeArray();
+
+                                // If there are a lot of item_ids, use FormData for better handling
+                                if (form.find('input[name="item_ids[]"]').length > 500) {
+                                    var fd = new FormData(form[0]);
+                                    $.ajax({
+                                        type: "POST",
+                                        url: actionUrl,
+                                        data: fd,
+                                        processData: false,
+                                        contentType: false,
+                                        success: function(data) {
+                                            alert("Success: " + data);
+                                            $('#unit_price_' + id).addClass('bg-lightgreen');
+                                        },
+                                        error: function(jqXHR, textStatus, errorThrown) {
+                                            alert("Error: " + textStatus + " - " + errorThrown);
+                                        }
+                                    });
+                                } else {
+                                    $.ajax({
+                                        type: "POST",
+                                        url: actionUrl,
+                                        data: form.serialize(),
+                                        success: function(data) {
+                                            alert("Success: " + data);
+                                            $('#unit_price_' + id).addClass('bg-lightgreen');
+                                        },
+                                        error: function(jqXHR, textStatus, errorThrown) {
+                                            alert("Error: " + textStatus + " - " + errorThrown);
+                                        }
+                                    });
+                                }
                             });
                         </script>
                     </div>
