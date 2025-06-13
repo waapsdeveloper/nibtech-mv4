@@ -518,7 +518,7 @@
                                         processData: false,
                                         contentType: false,
                                         success: function(data) {
-                                            alert("Success: " + data);
+                                            alert("Success: " + formData.length);
                                             $('#unit_price_' + id).addClass('bg-lightgreen');
                                         },
                                         error: function(jqXHR, textStatus, errorThrown) {
