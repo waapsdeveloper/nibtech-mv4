@@ -313,16 +313,23 @@ class Wholesale extends Component
         // dd(request()->all());
         if(request('unit_price') > 0){
             echo "<p>Updating prices for items...</p>";
-            foreach(request('item_ids') as $item_id){
-                $item = Order_item_model::find($item_id);
-                if($item->stock == null && $item->quantity > 1){
-                    $item->price = request('unit_price') * $item->quantity;
-                }else{
-                    $item->price = request('unit_price');
-                }
-                $item->save();
+            if(request('variation_ids') != null){
+                $variation_ids = request('variation_ids');
+                $items = Order_item_model::whereIn('variation_id', $variation_ids)->where('order_id', request('order_id'))->update(['price' => request('unit_price')]);
+                echo "<p>Updated items with variation IDs: " . implode(", ", $variation_ids) . " with price: " . request('unit_price') . "</p>";
+            }else{
 
-                echo "<p>Updated item ID: $item_id with price: {$item->price}</p>";
+                foreach(request('item_ids') as $item_id){
+                    $item = Order_item_model::find($item_id);
+                    if($item->stock == null && $item->quantity > 1){
+                        $item->price = request('unit_price') * $item->quantity;
+                    }else{
+                        $item->price = request('unit_price');
+                    }
+                    $item->save();
+
+                    echo "<p>Updated item ID: $item_id with price: {$item->price}</p>";
+                }
             }
         }
         if(request('php') == 1){
