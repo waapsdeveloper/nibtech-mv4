@@ -219,7 +219,7 @@
                             <td width="40">{{ $totalQty }}</td>
                             <td width="90" align="right">{{ $order->currency_id->sign }}0.00</td>
                         </tr> --}}
-                    <hr>
+
                 </tbody>
                 <tfoot>
                     <tr style="border-top: 1px solid Black" >
