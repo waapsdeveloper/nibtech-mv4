@@ -79,6 +79,7 @@ Route::middleware(['2fa'])->group(function () {
     Route::get('disable_2fa', [Profile::class, 'disable2FA'])->name('disable2fa');
 
 Route::get('index/get_testing_batches', [Index::class,'get_testing_batches'])->name('dashboard_view_testing_batches');
+Route::get('index/get_testing_models', [Index::class,'get_testing_models'])->name('dashboard_view_testing_models');
 Route::get('index/get_orders_data', [Index::class,'get_orders_data'])->name('dashboard_view_total_orders');
 Route::get('index/toggle_amount_view', [Index::class,'toggle_amount_view'])->name('index');
 Route::get('index/add_ip', [Index::class,'add_ip'])->name('add_ip');

@@ -422,6 +422,43 @@ class Index extends Component
         }
     }
 
+    public function get_testing_models(){
+        if(session('user')->hasPermission('dashboard_view_testing_models')){
+
+            ini_set('memory_limit', '1024M');
+
+            if(request('start_date') == null){
+                $start_date = now()->startOfDay()->format('Y-m-d H:i:s');
+            }else{
+                $start_date = request('start_date').' 00:00:00';
+            }
+            if(request('end_date') == null){
+                $end_date = now()->endOfDay()->format('Y-m-d H:i:s');
+            }else{
+                $end_date = request('end_date'). ' 23:59:59';
+            }
+
+            $operation_stocks = Stock_operations_model::where('description','LIKE','%DrPhone')->whereBetween('created_at', [$start_date, $end_date])->pluck('stock_id')->unique()->toArray();
+            $operations = Stock_operations_model::where('description','LIKE','%DrPhone')->whereBetween('created_at', [$start_date, $end_date])->pluck('new_variation_id')->unique()->toArray();
+            $variations = Variation_model::whereIn('id', $operations)->pluck('product_storage_sort_id')->unique()->toArray();
+            $product_storage_sorts = Product_storage_sort_model::whereIn('id', $variations)->withCount('stocks', function($q) use ($operation_stocks) {
+                $q->whereIn('stocks.id', $operation_stocks);
+            })
+            ->leftJoin('products', 'product_storage_sort.product_id', '=', 'products.id')
+            ->leftJoin('storages', 'product_storage_sort.storage', '=', 'storages.id')
+            ->select('product_storage_sort.id', 'products.model', 'storages.name as storage_name', DB::raw('COUNT(stocks.id) as total_stocks'))
+            ->groupBy('product_storage_sort.id', 'products.model', 'storages.name')
+            ->get();
+
+
+            dd($product_storage_sorts);
+
+
+            return response()->json($data);
+        }else{
+            return response()->json('No Permission');
+        }
+    }
     public function get_required_restock(){
 
         if(session('user')->hasPermission('dashboard_required_restock')){
