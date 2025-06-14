@@ -444,7 +444,7 @@ class Index extends Component
 
             $product_storage_sorts = Product_storage_sort_model::whereIn('product_storage_sort.id', $variations)
                 ->with(['product:id,model', 'storage_id:id,name', 'stocks' => function($q) use ($operation_stocks) {
-                    $q->whereIn('stocks.id', $operation_stocks);
+                    $q->whereIn('stock.id', $operation_stocks);
                 }])
                 ->get()
                 ->map(function($item) {
