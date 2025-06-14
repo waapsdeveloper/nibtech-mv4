@@ -221,7 +221,7 @@
                         </tr> --}}
 
                 </tbody>
-                <tfoot class="border-top">
+                <tfoot class="border-top" style="border-top: 1px solid Black">
                     <tr style="border-top: 1px solid Black" >
                         <td></td>
                         <td colspan="3">
