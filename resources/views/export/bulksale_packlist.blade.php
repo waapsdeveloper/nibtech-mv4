@@ -150,7 +150,7 @@
         </table>
         <!-- Order Items -->
         <div class="order-items">
-            <table cellpadding="5" border="1">
+            <table cellpadding="5">
                 <thead border="1">
                     <tr border="1">
                         <th width="320" border="0.1">Product Name</th>
