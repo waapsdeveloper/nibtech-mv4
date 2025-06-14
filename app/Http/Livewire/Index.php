@@ -442,7 +442,7 @@ class Index extends Component
             $operations = Stock_operations_model::where('description','LIKE','%DrPhone')->whereBetween('created_at', [$start_date, $end_date])->pluck('new_variation_id')->unique()->toArray();
             $variations = Variation_model::whereIn('id', $operations)->pluck('product_storage_sort_id')->unique()->toArray();
             $product_storage_sorts = Product_storage_sort_model::whereIn('id', $variations)
-                ->with(['product:id,model', 'storage:id,name', 'stocks' => function($q) use ($operation_stocks) {
+                ->with(['product:id,model', 'storage_id:id,name', 'stocks' => function($q) use ($operation_stocks) {
                     $q->whereIn('id', $operation_stocks);
                 }])
                 ->get()
@@ -450,7 +450,7 @@ class Index extends Component
                     return [
                         'id' => $item->id,
                         'model' => $item->product->model ?? null,
-                        'storage_name' => $item->storage->name ?? null,
+                        'storage_name' => $item->storage_id->name ?? null,
                         'total_stocks' => $item->stocks->count(),
                     ];
                 });
