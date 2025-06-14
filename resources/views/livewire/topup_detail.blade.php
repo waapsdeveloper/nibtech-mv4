@@ -427,6 +427,7 @@
                         <tbody>
                             @php
                                 $i = 0;
+                                $ttl = 0;
                             @endphp
                             @foreach ($variations as $variation)
                                 @php
@@ -452,6 +453,8 @@
                                     $stock_count = $stocks->where('variation_id', $variation->id)->count();
                                     if($process->status > 1){
                                         $qty_change = $variation->process_listed_stock_verifications($process->id)->sum('qty_change');
+
+                                        $ttl += $qty_change;
                                     }
                                 @endphp
                                 <tr @if ($variation->listed_stock < 0 && $variation->listed_stock + $stocks->where('variation_id', $variation->id)->count() < 0)
@@ -556,7 +559,7 @@
                             <tr>
                                 <td colspan="3" class="text-center"><b>Total</b></td>
                                 <td><b>{{ $stocks->count() }}</b></td>
-                                <td></td>
+                                <td><b>{{$ttl}}</b></td>
                             </tr>
                         </tfoot>
                     </table>
