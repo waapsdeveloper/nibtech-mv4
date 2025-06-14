@@ -231,7 +231,7 @@
                 <a href="{{url('export_bulksale_invoice')}}/{{ $order->id }}" target="_blank"><button class="btn-sm btn-secondary">Invoice</button></a>
                 @if ($order->exchange_rate != null)
                 <a href="{{url('export_bulksale_invoice')}}/{{ $order->id }}/1" target="_blank"><button class="btn-sm btn-secondary">{{$order->currency_id->sign}} Invoice</button></a>
-                <a class="dropdown-item" href="{{url('export_bulksale_invoice')}}/{{ $order->id }}/1?packlist=1" target="_blank">{{$order->currency_id->sign}} PackList</a>
+                <a class="btn-sm btn-secondary" href="{{url('export_bulksale_invoice')}}/{{ $order->id }}/1?packlist=1" target="_blank">{{$order->currency_id->sign}} PackList</a>
 
                 @endif
 
