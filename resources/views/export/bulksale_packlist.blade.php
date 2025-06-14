@@ -212,7 +212,6 @@
                             </tr>
                             @endif
                         @endforeach
-                        <br>
                     @endforeach
                         {{-- <tr>
                             <td width="320">Accessories</td>
