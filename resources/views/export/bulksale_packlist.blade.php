@@ -150,7 +150,7 @@
         </table>
         <!-- Order Items -->
         <div class="order-items">
-            <table cellpadding="5">
+            <table cellpadding="5" border="1">
                 <thead border="1">
                     <tr border="1">
                         <th width="320" border="0.1">Product Name</th>
@@ -269,7 +269,10 @@
         </div>
         <!-- Total Amount -->
         <div class="total-amount" style="padding:0; margin:0; line-height:6px">
-
+            @if ($order->reference)
+            <h5>Ref: {{ $order->reference }}</h5>
+            <br>
+            @endif
             <h3>Store Policy</h3>
             <hr>
             <h4>Stock Sold on Marginal VAT Scheme.</h4>
