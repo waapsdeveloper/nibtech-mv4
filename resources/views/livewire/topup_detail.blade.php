@@ -449,10 +449,18 @@
                                             `;
                                         }
                                     }
+                                    $stock_count = $stocks->where('variation_id', $variation->id)->count();
+                                    if($process->status > 1){
+                                        $qty_change = $variation->process_listed_stock_verifications($process->id)->sum('qty_change');
+                                    }
                                 @endphp
                                 <tr @if ($variation->listed_stock < 0 && $variation->listed_stock + $stocks->where('variation_id', $variation->id)->count() < 0)
                                     class="bg-danger"
-                                @endif>
+                                @endif
+                                @if ($process->status == 2 && $qty_change == $stock_count)
+                                    class="table-success"
+                                @endif
+                                >
                                     <td>{{ $i + 1 }}</td>
                                     <td>
                                         <a href="{{ url('listing').'?sku='.$variation->sku.'&process_id='.$process->id }}" target="_blank">
@@ -465,12 +473,12 @@
                                     <td>{{ $products[$variation->product_id] ?? "Variation Model Not added"}} {{$storages[$variation->storage] ?? null}} {{$colors[$variation->color] ?? null}} {{$grades[$variation->grade] ?? "Variation Grade Not added" }}</td>
                                     <td>
                                         <a href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#stocks-{{ $variation->id }}" aria-expanded="false" aria-controls="stocks-{{ $variation->id }}">
-                                            {{ $stocks->where('variation_id', $variation->id)->count() }}
+                                            {{ $stock_count }}
                                         </a>
                                     </td>
                                     @if ($process->status > 1)
                                         <td>
-                                            {{ $variation->process_listed_stock_verifications($process->id)->sum('qty_change') }}
+                                            {{ $qty_change }}
                                         </td>
                                     @endif
                                 </tr>
