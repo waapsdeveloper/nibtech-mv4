@@ -463,7 +463,7 @@ class Index extends Component
 
             $data['output'] = [];
             foreach($data['pss'] as $item){
-                $data['output'][] = $item['name'] . ' (' . $item['total_stocks'] . ')';
+                $data['output'][] = $item['name'] . '(' . $item['total_stocks'] . ') &nbsp;';
             }
 
             return response()->json($data);
