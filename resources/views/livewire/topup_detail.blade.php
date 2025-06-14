@@ -418,6 +418,10 @@
                                 <th><small><b>SKU</b></small></th>
                                 <th><small><b>Variation</b></small></th>
                                 <th><small><b>Qty</b></small></th>
+                                @if ($process->status > 1)
+                                    <th><small><b>Listed Stock</b></small></th>
+
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
@@ -464,7 +468,11 @@
                                             {{ $stocks->where('variation_id', $variation->id)->count() }}
                                         </a>
                                     </td>
-                                    <td></td>
+                                    @if ($process->status > 1)
+                                        <td>
+                                            {{ $variation->process_listed_stock_verifications($process->id)->sum('qty_change') }}
+                                        </td>
+                                    @endif
                                 </tr>
                                 <tr class="collapse bg-lightgreen" id="stocks-{{ $variation->id }}">
                                     <td colspan="5">
