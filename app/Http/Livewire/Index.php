@@ -423,7 +423,7 @@ class Index extends Component
     }
 
     public function get_testing_models(){
-        if(session('user')->hasPermission('dashboard_view_testing_models')){
+        // if(session('user')->hasPermission('dashboard_view_testing_models')){
 
             ini_set('memory_limit', '1024M');
 
@@ -441,23 +441,28 @@ class Index extends Component
             $operation_stocks = Stock_operations_model::where('description','LIKE','%DrPhone')->whereBetween('created_at', [$start_date, $end_date])->pluck('stock_id')->unique()->toArray();
             $operations = Stock_operations_model::where('description','LIKE','%DrPhone')->whereBetween('created_at', [$start_date, $end_date])->pluck('new_variation_id')->unique()->toArray();
             $variations = Variation_model::whereIn('id', $operations)->pluck('product_storage_sort_id')->unique()->toArray();
-            $product_storage_sorts = Product_storage_sort_model::whereIn('id', $variations)->withCount('stocks', function($q) use ($operation_stocks) {
-                $q->whereIn('stocks.id', $operation_stocks);
-            })
-            ->leftJoin('products', 'product_storage_sort.product_id', '=', 'products.id')
-            ->leftJoin('storages', 'product_storage_sort.storage', '=', 'storages.id')
-            ->select('product_storage_sort.id', 'products.model', 'storages.name as storage_name', DB::raw('COUNT(stocks.id) as total_stocks'))
-            ->groupBy('product_storage_sort.id', 'products.model', 'storages.name')
-            ->get();
+            $product_storage_sorts = Product_storage_sort_model::whereIn('id', $variations)
+                ->with(['product:id,model', 'storage:id,name', 'stocks' => function($q) use ($operation_stocks) {
+                    $q->whereIn('id', $operation_stocks);
+                }])
+                ->get()
+                ->map(function($item) {
+                    return [
+                        'id' => $item->id,
+                        'model' => $item->product->model ?? null,
+                        'storage_name' => $item->storage->name ?? null,
+                        'total_stocks' => $item->stocks->count(),
+                    ];
+                });
 
 
             dd($product_storage_sorts);
 
 
             // return response()->json($data);
-        }else{
-            return response()->json('No Permission');
-        }
+        // }else{
+        //     return response()->json('No Permission');
+        // }
     }
     public function get_required_restock(){
 
