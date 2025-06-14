@@ -458,7 +458,7 @@ class Index extends Component
 
 
             // dd($product_storage_sorts->sortByDesc('total_stocks')->take(10));
-            $data['pss'] = $product_storage_sorts->sortByDesc('total_stocks')->take($limit);
+            $data['pss'] = $product_storage_sorts->sortByDesc('total_stocks');
             $data['limit'] = $limit;
 
             $data['output'] = [];
