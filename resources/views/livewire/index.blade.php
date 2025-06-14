@@ -843,8 +843,8 @@
                     url: "{{url('index/get_testing_models')}}?"+queryString,
                     type: 'GET',
                     success: function(data) {
-                        console.log(data);
-                        testing_models.html(data.pss);
+                        // console.log(data);
+                        testing_models.html(data.output);
                     }
                 });
             }
