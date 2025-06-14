@@ -889,7 +889,7 @@ class Wholesale extends Component
         // Find the order
         $order = Order_model::with('customer', 'order_items')->find($order_id);
 
-        if(request('packlist') != 1){
+        // if(request('packlist') != 1){
         $order_items = Order_item_model::
             join('variation', 'order_items.variation_id', '=', 'variation.id')
             ->join('products', 'variation.product_id', '=', 'products.id')
@@ -911,9 +911,9 @@ class Wholesale extends Component
             ->groupBy('products.model', 'variation.storage')
             ->orderBy('products.model', 'ASC')
             ->get();
-        }else{
-            $order_items = [];
-        }
+        // }else{
+        //     $order_items = [];
+        // }
         $order_items_2 = Order_item_model::
             join('variation', 'order_items.variation_id', '=', 'variation.id')
             ->join('products', 'variation.product_id', '=', 'products.id')
