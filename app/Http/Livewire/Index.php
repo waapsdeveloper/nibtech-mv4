@@ -423,7 +423,7 @@ class Index extends Component
     }
 
     public function get_testing_models(){
-        // if(session('user')->hasPermission('dashboard_view_testing_models')){
+        if(session('user')->hasPermission('dashboard_view_testing_models')){
 
             ini_set('memory_limit', '1024M');
 
@@ -437,6 +437,7 @@ class Index extends Component
             }else{
                 $end_date = request('end_date'). ' 23:59:59';
             }
+            $limit = request('limit') ?? 10;
 
             $operation_stocks = Stock_operations_model::where('description','LIKE','%DrPhone')->whereBetween('created_at', [$start_date, $end_date])->pluck('stock_id')->unique()->toArray();
             $operations = Stock_operations_model::where('description','LIKE','%DrPhone')->whereBetween('created_at', [$start_date, $end_date])->pluck('new_variation_id')->unique()->toArray();
@@ -449,20 +450,22 @@ class Index extends Component
                 ->get()
                 ->map(function($item) {
                     return [
-                        'id' => $item->id,
+                        // 'id' => $item->id,
                         'name' => ($item->product->model ?? null) . ' ' . ($item->storage_id->name ?? null),
                         'total_stocks' => $item->stocks->count(),
                     ];
                 });
 
 
-            dd($product_storage_sorts->sortByDesc('total_stocks')->take(10));
+            // dd($product_storage_sorts->sortByDesc('total_stocks')->take(10));
+            $data['product_storage_sorts'] = $product_storage_sorts->sortByDesc('total_stocks')->take($limit);
+            $data['limit'] = $limit;
 
 
-            // return response()->json($data);
-        // }else{
-        //     return response()->json('No Permission');
-        // }
+            return response()->json($data);
+        }else{
+            return response()->json('No Permission');
+        }
     }
     public function get_required_restock(){
 
