@@ -844,7 +844,7 @@
                     type: 'GET',
                     success: function(data) {
                         console.log(data);
-                        testing_models.html(data);
+                        testing_models.html(data.pss);
                     }
                 });
             }
