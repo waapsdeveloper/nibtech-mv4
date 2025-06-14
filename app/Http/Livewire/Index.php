@@ -461,6 +461,10 @@ class Index extends Component
             $data['pss'] = $product_storage_sorts->sortByDesc('total_stocks')->take($limit);
             $data['limit'] = $limit;
 
+            $data['output'] = [];
+            foreach($data['pss'] as $item){
+                $data['output'][] = $item['name'] . ' (' . $item['total_stocks'] . ')';
+            }
 
             return response()->json($data);
         }else{
