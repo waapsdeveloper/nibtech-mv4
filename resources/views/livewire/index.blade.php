@@ -437,6 +437,15 @@
                                 </h5>
 
                             @endif
+                            @if (session('user')->hasPermission('dashboard_view_testing_models'))
+
+                                <h5>Testing Models:
+                                    <span id="testing_models" class="fa-sm">
+
+                                    </span>
+                                </h5>
+
+                            @endif
                             <div class="row">
                                 @if (session('user')->hasPermission('dashboard_view_total_orders'))
 
@@ -816,6 +825,31 @@
 
             $(document).ready(function(){
                 get_testing_batches();
+            });
+
+        @endif
+        @if (session('user')->hasPermission('dashboard_view_testing_models'))
+            function get_testing_models(){
+                let testing_models = $('#testing_models');
+                let params = {
+                    start_date: "{{ $start_date }}",
+                    end_date: "{{ $end_date }}",
+                }
+                let queryString = $.param(params);
+                // let data = load_data("{{ url('index/get_testing_models') }}"+'?'+queryString);
+                // testing_models.html(data);
+
+                $.ajax({
+                    url: "{{url('index/get_testing_models')}}?"+queryString,
+                    type: 'GET',
+                    success: function(data) {
+                        testing_models.html(data);
+                    }
+                });
+            }
+
+            $(document).ready(function(){
+                get_testing_models();
             });
 
         @endif
