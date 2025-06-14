@@ -457,7 +457,7 @@ class Index extends Component
                 });
 
 
-            dd($product_storage_sorts->sortBy('total_stocks',true)->values()->toArray());
+            dd($product_storage_sorts->sortByDesc('total_stocks')->values()->toArray());
 
 
             // return response()->json($data);
