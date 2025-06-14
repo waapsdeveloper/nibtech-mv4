@@ -187,6 +187,8 @@
                             }else {
                                 $grade = null;
                             }
+
+                            $variation_ids = explode(',', $item->variation_ids);
                         @endphp
                         <tr>
                             <td width="320">{{ $item->model . " - " . $storage . $color . $grade }}</td>
@@ -199,7 +201,8 @@
                             @endif
                         </tr>
                         @foreach ($items as $order_item)
-                            @if($order_item->variation_id == $item->variation_id)
+                            {{-- @if($order_item->variation_id == $item->variation_id) --}}
+                            @if(in_array($order_item->variation_id, $variation_ids))
                             <tr class="font-sm">
                                 <td width="320" style="font-size: 10px" align="right">{{ $order_item->stock->imei.$order_item->stock->serial_number }}</td>
                                 @if ($invoice != 1)
