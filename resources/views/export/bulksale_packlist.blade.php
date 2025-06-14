@@ -165,7 +165,7 @@
                         $totalQty = 0;
                         $items = $order->order_items
                     @endphp
-                    @foreach ($order_items_2 as $item)
+                    @foreach ($order_items as $item)
                         @php
                             // print_r($item);
                             // $itemTotal = $item->quantity * $item->price;
