@@ -29,6 +29,7 @@ class Testing extends Component
     }
     public function render()
     {
+        ini_set('max_execution_time', 1200);
 
         $data['title_page'] = "Testing";
         session()->put('page_title', $data['title_page']);
