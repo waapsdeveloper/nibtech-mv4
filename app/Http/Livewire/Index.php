@@ -450,8 +450,7 @@ class Index extends Component
                 ->map(function($item) {
                     return [
                         'id' => $item->id,
-                        'model' => $item->product->model ?? null,
-                        'storage_name' => $item->storage_id->name ?? null,
+                        'name' => ($item->product->model ?? null) . ' ' . ($item->storage_id->name ?? null),
                         'total_stocks' => $item->stocks->count(),
                     ];
                 });
