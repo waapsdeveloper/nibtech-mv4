@@ -454,7 +454,7 @@ class Index extends Component
             dd($product_storage_sorts);
 
 
-            return response()->json($data);
+            // return response()->json($data);
         }else{
             return response()->json('No Permission');
         }
