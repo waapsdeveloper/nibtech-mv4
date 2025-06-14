@@ -183,7 +183,7 @@
                                 $color = null;
                             }
                             if($item->grade){
-                                $grade = $grades[$item->grade] . " - " ;
+                                $grade = $grades[$item->grade] ;
                             }else {
                                 $grade = null;
                             }
