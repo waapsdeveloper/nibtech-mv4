@@ -903,7 +903,7 @@ class Wholesale extends Component
                 DB::raw('SUM(order_items.quantity) as total_quantity'),
                 DB::raw('SUM(order_items.price) as total_price'),
                 DB::raw('SUM(order_items.discount) as total_discount'),
-                'GROUP_CONCAT(DISTINCT order_items.variation_id) as variation_ids',
+                DB::raw('GROUP_CONCAT(DISTINCT order_items.variation_id) as variation_ids'),
             )
             ->where('order_items.order_id',$order_id)
             ->where('order_items.deleted_at',null)
