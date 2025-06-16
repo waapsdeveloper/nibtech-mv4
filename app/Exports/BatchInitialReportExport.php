@@ -49,7 +49,7 @@ class BatchInitialReportExport implements FromCollection, WithHeadings, WithMapp
             ->select(
                 'vendor_grade.name as v_grade',
                 'grade.name as grade_name',
-                'order_items.reference as notes',
+                'purchase_item.reference as notes',
                 'region.name as region_name',
                 DB::raw('COUNT(*) as quantity')
             )
