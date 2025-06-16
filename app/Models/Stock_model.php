@@ -64,9 +64,9 @@ class Stock_model extends Model
     {
         return $this->hasMany(Process_stock_model::class, 'stock_id', 'id');
     }
-    public function stock()
+    public function api_requests()
     {
-        return $this->belongsTo(Stock_model::class, 'stock_id', 'id');
+        return $this->hasMany(Api_request_model::class, 'stock_id', 'id');
     }
     public function stock_verifications()
     {
