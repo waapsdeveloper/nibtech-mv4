@@ -1279,46 +1279,49 @@ class Index extends Component
         return redirect()->back();
     }
     public function test(){
-
-        $no_region_stock = Stock_model::where('region_id', null)
+        // Optimize: eager load api_requests, process in chunks, minimize queries
+        Stock_model::whereNull('region_id')
             ->whereNotNull('status')
             ->whereNotNull('imei')
             ->whereHas('api_requests')
+            ->with(['api_requests' => function($q) { $q->limit(1); }])
             ->orderByRaw('RAND()')
             ->limit(1000)
-            ->get();
-
-        foreach($no_region_stock as $stock){
-            $api_request = $stock->api_requests->first();
-            if($api_request != null){
-                $request = $api_request->request;
-                $requestData = json_decode($request, true);
+            ->chunk(100, function($stocks) {
+            // Cache region names to avoid duplicate queries
+            static $regionCache = [];
+            foreach($stocks as $stock){
+                $api_request = $stock->api_requests->first();
+                if($api_request){
+                $requestData = json_decode($api_request->request, true);
                 $reg = $requestData['Regioncode'] ?? null;
-                if($reg != null){
-
-                    $region = Region_model::firstOrNew(['name' => $reg]);
-                    if(!$region->id){
-                        $region->save();
+                if($reg){
+                    if (!isset($regionCache[$reg])) {
+                    $region = Region_model::firstOrCreate(['name' => $reg]);
+                    $regionCache[$reg] = $region->id;
                     }
-                    if($stock->region_id == null || $stock->region_id == 0){
-                        $stock->region_id = $region->id;
-                    }elseif($stock->region_id != $region->id){
-                        $stock_operation = Stock_operations_model::create([
-                            'stock_id' => $stock->id,
-                            'api_request_id' => $api_request->id,
-                            'description' => "Region changed from: ".$stock->region->name." to: ".$region->name,
-                            'admin_id' => session('user_id'),
+                    $regionId = $regionCache[$reg];
+                    if($stock->region_id != $regionId){
+                    if($stock->region_id){
+                        Stock_operations_model::create([
+                        'stock_id' => $stock->id,
+                        'api_request_id' => $api_request->id,
+                        'description' => "Region changed from: ".($stock->region->name ?? '')." to: ".$reg,
+                        'admin_id' => session('user_id'),
                         ]);
                     }
+                    $stock->region_id = $regionId;
                     $stock->save();
-                    echo "Stock ID: ".$stock->id." - Region: ".$region->name."<br>";
+                    echo "Stock ID: {$stock->id} - Region: {$reg}<br>";
+                    }
                 }else{
-                    echo "Stock ID: ".$stock->id." - No region found in API request.<br>";
+                    echo "Stock ID: {$stock->id} - No region found in API request.<br>";
                 }
-            }else{
-                echo "Stock ID: ".$stock->id." - No API request found.<br>";
+                }else{
+                echo "Stock ID: {$stock->id} - No API request found.<br>";
+                }
             }
-        }
+            });
 
 
         // Create a sort for products storage sort
