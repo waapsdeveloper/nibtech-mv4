@@ -1290,7 +1290,8 @@ class Index extends Component
             $api_request = $stock->api_requests->first();
             if($api_request != null){
                 $request = $api_request->request;
-                $reg = $api_request->json_extract($request, 'Regioncode');
+                $requestData = json_decode($request, true);
+                $reg = $requestData['Regioncode'] ?? null;
                 if($reg != null){
 
                     $region = Region_model::firstOrNew(['name' => $reg]);
