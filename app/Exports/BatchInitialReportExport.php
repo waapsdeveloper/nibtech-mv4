@@ -50,7 +50,7 @@ class BatchInitialReportExport implements FromCollection, WithHeadings, WithMapp
                 'vendor_grade.name as v_grade',
                 'grade.name as grade_name',
                 'purchase_item.reference as notes',
-                'region.name as region_name',
+                DB::raw('COALESCE(region.name, "N/A") as region_name'),
                 DB::raw('COUNT(*) as quantity')
             )
             ->where('stock.order_id', $this->orderId)
