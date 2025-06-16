@@ -12,8 +12,6 @@ class BatchInitialReportExport implements FromCollection, WithHeadings, WithMapp
     protected $orderId;
     protected $grades;
     protected $vendorData = [];
-    protected $notesList = [];
-    protected $regionData = [];
 
     // Constructor to accept order_id
     public function __construct($orderId)
@@ -38,7 +36,6 @@ class BatchInitialReportExport implements FromCollection, WithHeadings, WithMapp
             //     $join->on('stock.id', '=', 'operation.stock_id')
             //         ->orderBy('operation.id', 'asc')->limit(1);
             // })
-            ->leftJoin('region', 'stock.region_id', '=', 'region.id')
             ->leftJoin('variation', 'operation.new_variation_id', '=', 'variation.id')
             ->leftJoin('order_items as purchase_item', function ($join) {
                 $join->on('stock.id', '=', 'purchase_item.stock_id')
@@ -47,47 +44,43 @@ class BatchInitialReportExport implements FromCollection, WithHeadings, WithMapp
             ->leftJoin('vendor_grade', 'purchase_item.reference_id', '=', 'vendor_grade.id')
             ->leftJoin('grade', 'variation.grade', '=', 'grade.id')
             ->select(
-                DB::raw('COALESCE(vendor_grade.name, "N/A") as v_grade'),
+                'vendor_grade.name as v_grade',
                 'grade.name as grade_name',
-                'purchase_item.reference as notes',
-                DB::raw('COALESCE(region.name, "N/A") as region_name'),
                 DB::raw('COUNT(*) as quantity')
             )
             ->where('stock.order_id', $this->orderId)
             ->whereNull('stock.deleted_at')
-            ->groupBy('vendor_grade.name', 'region.name', 'purchase_item.reference', 'grade.name')
+            ->groupBy('vendor_grade.name', 'grade.name')
             ->orderBy('vendor_grade.name')
             ->orderBy('grade.name')
             ->get();
-            foreach ($data as $row) {
-                // Initialize nested arrays if not set
-                if (!isset($this->vendorData[$row->v_grade][$row->region_name][$row->notes])) {
-                $this->vendorData[$row->v_grade][$row->region_name][$row->notes] = array_fill_keys($this->grades, 0);
-                }
-                // Set the quantity for the specific grade
-                $this->vendorData[$row->v_grade][$row->region_name][$row->notes][$row->grade_name] = $row->quantity;
-            }
 
-            $finalData = [];
-            foreach ($this->vendorData as $vendorGrade => $regions) {
-                foreach ($regions as $regionName => $notesArr) {
-                foreach ($notesArr as $notes => $gradesArr) {
-                    $row = [
-                    'vendor_grade' => $vendorGrade,
-                    'region_name' => $regionName,
-                    'notes' => $notes,
-                    ];
-                    $totalQuantity = 0;
-                    foreach ($this->grades as $grade) {
-                    $quantity = $gradesArr[$grade] ?? 0;
-                    $row[$grade] = $quantity;
-                    $totalQuantity += $quantity;
-                    }
-                    $row['total_quantity'] = $totalQuantity;
-                    $finalData[] = $row;
-                }
-                }
+        foreach ($data as $row) {
+            if (!isset($this->vendorData[$row->v_grade])) {
+                $this->vendorData[$row->v_grade] = array_fill_keys($this->grades, 0);
             }
+            $this->vendorData[$row->v_grade][$row->grade_name] = $row->quantity;
+        }
+
+        $finalData = [];
+        // foreach ($this->vendorData as $vendorGrade => $quantities) {
+        //     $row = ['vendor_grade' => $vendorGrade];
+        //     foreach ($this->grades as $grade) {
+        //         $row[$grade] = $quantities[$grade];
+        //     }
+        //     $finalData[] = $row;
+        // }
+        foreach ($this->vendorData as $vendorGrade => $quantities) {
+            $row = ['vendor_grade' => $vendorGrade];
+            $totalQuantity = 0;
+            foreach ($this->grades as $grade) {
+                $quantity = $quantities[$grade];
+                $row[$grade] = $quantity;
+                $totalQuantity += $quantity;
+            }
+            $row['total_quantity'] = $totalQuantity;
+            $finalData[] = $row;
+        }
 
         return collect($finalData);
     }
@@ -96,7 +89,7 @@ class BatchInitialReportExport implements FromCollection, WithHeadings, WithMapp
     public function headings(): array
     {
         // Static heading for the first column
-        $staticHeadings = ['Vendor Grade', 'Region Name', 'Notes'];
+        $staticHeadings = ['Vendor Grade'];
 
         // Merge static heading with dynamic grade names as headings
         return array_merge($staticHeadings, ['Total Quantity'], $this->grades);
@@ -106,7 +99,7 @@ class BatchInitialReportExport implements FromCollection, WithHeadings, WithMapp
     public function map($row): array
     {
         // Initialize the row data with the vendor grade
-        $rowData = [$row['vendor_grade'], $row['region_name'], $row['notes']];
+        $rowData = [$row['vendor_grade']];
 
         // Append total quantity
         $rowData[] = $row['total_quantity'];
