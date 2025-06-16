@@ -303,8 +303,8 @@ class Api_request_model extends Model
                         if(!$product->id){
                             Log::info($p->model.' '.'Dual eSIM');
                             continue;
-                            $product->category = $p->category;
-                            $product->brand = $p->brand;
+                            // $product->category = $p->category;
+                            // $product->brand = $p->brand;
                             // $product->model = $p->model.' Dual eSIM';
                             // $product->save();
                         }
@@ -347,10 +347,12 @@ class Api_request_model extends Model
                     if(!str_contains($p->model, 'Dual Sim')){
                         $product = Products_model::firstOrNew(['model'=>$p->model.' Dual Sim']);
                         if(!$product->id){
-                            $product->category = $p->category;
-                            $product->brand = $p->brand;
+                            Log::info($p->model.' '.'Dual Sim');
+                            continue;
+                            // $product->category = $p->category;
+                            // $product->brand = $p->brand;
                             // $product->model = $p->model.' Dual Sim';
-                            $product->save();
+                            // $product->save();
                         }
                         $p = $product;
                     }
@@ -375,7 +377,7 @@ class Api_request_model extends Model
                         'api_request_id' => $request->id,
                         'old_variation_id' => $stock->variation_id,
                         'new_variation_id' => $variation->id,
-                        'description' => "Dual-eSim Declared by tester | DrPhone",
+                        'description' => "Dual-Sim Declared by tester | DrPhone",
                         'admin_id' => $admin,
                         'created_at' => Carbon::parse($datas->Time)->format('Y-m-d H:i:s'),
                     ]);
@@ -502,6 +504,25 @@ class Api_request_model extends Model
                     //     'admin_id' => $admin,
                     //     'created_at' => Carbon::parse($datas->Time)->format('Y-m-d H:i:s'),
                     // ]);
+
+                    $region = Region_model::firstOrNew(['name' => $datas->Regioncode]);
+                    if(!$region->id){
+                        $region->save();
+                    }
+                    if($stock->region_id == null || $stock->region_id == 0){
+                        $stock->region_id = $region->id;
+                    }elseif($stock->region_id != $region->id){
+                        $stock_operation = Stock_operations_model::create([
+                            'stock_id' => $stock->id,
+                            'api_request_id' => $request->id,
+                            'old_variation_id' => $stock->variation_id,
+                            'new_variation_id' => $variation->id,
+                            'description' => "Region changed from: ".$stock->region->name." to: ".$region->name." | DrPhone",
+                            'admin_id' => $admin,
+                            'created_at' => Carbon::parse($datas->Time)->format('Y-m-d H:i:s'),
+                        ]);
+                    }
+
 
                     $variation->status = 1;
                     $variation->save();
