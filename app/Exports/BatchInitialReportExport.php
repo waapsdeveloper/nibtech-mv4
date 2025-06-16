@@ -55,7 +55,7 @@ class BatchInitialReportExport implements FromCollection, WithHeadings, WithMapp
             )
             ->where('stock.order_id', $this->orderId)
             ->whereNull('stock.deleted_at')
-            ->groupBy('vendor_grade.name', 'grade.name')
+            ->groupBy('vendor_grade.name', 'region.name', 'purchase_item.reference', 'grade.name')
             ->orderBy('vendor_grade.name')
             ->orderBy('grade.name')
             ->get();
