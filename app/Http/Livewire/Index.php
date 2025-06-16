@@ -1280,47 +1280,55 @@ class Index extends Component
     }
     public function test(){
         // Optimize: eager load api_requests, process in chunks, minimize queries
-        Stock_model::whereNull('region_id')
-            ->whereNotNull('status')
-            ->whereNotNull('imei')
-            ->whereHas('api_requests')
-            ->with(['api_requests' => function($q) { $q->limit(1); }])
-            ->orderByRaw('RAND()')
-            ->limit(1000)
-            ->chunk(100, function($stocks) {
+        // Stock_model::whereNull('region_id')
+        //     ->whereNotNull('status')
+        //     ->whereNotNull('imei')
+        //     ->whereHas('api_requests')
+        //     ->with(['api_requests' => function($q) { $q->limit(1); }])
+        //     ->orderByRaw('RAND()')
+        //     ->limit(1000)
+        //     ->get();
             // Cache region names to avoid duplicate queries
-            static $regionCache = [];
-            foreach($stocks as $stock){
+            $regionCache = [];
+            $stocks = Stock_model::whereNull('region_id')
+                ->whereNotNull('status')
+                ->whereNotNull('imei')
+                ->whereHas('api_requests')
+                ->with(['api_requests' => function($q) { $q->limit(1); }])
+                ->orderByRaw('RAND()')
+                ->limit(1000)
+                ->get();
+
+            $stocks->map(function($stock) use (&$regionCache) {
                 $api_request = $stock->api_requests->first();
                 if($api_request){
-                $requestData = json_decode($api_request->request, true);
-                $reg = $requestData['Regioncode'] ?? null;
-                if($reg){
-                    if (!isset($regionCache[$reg])) {
-                    $region = Region_model::firstOrCreate(['name' => $reg]);
-                    $regionCache[$reg] = $region->id;
-                    }
-                    $regionId = $regionCache[$reg];
-                    if($stock->region_id != $regionId){
-                    if($stock->region_id){
-                        Stock_operations_model::create([
-                        'stock_id' => $stock->id,
-                        'api_request_id' => $api_request->id,
-                        'description' => "Region changed from: ".($stock->region->name ?? '')." to: ".$reg,
-                        'admin_id' => session('user_id'),
-                        ]);
-                    }
-                    $stock->region_id = $regionId;
-                    $stock->save();
-                    echo "Stock ID: {$stock->id} - Region: {$reg}<br>";
+                    $requestData = json_decode($api_request->request, true);
+                    $reg = $requestData['Regioncode'] ?? null;
+                    if($reg){
+                        if (!isset($regionCache[$reg])) {
+                        $region = Region_model::firstOrCreate(['name' => $reg]);
+                        $regionCache[$reg] = $region->id;
+                        }
+                        $regionId = $regionCache[$reg];
+                        if($stock->region_id != $regionId){
+                        if($stock->region_id){
+                            Stock_operations_model::create([
+                            'stock_id' => $stock->id,
+                            'api_request_id' => $api_request->id,
+                            'description' => "Region changed from: ".($stock->region->name ?? '')." to: ".$reg,
+                            'admin_id' => session('user_id'),
+                            ]);
+                        }
+                        $stock->region_id = $regionId;
+                        $stock->save();
+                        echo "Stock ID: {$stock->id} - Region: {$reg}<br>";
+                        }
+                    }else{
+                        echo "Stock ID: {$stock->id} - No region found in API request.<br>";
                     }
                 }else{
-                    echo "Stock ID: {$stock->id} - No region found in API request.<br>";
+                    echo "Stock ID: {$stock->id} - No API request found.<br>";
                 }
-                }else{
-                echo "Stock ID: {$stock->id} - No API request found.<br>";
-                }
-            }
             });
 
 
