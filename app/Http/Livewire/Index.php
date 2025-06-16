@@ -1296,7 +1296,7 @@ class Index extends Component
                 ->whereHas('api_requests', function($q) {
                     $q->whereNotNull('status'); // Ensure only successful API requests are considered
                 })
-                ->with(['api_requests' => function($q) { $q->limit(1); }])
+                ->with(['api_requests'])
                 ->orderByDesc('id') // Order by ID to ensure consistent results
                 ->orderByRaw('RAND()')
                 // ->limit(1000)
