@@ -159,6 +159,10 @@ class IMEILabelExport
 
         $pdf->Ln(2); // Add some spacing
 
+        $pdf->MultiCell(58, 0,  env('APP_NAME'), 0, 'C', false, 1, null, null, true, 0, false, true, 0, 'T', true);
+
+        $pdf->Ln(2); // Add some spacing
+
         $pdf->MultiCell(58, 0, 'Invoice: '. $shipment_date, 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
 
         $pdf->MultiCell(58, 0, 'Delivery: '. $delivery_date, 0, 'L', false, 1, null, null, true, 0, false, true, 0, 'T', true);
