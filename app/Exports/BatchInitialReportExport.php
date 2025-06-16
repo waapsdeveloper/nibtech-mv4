@@ -47,7 +47,7 @@ class BatchInitialReportExport implements FromCollection, WithHeadings, WithMapp
             ->leftJoin('vendor_grade', 'purchase_item.reference_id', '=', 'vendor_grade.id')
             ->leftJoin('grade', 'variation.grade', '=', 'grade.id')
             ->select(
-                'vendor_grade.name as v_grade',
+                DB::raw('COALESCE(vendor_grade.name, "N/A") as v_grade'),
                 'grade.name as grade_name',
                 'purchase_item.reference as notes',
                 DB::raw('COALESCE(region.name, "N/A") as region_name'),
