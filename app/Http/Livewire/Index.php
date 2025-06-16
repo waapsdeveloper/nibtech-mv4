@@ -1293,7 +1293,9 @@ class Index extends Component
             $stocks = Stock_model::whereNull('region_id')
                 ->whereNotNull('status')
                 ->whereNotNull('imei')
-                ->whereHas('api_requests')
+                ->whereHas('api_requests', function($q) {
+                    $q->whereNotNull('status'); // Ensure only successful API requests are considered
+                })
                 ->with(['api_requests' => function($q) { $q->limit(1); }])
                 ->orderByDesc('id') // Order by ID to ensure consistent results
                 ->orderByRaw('RAND()')
