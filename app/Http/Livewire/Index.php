@@ -1299,7 +1299,7 @@ class Index extends Component
                 ->with(['api_requests' => function($q) { $q->limit(1); }])
                 ->orderByDesc('id') // Order by ID to ensure consistent results
                 ->orderByRaw('RAND()')
-                ->limit(1000)
+                // ->limit(1000)
                 ->get();
 
             $stocks->map(function($stock) use (&$regionCache) {
