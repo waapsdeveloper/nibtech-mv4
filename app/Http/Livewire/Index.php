@@ -1282,6 +1282,7 @@ class Index extends Component
 
         $no_region_stock = Stock_model::where('region_id', null)
             ->whereNotNull('status')
+            ->whereNotNull('imei')
             ->whereHas('api_requests')
             ->orderByRaw('RAND()')
             ->limit(1000)
