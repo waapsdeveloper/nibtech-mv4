@@ -1295,6 +1295,7 @@ class Index extends Component
                 ->whereNotNull('imei')
                 ->whereHas('api_requests')
                 ->with(['api_requests' => function($q) { $q->limit(1); }])
+                ->orderByDesc('id') // Order by ID to ensure consistent results
                 ->orderByRaw('RAND()')
                 ->limit(1000)
                 ->get();
