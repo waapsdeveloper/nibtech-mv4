@@ -82,7 +82,7 @@ class PriceHandler extends Command
                     continue;
                 }
                 if(is_array($list)){
-                    if($list['code'] == 'unknown-competitor'){
+                    if($list['code'] && $list['code'] == 'unknown-competitor'){
                         continue;
                     }
                     $error .= json_encode($list);
