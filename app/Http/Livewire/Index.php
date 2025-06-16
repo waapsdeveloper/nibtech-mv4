@@ -30,6 +30,7 @@ use App\Models\Variation_model;
 use App\Models\Stock_model;
 use App\Models\Stock_operations_model;
 use App\Models\Product_color_merge_model;
+use App\Models\Region_model;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 
@@ -1279,6 +1280,41 @@ class Index extends Component
     }
     public function test(){
 
+        $no_region_stock = Stock_model::where('region_id', null)
+            ->whereNotNull('status')
+            ->whereHas('api_requests')
+            ->limit(1000)
+            ->get();
+
+        foreach($no_region_stock as $stock){
+            $api_request = $stock->api_requests->first();
+            if($api_request != null){
+                $reg = $api_request->request->region;
+                if($reg != null){
+
+                    $region = Region_model::firstOrNew(['name' => $reg]);
+                    if(!$region->id){
+                        $region->save();
+                    }
+                    if($stock->region_id == null || $stock->region_id == 0){
+                        $stock->region_id = $region->id;
+                    }elseif($stock->region_id != $region->id){
+                        $stock_operation = Stock_operations_model::create([
+                            'stock_id' => $stock->id,
+                            'api_request_id' => $api_request->id,
+                            'description' => "Region changed from: ".$stock->region->name." to: ".$region->name,
+                            'admin_id' => session('user_id'),
+                        ]);
+                    }
+                    $stock->save();
+                    echo "Stock ID: ".$stock->id." - Region: ".$region->name."<br>";
+                }else{
+                    echo "Stock ID: ".$stock->id." - No region found in API request.<br>";
+                }
+            }else{
+                echo "Stock ID: ".$stock->id." - No API request found.<br>";
+            }
+        }
 
 
         // Create a sort for products storage sort
