@@ -96,6 +96,22 @@
                     | Listed Quantity: {{ $process->listed_stocks_verification->sum('qty_change') }}
                 @endif
             </h5>
+
+            @if ($process->status == 1)
+            <div class="p-1">
+                <form class="form-inline" action="{{ url('delete_repair_item') }}" method="POST" id="repair_item"
+                 {{-- onSubmit="return confirm('Are you sure you want to remove this item?');" --}}
+                 >
+                    @csrf
+                    <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
+                    <input type="text" class="form-control form-control-sm" name="imei" @if (request('remove') == 1) id="imei" @endif placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
+                    <input type="hidden" name="process_id" value="{{$process->id}}">
+                    <input type="hidden" name="remove" value="1">
+                    <button class="btn-sm btn-secondary pd-x-20" type="submit">Remove</button>
+
+                </form>
+            </div>
+            @endif
         </div>
 
         <br>
