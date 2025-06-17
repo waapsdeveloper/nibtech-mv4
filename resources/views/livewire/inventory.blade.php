@@ -112,31 +112,44 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md col-sm-2">
-                <select name="vendor" class="form-control form-select">
-                    <option value="">Vendor</option>
-                    @foreach ($vendors as $id => $name)
-                        <option value="{{ $id }}" @if (isset($_GET['vendor']) && $id == $_GET['vendor']) {{ 'selected' }} @endif>
-                            {{ $name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-md col-sm-2">
-                <select name="listing_or_topup" class="form-control form-select">
-                    <option value="">Topup Batch</option>
-                    <option value="0" @if (isset($_GET['listing_or_topup']) && $_GET['listing_or_topup'] == 0) {{ 'selected' }} @endif>
-                        No Topup</option>
-                    @foreach ($listings_or_topups as $id => $name)
-                        <option value="{{ $id }}" @if (isset($_GET['listing_or_topup']) && $id == $_GET['listing_or_topup']) {{ 'selected' }} @endif>
-                            {{ $name }}</option>
-                    @endforeach
-                </select>
-            </div>
         </div>
-        <div class="d-flex justify-content-end mt-3">
-            <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
-            <a href="{{ url('inventory') }}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
-            <button class="btn btn-primary pd-x-20" name="verify" value="1" type="submit">Verify</button>
+        <div class="d-flex justify-content-between mt-3">
+            <div class="row">
+                <div class="col-md col-sm-2">
+                    <select name="vendor" class="form-control form-select">
+                        <option value="">Vendor</option>
+                        @foreach ($vendors as $id => $name)
+                            <option value="{{ $id }}" @if (isset($_GET['vendor']) && $id == $_GET['vendor']) {{ 'selected' }} @endif>
+                                {{ $name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md col-sm-2">
+                    <select name="listing_or_topup" class="form-control form-select">
+                        <option value="">Topup Batch</option>
+                        <option value="0" @if (isset($_GET['listing_or_topup']) && $_GET['listing_or_topup'] == 0) {{ 'selected' }} @endif>
+                            No Topup</option>
+                        @foreach ($listings_or_topups as $id => $name)
+                            <option value="{{ $id }}" @if (isset($_GET['listing_or_topup']) && $id == $_GET['listing_or_topup']) {{ 'selected' }} @endif>
+                                {{ $name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md col-sm-2">
+                    <select name="region" class="form-control form-select">
+                        <option value="">Region</option>
+                        @foreach ($regions as $id => $name)
+                            <option value="{{ $id }}" @if (isset($_GET['region']) && $id == $_GET['region']) {{ 'selected' }} @endif>
+                                {{ $name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+            <div>
+                <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
+                <a href="{{ url('inventory') }}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
+                <button class="btn btn-primary pd-x-20" name="verify" value="1" type="submit">Verify</button>
+            </div>
         </div>
 
         <input type="hidden" name="replacement" value="{{ Request::get('replacement') }}">
@@ -257,6 +270,7 @@
                     <input type="hidden" name="product" value="{{ Request::get('product') }}">
                     <input type="hidden" name="storage" value="{{ Request::get('storage') }}">
                     <input type="hidden" name="vendor" value="{{ Request::get('vendor') }}">
+                    <input type="hidden" name="region" value="{{ Request::get('region') }}">
                     @if (Request::get('grade'))
                         @foreach (Request::get('grade') as $grd)
                             <input type="hidden" name="grade[]" value="{{ $grd }}">
