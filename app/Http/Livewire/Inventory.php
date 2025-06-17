@@ -18,6 +18,7 @@ use App\Models\Process_stock_model;
 use App\Models\Product_storage_sort_model;
 use App\Models\Stock_model;
 use App\Models\Products_model;
+use App\Models\Region_model;
 use App\Models\Stock_operations_model;
 use App\Models\Variation_model;
 use GuzzleHttp\Client;
@@ -52,6 +53,7 @@ class Inventory extends Component
         $data['categories'] = Category_model::get();
         $data['brands'] = Brand_model::get();
         $data['listings_or_topups'] = Process_model::whereIn('process_type_id',[21,22])->orderByDesc('id')->pluck('reference_id','id');
+        $data['regions'] = Region_model::pluck('name','id');
 
         if(request('replacement') == 1){
             $replacements = Order_item_model::where(['order_id'=>8974])->where('reference_id','!=',null)->pluck('reference_id')->toArray();
@@ -84,6 +86,19 @@ class Inventory extends Component
             $variation_ids = Variation_model::whereHas('stocks', function ($query) use ($aftersale) {
                     $query->where('status', 1)->when(request('aftersale') != 1, function ($q) use ($aftersale) {
                         return $q->whereNotIn('stock.id',$aftersale);
+                    });
+                })
+                ->when(request('listing_or_topup') != '' && request('listing_or_topup') == 0, function ($q) {
+                    return $q->whereDoesntHave('latest_listing_or_topup');
+                })
+                ->when(request('listing_or_topup') != '' && request('listing_or_topup') != 0, function ($q) {
+                    return $q->whereHas('process_stocks', function ($q) {
+                        $q->where('process_id', request('listing_or_topup'));
+                    });
+                })
+                ->when(request('region') != '', function ($q) {
+                    return $q->whereHas('stocks', function ($q) {
+                        $q->where('region_id', request('region'));
                     });
                 })
                 ->when(request('variation') != '', function ($q) {
@@ -212,6 +227,11 @@ class Inventory extends Component
             ->when(request('listing_or_topup') != '' && request('listing_or_topup') != 0, function ($q) {
                 return $q->whereHas('process_stocks', function ($q) {
                     $q->where('process_id', request('listing_or_topup'));
+                });
+            })
+            ->when(request('region') != '', function ($q) {
+                return $q->whereHas('stocks', function ($q) {
+                    $q->where('region_id', request('region'));
                 });
             })
             ->when(request('variation') != '', function ($q) {
