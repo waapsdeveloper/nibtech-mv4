@@ -511,7 +511,7 @@ class Api_request_model extends Model
                     }
                     if($stock->region_id == null || $stock->region_id == 0){
                         $stock->region_id = $region->id;
-                    }elseif($stock->region_id != $region->id){
+                    }elseif($stock->region_id != $region->id && $stock->region_id != 0 && $stock->region_id != null && $region->id != 0 && $region->id != null){
                         $stock_operation = Stock_operations_model::create([
                             'stock_id' => $stock->id,
                             'api_request_id' => $request->id,
