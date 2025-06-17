@@ -1194,7 +1194,7 @@ class Order extends Component
             $data['order_issues'] = $order_issues;
             // dd($data['missing_stock']);
 
-            if($data['order']->created_at >= now()->subDays(7) && $data['order']->created_at <= now()->subHours(0)){
+            if($data['order']->created_at >= now()->subDays(7) && $data['order']->created_at <= now()->subHours(1)){
                 $lower_products = array_map('strtolower', $data['products']->toArray());
                 $lower_storages = array_map('strtolower', $data['storages']->toArray());
                 $lower_colors = array_map('strtolower', $data['colors']->toArray());
