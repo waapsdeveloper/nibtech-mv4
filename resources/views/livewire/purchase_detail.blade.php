@@ -820,13 +820,24 @@
             <div class="row">
                 <div class="col-lg-10">
                     @if (isset($variations) && (!request('status') || request('status') == 1))
+                        @php
+                            $grade = null;
+                        @endphp
                     <div class="row">
 
                         @foreach ($variations as $variation)
                         <div class="col-md-4">
                             <div class="card @if ($variation->grade == 9)
                                 highlight
-                            @endif">
+                            @endif"
+                            @if ($grade == null || $variation->grade != $grade)
+                                id="{{ $variation->grade }}"
+                                @php
+                                    $grade = $variation->grade;
+                                @endphp
+
+                            @endif
+                            >
                                 <div class="card-header pb-0">
                                     @php
                                         isset($variation->product_id)?$product = $products[$variation->product_id]:$product = "MODEL NOT FOUND";
@@ -1065,9 +1076,13 @@
                                             @endphp
                                         <tr>
                                             {{-- <td>{{ $i }}</td> --}}
-                                            <td data-stock="{{ $item->id }}">{{ $count->grade }}</td>
                                             <td data-stock="{{ $item->id }}">
-                                                <a href="{{ url('inventory')}}?order_id={{ $order->id }}&grade[]={{ $count->grade_id }}" title="View Graded Inventory">
+                                                <a href="#{{ $count->grade_id}}">
+                                                {{ $count->grade }}
+                                                </a>
+                                            </td>
+                                            <td data-stock="{{ $item->id }}">
+                                                <a href="{{ url('inventory')}}?order_id={{ $order->id }}&grade[]={{ $count->grade_id }}" title="View Graded Inventory" target="_blank">
                                                     {{ $count->quantity }}
                                                 </a>
                                             </td>
@@ -1113,7 +1128,7 @@
                                             {{-- <td>{{ $i }}</td> --}}
                                             <td data-stock="{{ $item->id }}">{{ $count->region }}</td>
                                             <td data-stock="{{ $item->id }}">
-                                                <a href="{{ url('inventory')}}?order_id={{ $order->id }}&region={{ $count->region_id }}" title="View Graded Inventory">
+                                                <a href="{{ url('inventory')}}?order_id={{ $order->id }}&region={{ $count->region_id }}" title="View Graded Inventory" target="_blank">
                                                     {{ $count->quantity }}
                                                 </a>
                                             </td>
