@@ -418,10 +418,10 @@
                                 <h5 id="average_cost"></h5>
                             @endif
                             <div class=" mg-b-0">
-                                <form method="get" action="" class="row form-inline">
+                                {{-- <form method="get" action="" class="row form-inline"> --}}
                                     <label for="perPage" class="card-title inline">per page:</label>
                                     <select name="per_page" class="form-select form-select-sm" id="perPage"
-                                        onchange="this.form.submit()">
+                                        onchange="this.form.submit()" form="search">
                                         <option value="10" {{ Request::get('per_page') == 10 ? 'selected' : '' }}>
                                             10</option>
                                         <option value="20" {{ Request::get('per_page') == 20 ? 'selected' : '' }}>
@@ -445,7 +445,7 @@
                                     @endif
                                     <input type="hidden" name="page" value="{{ Request::get('page') }}">
                                     <input type="hidden" name="status" value="{{ Request::get('status') }}">
-                                </form>
+                                {{-- </form> --}}
                             </div>
 
                         </div>
