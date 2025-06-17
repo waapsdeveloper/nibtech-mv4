@@ -1056,7 +1056,8 @@
                         <div class="card-header pb-0">
                             Graded Total
                         </div>
-                        <div class="card-body"><div class="table-responsive">
+                        <div class="card-body">
+                            <div class="table-responsive">
                             <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                                 <thead>
                                     <tr>
@@ -1107,7 +1108,8 @@
                         <div class="card-header pb-0">
                             Region Total
                         </div>
-                        <div class="card-body"><div class="table-responsive">
+                        <div class="card-body">
+                            <div class="table-responsive">
                             <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                                 <thead>
                                     <tr>
@@ -1146,6 +1148,7 @@
                                     </tr>
                                 </tfoot>
                             </table>
+                            </div>
                         </div>
                     </div>
                 </div>
