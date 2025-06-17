@@ -1050,7 +1050,7 @@
 
                     @endif
                 </div>
-                <div class="col-lg-2 background-gray-100">
+                <div class="col-lg-2 bg-gray-300">
 
                     <div class="card">
                         <div class="card-header pb-0">
@@ -1100,6 +1100,7 @@
                                 </tfoot>
                             </table>
                         </div>
+                    </div>
                     </div>
                     <br>
                     <div class="card">
