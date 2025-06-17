@@ -230,9 +230,7 @@ class Inventory extends Component
                 });
             })
             ->when(request('region') != '', function ($q) {
-                return $q->whereHas('stocks', function ($q) {
-                    $q->where('region_id', request('region'));
-                });
+                return $q->where('region_id', request('region'));
             })
             ->when(request('variation') != '', function ($q) {
                 return $q->where('variation_id', request('variation'));
