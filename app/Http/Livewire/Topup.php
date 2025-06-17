@@ -464,7 +464,7 @@ class Topup extends Component
                     return redirect()->back();
                 }
 
-                if(request('copy') == 1){
+                if(request('copy') == 1 || request('copy_grade') == 1 || request('dual-esim') == 1 || request('dual-sim') == 1){
                     $process_stock->status = 1;
                     $process_stock->save();
                     session()->put('success', 'Stock ReAdded successfully SKU:'.$stock->variation->sku);
