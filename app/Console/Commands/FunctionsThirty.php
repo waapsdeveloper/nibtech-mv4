@@ -109,10 +109,6 @@ class FunctionsThirty extends Command
 
         foreach($listings as $country => $lists){
             foreach($lists as $list){
-                if( $list->publication_state == 4) {
-                    // If the listing is archived, we skip it
-                    continue;
-                }
                 $variation = Variation_model::where('sku',$list->sku)->first();
                 $currency = Currency_model::where('code',$list->currency)->first();
                 if($variation == null){
