@@ -432,6 +432,10 @@ class Topup extends Component
                 session()->put('error', 'Ad State is not valid for Topup: '.$stock->variation->state);
                 return redirect()->back();
             }
+            if(session()->has('variation_id') && session('variation_id') != $stock->variation_id){
+                session()->put('warning', 'Variation ID does not match with the stock variation');
+            }
+            session()->put('variation_id', $stock->variation_id);
 
             $process_stock = Process_stock_model::firstOrNew(['process_id'=>$process_id, 'stock_id'=>$stock->id]);
             $process_stock->admin_id = session('user_id');
@@ -468,11 +472,6 @@ class Topup extends Component
                     session()->put('error', 'Stock already Added SKU:'.$stock->variation->sku);
                 }
             }
-            $stock = Stock_model::find($stock->id);
-            if(session()->has('variation_id') && session('variation_id') != $stock->variation_id){
-                session()->put('warning', 'Variation ID does not match with the stock variation');
-            }
-            session()->put('variation_id', $stock->variation_id);
         }
         return redirect()->back();
     }
