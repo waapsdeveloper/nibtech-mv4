@@ -216,7 +216,7 @@
             </div>
             <br>
             @php
-            session()->forget('success');
+            session()->forget('warning');
             @endphp
         @endif
         @if (session('success'))
