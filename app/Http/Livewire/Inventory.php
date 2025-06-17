@@ -101,6 +101,11 @@ class Inventory extends Component
                         $q->where('region_id', request('region'));
                     });
                 })
+                ->when(request('order_id') != '', function ($q) {
+                    return $q->whereHas('stocks', function ($q) {
+                        $q->where('order_id', request('order_id'));
+                    });
+                })
                 ->when(request('variation') != '', function ($q) {
                     return $q->where('id', request('variation'));
                 })
@@ -231,6 +236,9 @@ class Inventory extends Component
             })
             ->when(request('region') != '', function ($q) {
                 return $q->where('region_id', request('region'));
+            })
+            ->when(request('order_id') != '', function ($q) {
+                return $q->where('order_id', request('order_id'));
             })
             ->when(request('variation') != '', function ($q) {
                 return $q->where('variation_id', request('variation'));
