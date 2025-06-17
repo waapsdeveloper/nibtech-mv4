@@ -68,6 +68,11 @@
             <div class="card-header pb-0">
 
                 <div style='float:right;'>
+                    <form method='get' action='{{url("request_drfones")}}'>
+                        <input type='text' name='imei' placeholder='Enter IMEI'>
+                        <input type='submit' value='Search'>
+                    </form>
+
                     <form method='post' action='".url("testing/upload_excel")."' enctype='multipart/form-data'>
                         @csrf
                         <input type='file' name='sheet'><input type='submit' value='Upload'>
