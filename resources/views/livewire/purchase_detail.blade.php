@@ -1052,7 +1052,7 @@
                 </div>
                 <div class="col-lg-2">
 
-                    <div class="card">
+                    <div class="card row">
                         <div class="card-header pb-0">
                             Graded Total
                         </div>
@@ -1102,7 +1102,7 @@
                         </div>
                     </div>
                     <br>
-                    <div class="card">
+                    <div class="card row">
                         <div class="card-header pb-0">
                             Region Total
                         </div>
