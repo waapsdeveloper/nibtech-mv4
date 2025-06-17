@@ -1177,6 +1177,16 @@ class Order extends Component
             ->orderBy('grade_id')
             ->get();
 
+            $data['region_count'] = Stock_model::select('region.name as region', 'stock.region_id', DB::raw('COUNT(*) as quantity'))
+            ->when(request('status'), function ($q) {
+                return $q->where('stock.status', request('status'));
+            })
+            ->where('stock.order_id', $order_id)
+            ->join('region', 'stock.region_id', '=', 'region.id')
+            ->groupBy('stock.region_id', 'region.name')
+            ->orderBy('region')
+            ->get();
+
             $data['missing_stock'] = Order_item_model::where('order_id',$order_id)->whereHas('stock',function ($q) {
                 $q->where(['imei'=>null,'serial_number'=>null]);
             })->get();

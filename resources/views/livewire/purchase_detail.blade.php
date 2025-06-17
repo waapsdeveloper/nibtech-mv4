@@ -1082,6 +1082,48 @@
                             </table>
                         </div>
                     </div>
+                    <br>
+                    <div class="card">
+                        <div class="card-header pb-0">
+                            Region Total
+                        </div>
+                        <div class="card-body"><div class="table-responsive">
+                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                                <thead>
+                                    <tr>
+                                        {{-- <th><small><b>No</b></small></th> --}}
+                                        <th><small><b>Region</b></small></th>
+                                        <th><small><b>Count</b></small></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @php
+                                        $total = 0;
+                                    @endphp
+                                    @foreach ($region_count as $count)
+
+                                            @php
+                                                $total += $count->quantity;
+                                            @endphp
+                                        <tr>
+                                            {{-- <td>{{ $i }}</td> --}}
+                                            <td data-stock="{{ $item->id }}">{{ $count->region }}</td>
+                                            <td data-stock="{{ $item->id }}">{{ $count->quantity }}</td>
+                                        </tr>
+                                        {{-- @endif --}}
+                                    @endforeach
+                                </tbody>
+
+                                <tfoot>
+                                    <tr>
+                                        {{-- <th><small><b>No</b></small></th> --}}
+                                        <th><b>Total</b></th>
+                                        <th><b>{{ $total }}</b></th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
 
