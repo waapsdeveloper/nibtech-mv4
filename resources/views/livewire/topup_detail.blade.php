@@ -476,7 +476,7 @@
                                 <tr @if ($variation->listed_stock < 0 && $variation->listed_stock + $stocks->where('variation_id', $variation->id)->count() < 0)
                                     class="bg-danger"
                                 @endif
-                                @if ($process->status == 2 && $qty_change == $stock_count)
+                                @if ($process->status >= 2 && $qty_change == $stock_count)
                                     class="table-success"
                                 @endif
                                 >
