@@ -1066,7 +1066,11 @@
                                         <tr>
                                             {{-- <td>{{ $i }}</td> --}}
                                             <td data-stock="{{ $item->id }}">{{ $count->grade }}</td>
-                                            <td data-stock="{{ $item->id }}">{{ $count->quantity }}</td>
+                                            <td data-stock="{{ $item->id }}">
+                                                <a href="{{ url('inventory')}}?order_id={{ $order->id }}&grade[]={{ $count->grade_id }}" title="View Graded Inventory">
+                                                    {{ $count->quantity }}
+                                                </a>
+                                            </td>
                                         </tr>
                                         {{-- @endif --}}
                                     @endforeach
@@ -1108,7 +1112,11 @@
                                         <tr>
                                             {{-- <td>{{ $i }}</td> --}}
                                             <td data-stock="{{ $item->id }}">{{ $count->region }}</td>
-                                            <td data-stock="{{ $item->id }}">{{ $count->quantity }}</td>
+                                            <td data-stock="{{ $item->id }}">
+                                                <a href="{{ url('inventory')}}?order_id={{ $order->id }}&region={{ $count->region_id }}" title="View Graded Inventory">
+                                                    {{ $count->quantity }}
+                                                </a>
+                                            </td>
                                         </tr>
                                         {{-- @endif --}}
                                     @endforeach
