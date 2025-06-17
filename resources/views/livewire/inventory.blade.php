@@ -417,35 +417,19 @@
                             @if (session('user')->hasPermission('view_cost'))
                                 <h5 id="average_cost"></h5>
                             @endif
-                            <div class=" mg-b-0">
-                                {{-- <form method="get" action="" class="row form-inline"> --}}
-                                    <label for="perPage" class="card-title inline">per page:</label>
-                                    <select name="per_page" class="form-select form-select-sm" id="perPage"
-                                        onchange="this.form.submit()" form="search">
-                                        <option value="10" {{ Request::get('per_page') == 10 ? 'selected' : '' }}>
-                                            10</option>
-                                        <option value="20" {{ Request::get('per_page') == 20 ? 'selected' : '' }}>
-                                            20</option>
-                                        <option value="50" {{ Request::get('per_page') == 50 ? 'selected' : '' }}>
-                                            50</option>
-                                        <option value="100" {{ Request::get('per_page') == 100 ? 'selected' : '' }}>100
-                                        </option>
-                                    </select>
-                                    {{-- <button type="submit">Apply</button> --}}
-                                    <input type="hidden" name="replacement" value="{{ Request::get('replacement') }}">
-                                    <input type="hidden" name="category" value="{{ Request::get('category') }}">
-                                    <input type="hidden" name="brand" value="{{ Request::get('brand') }}">
-                                    <input type="hidden" name="product" value="{{ Request::get('product') }}">
-                                    <input type="hidden" name="storage" value="{{ Request::get('storage') }}">
-                                    <input type="hidden" name="vendor" value="{{ Request::get('vendor') }}">
-                                    @if (Request::get('grade'))
-                                        @foreach (Request::get('grade') as $grd)
-                                            <input type="hidden" name="grade[]" value="{{ $grd }}">
-                                        @endforeach
-                                    @endif
-                                    <input type="hidden" name="page" value="{{ Request::get('page') }}">
-                                    <input type="hidden" name="status" value="{{ Request::get('status') }}">
-                                {{-- </form> --}}
+                            <div class="form-inline">
+                                <label for="perPage" class="card-title inline">per page:</label>
+                                <select name="per_page" id="per_page" class="form-select form-select-sm" id="perPage"
+                                    onchange="this.form.submit()" form="search">
+                                    <option value="10" {{ Request::get('per_page') == 10 ? 'selected' : '' }}>
+                                        10</option>
+                                    <option value="20" {{ Request::get('per_page') == 20 ? 'selected' : '' }}>
+                                        20</option>
+                                    <option value="50" {{ Request::get('per_page') == 50 ? 'selected' : '' }}>
+                                        50</option>
+                                    <option value="100" {{ Request::get('per_page') == 100 ? 'selected' : '' }}>100
+                                    </option>
+                                </select>
                             </div>
 
                         </div>
