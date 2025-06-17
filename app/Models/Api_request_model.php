@@ -517,7 +517,7 @@ class Api_request_model extends Model
                             'api_request_id' => $request->id,
                             'old_variation_id' => $stock->variation_id,
                             'new_variation_id' => $variation->id,
-                            'description' => "Region changed from: ".$stock->region->name." to: ".$region->name." | DrPhone",
+                            'description' => "Region changed from: ".($stock->region->name ?? null)." to: ".($region->name ?? null)." | DrPhone",
                             'admin_id' => $admin,
                             'created_at' => Carbon::parse($datas->Time)->format('Y-m-d H:i:s'),
                         ]);
