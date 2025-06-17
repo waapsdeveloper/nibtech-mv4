@@ -1201,6 +1201,7 @@ class Order extends Component
                 // Group testings by model, storage, and color (parent), and then by IMEI (child)
                 $testings = Api_request_model::whereNull('status')
                     ->where('request->BatchID', 'LIKE', '%'.$data['order']->reference_id.'%')
+                    ->orderByDesc('id')
                     ->get()
                     ->map(function($item) use ($data, $lower_products, $lower_storages, $lower_colors) {
                         $request = json_decode($item->request);
