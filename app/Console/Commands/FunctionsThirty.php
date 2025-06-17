@@ -51,6 +51,10 @@ class FunctionsThirty extends Command
             foreach($lists as $list){
 
                 $variation = Variation_model::where(['reference_id'=>trim($list->listing_id), 'sku' => trim($list->sku)])->first();
+                if( $list->publication_state == 4) {
+                    // If the listing is archived, we skip it
+                    continue;
+                }
                 if($variation == null){
                     // $list = $bm->getOneListing($list->listing_id);
                     $variation = Variation_model::firstOrNew(['reference_id' => trim($list->listing_id)]);
@@ -105,6 +109,10 @@ class FunctionsThirty extends Command
 
         foreach($listings as $country => $lists){
             foreach($lists as $list){
+                if( $list->publication_state == 4) {
+                    // If the listing is archived, we skip it
+                    continue;
+                }
                 $variation = Variation_model::where('sku',$list->sku)->first();
                 $currency = Currency_model::where('code',$list->currency)->first();
                 if($variation == null){
