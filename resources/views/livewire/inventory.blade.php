@@ -103,7 +103,7 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-4 col-sm-2">
+            <div class="col-md-5 col-sm-2">
                 <select name="grade[]" class="form-control form-select select2" multiple>
                     <option value="">Grade</option>
                     @foreach ($grades as $id => $name)
