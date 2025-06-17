@@ -67,7 +67,7 @@
         <div class="card">
             <div class="card-header pb-0">
 
-                <div style='d-flex; justify-content-end'>
+                <div class='d-flex justify-content-between'>
                     <form method='get' action='{{url("request_drfones")}}'>
                         <input type='text' name='imei' placeholder='Enter IMEI'>
                         <input type='submit' value='Search'>
