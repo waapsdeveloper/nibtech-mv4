@@ -417,9 +417,9 @@
                             @if (session('user')->hasPermission('view_cost'))
                                 <h5 id="average_cost"></h5>
                             @endif
-                            <div class="form-inline">
+                            <div class="">
                                 <label for="perPage" class="card-title inline">per page:</label>
-                                <select name="per_page" id="per_page" class="form-select form-select-sm" id="perPage"
+                                <select name="per_page" id="per_page" class="form-select-sm" id="perPage"
                                     onchange="this.form.submit()" form="search">
                                     <option value="10" {{ Request::get('per_page') == 10 ? 'selected' : '' }}>
                                         10</option>
