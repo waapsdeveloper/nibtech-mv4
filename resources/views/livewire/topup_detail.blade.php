@@ -99,7 +99,7 @@
 
             @if ($process->status == 1)
             <div class="p-1">
-                <form class="form-inline" action="{{ url('delete_repair_item') }}" method="POST" id="repair_item"
+                <form class="form-inline" action="{{ url('delete_topup_imei') }}" method="POST" id="topup_item"
                  {{-- onSubmit="return confirm('Are you sure you want to remove this item?');" --}}
                  >
                     @csrf
