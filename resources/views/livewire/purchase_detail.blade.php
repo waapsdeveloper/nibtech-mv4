@@ -1050,7 +1050,7 @@
 
                     @endif
                 </div>
-                <div class="col-lg-2 row">
+                <div class="col-lg-2 background-gray-100">
 
                     <div class="card">
                         <div class="card-header pb-0">
