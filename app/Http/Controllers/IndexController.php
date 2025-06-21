@@ -1,0 +1,1486 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Exports\StockSummeryExport;
+use App\Http\Controllers\BackMarketAPIController;
+use App\Models\Account_transaction_model;
+use App\Models\Admin_model;
+use App\Models\Brand_model;
+use App\Models\Category_model;
+use App\Models\Charge_value_model;
+use Carbon\Carbon;
+use Livewire\Component;
+use Illuminate\Support\Facades\DB;
+use App\Models\Order_model;
+use App\Models\Order_item_model;
+use App\Models\Products_model;
+use App\Models\Color_model;
+use App\Models\Currency_model;
+use App\Models\Customer_model;
+use App\Models\ExchangeRate;
+use App\Models\Storage_model;
+use App\Models\Grade_model;
+use App\Models\Ip_address_model;
+use App\Models\Order_charge_model;
+use App\Models\Process_model;
+use App\Models\Process_stock_model;
+use App\Models\Product_storage_sort_model;
+use App\Models\Variation_model;
+use App\Models\Stock_model;
+use App\Models\Stock_operations_model;
+use App\Models\Product_color_merge_model;
+use App\Models\Region_model;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
+
+class IndexController extends Controller
+{
+    public function index()
+    {
+        session()->forget('rep');
+        $data['title_page'] = "Dashboard";
+        session()->put('page_title', $data['title_page']);
+        // dd('Hello2');
+        $user_id = session('user_id');
+
+        if(request('per_page') != null){
+            $per_page = request('per_page');
+        }else{
+            $per_page = 10;
+        }
+        $data['purchase_status'] = [2 => '(Pending)', 3 => ''];
+        $data['products'] = Products_model::orderBy('model','asc')->pluck('model','id');
+        $data['categories'] = Category_model::pluck('name','id');
+        $data['brands'] = Brand_model::pluck('name','id');
+        $data['colors'] = Color_model::pluck('name','id');
+        $data['storages'] = Storage_model::pluck('name','id');
+        $data['grades'] = Grade_model::pluck('name','id');
+        $data['admins'] = Admin_model::pluck('first_name','id');
+
+        if(session('user')->hasPermission('add_ip')){
+            if(Ip_address_model::where('ip',request()->ip())->where('status',1)->count() == 0){
+                $data['add_ip'] = 1;
+            }
+        }
+        // New Added Variations
+        $data['variations'] = Variation_model::withoutGlobalScope('Status_not_3_scope')
+        ->where('product_id',null)
+        ->orderBy('name','desc')
+        ->paginate($per_page)
+        ->onEachSide(5)
+        ->appends(request()->except('page'));
+        // New Added Variations
+
+        $start_date = Carbon::now()->startOfDay();
+        $end_date = date('Y-m-d 23:59:59');
+        if (request('start_date') != NULL && request('end_date') != NULL) {
+            $start_date = request('start_date') . " 00:00:00";
+            $end_date = request('end_date') . " 23:59:59";
+        }
+        // $products = Products_model::get()->toArray();
+        // Retrieve the top 10 selling products from the order_items table
+        $variation_ids = [];
+        if(request('data') == 1){
+
+            $variation_ids = Variation_model::withoutGlobalScope('Status_not_3_scope')->select('id')
+            ->when(request('product') != '', function ($q) {
+                return $q->where('product_id', '=', request('product'));
+            })
+            ->when(request('sku') != '', function ($q) {
+                return $q->where('sku', 'LIKE', '%'.request('sku').'%');
+            })
+            ->when(request('category') != '', function ($q) {
+                return $q->whereHas('product', function ($qu) {
+                    $qu->where('category', '=', request('category'));
+                });
+            })
+            ->when(request('brand') != '', function ($q) {
+                return $q->whereHas('product', function ($qu) {
+                    $qu->where('brand', '=', request('brand'));
+                });
+            })
+            ->when(request('storage') != '', function ($q) {
+                return $q->where('variation.storage', 'LIKE', request('storage') . '%');
+            })
+            ->when(request('color') != '', function ($q) {
+                return $q->where('variation.color', 'LIKE', request('color') . '%');
+            })
+            ->when(request('grade') != '', function ($q) {
+                return $q->where('variation.grade', 'LIKE', request('grade') . '%');
+            })->pluck('id')->toArray();
+
+        }
+
+        if(session('user')->hasPermission('dashboard_top_selling_products')){
+            $top_products = Order_item_model::when(request('data') == 1, function($q) use ($variation_ids){
+                return $q->whereIn('variation_id', $variation_ids);
+            })
+            ->whereHas('order', function ($q) use ($start_date, $end_date) {
+                $q->where(['order_type_id'=>3, 'currency'=>4])
+                ->whereBetween('created_at', [$start_date, $end_date]);
+            })
+            ->select('variation_id', DB::raw('SUM(quantity) as total_quantity_sold'), DB::raw('AVG(price) as average_price'))
+            ->groupBy('variation_id')
+            ->orderByDesc('total_quantity_sold')
+            ->take($per_page)
+            ->get();
+
+            $data['top_products'] = $top_products;
+        }
+
+        if(session('user')->hasPermission('dashboard_view_testing')){
+            $testing_count = Admin_model::withCount(['stock_operations' => function($q) use ($start_date,$end_date) {
+                // $q->select(DB::raw('count(distinct stock_id)'))->where('description','LIKE','%DrPhone')->whereBetween('created_at', [$start_date, $end_date]);
+                $q->select(DB::raw('count(distinct stock_id)'))->where('process_id',1)->whereBetween('created_at', [$start_date, $end_date]);
+            }])->orderByDesc('stock_operations_count')->get();
+            $data['testing_count'] = $testing_count;
+        }
+
+        $aftersale = Order_item_model::whereHas('order', function ($q) {
+            $q->where('order_type_id',4)->where('status','<',3);
+        })->pluck('stock_id')->toArray();
+
+        if (session('user')->hasPermission('dashboard_view_aftersale_inventory')){
+            $data['returns_in_progress'] = count($aftersale);
+            $rmas = Order_model::whereIn('order_type_id',[2,5])->pluck('id')->toArray();
+            $rma = Stock_model::whereDoesntHave('order_items', function ($q) use ($rmas) {
+                    $q->whereIn('order_id', $rmas);
+                })->whereHas('variation', function ($q) {
+                    $q->where('grade', 10);
+                })->Where('status',2)->count();
+            $data['rma'] = $rma;
+            $data['aftersale_inventory'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', 'orders.status as status_id', 'stock.status as stock_status', DB::raw('COUNT(*) as quantity'))
+            ->where('stock.status', 2)
+            ->whereDoesntHave('sale_order', function ($query) {
+                $query->where('customer_id', 3955);
+            })
+            ->whereHas('sale_order', function ($query) {
+                $query->where('order_type_id', 3)->orWhere(['order_type_id'=>5, 'reference_id'=>999]);
+            })
+            ->join('variation', 'stock.variation_id', '=', 'variation.id')
+            ->join('grade', 'variation.grade', '=', 'grade.id')
+            ->whereIn('grade.id',[8,12,17])
+            ->join('orders', 'stock.order_id', '=', 'orders.id')
+            // ->where('orders.order_type_id',3)
+            ->groupBy('variation.grade', 'grade.name', 'orders.status', 'stock.status')
+            ->orderBy('grade_id')
+            ->get();
+
+            $replacements = Order_item_model::where(['order_id'=>8974])->where('reference_id','!=',null)->pluck('reference_id')->toArray();
+            // dd($replacements);
+            $data['awaiting_replacement'] = Stock_model::where('status', 1)
+            ->whereHas('order_items.order', function ($q) use ($replacements) {
+                $q->where(['status'=>3, 'order_type_id'=>3])
+                ->whereNotIn('reference_id', $replacements);
+            })
+            ->count();
+
+        }
+        if (session('user')->hasPermission('dashboard_view_inventory')){
+            $data['graded_inventory'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', 'orders.status as status_id', DB::raw('COUNT(*) as quantity'))
+            ->whereNotIn('stock.id', $aftersale)
+            ->where('stock.status', 1)
+            ->join('variation', 'stock.variation_id', '=', 'variation.id')
+            ->join('grade', 'variation.grade', '=', 'grade.id')
+            ->join('orders', 'stock.order_id', '=', 'orders.id')
+            ->groupBy('variation.grade', 'grade.name', 'orders.status')
+            ->orderBy('grade_id')
+            ->get();
+        }
+        if (session('user')->hasPermission('dashboard_view_listing_total')){
+            $data['listed_inventory'] = Variation_model::where('listed_stock','>',0)->sum('listed_stock');
+        }
+        if (session('user')->hasPermission('dashboard_view_pending_orders')){
+            $data['pending_orders_count'] = Order_model::where('status',2)->groupBy('order_type_id')->select('order_type_id', DB::raw('COUNT(id) as count'), DB::raw('SUM(price) as price'))->orderBy('order_type_id','asc')->get();
+        }
+
+
+
+
+        if (session('user')->hasPermission('monthly_sales_chart')){
+            $order = [];
+            $topup = [];
+            $dates = [];
+            for ($i = 1; $i <= date('d'); $i++) {
+                $start = date('Y-m-' . $i . ' 00:00:00');
+                $end = date('Y-m-' . $i . ' 23:59:59');
+                $orders = Order_model::where('created_at', '>', $start)->where('order_type_id',3)
+                    ->where('created_at', '<=', $end)->count();
+                $order[$i] = $orders;
+                $topups = Process_model::where('created_at', '>', $start)->where('process_type_id',22)
+                    ->where('created_at', '<=', $end)->sum('quantity');
+                $topup[$i] = $topups;
+                $dates[$i] = $i;
+            }
+            echo '<script> sessionStorage.setItem("failed", "' . implode(',', $topup) . '");</script>';
+            echo '<script> sessionStorage.setItem("approved", "' . implode(',', $order) . '");</script>';
+            echo '<script> sessionStorage.setItem("dates", "' . implode(',', $dates) . '");</script>';
+        }
+
+
+
+        $data['start_date'] = date('Y-m-d', strtotime($start_date));
+        $data['end_date'] = date("Y-m-d", strtotime($end_date));
+        return view('index')->with($data);
+    }
+    public function get_orders_data(){
+
+        $admins = Admin_model::pluck('first_name','id');
+        $start_date = Carbon::now()->startOfDay();
+        $end_date = date('Y-m-d 23:59:59');
+        if (request('start_date') != NULL && request('end_date') != NULL) {
+            $start_date = request('start_date') . " 00:00:00";
+            $end_date = request('end_date') . " 23:59:59";
+        }
+        // $products = Products_model::get()->toArray();
+        // Retrieve the top 10 selling products from the order_items table
+        $variation_ids = [];
+        if(request('data') == 1){
+
+            $variation_ids = Variation_model::withoutGlobalScope('Status_not_3_scope')->select('id')
+            ->when(request('product') != '', function ($q) {
+                return $q->where('product_id', '=', request('product'));
+            })
+            ->when(request('sku') != '', function ($q) {
+                return $q->where('sku', 'LIKE', '%'.request('sku').'%');
+            })
+            ->when(request('category') != '', function ($q) {
+                return $q->whereHas('product', function ($qu) {
+                    $qu->where('category', '=', request('category'));
+                });
+            })
+            ->when(request('brand') != '', function ($q) {
+                return $q->whereHas('product', function ($qu) {
+                    $qu->where('brand', '=', request('brand'));
+                });
+            })
+            ->when(request('storage') != '', function ($q) {
+                return $q->where('variation.storage', 'LIKE', request('storage') . '%');
+            })
+            ->when(request('color') != '', function ($q) {
+                return $q->where('variation.color', 'LIKE', request('color') . '%');
+            })
+            ->when(request('grade') != '', function ($q) {
+                return $q->where('variation.grade', 'LIKE', request('grade') . '%');
+            })->pluck('id')->toArray();
+
+        }
+
+        if(session('user')->hasPermission('dashboard_view_total_orders')){
+            $data['total_orders'] = Order_model::whereBetween('created_at', [$start_date, $end_date])->where('order_type_id',3)
+            ->whereHas('order_items', function ($q) use ($variation_ids) {
+                $q->when(request('data') == 1, function($q) use ($variation_ids){
+                    return $q->whereIn('variation_id', $variation_ids);
+                });
+            })
+            ->count();
+
+            $data['pending_orders'] = Order_model::whereBetween('created_at', [$start_date, $end_date])->where('order_type_id',3)->where('status','<',3)
+            ->whereHas('order_items', function ($q) use ($variation_ids) {
+                $q->when(request('data') == 1, function($q) use ($variation_ids){
+                    return $q->whereIn('variation_id', $variation_ids);
+                });
+            })
+            ->count();
+            $data['invoiced_orders'] = Order_model::where('processed_at', '>=', $start_date)->where('processed_at', '<=', $end_date)->where('order_type_id',3)
+            ->whereHas('order_items', function ($q) use ($variation_ids) {
+                $q->when(request('data') == 1, function($q) use ($variation_ids){
+                    return $q->whereIn('variation_id', $variation_ids);
+                });
+            })
+            ->count();
+
+            // Get Invoiced Orders By Hour With Hour Label
+            $data['invoiced_orders_by_hour'] = Order_model::where('processed_at', '>=', $start_date)->where('processed_at', '<=', $end_date)->where('order_type_id',3)
+            ->whereHas('order_items', function ($q) use ($variation_ids) {
+                $q->when(request('data') == 1, function($q) use ($variation_ids){
+                    return $q->whereIn('variation_id', $variation_ids);
+                });
+            })
+            ->orderBy('hour')
+            ->selectRaw('HOUR(processed_at) as hour, COUNT(id) as total, processed_by')
+            ->groupBy('hour', 'processed_by')
+            ->get();
+
+            $data['invoiced_orders_by_hour']->map(function($item) use ($admins){
+                $item->hour = Carbon::createFromFormat('H', $item->hour)->format('h A');
+                $item->processed_by = $admins[$item->processed_by] ?? 'Unknown';
+                return $item;
+            });
+
+            // if(session('user_id') == 1){
+            //     dd($data['invoiced_orders_by_hour']);
+            // }
+            // Get Invoiced Orders By Hour
+
+            $data['invoiced_items'] = Order_item_model::whereHas('order', function ($q) use ($start_date, $end_date) {
+                $q->where('processed_at', '>=', $start_date)->where('processed_at', '<=', $end_date)->where('order_type_id',3);
+            })->where('stock_id','!=',null)
+            ->when(request('data') == 1, function($q) use ($variation_ids){
+                    return $q->whereIn('variation_id', $variation_ids);
+                })
+            ->count();
+            $data['missing_imei'] = Order_item_model::whereHas('order', function ($q) use ($start_date, $end_date) {
+                $q->where('processed_at', '>=', $start_date)->where('processed_at', '<=', $end_date)->where('order_type_id',3);
+            })->where('stock_id',0)->count();
+
+            $data['total_conversations'] = Order_item_model::whereBetween('created_at', [$start_date, $end_date])->where('care_id','!=',null)
+            ->when(request('data') == 1, function($q) use ($variation_ids){
+                return $q->whereIn('variation_id', $variation_ids);
+            })->whereHas('sale_order')->count();
+
+
+            $data['total_order_items'] = Order_item_model::whereBetween('order_items.created_at', [$start_date, $end_date])
+                ->when(request('data') == 1, function($q) use ($variation_ids){
+                    return $q->whereIn('variation_id', $variation_ids);
+                })
+                ->selectRaw('orders.currency, AVG(order_items.price) as average_price, SUM(order_items.price) as total_price')
+                ->join('orders', 'order_items.order_id', '=', 'orders.id')
+                ->where('orders.order_type_id', 3)
+                ->whereNull('orders.deleted_at')
+                ->whereNull('order_items.deleted_at')
+                ->groupBy('orders.currency')
+                ->get();
+
+            $data['ttl_average'] = $data['total_order_items']->pluck('average_price', 'currency');
+            $data['ttl_total'] = $data['total_order_items']->pluck('total_price', 'currency');
+
+            $data['ttl'] = [];
+            if($data['ttl_average']->count() == 0){
+                $data['ttl'] = [];
+            }else{
+
+                $data['currencies'] = Currency_model::whereIn('id', $data['ttl_average']->keys())->pluck('code', 'id');
+                $data['currency_signs'] = Currency_model::whereIn('id', $data['ttl_average']->keys())->pluck('sign', 'id');
+
+                foreach($data['currencies'] as $key => $currency){
+                    $data['ttl']['Average '.$currency] = $data['currency_signs'][$key] . amount_formatter($data['ttl_average'][$key], 2);
+                    $data['ttl']['Total '.$currency] = $data['currency_signs'][$key] . amount_formatter($data['ttl_total'][$key], 2);
+                }
+            }
+            // $data['currencies'] = Currency_model::whereIn('id', key($data['ttl_average']))->pluck('code', 'id');
+            // $data['currency_signs'] = Currency_model::whereIn('id', key($data['ttl_average']))->pluck('sign', 'id');
+
+            // $data['currencies']->map(function($item, $key) use ($data){
+            //     $data['ttl']['Average '.$item] = $data['currency_signs'][$key] . number_format($data['ttl_average'][$key], 2);
+            //     $data['ttl']['Total '.$item] = $data['currency_signs'][$key] . number_format($data['ttl_total'][$key], 2);
+            // });
+
+
+            $data['order_items'] = Order_item_model::whereBetween('orders.processed_at', [$start_date, $end_date])
+                ->when(request('data') == 1, function($q) use ($variation_ids){
+                    return $q->whereIn('variation_id', $variation_ids);
+                })
+
+                ->selectRaw('AVG(CASE WHEN orders.currency = 4 THEN order_items.price END) as average_eur')
+                ->selectRaw('SUM(CASE WHEN orders.currency = 4 THEN order_items.price END) as total_eur')
+                ->selectRaw('SUM(CASE WHEN orders.currency = 5 THEN order_items.price END) as total_gbp')
+                ->join('orders', 'order_items.order_id', '=', 'orders.id')
+                ->where('orders.order_type_id',3)
+                ->Where('orders.deleted_at',null)
+                ->Where('order_items.deleted_at',null)
+                ->first();
+
+            $data['average'] = $data['order_items']->average_eur;
+            $data['total_eur'] = $data['order_items']->total_eur;
+            $data['total_gbp'] = $data['order_items']->total_gbp;
+        }
+
+        return response()->json($data);
+    }
+    public function get_testing_batches(){
+        if(session('user')->hasPermission('dashboard_view_testing_batches')){
+
+            ini_set('memory_limit', '1024M');
+
+            if(request('start_date') == null){
+                $start_date = now()->startOfDay()->format('Y-m-d H:i:s');
+            }else{
+                $start_date = request('start_date').' 00:00:00';
+            }
+            if(request('end_date') == null){
+                $end_date = now()->endOfDay()->format('Y-m-d H:i:s');
+            }else{
+                $end_date = request('end_date'). ' 23:59:59';
+            }
+
+            $operations = Stock_operations_model::where('description','LIKE','%DrPhone')->whereBetween('created_at', [$start_date, $end_date])->pluck('stock_id')->unique()->toArray();
+            $stock = Stock_model::whereIn('id', $operations)->pluck('order_id')->unique()->toArray();
+            $orders = Order_model::whereIn('id', $stock)->pluck('customer_id','reference_id')->toArray();
+            $vendor_names = Customer_model::whereIn('id', $orders)->pluck('last_name','id')->toArray();
+            $data = [];
+            foreach($orders as $key => $order){
+                $data[] = $key . '(' . $vendor_names[$order] .') ';
+            }
+            return response()->json($data);
+        }else{
+            return response()->json('No Permission');
+        }
+    }
+
+    public function get_testing_models(){
+        if(session('user')->hasPermission('dashboard_view_testing_models')){
+
+            ini_set('memory_limit', '1024M');
+
+            if(request('start_date') == null){
+                $start_date = now()->startOfDay()->format('Y-m-d H:i:s');
+            }else{
+                $start_date = request('start_date').' 00:00:00';
+            }
+            if(request('end_date') == null){
+                $end_date = now()->endOfDay()->format('Y-m-d H:i:s');
+            }else{
+                $end_date = request('end_date'). ' 23:59:59';
+            }
+            $limit = request('limit') ?? 10;
+
+            $operation_stocks = Stock_operations_model::where('description','LIKE','%DrPhone')->whereBetween('created_at', [$start_date, $end_date])->pluck('stock_id')->unique()->toArray();
+            $operations = Stock_operations_model::where('description','LIKE','%DrPhone')->whereBetween('created_at', [$start_date, $end_date])->pluck('new_variation_id')->unique()->toArray();
+            $variations = Variation_model::whereIn('id', $operations)->pluck('product_storage_sort_id')->unique()->toArray();
+
+            $product_storage_sorts = Product_storage_sort_model::whereIn('product_storage_sort.id', $variations)
+                ->with(['product:id,model', 'storage_id:id,name', 'stocks' => function($q) use ($operation_stocks) {
+                    $q->whereIn('stock.id', $operation_stocks);
+                }])
+                ->get()
+                ->map(function($item) {
+                    return [
+                        // 'id' => $item->id,
+                        'name' => ($item->product->model ?? null) . ' ' . ($item->storage_id->name ?? null),
+                        'total_stocks' => $item->stocks->count(),
+                    ];
+                });
+
+
+            // dd($product_storage_sorts->sortByDesc('total_stocks')->take(10));
+            $data['pss'] = $product_storage_sorts->sortByDesc('total_stocks');
+            $data['limit'] = $limit;
+
+            $data['output'] = [];
+            foreach($data['pss'] as $item){
+                $data['output'][] = $item['name'] . '(' . $item['total_stocks'] . ') &nbsp;';
+            }
+
+            return response()->json($data);
+        }else{
+            return response()->json('No Permission');
+        }
+    }
+    public function get_required_restock(){
+
+        if(session('user')->hasPermission('dashboard_required_restock')){
+
+            if(request('days') != null){
+                $days = request('days');
+            }else{
+                $days = 30;
+            }
+            if(request('difference') != null){
+                $difference = request('difference')/100;
+            }else{
+                $difference = 0.2;
+            }
+            if(request('min_sales') != null){
+                $min_sale = request('min_sales');
+            }else{
+                $min_sale = 100;
+            }
+            if(request('max_stock') != null){
+                $max_stock = request('max_stock');
+            }else{
+                $max_stock = 100;
+            }
+
+            $start_date = now()->subDays($days)->startOfDay()->format('Y-m-d');
+            $products = Products_model::orderBy('model','asc')->pluck('model','id');
+            $storages = Storage_model::pluck('name','id');
+            $colors = Color_model::pluck('name','id');
+            $grades = Grade_model::pluck('name','id');
+
+            if(request('per_page_2') != null){
+                $per_page_2 = request('per_page_2');
+            }else{
+                $per_page_2 = 10;
+            }
+            $variation_ids = [];
+            if(request('data') == 1){
+
+                $variation_ids = Variation_model::select('id')
+                ->when(request('product') != '', function ($q) {
+                    return $q->where('product_id', '=', request('product'));
+                })
+                ->when(request('sku') != '', function ($q) {
+                    return $q->where('sku', 'LIKE', '%'.request('sku').'%');
+                })
+                ->when(request('category') != '', function ($q) {
+                    return $q->whereHas('product', function ($qu) {
+                        $qu->where('category', '=', request('category'));
+                    });
+                })
+                ->when(request('brand') != '', function ($q) {
+                    return $q->whereHas('product', function ($qu) {
+                        $qu->where('brand', '=', request('brand'));
+                    });
+                })
+                ->when(request('storage') != '', function ($q) {
+                    return $q->where('variation.storage', 'LIKE', request('storage') . '%');
+                })
+                ->when(request('color') != '', function ($q) {
+                    return $q->where('variation.color', 'LIKE', request('color') . '%');
+                })
+                ->when(request('grade') != '', function ($q) {
+                    return $q->where('variation.grade', 'LIKE', request('grade') . '%');
+                })->pluck('id')->toArray();
+            }
+
+            $variation_sales = Order_item_model::when(request('data') == 1, function($q) use ($variation_ids){
+                return $q->whereIn('variation_id', $variation_ids);
+            })
+            ->whereHas('order', function ($q) use ($start_date) {
+                $q->where(['order_type_id'=>3])
+                ->where('created_at', '>=', $start_date);
+            })
+            ->select('variation_id', DB::raw('SUM(quantity) as total_quantity_sold'), DB::raw('AVG(price) as average_price'))
+            ->groupBy('variation_id')
+            ->orderByDesc('total_quantity_sold')
+            // ->take($per_page_2)
+            ->get()
+            ->keyBy('variation_id');
+
+            $variation_stock = Stock_model::whereIn('variation_id', $variation_sales->pluck('variation_id')->toArray())
+            ->where('status',1)
+            ->select('variation_id', DB::raw('COUNT(*) as total_quantity_stocked'))
+            ->groupBy('variation_id')
+            ->orderBy('total_quantity_stocked')
+            ->get()
+            ->keyBy('variation_id');
+
+            $variations = Variation_model::whereIn('id', $variation_sales->pluck('variation_id')->toArray())->get();
+            $merged_data = [];
+            foreach($variations as $variation){
+                $model = $products[$variation->product_id] ?? 'Model not found';
+                $storage = $storages[$variation->storage] ?? '';
+                $color = $colors[$variation->color] ?? '';
+                $grade = $grades[$variation->grade] ?? '';
+
+                $sale = $variation_sales[$variation->id]->total_quantity_sold ?? 0;
+                $stock = $variation_stock[$variation->id]->total_quantity_stocked ?? 0;
+
+
+                if($stock < $sale*$difference && $sale >= $min_sale && $stock <= $max_stock){
+                    $merged_data[] = [
+                        'variation_id' => $variation->id,
+                        'product_id' => $variation->product_id,
+                        'storage' => $variation->storage,
+                        'color' => $variation->color,
+                        'grade' => $variation->grade,
+                        'sku' => $variation->sku,
+                        'variation' => $model . ' ' . $storage . ' ' . $color . ' ' . $grade,
+                        'total_quantity_sold' => $variation_sales[$variation->id]->total_quantity_sold ?? 0,
+                        'average_price' => amount_formatter($variation_sales[$variation->id]->average_price) ?? 0,
+                        'total_quantity_stocked' => $variation_stock[$variation->id]->total_quantity_stocked ?? 0,
+                        'start_date' => $start_date,
+                    ];
+                }
+            }
+
+            return response()->json($merged_data);
+
+        }
+    }
+
+    public function get_most_profittable(){
+
+        if(session('user')->hasPermission('dashboard_most_profittable')){
+
+            if(request('days') != null){
+                $days = request('days');
+            }else{
+                $days = 15;
+            }
+            if(request('difference') != null){
+                $difference = request('difference')/100;
+            }else{
+                $difference = 0.2;
+            }
+            if(request('min_sales') != null){
+                $min_sale = request('min_sales');
+            }else{
+                $min_sale = 100;
+            }
+            if(request('max_stock') != null){
+                $max_stock = request('max_stock');
+            }else{
+                $max_stock = 100;
+            }
+
+            $start_date = now()->subDays($days)->startOfDay()->format('Y-m-d');
+            $products = Products_model::orderBy('model','asc')->pluck('model','id');
+            $storages = Storage_model::pluck('name','id');
+
+            if(request('per_page_2') != null){
+                $per_page_2 = request('per_page_2');
+            }else{
+                $per_page_2 = 10;
+            }
+            $variation_ids = [];
+            if(request('data') == 1){
+
+                $variation_ids = Variation_model::select('id')
+                ->when(request('product') != '', function ($q) {
+                    return $q->where('product_id', '=', request('product'));
+                })
+                ->when(request('sku') != '', function ($q) {
+                    return $q->where('sku', 'LIKE', '%'.request('sku').'%');
+                })
+                ->when(request('category') != '', function ($q) {
+                    return $q->whereHas('product', function ($qu) {
+                        $qu->where('category', '=', request('category'));
+                    });
+                })
+                ->when(request('brand') != '', function ($q) {
+                    return $q->whereHas('product', function ($qu) {
+                        $qu->where('brand', '=', request('brand'));
+                    });
+                })
+                ->when(request('storage') != '', function ($q) {
+                    return $q->where('variation.storage', request('storage'));
+                })
+                ->when(request('color') != '', function ($q) {
+                    return $q->where('variation.color', request('color'));
+                })
+                ->when(request('grade') != '', function ($q) {
+                    return $q->where('variation.grade', request('grade'));
+                })->pluck('id')->toArray();
+            }
+
+            $variation_sales = Order_item_model::when(request('data') == 1, function($q) use ($variation_ids){
+                return $q->whereIn('variation_id', $variation_ids);
+            })
+            ->whereHas('order', function ($q) use ($start_date) {
+                $q->whereIn('order_type_id', [3,5])
+                ->where('created_at', '>=', $start_date);
+            })
+            ->select('variation_id', DB::raw('SUM(quantity) as total_quantity_sold'), DB::raw('AVG(price) as average_price'), DB::raw('SUM(price) as total_price'))
+            ->groupBy('variation_id')
+            ->orderByDesc('total_quantity_sold')
+            // ->take($per_page_2)
+            ->get()
+            ->keyBy('variation_id');
+
+            $variation_stock = Stock_model::whereIn('variation_id', $variation_sales->pluck('variation_id')->toArray())
+            ->where('status',1)
+            ->select('variation_id', DB::raw('COUNT(*) as total_quantity_stocked'))
+            ->groupBy('variation_id')
+            ->orderBy('total_quantity_stocked')
+            ->get()
+            ->keyBy('variation_id');
+
+            $variations = Variation_model::whereIn('id', $variation_sales->pluck('variation_id')->toArray())->get();
+            $merged_data = [];
+            foreach($variations as $variation){
+                $model = $products[$variation->product_id] ?? 'Model not found';
+                $storage = $storages[$variation->storage] ?? '';
+                $color = $colors[$variation->color] ?? '';
+                $grade = $grades[$variation->grade] ?? '';
+
+                $sale = $variation_sales[$variation->id]->total_quantity_sold ?? 0;
+                $stock = $variation_stock[$variation->id]->total_quantity_stocked ?? 0;
+
+
+                if($stock < $sale*$difference && $sale >= $min_sale && $stock <= $max_stock){
+                    $merged_data[] = [
+                        'variation_id' => $variation->id,
+                        'product_id' => $variation->product_id,
+                        'storage' => $variation->storage,
+                        'color' => $variation->color,
+                        'grade' => $variation->grade,
+                        'sku' => $variation->sku,
+                        'variation' => $model . ' ' . $storage . ' ' . $color . ' ' . $grade,
+                        'total_quantity_sold' => $variation_sales[$variation->id]->total_quantity_sold ?? 0,
+                        'average_price' => amount_formatter($variation_sales[$variation->id]->average_price) ?? 0,
+                        'total_quantity_stocked' => $variation_stock[$variation->id]->total_quantity_stocked ?? 0,
+                        'start_date' => $start_date,
+                    ];
+                }
+            }
+
+            return response()->json($merged_data);
+
+        }
+    }
+    public function get_price_changes(){
+
+        if(session('user')->hasPermission('dashboard_price_changes')){
+
+            if(request('days') != null){
+                $days = request('days');
+            }else{
+                $days = 30;
+            }
+            if(request('difference') != null){
+                $difference = request('difference')/100;
+            }else{
+                $difference = 0.2;
+            }
+            if(request('min_sales') != null){
+                $min_sale = request('min_sales');
+            }else{
+                $min_sale = 100;
+            }
+            if(request('max_stock') != null){
+                $max_stock = request('max_stock');
+            }else{
+                $max_stock = 100;
+            }
+
+            $start_date = now()->subDays($days)->startOfDay()->format('Y-m-d');
+            $products = Products_model::orderBy('model','asc')->pluck('model','id');
+            $storages = Storage_model::pluck('name','id');
+            $colors = Color_model::pluck('name','id');
+            $grades = Grade_model::pluck('name','id');
+
+            if(request('per_page_2') != null){
+                $per_page_2 = request('per_page_2');
+            }else{
+                $per_page_2 = 10;
+            }
+            $variation_ids = [];
+            if(request('data') == 1){
+
+                $variation_ids = Variation_model::select('id')
+                ->whereNotNull('sku')
+                ->when(request('product') != '', function ($q) {
+                    return $q->where('product_id', '=', request('product'));
+                })
+                ->when(request('sku') != '', function ($q) {
+                    return $q->where('sku', 'LIKE', '%'.request('sku').'%');
+                })
+                ->when(request('category') != '', function ($q) {
+                    return $q->whereHas('product', function ($qu) {
+                        $qu->where('category', '=', request('category'));
+                    });
+                })
+                ->when(request('brand') != '', function ($q) {
+                    return $q->whereHas('product', function ($qu) {
+                        $qu->where('brand', '=', request('brand'));
+                    });
+                })
+                ->when(request('storage') != '', function ($q) {
+                    return $q->where('variation.storage', 'LIKE', request('storage') . '%');
+                })
+                ->when(request('color') != '', function ($q) {
+                    return $q->where('variation.color', 'LIKE', request('color') . '%');
+                })
+                ->when(request('grade') != '', function ($q) {
+                    return $q->where('variation.grade', 'LIKE', request('grade') . '%');
+                })->pluck('id')->toArray();
+            }
+            $today_average = Order_item_model::when(request('data') == 1, function($q) use ($variation_ids){
+                return $q->whereIn('variation_id', $variation_ids);
+            })
+            ->whereHas('order', function ($q) {
+                $q->where(['order_type_id'=>3])
+                ->where('currency', 4)
+                ->where('created_at', '>=', now()->startOfDay());
+            })
+            ->select('variation_id', DB::raw('AVG(price) as average_price'), DB::raw('SUM(quantity) as total_quantity_sold'))
+            ->groupBy('variation_id')
+            ->get()
+            ->keyBy('variation_id');
+
+            $yesterday_average = Order_item_model::when(request('data') == 1, function($q) use ($variation_ids){
+                return $q->whereIn('variation_id', $variation_ids);
+            })
+            ->whereHas('order', function ($q) {
+                $q->where(['order_type_id'=>3])
+                ->where('currency', 4)
+                ->where('created_at', '>=', now()->subDays(1)->startOfDay())
+                ->where('created_at', '<', now()->startOfDay());
+            })
+            ->select('variation_id', DB::raw('AVG(price) as average_price'), DB::raw('SUM(quantity) as total_quantity_sold'))
+            ->groupBy('variation_id')
+            ->get()
+            ->keyBy('variation_id');
+
+            $price_changes = [];
+            foreach ($today_average as $variation_id => $today) {
+                if (isset($yesterday_average[$variation_id])) {
+                    $variation = Variation_model::find($variation_id);
+                    $yesterday = $yesterday_average[$variation_id];
+                    $change = (($today->average_price - $yesterday->average_price) / $yesterday->average_price) * 100;
+                    $price_changes[] = [
+                        'variation_id' => $variation_id,
+                        'variation' => ($variation->product->model ?? '') . ' ' . ($variation->storage_id->name ?? '') . ' ' . ($variation->color_id->name ?? '') . ' ' . ($variation->grade_id->name ?? ''),
+                        'product_id' => $variation->product_id,
+                        'storage' => $variation->storage,
+                        'color' => $variation->color,
+                        'grade' => $variation->grade,
+                        'change' => $change,
+                        'today_average' => amount_formatter($today->average_price),
+                        'today_quantity' => $today->total_quantity_sold,
+                        'yesterday_average' => amount_formatter($yesterday->average_price),
+                        'yesterday_quantity' => $yesterday->total_quantity_sold,
+                    ];
+                }
+            }
+            usort($price_changes, function($a, $b) {
+                return $b['change'] <=> $a['change'];
+            });
+
+            $top_10_changes = array_slice($price_changes, 0, 10);
+
+            $data['top_10_changes'] = $top_10_changes;
+
+            usort($price_changes, function($a, $b) {
+                return $a['change'] <=> $b['change'];
+            });
+
+            $bottom_10_changes = array_slice($price_changes, 0, 10);
+
+            $data['bottom_10_changes'] = $bottom_10_changes;
+
+            return response()->json($data);
+
+        }
+    }
+    public function toggle_amount_view(){
+        if(session('amount_view') == 1){
+            session()->put('amount_view',0);
+        }else{
+            session()->put('amount_view',1);
+        }
+        return redirect()->back();
+    }
+    public function add_ip(){
+        $ip = request()->ip();
+        $ip_address = Ip_address_model::firstOrNew(['ip' => $ip]);
+        $ip_address->admin_id = session('user_id');
+        $ip_address->status = 1;
+        $ip_address->save();
+        return redirect()->back();
+    }
+    public function refresh_sales_chart() {
+        $order = [];
+        $eur = [];
+        $gbp = [];
+        $dates = [];
+        $k = 0;
+
+        // Loop for the last 3 weeks
+        for ($i = 8; $i >= 0; $i--) {
+            $k++;
+
+            // Week 1: Wednesday to Tuesday
+
+            $start = date('Y-m-d 00:00:00', strtotime('last Wednesday - ' . ($i * 7) . ' days'));
+            $end = date('Y-m-d 23:59:59', strtotime('next Tuesday - ' . ($i * 7) . ' days'));
+            // If today is Wednesday
+            if (date('w') == 3) {
+                $start = date('Y-m-d 00:00:00', strtotime('this Wednesday - ' . ($i * 7) . ' days'));
+            }
+            if (date('w') == 2) {
+                $end = date('Y-m-d 23:59:59', strtotime('this Tuesday - ' . ($i * 7) . ' days'));
+            }
+
+            // Fetch orders and prices in Euros and Pounds
+            $orders = Order_model::where('processed_at', '>=', $start)
+                ->where('processed_at', '<=', $end)
+                ->where('order_type_id', 3)
+                ->whereIn('status', [3, 6])
+                ->count();
+
+            $euro = Order_item_model::whereHas('order', function ($q) use ($start, $end) {
+                $q->where('processed_at', '>=', $start)
+                  ->where('processed_at', '<=', $end)
+                  ->where('order_type_id', 3)
+                  ->whereIn('status', [3, 6])
+                  ->where('currency', 4);
+            })->sum('price');
+
+            $pound = Order_item_model::whereHas('order', function ($q) use ($start, $end) {
+                $q->where('processed_at', '>=', $start)
+                  ->where('processed_at', '<=', $end)
+                  ->where('order_type_id', 3)
+                  ->whereIn('status', [3, 6])
+                  ->where('currency', 5);
+            })->sum('price');
+
+            // Store the data
+            $order[$k] = $orders;
+            $eur[$k] = $euro;
+            $gbp[$k] = $pound;
+            $dates[$k] = date('d M', strtotime($start)) . " - " . date('d M', strtotime($end));
+        }
+
+        // Output the data as a script
+        echo '<script> ';
+        echo 'sessionStorage.setItem("total2", "' . implode(',', $order) . '");';
+        echo 'sessionStorage.setItem("approved2", "' . implode(',', $eur) . '");';
+        echo 'sessionStorage.setItem("failed2", "' . implode(',', $gbp) . '");';
+        echo 'sessionStorage.setItem("dates2", "' . implode(',', $dates) . '");';
+        echo 'window.location.href = document.referrer; </script>';
+    }
+
+    public function refresh_7_days_chart()
+    {
+        $order = [];
+        $dates = [];
+
+        // Get today's day of the week (1 = Monday, ..., 7 = Sunday)
+        $today = date('w');
+
+        // Calculate the start and end of the week (Wednesday to Tuesday)
+        if ($today == 0) { // Sunday is considered as the 0th day in PHP
+            $today = 7;
+        }
+
+        $days_since_wednesday = $today - 3; // 3 is for Wednesday
+        if ($days_since_wednesday < 0) {
+            $days_since_wednesday += 7;
+        }
+
+        $start = date('Y-m-d', strtotime('-' . $days_since_wednesday . ' days'));
+        $end = date('Y-m-d', strtotime($start . ' +6 days'));
+
+        $i = $start;
+        while (true) {
+            // Handle day, month, and year transitions
+            $date_str = $i;
+            $start_time = date('Y-m-d 00:00:00', strtotime($date_str));
+            $end_time = date('Y-m-d 23:59:59', strtotime($date_str));
+
+            $orders = Order_model::where('created_at', '>=', $start_time)
+                ->where('created_at', '<=', $end_time)
+                ->where('order_type_id', 3)
+                ->count();
+
+            $order[] = $orders;
+            $dates[] = date('d-m-Y', strtotime($date_str));
+
+            // Move to the next day
+            if ($i == $end) {
+                break;
+            }
+
+            $i = date('Y-m-d', strtotime($i . ' +1 day'));
+        }
+
+        $order_data = implode(',', $order);
+        $dates_data = implode(',', $dates);
+
+        echo '<script>
+            sessionStorage.setItem("total3", "' . $order_data . '");
+            sessionStorage.setItem("dates3", "' . $dates_data . '");
+        </script>';
+
+        // Second set of data for comparison (last 7 days, Wednesday to Tuesday)
+        $order2 = [];
+        $dates2 = [];
+
+        // Get the previous week's Wednesday as the start day
+        $start2 = date('Y-m-d', strtotime($start . ' -7 days'));
+        $end2 = date('Y-m-d', strtotime($start2 . ' +6 days'));
+
+        $i = $start2;
+        while (true) {
+            $date_str = $i;
+            $start_time = date('Y-m-d 00:00:00', strtotime($date_str));
+            $end_time = date('Y-m-d 23:59:59', strtotime($date_str));
+
+            $orders2 = Order_model::where('created_at', '>=', $start_time)
+                ->where('created_at', '<=', $end_time)
+                ->where('order_type_id', 3)
+                ->count();
+
+            $order2[] = $orders2;
+            $dates2[] = date('d-m-Y', strtotime($date_str));
+
+            if ($i == $end2) {
+                break;
+            }
+
+            $i = date('Y-m-d', strtotime($i . ' +1 day'));
+        }
+
+        $order_data2 = implode(',', $order2);
+        $dates_data2 = implode(',', $dates2);
+
+        echo '<script>
+            sessionStorage.setItem("total32", "' . $order_data2 . '");
+            sessionStorage.setItem("dates32", "' . $dates_data2 . '");
+            window.location.href = document.referrer;
+        </script>';
+    }
+    public function refresh_7_days_progressive_chart()
+    {
+        $order = [];
+        $dates = [];
+        $cumulative_orders = 0; // Track progressive sum
+
+        // Get today's day of the week (1 = Monday, ..., 7 = Sunday)
+        $today = date('w');
+
+        // Calculate the start and end of the week (Wednesday to Tuesday)
+        if ($today == 0) { // Sunday is considered as the 0th day in PHP
+            $today = 7;
+        }
+
+        $days_since_wednesday = $today - 3; // 3 is for Wednesday
+        if ($days_since_wednesday < 0) {
+            $days_since_wednesday += 7;
+        }
+
+        $start = date('Y-m-d', strtotime('-' . $days_since_wednesday . ' days'));
+        $end = date('Y-m-d', strtotime($start . ' +6 days'));
+
+        $i = $start;
+        while (true) {
+            // Handle day, month, and year transitions
+            $date_str = $i;
+            $start_time = date('Y-m-d 00:00:00', strtotime($date_str));
+            $end_time = date('Y-m-d 23:59:59', strtotime($date_str));
+
+            $daily_orders = Order_model::where('created_at', '>=', $start_time)
+                ->where('created_at', '<=', $end_time)
+                ->where('order_type_id', 3)
+                ->count();
+
+            // Add daily orders to cumulative count
+            $cumulative_orders += $daily_orders;
+
+            // Store the progressive order count
+            $order[] = $cumulative_orders;
+
+            // Store the date
+            $dates[] = date('d-m-Y', strtotime($date_str));
+
+            // Move to the next day
+            if ($i == $end) {
+                break;
+            }
+            if($i == date('Y-m-d')){
+                break;
+            }
+            $i = date('Y-m-d', strtotime($i . ' +1 day'));
+        }
+
+        // Prepare data for sessionStorage
+        $order_data = implode(',', $order);
+        $dates_data = implode(',', $dates);
+
+        // Store the data in sessionStorage
+        echo '<script>
+            sessionStorage.setItem("total4", "' . $order_data . '");
+            sessionStorage.setItem("dates4", "' . $dates_data . '");
+        </script>';
+
+        // Second set of data for comparison (previous 7 days, Wednesday to Tuesday)
+        $order2 = [];
+        $dates2 = [];
+        $cumulative_orders2 = 0; // Track progressive sum for previous week
+
+        // Get the previous week's Wednesday as the start day
+        $start2 = date('Y-m-d', strtotime($start . ' -7 days'));
+        $end2 = date('Y-m-d', strtotime($start2 . ' +6 days'));
+
+        $i = $start2;
+        while (true) {
+            $date_str = $i;
+            $start_time = date('Y-m-d 00:00:00', strtotime($date_str));
+            $end_time = date('Y-m-d 23:59:59', strtotime($date_str));
+
+            $daily_orders2 = Order_model::where('created_at', '>=', $start_time)
+                ->where('created_at', '<=', $end_time)
+                ->where('order_type_id', 3)
+                ->count();
+
+            // Add daily orders to cumulative count for previous week
+            $cumulative_orders2 += $daily_orders2;
+
+            // Store the progressive order count for previous week
+            $order2[] = $cumulative_orders2;
+
+            // Store the date
+            $dates2[] = date('d-m-Y', strtotime($date_str));
+
+            if ($i == $end2) {
+                break;
+            }
+
+            $i = date('Y-m-d', strtotime($i . ' +1 day'));
+        }
+
+        // Prepare data for sessionStorage
+        $order_data2 = implode(',', $order2);
+        $dates_data2 = implode(',', $dates2);
+
+        // Store the data for previous week in sessionStorage
+        echo '<script>
+            sessionStorage.setItem("total42", "' . $order_data2 . '");
+            sessionStorage.setItem("dates42", "' . $dates_data2 . '");
+            window.location.href = document.referrer;
+        </script>';
+    }
+
+    public function stock_cost_summery(){
+
+
+        if (request()->has('type')) {
+            $type = request()->get('type');
+        } else {
+            $type = 'cost';
+        }
+        if($type == 'price_text'){
+            if (request()->has('currency')) {
+                $currency = request()->get('currency');
+            } else {
+                $currency = 4;
+                $sign = '€';
+            }
+            if ($currency != 4) {
+                $curr = Currency_model::find($currency);
+                $exchange_rate = ExchangeRate::where('target_currency', $curr->code)->first();
+                if ($exchange_rate) {
+                    $exchange_rate = $exchange_rate->rate;
+                    $sign = $curr->sign;
+                } else {
+                    $exchange_rate = 1;
+                    $sign = '€';
+                }
+
+            }
+
+            $grades = [1,2,3,4,5];
+
+            $categories = Category_model::pluck('name','id');
+            $brands = Brand_model::pluck('name','id');
+            $grade_names = Grade_model::whereIn('id', $grades)->pluck('name','id');
+            $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q){
+                $q->where('stock.status',1);
+            })
+            ->join('products', 'product_storage_sort.product_id', '=', 'products.id')
+            ->orderBy('products.model')
+            // ->orderBy('product_id')
+            ->orderBy('product_storage_sort.storage')
+            ->select('product_storage_sort.*')
+            ->with(['product','stocks' => function($q){
+                $q->where('stock.status',1);
+            }, 'stocks.variation'])
+            ->get();
+
+            $result = [];
+            foreach($product_storage_sort as $pss){
+                $product = $pss->product;
+                $storage = $pss->storage_id->name ?? null;
+                $data = [];
+                $data['model'] = $product->model.' '.$storage;
+                $data['stock_count'] = 0;
+                $data['average_cost'] = 0;
+                $data['average_price'] = 0;
+                $data['graded_average_cost'] = [];
+                $data['graded_average_price'] = [];
+                $data['graded_stock_count'] = [];
+
+                // print_r($pss->stocks->where('status',1));
+                foreach($pss->stocks->where('status',1) as $stock){
+                    $variation = $stock->variation;
+                    if(in_array($variation->grade, $grades)){
+                        $purchase_item = $stock->order_items->where('order_id',$stock->order_id)->first();
+                        if($purchase_item == null){
+                            echo 'Purchase item not found for stock id: '.$stock->id;
+                            continue;
+                        }
+                        $data['average_cost'] += $purchase_item->price;
+                        $data['average_price'] += ($purchase_item->price*0.06+$purchase_item->price) * $exchange_rate;
+                        $data['stock_count']++;
+                        if(!isset($data['graded_average_cost'][$variation->grade])){
+                            $data['graded_average_cost'][$variation->grade] = 0;
+                        }
+                        if(!isset($data['graded_average_price'][$variation->grade])){
+                            $data['graded_average_price'][$variation->grade] = 0;
+                        }
+                        if(!isset($data['graded_stock_count'][$variation->grade])){
+                            $data['graded_stock_count'][$variation->grade] = 0;
+                        }
+                        $data['graded_average_cost'][$variation->grade] += $purchase_item->price;
+                        $data['graded_average_price'][$variation->grade] += ($purchase_item->price*0.06+$purchase_item->price) * $exchange_rate;
+                        $data['graded_stock_count'][$variation->grade]++;
+                    }
+                }
+                if($data['stock_count'] == 0){
+                    continue;
+                }
+                $data['average_cost'] = $data['average_cost']/$data['stock_count'];
+                foreach($grades as $grade){
+                    if(!isset($data['graded_average_cost'][$grade])){
+                        continue;
+                    }
+                    if(!isset($data['graded_stock_count'][$grade])){
+                        continue;
+                    }
+                    $data['graded_average_cost'][$grade] = $data['graded_average_cost'][$grade]/$data['graded_stock_count'][$grade];
+                }
+                $data['average_price'] = $data['average_price']/$data['stock_count'];
+                foreach($grades as $grade){
+                    if(!isset($data['graded_average_price'][$grade])){
+                        continue;
+                    }
+                    if(!isset($data['graded_stock_count'][$grade])){
+                        continue;
+                    }
+                    $data['graded_average_price'][$grade] = $data['graded_average_price'][$grade]/$data['graded_stock_count'][$grade];
+                }
+                $result[$product->category][$product->brand][] = $data;
+            }
+            $message = '';
+            foreach($result as $category => $brnds){
+                foreach($brnds as $brand => $data){
+                    $message .= '<strong>'.$categories[$category].' - '.$brands[$brand].'</strong><br>';
+                    foreach($data as $key => $value){
+                        if($value['stock_count'] == 0){
+                            unset($result[$category][$brand][$key]);
+                        }
+                        $message .= $value['model'].' - '.$value['stock_count'].'pcs @ '.$sign.''.amount_formatter($value['average_price']).'<br>';
+                    }
+                    $message .= '<br><br>';
+                }
+            }
+            echo "<pre>";
+            // print_r($result);
+            // echo "<br><br>";
+            echo $message;
+            echo "</pre>";
+            die();
+        }
+
+        $pdf = new StockSummeryExport();
+        $pdf->generatePdf();
+
+    }
+
+    public function clear_cache(){
+        // Clear various caches and optimize the application
+        Cache::flush();
+        Artisan::call('optimize:clear');
+        Artisan::call('cache:clear');
+        Artisan::call('config:clear');
+        Artisan::call('view:clear');
+        Artisan::call('route:clear');
+        // Artisan::call('config:cache');
+        // Artisan::call('route:cache');
+        // Artisan::call('optimize');
+        return redirect()->back();
+    }
+    public function test(){
+        // Optimize: eager load api_requests, process in chunks, minimize queries
+        // Stock_model::whereNull('region_id')
+        //     ->whereNotNull('status')
+        //     ->whereNotNull('imei')
+        //     ->whereHas('api_requests')
+        //     ->with(['api_requests' => function($q) { $q->limit(1); }])
+        //     ->orderByRaw('RAND()')
+        //     ->limit(1000)
+        //     ->get();
+            // Cache region names to avoid duplicate queries
+            $regionCache = [];
+            $stocks = Stock_model::whereNull('region_id')
+                ->whereNotNull('status')
+                ->whereNotNull('imei')
+                ->whereHas('api_requests', function($q) {
+                    $q->whereNotNull('status'); // Ensure only successful API requests are considered
+                })
+                ->with(['api_requests'])
+                ->orderByDesc('id') // Order by ID to ensure consistent results
+                ->orderByRaw('RAND()')
+                ->limit(10000)
+                ->get();
+
+            $stocks->map(function($stock) use (&$regionCache) {
+                $api_request = $stock->api_requests->first();
+                if($api_request){
+                    $requestData = json_decode($api_request->request, true);
+                    $reg = $requestData['Regioncode'] ?? null;
+                    if($reg){
+                        if (!isset($regionCache[$reg])) {
+                        $region = Region_model::firstOrCreate(['name' => $reg]);
+                        $regionCache[$reg] = $region->id;
+                        }
+                        $regionId = $regionCache[$reg];
+                        if($stock->region_id != $regionId){
+                        if($stock->region_id){
+                            Stock_operations_model::create([
+                            'stock_id' => $stock->id,
+                            'api_request_id' => $api_request->id,
+                            'description' => "Region changed from: ".($stock->region->name ?? '')." to: ".$reg,
+                            'admin_id' => session('user_id'),
+                            ]);
+                        }
+                        $stock->region_id = $regionId;
+                        $stock->save();
+                        echo "Stock ID: {$stock->id} - Region: {$reg}<br>";
+                        }
+                    }else{
+                        echo "Stock ID: {$stock->id} - No region found in API request.<br>";
+                    }
+                }else{
+                    echo "Stock ID: {$stock->id} - No API request found.<br>";
+                }
+            });
+
+
+        // Create a sort for products storage sort
+
+        $product_storage_sort = Product_storage_sort_model::leftJoin('products', 'product_storage_sort.product_id', '=', 'products.id')
+            ->orderBy('products.category')
+            ->orderBy('products.brand')
+            ->orderBy('products.model')
+            ->orderBy('product_storage_sort.storage')
+            ->select('product_storage_sort.*', 'products.model', 'products.category', 'products.brand')
+            ->whereNull('product_storage_sort.sort')
+            ->get();
+
+        $pss_array = $product_storage_sort->toArray();
+
+        foreach($pss_array as $key => $pss){
+            $cat = $pss['category'] ?? 0;
+            $brand = str_pad($pss['brand'] ?? 0, 2, '0', STR_PAD_LEFT);
+            $pro = str_pad($pss['product_id'] ?? 0, 5, '0', STR_PAD_LEFT);
+            $storage = str_pad($pss['storage'] ?? 0, 2, '0', STR_PAD_LEFT);
+            $pss_array[$key]['new_sort'] = $cat . $brand . $pro . $storage;
+
+            Product_storage_sort_model::where('id', $pss['id'])
+                ->update(['sort' => $pss_array[$key]['new_sort']]);
+        }
+
+        echo "<pre>";
+        print_r($pss_array);
+        echo "</pre>";
+
+
+
+        // $listings_and_topups = Process_model::where('status', 3)
+        //     ->whereIn('process_type_id', [21,22])
+        //     ->get();
+
+        // $topup_items = Process_stock_model::whereIn('process_id', $listings_and_topups->pluck('id')->toArray())
+        //     ->where('status', '!=', 3)
+        //     ->get();
+
+
+        // $bm = new BackMarketAPIController();
+        // echo "<pre>";
+        // print_r($bm->getlabelData());
+        // print_r($bm->getReturnLabelData());
+        // echo "</pre>";
+        // $transactions = Account_transaction_model::whereNull('date')->get();
+        // foreach($transactions as $transaction){
+        //     if($transaction->order != null){
+        //         $transaction->date = $transaction->order->created_at;
+        //     }elseif($transaction->process != null){
+        //         $transaction->date = $transaction->process->updated_at;
+        //     }
+        //     $transaction->save();
+        // }
+        // Merge Colors all
+        // $product_color_merge = Product_color_merge_model::all();
+
+        // $product_ids = $product_color_merge->pluck('product_id')->toArray();
+        // $color_ids = $product_color_merge->pluck('color_from')->toArray();
+
+        // $variations = Variation_model::whereIn('product_id', $product_ids)->whereIn('color', $color_ids)->get();
+        // foreach($variations as $variation){
+        //     $pcm = $product_color_merge->where('product_id',$variation->product_id)->where('color_from',$variation->color)->first();
+        //     if($pcm != null){
+        //         $variation->color = $pcm->color_to;
+        //         $variation->save();
+        //         echo $variation->id . ' - ' . $variation->product_id . ' - ' . $variation->color . '<br>';
+        //     }
+        // }
+
+        // $variations = Variation_model::where('listed_stock','>',0)->whereNotNull('reference_id')->pluck('reference_id');
+
+
+        // $bm = new BackMarketAPIController();
+        // foreach($variations as $variation){
+        //     $response = $bm->updateOneListing($variation,json_encode(['quantity'=>0]));
+        // }
+        // ini_set('max_execution_time', 1200);
+        // ini_set('memory_limit', '2048M');
+        // ini_set('group_concat_max_len', 4294967295);
+        // $orders = Order_model::where('order_type_id',3)->where('status',3)->where('processed_at','>=','2024--08-01')->pluck('price');
+        // echo "Orders: ".$orders->count()."<br>";
+        // echo "Total Orders: ".array_sum($orders->toArray())."<br>";
+
+        // $charge_values = Charge_value_model::whereHas('charge', function($q){
+        //     $q->where('name','LIKE','%Payment Method Charge%');
+        // })->pluck('id');
+        // print_r($charge_values);
+        // // dd($charge_values);
+        // echo "Payment Charges: ".$charge_values->count()."<br>";
+        // $order_charges = Order_charge_model::whereIn('charge_value_id', $charge_values->toArray())
+        // ->whereHas('order', function($q) use ($orders){
+        //     $q->where('order_type_id',3)->where('status',3)->where('processed_at','>=','2024--08-01');
+        // })->get();
+        // print_r($order_charges);
+
+        // $all_charges = Order_charge_model::whereHas('order', function($q) use ($orders){
+        //     $q->where('order_type_id',3)->where('status',3)->where('processed_at','>=','2024--08-01');
+        // })->pluck('amount');
+        // // echo "Payment Charges: ".$order_charges->count()."<br>";
+        // echo "All Charges: ".$all_charges->count()."<br>";
+        // echo "Total Payment Charges: ".array_sum($all_charges->toArray())."<br>";
+
+        // ini_set('max_execution_time', 1200);
+        // Variation_model::where('product_storage_sort_id',null)->each(function($variation){
+        //     $pss = Product_storage_sort_model::firstOrNew(['product_id'=>$variation->product_id,'storage'=>$variation->storage]);
+        //     if($pss->id == null){
+        //         $pss->save();
+        //     }
+        //     $variation->product_storage_sort_id = $pss->id;
+        //     $variation->save();
+        // });
+        // $order_c = new Order();
+        // Order_model::where('scanned',null)->where('order_type_id',3)->where('tracking_number', '!=', null)->whereBetween('created_at', ['2024-05-01 00:00:00', now()->subDays(1)->format('Y-m-d H:i:s')])
+        // ->orderByDesc('id')->each(function($order) use ($order_c){
+        //     $order_c->getLabel($order->reference_id, false, true);
+        // });
+
+        // $bm = new BackMarketAPIController();
+        // $resArray = $bm->getlabelData();
+
+        // $orders = [];
+        // $deliveries = [];
+        // if ($resArray !== null) {
+        //     foreach ($resArray as $data) {
+        //         if (!empty($data) && $data->hubScanned == true && !in_array($data->order, $orders)) {
+        //             $orders[] = $data->order;
+
+        //         }
+        //         if (!empty($data) && !isset($deliveries[$data->order]) && $data->dateDelivery != null) {
+        //             $deliveries[$data->order] = Carbon::parse($data->dateDelivery);
+        //         }
+        //     }
+        // }
+
+        // if($orders != []){
+
+        //     Order_model::whereIn('reference_id',$orders)->update(['scanned' => 1]);
+
+        // }
+        // if($deliveries != []){
+
+        //     foreach($deliveries as $order => $delivery){
+        //         Order_model::where('reference_id',$order)->update(['delivered_at' => $delivery]);
+        //     }
+
+        // }
+
+        // $care_ids = Order_item_model::where('care_id','!=',null)->whereHas()
+
+
+    }
+
+}
