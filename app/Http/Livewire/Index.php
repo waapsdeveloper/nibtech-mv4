@@ -70,6 +70,7 @@ class Index extends Component
         // New Added Variations
         $data['variations'] = Variation_model::withoutGlobalScope('Status_not_3_scope')
         ->where('product_id',null)
+        ->where('state','!=', 4)
         ->orderBy('name','desc')
         ->paginate($per_page)
         ->onEachSide(5)
