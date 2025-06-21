@@ -155,11 +155,13 @@ class Topup extends Component
             echo ' ';
             echo $pushed_total = Listed_stock_verification_model::where('process_id', $process_id)->sum('qty_change');
             if($scanned_total == $pushed_total){
+                $process->verified_by = session('user_id');
                 $process->status = 3;
             }
 
         }
         if(request('close') == 1){
+            $process->verified_by = session('user_id');
             $process->status = 3;
         }
 
