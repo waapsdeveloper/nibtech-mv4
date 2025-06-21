@@ -375,6 +375,71 @@
                         };
                     })
                 .catch(error => console.error('Error fetching color colors:', error));
+
+                fetch(`{{ url('product') }}/get_merged_colors/${productId}`)
+                    .then(response => response.json())
+                    .then(mergedColors => {
+                        // console.log(mergedColors);
+                        // Render the product details
+
+                        // Iterate through the colors and create menu items
+                        for (const [key, mergedColor] of Object.entries(mergedColors)) {
+                            const colorDiv = document.createElement('tr');
+
+                            const colorLink = document.createElement('td');
+
+                            const colorAnchor = document.createElement('a');
+                            colorAnchor.href = `{{ url('variation') }}?product=${productId}&color=${mergedColor.color_from}`;
+                            colorAnchor.target = '_blank';
+                            colorAnchor.innerHTML = mergedColor.color_from_name;
+                            colorLink.appendChild(colorAnchor);
+
+
+                            colorDiv.appendChild(colorLink);
+                            const colorLink2 = document.createElement('td');
+
+                            const colorAnchor2 = document.createElement('a');
+                            colorAnchor2.href = `{{ url('variation') }}?product=${productId}&color=${mergedColor.color_to}`;
+                            colorAnchor2.target = '_blank';
+                            colorAnchor2.innerHTML = mergedColor.color_to_name;
+                            colorLink2.appendChild(colorAnchor2);
+
+                            colorDiv.appendChild(colorLink2);
+
+                            const deleteForm = document.createElement('form');
+                            deleteForm.method = 'get';
+                            deleteForm.action = `{{ url('product') }}/delete_merge/${mergedColor.id}`;
+                            deleteForm.className = 'row form-inline';
+                            colorLink2.appendChild(deleteForm);
+
+                            const colorButton = document.createElement('button');
+                            colorButton.className = 'btn btn-danger btn-sm';
+                            colorButton.innerHTML = 'Delete';
+                            colorButton.type = 'submit';
+                            colorButton.onclick = function(event) {
+                                event.preventDefault(); // Prevent default form submission
+                                if (confirm('Are you sure you want to delete this merge?')) {
+                                    deleteForm.submit(); // Submit the form if confirmed
+                                }
+                            };
+                            colorButton.setAttribute('data-bs-toggle', 'tooltip');
+                            colorButton.setAttribute('data-bs-placement', 'top');
+                            colorButton.setAttribute('title', 'Delete Merge');
+                            colorButton.setAttribute('data-bs-original-title', 'Delete Merge');
+                            colorButton.setAttribute('data-bs-trigger', 'hover');
+                            colorButton.setAttribute('data-bs-container', 'body');
+                            colorButton.setAttribute('data-bs-delay', '500');
+                            colorButton.setAttribute('data-bs-html', 'true');
+
+                            deleteForm.appendChild(colorButton);
+
+
+                            colorDiv.appendChild(colorLink2);
+
+                            colorMenu.appendChild(colorDiv);
+                        };
+                    })
+                .catch(error => console.error('Error fetching color colors:', error));
             }
         </script>
 

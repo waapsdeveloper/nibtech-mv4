@@ -1,31 +1,15 @@
 <?php
 
 namespace App\Http\Livewire;
-    use App\Http\Controllers\BackMarketAPIController;
     use Livewire\Component;
-    use App\Models\Merchant_model;
     use App\Models\Category_model;
     use App\Models\Brand_model;
     use App\Models\Variation_model;
     use App\Models\Products_model;
-    use App\Models\Stock_model;
-    use App\Models\Order_model;
-    use App\Models\Order_item_model;
     use App\Models\Order_status_model;
-    use App\Models\Customer_model;
-    use App\Models\Currency_model;
-    use App\Models\Country_model;
     use App\Models\Storage_model;
     use App\Models\Color_model;
-    use GuzzleHttp\Psr7\Request;
-    use Carbon\Carbon;
-    use Illuminate\Support\Facades\Session;
-    use App\Exports\OrdersExport;
-    use App\Exports\PickListExport;
-    use App\Exports\LabelsExport;
-    use App\Exports\DeliveryNotesExport;
 use App\Models\Product_color_merge_model;
-use Illuminate\Support\Facades\DB;
     use Maatwebsite\Excel\Facades\Excel;
 
 
@@ -107,6 +91,23 @@ class Product extends Component
         $colors = Color_model::whereIn('id', $colors)->get();
 
         return response()->json($colors);
+    }
+
+    public function get_merged_colors($id){
+        $merged_colors = Product_color_merge_model::where('product_id', $id)->withAggregate('colorFrom', 'name')
+            ->withAggregate('colorTo', 'name')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'product_id' => $item->product_id,
+                    'color_from' => $item->color_from,
+                    'color_to' => $item->color_to,
+                    'color_from_name' => $item->color_from_id->name,
+                    'color_to_name' => $item->color_to_id->name,
+                ];
+            });
+        return response()->json($merged_colors);
     }
 
     public function merge_colors(){
