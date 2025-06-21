@@ -21,6 +21,7 @@
 		<script src="{{asset('assets/plugins/jquery/jquery.min.js')}}"></script>
 
         @include('layouts.components.styles')
+
         <style>
 
             :root {
@@ -50,10 +51,11 @@
             }
 
         </style>
-        @livewireStyles
         <script src="//unpkg.com/alpinejs" defer></script>
 
         <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+        @livewireStyles
+        {{-- <livewire:styles /> --}}
 	</head>
 
 	<body class="ltr main-body app sidebar-mini">
@@ -71,6 +73,8 @@
                 @include('layouts.components.app-header')
 
                 @include('layouts.components.app-sidebar')
+
+                @include('layouts.components.sidebar-right')
 
 			</div>
 
@@ -94,12 +98,19 @@
             @yield('modal')
 
             @include('layouts.components.footer')
-
 		</div>
 		<!-- End Page -->
 
         @include('layouts.components.scripts')
 
+                    {{-- <livewire:chat-box /> --}}
+        <livewire:chat-manager />
+
+        {{-- <livewire:chat-sidebar /> --}}
+
         @livewireScripts
+        <script src="//unpkg.com/alpinejs" defer></script>
+        {{-- <livewire:scripts /> --}}
+
     </body>
 </html>

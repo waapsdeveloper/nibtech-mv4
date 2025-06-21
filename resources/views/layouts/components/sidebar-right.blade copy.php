@@ -18,8 +18,7 @@
 						</div>
 						<div class="tab-content">
 							<div class="tab-pane active " id="side1">
-                                {{-- <livewire:group-chat /> --}}
-								{{-- <div class="list d-flex align-items-center border-bottom p-3">
+								<div class="list d-flex align-items-center border-bottom p-3">
 									<div class="">
 										<span class="avatar bg-primary brround avatar-md">CH</span>
 									</div>
@@ -154,12 +153,10 @@
 											</div>
 										</div>
 									</a>
-								</div> --}}
+								</div>
 							</div>
 							<div class="tab-pane  " id="side2">
-                                <livewire:chat-sidebar />
-                                {{-- <livewire:private-chat /> --}}
-								{{-- <div class="list-group list-group-flush ">
+								<div class="list-group list-group-flush ">
 									<div class="list-group-item d-flex  align-items-center">
 										<div class="me-3">
 											<span class="avatar avatar-lg brround cover-image" data-image-src="{{asset('assets/img/faces/12.jpg')}}"><span class="avatar-status bg-success"></span></span>
@@ -237,7 +234,7 @@
 											</div>
 										</div>
 									</div>
-								</div> --}}
+								</div>
 							</div>
 							<div class="tab-pane  " id="side3">
 								<div class="list-group list-group-flush ">

@@ -48,6 +48,22 @@ class Admin_model extends Model
         return $this->hasMany(Stock_operations_model::class, 'admin_id', 'id');
     }
 
+    public function sentPrivateMessages()
+    {
+        return $this->hasMany(PrivateMessage::class, 'sender_id', 'admin_id');
+    }
+
+    public function receivedPrivateMessages()
+    {
+        return $this->hasMany(PrivateMessage::class, 'receiver_id', 'admin_id');
+    }
+
+    public function privateMessages()
+    {
+        return $this->hasMany(PrivateMessage::class, 'sender_id', 'admin_id')
+                    ->orWhere('receiver_id', $this->admin_id);
+    }
+
     public function hasPermission($permission)
     {
 
