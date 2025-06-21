@@ -408,7 +408,7 @@
 
                             const deleteForm = document.createElement('form');
                             deleteForm.method = 'get';
-                            deleteForm.action = `{{ url('product') }}/delete_merge/${mergedColor.id}`;
+                            deleteForm.action = `{{ url('product') }}/delete_merged_colors/${mergedColor.id}`;
                             deleteForm.className = 'row form-inline';
                             colorLink2.appendChild(deleteForm);
 
@@ -439,7 +439,7 @@
                             colorMenu.appendChild(colorDiv);
                         };
                     })
-                .catch(error => console.error('Error fetching color colors:', error));
+                .catch(error => console.error('Error fetching Merged colors:', error));
             }
         </script>
 
