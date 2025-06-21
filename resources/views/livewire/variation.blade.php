@@ -218,13 +218,20 @@
                                 @php
                                     $model_colors = $product->same_products->pluck('color')->unique();
 
-                                    if (($product->duplicates->count() >= 1 && $product->sku == null) || ($product->duplicates->count() >= 1 && $product->sku != null && $product->state == 4)) {
-                                        $duplicates = $product->duplicates->where('state','!=', 4);
-                                        if ($duplicates->count() == 1) {
-                                            $duplicate = $duplicates->first();
-                                            $product->merge($duplicate->id);
-                                        }
+                                    if ($product->duplicates->count() == 1 && $product->sku == null) {
+                                        $duplicate = $product->duplicates->first();
+                                        $product->merge($duplicate->id);
                                     }
+                                    if ($product->duplicates->count() == 1 && $product->sku != null && $product->state == 4) {
+                                        $duplicate = $product->duplicates->first();
+                                        $product->merge($duplicate->id);
+                                    }
+
+                                    if (($product->duplicate_sku != null && $product->sku == null) || ($product->duplicate_sku != null && $product->sku != null && $product->state == 4)) {
+                                        $duplicate = $product->duplicates->first();
+                                        $product->merge($duplicate->id);
+                                    }
+
                                 @endphp
                                   <form class="form-inline" method="POST" action="{{ url('variation/merge').'/'.$product->id }}" id="merge_{{$product->id}}">
                                       @csrf
