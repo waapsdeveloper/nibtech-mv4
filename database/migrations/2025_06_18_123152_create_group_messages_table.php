@@ -22,7 +22,7 @@ return new class extends Migration
             $table->timestamps();
 
 
-            $table->foreign('group_id')->references('id')->on('chat_groups')->onDelete('cascade');
+            // $table->foreign('group_id')->references('id')->on('chat_groups')->onDelete('cascade');
             $table->foreign('sender_id')->references('admin_id')->on('admin_model')->onDelete('cascade');
 
         });
