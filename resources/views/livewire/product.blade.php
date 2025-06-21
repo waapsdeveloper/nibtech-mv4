@@ -382,6 +382,7 @@
                         // console.log(mergedColors);
                         // Render the product details
 
+                        const colorMenu = document.getElementById('color_data');
                         // Iterate through the colors and create menu items
                         for (const [key, mergedColor] of Object.entries(mergedColors)) {
                             const colorDiv = document.createElement('tr');
