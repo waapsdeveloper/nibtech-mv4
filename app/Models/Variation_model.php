@@ -66,6 +66,7 @@ class Variation_model extends Model
                     ->where('grade', $this->grade)
                     // ->where('sub_grade', $this->sub_grade)
                     ->whereNotNull('sku')
+                    ->where('state', '!=', 4) // Exclude archived variations
                     ->where('id', '!=', $this->id);
     }
     public function hasDuplicate()
