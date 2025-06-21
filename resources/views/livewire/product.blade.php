@@ -398,6 +398,7 @@
 
                             colorDiv.appendChild(colorLink);
                             const colorLink2 = document.createElement('td');
+                            colorLink2.className = 'd-flex justify-content-between align-items-center';
 
                             const colorAnchor2 = document.createElement('a');
                             colorAnchor2.href = `{{ url('variation') }}?product=${productId}&color=${mergedColor.color_to}`;
