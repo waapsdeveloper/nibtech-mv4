@@ -43,4 +43,5 @@
 		<script src="{{asset('assets/js/exported.js')}}"></script>
 
         <!-- DataTables JS -->
-		{{-- <script src="{{asset('assets/DataTables/datatables.min.js')}}"></script> --}}
+		<script src="{{asset('assets/DataTables/datatables.min.js')}}"></script>
+
