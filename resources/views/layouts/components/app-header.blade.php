@@ -75,6 +75,12 @@
                                 <a class="dropdown-item" href="{{url('logout')}}"><i class="far fa-arrow-alt-circle-left"></i> {{ __('locale.Sign Out') }}</a>
                             </div>
                         </li>
+                        <li class="nav nav-item nav-link ps-lg-2 mx-4">
+                            {{-- SideBar --}}
+                            <a class="nav-link nav-link-bg" data-bs-toggle="sidebar-right" data-bs-target=".sidebar-right">
+                                <i class="fe fe-align-right header-icon-svgs"></i>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>

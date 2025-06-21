@@ -33,6 +33,7 @@ use App\Http\Controllers\ExchangeRateController;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\GoogleController;
+use App\Http\Controllers\IndexController;
 use App\Http\Controllers\ListingController;
 use App\Http\Controllers\ReportController;
 use App\Http\Livewire\Brand;
@@ -72,7 +73,7 @@ Route::get('error500', Error500::class)->name('error');
 Route::get('error501', Error501::class)->name('error');
 
 Route::middleware(['2fa'])->group(function () {
-    Route::get('/', Index::class)->name('index');
+    Route::get('/', [IndexController::class, 'index'])->name('index');
     Route::get('index', Index::class)->name('index');
     Route::get('index/clear_cache', [Index::class,'clear_cache'])->name('index');
     Route::get('enable_2fa', [Profile::class, 'enable2FA'])->name('enable2fa');
