@@ -684,12 +684,12 @@ class Repair extends Component
         }
     }
     public function receive_not_repair_items(){
-        if(request('repairer_id') != null){
+        // if(request('repairer_id') != null){
             $repairer_id = request('repairer_id');
             session()->put('repairer_id', $repairer_id);
-        }else{
-            $repairer_id = session('repairer_id');
-        }
+        // }else{
+        //     $repairer_id = session('repairer_id');
+        // }
 
         if(request('check_testing_days') > 0){
             session()->put('check_testing_days',request('check_testing_days'));
