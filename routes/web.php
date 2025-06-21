@@ -319,6 +319,8 @@ Route::post('product/update_product/{id}', [Product::class,'update_product'])->n
 Route::get('product/import_product', [Product::class,'import_product'])->name('import_product');
 Route::get('product/get_colors/{id}', [Product::class,'get_colors'])->name('merge_product_colors');
 Route::post('product/merge_colors', [Product::class,'merge_colors'])->name('merge_product_colors');
+Route::get('product/get_merged_colors/{id}', [Product::class,'get_merged_colors'])->name('merge_product_colors');
+Route::get('product/delete_merged_colors/{id}', [Product::class,'delete_merged_colors'])->name('merge_product_colors');
 
 
 Route::get('variation', Variation::class)->name('view_variation');

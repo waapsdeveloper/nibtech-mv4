@@ -134,6 +134,12 @@ class Product extends Component
         return redirect()->back();
     }
 
+    public function delete_merged_colors($id){
+        $product_color_merge = Product_color_merge_model::find($id)->delete();
+        session()->put('success', 'Merged colors have been deleted successfully');
+        return redirect()->back();
+    }
+
     public function import_product(){
 
         $excelFilePath = storage_path('app/listing.xlsx');
