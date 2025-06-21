@@ -94,8 +94,8 @@ class Product extends Component
     }
 
     public function get_merged_colors($id){
-        $merged_colors = Product_color_merge_model::where('product_id', $id)->withAggregate('colorFrom', 'name')
-            ->withAggregate('colorTo', 'name')
+        $merged_colors = Product_color_merge_model::where('product_id', $id)->withAggregate('color_from_id', 'name')
+            ->withAggregate('color_to_id', 'name')
             ->get()
             ->map(function ($item) {
                 return [
