@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('group_id');
             $table->unsignedBigInteger('admin_id');
             $table->timestamps();
-            $table->foreign('group_id')->references('id')->on('chat_groups')->onDelete('cascade');
+            // $table->foreign('group_id')->references('id')->on('chat_groups')->onDelete('cascade');
         });
     }
 
