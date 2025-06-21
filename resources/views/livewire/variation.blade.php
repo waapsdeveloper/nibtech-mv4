@@ -227,7 +227,7 @@
                                         $product->merge($duplicate->id);
                                     }
 
-                                    if (($product->duplicate_skus != null && $product->sku == null) || ($product->duplicate_skus != null && $product->sku != null && $product->state == 4)) {
+                                    if (($product->duplicate_skus->count() != null && $product->sku == null) || ($product->duplicate_skus->count() != null && $product->sku != null && $product->state == 4)) {
                                         $duplicate = $product->duplicate_skus->first();
                                         $product->merge($duplicate->id);
                                     }
