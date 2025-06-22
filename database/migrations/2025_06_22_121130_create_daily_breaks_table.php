@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('daily_breaks', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('admin_id'); // FK to admins table
+            $table->unsignedBigInteger('attendance_id'); // FK to attendance table
             $table->timestamp('break_start')->nullable();
             $table->timestamp('break_end')->nullable();
             $table->timestamps();
