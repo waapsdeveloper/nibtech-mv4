@@ -95,4 +95,18 @@ class Admin_model extends Model
         return false;
     }
 
+    public function shift()
+    {
+        return $this->belongsTo(CompanyStructure::class, 'shift_id');
+    }
+    public function leavePolicy()
+    {
+        return $this->belongsTo(CompanyStructure::class, 'leave_policy_id');
+    }
+    public function payType()
+    {
+        return $this->belongsTo(CompanyStructure::class, 'pay_type_id');
+    }
+
+
 }
