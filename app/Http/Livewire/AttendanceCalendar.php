@@ -68,6 +68,7 @@ class AttendanceCalendar extends Component
                           ->where('end_date', '>', $endOfMonth);
                   });
             })
+            ->whereNotIn('status', ['rejected', 'cancelled'])
             ->get();
 
         $today = Carbon::now()->toDateString();

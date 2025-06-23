@@ -59,7 +59,7 @@ class LeaveHistory extends Component
         $adminId = $this->adminId;
 
         $query = LeaveRequest::with('admin');
-        if ($this->viewMode === 'employee') {
+        if ($this->viewMode === 'employee' || !request('all')) {
             $query->where('admin_id', $adminId);
         }
 
