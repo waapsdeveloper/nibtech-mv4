@@ -54,12 +54,12 @@ class Index extends Component
             $per_page = 10;
         }
         $data['purchase_status'] = [2 => '(Pending)', 3 => ''];
-        $data['products'] = Products_model::orderBy('model','asc')->pluck('model','id');
-        $data['categories'] = Category_model::pluck('name','id');
-        $data['brands'] = Brand_model::pluck('name','id');
-        $data['colors'] = Color_model::pluck('name','id');
-        $data['storages'] = Storage_model::pluck('name','id');
-        $data['grades'] = Grade_model::pluck('name','id');
+        $data['products'] = session('dropdown_data')['products'];
+        $data['categories'] = session('dropdown_data')['categories'];
+        $data['brands'] = session('dropdown_data')['brands'];
+        $data['colors'] = session('dropdown_data')['colors'];
+        $data['storages'] = session('dropdown_data')['storages'];
+        $data['grades'] = session('dropdown_data')['grades'];
         $data['admins'] = Admin_model::pluck('first_name','id');
 
         if(session('user')->hasPermission('add_ip')){
@@ -499,10 +499,10 @@ class Index extends Component
             }
 
             $start_date = now()->subDays($days)->startOfDay()->format('Y-m-d');
-            $products = Products_model::orderBy('model','asc')->pluck('model','id');
-            $storages = Storage_model::pluck('name','id');
-            $colors = Color_model::pluck('name','id');
-            $grades = Grade_model::pluck('name','id');
+            $products = session('dropdown_data')['products'];
+            $storages = session('dropdown_data')['storages'];
+            $colors = session('dropdown_data')['colors'];
+            $grades = session('dropdown_data')['grades'];
 
             if(request('per_page_2') != null){
                 $per_page_2 = request('per_page_2');
@@ -622,8 +622,8 @@ class Index extends Component
             }
 
             $start_date = now()->subDays($days)->startOfDay()->format('Y-m-d');
-            $products = Products_model::orderBy('model','asc')->pluck('model','id');
-            $storages = Storage_model::pluck('name','id');
+            $products = session('dropdown_data')['products'];
+            $storages = session('dropdown_data')['storages'];
 
             if(request('per_page_2') != null){
                 $per_page_2 = request('per_page_2');
@@ -724,33 +724,6 @@ class Index extends Component
                 $days = request('days');
             }else{
                 $days = 30;
-            }
-            if(request('difference') != null){
-                $difference = request('difference')/100;
-            }else{
-                $difference = 0.2;
-            }
-            if(request('min_sales') != null){
-                $min_sale = request('min_sales');
-            }else{
-                $min_sale = 100;
-            }
-            if(request('max_stock') != null){
-                $max_stock = request('max_stock');
-            }else{
-                $max_stock = 100;
-            }
-
-            $start_date = now()->subDays($days)->startOfDay()->format('Y-m-d');
-            $products = Products_model::orderBy('model','asc')->pluck('model','id');
-            $storages = Storage_model::pluck('name','id');
-            $colors = Color_model::pluck('name','id');
-            $grades = Grade_model::pluck('name','id');
-
-            if(request('per_page_2') != null){
-                $per_page_2 = request('per_page_2');
-            }else{
-                $per_page_2 = 10;
             }
             $variation_ids = [];
             if(request('data') == 1){

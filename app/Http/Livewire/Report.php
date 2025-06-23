@@ -58,12 +58,12 @@ class Report extends Component
         $data['purchase_status'] = [2 => '(Pending)', 3 => ''];
         $data['purchase_orders'] = Order_model::where('order_type_id',1)->pluck('reference_id','id');
         $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('first_name','id');
-        $data['categories'] = Category_model::pluck('name','id');
-        $data['brands'] = Brand_model::pluck('name','id');
+        $data['categories'] = session('dropdown_data')['categories'];
+        $data['brands'] = session('dropdown_data')['brands'];
         $data['products'] = Products_model::orderBy('model','asc')->get();
-        $data['colors'] = Color_model::pluck('name','id');
-        $data['storages'] = Storage_model::pluck('name','id');
-        $data['grades'] = Grade_model::pluck('name','id');
+        $data['colors'] = session('dropdown_data')['colors'];
+        $data['storages'] = session('dropdown_data')['storages'];
+        $data['grades'] = session('dropdown_data')['grades'];
         $data['currencies'] = Currency_model::pluck('sign','id');
 
         $start_date = Carbon::now()->startOfMonth()->format('Y-m-d');
@@ -1663,7 +1663,7 @@ class Report extends Component
 
     public function ecommerce_report()
     {
-        $data['categories'] = Category_model::pluck('name','id');
+        $data['categories'] = session('dropdown_data')['categories'];
 
         DB::statement("SET SESSION group_concat_max_len = 1500000;");
         $start_date = Carbon::now()->startOfMonth();
@@ -1804,9 +1804,9 @@ class Report extends Component
         // DB::statement("SET SESSION group_concat_max_len = 1500000;");
 
         $data['products'] = Products_model::pluck('model','id');
-        $data['storages'] = Storage_model::pluck('name','id');
-        $data['colors'] = Color_model::pluck('name','id');
-        $data['grades'] = Grade_model::pluck('name','id');
+        $data['storages'] = session('dropdown_data')['storages'];
+        $data['colors'] = session('dropdown_data')['colors'];
+        $data['grades'] = session('dropdown_data')['grades'];
 
         $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
         $data['currencies'] = Currency_model::pluck('sign','id');
@@ -1975,7 +1975,7 @@ class Report extends Component
         DB::statement("SET SESSION group_concat_max_len = 1500000;");
 
         $data['products'] = Products_model::pluck('model','id');
-        $data['storages'] = Storage_model::pluck('name','id');
+        $data['storages'] = session('dropdown_data')['storages'];
 
         $start_date = Carbon::now()->startOfMonth();
         // $start_date = date('Y-m-d 00:00:00',);
@@ -2849,9 +2849,9 @@ class Report extends Component
         //     'order_items' =>$order_items,
         //     'invoice' => $invoice
         // ];
-        $data['storages'] = Storage_model::pluck('name','id');
-        // $data['grades'] = Grade_model::pluck('name','id');
-        // $data['colors'] = Color_model::pluck('name','id');
+        $data['storages'] = session('dropdown_data')['storages'];
+        // $data['grades'] = session('dropdown_data')['grades'];
+        // $data['colors'] = session('dropdown_data')['colors'];
 
         // Create a new TCPDF instance
         $pdf = new TCPDF();

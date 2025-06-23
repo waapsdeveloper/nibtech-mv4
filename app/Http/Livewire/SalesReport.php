@@ -42,12 +42,12 @@ class SalesReport extends Component
         // $data['purchase_status'] = [2 => '(Pending)', 3 => ''];
         // $data['purchase_orders'] = Order_model::where('order_type_id',1)->pluck('reference_id','id');
         // $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('first_name','id');
-        $data['categories'] = Category_model::pluck('name','id');
-        // $data['brands'] = Brand_model::pluck('name','id');
+        $data['categories'] = session('dropdown_data')['categories'];
+        // $data['brands'] = session('dropdown_data')['brands'];
         // $data['products'] = Products_model::orderBy('model','asc')->get();
-        // $data['colors'] = Color_model::pluck('name','id');
-        // $data['storages'] = Storage_model::pluck('name','id');
-        // $data['grades'] = Grade_model::pluck('name','id');
+        // $data['colors'] = session('dropdown_data')['colors'];
+        // $data['storages'] = session('dropdown_data')['storages'];
+        // $data['grades'] = session('dropdown_data')['grades'];
         // $data['variations'] = Variation_model::where('product_id',null)
         // ->orderBy('name','desc')
         // ->paginate($per_page)
