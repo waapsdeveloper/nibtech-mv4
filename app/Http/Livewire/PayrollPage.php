@@ -10,16 +10,17 @@ use Carbon\Carbon;
 
 class PayrollPage extends Component
 {
+
+    public $viewMode = 'employee'; // 'employee' or 'manager'
     public $adminId;
     public $attendance = [];
     public $leaveRequests = [];
     public $totalWorkedHours = '00:00:00';
     public $estimatedPay = 0;
-    public $calendarDays = [];
-
-    public function mount()
+    public function mount($adminId = null, $viewMode = 'employee')
     {
-        $this->adminId = session('user_id');
+        $this->viewMode = $viewMode;
+        $this->adminId = $adminId ?? session('user_id');
         $this->loadData();
     }
 
@@ -38,7 +39,6 @@ class PayrollPage extends Component
             ->get();
 
         $this->calculateWorkAndPay();
-        $this->generateCalendar();
     }
 
     public function calculateWorkAndPay()
@@ -70,35 +70,6 @@ class PayrollPage extends Component
         $rate = $admin->salary_type === 'hourly' ? $admin->salary_amount : 0;
 
         $this->estimatedPay = round($rate * ($totalSeconds / 3600), 2);
-    }
-
-    public function generateCalendar()
-    {
-        $start = Carbon::now()->startOfMonth();
-        $end = Carbon::now()->endOfMonth();
-
-        $this->calendarDays = collect();
-
-        while ($start <= $end) {
-            $status = 'Absent';
-            $attendance = $this->attendance->firstWhere('date', $start->toDateString());
-            $leave = $this->leaveRequests->first(function ($l) use ($start) {
-                return Carbon::parse($start)->between(Carbon::parse($l->start_date), Carbon::parse($l->end_date));
-            });
-
-            if ($attendance) {
-                $status = 'Present';
-            } elseif ($leave) {
-                $status = ucfirst($leave->type);
-            }
-
-            $this->calendarDays->push([
-                'date' => $start->toDateString(),
-                'status' => $status,
-            ]);
-
-            $start->addDay();
-        }
     }
 
     public function render()

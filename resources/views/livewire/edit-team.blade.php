@@ -119,6 +119,9 @@
                                     </div>
                                 </div>
                             </form>
+
+
+    <livewire:payroll-page :adminId="$member->id" :viewMode="'manager'" />
                         </div>
                         <div class="col-md-3">
                             <div class="card">
