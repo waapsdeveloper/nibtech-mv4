@@ -81,37 +81,37 @@ class IndexController extends Controller
         }
         // $products = Products_model::get()->toArray();
         // Retrieve the top 10 selling products from the order_items table
-        $variation_ids = [];
-        if(request('data') == 1){
+        // $variation_ids = [];
+        // if(request('data') == 1){
 
-            $variation_ids = Variation_model::withoutGlobalScope('Status_not_3_scope')->select('id')
-            ->when(request('product') != '', function ($q) {
-                return $q->where('product_id', '=', request('product'));
-            })
-            ->when(request('sku') != '', function ($q) {
-                return $q->where('sku', 'LIKE', '%'.request('sku').'%');
-            })
-            ->when(request('category') != '', function ($q) {
-                return $q->whereHas('product', function ($qu) {
-                    $qu->where('category', '=', request('category'));
-                });
-            })
-            ->when(request('brand') != '', function ($q) {
-                return $q->whereHas('product', function ($qu) {
-                    $qu->where('brand', '=', request('brand'));
-                });
-            })
-            ->when(request('storage') != '', function ($q) {
-                return $q->where('variation.storage', 'LIKE', request('storage') . '%');
-            })
-            ->when(request('color') != '', function ($q) {
-                return $q->where('variation.color', 'LIKE', request('color') . '%');
-            })
-            ->when(request('grade') != '', function ($q) {
-                return $q->where('variation.grade', 'LIKE', request('grade') . '%');
-            })->pluck('id')->toArray();
+        //     $variation_ids = Variation_model::withoutGlobalScope('Status_not_3_scope')->select('id')
+        //     ->when(request('product') != '', function ($q) {
+        //         return $q->where('product_id', '=', request('product'));
+        //     })
+        //     ->when(request('sku') != '', function ($q) {
+        //         return $q->where('sku', 'LIKE', '%'.request('sku').'%');
+        //     })
+        //     ->when(request('category') != '', function ($q) {
+        //         return $q->whereHas('product', function ($qu) {
+        //             $qu->where('category', '=', request('category'));
+        //         });
+        //     })
+        //     ->when(request('brand') != '', function ($q) {
+        //         return $q->whereHas('product', function ($qu) {
+        //             $qu->where('brand', '=', request('brand'));
+        //         });
+        //     })
+        //     ->when(request('storage') != '', function ($q) {
+        //         return $q->where('variation.storage', 'LIKE', request('storage') . '%');
+        //     })
+        //     ->when(request('color') != '', function ($q) {
+        //         return $q->where('variation.color', 'LIKE', request('color') . '%');
+        //     })
+        //     ->when(request('grade') != '', function ($q) {
+        //         return $q->where('variation.grade', 'LIKE', request('grade') . '%');
+        //     })->pluck('id')->toArray();
 
-        }
+        // }
 
         // if(session('user')->hasPermission('dashboard_top_selling_products')){
         //     $top_products = Order_item_model::when(request('data') == 1, function($q) use ($variation_ids){
@@ -138,9 +138,9 @@ class IndexController extends Controller
             $data['testing_count'] = $testing_count;
         }
 
-        $aftersale = Order_item_model::whereHas('order', function ($q) {
-            $q->where('order_type_id',4)->where('status','<',3);
-        })->pluck('stock_id')->toArray();
+        // $aftersale = Order_item_model::whereHas('order', function ($q) {
+        //     $q->where('order_type_id',4)->where('status','<',3);
+        // })->pluck('stock_id')->toArray();
 
         if (session('user')->hasPermission('dashboard_view_aftersale_inventory')){
             // $data['returns_in_progress'] = count($aftersale);
