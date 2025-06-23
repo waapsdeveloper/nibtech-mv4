@@ -20,7 +20,7 @@ class AuthorizeMiddleware
         $userId = session('user_id');
         if($userId != null){
 
-            $user = session('user');
+            $user = session('user') ?? Admin_model::find($userId);
 
             if($user->status == 0){
                 // Log the unauthorized access attempt
