@@ -69,7 +69,7 @@ class IMEI extends Component
             $data['colors'] = session('dropdown_data')['colors'];
             $data['storages'] = session('dropdown_data')['storages'];
             $data['grades'] = session('dropdown_data')['grades'];
-            $data['vendor_grades'] = Vendor_session('dropdown_data')['grades'];
+            $data['vendor_grades'] = Vendor_grade_model::pluck('name','id');
             if (request('imei') == '' || !$stock || $stock->status == null) {
                 if(isset($error)){
                     session()->put('error', $error);
