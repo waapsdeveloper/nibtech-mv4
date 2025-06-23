@@ -1,4 +1,4 @@
-@extends('layouts.app')
+{{-- @extends('layouts.app') --}}app') --}}
 
 @section('styles')
 <link href="{{asset('assets/plugins/select2/css/select2.min.css')}}" rel="stylesheet" />

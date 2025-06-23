@@ -1,4 +1,4 @@
-@extends('layouts.app')
+{{-- @extends('layouts.app') --}}app') --}}
 
     @section('styles')
     <!-- INTERNAL Select2 css -->
