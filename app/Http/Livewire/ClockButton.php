@@ -50,11 +50,18 @@ class ClockButton extends Component
 
     public function clockIn()
     {
-        Attendance::firstOrCreate(
-            ['admin_id' => session('user_id'), 'date' => now()->toDateString()],
-            ['clock_in' => now()->format('H:i:s')]
-        );
+        $addendance = Attendance::where('admin_id', session('user_id'))
+            ->where('date', now()->toDateString())
+            ->first();
+        if ($addendance && $addendance->clock_in) {
+            $this->endBreak();
+        }else {
 
+            Attendance::firstOrCreate(
+                ['admin_id' => session('user_id'), 'date' => now()->toDateString()],
+                ['clock_in' => now()->format('H:i:s')]
+            );
+        }
         $this->refreshStatus();
     }
 
@@ -68,7 +75,10 @@ class ClockButton extends Component
             $attendance->update(['clock_out' => now()->format('H:i:s')]);
         }
 
-        $this->refreshStatus();
+        // $this->refreshStatus();
+        // ?logout
+
+        return redirect()->to('logout');
     }
 
     public function startBreak()
@@ -79,7 +89,10 @@ class ClockButton extends Component
             $attendance->dailyBreaks()->create(['break_start' => now()]);
         }
 
-        $this->refreshStatus();
+        // $this->refreshStatus();
+        // Load Logout class to handle logout
+        return redirect()->to('logout');
+
     }
 
     public function endBreak()

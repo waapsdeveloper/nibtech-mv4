@@ -28,11 +28,11 @@
     ]) --}}
 
     <h4 class="mt-4">Leave Requests</h4>
-    <livewire:leave-request-form />
-    <livewire:leave-history />
+    <livewire:leave-request-form :viewMode="$viewMode" :adminId="$adminId" />
+    <livewire:leave-history :viewMode="$viewMode" :adminId="$adminId" />
 
     <h4 class="mt-4">Calendar View</h4>
-    <livewire:attendance-calendar />
+    <livewire:attendance-calendar :adminId="$adminId" :viewMode="$viewMode" />
 
     {{-- Uncomment if you want to display calendar days in a different format --}}
     {{-- <div class="d-flex flex-wrap">

@@ -44,6 +44,11 @@ class Signin extends Component
             $request->session()->put('fname', $login_detail->first_name);
             $request->session()->put('lname', $login_detail->last_name);
             $request->session()->put('our_id', 001);
+
+            // Clock In
+            $clock = new ClockButton();
+            $clock->clockIn();
+
             return redirect('/');
         }else{
             $error = "Incorrect Username or Password ";
