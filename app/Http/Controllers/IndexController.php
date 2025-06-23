@@ -38,6 +38,16 @@ class IndexController extends Controller
 {
     public function index()
     {
+        if(!session('dropdown_data')){
+            $data['dropdown_data'] = [];
+            $data['dropdown_data']['products'] = Products_model::pluck('model', 'id');
+            $data['dropdown_data']['categories'] = Category_model::pluck('name', 'id');
+            $data['dropdown_data']['brands'] = Brand_model::pluck('name', 'id');
+            $data['dropdown_data']['colors'] = Color_model::pluck('name', 'id');
+            $data['dropdown_data']['storages'] = Storage_model::pluck('name', 'id');
+            $data['dropdown_data']['grades'] = Grade_model::pluck('name', 'id');
+            session(['dropdown_data' => $data['dropdown_data']]);
+        }
         session()->forget('rep');
         $data['title_page'] = "Dashboard";
         session()->put('page_title', $data['title_page']);
