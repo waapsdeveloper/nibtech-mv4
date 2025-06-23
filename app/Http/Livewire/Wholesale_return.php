@@ -268,10 +268,10 @@ class Wholesale_return extends Component
 
 
         $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
-        $data['storages'] = Storage_model::pluck('name','id');
+        $data['storages'] = session('dropdown_data')['storages'];
         $data['products'] = Products_model::pluck('model','id');
-        $data['grades'] = Grade_model::pluck('name','id');
-        $data['colors'] = Color_model::pluck('name','id');
+        $data['grades'] = session('dropdown_data')['grades'];
+        $data['colors'] = session('dropdown_data')['colors'];
 
         $data['imei'] = request('imei');
 

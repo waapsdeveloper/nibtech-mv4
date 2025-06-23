@@ -46,10 +46,10 @@ class Inventory extends Component
         }
 
         $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('first_name','id');
-        $data['colors'] = Color_model::pluck('name','id');
-        $data['storages'] = Storage_model::pluck('name','id');
+        $data['colors'] = session('dropdown_data')['colors'];
+        $data['storages'] = session('dropdown_data')['storages'];
         $data['products'] = Products_model::pluck('model','id');
-        $data['grades'] = Grade_model::pluck('name','id');
+        $data['grades'] = session('dropdown_data')['grades'];
         $data['categories'] = Category_model::get();
         $data['brands'] = Brand_model::get();
         $data['listings_or_topups'] = Process_model::whereIn('process_type_id',[21,22])->orderByDesc('id')->pluck('reference_id','id');
@@ -425,10 +425,10 @@ class Inventory extends Component
             $per_page = 10;
         }
 
-        $data['colors'] = Color_model::pluck('name','id');
-        $data['storages'] = Storage_model::pluck('name','id');
+        $data['colors'] = session('dropdown_data')['colors'];
+        $data['storages'] = session('dropdown_data')['storages'];
         $data['products'] = Products_model::pluck('model','id');
-        $data['grades'] = Grade_model::pluck('name','id');
+        $data['grades'] = session('dropdown_data')['grades'];
         $active_inventory_verification = Process_model::where(['process_type_id'=>20,'status'=>1])->first();
 
         $data['active_inventory_verification'] = $active_inventory_verification;
@@ -954,9 +954,9 @@ class Inventory extends Component
         }
         $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('first_name','id');
         $data['products'] = Products_model::pluck('model','id');
-        $data['colors'] = Color_model::pluck('name','id');
-        $data['storages'] = Storage_model::pluck('name','id');
-        $data['grades'] = Grade_model::pluck('name','id');
+        $data['colors'] = session('dropdown_data')['colors'];
+        $data['storages'] = session('dropdown_data')['storages'];
+        $data['grades'] = session('dropdown_data')['grades'];
         $data['currencies'] = Currency_model::pluck('sign','id');
         $data['categories'] = Category_model::get();
         $data['brands'] = Brand_model::get();

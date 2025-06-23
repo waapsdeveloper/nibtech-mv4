@@ -46,8 +46,8 @@ class ListingController extends Controller
         }
         session()->put('page_title', $data['title_page']);
         $data['bm'] = new BackMarketAPIController();
-        $data['storages'] = Storage_model::pluck('name','id');
-        $data['colors'] = Color_model::pluck('name','id');
+        $data['storages'] = session('dropdown_data')['storages'];
+        $data['colors'] = session('dropdown_data')['colors'];
         $data['grades'] = Grade_model::where('id',"<",6)->pluck('name','id')->toArray();
         $data['eur_gbp'] = ExchangeRate::where('target_currency','GBP')->first()->rate;
         $data['exchange_rates'] = ExchangeRate::pluck('rate','target_currency');

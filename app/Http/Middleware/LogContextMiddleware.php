@@ -19,7 +19,7 @@ class LogContextMiddleware
     {
         Log::withContext([
             'url' => $request->fullUrl(),
-            'user_id' => optional(Auth::user())->id,
+            'user_id' => optional(session('user'))->id,
             'ip' => $request->ip(),
             'request_data' => $request->except(['password', 'password_confirmation']), // Exclude sensitive data
         ]);

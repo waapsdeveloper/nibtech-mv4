@@ -33,9 +33,9 @@ class Stock_room extends Component
         $data['title_page'] = "Stock Room";
         session()->put('page_title', $data['title_page']);
         $data['admins'] = Admin_model::where('id', '!=', 1)->get();
-        $data['colors'] = Color_model::pluck('name','id');
-        $data['storages'] = Storage_model::pluck('name','id');
-        $data['grades'] = Grade_model::pluck('name','id');
+        $data['colors'] = session('dropdown_data')['colors'];
+        $data['storages'] = session('dropdown_data')['storages'];
+        $data['grades'] = session('dropdown_data')['grades'];
         $user_id = session('user_id');
         $user = session('user');
 
@@ -103,8 +103,8 @@ class Stock_room extends Component
         return view('livewire.stock_room', $data); // Return the Blade view instance with data
     }
     public function exit_scan(){
-        $data['storages'] = Storage_model::pluck('name','id');
-        $data['grades'] = Grade_model::pluck('name','id');
+        $data['storages'] = session('dropdown_data')['storages'];
+        $data['grades'] = session('dropdown_data')['grades'];
         $admin_id = request('admin_id');
         $data['admin_id'] = $admin_id;
         $last_ten = Stock_movement_model::where(['admin_id'=>$admin_id, 'received_at'=>null])->orderBy('id','desc')->limit(10)->get();

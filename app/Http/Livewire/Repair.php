@@ -420,10 +420,10 @@ class Repair extends Component
         $data['repairers'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
         $data['vendors'] = Customer_model::whereNotNull('is_vendor')->get();
         $data['exchange_rates'] = ExchangeRate::pluck('rate','target_currency');
-        $data['storages'] = Storage_model::pluck('name','id');
+        $data['storages'] = session('dropdown_data')['storages'];
         $data['products'] = Products_model::pluck('model','id');
-        $data['grades'] = Grade_model::pluck('name','id');
-        $data['colors'] = Color_model::pluck('name','id');
+        $data['grades'] = session('dropdown_data')['grades'];
+        $data['colors'] = session('dropdown_data')['colors'];
         $variations = Variation_model::with([
             'stocks' => function ($query) use ($process_id) {
                 $query->whereHas('process_stocks', function ($query) use ($process_id) {
@@ -501,10 +501,10 @@ class Repair extends Component
             $per_page = 20;
         }
         $data['repairers'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
-        $data['storages'] = Storage_model::pluck('name','id');
+        $data['storages'] = session('dropdown_data')['storages'];
         $data['products'] = Products_model::pluck('model','id');
-        $data['grades'] = Grade_model::pluck('name','id');
-        $data['colors'] = Color_model::pluck('name','id');
+        $data['grades'] = session('dropdown_data')['grades'];
+        $data['colors'] = session('dropdown_data')['colors'];
         if(request('show') == 1){
             if(session('process_stock_ids') != []){
                 $processed_stocks = Process_stock_model::whereIn('id', session('process_stock_ids'))->with(['process','stock'])->orderByDesc('updated_at')->get();
@@ -525,10 +525,10 @@ class Repair extends Component
             $per_page = 20;
         }
         $data['repairers'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
-        $data['storages'] = Storage_model::pluck('name','id');
+        $data['storages'] = session('dropdown_data')['storages'];
         $data['products'] = Products_model::pluck('model','id');
-        $data['grades'] = Grade_model::pluck('name','id');
-        $data['colors'] = Color_model::pluck('name','id');
+        $data['grades'] = session('dropdown_data')['grades'];
+        $data['colors'] = session('dropdown_data')['colors'];
         if(request('show') == 1){
             if(session('process_stock_ids') != []){
                 $processed_stocks = Process_stock_model::whereIn('id', session('process_stock_ids'))->where('status',3)->with(['process','stock'])->orderByDesc('updated_at')->get();
@@ -1271,9 +1271,9 @@ class Repair extends Component
             'process_stocks' =>$process_stocks,
             'invoice' => $invoice
         ];
-        $data['storages'] = Storage_model::pluck('name','id');
-        $data['grades'] = Grade_model::pluck('name','id');
-        $data['colors'] = Color_model::pluck('name','id');
+        $data['storages'] = session('dropdown_data')['storages'];
+        $data['grades'] = session('dropdown_data')['grades'];
+        $data['colors'] = session('dropdown_data')['colors'];
 
         // Create a new TCPDF instance
         $pdf = new TCPDF();
