@@ -241,10 +241,10 @@ class Wholesale extends Component
         $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
         // $data['imeis'] = Stock_model::whereIn('status',[1,3])->orderBy('serial_number','asc')->orderBy('imei','asc')->get();
         $data['exchange_rates'] = ExchangeRate::pluck('rate','target_currency');
-        $data['storages'] = Storage_model::pluck('name','id');
+        $data['storages'] = session('dropdown_data')['storages'];
         $data['products'] = Products_model::pluck('model','id');
-        $data['grades'] = Grade_model::pluck('name','id');
-        $data['colors'] = Color_model::pluck('name','id');
+        $data['grades'] = session('dropdown_data')['grades'];
+        $data['colors'] = session('dropdown_data')['colors'];
 
         $variations = Variation_model::
         // whereHas('stocks', function ($query) use ($order_id) {
@@ -946,9 +946,9 @@ class Wholesale extends Component
             'order_items_2' =>$order_items_2,
             'invoice' => $invoice
         ];
-        $data['storages'] = Storage_model::pluck('name','id');
-        $data['grades'] = Grade_model::pluck('name','id');
-        $data['colors'] = Color_model::pluck('name','id');
+        $data['storages'] = session('dropdown_data')['storages'];
+        $data['grades'] = session('dropdown_data')['grades'];
+        $data['colors'] = session('dropdown_data')['colors'];
 
         // Create a new TCPDF instance
         $pdf = new TCPDF();
@@ -1052,9 +1052,9 @@ class Wholesale extends Component
             'order_items_2' =>$order_items_2,
             'invoice' => 1
         ];
-        $data['storages'] = Storage_model::pluck('name','id');
-        $data['grades'] = Grade_model::pluck('name','id');
-        $data['colors'] = Color_model::pluck('name','id');
+        $data['storages'] = session('dropdown_data')['storages'];
+        $data['grades'] = session('dropdown_data')['grades'];
+        $data['colors'] = session('dropdown_data')['colors'];
 
 
         Mail::to('accounts@nibritaintech.com')->send(new BulksaleInvoiceMail($data));
@@ -1071,9 +1071,9 @@ class Wholesale extends Component
         $data['brands'] = Brand_model::orderBy('name')->pluck('name','id');
         $data['currencies'] = Currency_model::all();
         // $data['products'] = Products_model::orderBy('model')->pluck('model','id');
-        // $data['storages'] = Storage_model::pluck('name','id');
+        // $data['storages'] = session('dropdown_data')['storages'];
         // $data['colors'] = Color_model::orderBy('name')->pluck('name','id');
-        $data['grades'] = Grade_model::pluck('name','id');
+        $data['grades'] = session('dropdown_data')['grades'];
 
         $data['cart'] = session()->get('cart', []);
 

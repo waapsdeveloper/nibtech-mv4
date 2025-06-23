@@ -297,8 +297,8 @@
                                 </div>
                             @endif
                             @if (session('user')->hasPermission('dashboard_top_selling_products'))
-
-                                <div class="card">
+                                @livewire('dashboard.top-selling-products')
+                                {{-- <div class="card">
                                     <div class="card-header pb-0">
                                         <div class="d-flex justify-content-between">
                                             <h4 class="card-title ">Top Selling Products</h4>
@@ -311,7 +311,6 @@
                                                     <option value="50" {{ Request::get('per_page') == 50 ? 'selected' : '' }}>50</option>
                                                     <option value="100" {{ Request::get('per_page') == 100 ? 'selected' : '' }}>100</option>
                                                 </select>
-                                                {{-- <button type="submit">Apply</button> --}}
                                                 <input type="hidden" name="start_date" value="{{ $start_date }}">
                                                 <input type="hidden" name="end_date" value="{{ $end_date }}">
                                                 <input type="hidden" name="product" value="{{ Request::get('product') }}">
@@ -360,12 +359,9 @@
                                                         <td>
                                                             <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                                             <div class="dropdown-menu">
-                                                                {{-- <a class="dropdown-item" href="{{url('order')}}/refresh/{{ $order->reference_id }}"><i class="fe fe-arrows-rotate me-2 "></i>Refresh</a> --}}
-                                                                {{-- <a class="dropdown-item" href="{{ $order->delivery_note_url }}" target="_blank"><i class="fe fe-arrows-rotate me-2 "></i>Delivery Note</a> --}}
                                                                 <a class="dropdown-item" href="https://backmarket.fr/bo-seller/listings/active?sku={{ $variation->sku }}" target="_blank"><i class="fe fe-caret me-2"></i>View Listing in BackMarket</a>
                                                                 <a class="dropdown-item" href="{{url('order')}}?sku={{ $variation->sku }}&start_date={{ $start_date }}&end_date={{ $end_date }}" target="_blank"><i class="fe fe-caret me-2"></i>View Orders</a>
                                                                 <a class="dropdown-item" href="https://backmarket.fr/bo-seller/orders/all?sku={{ $variation->sku }}&startDate={{ $start_date }}&endDate={{ $end_date }}" target="_blank"><i class="fe fe-caret me-2"></i>View Orders in BackMarket</a>
-                                                                {{-- <a class="dropdown-item" href="javascript:void(0);"><i class="fe fe-trash-2 me-2"></i>Delete</a> --}}
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -382,7 +378,7 @@
                                             </tfoot>
                                         </table>
                                     </div>
-                                </div>
+                                </div> --}}
                             @endif
 
                             @if (session('user')->hasPermission('dashboard_required_restock'))
@@ -485,9 +481,10 @@
                                 @endif
 
                                 @if (session('user')->hasPermission('dashboard_view_aftersale_inventory'))
+                                    @livewire('dashboard.aftersale-inventory-widget')
 
                                 {{-- Date search section --}}
-                                <div class="col-md col-xs-6">
+                                {{-- <div class="col-md col-xs-6">
                                     <div class="card">
                                         <div class="card-header border-bottom-0">
                                                 <h3 class="card-title mb-0">Aftersale Inventory</h3> <span class="d-block tx-12 mb-0 text-muted"></span>
@@ -515,14 +512,14 @@
                                             </table>
                                         </div>
                                     </div>
-                                </div>
+                                </div> --}}
                                 @endif
 
                             </div>
 								{{-- Welcome Box end --}}
 								{{-- Date search section --}}
                             @if (session('user')->hasPermission('dashboard_view_inventory'))
-                            <div class="card custom-card">
+                            {{-- <div class="card custom-card">
                                 <div class="card-header border-bottom-0 d-flex justify-content-between">
                                     <h3 class="card-title mb-2 ">Available Inventory by Grade</h3>
                                     @if (session('user')->hasPermission('dashboard_view_listing_total'))
@@ -542,7 +539,9 @@
                                         @endforeach
                                     </h6>
                                 @endif
-                            </div>
+                            </div> --}}
+                            @livewire('dashboard.inventory-overview-widget', ['wire:pollingInterval' => 60000])
+
                             @endif
                             @if (session('user')->hasPermission('monthly_sales_chart'))
                                 <div class="card custom-card overflow-hidden">

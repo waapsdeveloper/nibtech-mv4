@@ -12,7 +12,7 @@ class Ensure2FAIsVerified
     public function handle($request, Closure $next)
     {
 
-        $admin = Admin_model::find(session('user_id'));
+        $admin = session('user');
 
         if ($admin->is_2fa_enabled && !$request->session()->has('2fa_verified')) {
             $ip = $request->ip();
