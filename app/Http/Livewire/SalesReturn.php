@@ -175,7 +175,7 @@ class SalesReturn extends Component
         $data['grades'] = session('dropdown_data')['grades'];
         $data['colors'] = session('dropdown_data')['colors'];
         $data['currencies'] = Currency_model::pluck('sign','id');
-        $data['vendor_grades'] = Vendor_session('dropdown_data')['grades'];
+        $data['vendor_grades'] = Vendor_grade_model::pluck('name','id');
 
         $data['imei'] = request('imei');
 
