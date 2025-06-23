@@ -24,8 +24,8 @@
 					<!-- /breadcrumb -->
                     <hr style="border-bottom: 1px solid #000">
 					<!-- row -->
-                    <div class="row">
-                        <div class="col-lg-9 col-md-9">
+                    {{-- <div class="row"> --}}
+                        {{-- <div class="col-lg-9 col-md-9"> --}}
                             <form action="{{url('update-member')}}/{{$member->id}}" method="POST">
                                 @csrf
                                 <div class="card">
@@ -122,7 +122,7 @@
 
 
     <livewire:payroll-page :adminId="$member->id" :viewMode="'manager'" />
-                        </div>
+                        {{-- </div>
                         <div class="col-md-3">
                             <div class="card">
                                 <div class="card-header">
@@ -131,34 +131,15 @@
                                 </div>
                                 <div class="card-body">
                                     <div>
-                                        {{-- <label for="role">Select Role:</label>
-                                        <select id="role" class="form-select" onchange="fetchPermissions()">
-                                            @foreach ($roles as $role)
-                                                <option value="{{ $role->id }}" @if($role->id == $member->role_id) selected @endif>{{ $role->name }}</option>
-                                            @endforeach
-                                        </select> --}}
                                     </div>
                                     <br>
                                     <div id="permissions">
-                                        <!-- Permissions will be displayed here -->
                                     </div>
                                     <script>
 
                                         document.addEventListener('DOMContentLoaded', function() {
                                             fetchPermissions()
                                         })
-                                        // function togglePermission(roleId, permissionId, isChecked) {
-                                        //     // Send AJAX request to server to create or delete role permission
-                                        //     fetch(`{{ url('toggle_role_permission') }}/${roleId}/${permissionId}/${isChecked}`, { method: 'POST' })
-                                        //         // .then(response => response.json())
-                                        //         .then(data => {
-                                        //             // Update UI based on server response
-                                        //             console.log(data); // You can handle the response as per your requirement
-                                        //         })
-                                        //         .catch(error => {
-                                        //             console.error('Error:', error);
-                                        //         });
-                                        // }
                                         function togglePermission(permissionId, isChecked) {
                                         // Get the CSRF token from the meta tag in your HTML
                                         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -207,8 +188,8 @@
 
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                        </div> --}}
+                    {{-- </div> --}}
 					<!-- /row -->
 
                     @endsection
