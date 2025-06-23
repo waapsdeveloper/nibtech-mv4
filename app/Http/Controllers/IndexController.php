@@ -1270,6 +1270,7 @@ class IndexController extends Controller
         Artisan::call('config:clear');
         Artisan::call('view:clear');
         Artisan::call('route:clear');
+        session()->forget('dropdown_data');
         // Artisan::call('config:cache');
         // Artisan::call('route:cache');
         // Artisan::call('optimize');
