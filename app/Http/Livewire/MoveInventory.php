@@ -34,8 +34,8 @@ class MoveInventory extends Component
 
         $data['admins'] = Admin_model::where('id','!=',1)->get();
         $data['products'] = Products_model::orderBy('model','asc')->get();
-        $data['colors'] = Color_model::pluck('name','id');
-        $data['storages'] = Storage_model::pluck('name','id');
+        $data['colors'] = session('dropdown_data')['colors'];
+        $data['storages'] = session('dropdown_data')['storages'];
         $data['grades'] = Grade_model::all();
         $data['vendor_grades'] = Vendor_grade_model::all();
 

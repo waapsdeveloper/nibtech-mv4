@@ -284,11 +284,11 @@ class RMA extends Component
         session()->put('page_title', $data['title_page']);
         // $data['imeis'] = Stock_model::whereIn('status',[1,3])->orderBy('serial_number','asc')->orderBy('imei','asc')->get();
         $data['exchange_rates'] = ExchangeRate::pluck('rate','target_currency');
-        $data['storages'] = Storage_model::pluck('name','id');
+        $data['storages'] = session('dropdown_data')['storages'];
         $data['products'] = Products_model::pluck('model','id');
-        $data['grades'] = Grade_model::pluck('name','id');
-        $data['colors'] = Color_model::pluck('name','id');
-        $data['vendor_grades'] = Vendor_grade_model::pluck('name','id');
+        $data['grades'] = session('dropdown_data')['grades'];
+        $data['colors'] = session('dropdown_data')['colors'];
+        $data['vendor_grades'] = Vendor_session('dropdown_data')['grades'];
         if(request('per_page') != null){
             $per_page = request('per_page');
         }else{
@@ -596,9 +596,9 @@ class RMA extends Component
             'order_items_2' =>$order_items_2,
             'invoice' => $invoice
         ];
-        $data['storages'] = Storage_model::pluck('name','id');
-        $data['grades'] = Grade_model::pluck('name','id');
-        $data['colors'] = Color_model::pluck('name','id');
+        $data['storages'] = session('dropdown_data')['storages'];
+        $data['grades'] = session('dropdown_data')['grades'];
+        $data['colors'] = session('dropdown_data')['colors'];
 
         // Create a new TCPDF instance
         $pdf = new TCPDF();
@@ -676,9 +676,9 @@ class RMA extends Component
             'customer' => $order->customer,
             'order_items' =>$order_items
         ];
-        $data['storages'] = Storage_model::pluck('name','id');
-        $data['grades'] = Grade_model::pluck('name','id');
-        $data['colors'] = Color_model::pluck('name','id');
+        $data['storages'] = session('dropdown_data')['storages'];
+        $data['grades'] = session('dropdown_data')['grades'];
+        $data['colors'] = session('dropdown_data')['colors'];
 
 
         Mail::to($order->customer->email)->send(new BulksaleInvoiceMail($data));

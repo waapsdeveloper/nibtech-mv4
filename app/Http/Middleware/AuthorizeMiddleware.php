@@ -20,7 +20,7 @@ class AuthorizeMiddleware
         $userId = session('user_id');
         if($userId != null){
 
-            $user = Admin_model::find($userId);
+            $user = session('user') ?? Admin_model::find($userId);
 
             if($user->status == 0){
                 // Log the unauthorized access attempt
@@ -28,9 +28,7 @@ class AuthorizeMiddleware
                 abort(403, 'Account Blocked - Quote of the day: '.Inspiring::just_quote());
             }
 
-            $all_grades = Grade_model::all();
             session()->put('user',$user);
-            session()->put('all_grades',$all_grades);
         }
         // If the current route is the login route or sign-in route, bypass the middleware
         if ($currentRoute == 'login' || $currentRoute == 'signin' || $currentRoute == 'admin.2fa' || $currentRoute == 'admin.2fa2' || $currentRoute == 'index' || $currentRoute == 'profile' || $currentRoute == 'error') {

@@ -41,8 +41,8 @@ class Listing extends Component
         $data['categories'] = Category_model::all();
         $data['brands'] = Brand_model::all();
         $data['products'] = Products_model::all();
-        $data['storages'] = Storage_model::pluck('name','id');
-        $data['colors'] = Color_model::pluck('name','id');
+        $data['storages'] = session('dropdown_data')['storages'];
+        $data['colors'] = session('dropdown_data')['colors'];
         $data['grades'] = Grade_model::where('id',"<",6)->pluck('name','id')->toArray();
 
         if(request('per_page') != null){

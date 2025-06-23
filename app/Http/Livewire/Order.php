@@ -56,9 +56,9 @@ class Order extends Component
         // ini_set('memory_limit', '2560M');
         $data['title_page'] = "Sales";
         session()->put('page_title', $data['title_page']);
-        $data['storages'] = Storage_model::pluck('name','id');
-        $data['colors'] = Color_model::pluck('name','id');
-        $data['grades'] = Grade_model::pluck('name','id');
+        $data['storages'] = session('dropdown_data')['storages'];
+        $data['colors'] = session('dropdown_data')['colors'];
+        $data['grades'] = session('dropdown_data')['grades'];
 
         $data['currencies'] = Currency_model::pluck('sign', 'id');
         $data['last_hour'] = Carbon::now()->subHour();
@@ -768,9 +768,9 @@ class Order extends Component
         session()->put('page_title', $data['title_page']);
         $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
         $data['products'] = Products_model::pluck('model','id');
-        $data['storages'] = Storage_model::pluck('name','id');
-        $data['colors'] = Color_model::pluck('name','id');
-        $data['grades'] = Grade_model::pluck('name','id');
+        $data['storages'] = session('dropdown_data')['storages'];
+        $data['colors'] = session('dropdown_data')['colors'];
+        $data['grades'] = session('dropdown_data')['grades'];
 
         $data['order'] = Order_model::when($deleted == 1, function ($q) {
             return $q->withTrashed();
@@ -1680,7 +1680,7 @@ class Order extends Component
     public function purchase_model_graded_count($order_id, $pss_id, $s_type = null){
         $pss = Product_storage_sort_model::find($pss_id);
         $stocks = $pss->stocks->where('order_id',$order_id);
-        $grades = Grade_model::pluck('name','id');
+        $grades = session('dropdown_data')['grades'];
         if($s_type == 'rtg'){
             $grades = Grade_model::whereIn('id',[1,2,3,4,5,7])->pluck('name','id');
         }

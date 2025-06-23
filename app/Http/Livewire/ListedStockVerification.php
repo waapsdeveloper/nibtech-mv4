@@ -235,10 +235,10 @@ class ListedStockVerification extends Component
         }
         $data['vendors'] = Customer_model::whereNotNull('is_vendor')->get();
         $data['exchange_rates'] = ExchangeRate::pluck('rate','target_currency');
-        $data['storages'] = Storage_model::pluck('name','id');
+        $data['storages'] = session('dropdown_data')['storages'];
         $data['products'] = Products_model::pluck('model','id');
-        $data['grades'] = Grade_model::pluck('name','id');
-        $data['colors'] = Color_model::pluck('name','id');
+        $data['grades'] = session('dropdown_data')['grades'];
+        $data['colors'] = session('dropdown_data')['colors'];
 
         $process = Process_model::with(['process_stocks'])->find($process_id);
         $last_ten = Listed_stock_verification_model::where('process_id',$process_id)->orderBy('id','desc')->limit($per_page)->get();

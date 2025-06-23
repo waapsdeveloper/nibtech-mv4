@@ -29,9 +29,9 @@ class Issue extends Component
         }
 
         $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('first_name','id');
-        $data['colors'] = Color_model::pluck('name','id');
-        $data['storages'] = Storage_model::pluck('name','id');
-        $data['grades'] = Grade_model::pluck('name','id');
+        $data['colors'] = session('dropdown_data')['colors'];
+        $data['storages'] = session('dropdown_data')['storages'];
+        $data['grades'] = session('dropdown_data')['grades'];
         $data['categories'] = Category_model::get();
         $data['brands'] = Brand_model::get();
         $items = Order_item_model::where('linked_id','!=',null)->where(['status'=>3])

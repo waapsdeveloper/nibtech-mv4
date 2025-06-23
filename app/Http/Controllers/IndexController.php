@@ -50,12 +50,12 @@ class IndexController extends Controller
             $per_page = 10;
         }
         $data['purchase_status'] = [2 => '(Pending)', 3 => ''];
-        $data['products'] = Products_model::orderBy('model','asc')->pluck('model','id');
-        $data['categories'] = Category_model::pluck('name','id');
-        $data['brands'] = Brand_model::pluck('name','id');
-        $data['colors'] = Color_model::pluck('name','id');
-        $data['storages'] = Storage_model::pluck('name','id');
-        $data['grades'] = Grade_model::pluck('name','id');
+        $data['products'] = session('dropdown_data')['products'];
+        $data['categories'] = session('dropdown_data')['categories'];
+        $data['brands'] = session('dropdown_data')['brands'];
+        $data['colors'] = session('dropdown_data')['colors'];
+        $data['storages'] = session('dropdown_data')['storages'];
+        $data['grades'] = session('dropdown_data')['grades'];
         $data['admins'] = Admin_model::pluck('first_name','id');
 
         if(session('user')->hasPermission('add_ip')){
@@ -66,6 +66,7 @@ class IndexController extends Controller
         // New Added Variations
         $data['variations'] = Variation_model::withoutGlobalScope('Status_not_3_scope')
         ->where('product_id',null)
+        ->where('state','!=', 4)
         ->orderBy('name','desc')
         ->paginate($per_page)
         ->onEachSide(5)
@@ -112,22 +113,22 @@ class IndexController extends Controller
 
         }
 
-        if(session('user')->hasPermission('dashboard_top_selling_products')){
-            $top_products = Order_item_model::when(request('data') == 1, function($q) use ($variation_ids){
-                return $q->whereIn('variation_id', $variation_ids);
-            })
-            ->whereHas('order', function ($q) use ($start_date, $end_date) {
-                $q->where(['order_type_id'=>3, 'currency'=>4])
-                ->whereBetween('created_at', [$start_date, $end_date]);
-            })
-            ->select('variation_id', DB::raw('SUM(quantity) as total_quantity_sold'), DB::raw('AVG(price) as average_price'))
-            ->groupBy('variation_id')
-            ->orderByDesc('total_quantity_sold')
-            ->take($per_page)
-            ->get();
+        // if(session('user')->hasPermission('dashboard_top_selling_products')){
+        //     $top_products = Order_item_model::when(request('data') == 1, function($q) use ($variation_ids){
+        //         return $q->whereIn('variation_id', $variation_ids);
+        //     })
+        //     ->whereHas('order', function ($q) use ($start_date, $end_date) {
+        //         $q->where(['order_type_id'=>3, 'currency'=>4])
+        //         ->whereBetween('created_at', [$start_date, $end_date]);
+        //     })
+        //     ->select('variation_id', DB::raw('SUM(quantity) as total_quantity_sold'), DB::raw('AVG(price) as average_price'))
+        //     ->groupBy('variation_id')
+        //     ->orderByDesc('total_quantity_sold')
+        //     ->take($per_page)
+        //     ->get();
 
-            $data['top_products'] = $top_products;
-        }
+        //     $data['top_products'] = $top_products;
+        // }
 
         if(session('user')->hasPermission('dashboard_view_testing')){
             $testing_count = Admin_model::withCount(['stock_operations' => function($q) use ($start_date,$end_date) {
@@ -142,57 +143,57 @@ class IndexController extends Controller
         })->pluck('stock_id')->toArray();
 
         if (session('user')->hasPermission('dashboard_view_aftersale_inventory')){
-            $data['returns_in_progress'] = count($aftersale);
-            $rmas = Order_model::whereIn('order_type_id',[2,5])->pluck('id')->toArray();
-            $rma = Stock_model::whereDoesntHave('order_items', function ($q) use ($rmas) {
-                    $q->whereIn('order_id', $rmas);
-                })->whereHas('variation', function ($q) {
-                    $q->where('grade', 10);
-                })->Where('status',2)->count();
-            $data['rma'] = $rma;
-            $data['aftersale_inventory'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', 'orders.status as status_id', 'stock.status as stock_status', DB::raw('COUNT(*) as quantity'))
-            ->where('stock.status', 2)
-            ->whereDoesntHave('sale_order', function ($query) {
-                $query->where('customer_id', 3955);
-            })
-            ->whereHas('sale_order', function ($query) {
-                $query->where('order_type_id', 3)->orWhere(['order_type_id'=>5, 'reference_id'=>999]);
-            })
-            ->join('variation', 'stock.variation_id', '=', 'variation.id')
-            ->join('grade', 'variation.grade', '=', 'grade.id')
-            ->whereIn('grade.id',[8,12,17])
-            ->join('orders', 'stock.order_id', '=', 'orders.id')
-            // ->where('orders.order_type_id',3)
-            ->groupBy('variation.grade', 'grade.name', 'orders.status', 'stock.status')
-            ->orderBy('grade_id')
-            ->get();
+            // $data['returns_in_progress'] = count($aftersale);
+            // $rmas = Order_model::whereIn('order_type_id',[2,5])->pluck('id')->toArray();
+            // $rma = Stock_model::whereDoesntHave('order_items', function ($q) use ($rmas) {
+            //         $q->whereIn('order_id', $rmas);
+            //     })->whereHas('variation', function ($q) {
+            //         $q->where('grade', 10);
+            //     })->Where('status',2)->count();
+            // $data['rma'] = $rma;
+            // $data['aftersale_inventory'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', 'orders.status as status_id', 'stock.status as stock_status', DB::raw('COUNT(*) as quantity'))
+            // ->where('stock.status', 2)
+            // ->whereDoesntHave('sale_order', function ($query) {
+            //     $query->where('customer_id', 3955);
+            // })
+            // ->whereHas('sale_order', function ($query) {
+            //     $query->where('order_type_id', 3)->orWhere(['order_type_id'=>5, 'reference_id'=>999]);
+            // })
+            // ->join('variation', 'stock.variation_id', '=', 'variation.id')
+            // ->join('grade', 'variation.grade', '=', 'grade.id')
+            // ->whereIn('grade.id',[8,12,17])
+            // ->join('orders', 'stock.order_id', '=', 'orders.id')
+            // // ->where('orders.order_type_id',3)
+            // ->groupBy('variation.grade', 'grade.name', 'orders.status', 'stock.status')
+            // ->orderBy('grade_id')
+            // ->get();
 
-            $replacements = Order_item_model::where(['order_id'=>8974])->where('reference_id','!=',null)->pluck('reference_id')->toArray();
-            // dd($replacements);
-            $data['awaiting_replacement'] = Stock_model::where('status', 1)
-            ->whereHas('order_items.order', function ($q) use ($replacements) {
-                $q->where(['status'=>3, 'order_type_id'=>3])
-                ->whereNotIn('reference_id', $replacements);
-            })
-            ->count();
+            // $replacements = Order_item_model::where(['order_id'=>8974])->where('reference_id','!=',null)->pluck('reference_id')->toArray();
+            // // dd($replacements);
+            // $data['awaiting_replacement'] = Stock_model::where('status', 1)
+            // ->whereHas('order_items.order', function ($q) use ($replacements) {
+            //     $q->where(['status'=>3, 'order_type_id'=>3])
+            //     ->whereNotIn('reference_id', $replacements);
+            // })
+            // ->count();
 
         }
         if (session('user')->hasPermission('dashboard_view_inventory')){
-            $data['graded_inventory'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', 'orders.status as status_id', DB::raw('COUNT(*) as quantity'))
-            ->whereNotIn('stock.id', $aftersale)
-            ->where('stock.status', 1)
-            ->join('variation', 'stock.variation_id', '=', 'variation.id')
-            ->join('grade', 'variation.grade', '=', 'grade.id')
-            ->join('orders', 'stock.order_id', '=', 'orders.id')
-            ->groupBy('variation.grade', 'grade.name', 'orders.status')
-            ->orderBy('grade_id')
-            ->get();
-        }
-        if (session('user')->hasPermission('dashboard_view_listing_total')){
-            $data['listed_inventory'] = Variation_model::where('listed_stock','>',0)->sum('listed_stock');
-        }
-        if (session('user')->hasPermission('dashboard_view_pending_orders')){
-            $data['pending_orders_count'] = Order_model::where('status',2)->groupBy('order_type_id')->select('order_type_id', DB::raw('COUNT(id) as count'), DB::raw('SUM(price) as price'))->orderBy('order_type_id','asc')->get();
+        //     $data['graded_inventory'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', 'orders.status as status_id', DB::raw('COUNT(*) as quantity'))
+        //     ->whereNotIn('stock.id', $aftersale)
+        //     ->where('stock.status', 1)
+        //     ->join('variation', 'stock.variation_id', '=', 'variation.id')
+        //     ->join('grade', 'variation.grade', '=', 'grade.id')
+        //     ->join('orders', 'stock.order_id', '=', 'orders.id')
+        //     ->groupBy('variation.grade', 'grade.name', 'orders.status')
+        //     ->orderBy('grade_id')
+        //     ->get();
+        // }
+        // if (session('user')->hasPermission('dashboard_view_listing_total')){
+        //     $data['listed_inventory'] = Variation_model::where('listed_stock','>',0)->sum('listed_stock');
+        // }
+        // if (session('user')->hasPermission('dashboard_view_pending_orders')){
+        //     $data['pending_orders_count'] = Order_model::where('status',2)->groupBy('order_type_id')->select('order_type_id', DB::raw('COUNT(id) as count'), DB::raw('SUM(price) as price'))->orderBy('order_type_id','asc')->get();
         }
 
 
@@ -494,10 +495,10 @@ class IndexController extends Controller
             }
 
             $start_date = now()->subDays($days)->startOfDay()->format('Y-m-d');
-            $products = Products_model::orderBy('model','asc')->pluck('model','id');
-            $storages = Storage_model::pluck('name','id');
-            $colors = Color_model::pluck('name','id');
-            $grades = Grade_model::pluck('name','id');
+            $products = session('dropdown_data')['products'];
+            $storages = session('dropdown_data')['storages'];
+            $colors = session('dropdown_data')['colors'];
+            $grades = session('dropdown_data')['grades'];
 
             if(request('per_page_2') != null){
                 $per_page_2 = request('per_page_2');
@@ -617,8 +618,8 @@ class IndexController extends Controller
             }
 
             $start_date = now()->subDays($days)->startOfDay()->format('Y-m-d');
-            $products = Products_model::orderBy('model','asc')->pluck('model','id');
-            $storages = Storage_model::pluck('name','id');
+            $products = session('dropdown_data')['products'];
+            $storages = session('dropdown_data')['storages'];
 
             if(request('per_page_2') != null){
                 $per_page_2 = request('per_page_2');
@@ -737,10 +738,10 @@ class IndexController extends Controller
             }
 
             $start_date = now()->subDays($days)->startOfDay()->format('Y-m-d');
-            $products = Products_model::orderBy('model','asc')->pluck('model','id');
-            $storages = Storage_model::pluck('name','id');
-            $colors = Color_model::pluck('name','id');
-            $grades = Grade_model::pluck('name','id');
+            $products = session('dropdown_data')['products'];
+            $storages = session('dropdown_data')['storages'];
+            $colors = session('dropdown_data')['colors'];
+            $grades = session('dropdown_data')['grades'];
 
             if(request('per_page_2') != null){
                 $per_page_2 = request('per_page_2');

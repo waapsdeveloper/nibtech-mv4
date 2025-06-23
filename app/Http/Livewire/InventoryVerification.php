@@ -119,10 +119,10 @@ class InventoryVerification extends Component
         }
         $data['vendors'] = Customer_model::whereNotNull('is_vendor')->get();
         $data['exchange_rates'] = ExchangeRate::pluck('rate','target_currency');
-        $data['storages'] = Storage_model::pluck('name','id');
+        $data['storages'] = session('dropdown_data')['storages'];
         $data['products'] = Products_model::pluck('model','id');
-        $data['grades'] = Grade_model::pluck('name','id');
-        $data['colors'] = Color_model::pluck('name','id');
+        $data['grades'] = session('dropdown_data')['grades'];
+        $data['colors'] = session('dropdown_data')['colors'];
 
         $last_ten = Process_stock_model::where('process_id',$process_id)->where('status',1)->orderBy('id','desc')->limit($per_page)->get();
         $data['last_ten'] = $last_ten;
@@ -212,10 +212,10 @@ class InventoryVerification extends Component
         }
 
         $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('first_name','id');
-        $data['colors'] = Color_model::pluck('name','id');
-        $data['storages'] = Storage_model::pluck('name','id');
+        $data['colors'] = session('dropdown_data')['colors'];
+        $data['storages'] = session('dropdown_data')['storages'];
         $data['products'] = Products_model::pluck('model','id');
-        $data['grades'] = Grade_model::pluck('name','id');
+        $data['grades'] = session('dropdown_data')['grades'];
         $data['categories'] = Category_model::get();
         $data['brands'] = Brand_model::get();
 
