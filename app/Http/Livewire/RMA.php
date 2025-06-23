@@ -288,7 +288,7 @@ class RMA extends Component
         $data['products'] = Products_model::pluck('model','id');
         $data['grades'] = session('dropdown_data')['grades'];
         $data['colors'] = session('dropdown_data')['colors'];
-        $data['vendor_grades'] = Vendor_session('dropdown_data')['grades'];
+        $data['vendor_grades'] = Vendor_grade_model::pluck('name','id');
         if(request('per_page') != null){
             $per_page = request('per_page');
         }else{
