@@ -2730,6 +2730,7 @@ class Order extends Component
                         ->whereDoesntHave('latest_topup', function ($q) {
                             $q->where('status', '<', 3);
                         })
+                        ->whereHas('latest_listing_or_topup')
                         ->get();
                     if($stocks->count() > 3 && !$stock[$i]->stock_repairs()->exists()){
                         session()->put('error', "Sell Old Stock First | ".$stocks->count() . "pcs Available");
