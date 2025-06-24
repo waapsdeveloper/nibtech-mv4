@@ -12,7 +12,7 @@
         @foreach ($gradedInventory as $inv)
             <div class="col-lg-3 col-md-4">
                 <h6>
-                    <a href="{{ url('inventory') }}?grade[]={{ $inv->grade_id }}&status={{ $inv->status_id }}">
+                    <a href="{{ url('inventory') }}?grade[]={{ $inv->grade_id }}&status={{ $inv->status_id }}"  wire:navigate>
                         {{ $inv->grade }}: {{ $inv->quantity }} {{ $purchaseStatus[$inv->status_id] ?? '' }}
                     </a>
                 </h6>
