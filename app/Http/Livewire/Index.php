@@ -1248,7 +1248,7 @@ class Index extends Component
         Artisan::call('view:clear');
         Artisan::call('route:clear');
         session()->forget('dropdown_data');
-        $this->mount(); // Or re-trigger the population logic
+        // $this->mount(); // Or re-trigger the population logic
         // Artisan::call('config:cache');
         // Artisan::call('route:cache');
         // Artisan::call('optimize');
