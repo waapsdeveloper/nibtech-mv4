@@ -2723,10 +2723,14 @@ class Order extends Component
                     return redirect()->back();
                 }
                 if($stock[$i]->created_at->diffInDays() < 20 && !session('user')->hasPermission('allow_sell_new_stock')){
-                    $stocks = Stock_model::where('variation_id',$variant->id)->where('status',1)->where('order_id','<' , $stock[$i]->order_id)->where('updated_at','<',now()->subDays(5))->whereDoesntHave('latest_listing_or_topup', function($q){
-                        $q->where('status', '<', 3);
-                    })
-                    ->get();
+                    $stocks = Stock_model::where('variation_id', $variant->id)
+                        ->where('status', 1)
+                        ->where('order_id', '<', $stock[$i]->order_id)
+                        ->where('updated_at', '<', now()->subDays(5))
+                        ->whereDoesntHave('latest_topup', function ($q) {
+                            $q->where('status', '<', 3);
+                        })
+                        ->get();
                     if($stocks->count() > 3 && !$stock[$i]->stock_repairs()->exists()){
                         session()->put('error', "Sell Old Stock First | ".$stocks->count() . "pcs Available");
                         return redirect()->back();
