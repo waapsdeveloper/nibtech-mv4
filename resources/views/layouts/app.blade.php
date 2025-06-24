@@ -108,9 +108,9 @@
 
         {{-- <livewire:chat-sidebar /> --}}
 
-        @livewireScripts
+        @livewireScripts(['includeNavigate' => true])
+        {{-- @livewireScripts --}}
         <script src="//unpkg.com/alpinejs" defer></script>
         {{-- <livewire:scripts /> --}}
-
     </body>
 </html>
