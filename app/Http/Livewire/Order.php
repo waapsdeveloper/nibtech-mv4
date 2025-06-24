@@ -2736,6 +2736,9 @@ class Order extends Component
                         return redirect()->back();
                     }
                 }
+                if(session('user_id') == 1){
+                    dd($stocks);
+                }
                 // if($stock[$i]->status != 1){
 
                     $last_item = $stock[$i]->last_item();
