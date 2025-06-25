@@ -195,12 +195,19 @@
                     <div class="card">
                         <div class="card-header pb-0 d-flex justify-content-between">
                             <h5 class="card-title mg-b-0"> Customer Transactions </h5>
-                            <button class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#record_payment">Record Payment</button>
+                            {{-- <button class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#record_payment">Record Payment</button> --}}
                             <form method="GET" action="{{ url('customer/export_reports/'.$customer->id) }}" target="_BLANK" class="form-inline">
                                 <input type="hidden" name="start_date" value="{{ request('start_date') }}">
                                 <input type="hidden" name="end_date" value="{{ request('end_date') }}">
                                 <button type="submit" name="statement" value="1" class="btn btn-primary">Statement</button>
                             </form>
+                            <select class="form-control form-select" name="per_page" id="per_page" form="search" onchange="this.form.submit()">
+                                <option value="10" @if (request('per_page') == 10) selected @endif>10</option>
+                                <option value="25" @if (request('per_page') == 25) selected @endif>25</option>
+                                <option value="50" @if (request('per_page') == 50) selected @endif>50</option>
+                                <option value="100" @if (request('per_page') == 100) selected @endif>100</option
+                                    >
+                            </select>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
