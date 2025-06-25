@@ -999,11 +999,12 @@ class Inventory extends Component
                 $q->where('grade', 12);
             });
         })
-        ->when(request('grade') != [], function ($q) use ($rma_order_ids) {
+        ->whereNotIn('sale_order_id', $rma_order_ids)
+        ->when(request('grade') != [], function ($q) {
             $q->whereDoesntHave('sale_order', function ($query) {
                 $query->where('customer_id', 3955);
-            })
-            ->whereNotIn('sale_order_id', $rma_order_ids);
+            });
+
         })
         // ->orderBy('product_id','ASC')
         ->orderByDesc(
