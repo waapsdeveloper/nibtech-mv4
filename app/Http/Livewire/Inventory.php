@@ -990,7 +990,10 @@ class Inventory extends Component
             });
         })
         ->whereHas('variation', function ($q) {
-            $q->where('grade', 12);
+            $q->where('grade', 12)
+            ->when(request('grade') != [], function ($q) {
+                $q->whereIn('grade', request('grade'));
+            });
         })
         ->orderBy('product_id','ASC')
         ->paginate($per_page)

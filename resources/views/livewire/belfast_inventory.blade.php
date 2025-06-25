@@ -156,9 +156,10 @@
 
         <div class="d-flex justify-content-between">
             <div>
-                <a href="{{url('belfast_inventory')}}?status=1" class="btn btn-link">Active</a>
-                <a href="{{url('belfast_inventory')}}?status=2" class="btn btn-link">AfterSale</a>
-                <a href="{{url('belfast_inventory')}}" class="btn btn-link">All</a>
+                <a href="{{url('belfast_inventory')}}?status=1" class="btn btn-link @if (Request::get('status') == 1) active @endif ">Active</a>
+                <a href="{{url('belfast_inventory')}}?status=2" class="btn btn-link @if (Request::get('status') == 2) active @endif ">AfterSale</a>
+                <a href="{{url('belfast_inventory')}}" class="btn btn-link @if (!Request::get('status')) active @endif ">All</a>
+                <a href="{{url('belfast_inventory')}}?status=2&grade[]=8" class="btn btn-link @if (Request::get('status') == 2 && in_array(8, Request::get('grade', []))) active @endif ">Aftersale Repair</a>
             </div>
         </div>
         <br>
