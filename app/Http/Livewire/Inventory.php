@@ -1003,7 +1003,7 @@ class Inventory extends Component
             $q->whereDoesntHave('sale_order', function ($query) {
                 $query->where('customer_id', 3955);
             })
-            ->whereNotIn('sale_order_id', $rma_order_ids)
+            ->whereNotIn('sale_order_id', $rma_order_ids);
         })
         ->orderBy('product_id','ASC')
         ->paginate($per_page)
