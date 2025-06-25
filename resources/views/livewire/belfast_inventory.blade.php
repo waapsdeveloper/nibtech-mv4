@@ -209,7 +209,7 @@
                                 }
                                 .descri {
                                     width: 30px !important;
-                                    max-width: 300px !important;
+                                    max-width: 30px !important;
                                     overflow: hidden;
                                     text-overflow: ellipsis;
                                     white-space: nowrap;
