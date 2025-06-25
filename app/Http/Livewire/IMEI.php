@@ -204,6 +204,10 @@ class IMEI extends Component
                         $stock->sale_order_id = $last_item->order_id;
                         $stock->save();
                     }
+                    if($stock->sale_order_id != $last_item->order_id){
+                        $stock->sale_order_id = $last_item->order_id;
+                        $stock->save();
+                    }
                 }
                     session()->put('success', $message);
             }
