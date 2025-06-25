@@ -350,6 +350,11 @@ class Stock_model extends Model
                     $stock->sale_order_id = $last_item->order_id;
                     $stock->save();
                 }
+
+                if($stock->sale_order_id != $last_item->order_id){
+                    $stock->sale_order_id = $last_item->order_id;
+                    $stock->save();
+                }
             }
             if($stock->status == null){
                 $message = "IMEI missing status";
