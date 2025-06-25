@@ -428,6 +428,10 @@ canvas {
                     <td align="right"><strong>{{ $order->currency_id->sign }}{{ number_format($totalAmount, 2) }}</strong></td>
                 </tr>
                 <tr>
+                    <td colspan="3" style="text-align: right;"><strong>VAT:</strong></td>
+                    <td align="right"><strong>{{ $order->currency_id->sign }}0.00</strong></td>
+                </tr>
+                <tr>
                     <td colspan="3" style="text-align: right;"><strong>Amount Due:</strong></td>
                     <td align="right"><strong>{{ $order->currency_id->sign }}{{ number_format($totalAmount, 2) }}</strong></td>
                 </tr>
