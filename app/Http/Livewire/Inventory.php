@@ -997,6 +997,11 @@ class Inventory extends Component
                 $q->where('grade', 12);
             });
         })
+        ->when(request('grade') != [], function ($q) {
+            $q->whereHas('last_item.order', function ($q) {
+                $q->where('order_type_id', 3);
+            });
+        })
         ->orderBy('product_id','ASC')
         ->paginate($per_page)
         ->onEachSide(5)
