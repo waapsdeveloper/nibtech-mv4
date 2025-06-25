@@ -201,21 +201,6 @@
                     </div>
                     <div class="card-body">
                         <div class="table-responsive" id="print_inv">
-                            <style media="print">
-                                .table {
-                                    width: 100% !important;
-                                    max-width: 100% !important;
-                                    table-layout: auto !important;
-                                }
-                                .descri {
-                                    width: 30px !important;
-                                    max-width: 30px !important;
-                                    overflow: hidden;
-                                    text-overflow: ellipsis;
-                                    white-space: nowrap;
-                                }
-
-                            </style>
                             <table class="table table-bordered table-hover mb-0 text-md-nowrap w-100">
                                 <thead>
                                     <tr>
@@ -469,6 +454,21 @@
                 );
                 mywindow.document.write(
                     `<link rel="stylesheet" href="{{ asset('assets/css/style.css') }}" type="text/css" />`);
+                // Add print styles dynamically
+                mywindow.document.write(`<style media="print">
+                    .table {
+                        width: 100% !important;
+                        max-width: 100% !important;
+                        table-layout: auto !important;
+                    }
+                    .descri {
+                        width: 30px !important;
+                        max-width: 30px !important;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                    }
+                </style>`);
                 mywindow.document.write('<title>' + document.title + '</title></head><body>');
                 mywindow.document.write(content);
                 mywindow.document.write('</body></html>');
@@ -483,17 +483,3 @@
 
                 return true;
             }
-        </script>
-		<!--Internal Sparkline js -->
-		<script src="{{asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js')}}"></script>
-
-		<!-- Internal Piety js -->
-		<script src="{{asset('assets/plugins/peity/jquery.peity.min.js')}}"></script>
-
-		<!-- Internal Chart js -->
-		<script src="{{asset('assets/plugins/chartjs/Chart.bundle.min.js')}}"></script>
-
-		<!-- INTERNAL Select2 js -->
-		<script src="{{asset('assets/plugins/select2/js/select2.full.min.js')}}"></script>
-		<script src="{{asset('assets/js/select2.js')}}"></script>
-    @endsection
