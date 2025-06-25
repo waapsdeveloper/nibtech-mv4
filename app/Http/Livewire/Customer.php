@@ -89,6 +89,10 @@ class Customer extends Component
         if(str_contains(url()->previous(),url('customer')) && !str_contains(url()->previous(),'profile')){
             session()->put('previous', url()->previous());
         }
+        $per_page = 50;
+        if(request('per_page') != '' && is_numeric(request('per_page'))){
+            $per_page = request('per_page');
+        }
         $data['title_page'] = "Customer Profile";
         session()->put('page_title', $data['title_page']);
         $customer = Customer_model::find($id);
@@ -123,7 +127,8 @@ class Customer extends Component
             return $q->whereDate('date', '<=', request('end_date') . ' 23:59:59');
         })
         ->where('payment_method_id', '!=', null)
-        ->orderBy('date','desc')->get();
+        ->orderBy('date','desc')
+        ->get();
 
 
         $data['currencies'] = Currency_model::all();
@@ -273,7 +278,8 @@ class Customer extends Component
                 return $q->whereDate('created_at', '<=', request('end_date') . ' 23:59:59');
             })
             ->with(['transaction_type', 'payment_method', 'order', 'process'])
-            ->orderBy('date','desc')->get();
+            ->orderBy('date','desc')->paginate($per_page)
+            ->appends(request()->except('page'));
             $data['transactions'] = $transactions;
 
 
