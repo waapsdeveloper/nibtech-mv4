@@ -215,7 +215,7 @@
                                         <th><small><b>Cost</b></small></th>
                                         @endif
                                         <th><small><b>Operator</b></small></th>
-                                        <th><small><b>Reason</b></small></th>
+                                        <th width="300"><small><b>Reason</b></small></th>
                                         <th><small><b>Datetime</b></small></th>
                                         <th><small><b>Action</b></small></th>
                                     </tr>
