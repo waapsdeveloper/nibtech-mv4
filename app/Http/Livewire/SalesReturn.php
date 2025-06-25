@@ -384,6 +384,7 @@ class SalesReturn extends Component
 
                         $stock->variation_id = $variation->id;
                         $stock->status = 1;
+                        $stock->sale_order_id = null;
                         $stock->save();
 
                         if (session()->has('counter')) {

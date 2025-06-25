@@ -329,9 +329,11 @@ class Stock_model extends Model
                 // if($stock->status == 2){
                     if($process_stocks->where('status',1)->count() == 0){
                         $stock->status = 1;
+                        $stock->sale_order_id = null;
                         $stock->save();
                     }else{
                         $stock->status = 2;
+                        $stock->sale_order_id = null;
                         $stock->save();
 
                         $message = "IMEI sent for repair";
@@ -345,6 +347,7 @@ class Stock_model extends Model
                 $type = 'error';
                 if($stock->status == 1){
                     $stock->status = 2;
+                    $stock->sale_order_id = $last_item->order_id;
                     $stock->save();
                 }
             }
