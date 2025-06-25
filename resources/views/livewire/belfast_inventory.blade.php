@@ -202,7 +202,7 @@
                     <div class="card-body">
                         <div class="table-responsive" id="print_inv">
                             <style media="print">
-                                .table {
+                                /* .table {
                                     width: 100% !important;
                                     max-width: 100% !important;
                                     table-layout: auto !important;
@@ -213,7 +213,7 @@
                                     overflow: hidden;
                                     text-overflow: ellipsis;
                                     white-space: nowrap;
-                                }
+                                } */
 
                             </style>
                             <table class="table table-bordered table-hover mb-0 text-md-nowrap w-100">
