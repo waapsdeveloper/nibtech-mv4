@@ -167,7 +167,7 @@
         <br>
         <div class="row">
             <div class="col-xl-12">
-                <div class="card" id="print_inv">
+                <div class="card">
                     <div class="card-header pb-0">
                         <div class="d-flex justify-content-between">
                             <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$stocks->firstItem()}} {{ __('locale.To') }} {{$stocks->lastItem()}} {{ __('locale.Out Of') }} {{$stocks->total()}} </h5>
@@ -203,7 +203,7 @@
 
 
 
-                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                            <table class="table table-bordered table-hover mb-0 text-md-nowrap w-100" id="print_inv">
                                 <thead>
                                     <tr>
                                         <th><small><b>No</b></small></th>
