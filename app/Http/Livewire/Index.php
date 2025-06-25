@@ -157,8 +157,8 @@ class Index extends Component
             $data['rma'] = $rma;
             $data['aftersale_inventory'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', 'orders.status as status_id', 'stock.status as stock_status', DB::raw('COUNT(*) as quantity'))
             ->where('stock.status', 2)
-            ->whereDoesntHave('sale_order', function ($query) {
-                $query->where('customer_id', 3955);
+            ->whereHas('sale_order', function ($query) {
+                $query->where('order_type_id', 3)->orWhere('reference_id', 999);
             })
             ->whereHas('sale_order', function ($query) {
                 $query->where('order_type_id', 3)->orWhere(['order_type_id'=>5, 'reference_id'=>999]);
