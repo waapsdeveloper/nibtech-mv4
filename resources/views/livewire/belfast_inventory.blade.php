@@ -199,11 +199,11 @@
 
                         </div>
                     </div>
-                    <div class="card-body"><div class="table-responsive">
+                    <div class="card-body"><div class="table-responsive" id="print_inv">
 
 
 
-                            <table class="table table-bordered table-hover mb-0 text-md-nowrap w-100" id="print_inv">
+                            <table class="table table-bordered table-hover mb-0 text-md-nowrap w-100">
                                 <thead>
                                     <tr>
                                         <th><small><b>No</b></small></th>
