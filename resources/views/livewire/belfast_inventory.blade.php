@@ -161,11 +161,13 @@
                 <a href="{{url('belfast_inventory')}}" class="btn btn-link @if (!Request::get('status')) active @endif ">All</a>
                 <a href="{{url('belfast_inventory')}}?status=2&grade[]=8" class="btn btn-link @if (Request::get('status') == 2 && in_array(8, Request::get('grade', []))) active @endif ">Aftersale Repair</a>
             </div>
+            <button class="btn btn-sm btn-secondary" id="print_btn" onclick="PrintElem('print_inv')"><i
+                    class="fa fa-print"></i></button>
         </div>
         <br>
         <div class="row">
             <div class="col-xl-12">
-                <div class="card">
+                <div class="card" id="print_inv">
                     <div class="card-header pb-0">
                         <div class="d-flex justify-content-between">
                             <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$stocks->firstItem()}} {{ __('locale.To') }} {{$stocks->lastItem()}} {{ __('locale.Out Of') }} {{$stocks->total()}} </h5>
@@ -438,6 +440,29 @@
             modal.find('.modal-body #price').val(price)
             modal.find('.modal-body #linked_id').val(linked_id)
             })
+
+
+            function PrintElem(elem) {
+                var mywindow = window.open('', 'PRINT', 'height=400,width=600');
+
+                mywindow.document.write('<html><head>');
+                mywindow.document.write(
+                    `<link rel="stylesheet" href="{{ asset('assets/plugins/bootstrap/css/bootstrap.min.css') }}" type="text/css" />`
+                );
+                mywindow.document.write(
+                    `<link rel="stylesheet" href="{{ asset('assets/css/style.css') }}" type="text/css" />`);
+                mywindow.document.write('<title>' + document.title + '</title></head><body >');
+                mywindow.document.write(document.getElementById(elem).innerHTML);
+                mywindow.document.write('</body></html>');
+
+                mywindow.document.close(); // necessary for IE >= 10
+                mywindow.focus(); // necessary for IE >= 10*/
+
+                mywindow.print();
+                mywindow.close();
+
+                return true;
+            }
         </script>
 		<!--Internal Sparkline js -->
 		<script src="{{asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js')}}"></script>
