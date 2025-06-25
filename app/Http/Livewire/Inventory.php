@@ -1006,7 +1006,12 @@ class Inventory extends Component
             ->whereNotIn('sale_order_id', $rma_order_ids);
         })
         // ->orderBy('product_id','ASC')
-        ->orderBy('latest_operation.created_at','DESC')
+        ->orderByDesc(
+            Stock_operations_model::select('created_at')
+            ->whereColumn('stock_id', 'stock.id')
+            ->latest()
+            ->limit(1)
+        )
         ->paginate($per_page)
         ->onEachSide(5)
         ->appends(request()->except('page'));
