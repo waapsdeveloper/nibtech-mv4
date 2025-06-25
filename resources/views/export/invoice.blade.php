@@ -220,8 +220,10 @@
                                         <td>Sub Total:</td>
                                         <td align="right"> <strong>{{ $order->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td>
                                     </tr>
-                                    <br>
-                                    <br>
+                                    <tr>
+                                        <td>VAT:</td>
+                                        <td align="right"> <strong>{{ $order->currency_id->sign }}0.00</strong></td>
+                                    </tr>
                                     <hr>
                                     <tr>
                                         <td>Amount Due:</td>
