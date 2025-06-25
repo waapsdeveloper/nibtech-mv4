@@ -952,6 +952,8 @@ class Inventory extends Component
             session()->put('error', 'No Open Sales Return Order found');
             return redirect()->back();
         }
+        $rma_order_ids = Order_model::where('order_type_id', 2)->pluck('id');
+
         $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('first_name','id');
         $data['products'] = Products_model::pluck('model','id');
         $data['colors'] = session('dropdown_data')['colors'];
@@ -997,10 +999,11 @@ class Inventory extends Component
                 $q->where('grade', 12);
             });
         })
-        ->when(request('grade') != [], function ($q) {
-            $q->whereHas('last_item.order', function ($q) {
-                $q->where('order_type_id', 3);
-            });
+        ->when(request('grade') != [], function ($q) use ($rma_order_ids) {
+            $q->whereDoesntHave('sale_order', function ($query) {
+                $query->where('customer_id', 3955);
+            })
+            ->whereNotIn('sale_order_id', $rma_order_ids)
         })
         ->orderBy('product_id','ASC')
         ->paginate($per_page)
