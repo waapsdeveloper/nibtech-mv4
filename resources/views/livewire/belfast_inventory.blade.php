@@ -208,7 +208,7 @@
                                     table-layout: auto !important;
                                 }
                                 .descri {
-                                    width: 300px !important;
+                                    width: 30px !important;
                                     max-width: 300px !important;
                                     overflow: hidden;
                                     text-overflow: ellipsis;
