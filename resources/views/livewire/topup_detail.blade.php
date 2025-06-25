@@ -601,20 +601,30 @@
             });
             function PrintElem(elem)
             {
-                var mywindow = window.open('', 'PRINT', 'height=400,width=600');
+                var content = document.getElementById(elem).innerHTML;
+                if (!content) {
+                    alert('Nothing to print!');
+                    return false;
+                }
 
+                var mywindow = window.open('', 'PRINT', 'height=600,width=900');
                 mywindow.document.write('<html><head>');
-                mywindow.document.write(`<link rel="stylesheet" href="{{asset('assets/plugins/bootstrap/css/bootstrap.min.css')}}" type="text/css" />`);
-                mywindow.document.write(`<link rel="stylesheet" href="{{asset('assets/css/style.css')}}" type="text/css" />`);
-                mywindow.document.write('<title>' + document.title  + '</title></head><body >');
-                mywindow.document.write(document.getElementById(elem).innerHTML);
+                mywindow.document.write(
+                    `<link rel="stylesheet" href="{{ asset('assets/plugins/bootstrap/css/bootstrap.min.css') }}" type="text/css" />`
+                );
+                mywindow.document.write(
+                    `<link rel="stylesheet" href="{{ asset('assets/css/style.css') }}" type="text/css" />`);
+                mywindow.document.write('<title>' + document.title + '</title></head><body>');
+                mywindow.document.write(content);
                 mywindow.document.write('</body></html>');
 
-                mywindow.document.close(); // necessary for IE >= 10
-                mywindow.focus(); // necessary for IE >= 10*/
+                mywindow.document.close();
+                mywindow.focus();
 
-                mywindow.print();
-                mywindow.close();
+                setTimeout(function() {
+                    mywindow.print();
+                    mywindow.close();
+                }, 500);
 
                 return true;
             }
