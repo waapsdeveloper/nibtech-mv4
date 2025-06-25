@@ -497,7 +497,7 @@
                                             @foreach ($aftersale_inventory as $inv)
                                                 <tr>
                                                     <td>{{ $inv->grade }}:</td>
-                                                    <td class="tx-right"><a href="{{url('belfast_inventory')}}?grade[]={{ $inv->grade_id }}&status={{ $inv->status_id }}" title="Go to orders page">{{ $inv->quantity }}</a></td>
+                                                    <td class="tx-right"><a href="{{url('belfast_inventory')}}?grade[]={{ $inv->grade_id }}&status={{$inv->stock_status }}" title="Go to orders page">{{ $inv->quantity }}</a></td>
                                                 </tr>
                                             @endforeach
                                             <tr>
