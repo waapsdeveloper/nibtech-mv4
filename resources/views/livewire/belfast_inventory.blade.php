@@ -156,10 +156,10 @@
 
         <div class="d-flex justify-content-between">
             <div>
-                <a href="{{url('belfast_inventory')}}?status=1" class="btn btn-link @if (Request::get('status') == 1) active @endif ">Active</a>
-                <a href="{{url('belfast_inventory')}}?status=2" class="btn btn-link @if (Request::get('status') == 2) active @endif ">AfterSale</a>
-                <a href="{{url('belfast_inventory')}}" class="btn btn-link @if (!Request::get('status')) active @endif ">All</a>
-                <a href="{{url('belfast_inventory')}}?status=2&grade[]=8" class="btn btn-link @if (Request::get('status') == 2 && in_array(8, Request::get('grade', []))) active @endif ">Aftersale Repair</a>
+                <a href="{{url('belfast_inventory')}}?status=1" class="btn btn-link @if (Request::get('status') == 1) bg-white @endif ">Active</a>
+                <a href="{{url('belfast_inventory')}}?status=2" class="btn btn-link @if (Request::get('status') == 2 && !Request::get('grade')) bg-white @endif ">AfterSale</a>
+                <a href="{{url('belfast_inventory')}}" class="btn btn-link @if (!Request::get('status')) bg-white @endif ">All</a>
+                <a href="{{url('belfast_inventory')}}?status=2&grade[]=8" class="btn btn-link @if (Request::get('status') == 2 && in_array(8, Request::get('grade', []))) bg-white @endif ">Aftersale Repair</a>
             </div>
             <button class="btn btn-sm btn-secondary" id="print_btn" onclick="PrintElem('print_inv')"><i
                     class="fa fa-print"></i></button>
