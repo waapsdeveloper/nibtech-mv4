@@ -245,7 +245,7 @@
                                             @endif
                                             @if ($latest_operation)
                                             <td>{{ $latest_operation->admin->first_name }}</td>
-                                            <td> {{ $latest_operation->description }} </td>
+                                            <td width="300"> {{ $latest_operation->description }} </td>
                                             <td>{{ $latest_operation->updated_at }}</td>
                                             @else
                                             <td></td>
