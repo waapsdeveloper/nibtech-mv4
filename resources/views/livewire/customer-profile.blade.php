@@ -201,13 +201,14 @@
                                 <input type="hidden" name="end_date" value="{{ request('end_date') }}">
                                 <button type="submit" name="statement" value="1" class="btn btn-primary">Statement</button>
                             </form>
+                            <div>
                             <select class="form-control form-select" name="per_page" id="per_page" form="search" onchange="this.form.submit()">
-                                <option value="10" @if (request('per_page') == 10) selected @endif>10</option>
-                                <option value="25" @if (request('per_page') == 25) selected @endif>25</option>
                                 <option value="50" @if (request('per_page') == 50) selected @endif>50</option>
-                                <option value="100" @if (request('per_page') == 100) selected @endif>100</option
-                                    >
+                                <option value="100" @if (request('per_page') == 100) selected @endif>100</option>                                    >
+                                <option value="200" @if (request('per_page') == 200) selected @endif>200</option>
+                                <option value="500" @if (request('per_page') == 500) selected @endif>500</option>
                             </select>
+                            </div>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
