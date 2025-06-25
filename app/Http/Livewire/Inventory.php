@@ -1001,7 +1001,7 @@ class Inventory extends Component
         ->when(request('grade') != [], function ($q) {
             $q->whereHas('sale_order', function ($query) {
                 $query->where('order_type_id', 3)->orWhere('reference_id', 999);
-            })
+            });
         })
         // ->orderBy('product_id','ASC')
         ->orderByDesc(
