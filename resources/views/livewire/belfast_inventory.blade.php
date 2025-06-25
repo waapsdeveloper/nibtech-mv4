@@ -207,6 +207,14 @@
                                     max-width: 100% !important;
                                     table-layout: auto !important;
                                 }
+                                .descri {
+                                    width: 300px !important;
+                                    max-width: 300px !important;
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                    white-space: nowrap;
+                                }
+
                             </style>
                             <table class="table table-bordered table-hover mb-0 text-md-nowrap w-100">
                                 <thead>
@@ -250,7 +258,7 @@
                                             @endif
                                             @if ($latest_operation)
                                             <td>{{ $latest_operation->admin->first_name }}</td>
-                                            <td width="300"> {{ $latest_operation->description }} </td>
+                                            <td class="descri" width="300"> {{ $latest_operation->description }} </td>
                                             <td>{{ $latest_operation->updated_at }}</td>
                                             @else
                                             <td></td>
