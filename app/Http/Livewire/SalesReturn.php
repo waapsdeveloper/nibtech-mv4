@@ -226,6 +226,10 @@ class SalesReturn extends Component
                         $stock->status = 2;
                         $stock->save();
                     }
+                    if($stock->sale_order_id != $last_item->order_id){
+                        $stock->sale_order_id = $last_item->order_id;
+                        $stock->save();
+                    }
                         session()->put('success', 'IMEI Sold');
                 }
                 if($stock->status == 2){
