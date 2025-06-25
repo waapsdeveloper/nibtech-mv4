@@ -277,7 +277,7 @@ class Customer extends Component
             ->when(request('end_date') != '', function ($q) {
                 return $q->whereDate('created_at', '<=', request('end_date') . ' 23:59:59');
             })
-            ->with(['transaction_type', 'payment_method', 'order', 'process'])
+            ->with(['transaction_type', 'payment_method', 'order', 'process', 'children'])
             ->orderBy('date','desc')->paginate($per_page)
             ->appends(request()->except('page'));
             $data['transactions'] = $transactions;
