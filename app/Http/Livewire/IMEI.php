@@ -344,6 +344,7 @@ class IMEI extends Component
                 $item->linked_id = $linked_id;
                 $item->save();
                 $linked_id = $item->id;
+                $sale_order_id = $item->order_id;
             } elseif (in_array($item->order->order_type_id, [4, 6]) && $linked_id && in_array($last_item->order->order_type_id, [3, 5])) {
                 // $new_order[] = $item;
                 $item->linked_id = $linked_id;
@@ -351,11 +352,13 @@ class IMEI extends Component
                 $item->price = $last_item->price;
                 $item->save();
                 $linked_id = $item->id;
+                $sale_order_id = null;
             } elseif ($item->order->order_type_id == 1 && $linked_id && $last_item->order->order_type_id == 2) {
                 // $new_order[] = $item;
                 $item->linked_id = $linked_id;
                 $item->save();
                 $linked_id = $item->id;
+                $sale_order_id = null;
             } else {
                 $reserve[] = $item->id;
             }
@@ -367,6 +370,7 @@ class IMEI extends Component
                     $item2->linked_id = $linked_id;
                     $item2->save();
                     $linked_id = $item2->id;
+                    $sale_order_id = $item->order_id;
                     array_shift($reserve);
                 } elseif (in_array($item2->order->order_type_id, [4, 6]) && $linked_id && in_array($last_item->order->order_type_id, [3, 5])) {
                     // $new_order[] = $item2;
@@ -375,6 +379,7 @@ class IMEI extends Component
                     $item2->price = $last_item->price;
                     $item2->save();
                     $linked_id = $item2->id;
+                    $sale_order_id = null;
                     array_shift($reserve);
                 }
 
@@ -392,6 +397,7 @@ class IMEI extends Component
                 $item2->linked_id = $linked_id;
                 $item2->save();
                 $linked_id = $item2->id;
+                $sale_order_id = $item->order_id;
                 // array_shift($reserve);
             } elseif (in_array($item2->order->order_type_id, [4, 6]) && $linked_id && in_array($last_item->order->order_type_id, [3, 5])) {
                 // $new_order[] = $item2;
@@ -400,6 +406,7 @@ class IMEI extends Component
                 $item2->price = $last_item->price;
                 $item2->save();
                 $linked_id = $item2->id;
+                $sale_order_id = null;
                 // array_shift($reserve);
             } elseif (in_array($item2->order->order_type_id, [3, 5]) && $linked_id && in_array($last_item->order->order_type_id, [3, 5])) {
                 // $new_order[] = $item2;
@@ -432,9 +439,13 @@ class IMEI extends Component
                 $item2->linked_id = $return_item->id;
                 $item2->save();
                 $linked_id = $item2->id;
+                $sale_order_id = $item->order_id;
             }
         }
         $stock->order_id = $order_id;
+        if($stock->status == 2){
+            $stock->sale_order_id = $sale_order_id;
+        }
         $stock->save();
         session()->put('success', 'Rearranged Successfully');
         return redirect()->back();
