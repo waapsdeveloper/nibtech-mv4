@@ -470,6 +470,27 @@
                 mywindow.document.write(
                     `<link rel="stylesheet" href="{{ asset('assets/css/style.css') }}" type="text/css" />`);
                 mywindow.document.write('<title>' + document.title + '</title></head><body>');
+                mywindow.document.write(`
+                    <style>
+                        @media print {
+                            body, html {
+                                width: 100% !important;
+                                margin: 0;
+                                padding: 0;
+                            }
+                            .table {
+                                width: 100% !important;
+                                max-width: 100% !important;
+                                table-layout: auto !important;
+                                word-break: break-word;
+                            }
+                            .card, .card-body, .card-header {
+                                width: 100% !important;
+                                max-width: 100% !important;
+                            }
+                        }
+                    </style>
+                `);
                 mywindow.document.write(content);
                 mywindow.document.write('</body></html>');
 
