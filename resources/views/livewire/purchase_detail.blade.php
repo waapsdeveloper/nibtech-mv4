@@ -26,6 +26,10 @@
                     @if ($order->status <= 2)
                     <form class="form-inline" method="POST" id="approveform" action="{{url('purchase/approve').'/'.$order->id}}">
                         @csrf
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="reference_id" name="reference_id" placeholder="Enter Batch Reference" value="{{$order->reference_id}}" onchange="submitForm()">
+                            <label for="reference_id">Batch Reference</label>
+                        </div>
                         <div class="">
                             <select name="customer_id" class="form-select">
                                 @foreach ($vendors as $id=>$vendor)
