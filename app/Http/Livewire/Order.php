@@ -598,6 +598,7 @@ class Order extends Component
     public function purchase_approve($order_id){
         $order = Order_model::find($order_id);
         $order->reference = request('reference');
+        $order->reference_id = request('reference_id');
         $order->tracking_number = request('tracking_number');
         if(request('customer_id') != null){
             $order->customer_id = request('customer_id');
