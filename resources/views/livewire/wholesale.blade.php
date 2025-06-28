@@ -253,91 +253,95 @@
             </div>
         </div>
 
-        <div class="modal fade" id="record_payment" tabindex="-1" role="dialog" aria-labelledby="record_payment" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                    <form method="POST" action="{{url('transaction/add_payment')}}" id="record_payment_form">
-                        @csrf
-                        <input type="hidden" name="customer_id" value="{{ $customer->id }}">
-                        <input type="hidden" name="type" value="1">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="exampleModalLabel2">Record Payment for {{ $customer->company }}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">&times;</button>
-                        </div>
-                        <div class="modal-body pd-20">
-                        <input type="hidden" name="transaction_id" id="transaction_id">
-                            <div class="row hide-on-edit">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="type">Payment Type</label>
-                                        <select class="form-control form-select" name="type" id="type" required>
-                                            <option value="1">Receive</option>
-                                            <option value="2">Send</option>
-                                        </select>
+        @if (session('user')->hasPermission('record_payment') && isset($customer))
+
+            <div class="modal fade" id="record_payment" tabindex="-1" role="dialog" aria-labelledby="record_payment" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <form method="POST" action="{{url('transaction/add_payment')}}" id="record_payment_form">
+                            @csrf
+                            <input type="hidden" name="customer_id" value="{{ $customer->id }}">
+                            <input type="hidden" name="type" value="1">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel2">Record Payment for {{ $customer->company }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">&times;</button>
+                            </div>
+                            <div class="modal-body pd-20">
+                            <input type="hidden" name="transaction_id" id="transaction_id">
+                                <div class="row hide-on-edit">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="type">Payment Type</label>
+                                            <select class="form-control form-select" name="type" id="type" required>
+                                                <option value="1">Receive</option>
+                                                <option value="2">Send</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="method">Payment Method</label>
+                                            <select class="form-control form-select" name="payment_method" id="method" required>
+                                                <option value="1">Bank Transfer</option>
+                                                <option value="2">Cash</option>
+                                                <option value="3">Credit Card</option>
+                                                <option value="4">Cheque</option>
+                                                <option value="5">Other</option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="method">Payment Method</label>
-                                        <select class="form-control form-select" name="payment_method" id="method" required>
-                                            <option value="1">Bank Transfer</option>
-                                            <option value="2">Cash</option>
-                                            <option value="3">Credit Card</option>
-                                            <option value="4">Cheque</option>
-                                            <option value="5">Other</option>
-                                        </select>
+                                <div class="row">
+                                    <div class="col-md-6">
+
+                                        <div class="form-group">
+                                            <label for="currency">Currency</label>
+                                            <select class="form-control form-select" name="currency" id="currency" required>
+                                                @foreach ($currencies as $currency)
+                                                    <option value="{{ $currency->id }}" @if ($currency->id == 4) selected @endif>{{ $currency->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
                                     </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="exchange_rate">Exchange Rate</label>
+                                            <input type="number" class="form-control" name="exchange_rate" value="1" id="exchange_rate" step="0.0001" required>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+
+                                        <div class="form-group">
+                                            <label for="amount">Amount</label>
+                                            <input type="number" class="form-control" name="amount" id="amount" step="0.01" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="date">Date</label>
+                                            <input type="date" class="form-control" name="date" id="date" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="description">Description</label>
+                                    <textarea class="form-control" name="description" id="description" required></textarea>
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-md-6">
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary">Record Payment</button>
 
-                                    <div class="form-group">
-                                        <label for="currency">Currency</label>
-                                        <select class="form-control form-select" name="currency" id="currency" required>
-                                            @foreach ($currencies as $currency)
-                                                <option value="{{ $currency->id }}" @if ($currency->id == 4) selected @endif>{{ $currency->name }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="exchange_rate">Exchange Rate</label>
-                                        <input type="number" class="form-control" name="exchange_rate" value="1" id="exchange_rate" step="0.0001" required>
-                                    </div>
-                                </div>
                             </div>
-
-                            <div class="row">
-                                <div class="col-md-6">
-
-                                    <div class="form-group">
-                                        <label for="amount">Amount</label>
-                                        <input type="number" class="form-control" name="amount" id="amount" step="0.01" required>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="date">Date</label>
-                                        <input type="date" class="form-control" name="date" id="date" required>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="description">Description</label>
-                                <textarea class="form-control" name="description" id="description" required></textarea>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="submit" class="btn btn-primary">Record Payment</button>
-
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </div>
+
+        @endif
 
     <div class="modal" id="modaldemo">
         <div class="modal-dialog wd-xl-400" role="document">
