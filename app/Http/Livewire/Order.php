@@ -1379,12 +1379,13 @@ class Order extends Component
         ini_set('memory_limit', '512M');
         ini_set('max_execution_time', '300');
 
+        $order = Order_model::find($order_id);
 
         // Additional content from your view
         if(request('packlist') == 1){
         }elseif(request('sheet') == 2){
 
-            return Excel::download(new PurchasesheetExport, 'purchase.xlsx');
+            return Excel::download(new PurchasesheetExport, 'PO'.$order->reference_id.' '.$order->customer->company.' '.$order->order_items->sum('quantity').' pcs.xlsx');
 
         }
 
