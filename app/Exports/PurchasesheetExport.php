@@ -35,16 +35,19 @@ class PurchasesheetExport implements FromCollection, WithHeadings
         ->leftJoin('order_items as s_item', function($join) {
             $join->on('stock.id', '=', 's_item.stock_id')
              ->whereColumn('s_item.order_id', '!=', 'orders.id')
+             ->whereNull('s_item.deleted_at')
              ->orderBy('s_item.id', 'DESC')
              ->limit(1);
         })
         ->leftJoin('orders as s_orders', function($join) {
             $join->on('s_item.order_id', '=', 's_orders.id')
-             ->whereNull('s_orders.deleted_at');
+             ->whereNull('s_orders.deleted_at')
+             ->limit(1);
         })
         ->leftJoin('customer', function($join) {
             $join->on('s_orders.customer_id', '=', 'customer.id')
-             ->whereNull('customer.deleted_at');
+             ->whereNull('customer.deleted_at')
+             ->limit(1);
         })
         // ->leftJoin('process_stock', 'stock.id', '=', 'process_stock.stock_id')
         ->leftJoin('process_stock', function($join) {
