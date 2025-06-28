@@ -253,7 +253,7 @@
             </div>
         </div>
 
-        @if (session('user')->hasPermission('record_payment') && $customer != null)
+        @if (session('user')->hasPermission('record_payment') && isset($customer))
 
             <div class="modal fade" id="record_payment" tabindex="-1" role="dialog" aria-labelledby="record_payment" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered" role="document">
