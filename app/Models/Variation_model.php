@@ -156,6 +156,10 @@ class Variation_model extends Model
             $q->where('order_type_id',3)->where('status',2);
         });
     }
+    public function process_stocks()
+    {
+        return $this->hasMany(Process_stock_model::class, 'variation_id', 'id');
+    }
     public function update_qty($bm)
     {
         $var = $bm->getOneListing($this->reference_id);
