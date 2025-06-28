@@ -120,6 +120,10 @@
 
             <h4>Topup Details</h4>
 
+            @if ($process->status == 3)
+
+                <a href="{{ url('listing').'?show=only&process_id='.$process->id }}" class="btn btn-link">View Topup Listing</a>
+            @endif
 
             <div class="btn-group p-1" role="group">
                 {{-- JS Print to Print topup Variations DIv --}}

@@ -814,6 +814,8 @@
                     special: "{{ Request::get('special') }}",
                     sale_40: "{{ Request::get('sale_40') }}",
                     variation_id: "{{ Request::get('variation_id') }}",
+                    process_id: "{{ Request::get('process_id') }}",
+                    show: "{{ Request::get('show') }}",
                     csrf: "{{ csrf_token() }}"
                 };
 
