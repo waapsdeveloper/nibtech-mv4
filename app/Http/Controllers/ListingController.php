@@ -181,7 +181,7 @@ class ListingController extends Controller
                 $q->where('handler_status', request('handler_status'));
             });
         })
-        ->when(request('process_id') != '' && request('show') == 'only', function ($q) {
+        ->when(request('process_id') != '' && request('special') == 'show_only', function ($q) {
             return $q->whereHas('process_stocks', function ($q) {
                 $q->where('process_id', request('process_id'));
             });
