@@ -181,6 +181,11 @@ class ListingController extends Controller
                 $q->where('handler_status', request('handler_status'));
             });
         })
+        ->when(request('process_id') != '' && request('show') == 'only', function ($q) {
+            return $q->whereHas('process_stocks', function ($q) {
+                $q->where('process_id', request('process_id'));
+            });
+        })
         ->where('sku', '!=', null)
         ->when(request('sort') == 4, function ($q) {
             return $q->join('products', 'variation.product_id', '=', 'products.id') // Join the products table
