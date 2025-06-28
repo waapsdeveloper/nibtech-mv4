@@ -34,12 +34,18 @@ class PurchasesheetExport implements FromCollection, WithHeadings
         ->leftJoin('grade as sub', 'variation.sub_grade', '=', 'sub.id')
         ->leftJoin('order_items as s_item', function($join) {
             $join->on('stock.id', '=', 's_item.stock_id')
-                 ->whereColumn('s_item.order_id', '!=', 'orders.id')
-                 ->orderBy('s_item.id', 'DESC')
-                 ->limit(1);
+             ->whereColumn('s_item.order_id', '!=', 'orders.id')
+             ->orderBy('s_item.id', 'DESC')
+             ->limit(1);
         })
-        ->leftJoin('orders as s_orders', 's_item.order_id', '=', 's_orders.id')
-        ->leftJoin('customer', 's_orders.customer_id', '=', 'customer.id')
+        ->leftJoin('orders as s_orders', function($join) {
+            $join->on('s_item.order_id', '=', 's_orders.id')
+             ->whereNull('s_orders.deleted_at');
+        })
+        ->leftJoin('customer', function($join) {
+            $join->on('s_orders.customer_id', '=', 'customer.id')
+             ->whereNull('customer.deleted_at');
+        })
         // ->leftJoin('process_stock', 'stock.id', '=', 'process_stock.stock_id')
         ->leftJoin('process_stock', function($join) {
             $join->on('stock.id', '=', 'process_stock.stock_id')
