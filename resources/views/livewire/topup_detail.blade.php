@@ -122,7 +122,7 @@
 
             @if ($process->status == 3)
 
-                <a href="{{ url('listing').'?show=only&process_id='.$process->id }}" class="btn btn-link">View Topup Listing</a>
+                <a href="{{ url('listing').'?special=show_only&process_id='.$process->id }}" class="btn btn-link" target="_blank">View Topup Listing</a>
             @endif
 
             <div class="btn-group p-1" role="group">
