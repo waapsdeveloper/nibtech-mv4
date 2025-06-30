@@ -62,6 +62,7 @@
 </head>
 <body>
 
+
     {{-- <iframe src="{{ $order->delivery_note_url }}"></iframe> --}}
     <div class="invoice-container">
         <!-- Company Information -->
@@ -287,5 +288,7 @@
             <h4>Stock Sold on Marginal VAT Scheme.</h4>
         </div>
     </div>
+
+
 </body>
 </html>

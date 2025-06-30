@@ -119,4 +119,76 @@
 		<!-- Internal Chart js -->
 		<script src="{{asset('assets/plugins/chartjs/Chart.bundle.min.js')}}"></script>
 
+        <!-- Load RSVP (required for promises) -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/rsvp/4.8.5/rsvp.min.js"></script>
+
+        <!-- Load SHA support -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jsSHA/2.4.2/sha.js"></script>
+
+        <!-- Load QZ Tray -->
+        <script src="https://cdn.jsdelivr.net/npm/qz-tray@2.1.0/qz-tray.js"></script>
+
+        <!-- Set up QZ Tray configuration -->
+        <script>
+            // 1. Set certificate promise (test mode)
+            qz.security.setCertificatePromise(() => Promise.resolve("-----BEGIN CERTIFICATE-----\nFAKE\n-----END CERTIFICATE-----"));
+
+            // 2. Set signature promise (test mode)
+            qz.security.setSignaturePromise((toSign) => {
+                return Promise.resolve("UNSIGNED"); // ⚠️ Only for development!
+            });
+
+            // 3. Connect to QZ Tray
+            function connectQZ() {
+                qz.websocket.connect().then(() => {
+                    console.log("✅ Connected to QZ Tray");
+                }).catch(err => {
+                    console.error("❌ QZ Tray connection error:", err);
+                });
+            }
+
+            // Optional: auto-connect when page is ready
+            document.addEventListener('DOMContentLoaded', connectQZ);
+        </script>
+
+
+    {{-- <script>
+
+        function printReceipt() {
+            const config = qz.configs.create("RICOH MP 5054"); // replace with actual printer name
+
+            const data = [
+                '\x1B\x40', // Reset
+                'BritainTech POS\n',
+                '----------------------\n',
+                'Product A x1  £50.00\n',
+                'Product B x2  £30.00\n',
+                '----------------------\n',
+                'Total:       £110.00\n',
+                '\nThank you!\n\n\n\n',
+                '\x1B\x69' // Full cut
+            ];
+
+            qz.print(config, data).then(() => {
+                console.log("Printed Successfully");
+            }).catch(err => console.error(err));
+        }
+        function openCashDrawer() {
+            const config = qz.configs.create("RICOH MP 5054"); // replace with actual printer name
+            const data = ['\x1B\x70\x00\x19\xFA']; // Pulse drawer pin 2 (common command)
+
+            qz.print(config, data).then(() => {
+                console.log("Cash drawer opened.");
+            }).catch(err => console.error(err));
+        }
+
+        // After order success
+        setTimeout(() => {
+            printReceipt();
+            openCashDrawer();
+        }, 1000);
+
+        qz.printers.getDefault().then(console.log).catch(console.error);
+
+    </script> --}}
     @endsection
