@@ -52,7 +52,7 @@ class AuthorizeMiddleware
         // Check if the user has the required permission for the current page
         if (!$user->hasPermission($currentRoute)) {
             // Log the unauthorized access attempt
-            Log::info('Unauthorized access attempt by user '.$user->first_name.' to '.$currentRoute);
+            Log::info('Unauthorized access attempt by user '.$user->first_name.' with Role '.$user->role->name.' to '.$currentRoute);
             abort(403, 'Quote of the day: '.Inspiring::just_quote());
         }
         // Remove the 'page' session variable
