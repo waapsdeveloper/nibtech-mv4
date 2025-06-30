@@ -90,7 +90,10 @@ class Admin_model extends Model
         }
         // }
         $per = Permission_model::firstOrNew(['name'=>$permission]);
-        $per->save();
+        if ($per->id == null) {
+            $per->name = $permission;
+            $per->save();
+        }
 
         return false;
     }
