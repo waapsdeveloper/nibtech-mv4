@@ -180,15 +180,16 @@
                 </form> --}}
                 @endif
                 @if ($order->status == 2)
+                <div>
                 <form class="form-inline " action="{{ url('check_wholesale_item').'/'.$order_id }}" method="POST" id="wholesale_item">
                     @csrf
                     <div class="form-floating wd-200">
-                        <select class="form-select select2" name="exclude_vendors[]" id="" multiple>
+                        <select class="form-select select2" name="exclude_vendors[]" id="exclude_vendors" multiple>
                             @foreach ($vendors1 as $id => $vendor)
                                 <option value="{{ $id }}" @if(session('exclude_vendors') != null && in_array($id,session('exclude_vendors'))) {{'selected'}}@endif>{{ $vendor }}</option>
                             @endforeach
                         </select>
-                        <label for="">Exclude Vendor</label>
+                        <label for="exclude_vendors">Exclude Vendor(s)</label>
                     </div>
                     <div class="form-floating">
                         <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" id="imei" onload="this.focus()" onloadeddata="$(this).focus()" autofocus required>
@@ -199,6 +200,13 @@
                     <button class="btn btn-primary" type="submit">Insert</button>
 
                 </form>
+
+                <form method="POST" enctype="multipart/form-data" action="{{ url('wholesale/add_wholesale_sheet').'/'.$order_id}}" class="form-inline p-1">
+                    @csrf
+                    <input type="file" class="form-control form-control-sm" name="sheet">
+                    <button type="submit" class="btn btn-sm btn-primary">Upload Sheet</button>
+                </form>
+                </div>
                 @endif
                 <script>
 
@@ -217,11 +225,22 @@
                 </script>
             <div class="p-2 tx-right">
                 @if ($order->status < 3)
-                <form method="POST" enctype="multipart/form-data" action="{{ url('wholesale/add_wholesale_sheet').'/'.$order_id}}" class="form-inline p-1">
-                    @csrf
-                    <input type="file" class="form-control form-control-sm" name="sheet">
-                    <button type="submit" class="btn btn-sm btn-primary">Upload Sheet</button>
-                </form>
+                    <form class="form-inline" action="{{ url('wholesale/add_order_charges').'/'.$order_id }}" method="POST" id="wholesale_charges">
+                        @csrf
+                        <div class="form-floating">
+                            <select name="charge" class="form-select">
+                                <option value="">Select Charge</option>
+                                @foreach ($ws_charges as $id => $charge)
+                                    <option value="{{ $id }}" @if(isset($_GET['charge']) && $id == $_GET['charge']) {{'selected'}}@endif title="{{ $charge->description }}">{{ $charge->name }}</option>
+                                @endforeach
+                            </select>
+                            <label for="charge">Charge</label>
+                        </div>
+                        <div class="form-floating">
+                            <input type="number" class="form-control" name="amount" placeholder="Enter € Amount" id="amount" step="0.01" required>
+                            <label for="amount">Amount</label>
+                        </div>
+                    </form>
                 @endif
                 {{-- @if ($order->customer->email == null)
                     Customer Email Not Added
