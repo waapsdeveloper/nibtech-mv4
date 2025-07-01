@@ -7,6 +7,7 @@ use App\Mail\BulksaleInvoiceMail;
 use App\Models\Account_transaction_model;
 use App\Models\Brand_model;
 use App\Models\Category_model;
+use App\Models\Charge_model;
 use Livewire\Component;
 use App\Models\Variation_model;
 use App\Models\Products_model;
@@ -245,6 +246,7 @@ class Wholesale extends Component
         $data['products'] = Products_model::pluck('model','id');
         $data['grades'] = session('dropdown_data')['grades'];
         $data['colors'] = session('dropdown_data')['colors'];
+        $data['ws_charges'] = Charge_model::where('order_type_id',5)->get();
 
         $variations = Variation_model::
         // whereHas('stocks', function ($query) use ($order_id) {
