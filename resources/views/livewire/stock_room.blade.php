@@ -63,6 +63,23 @@
                         <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" id="imeiInput" onload="this.focus()" autofocus required>
                         <label for="">IMEI</label>
                     </div>&nbsp;&nbsp;&nbsp;&nbsp;
+
+            <script>
+
+                window.onload = function() {
+                    document.getElementById('imeiInput').focus();
+                    document.getElementById('imeiInput').click();
+                    setTimeout(function(){ document.getElementById('imeiInput').focus();$('#imeiInput').focus(); }, 500);
+                };
+                document.addEventListener('DOMContentLoaded', function() {
+                    var input = document.getElementById('imeiInput');
+                    input.focus();
+                    input.select();
+                    document.getElementById('imeiInput').click();
+                    setTimeout(function(){ document.getElementById('imeiInput').focus();$('#imeiInput').focus(); }, 500);
+                });
+
+            </script>
                     <div>
                         <div class="form-check form-switch">
                             <input class="form-check-input" type="radio" id="com" name="description" value="Change of mind" required @if (session('description') == "Change of mind") {{'checked'}} @endif>
