@@ -107,7 +107,7 @@
                             <option value="">Select</option>
                             @foreach ($all_variations as $variation)
                                 @php
-                                    if($variation->product){
+                                    if($variation->product_id){
                                         $product = $products[$variation->product_id];
                                     }else{
                                         $product = null;
