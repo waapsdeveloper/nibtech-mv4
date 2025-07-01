@@ -230,7 +230,7 @@
                     <form class="form-inline" action="{{ url('wholesale/add_wholesale_charge').'/'.$order_id }}" method="POST" id="wholesale_charges">
                         @csrf
                         <div class="">
-                            <select name="charge" class="form-select">
+                            <select name="charge" class="form-select" required>
                                 <option value="">Select Charge</option>
                                 @foreach ($ws_charges as $id => $charge)
                                     <option value="{{ $id }}" @if(isset($_GET['charge']) && $id == $_GET['charge']) {{'selected'}}@endif title="{{ $charge->description }}">{{ $charge->name }}</option>
