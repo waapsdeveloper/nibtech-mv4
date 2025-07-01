@@ -117,26 +117,29 @@
                 </div>
                 <div class="text-center">
                     <h4>BulkSale Order Detail - {{ $order->reference_id }}</h4>
-                    <h5>Purchaser: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->sum('quantity') }} @if (session('user')->hasPermission('view_price')) | Total Price: €{{ amount_formatter($order->order_items->sum('price'),2) }} @endif
+                    <h5>{{ $order->customer->first_name }} | Items: {{ $order->order_items->sum('quantity') }} @if (session('user')->hasPermission('view_price')) | Price: €{{ amount_formatter($order->order_items->sum('price'),2) }} @endif
                         @if ($order->order_charges->count() > 0)
                             <span title="
                             @foreach ($order->order_charges as $charge)
                                 {{ $charge->charge_value->charge->name }}: €{{ amount_formatter($charge->amount, 2) }} &#013; &#010;
                             @endforeach
 
-                            ">| Total Charges: €{{ amount_formatter($order->order_charges->sum('amount'),2) }}</span>
+                            ">| Charges: €{{ amount_formatter($order->order_charges->sum('amount'),2) }}</span>
                         @endif
                     </h5>
                 </div>
-                <div class="">
-                    <ol class="breadcrumb">
+                <div class="text-end">
+                    <ol class="breadcrumb justify-content-end">
                         <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
                         <li class="breadcrumb-item tx-15"><a href="{{ session('previous')}}">BulkSale</a></li>
                         <li class="breadcrumb-item active" aria-current="page">BulkSale Detail</li>
                     </ol>
                     <br>
-                    Creation Date: {{ $order->created_at }}<br>
-                    Approval Date: {{ $order->processed_at }}
+                    Creation Date: {{ $order->created_at }}
+                    @if ($order->status == 3)
+                    <br>
+                        Approval Date: {{ $order->processed_at }}
+                    @endif
                 </div>
             </div>
         <!-- /breadcrumb -->
@@ -229,7 +232,7 @@
                 </script>
             <div class="p-2 tx-right">
                 @if ($order->status < 3)
-                    <form class="form-inline" action="{{ url('wholesale/add_wholesale_charge').'/'.$order_id }}" method="POST" id="wholesale_charges">
+                    <form class="form-inline collapse" action="{{ url('wholesale/add_wholesale_charge').'/'.$order_id }}" method="POST" id="wholesale_charges">
                         @csrf
                         <div class="">
                             <select name="charge" class="form-select" required>
@@ -249,6 +252,9 @@
                 {{-- @if ($order->customer->email == null)
                     Customer Email Not Added
                 @else --}}
+                <button class="btn btn-sm btn-primary" data-bs-toggle="collapse" data-bs-target="#sheet-upload-form" aria-expanded="false" aria-controls="sheet-upload-form">Upload Sheet</button>
+                <button class="btn btn-sm btn-primary" data-bs-toggle="collapse" data-bs-target="#wholesale_charges" aria-expanded="false" aria-controls="wholesale_charges">Add Charge</button>
+
                 <a href="{{url('bulksale_email')}}/{{ $order->id }}" target="_blank"><button class="btn-sm btn-secondary">Send Email to Accounts</button></a>
                 {{-- @endif --}}
                 <a href="{{url('export_bulksale_invoice')}}/{{ $order->id }}" target="_blank"><button class="btn-sm btn-secondary">Invoice</button></a>
