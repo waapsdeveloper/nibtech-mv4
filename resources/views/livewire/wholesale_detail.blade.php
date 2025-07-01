@@ -67,7 +67,7 @@
                         </datalist>
                         <label for="currency">Currency</label>
                     </div>
-                    <div class="form-floating">
+                    <div class="form-floating wd-150">
                         <input type="text" class="form-control wd-150" id="rate" name="rate" placeholder="Enter Exchange Rate" value="{{$order->exchange_rate}}" >
                         <label for="rate">Exchange Rate</label>
                     </div>
