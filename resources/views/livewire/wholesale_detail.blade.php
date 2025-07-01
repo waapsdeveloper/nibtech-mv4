@@ -121,7 +121,7 @@
                         @if ($order->order_charges->count() > 0)
                             <span title="
                             @foreach ($order->order_charges as $charge)
-                                {{ $charge->charge_value->charge->name }}: €{{ amount_formatter($charge->amount, 2) }}<br>
+                                {{ $charge->charge_value->charge->name }}: €{{ amount_formatter($charge->amount, 2) }} /n/r
                             @endforeach
                             ">| Total Charges: €{{ amount_formatter($order->order_charges->sum('amount'),2) }}</span>
                         @endif
