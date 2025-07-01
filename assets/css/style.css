@@ -95245,7 +95245,7 @@ a.text-dark:hover, a.text-dark:focus {
 }
 
 .wd-150 {
-  width: 150px;
+  width: 150px !important;
 }
 
 .wd-150-f {
