@@ -51,7 +51,7 @@
                 <form class="form-inline" id="approveform" style="max-width: 600px" method="POST" action="{{url('wholesale/approve').'/'.$order->id}}">
                     @csrf
                     <div class="">
-                        <select name="customer_id" class="form-select">
+                        <select name="customer_id" class="form-select wd-200">
                             @foreach ($vendors as $id=>$vendor)
                                 <option value="{{ $id }}" {{ $order->customer_id == $id ? 'selected' : '' }}>{{ $vendor }}</option>
 
