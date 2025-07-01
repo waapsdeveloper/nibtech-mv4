@@ -391,8 +391,8 @@ class Wholesale extends Component
 
         $charge_value = Charge_value_model::where('charge_id', $validated['charge'])
             ->where(function ($query) {
-                $query->where('ended_at', null)
-                    ->orWhere('ended_at', '>', now());
+                $query->where('ended_at','>', now())
+                    ->orWhere('ended_at', null);
             })
             ->orderByDesc('id')
             ->first();
