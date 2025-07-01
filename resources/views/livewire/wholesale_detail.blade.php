@@ -149,7 +149,7 @@
             <div class="p-2">
                 @if ($order->status == 2)
                 <h4>Add BulkSale Item</h4>
-                <div class="btn-group">
+                <div class="btn-group btn-group-sm">
 
                     <button class="btn btn-sm btn-primary" data-bs-toggle="collapse" data-bs-target="#sheet-upload-form" aria-expanded="false" aria-controls="sheet-upload-form">Upload Sheet</button>
                     <button class="btn btn-sm btn-primary" data-bs-toggle="collapse" data-bs-target="#wholesale_charges" aria-expanded="false" aria-controls="wholesale_charges">Add Charge</button>
