@@ -27,6 +27,8 @@ use Illuminate\Support\Facades\DB;
     use App\Mail\InvoiceMail;
 use App\Models\Account_transaction_model;
 use App\Models\Api_request_model;
+use App\Models\Brand_model;
+use App\Models\Category_model;
 use App\Models\Color_model;
 use App\Models\ExchangeRate;
 use App\Models\Grade_model;
