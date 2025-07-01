@@ -233,7 +233,7 @@
                             <select name="charge" class="form-select" required>
                                 <option value="">Select Charge</option>
                                 @foreach ($ws_charges as $id => $charge)
-                                    <option value="{{ $id }}" @if(isset($_GET['charge']) && $id == $_GET['charge']) {{'selected'}}@endif title="{{ $charge->description }}">{{ $charge->name }}</option>
+                                    <option value="{{ $charge->id }}" @if(isset($_GET['charge']) && $charge->id == $_GET['charge']) {{'selected'}}@endif title="{{ $charge->description }}">{{ $charge->name }}</option>
                                 @endforeach
                             </select>
                         </div>
