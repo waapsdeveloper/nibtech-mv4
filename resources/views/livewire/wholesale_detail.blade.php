@@ -255,18 +255,18 @@
                 <button class="btn btn-sm btn-primary" data-bs-toggle="collapse" data-bs-target="#sheet-upload-form" aria-expanded="false" aria-controls="sheet-upload-form">Upload Sheet</button>
                 <button class="btn btn-sm btn-primary" data-bs-toggle="collapse" data-bs-target="#wholesale_charges" aria-expanded="false" aria-controls="wholesale_charges">Add Charge</button>
 
-                <a href="{{url('bulksale_email')}}/{{ $order->id }}" target="_blank" class="btn-sm btn-secondary">Send Email to Accounts</a>
+                <a href="{{url('bulksale_email')}}/{{ $order->id }}" target="_blank" class="btn btn-sm btn-secondary">Send Email to Accounts</a>
                 {{-- @endif --}}
-                <a href="{{url('export_bulksale_invoice')}}/{{ $order->id }}" target="_blank" class="btn-sm btn-secondary">Invoice</a>
+                <a href="{{url('export_bulksale_invoice')}}/{{ $order->id }}" target="_blank" class="btn btn-sm btn-secondary">Invoice</a>
                 @if ($order->exchange_rate != null)
 
-                <a href="{{url('export_bulksale_invoice')}}/{{ $order->id }}/1" target="_blank" class="btn-sm btn-secondary">{{$order->currency_id->sign}} Invoice</a>
-                <a href="{{url('export_bulksale_invoice')}}/{{ $order->id }}/1?packlist=1" target="_blank" class="btn-sm btn-secondary">{{$order->currency_id->sign}} PackList</a>
+                <a href="{{url('export_bulksale_invoice')}}/{{ $order->id }}/1" target="_blank" class="btn btn-sm btn-secondary">{{$order->currency_id->sign}} Invoice</a>
+                <a href="{{url('export_bulksale_invoice')}}/{{ $order->id }}/1?packlist=1" target="_blank" class="btn btn-sm btn-secondary">{{$order->currency_id->sign}} PackList</a>
 
                 @endif
 
                 <div class="btn-group" role="group">
-                    <button type="button" class="btn-sm btn-secondary dropdown-toggle" id="pack_sheet" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button type="button" class="btn btn-sm btn-secondary dropdown-toggle" id="pack_sheet" data-bs-toggle="dropdown" aria-expanded="false">
                     Pack Sheet
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="pack_sheet">
