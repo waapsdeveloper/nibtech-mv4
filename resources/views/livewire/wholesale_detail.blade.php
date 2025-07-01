@@ -153,7 +153,7 @@
                 @endif
             </div>
                 @if ($order->status == 2)
-                <div>
+                {{-- <div> --}}
 
                 <form class="form-inline " action="{{ url('check_wholesale_item').'/'.$order_id }}" method="POST" id="wholesale_item">
                     @csrf
@@ -205,12 +205,12 @@
                         if (e.dataTransfer && e.dataTransfer.files.length > 0) {
                             const fileInput = document.getElementById('sheet-upload-input');
                             fileInput.files = e.dataTransfer.files;
-                            $('#sheet-upload-input').collapse('show');
+                            $('#sheet-upload-form').show();
                             // document.getElementById('sheet-upload-form').submit();
                         }
                     });
                 </script>
-                </div>
+                {{-- </div> --}}
                 @endif
                 <script>
 
