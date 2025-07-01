@@ -236,7 +236,7 @@
                             </select>
                         </div>
                         <div class="form-floating">
-                            <input type="number" class="form-control" width="100" name="amount" placeholder="Enter € Amount" id="amount" step="0.01" required>
+                            <input type="number" class="form-control wd-100" name="amount" placeholder="Enter € Amount" id="amount" step="0.01" required>
                             <label for="amount">Amount</label>
                         </div>
                         <button class="btn btn-primary" type="submit">Add Charge</button>
