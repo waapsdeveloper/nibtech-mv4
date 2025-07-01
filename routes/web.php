@@ -185,6 +185,7 @@ Route::get('wholesale', Wholesale::class)->name('view_wholesale');
 Route::post('add_wholesale', [Wholesale::class,'add_wholesale'])->name('add_wholesale');
 Route::post('check_wholesale_item/{id}', [Wholesale::class,'check_wholesale_item'])->name('add_wholesale_item');
 Route::post('add_wholesale_item/{id}', [Wholesale::class,'add_wholesale_item'])->name('add_wholesale_item');
+Route::post('wholesale/add_wholesale_charge/{id}', [Wholesale::class,'add_wholesale_charge'])->name('add_wholesale_charge');
 Route::get('delete_wholesale/{id}', [Wholesale::class,'delete_order'])->name('delete_wholesale');
 Route::get('delete_wholesale_item/{id}', [Wholesale::class,'delete_order_item'])->name('delete_wholesale_item');
 Route::get('wholesale/detail/{id}', [Wholesale::class,'wholesale_detail'])->name('wholesale_detail');

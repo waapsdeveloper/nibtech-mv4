@@ -8,6 +8,7 @@ use App\Models\Account_transaction_model;
 use App\Models\Brand_model;
 use App\Models\Category_model;
 use App\Models\Charge_model;
+use App\Models\Charge_value_model;
 use Livewire\Component;
 use App\Models\Variation_model;
 use App\Models\Products_model;
@@ -20,6 +21,7 @@ use App\Models\Currency_model;
 use App\Models\Color_model;
 use App\Models\ExchangeRate;
 use App\Models\Grade_model;
+use App\Models\Order_charge_model;
 use App\Models\Order_issue_model;
 use App\Models\Stock_operations_model;
 use App\Models\Storage_model;
@@ -370,6 +372,40 @@ class Wholesale extends Component
             session()->put('error', $error);
         }
         return redirect()->back();
+    }
+
+    public function add_wholesale_charge(Request $request, $order_id)
+    {
+
+        $validated = $request->validate([
+            'charge' => 'required|exists:charges,id',
+            'amount' => 'required|numeric|min:0',
+        ]);
+
+        $order = Order_model::find($order_id);
+        if (!$order) {
+            return redirect()->back()->withErrors(['Order not found']);
+        }
+
+        $charge_value = Charge_value_model::where('charge_id', $validated['charge'])
+            ->where('ended_at', '>', $order->created_at)
+            ->orderByDesc('id')
+            ->first();
+
+
+        $orderCharge = Order_charge_model::firstOrNew([
+            'order_id' => $order_id,
+            'charge_value_id' => $charge_value->id,
+        ]);
+        $orderCharge->amount = $validated['amount'];
+        $orderCharge->save();
+
+        // Update the order's total price
+        $order->price = $order->order_items->sum('price') + $order->order_charges->sum('amount');
+        $order->charges = $order->order_charges->sum('amount');
+        $order->save();
+
+        return redirect()->back()->with('success', 'Charge added successfully');
     }
 
     public function check_wholesale_item($order_id, $imei = null, $variation_id = null, $back = null){
