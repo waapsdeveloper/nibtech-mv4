@@ -116,8 +116,16 @@
 
                 </div>
                 <div class="text-center">
-                    <h4>BulkSale Order Detail</h4>
-                    <h5>Reference: {{ $order->reference_id }} | Purchaser: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->sum('quantity') }} @if (session('user')->hasPermission('view_price')) | Total Price: €{{ amount_formatter($order->order_items->sum('price'),2) }} @endif</h5>
+                    <h4>BulkSale Order Detail - {{ $order->reference_id }}</h4>
+                    <h5>Purchaser: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->sum('quantity') }} @if (session('user')->hasPermission('view_price')) | Total Price: €{{ amount_formatter($order->order_items->sum('price'),2) }} @endif
+                        @if ($order->order_charges->count() > 0)
+                            <span title="
+                            @foreach ($order->order_charges as $charge)
+                                {{ $charge->charge_value->charge->name }}: €{{ amount_formatter($charge->amount, 2) }}<br>
+                            @endforeach
+                            ">| Total Charges: €{{ amount_formatter($order->order_charges->sum('amount'),2) }}</span>
+                        @endif
+                    </h5>
                 </div>
                 <div class="">
                     <ol class="breadcrumb">
@@ -135,7 +143,7 @@
         <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
 
             <div class="p-2">
-                @if ($order->status < 3)
+                @if ($order->status == 2)
                 <h4>Add BulkSale Item</h4>
                 <span class="form-check form-switch ms-4 p-2" title="Bypass Wholesale check" onclick="$('#bypass_check').check()">
                     <input type="checkbox" value="1" id="bypass_check" name="bypass_check" class="form-check-input" form="wholesale_item" @if (session('bypass_check') == 1) checked @endif>
@@ -143,44 +151,9 @@
                 </span>
                 @endif
             </div>
-                @if ($order->status == 1)
-                {{-- <form class="form-inline" action="{{ url('wholesale_item_po').'/'.$order_id }}" method="POST" id="wholesale_item">
-                    @csrf
-
-                    <div class="form-floating">
-                        <input type="text" name="product" value="{{ Request::get('product') }}" class="form-control" data-bs-placeholder="Select Model" list="product-menu">
-                        <label for="product">Product</label>
-                    </div>
-                    <datalist id="product-menu">
-                        <option value="">Select</option>
-                        @foreach ($products as $id => $model)
-                            <option value="{{ $id }}" @if(isset($_GET['product']) && $id == $_GET['product']) {{'selected'}}@endif>{{ $model }}</option>
-                        @endforeach
-                    </datalist>
-                    <select name="storage" class="form-control form-select">
-                        <option value="">Storage</option>
-                        @foreach ($storages as $id=>$name)
-                            <option value="{{ $id }}" @if(isset($_GET['storage']) && $id == $_GET['storage']) {{'selected'}}@endif>{{ $name }}</option>
-                        @endforeach
-                    </select>
-                    <select name="color" class="form-control form-select">
-                        <option value="">Color</option>
-                        @foreach ($colors as $id=>$name)
-                            <option value="{{ $id }}" @if(isset($_GET['color']) && $id == $_GET['color']) {{'selected'}}@endif>{{ $name }}</option>
-                        @endforeach
-                    </select>
-                    <select name="grade[]" class="form-control form-select select2" multiple>
-                        <option value="">Grade</option>
-                        @foreach ($grades as $id=>$name)
-                            <option value="{{ $id }}" @if(isset($_GET['grade']) && in_array($id,$_GET['grade'])) {{'selected'}}@endif>{{ $name }}</option>
-                        @endforeach
-                    </select>
-                    <button class="btn-sm btn-primary pd-x-20" type="submit">Insert</button>
-
-                </form> --}}
-                @endif
                 @if ($order->status == 2)
                 <div>
+
                 <form class="form-inline " action="{{ url('check_wholesale_item').'/'.$order_id }}" method="POST" id="wholesale_item">
                     @csrf
                     <div class="form-floating wd-200">
@@ -200,12 +173,41 @@
                     <button class="btn btn-primary" type="submit">Insert</button>
 
                 </form>
-
-                <form method="POST" enctype="multipart/form-data" action="{{ url('wholesale/add_wholesale_sheet').'/'.$order_id}}" class="form-inline p-1">
+                <form method="POST" enctype="multipart/form-data" action="{{ url('wholesale/add_wholesale_sheet').'/'.$order_id}}" class="form-inline p-1" id="sheet-upload-form">
                     @csrf
-                    <input type="file" class="form-control form-control-sm" name="sheet">
+                    <input type="file" class="form-control form-control-sm" name="sheet" id="sheet-upload-input">
                     <button type="submit" class="btn btn-sm btn-primary">Upload Sheet</button>
                 </form>
+                <!-- Drop overlay -->
+                <div id="drop-overlay" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:9999;background:rgba(1,106,89,0.2);color:#016a59;font-size:2rem;align-items:center;justify-content:center;text-align:center;pointer-events:none;">
+                    <div style="margin:auto;">
+                        <i class="fa fa-upload" style="font-size:3rem"></i><br>
+                        <b>Drop your sheet file anywhere to upload</b>
+                    </div>
+                </div>
+                <script>
+                    // Drag and drop anywhere in page for it
+                    document.addEventListener('dragover', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        document.getElementById('drop-overlay').style.display = 'flex';
+                    });
+                    document.addEventListener('dragleave', function(e) {
+                        if (e.target === document.body || e.pageX === 0 || e.pageY === 0) {
+                            document.getElementById('drop-overlay').style.display = 'none';
+                        }
+                    });
+                    document.addEventListener('drop', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        document.getElementById('drop-overlay').style.display = 'none';
+                        if (e.dataTransfer && e.dataTransfer.files.length > 0) {
+                            const fileInput = document.getElementById('sheet-upload-input');
+                            fileInput.files = e.dataTransfer.files;
+                            // document.getElementById('sheet-upload-form').submit();
+                        }
+                    });
+                </script>
                 </div>
                 @endif
                 <script>
@@ -239,7 +241,7 @@
                             <input type="number" class="form-control wd-100" name="amount" placeholder="Enter € Amount" id="amount" step="0.01" required>
                             <label for="amount">Amount</label>
                         </div>
-                        <button class="btn btn-primary" type="submit">Add Charge</button>
+                        <button class="btn btn-primary" type="submit">Add</button>
                     </form>
                 @endif
                 {{-- @if ($order->customer->email == null)
