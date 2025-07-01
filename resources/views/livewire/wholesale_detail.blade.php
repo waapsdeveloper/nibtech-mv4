@@ -152,8 +152,10 @@
                 <div class="btn-group">
 
                     <button class="btn btn-sm btn-primary" data-bs-toggle="collapse" data-bs-target="#sheet-upload-form" aria-expanded="false" aria-controls="sheet-upload-form">Upload Sheet</button>
+                    &nbsp;
                     <button class="btn btn-sm btn-primary" data-bs-toggle="collapse" data-bs-target="#wholesale_charges" aria-expanded="false" aria-controls="wholesale_charges">Add Charge</button>
-
+                    &nbsp;
+                    &nbsp;
                     <span class="form-check form-switch ms-4 p-1" title="Bypass Wholesale check" onclick="$('#bypass_check').check()">
                         <input type="checkbox" value="1" id="bypass_check" name="bypass_check" class="form-check-input" form="wholesale_item" @if (session('bypass_check') == 1) checked @endif>
                         <label class="form-check-label" for="bypass_check">Bypass check</label>
