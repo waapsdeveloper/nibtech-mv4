@@ -20,7 +20,7 @@
 
 
         <!-- breadcrumb -->
-            <div class="breadcrumb-header justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
+            <div class="breadcrumb-header justify-content-between mb-0" style="border-bottom: 1px solid rgb(216, 212, 212);">
                 <div class="">
                     {{-- <span class="ms-3 form-check form-switch ms-4">
                         <input type="checkbox" value="1" name="bypass_check" class="form-check-input" form="wholesale_item" @if (session('bypass_check') == 1) checked @endif>
@@ -255,16 +255,17 @@
                 <button class="btn btn-sm btn-primary" data-bs-toggle="collapse" data-bs-target="#sheet-upload-form" aria-expanded="false" aria-controls="sheet-upload-form">Upload Sheet</button>
                 <button class="btn btn-sm btn-primary" data-bs-toggle="collapse" data-bs-target="#wholesale_charges" aria-expanded="false" aria-controls="wholesale_charges">Add Charge</button>
 
-                <a href="{{url('bulksale_email')}}/{{ $order->id }}" target="_blank"><button class="btn-sm btn-secondary">Send Email to Accounts</button></a>
+                <a href="{{url('bulksale_email')}}/{{ $order->id }}" target="_blank" class="btn-sm btn-secondary">Send Email to Accounts</a>
                 {{-- @endif --}}
-                <a href="{{url('export_bulksale_invoice')}}/{{ $order->id }}" target="_blank"><button class="btn-sm btn-secondary">Invoice</button></a>
+                <a href="{{url('export_bulksale_invoice')}}/{{ $order->id }}" target="_blank" class="btn-sm btn-secondary">Invoice</a>
                 @if ($order->exchange_rate != null)
-                <a href="{{url('export_bulksale_invoice')}}/{{ $order->id }}/1" target="_blank"><button class="btn-sm btn-secondary">{{$order->currency_id->sign}} Invoice</button></a>
-                <a href="{{url('export_bulksale_invoice')}}/{{ $order->id }}/1?packlist=1" target="_blank"><button class="btn-sm btn-secondary">{{$order->currency_id->sign}} PackList</button></a>
+
+                <a href="{{url('export_bulksale_invoice')}}/{{ $order->id }}/1" target="_blank" class="btn-sm btn-secondary">{{$order->currency_id->sign}} Invoice</a>
+                <a href="{{url('export_bulksale_invoice')}}/{{ $order->id }}/1?packlist=1" target="_blank" class="btn-sm btn-secondary">{{$order->currency_id->sign}} PackList</a>
 
                 @endif
 
-                <div class="btn-group p-1" role="group">
+                <div class="btn-group" role="group">
                     <button type="button" class="btn-sm btn-secondary dropdown-toggle" id="pack_sheet" data-bs-toggle="dropdown" aria-expanded="false">
                     Pack Sheet
                     </button>
