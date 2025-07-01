@@ -174,7 +174,7 @@
                     <button class="btn btn-primary" type="submit">Insert</button>
 
                 </form>
-                <form method="POST" enctype="multipart/form-data" action="{{ url('wholesale/add_wholesale_sheet').'/'.$order_id}}" class="form-inline p-1" id="sheet-upload-form">
+                <form method="POST" enctype="multipart/form-data" action="{{ url('wholesale/add_wholesale_sheet').'/'.$order_id}}" class="form-inline p-1 collapse" id="sheet-upload-form">
                     @csrf
                     <input type="file" class="form-control form-control-sm" name="sheet" id="sheet-upload-input">
                     <button type="submit" class="btn btn-sm btn-primary">Upload Sheet</button>
@@ -205,6 +205,7 @@
                         if (e.dataTransfer && e.dataTransfer.files.length > 0) {
                             const fileInput = document.getElementById('sheet-upload-input');
                             fileInput.files = e.dataTransfer.files;
+                            $('#sheet-upload-input').collapse('show');
                             // document.getElementById('sheet-upload-form').submit();
                         }
                     });
