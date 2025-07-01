@@ -149,10 +149,6 @@
             <div class="p-2">
                 @if ($order->status == 2)
                 <h4>Add BulkSale Item</h4>
-                <span class="form-check form-switch ms-4 p-2" title="Bypass Wholesale check" onclick="$('#bypass_check').check()">
-                    <input type="checkbox" value="1" id="bypass_check" name="bypass_check" class="form-check-input" form="wholesale_item" @if (session('bypass_check') == 1) checked @endif>
-                    <label class="form-check-label" for="bypass_check">Bypass check</label>
-                </span>
                 @endif
             </div>
                 @if ($order->status == 2)
@@ -160,6 +156,10 @@
 
                 <form class="form-inline " action="{{ url('check_wholesale_item').'/'.$order_id }}" method="POST" id="wholesale_item">
                     @csrf
+                    <span class="form-check form-switch ms-4 p-2" title="Bypass Wholesale check" onclick="$('#bypass_check').check()">
+                        <input type="checkbox" value="1" id="bypass_check" name="bypass_check" class="form-check-input" form="wholesale_item" @if (session('bypass_check') == 1) checked @endif>
+                        <label class="form-check-label" for="bypass_check">Bypass check</label>
+                    </span>
                     <div class="form-floating wd-200">
                         <select class="form-select select2" name="exclude_vendors[]" id="exclude_vendors" multiple>
                             @foreach ($vendors1 as $id => $vendor)
