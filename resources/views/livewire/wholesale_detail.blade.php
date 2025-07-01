@@ -239,6 +239,7 @@
                             <input type="number" class="form-control" name="amount" placeholder="Enter € Amount" id="amount" step="0.01" required>
                             <label for="amount">Amount</label>
                         </div>
+                        <button class="btn btn-primary" type="submit">Add Charge</button>
                     </form>
                 @endif
                 {{-- @if ($order->customer->email == null)
