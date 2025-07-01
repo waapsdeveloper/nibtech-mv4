@@ -227,14 +227,13 @@
                 @if ($order->status < 3)
                     <form class="form-inline" action="{{ url('wholesale/add_order_charges').'/'.$order_id }}" method="POST" id="wholesale_charges">
                         @csrf
-                        <div class="form-floating">
+                        <div class="">
                             <select name="charge" class="form-select">
                                 <option value="">Select Charge</option>
                                 @foreach ($ws_charges as $id => $charge)
                                     <option value="{{ $id }}" @if(isset($_GET['charge']) && $id == $_GET['charge']) {{'selected'}}@endif title="{{ $charge->description }}">{{ $charge->name }}</option>
                                 @endforeach
                             </select>
-                            <label for="charge">Charge</label>
                         </div>
                         <div class="form-floating">
                             <input type="number" class="form-control" name="amount" placeholder="Enter € Amount" id="amount" step="0.01" required>
