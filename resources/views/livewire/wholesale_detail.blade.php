@@ -76,7 +76,7 @@
                         <label for="reference">Reference</label>
                     </div>
                     <div class="form-floating">
-                        <input type="text" class="form-control wd-200" id="tracking_number" name="tracking_number" placeholder="Enter Tracking Number" value="{{$order->tracking_number}}">
+                        <input type="text" class="form-control wd-150" id="tracking_number" name="tracking_number" placeholder="Enter Tracking Number" value="{{$order->tracking_number}}">
                         <label for="tracking_number">Tracking Number</label>
                     </div>
                     <button type="submit" class="btn btn-success" name="approve" value="1">Approve</button>
