@@ -387,17 +387,25 @@ class Wholesale extends Component
             return redirect()->back()->withErrors(['Order not found']);
         }
 
+        $charge = Charge_model::find($validated['charge']);
+
         $charge_value = Charge_value_model::where('charge_id', $validated['charge'])
             ->where('ended_at', '>', $order->created_at)
             ->orderByDesc('id')
             ->first();
 
+        $amount = $validated['amount'];
+
+        if($charge->amount_type == 2){
+            // If the charge is a percentage, calculate the amount based on the order's total price
+            $amount = $order->order_items->sum('price') * ($amount / 100);
+        }
 
         $orderCharge = Order_charge_model::firstOrNew([
             'order_id' => $order_id,
             'charge_value_id' => $charge_value->id,
         ]);
-        $orderCharge->amount = $validated['amount'];
+        $orderCharge->amount = $amount;
         $orderCharge->save();
 
         // Update the order's total price
