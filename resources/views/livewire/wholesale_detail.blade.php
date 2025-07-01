@@ -68,7 +68,7 @@
                         <label for="currency">Currency</label>
                     </div>
                     <div class="form-floating">
-                        <input type="text" class="form-control w-[150px]" id="rate" name="rate" placeholder="Enter Exchange Rate" value="{{$order->exchange_rate}}" >
+                        <input type="text" class="form-control wd-150" id="rate" name="rate" placeholder="Enter Exchange Rate" value="{{$order->exchange_rate}}" >
                         <label for="rate">Exchange Rate</label>
                     </div>
                     <div class="form-floating">
