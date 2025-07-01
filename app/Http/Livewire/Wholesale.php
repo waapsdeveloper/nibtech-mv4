@@ -378,7 +378,7 @@ class Wholesale extends Component
     {
 
         $validated = $request->validate([
-            'charge' => 'required|exists:charges,id',
+            'charge' => 'required|numeric',
             'amount' => 'required|numeric|min:0',
         ]);
 
