@@ -225,7 +225,7 @@
                 </script>
             <div class="p-2 tx-right">
                 @if ($order->status < 3)
-                    <form class="form-inline" action="{{ url('wholesale/add_order_charges').'/'.$order_id }}" method="POST" id="wholesale_charges">
+                    <form class="form-inline" action="{{ url('wholesale/add_wholesale_charge').'/'.$order_id }}" method="POST" id="wholesale_charges">
                         @csrf
                         <div class="">
                             <select name="charge" class="form-select">
