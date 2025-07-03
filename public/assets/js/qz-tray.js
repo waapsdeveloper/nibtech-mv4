@@ -634,7 +634,13 @@ var qz = (function() {
                 if (typeof RSVP !== 'undefined') {
                     return new RSVP.Promise(resolver);
                 } else if (typeof Promise !== 'undefined') {
-                    return new Promise(resolver);
+                    if (typeof resolver === 'function') {
+                        return new Promise(resolver);
+                    } else if (resolver && typeof resolver.then === 'function') {
+                        return resolver;
+                    } else {
+                        _qz.log.error("Promise resolver must be a function or a Promise.");
+                    }
                 } else {
                     _qz.log.error("Promise/A+ support is required.  See qz.api.setPromiseType(...)");
                 }
