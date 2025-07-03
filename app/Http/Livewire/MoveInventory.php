@@ -91,6 +91,18 @@ class MoveInventory extends Component
             //     });
             // })
 
+            ->when(request('pss') != '', function ($q) {
+                return $q->whereHas('old_variation', function ($subQuery) {
+                    $subQuery->where('product_storage_sort_id', request('pss'));
+                })->orWhereHas('new_variation', function ($subQuery) {
+                    $subQuery->where('product_storage_sort_id', request('pss'));
+                });
+            })
+            ->when(request('po') != '', function ($q) {
+                return $q->whereHas('stock', function ($subQuery) {
+                    $subQuery->where('order_id', request('po'));
+                });
+            })
             ->when(request('adm') != '', function ($q) {
                 return $q->where('admin_id', request('adm'));
             })
