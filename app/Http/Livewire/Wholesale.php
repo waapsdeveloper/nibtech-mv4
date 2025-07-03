@@ -1039,7 +1039,7 @@ class Wholesale extends Component
         // file_put_contents('invoice.pdf', $pdfContent);
 
         // Get the PDF content
-        // $pdf->Output($filename, 'I');
+        $pdf->Output($filename, 'I');
 
         // $pdfContent = $pdf->Output('', 'S');
         // Return a response or redirect
