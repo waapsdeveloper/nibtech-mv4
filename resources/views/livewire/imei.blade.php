@@ -73,6 +73,7 @@
 
                 @endif
 
+                <a href="{{ url('imei/print_label').'?stock_id='.$stock->id}}&minimal=1" target="_blank" class="btn btn-secondary"><i class="fa fa-print"></i></a>
                 <a href="{{ url('imei/print_label').'?stock_id='.$stock->id}}" target="_blank" class="btn btn-secondary"><i class="fa fa-print"></i></a>
                 @if (session('user')->hasPermission('rearrange_imei_order'))
                     <a href="{{ url('imei/rearrange').'/'.$stock->id}}" class="btn btn-secondary mx-1">Rearrange</a>
