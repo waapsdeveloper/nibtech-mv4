@@ -416,7 +416,7 @@ class Index extends Component
             $vendor_names = Customer_model::whereIn('id', $orders)->pluck('last_name','id')->toArray();
             $data = [];
             foreach($orders as $key => $order){
-                $data[] = '<a href="'. url('move_inventory') . '?po=' . $key . '/' . $vendor_names[$order] .'" title="view" target="_blank">'.$key.'('.$vendor_names[$order].')</a>';
+                $data[] = '<a href="'. url('move_inventory') . '?po=' . $key . '&start_date=' . request('start_date') . '&end_date=' . request('end_date') . '" title="view" target="_blank">'.$key.'('.$vendor_names[$order].')</a>';
             }
             return response()->json($data);
         }else{
@@ -465,7 +465,7 @@ class Index extends Component
 
             $data['output'] = [];
             foreach($data['pss'] as $item){
-                $data['output'][] = '<a href="'. url('move_inventory') . '?pss=' . $item['id'] . '" title="view" target="_blank">'.$item['name'] . '(' . $item['total_stocks'] . ')</a> &nbsp;';
+                $data['output'][] = '<a href="'. url('move_inventory') . '?pss=' . $item['id'] . '&start_date=' . request('start_date') . '&end_date=' . request('end_date') . '" title="view" target="_blank">'.$item['name'] . '(' . $item['total_stocks'] . ')</a> &nbsp;';
             }
 
             return response()->json($data);
