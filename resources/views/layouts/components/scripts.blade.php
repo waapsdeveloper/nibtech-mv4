@@ -45,3 +45,8 @@
         <!-- DataTables JS -->
 		<script src="{{asset('assets/DataTables/datatables.min.js')}}"></script>
 
+
+        <!-- Load QZ Tray -->
+        <script src="{{asset('assets/js/qz-tray.js')}}"></script>
+
+        <script src="{{asset('assets/js/functions.js')}}"></script>
