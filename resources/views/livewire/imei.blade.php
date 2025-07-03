@@ -48,22 +48,22 @@
                     </div>
                         <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
                 </form>
-            <script>
+                <script>
 
-                window.onload = function() {
-                    document.getElementById('imeiInput').focus();
-                    document.getElementById('imeiInput').click();
-                    setTimeout(function(){ document.getElementById('imeiInput').focus();$('#imeiInput').focus(); }, 500);
-                };
-                document.addEventListener('DOMContentLoaded', function() {
-                    var input = document.getElementById('imeiInput');
-                    input.focus();
-                    input.select();
-                    document.getElementById('imeiInput').click();
-                    setTimeout(function(){ document.getElementById('imeiInput').focus();$('#imeiInput').focus(); }, 500);
-                });
+                    window.onload = function() {
+                        document.getElementById('imeiInput').focus();
+                        document.getElementById('imeiInput').click();
+                        setTimeout(function(){ document.getElementById('imeiInput').focus();$('#imeiInput').focus(); }, 500);
+                    };
+                    document.addEventListener('DOMContentLoaded', function() {
+                        var input = document.getElementById('imeiInput');
+                        input.focus();
+                        input.select();
+                        document.getElementById('imeiInput').click();
+                        setTimeout(function(){ document.getElementById('imeiInput').focus();$('#imeiInput').focus(); }, 500);
+                    });
 
-            </script>
+                </script>
             </div>
             @if(isset($stock))
             <div class="p-2 d-flex justify-content-between">

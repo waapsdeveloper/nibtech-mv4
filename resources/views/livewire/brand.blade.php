@@ -16,6 +16,10 @@
     @endsection
 <br>
     @section('content')
+
+<div id="qz-alert" style="position: fixed; width: 60%; margin: 0 4% 0 36%; z-index: 900;"></div>
+<div id="qz-pin" style="position: fixed; width: 30%; margin: 0 66% 0 4%; z-index: 900;"></div>
+
         <!-- breadcrumb -->
             <div class="breadcrumb-header justify-content-between">
                 <div class="left-content">
@@ -104,7 +108,68 @@
             </div>
         </div>
 
-<button onclick="printReceipt()">🖨️ Test Print</button>
+
+            <div id="qz-connection" class="panel panel-default">
+                <div class="panel-heading">
+                    <button class="close tip" data-toggle="tooltip" title="Launch QZ" id="launch" href="#" onclick="launchQZ();" style="display: none;">
+                        <i class="fa fa-external-link"></i>
+                    </button>
+                    <h3 class="panel-title">
+                        Connection: <span id="qz-status" class="text-muted" style="font-weight: bold;">Unknown</span>
+                    </h3>
+                </div>
+
+                <div class="panel-body">
+                    <div class="btn-toolbar">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-success" onclick="startConnection();">Connect</button>
+                            <button id="toggleConnectionGroup" type="button" class="btn btn-success"
+                                    onclick="checkGroupActive('toggleConnectionGroup', 'connectionGroup'); $('#connectionHost').select();"
+                                    data-toggle="tooltip" data-placement="bottom" title="Connect to QZ Tray running on a print server"><span class="fa fa-caret-down"></span>&nbsp;</button>
+                            <button type="button" class="btn btn-warning" onclick="endConnection();">Disconnect</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr />
+
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Printer</h3>
+                </div>
+
+                <div class="panel-body">
+                    <div class="form-group">
+                        <label for="printerSearch">Search:</label>
+                        <input type="text" id="printerSearch" value="zebra" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-default btn-sm" onclick="findPrinter($('#printerSearch').val(), true);">Find Printer</button>
+                            <button type="button" class="btn btn-default btn-sm" onclick="findDefaultPrinter(true);">Find Default Printer</button>
+                            <button type="button" class="btn btn-default btn-sm" onclick="findPrinters();">Find All Printers</button>
+                        </div>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-default btn-sm" onclick="detailPrinters();">Get Printer Details</button>
+                        </div>
+                    </div>
+                    <hr />
+                    <div class="form-group">
+                        <label>Current printer:</label>
+                        <div id="configPrinter">NONE</div>
+                    </div>
+                    <div class="form-group">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-default btn-sm" onclick="setPrinter($('#printerSearch').val());">Set To Search</button>
+                            <button type="button" class="btn btn-default btn-sm" data-toggle="modal" data-target="#askHostModal">Set To Host</button>
+                        </div>
+                        <button type="button" class="btn btn-warning btn-sm" onclick="clearQueue($('#printerSearch').val());">Clear Queue</button>
+                    </div>
+                </div>
+            </div>
+<button type="button" class="btn btn-success" onclick="startConnection();">Connect</button>
+<button onclick="printCurrentPage()">🖨️ Test Print</button>
         @php
             session()->forget('success');
         @endphp
@@ -121,166 +186,73 @@
 		<!-- Internal Chart js -->
 		<script src="{{asset('assets/plugins/chartjs/Chart.bundle.min.js')}}"></script>
 
-        <!-- Load RSVP (required for promises) -->
-        {{-- <script src="https://cdnjs.cloudflare.com/ajax/libs/rsvp/4.8.5/rsvp.min.js"></script> --}}
 
-        <!-- Load SHA support -->
-        {{-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jsSHA/2.4.2/sha.js"></script> --}}
-
-        <!-- Load QZ Tray -->
-        <script src="{{asset('assets/js/qz-tray.js')}}"></script>
-
-        <!-- Set up QZ Tray configuration -->
-        {{-- <script>
-            // 1. Set certificate promise (test mode)
-            qz.security.setCertificatePromise(() => Promise.resolve(`
-            -----BEGIN CERTIFICATE-----
-MIIECzCCAvOgAwIBAgIGAZfB2PAEMA0GCSqGSIb3DQEBCwUAMIGiMQswCQYDVQQG
-EwJVUzELMAkGA1UECAwCTlkxEjAQBgNVBAcMCUNhbmFzdG90YTEbMBkGA1UECgwS
-UVogSW5kdXN0cmllcywgTExDMRswGQYDVQQLDBJRWiBJbmR1c3RyaWVzLCBMTEMx
-HDAaBgkqhkiG9w0BCQEWDXN1cHBvcnRAcXouaW8xGjAYBgNVBAMMEVFaIFRyYXkg
-RGVtbyBDZXJ0MB4XDTI1MDYyOTE3MTgyOVoXDTQ1MDYyOTE3MTgyOVowgaIxCzAJ
-BgNVBAYTAlVTMQswCQYDVQQIDAJOWTESMBAGA1UEBwwJQ2FuYXN0b3RhMRswGQYD
-VQQKDBJRWiBJbmR1c3RyaWVzLCBMTEMxGzAZBgNVBAsMElFaIEluZHVzdHJpZXMs
-IExMQzEcMBoGCSqGSIb3DQEJARYNc3VwcG9ydEBxei5pbzEaMBgGA1UEAwwRUVog
-VHJheSBEZW1vIENlcnQwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDR
-686K4jD1vFTSw0dKH/Drd78qqgO9U3Lgi6YB5t50tfDFLrpEQUSW1gGzOk82mBG+
-CW7cBgVF9lEyMGhhp+/mdWOoC1UARum6QavrO9bzKxjka0H7EifG8Cd2+6kY1ybW
-ASmWSgQoR0plwi0oNheD+XfpKz3zPkcxEsjmJ/5jSCFuuLpZwZA+8M5Pzrt2MmX5
-n3HFKQjX5GLXzhRiz6F7+8fShlb+tOieKcPevAkR2c0Tjco+z5DyEccA2aAirWF0
-NDM7dDtAOdXsmoXC7GZenOWV0meza7wrUVsTOZTO29noGo/ihcqbm19U6+gp5dQT
-vhBZ+wDyZLzcQT4Fk3chAgMBAAGjRTBDMBIGA1UdEwEB/wQIMAYBAf8CAQEwDgYD
-VR0PAQH/BAQDAgEGMB0GA1UdDgQWBBQTkdY7/8UDc4v37lTC3AIM32HLrzANBgkq
-hkiG9w0BAQsFAAOCAQEAxvwTagwcyB3QBRhNFWG6punNWFCqpeRqmToDvYJzLYyf
-xF6PNCSdTTp+TYGBNHo95JwI6sva1YWEtEHThtVW2ABpsIacf0jDP2BfC1rzjxae
-Y3z3rlLsjQmrdhs+3BCvye0PskivzzyDc6TAN85be5ctchXgQHZYfMpvfd49i5dF
-KoGF9j1MP0Qi0B7wfcYvb2RYgjTIirmDMIVSC6gZX3XVgw3rH8jC4VZs/UJwEmZ0
-AwrGTEE6z5JBr4+P7zwEk++9CACWtvxyO+/VzsiCm+L7xOxPV12qgj/m5aCucHeZ
-rxiqK6VMem9QmZu5k4CjZc3qPkuC2PK4+wCp13vwmQ==
------END CERTIFICATE-----
-            `));
-
-            // 2. Set signature promise (test mode)
-            qz.security.setSignaturePromise((toSign) => {
-                return Promise.resolve("UNSIGNED"); // ⚠️ Only for development!
-            });
-
-            // 3. Connect to QZ Tray
-            function connectQZ() {
-                qz.websocket.connect().then(() => {
-                    console.log("✅ Connected to QZ Tray");
-                }).catch(err => {
-                    console.error("❌ QZ Tray connection error:", err);
-                });
-            }
-
-            // Optional: auto-connect when page is ready
-            document.addEventListener('DOMContentLoaded', connectQZ);
-        </script>
-
-
-    <script>
-
-        function printReceipt() {
-            const config = qz.configs.create("RICOH MP 5054"); // replace with actual printer name
-
-            const data = [
-                '\x1B\x40', // Reset
-                'BritainTech POS\n',
-                '----------------------\n',
-                'Product A x1  £50.00\n',
-                'Product B x2  £30.00\n',
-                '----------------------\n',
-                'Total:       £110.00\n',
-                '\nThank you!\n\n\n\n',
-                '\x1B\x69' // Full cut
-            ];
-
-            qz.print(config, data).then(() => {
-                console.log("Printed Successfully");
-            }).catch(err => console.error(err));
-        }
-        // function openCashDrawer() {
-        //     const config = qz.configs.create("RICOH MP 5054"); // replace with actual printer name
-        //     const data = ['\x1B\x70\x00\x19\xFA']; // Pulse drawer pin 2 (common command)
-
-        //     qz.print(config, data).then(() => {
-        //         console.log("Cash drawer opened.");
-        //     }).catch(err => console.error(err));
-        // }
-
-        // Test Print Function
-        // function testPrint() {
-        //     // disconnectQZ();
-        //     let printerName;
-        //     qz.printers.getDefault()
-        //         .then((printer) => {
-        //             printerName = printer;
-        //             const config = qz.configs.create(printerName);
-        //             const data = [
-        //                 { type: 'raw', format: 'plain', data: '*** Test Print ***\nHello from QZ Tray!\n\n' }
-        //             ];
-        //             return qz.print(config, data);
-        //         })
-        //         .then(() => {
-        //             console.log("✅ Print sent successfully");
-        //             disconnectQZ();
-        //         })
-        //         .catch((err) => {
-        //             console.error("❌ Error during print", err);
-        //         });
-        // }
-
-        // Disconnect
-        function disconnectQZ() {
-            if (qz.websocket.isActive()) {
-                qz.websocket.disconnect();
-            }
-        }
-        // After order success
-        // setTimeout(() => {
-        //     printReceipt();
-        //     // openCashDrawer();
-        // }, 1000);
-
-        qz.printers.getDefault().then(console.log).catch(console.error);
-
-    </script> --}}
 <script>
-    async function initQZTrayWithCachedPrinter() {
-        await connectQZ();
 
-        let cachedPrinter = localStorage.getItem("qz_selected_printer");
-        if (!cachedPrinter) {
-            const printers = await qz.printers.find();
-            let selection = prompt("Select printer:\n" + printers.join("\n"));
 
-            if (!selection || !printers.includes(selection)) {
-                alert("Printer not selected or not found.");
-                throw new Error("Printer not selected");
-            }
+    /// Pixel Printers ///
+    // function printHTML() {
+    //     var config = getUpdatedConfig();
+    //     var opts = getUpdatedOptions(true);
+    //     var printData = [
+    //         {
+    //         type: 'pixel',
+    //         format: 'html',
+    //         flavor: 'plain',
+    //         data: `<iframe src="{{ url('order/export_invoice_new/269207') }}" style="width: 100%; height: 100%;"></iframe>`,
+    //         options: opts
+    //         }
+    //     ];
 
-            localStorage.setItem("qz_selected_printer", selection);
-            cachedPrinter = selection;
-        }
+    //     qz.print(config, printData).catch(displayError);
+    // }
 
-        return qz.configs.create(cachedPrinter);
+    function printCurrentPage() {
+        const htmlContent = document.documentElement.outerHTML;
+
+        console.log(htmlContent);
+        const config = qz.configs.create("RICOH MP 5054", {
+            density: 300, // DPI (print quality)
+            units: "px", // use pixels
+            scaleContent: true, // scale to fit page
+            rasterize: true, // forces pixel rendering for HTML
+            pxWidth: 800, // set desired print width
+            pxHeight: 1100 // set desired print height
+        });
+
+        const data = [{
+            type: 'pixel',
+            format: 'html',
+            flavor: 'plain',
+            data: htmlContent
+        }];
+
+        qz.print(config, data).then(() => {
+            console.log("✅ Printed current page successfully");
+        }).catch(err => {
+            console.error("❌ Print error:", err);
+        });
     }
 
-    function connectQZ() {
-        if (!qz.websocket.isActive()) {
-            return qz.websocket.connect().then(() => {
-                console.log("✅ Connected to QZ Tray");
-            });
-        } else {
-            return Promise.resolve();
-        }
-    }
+    function printHTML() {
+        const config = getUpdatedConfig();
+        const opts = getUpdatedOptions(true);
 
-    function disconnectQZ() {
-        if (qz.websocket.isActive()) {
-            qz.websocket.disconnect();
-        }
+
+        const htmlContent = document.documentElement.outerHTML; // full HTML of current page
+        const printData = [{
+            type: 'pixel',
+            format: 'html',
+            flavor: 'plain',
+            data: htmlContent,
+            // options: opts
+        }];
+
+        qz.print(config, printData).then(() => {
+            console.log("✅ Printed current page successfully");
+        }).catch(err => {
+            console.error("❌ Print error:", err);
+        });
     }
 
     function printReceipt() {
