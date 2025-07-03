@@ -1039,13 +1039,23 @@ class Wholesale extends Component
         // file_put_contents('invoice.pdf', $pdfContent);
 
         // Get the PDF content
-        $pdf->Output($filename, 'I');
+        // $pdf->Output($filename, 'I');
 
         // $pdfContent = $pdf->Output('', 'S');
         // Return a response or redirect
 
         // Pass the PDF content to the view
         // return view('livewire.show_pdf')->with(['pdfContent'=> $pdfContent, 'delivery_note'=>$order->delivery_note_url]);
+
+        // Save to temp file in storage
+        $safeName = 'invoice_print.pdf';
+        $path = storage_path('app/public/' . $safeName);
+        $pdf->Output($path, 'F');
+
+        return response()->json([
+            'url' => asset('storage/' . $safeName),
+            'name' => $filename
+        ]);
     }
 
     public function bulksale_email($order_id){

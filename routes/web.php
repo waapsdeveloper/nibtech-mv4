@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ApiRequestController;
+use App\Http\Controllers\Controller;
 use App\Http\Livewire\Change;
 use App\Http\Livewire\Charge;
 use App\Http\Livewire\Customer;
@@ -46,6 +47,7 @@ use App\Http\Livewire\Stock_room;
 use App\Http\Livewire\Storage;
 use App\Http\Livewire\Transaction;
 use App\Http\Livewire\Wholesale_return;
+use Illuminate\Http\Request;
 
 /*
 |--------------------------------------------------------------------------
@@ -451,6 +453,12 @@ Route::get('oauth2/callback', [GoogleController::class, 'handleGoogleCallback'])
 Route::get('/exchange-rates', [ExchangeRateController::class, 'index']);
 
 Route::get('request_drfones', [ApiRequestController::class, 'request_drfones'])->name('request_drfones');
+
+Route::get('/qz-sign', [Controller::class, 'verify_signature']);
+
+
+
+
 
 });
 // });
