@@ -416,7 +416,7 @@ class Index extends Component
             $vendor_names = Customer_model::whereIn('id', $orders)->pluck('last_name','id')->toArray();
             $data = [];
             foreach($orders as $key => $order){
-                $data[] = '<a href="'. url('move_inventory') . '/' . $key . '/' . $vendor_names[$order] .'" title="view">'.$key.'('.$vendor_names[$order].')</a>';
+                $data[] = '<a href="'. url('move_inventory') . '?po=' . $key . '/' . $vendor_names[$order] .'" title="view">'.$key.'('.$vendor_names[$order].')</a>';
             }
             return response()->json($data);
         }else{
@@ -452,7 +452,7 @@ class Index extends Component
                 ->get()
                 ->map(function($item) {
                     return [
-                        // 'id' => $item->id,
+                        'id' => $item->id,
                         'name' => ($item->product->model ?? null) . ' ' . ($item->storage_id->name ?? null),
                         'total_stocks' => $item->stocks->count(),
                     ];
@@ -465,7 +465,7 @@ class Index extends Component
 
             $data['output'] = [];
             foreach($data['pss'] as $item){
-                $data['output'][] = $item['name'] . '(' . $item['total_stocks'] . ') &nbsp;';
+                $data['output'][] = '<a href="'. url('move_inventory') . '?pss=' . $item['id'] . '" title="view">'.$item['name'] . '(' . $item['total_stocks'] . ')</a> &nbsp;';
             }
 
             return response()->json($data);
