@@ -297,6 +297,8 @@
                                     <input type="text" class="form-control" id="imei" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset" onchange="this.form.submit()">
                                     <label for="imei">IMEI</label>
                                 </div>
+                                <input type="hidden" name="po" value="@isset($_GET['po']){{$_GET['po']}}@endisset">
+                                <input type="hidden" name="pss" value="@isset($_GET['pss']){{$_GET['pss']}}@endisset">
                             </form>
                         </div>
                     </div>
