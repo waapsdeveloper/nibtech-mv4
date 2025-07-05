@@ -772,6 +772,12 @@ class Wholesale extends Component
             // print_r($d);
             $n = trim($d[$name]);
             $im = trim($d[$imei]);
+            if(str_contains($im, ' ')){
+                $im = str_replace(' ', '', $im);
+            }
+            if(str_contains($im, '\u00a0')){
+                $im = str_replace('\u00a0', '', $im);
+            }
             if(ctype_digit($im)){
                 $i = $im;
                 $s = null;
