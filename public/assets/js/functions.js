@@ -396,7 +396,7 @@
     }
 
     function printQz(link, type) {
-        printer = LocalStorage.getItem(type + "_Printer");
+        printer = localStorage.getItem(type + "_Printer");
         if (!printer) {
             displayMessage("No printer selected for " + type + ". Please select a printer first.", 'alert-warning');
             return;
