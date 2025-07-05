@@ -188,8 +188,16 @@ class IMEILabelExport
 
 
         // Output the PDF as a response
-        return $pdf->Output('product_label.pdf');
+        // return $pdf->Output('product_label.pdf');
 
+        $safeName = 'sticker_print.pdf';
+        $path = storage_path('app/public/' . $safeName);
+        $pdf->Output($path, 'F');
+
+        return response()->json([
+            'url' => asset('storage/' . $safeName),
+            'name' => $safeName
+        ]);
     }
 
 }

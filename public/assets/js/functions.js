@@ -394,23 +394,23 @@
         }
         return val === truncated ? val : truncated + "&hellip;";
     }
-
     function printQz(link, type) {
-        printer = localStorage.getItem(type + "_Printer");
+        console.log("Printing from link: " + link);
+        const printer = localStorage.getItem(type + "_Printer");
         if (!printer) {
             displayMessage("No printer selected for " + type + ". Please select a printer first.", 'alert-warning');
             return;
         }
         const config = qz.configs.create(printer);
 
-        fetch(`${link}`)
+        fetch(link)
             .then(res => res.blob())
-            .then(blob => blob.arrayBuffer())
-            .then(data => {
+            .then(blob => blob.arrayBuffer())  // get raw bytes
+            .then(arrayBuffer => {
                 return qz.print(config, [{
-                    type: 'raw',
-                    format: 'pdf',
-                    data: data
+                    type: 'pdf',
+                    format: 'file',
+                    data: arrayBuffer // not blob.url
                 }]);
             }).then(() => {
                 console.log("✅ Printed successfully.");

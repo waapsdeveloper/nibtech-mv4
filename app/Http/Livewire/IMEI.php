@@ -244,6 +244,8 @@ class IMEI extends Component
         $pdfExport = new IMEILabelExport();
         $pdfExport->generatePdf();
 
+
+
     }
 
     public function change_po($stock_id){
