@@ -47,6 +47,10 @@
                         <label for="">IMEI</label>
                     </div>
                         <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
+                    @if (request('autoprint') == 1)
+                        <input type="hidden" name="autoprint" value="1">
+
+                    @endif
                 </form>
                 <script>
 
