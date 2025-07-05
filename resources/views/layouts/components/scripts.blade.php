@@ -1,6 +1,10 @@
 		<!-- BACK-TO-TOP -->
 		<a href="#top" id="back-to-top"><i class="las la-arrow-up"></i></a>
 
+        <script>
+            var storagePath = '{{ asset('storage') }}';
+        </script>
+
 		<!-- BOOTSTRAP JS -->
 		<script src="{{asset('assets/plugins/bootstrap/js/popper.min.js')}}"></script>
 		<script src="{{asset('assets/plugins/bootstrap/js/bootstrap.min.js')}}"></script>

@@ -394,28 +394,32 @@
         }
         return val === truncated ? val : truncated + "&hellip;";
     }
-
     function printQz(link, type) {
-        printer = localStorage.getItem(type + "_Printer");
+        console.log("Printing from link: " + link);
+        const printer = localStorage.getItem(type + "_Printer");
         if (!printer) {
             displayMessage("No printer selected for " + type + ". Please select a printer first.", 'alert-warning');
             return;
         }
         const config = qz.configs.create(printer);
 
-        fetch(`${link}`)
-            .then(res => res.blob())
+        fetch(link)
+            .then(response => response.blob())
             .then(blob => blob.arrayBuffer())
-            .then(data => {
+            .then(arrayBuffer => {
                 return qz.print(config, [{
-                    type: 'raw',
+                    type: 'pixel',
                     format: 'pdf',
-                    data: data
+                    flavor: 'file',
+                    data: storagePath + '/sticker_print.pdf',
                 }]);
-            }).then(() => {
+            })
+            .then(() => {
                 console.log("✅ Printed successfully.");
-            }).catch(err => {
+            })
+            .catch(err => {
                 console.error("❌ Print failed", err);
+                displayMessage("Print failed: " + (err && err.message ? err.message : err), 'alert-danger');
             });
     }
 
