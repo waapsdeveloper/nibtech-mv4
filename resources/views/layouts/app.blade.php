@@ -112,5 +112,14 @@
         @livewireScripts
         <script src="//unpkg.com/alpinejs" defer></script>
         {{-- <livewire:scripts /> --}}
+
+        @if (request('autoprint') == 1)
+            <script>
+                $(document).ready(function() {
+                    // Trigger the print button click
+                    $('#printBtn').click();
+                });
+            </script>
+        @endif
     </body>
 </html>
