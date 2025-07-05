@@ -779,11 +779,11 @@ class Wholesale extends Component
                 $im = str_replace('\u00a0', '', $im);
             }
             if(ctype_digit($im)){
-                $i = $im;
+                $i = trim($im);
                 $s = null;
             }else{
                 $i = null;
-                $s = $im;
+                $s = trim($im);
             }
             if(trim($im) == ''){
                 continue;
@@ -820,7 +820,7 @@ class Wholesale extends Component
                     $issue[$dr]['data']['row'] = $dr;
                     $issue[$dr]['data']['name'] = $n;
                     $issue[$dr]['data']['storage'] = $st;
-                    $issue[$dr]['data']['imei'] = $i.$s;
+                    $issue[$dr]['data']['imei'] = $i.'s'.$s;
                     $issue[$dr]['message'] = 'Stock Not Found';
 
                     continue;
