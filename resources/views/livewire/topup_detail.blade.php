@@ -85,7 +85,7 @@
                         <li class="breadcrumb-item active" aria-current="page">Topup Detail</li>
                     </ol>
                     @if ($process->status > 1 && $process->listed_stocks_verification->sum('qty_change') > $process->process_stocks->count())
-                        <a href="{{ url('topup/rrecheck_closed_topup').'/'.$process->id }}" class="btn btn-link">Recheck Topup</a>
+                        <a href="{{ url('topup/recheck_closed_topup').'/'.$process->id }}" class="btn btn-link">Recheck Topup</a>
 
                     @endif
                 </div>
@@ -488,7 +488,7 @@
                                     class="table-success"
                                 @endif
                                 >
-                                    <td>{{ $i + 1 }}</td>
+                                    <td title="{{ $variation->id }}">{{ $i + 1 }}</td>
                                     <td>
                                         <a href="{{ url('listing').'?sku='.$variation->sku.'&process_id='.$process->id }}" target="_blank">
                                         {{ $variation->sku ?? "Variation SKU Not added"}}
