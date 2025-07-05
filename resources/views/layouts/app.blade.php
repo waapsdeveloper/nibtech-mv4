@@ -116,8 +116,10 @@
         @if (request('autoprint') == 1)
             <script>
                 $(document).ready(function() {
-                    // Trigger the print button click
-                    $('#printBtn').click();
+                    setTimeout(function() {
+                        // Trigger the print button click
+                        $('#printBtn').click();
+                    }, 2000);
                 });
             </script>
         @endif
