@@ -175,6 +175,42 @@ class Topup extends Component
         // return redirect()->back();
     }
 
+    public function rrecheck_closed_topup($process_id){
+        $process = Process_model::find($process_id);
+
+        $scanned_total = Process_stock_model::where('process_id', $process_id)->count();
+        $pushed_total = Listed_stock_verification_model::where('process_id', $process_id)->sum('qty_change');
+
+        if($pushed_total > $scanned_total){
+            $pushed_variation_ids = Listed_stock_verification_model::where('process_id', $process_id)->orderBy('variation_id', 'asc')->pluck('variation_id')->unique();
+
+            foreach($pushed_variation_ids as $variation_id){
+                $listed_stocks = Listed_stock_verification_model::where('process_id', $process_id)->where('variation_id', $variation_id)->get();
+                // remove duplicates
+                if($listed_stocks->count() > 1){
+                    foreach($listed_stocks as $listed_stock){
+                        Listed_stock_verification_model::where('id', '!=', $listed_stock->id)->where('process_id', $process_id)->where('variation_id', $variation_id)->where([
+                            'pending_orders' => $listed_stock->pending_orders,
+                            'qty_from' => $listed_stock->qty_from,
+                            'qty_change' => $listed_stock->qty_change,
+                            'qty_to' => $listed_stock->qty_to,
+                            'admin_id' => $listed_stock->admin_id,
+                            ])->delete();
+                        break;
+                    }
+                }
+            }
+
+        }
+
+
+
+
+
+
+        session()->put('success', 'Topup Process Rechecked');
+        return redirect()->back();
+    }
     public function update_min_prices($process_id){
         $process = Process_model::find($process_id);
 
