@@ -75,10 +75,13 @@
 
 
     /// Detection ///
-    function findPrinter(query, set, radio) {
+    function findPrinter(query, set, radio, type) {
         $("#printerSearch").val(query);
         qz.printers.find(query).then(function(data) {
             displayMessage("<strong>Found:</strong> " + data);
+            if (type) {
+                localStorage.setItem(type + "_Printer", data);
+            }
             if (set) { setPrinter(data); }
             if(radio) {
                 var input = document.querySelector("input[value='" + radio + "']");
@@ -86,6 +89,7 @@
                     input.checked = true;
                     $(input.parentElement).fadeOut(300).fadeIn(500);
                 }
+
             }
         }).catch(displayError);
     }
@@ -101,7 +105,7 @@
         qz.printers.find().then(function(data) {
             var list = '';
             for(var i = 0; i < data.length; i++) {
-                var button = '<button class="btn btn-default btn-xs" onclick="findPrinter(\'' + data[i].replace(/\\/g, "\\\\") + '\', true)" data-dismiss="alert">Use This</button>'
+                var button = `<button class="btn btn-default btn-xs" onclick="findPrinter(\'' + data[i].replace(/\\/g, "\\\\") + '\', true, null, 'A4')" data-dismiss="alert">Use This for A4</button><button class="btn btn-default btn-xs" onclick="findPrinter(\'' + data[i].replace(/\\/g, "\\\\") + '\', true, null, 'DHL')" data-dismiss="alert">Use This for DHL</button><button class="btn btn-default btn-xs" onclick="findPrinter(\'' + data[i].replace(/\\/g, "\\\\") + '\', true, null, 'Sticker')" data-dismiss="alert">Use This for Sticker</button>`
                 list += "&nbsp; " + data[i] + "&nbsp;" + button + "<br/>";
             }
 
@@ -390,7 +394,29 @@
         return val === truncated ? val : truncated + "&hellip;";
     }
 
+    function printQz(link, type) {
+        printer = LocalStorage.getItem(type + "_Printer");
+        if (!printer) {
+            displayMessage("No printer selected for " + type + ". Please select a printer first.", 'alert-warning');
+            return;
+        }
+        const config = qz.configs.create(printer);
 
+        fetch(`${link}`)
+            .then(res => res.blob())
+            .then(blob => blob.arrayBuffer())
+            .then(data => {
+                return qz.print(config, [{
+                    type: 'raw',
+                    format: 'pdf',
+                    data: data
+                }]);
+            }).then(() => {
+                console.log("✅ Printed successfully.");
+            }).catch(err => {
+                console.error("❌ Print failed", err);
+            });
+    }
 
 
 
