@@ -175,7 +175,7 @@ class Topup extends Component
         // return redirect()->back();
     }
 
-    public function rrecheck_closed_topup($process_id){
+    public function recheck_closed_topup($process_id){
         $process = Process_model::find($process_id);
 
         $scanned_total = Process_stock_model::where('process_id', $process_id)->count();
