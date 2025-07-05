@@ -195,9 +195,15 @@ class IMEILabelExport
         $pdf->Output($path, 'F');
 
         return response()->json([
-            'url' => asset('storage/' . $safeName),
+            'data' => asset('storage/' . $safeName),
             'name' => $safeName
         ]);
+        // Output PDF as a binary string (S = return as string)
+        // $pdfContent = $pdf->Output('sticker_print.pdf', 'S');
+
+        // return response($pdfContent, 200)
+        //     ->header('Content-Type', 'application/pdf')
+        //     ->header('Content-Disposition', 'inline; filename="sticker_print.pdf"');
     }
 
 }

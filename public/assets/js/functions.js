@@ -404,18 +404,22 @@
         const config = qz.configs.create(printer);
 
         fetch(link)
-            .then(res => res.blob())
-            .then(blob => blob.arrayBuffer())  // get raw bytes
+            .then(response => response.blob())
+            .then(blob => blob.arrayBuffer())
             .then(arrayBuffer => {
                 return qz.print(config, [{
-                    type: 'pdf',
-                    format: 'file',
-                    data: arrayBuffer // not blob.url
+                    type: 'pixel',
+                    format: 'pdf',
+                    flavor: 'file',
+                    data: storagePath + '/sticker_print.pdf',
                 }]);
-            }).then(() => {
+            })
+            .then(() => {
                 console.log("✅ Printed successfully.");
-            }).catch(err => {
+            })
+            .catch(err => {
                 console.error("❌ Print failed", err);
+                displayMessage("Print failed: " + (err && err.message ? err.message : err), 'alert-danger');
             });
     }
 
