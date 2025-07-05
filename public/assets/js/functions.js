@@ -81,6 +81,7 @@
             displayMessage("<strong>Found:</strong> " + data);
             if (type) {
                 localStorage.setItem(type + "_Printer", data);
+                displayMessage("Printer for " + type + " set to: " + data, 'alert-success');
             }
             if (set) { setPrinter(data); }
             if(radio) {
@@ -105,7 +106,7 @@
         qz.printers.find().then(function(data) {
             var list = '';
             for(var i = 0; i < data.length; i++) {
-                var button = `<button class="btn btn-default btn-xs" onclick="findPrinter(\'' + data[i].replace(/\\/g, "\\\\") + '\', true, null, 'A4')" data-dismiss="alert">Use This for A4</button><button class="btn btn-default btn-xs" onclick="findPrinter(\'' + data[i].replace(/\\/g, "\\\\") + '\', true, null, 'DHL')" data-dismiss="alert">Use This for DHL</button><button class="btn btn-default btn-xs" onclick="findPrinter(\'' + data[i].replace(/\\/g, "\\\\") + '\', true, null, 'Sticker')" data-dismiss="alert">Use This for Sticker</button>`
+                var button = `<button class="btn btn-default btn-xs" onclick="findPrinter(&quot;${data[i].replace(/\\/g, "\\\\")}&quot;, true, null, 'A4')" data-dismiss="alert">Use This for A4</button><button class="btn btn-default btn-xs" onclick="findPrinter(&quot;${data[i].replace(/\\/g, "\\\\")}&quot;, true, null, 'DHL')" data-dismiss="alert">Use This for DHL</button><button class="btn btn-default btn-xs" onclick="findPrinter(&quot;${data[i].replace(/\\/g, "\\\\")}&quot;, true, null, 'Sticker')" data-dismiss="alert">Use This for Sticker</button>`;
                 list += "&nbsp; " + data[i] + "&nbsp;" + button + "<br/>";
             }
 
