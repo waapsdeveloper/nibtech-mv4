@@ -298,6 +298,8 @@ class Wholesale extends Component
         $data['order_id'] = $order_id;
         $data['currency'] = $data['order']->currency_id->sign;
 
+        $data['scanned_total'] = Order_item_model::where('order_id',$order_id)->where('admin_id',session('user_id'))->count();
+
             // die;
         // echo "<pre>";
         // // print_r($items->stocks);
