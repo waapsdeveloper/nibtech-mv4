@@ -242,7 +242,9 @@ class IMEI extends Component
 
     public function print_label(){
         $pdfExport = new IMEILabelExport();
-        $pdfExport->generatePdf();
+        return $pdfExport->generatePdf();
+
+
 
     }
 
