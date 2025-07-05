@@ -771,15 +771,15 @@ class Wholesale extends Component
             // echo $dr." ";
             // print_r($d);
             $n = trim($d[$name]);
-            $d[$imei] = trim($d[$imei]);
-            if(ctype_digit($d[$imei])){
-                $i = $d[$imei];
+            $im = trim($d[$imei]);
+            if(ctype_digit($im)){
+                $i = $im;
                 $s = null;
             }else{
                 $i = null;
-                $s = $d[$imei];
+                $s = $im;
             }
-            if(trim($d[$imei]) == ''){
+            if(trim($im) == ''){
                 continue;
             }
             if(trim($n) == ''){
