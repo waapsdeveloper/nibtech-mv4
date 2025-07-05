@@ -401,7 +401,7 @@
             displayMessage("No printer selected for " + type + ". Please select a printer first.", 'alert-warning');
             return;
         }
-        const config = qz.configs.create(printer, { orientation: 'portrait' });
+        const config = qz.configs.create(printer);
 
         fetch(link)
             .then(response => response.blob())
