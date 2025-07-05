@@ -298,6 +298,8 @@ class Wholesale extends Component
         $data['order_id'] = $order_id;
         $data['currency'] = $data['order']->currency_id->sign;
 
+        $data['scanned_total'] = Order_item_model::where('order_id',$order_id)->where('admin_id',session('user_id'))->count();
+
             // die;
         // echo "<pre>";
         // // print_r($items->stocks);
@@ -917,13 +919,7 @@ class Wholesale extends Component
 
 
         if($issue != []){
-            foreach($issue as $row => $datas){
-                Order_issue_model::create([
-                    'order_id' => $order_id,
-                    'data' => json_encode($datas['data']),
-                    'message' => $datas['message'],
-                ]);
-            }
+            session()->put('error', json_encode($issue));
         }
 
         return redirect()->back();
