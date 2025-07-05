@@ -771,6 +771,7 @@ class Wholesale extends Component
             // echo $dr." ";
             // print_r($d);
             $n = trim($d[$name]);
+            $d[$imei] = trim($d[$imei]);
             if(ctype_digit($d[$imei])){
                 $i = $d[$imei];
                 $s = null;
