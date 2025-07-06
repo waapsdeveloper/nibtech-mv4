@@ -76,7 +76,7 @@
                     <a href="{{ url('request_drfones?imei='.$stock->imei.$stock->serial_number) }}" class="text-danger btn btn-link" title="Check DRFones" target="_blank"><i class="fa fa-search"></i></a>
 
                 @endif
-                <button class="btn btn-primary" onclick="printQz('{{ url('imei/print_label').'?stock_id='.$stock->id}}&minimal=1', 'Sticker')" id="printBtn">Print Sticker</button>
+                <button class="btn btn-primary" onclick="printQz('{{ url('imei/print_label').'?stock_id='.$stock->id}}&minimal=1&autoprint=1', 'Sticker')" id="printBtn">Print Sticker</button>
                 <a href="{{ url('imei/print_label').'?stock_id='.$stock->id}}&minimal=1" target="_blank" class="btn btn-secondary"><i class="fa fa-print"></i></a>
                 <a href="{{ url('imei/print_label').'?stock_id='.$stock->id}}" target="_blank" class="btn btn-secondary"><i class="fa fa-print"></i></a>
                 @if (session('user')->hasPermission('rearrange_imei_order'))

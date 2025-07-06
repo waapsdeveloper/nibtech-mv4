@@ -189,15 +189,19 @@ class IMEILabelExport
 
         // Output the PDF as a response
         // return $pdf->Output('product_label.pdf');
+        if(request('autoprint') == 1){
 
-        $safeName = 'sticker_print.pdf';
-        $path = storage_path('app/public/' . $safeName);
-        $pdf->Output($path, 'F');
+            $safeName = 'sticker_print.pdf';
+            $path = storage_path('app/public/' . $safeName);
+            $pdf->Output($path, 'F');
 
-        return response()->json([
-            'data' => asset('storage/' . $safeName),
-            'name' => $safeName
-        ]);
+            return response()->json([
+                'data' => asset('storage/' . $safeName),
+                'name' => $safeName
+            ]);
+        }else{
+            return $pdf->Output('sticker_print.pdf'); // Inline display in the browser
+        }
         // Output PDF as a binary string (S = return as string)
         // $pdfContent = $pdf->Output('sticker_print.pdf', 'S');
 
