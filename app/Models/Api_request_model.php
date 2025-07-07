@@ -400,6 +400,7 @@ class Api_request_model extends Model
                 if($storage != 0){
                     $new_variation['storage'] = $storage;
                 }
+                unset($message);
                 if($stock->variation->storage != null && $stock->variation->storage != 0 && $stock->variation->storage != $storage && $storage != 0){
                     $message = "Storage changed from: ".$stock->variation->storage_id->name." to: ".$storages[$storage];
                     // dd($message, $stock, $datas);
