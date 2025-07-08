@@ -272,7 +272,7 @@
                         <div class="form-group">
                             <label for="">Vendor</label>
                             <select class="form-select" placeholder="Input Vendor" name="purchase[vendor]" required>
-                                <option>Select Vendor</option>
+                                <option value="">Select Vendor</option>
                                 @foreach ($vendors as $id=>$vendor)
                                     <option value="{{ $id }}">{{ $vendor }}</option>
 
