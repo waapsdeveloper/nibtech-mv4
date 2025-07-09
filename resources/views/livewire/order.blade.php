@@ -179,7 +179,7 @@
 
                 <div class="col-lg-2 col-xl-2 col-md-3 col-sm-6">
                     <select name="exclude_topup[]" class="form-control form-select select2" multiple>
-                        <option value="">Grade</option>
+                        <option value="">Exclude Topups</option>
                         @foreach ($topups as $id => $name)
                             <option value="{{ $id }}" @if (isset($_GET['exclude_topup']) && in_array($id, $_GET['exclude_topup'])) {{ 'selected' }} @endif>
                                 {{ $name }}</option>
@@ -252,6 +252,12 @@
             <input type="hidden" name="tracking_number" value="{{ Request::get('tracking_number') }}">
             <input type="hidden" name="page" value="{{ Request::get('page') }}">
             <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
+            @if (Request::get('exclude_topup'))
+                @foreach (Request::get('exclude_topup') as $topup)
+                    <input type="hidden" name="exclude_topup[]" value="{{ $topup }}">
+                @endforeach
+
+            @endif
             @if (Request::get('care') == 1)
                 <input type="hidden" name="care" value="{{ Request::get('care') }}">
             @endif
