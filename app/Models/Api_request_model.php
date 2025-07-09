@@ -203,7 +203,7 @@ class Api_request_model extends Model
                 continue;
 
             }
-            if(config('app.url') == 'https://sdpos.nibritaintech.com' && $stock == null && in_array(trim($datas->PCName), ['PC12', 'PC13', 'PC14', 'PC15'])){
+            if(config('app.url') == 'https://sdpos.nibritaintech.com' && in_array(trim($datas->PCName), ['PC12', 'PC13', 'PC14', 'PC15'])){
 
                 $request->send_to_yk();
                 continue;
