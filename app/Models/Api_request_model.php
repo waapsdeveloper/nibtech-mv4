@@ -88,10 +88,6 @@ class Api_request_model extends Model
             }
 
             if(!$stock && $datas->Imei == '' && $datas->Imei2 == ''){
-                // $api_request = Api_request_model::where('stock_id','!=',null)->where('status','!=',null)->first();
-                // if($api_request){
-                //     $stock = Stock_model::find($api_request->stock_id);
-                // }
                 continue;
             }
 
@@ -104,12 +100,7 @@ class Api_request_model extends Model
             }
             if(!in_array($datas->Imei, $imeis)){
                 $imeis[] = $datas->Imei;
-            // echo "<div class='col-md-4'><pre>";
-
-            // // print_r($request);
-            // print_r($datas);
-            // echo "</pre></div>";
-            $return[] = $datas;
+                $return[] = $datas;
 
             }
 
@@ -185,21 +176,15 @@ class Api_request_model extends Model
                 // retrieve its index
                 $admin = array_search($adminName, $lowercaseAdmins);
             }else{
-                // if($adminName == 'paras khan'){
-                //     $admin = 6;
-                // }elseif(trim($adminName) == 'sangeeta punia'){
-                //     $admin = 8;
-                // }elseif($adminName == 'owais'){
-                //     $admin = 2;
-                // }elseif($adminName == '' && $datas->PCName == 'PC6'){
-                //     $admin = 16;
-                // }else{
-                if($stock != null){
+                if(config('app.url') == 'https://sdpos.nibritaintech.com' && $stock != null){
 
 
                     if($stock != null && $stock->last_item() != null && $stock->last_item()->order->customer_id == 3955 && $stock->status == 2){
 
                         $admin = 11;
+                    }elseif($stock != null && $stock->last_item() != null && $stock->last_item()->order->customer_id == 16059 && $stock->status == 2){
+
+                        $admin = 43;
                     }else{
                         echo "Please create/change Team Member First Name to: ".$adminName;
                         // continue;
@@ -218,7 +203,7 @@ class Api_request_model extends Model
                 continue;
 
             }
-            if(config('app.url') == 'https://sdpos.nibritaintech.com' && $stock == null && in_array($datas->PCName, ['PC12', 'PC13', 'PC14', 'PC15'])){
+            if(config('app.url') == 'https://sdpos.nibritaintech.com' && $stock == null && in_array(trim($datas->PCName), ['PC12', 'PC13', 'PC14', 'PC15'])){
 
                 $request->send_to_yk();
                 continue;
