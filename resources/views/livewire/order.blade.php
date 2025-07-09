@@ -183,8 +183,6 @@
                     </div>
                 </div>
                 <input type="hidden" name="page" value="{{ Request::get('page') }}">
-                <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
-                <input type="hidden" name="sort" value="{{ Request::get('sort') }}">
                 @if (Request::get('care') == 1)
                     <input type="hidden" name="care" value="{{ Request::get('care') }}">
                 @endif
@@ -324,66 +322,27 @@
                             </h4>
                             <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$orders->firstItem()}} {{ __('locale.To') }} {{$orders->lastItem()}} {{ __('locale.Out Of') }} {{$orders->total()}} </h5>
 
-                            <div class=" mg-b-0">
-                                <form method="get" action="" class="row form-inline">
-                                    <label for="perPage" class="card-title inline">Sort:</label>
-                                    <select name="sort" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
+                            <div class="row">
+                                <div class="form-floating">
+                                    <select name="sort" class="form-select-sm" id="perPage" onchange="this.form.submit()" form="search">
                                         <option value="1" {{ Request::get('sort') == 1 ? 'selected' : '' }}>Order DESC</option>
                                         <option value="2" {{ Request::get('sort') == 2 ? 'selected' : '' }}>Order ASC</option>
                                         <option value="3" {{ Request::get('sort') == 3 ? 'selected' : '' }}>Name DESC</option>
                                         <option value="4" {{ Request::get('sort') == 4 ? 'selected' : '' }}>Name ASC</option>
                                     </select>
+                                    <label for="perPage" class="">Sort:</label>
                                     {{-- <button type="submit">Apply</button> --}}
-                                    <input type="hidden" name="start_date" value="{{ Request::get('start_date') }}">
-                                    <input type="hidden" name="start_time" value="{{ Request::get('start_time') }}">
-                                    <input type="hidden" name="end_date" value="{{ Request::get('end_date') }}">
-                                    <input type="hidden" name="end_time" value="{{ Request::get('end_time') }}">
-                                    <input type="hidden" name="status" value="{{ Request::get('status') }}">
-                                    <input type="hidden" name="adm" value="{{ Request::get('adm') }}">
-                                    <input type="hidden" name="order_id" value="{{ Request::get('order_id') }}">
-                                    <input type="hidden" name="sku" value="{{ Request::get('sku') }}">
-                                    <input type="hidden" name="imei" value="{{ Request::get('imei') }}">
-                                    <input type="hidden" name="page" value="{{ Request::get('page') }}">
-                                    <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
-                                    <input type="hidden" name="care" value="{{ Request::get('care') }}">
-                                    @if (Request::get('missing'))
-                                        <input type="hidden" name="missing" value="{{ Request::get('missing') }}">
-                                    @endif
-                                    @if (Request::get('transaction'))
-                                        <input type="hidden" name="transaction" value="{{ Request::get('transaction') }}">
-                                    @endif
-                                </form>
-                                <form method="get" action="" class="row form-inline">
-                                    <label for="perPage" class="card-title inline">per page:</label>
-                                    <select name="per_page" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()">
+                                </div>
+                                <div class="form-floating">
+                                    <select name="per_page" class="form-select-sm wd-100" id="perPage" onchange="this.form.submit()" form="search">
                                         <option value="10" {{ Request::get('per_page') == 10 ? 'selected' : '' }}>10</option>
                                         <option value="20" {{ Request::get('per_page') == 20 ? 'selected' : '' }}>20</option>
                                         <option value="50" {{ Request::get('per_page') == 50 ? 'selected' : '' }}>50</option>
                                         <option value="100" {{ Request::get('per_page') == 100 ? 'selected' : '' }}>100</option>
                                     </select>
+                                    <label for="perPage" class="">per page:</label>
                                     {{-- <button type="submit">Apply</button> --}}
-                                    <input type="hidden" name="start_date" value="{{ Request::get('start_date') }}">
-                                    <input type="hidden" name="start_time" value="{{ Request::get('start_time') }}">
-                                    <input type="hidden" name="end_date" value="{{ Request::get('end_date') }}">
-                                    <input type="hidden" name="end_time" value="{{ Request::get('end_time') }}">
-                                    <input type="hidden" name="status" value="{{ Request::get('status') }}">
-                                    <input type="hidden" name="adm" value="{{ Request::get('adm') }}">
-                                    <input type="hidden" name="order_id" value="{{ Request::get('order_id') }}">
-                                    <input type="hidden" name="sku" value="{{ Request::get('sku') }}">
-                                    <input type="hidden" name="imei" value="{{ Request::get('imei') }}">
-                                    <input type="hidden" name="tracking_number" value="{{ Request::get('tracking_number') }}">
-                                    <input type="hidden" name="page" value="{{ Request::get('page') }}">
-                                    <input type="hidden" name="sort" value="{{ Request::get('sort') }}">
-                                    @if (Request::get('care') == 1)
-                                        <input type="hidden" name="care" value="{{ Request::get('care') }}">
-                                    @endif
-                                    @if (Request::get('missing'))
-                                        <input type="hidden" name="missing" value="{{ Request::get('missing') }}">
-                                    @endif
-                                    @if (Request::get('transaction'))
-                                        <input type="hidden" name="transaction" value="{{ Request::get('transaction') }}">
-                                    @endif
-                                </form>
+                                </div>
                             </div>
 
                         </div>

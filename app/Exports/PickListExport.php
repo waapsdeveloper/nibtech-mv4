@@ -2,6 +2,9 @@
 
 namespace App\Exports;
 
+use App\Models\Listed_stock_verification_model;
+use App\Models\Process_model;
+use App\Models\Variation_model;
 use Illuminate\Support\Facades\DB;
 use TCPDF;
 use Picqer\Barcode\BarcodeGeneratorPNG;
@@ -23,6 +26,24 @@ class PickListExport
             $end_date = request('end_date')." 23:59:59";
         }else{
             $end_date = now();
+        }
+
+        $difference_variations = [];
+        if(request('exclude_topup') != [] && request('exclude_topup') != null){
+            $topup_ids = Process_model::whereIn('reference_id', request('exclude_topup'))->where('process_type_id', 22)->pluck('id');
+            $listed_stock_verification = Listed_stock_verification_model::whereIn('process_id', $topup_ids)->get();
+
+            $variations = Variation_model::whereIn('id', $listed_stock_verification->pluck('variation_id'))->get()->keyBy('id');
+
+            foreach($variations as $variation){
+                $difference = $listed_stock_verification->where('variation_id', $variation->id)->sum('qty_change') - $variation->listed_stock;
+                if($difference > 0){
+                    $difference_variations[$variation->sku] = $difference;
+                }
+            }
+
+
+
         }
         // Fetch data from the database
         $data = DB::table('orders')
@@ -54,32 +75,6 @@ class PickListExport
             ->when(request('status') != '', function ($q) {
                 return $q->where('orders.status', request('status'));
             })
-            // ->when(request('order_id') != '', function ($q) {
-            //     if(str_contains(request('order_id'),'<')){
-            //         $order_ref = str_replace('<','',request('order_id'));
-            //         return $q->where('orders.reference_id', '<', $order_ref);
-            //     }elseif(str_contains(request('order_id'),'>')){
-            //         $order_ref = str_replace('>','',request('order_id'));
-            //         return $q->where('orders.reference_id', '>', $order_ref);
-            //     }elseif(str_contains(request('order_id'),'<=')){
-            //         $order_ref = str_replace('<=','',request('order_id'));
-            //         return $q->where('orders.reference_id', '<=', $order_ref);
-            //     }elseif(str_contains(request('order_id'),'>=')){
-            //         $order_ref = str_replace('>=','',request('order_id'));
-            //         return $q->where('orders.reference_id', '>=', $order_ref);
-            //     }elseif(str_contains(request('order_id'),'-')){
-            //         $order_ref = explode('-',request('order_id'));
-            //         return $q->whereBetween('orders.reference_id', $order_ref);
-            //     }elseif(str_contains(request('order_id'),',')){
-            //         $order_ref = explode(',',request('order_id'));
-            //         return $q->whereIn('orders.reference_id', $order_ref);
-            //     }elseif(str_contains(request('order_id'),' ')){
-            //         $order_ref = explode(' ',request('order_id'));
-            //         return $q->whereIn('orders.reference_id', $order_ref);
-            //     }else{
-            //         return $q->where('orders.reference_id', 'LIKE', request('order_id') . '%');
-            //     }
-            // })
 
             ->when(request('order_id') != '', function ($q) {
                 return $this->filterOrderId($q, request('order_id'));
@@ -131,6 +126,9 @@ class PickListExport
                 return $q->where('reference_id', '>', request('last_order'));
             })
             ->count();
+
+
+
         // Create a TCPDF instance
         $pdf = new TCPDF();
         $pdf->SetMargins(10, 10, 10);
@@ -159,8 +157,18 @@ class PickListExport
         $j = 0;
         // Iterate through data and add to PDF
         foreach ($data as $order) {
+            $total_quantity = $order->total_quantity;
+
+            if($difference_variations != [] && count($difference_variations) > 0 && isset($difference_variations[$order->sku]) && $difference_variations[$order->sku] < 0){
+                if($difference_variations[$order->sku] >= $order->total_quantity){
+                    continue;
+                }else{
+                    $total_quantity = $order->total_quantity + $difference_variations[$order->sku];
+                }
+
+            }
             $i++;
-            $j += $order->total_quantity;
+            $j += $total_quantity;
             $pdf->Ln();
             // Set line style for all borders
             $pdf->SetLineStyle(['width' => 0.1, 'color' => [0, 0, 0]]);
@@ -170,7 +178,7 @@ class PickListExport
             $variationName = $this->ellipsize($order->model." - ".$order->storage." - ".$order->color, 60);
             $pdf->Cell(110, 10, $variationName, 1);
             $pdf->Cell(22, 10, $order->grade_name, 1);
-            $pdf->Cell(5, 10, $order->total_quantity, 1);
+            $pdf->Cell(5, 10, $total_quantity, 1);
 
             // Generate and add barcode with SKU text
             $barcodeImage = $this->generateBarcodeWithSku($barcodeGenerator, $order->sku);
