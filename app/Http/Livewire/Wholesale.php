@@ -677,6 +677,14 @@ class Wholesale extends Component
         $variation->stock -= 1;
         $variation->save();
 
+        if (session()->has('counter')) {
+            // Increment the counter
+            session()->increment('counter');
+        } else {
+            // Initialize the counter if it doesn't exist
+            session()->put('counter', 1);
+        }
+
         $order_item = new Order_item_model();
         $order_item->order_id = $order_id;
         $order_item->variation_id = $stock->variation_id;
