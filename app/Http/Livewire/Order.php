@@ -1750,7 +1750,7 @@ class Order extends Component
         $issue = [];
         // Validate the uploaded file
         request()->validate([
-            'purchase.sheet' => 'file|mimes:xlsx,xls',
+            'purchase.sheet' => 'required|file|mimes:xlsx,xls',
         ]);
 
         // Store the uploaded file in a temporary location
