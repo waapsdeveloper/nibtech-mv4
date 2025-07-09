@@ -1,4 +1,4 @@
-{{-- {{-- @extends('layouts.app') --}} --}}
+{{-- @extends('layouts.app') --}}
 
     @section('styles')
         <style>
@@ -176,6 +176,16 @@
                         <option value="2" @if(isset($_GET['with_stock']) && $_GET['with_stock'] == 2) {{'selected'}}@endif>Without Stock</option>
                     </select>
                 </div>
+
+                <div class="col-lg-2 col-xl-2 col-md-3 col-sm-6">
+                    <select name="exclude_topup[]" class="form-control form-select select2" multiple>
+                        <option value="">Grade</option>
+                        @foreach ($topups as $id => $name)
+                            <option value="{{ $id }}" @if (isset($_GET['exclude_topup']) && in_array($id, $_GET['exclude_topup'])) {{ 'selected' }} @endif>
+                                {{ $name }}</option>
+                        @endforeach
+                    </select>
+                </div>
                 <div class="col-lg-2 col-xl-2 col-md-3 col-sm-6">
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" id="invoice" name="invoice" value="1" @if (request('invoice') == "1") {{'checked'}} @endif>
@@ -309,8 +319,7 @@
         <div class="row">
             <div class="col-xl-12">
                 <div class="card">
-                    <div class="card-header pb-0">
-                        <div class="d-flex justify-content-between">
+                    <div class="card-header pb-0 d-flex justify-content-between">
                             <h4 class="card-title mg-b-0">
                                 <label>
                                     <input type="checkbox" id="checkAll" onclick="checkAll()"> Check All
@@ -323,29 +332,28 @@
                             <h5 class="card-title mg-b-0">{{ __('locale.From') }} {{$orders->firstItem()}} {{ __('locale.To') }} {{$orders->lastItem()}} {{ __('locale.Out Of') }} {{$orders->total()}} </h5>
 
                             <div class="row">
-                                <div class="form-floating">
-                                    <select name="sort" class="form-select-sm" id="perPage" onchange="this.form.submit()" form="search">
+                                {{-- <div class="form-group"> --}}
+                                    <label for="perPage" class="card-title inline">Sort:</label>
+                                    <select name="sort" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()" form="search">
                                         <option value="1" {{ Request::get('sort') == 1 ? 'selected' : '' }}>Order DESC</option>
                                         <option value="2" {{ Request::get('sort') == 2 ? 'selected' : '' }}>Order ASC</option>
                                         <option value="3" {{ Request::get('sort') == 3 ? 'selected' : '' }}>Name DESC</option>
                                         <option value="4" {{ Request::get('sort') == 4 ? 'selected' : '' }}>Name ASC</option>
                                     </select>
-                                    <label for="perPage" class="">Sort:</label>
                                     {{-- <button type="submit">Apply</button> --}}
-                                </div>
-                                <div class="form-floating">
-                                    <select name="per_page" class="form-select-sm wd-100" id="perPage" onchange="this.form.submit()" form="search">
+                                {{-- </div>
+                                <div class="form-group"> --}}
+                                    <label for="perPage" class="card-title inline">per page:</label>
+                                    <select name="per_page" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()" form="search">
                                         <option value="10" {{ Request::get('per_page') == 10 ? 'selected' : '' }}>10</option>
                                         <option value="20" {{ Request::get('per_page') == 20 ? 'selected' : '' }}>20</option>
                                         <option value="50" {{ Request::get('per_page') == 50 ? 'selected' : '' }}>50</option>
                                         <option value="100" {{ Request::get('per_page') == 100 ? 'selected' : '' }}>100</option>
                                     </select>
-                                    <label for="perPage" class="">per page:</label>
                                     {{-- <button type="submit">Apply</button> --}}
-                                </div>
+                                {{-- </div> --}}
                             </div>
 
-                        </div>
                     </div>
 
                     <datalist id="tester_list">
