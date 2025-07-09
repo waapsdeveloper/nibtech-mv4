@@ -112,7 +112,12 @@
         @livewireScripts
         <script src="//unpkg.com/alpinejs" defer></script>
         {{-- <livewire:scripts /> --}}
+        <script>
 
+            $(document).ready(function() {
+                $('.select2').select2();
+            });
+        </script>
         @if (request('autoprint') == 1)
             <script>
                 $(document).ready(function() {

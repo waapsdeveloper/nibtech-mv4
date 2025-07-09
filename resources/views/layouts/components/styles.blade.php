@@ -29,3 +29,4 @@
 		<!-- DataTable CSS -->
 		{{-- <link href="{{asset('assets/DataTables/datatables.min.css')}}" rel="stylesheet"> --}}
 
+        <link href="{{ asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet" />

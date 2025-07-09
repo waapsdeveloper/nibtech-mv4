@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
 @section('styles')
-    <link href="{{ asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet" />
     <style>
         .rows {
             border: 1px solid #016a5949;
@@ -769,7 +768,4 @@
     <!-- Internal Chart js -->
     <script src="{{ asset('assets/plugins/chartjs/Chart.bundle.min.js') }}"></script>
 
-    <!-- INTERNAL Select2 js -->
-    <script src="{{ asset('assets/plugins/select2/js/select2.full.min.js') }}"></script>
-    <script src="{{ asset('assets/js/select2.js') }}"></script>
 @endsection

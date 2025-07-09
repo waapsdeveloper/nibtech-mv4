@@ -63,7 +63,7 @@ class Order extends Component
         $data['colors'] = session('dropdown_data')['colors'];
         $data['grades'] = session('dropdown_data')['grades'];
         $data['topups'] = Process_model::where('process_type_id', 22)
-        ->where('status', 3)->orderByDesc('id')
+        ->where('status', '>=', 2)->orderByDesc('id')
         ->pluck('reference_id', 'id');
 
         $data['currencies'] = Currency_model::pluck('sign', 'id');
@@ -108,22 +108,20 @@ class Order extends Component
         }else{
             $end_date = now();
         }
+
+
         $difference_variations = [];
         if(request('exclude_topup') != [] && request('exclude_topup') != null){
-            $topup_ids = Process_model::whereIn('reference_id', request('exclude_topup'))->where('process_type_id', 22)->pluck('id');
-            $listed_stock_verification = Listed_stock_verification_model::whereIn('process_id', $topup_ids)->get();
+            $listed_stock_verification = Listed_stock_verification_model::whereIn('process_id', request('exclude_topup'))->get();
 
             $variations = Variation_model::whereIn('id', $listed_stock_verification->pluck('variation_id'))->get()->keyBy('id');
 
             foreach($variations as $variation){
-                $difference = $variation->listed_stock - $listed_stock_verification->where('variation_id', $variation->id)->sum('qty_change');
-                if($difference < 0){
-                    $difference_variations[$variation->id] = $difference;
+                $difference = $listed_stock_verification->where('variation_id', $variation->id)->sum('qty_change') - $variation->listed_stock;
+                if($difference > 0){
+                    $difference_variations[$variation->sku] = $difference;
                 }
             }
-
-
-
         }
 
         $orders = Order_model::with(['customer','customer.orders','order_items','order_items.variation','order_items.variation.product', 'order_items.variation.grade_id', 'order_items.stock', 'order_items.replacement', 'transactions'])
@@ -1233,7 +1231,7 @@ class Order extends Component
             $data['order_issues'] = $order_issues;
             // dd($data['missing_stock']);
 
-            if($data['order']->created_at >= now()->subDays(7) && $data['order']->created_at <= now()->subHours(1)){
+            if($data['order']->created_at >= now()->subDays(7) && $data['order']->created_at <= now()->subMinutes(15)){
                 $lower_products = array_map('strtolower', $data['products']->toArray());
                 $lower_storages = array_map('strtolower', $data['storages']->toArray());
                 $lower_colors = array_map('strtolower', $data['colors']->toArray());
