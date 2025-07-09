@@ -62,7 +62,9 @@ class Order extends Component
         $data['storages'] = session('dropdown_data')['storages'];
         $data['colors'] = session('dropdown_data')['colors'];
         $data['grades'] = session('dropdown_data')['grades'];
-        $data['topups'] = Process_model::where('process_type_id', 22)->pluck('reference_id', 'id');
+        $data['topups'] = Process_model::where('process_type_id', 22)
+        ->where('status', 3)->orderByDesc('id')
+        ->pluck('reference_id', 'id');
 
         $data['currencies'] = Currency_model::pluck('sign', 'id');
         $data['last_hour'] = Carbon::now()->subHour();
