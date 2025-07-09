@@ -119,7 +119,7 @@ class Order extends Component
             foreach($variations as $variation){
                 $difference = $listed_stock_verification->where('variation_id', $variation->id)->sum('qty_change') - $variation->listed_stock;
                 if($difference > 0){
-                    $difference_variations[$variation->sku] = $difference;
+                    $difference_variations[$variation->id] = $difference;
                 }
             }
         }
@@ -293,6 +293,21 @@ class Order extends Component
             return $q->orderBy('orders.processed_at', 'desc');
         })
         ->orderBy('orders.reference_id', 'desc'); // Secondary order by reference_id
+
+        if($difference_variations != [] && request('exclude_topup') != [] && request('exclude_topup') != null){
+            foreach($orders->whereHas('order_items', function ($q) use ($difference_variations) {
+                    $q->whereIn('variation_id', $difference_variations);
+                }) as $ref => $order){
+                foreach($order->order_items as $item){
+                    if(isset($difference_variations[$item->variation_id]) && $difference_variations[$item->variation_id] > 0){
+                        $orders->forget($ref);
+                        $difference_variations[$item->variation_id] -= $item->quantity;
+                        break;
+                    }
+                }
+            }
+
+        }
 
 
         if(request('bulk_invoice') && request('bulk_invoice') == 1){

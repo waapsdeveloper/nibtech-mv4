@@ -12,6 +12,8 @@
 		<!-- P-SCROLL BAR CSS -->
 		<link href="{{asset('assets/plugins/perfect-scrollbar/p-scrollbar.css')}}" rel="stylesheet" />
 
+        <link href="{{ asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet" />
+
         @yield('styles')
 
 		<!-- STYLES CSS -->
@@ -29,4 +31,3 @@
 		<!-- DataTable CSS -->
 		{{-- <link href="{{asset('assets/DataTables/datatables.min.css')}}" rel="stylesheet"> --}}
 
-        <link href="{{ asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet" />
