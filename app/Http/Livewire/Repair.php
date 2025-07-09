@@ -1080,6 +1080,13 @@ class Repair extends Component
             $variation->stock -= 1;
             $variation->save();
 
+            if (session()->has('counter')) {
+                // Increment the counter
+                session()->increment('counter');
+            } else {
+                // Initialize the counter if it doesn't exist
+                session()->put('counter', 1);
+            }
             $process_stock = new Process_stock_model();
             $process_stock->process_id = $process_id;
             $process_stock->stock_id = $stock->id;
