@@ -49,6 +49,9 @@
         <!-- DataTables JS -->
 		<script src="{{asset('assets/DataTables/datatables.min.js')}}"></script>
 
+        <!-- INTERNAL Select2 js -->
+        <script src="{{ asset('assets/plugins/select2/js/select2.full.min.js') }}"></script>
+        <script src="{{ asset('assets/js/select2.js') }}"></script>
 
         <!-- Load QZ Tray -->
         <script src="{{asset('assets/js/qz-tray.js')}}"></script>
