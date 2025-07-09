@@ -81,7 +81,7 @@ class PurchasesheetExport implements FromCollection, WithHeadings
             'sub.name as sub_grade',
             'stock.imei as imei',
             'stock.serial_number as serial_number',
-            'stock.status as stock_status',
+            DB::raw('CASE WHEN stock.status = 1 THEN "Available" WHEN stock.status = 2 THEN "Sold" ELSE stock.status END as stock_status'),
             's_orders.reference_id as po',
             's_orders.created_at as po_date',
             'customer.company as vendor',

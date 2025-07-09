@@ -275,7 +275,6 @@
                                 <option value="">Select Vendor</option>
                                 @foreach ($vendors as $id=>$vendor)
                                     <option value="{{ $id }}">{{ $vendor }}</option>
-
                                 @endforeach
                             </select>
                         </div>
