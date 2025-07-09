@@ -30,8 +30,7 @@ class PickListExport
 
         $difference_variations = [];
         if(request('exclude_topup') != [] && request('exclude_topup') != null){
-            $topup_ids = Process_model::whereIn('reference_id', request('exclude_topup'))->where('process_type_id', 22)->pluck('id');
-            $listed_stock_verification = Listed_stock_verification_model::whereIn('process_id', $topup_ids)->get();
+            $listed_stock_verification = Listed_stock_verification_model::whereIn('process_id', request('exclude_topup'))->get();
 
             $variations = Variation_model::whereIn('id', $listed_stock_verification->pluck('variation_id'))->get()->keyBy('id');
 
@@ -41,6 +40,8 @@ class PickListExport
                     $difference_variations[$variation->sku] = $difference;
                 }
             }
+
+            // dd(request('exclude_topup'), $difference_variations, $listed_stock_verification, $variations);
 
 
 
@@ -159,13 +160,13 @@ class PickListExport
         foreach ($data as $order) {
             $total_quantity = $order->total_quantity;
 
-            if($difference_variations != [] && count($difference_variations) > 0 && isset($difference_variations[$order->sku]) && $difference_variations[$order->sku] < 0){
+            if($difference_variations != [] && count($difference_variations) > 0 && isset($difference_variations[$order->sku]) && $difference_variations[$order->sku] > 0){
                 if($difference_variations[$order->sku] >= $order->total_quantity){
                     continue;
                 }else{
                     $total_quantity = $order->total_quantity + $difference_variations[$order->sku];
+                    // dd($total_quantity);
                 }
-
             }
             $i++;
             $j += $total_quantity;
