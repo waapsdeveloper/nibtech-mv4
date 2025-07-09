@@ -32,6 +32,7 @@ use App\Models\Category_model;
 use App\Models\Color_model;
 use App\Models\ExchangeRate;
 use App\Models\Grade_model;
+use App\Models\Listed_stock_verification_model;
 use App\Models\Order_issue_model;
 use App\Models\Process_model;
 use App\Models\Process_stock_model;
@@ -103,6 +104,23 @@ class Order extends Component
             $end_date = request('end_date')." 23:59:59";
         }else{
             $end_date = now();
+        }
+        $difference_variations = [];
+        if(request('exclude_topup') != [] && request('exclude_topup') != null){
+            $topup_ids = Process_model::whereIn('reference_id', request('exclude_topup'))->where('process_type_id', 22)->pluck('id');
+            $listed_stock_verification = Listed_stock_verification_model::whereIn('process_id', $topup_ids)->get();
+
+            $variations = Variation_model::whereIn('id', $listed_stock_verification->pluck('variation_id'))->get()->keyBy('id');
+
+            foreach($variations as $variation){
+                $difference = $variation->listed_stock - $listed_stock_verification->where('variation_id', $variation->id)->sum('qty_change');
+                if($difference < 0){
+                    $difference_variations[$variation->id] = $difference;
+                }
+            }
+
+
+
         }
 
         $orders = Order_model::with(['customer','customer.orders','order_items','order_items.variation','order_items.variation.product', 'order_items.variation.grade_id', 'order_items.stock', 'order_items.replacement', 'transactions'])
@@ -251,6 +269,11 @@ class Order extends Component
         //     })->whereHas('order_items.variation', function ($q) {
         //         $q->orderBy('variation.grade', 'ASC');
         //     });
+
+        // ->when(request('exclude_topup') != [] && request('exclude_topup') != null, function ($q) use ($difference_variations) {
+        //     // if Variation ID is in difference_variations, exclude it until quantity is sufficient
+
+        // })
 
         ->when(request('sort') == 4, function ($q) {
             return $q->join('order_items', 'order_items.order_id', '=', 'orders.id')

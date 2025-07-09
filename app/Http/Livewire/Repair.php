@@ -470,6 +470,7 @@ class Repair extends Component
         }
         $data['process_id'] = $process_id;
 
+        $data['scanned_total'] = Process_stock_model::where('process_id',$process_id)->where('admin_id',session('user_id'))->count();
 
         return view('livewire.repair_detail')->with($data);
 
