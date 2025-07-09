@@ -1796,7 +1796,7 @@ class Order extends Component
             session()->put('error', "Heading not Found(name, imei, cost)");
             return redirect()->back();
         }
-        if(!is_numeric($data[1][$cost])){
+        if(isset($data[1]) && !is_numeric($data[1][$cost])){
             session()->put('error', "Formula in Cost is not Allowed");
             return redirect()->back();
 
