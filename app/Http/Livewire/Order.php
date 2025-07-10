@@ -298,20 +298,24 @@ class Order extends Component
         if($difference_variations != [] && request('exclude_topup') != [] && request('exclude_topup') != null){
             $orders_clone = $orders->clone();
             $orders_clone = $orders_clone->whereHas('order_items', function ($q) use ($difference_variations) {
-                    $q->whereIn('variation_id', $difference_variations);
+                    $q->whereIn('variation_id', array_keys($difference_variations));
                 })->get();
             $ids = [];
             foreach($orders_clone as $ref => $order){
+                // echo $order->reference_id . '<br>';
                 foreach($order->order_items as $item){
+                    // echo $item->variation_id . ' - ' . $item->variation->sku . '<br>';
                     if(isset($difference_variations[$item->variation_id]) && $difference_variations[$item->variation_id] > 0){
                         if(!in_array($item->order_id, $ids)){
                             $ids[] = $item->order_id;
                         }
+                        // echo $item->variation_id . ' - ' . $difference_variations[$item->variation_id] . '<br>';
                         $difference_variations[$item->variation_id] -= 1;
                         continue;
                     }
                 }
             }
+            // dd($ids, $difference_variations, $orders_clone);
             $orders = $orders->whereNotIn('id', $ids);
             // dd($difference_variations, array_sum($difference_variations));
         }
