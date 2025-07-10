@@ -602,11 +602,11 @@
                                             $variation = $item->variation;
                                             $i ++;
 
-                                            (isset($variation->product) && $products[$variation->product_id])?$product = $products[$variation->product_id]:$product = null;
-                                            (isset($variation->storage) && $storages[$variation->storage])?$storage = $storages[$variation->storage]:$storage = null;
-                                            (isset($variation->color) && $colors[$variation->color])?$color = $colors[$variation->color]:$color = null;
-                                            (isset($variation->grade) && $grades[$variation->grade])?$grade = $grades[$variation->grade]:$grade = null;
-                                            (isset($variation->sub_grade) && $grades[$variation->sub_grade])?$sub_grade = $grades[$variation->sub_grade]:$sub_grade = null;
+                                            (isset($variation->product) && isset($products[$variation->product_id]))?$product = $products[$variation->product_id]:$product = null;
+                                            (isset($variation->storage) && isset($storages[$variation->storage]))?$storage = $storages[$variation->storage]:$storage = null;
+                                            (isset($variation->color) && isset($colors[$variation->color]))?$color = $colors[$variation->color]:$color = null;
+                                            (isset($variation->grade) && isset($grades[$variation->grade]))?$grade = $grades[$variation->grade]:$grade = null;
+                                            (isset($variation->sub_grade) && isset($grades[$variation->sub_grade]))?$sub_grade = $grades[$variation->sub_grade]:$sub_grade = null;
 
                                         @endphp
                                         <tr>
