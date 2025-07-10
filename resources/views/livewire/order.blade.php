@@ -178,7 +178,7 @@
                 </div>
 
                 <div class="col-lg-2 col-xl-2 col-md-3 col-sm-6">
-                    <select name="exclude_topup[]" class="form-control form-select select2" multiple>
+                    <select name="exclude_topup[]" class="form-control form-select select2" multiple data-bs-placeholder="Exclude Topups">
                         <option value="">Exclude Topups</option>
                         @foreach ($topups as $id => $name)
                             <option value="{{ $id }}" @if (isset($_GET['exclude_topup']) && in_array($id, $_GET['exclude_topup'])) {{ 'selected' }} @endif>
@@ -1196,6 +1196,9 @@
             modal.find('.modal-body #item_id').val(item)
             })
 
+                $('.select2').select2({
+                    placeholder: "Exclude Topups",
+                });
 
         // function get_customer_previous_orders(customer_id, order_id){
         //     let url = "{{ url('order/get_b2c_orders_by_customer_json') }}/".concat(customer_id).concat('/').concat(order_id);
@@ -1209,13 +1212,6 @@
         //     })
         // }
     </script>
-		<!--Internal Sparkline js -->
-		<script src="{{asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js')}}"></script>
 
-		<!-- Internal Piety js -->
-		<script src="{{asset('assets/plugins/peity/jquery.peity.min.js')}}"></script>
-
-		<!-- Internal Chart js -->
-		<script src="{{asset('assets/plugins/chartjs/Chart.bundle.min.js')}}"></script>
 
     @endsection
