@@ -294,21 +294,27 @@ class Order extends Component
         })
         ->orderBy('orders.reference_id', 'desc'); // Secondary order by reference_id
 
+
         if($difference_variations != [] && request('exclude_topup') != [] && request('exclude_topup') != null){
-            foreach($orders->whereHas('order_items', function ($q) use ($difference_variations) {
+            $orders_clone = $orders->clone();
+            $orders_clone = $orders_clone->whereHas('order_items', function ($q) use ($difference_variations) {
                     $q->whereIn('variation_id', $difference_variations);
-                }) as $ref => $order){
+                })->get();
+            $ids = [];
+            foreach($orders_clone as $ref => $order){
                 foreach($order->order_items as $item){
                     if(isset($difference_variations[$item->variation_id]) && $difference_variations[$item->variation_id] > 0){
-                        $orders->forget($ref);
-                        $difference_variations[$item->variation_id] -= $item->quantity;
-                        break;
+                        if(!in_array($item->order_id, $ids)){
+                            $ids[] = $item->order_id;
+                        }
+                        $difference_variations[$item->variation_id] -= 1;
+                        continue;
                     }
                 }
             }
-
+            $orders = $orders->whereNotIn('id', $ids);
+            // dd($difference_variations, array_sum($difference_variations));
         }
-
 
         if(request('bulk_invoice') && request('bulk_invoice') == 1){
             $order_ids = [];

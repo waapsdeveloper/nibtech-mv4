@@ -40,11 +40,6 @@ class PickListExport
                     $difference_variations[$variation->sku] = $difference;
                 }
             }
-
-            // dd(request('exclude_topup'), $difference_variations, $listed_stock_verification, $variations);
-
-
-
         }
         // Fetch data from the database
         $data = DB::table('orders')
