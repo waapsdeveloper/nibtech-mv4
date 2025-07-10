@@ -303,7 +303,11 @@ class Repair extends Component
     }
     public function repair_revert_status($repair_id){
         $repair = Process_model::find($repair_id);
-        $repair->status -= 1;
+        if($repair->status > 1){
+            $repair->status -= 1;
+        }else{
+            $repair->status = 1;
+        }
         $repair->save();
         return redirect()->back();
     }
