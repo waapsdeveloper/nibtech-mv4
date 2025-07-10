@@ -81,7 +81,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
                 'admin2.first_name as admin_name',
                 'p_stock.status as status',
                 'p_stock.created_at as created_at',
-                'order_items.price as price',
+                // 'order_items.price as price',
                 DB::raw('order_items.price * process.exchange_rate as ex_price'),
             )
             ->where('process.id', request('id'))
@@ -115,7 +115,7 @@ class RepairsheetExport implements FromCollection, WithHeadings
             'Admin',
             'Status',
             'Created At',
-            'Price',
+            // 'Price',
             'Exchange Price',
         ];
     }
