@@ -599,6 +599,10 @@
                                         {{-- @dd($item->sale_item) --}}
                                         @php
                                             $item = $processed_stock->stock;
+                                            if($item == null){
+                                                print($processed_stock);
+                                                continue;
+                                            }
                                             $variation = $item->variation;
                                             $i ++;
 
