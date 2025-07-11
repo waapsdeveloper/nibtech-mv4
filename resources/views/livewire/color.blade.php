@@ -78,6 +78,8 @@
                                     <tr>
                                         <th><small><b>{{ __('locale.S.No') }}</b></small></th>
                                         <th><small><b>Name</b></small></th>
+                                        <th><small><b>Created At</b></small></th>
+                                        <th><small><b>Updated At</b></small></th>
                                         <th></th>
                                     </tr>
                                 </thead>
@@ -92,6 +94,12 @@
                                         <tr>
                                             <td title="{{$color->id}}">{{$i}}</td>
                                             <td>{{$color->name}}</td>
+                                            <td>
+                                                {{ $color->created_at }}
+                                            </td>
+                                            <td>
+                                                {{ $color->updated_at }}
+                                            </td>
                                             <td><center><a href="edit-color/{{$color->id}}" class="text text-success w-100 vh-100">{{ __('locale.Edit') }}</a></center></td>
                                         </tr>
                                     @endforeach
