@@ -11,7 +11,7 @@ class Color_model extends Model
     use HasFactory;
     protected $table = 'color';
     protected $primaryKey = 'id';
-    public $timestamps = FALSE;
+    // public $timestamps = FALSE;
     protected $fillable = [
         // other fields...
         'name',
