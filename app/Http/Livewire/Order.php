@@ -1970,7 +1970,7 @@ class Order extends Component
                         // If the color doesn't exist in the predefined colors array,
                         // create a new color record in the database
                         $newColor = Color_model::create([
-                            'name' => $colorName
+                            'name' => ucwords($colorName)
                         ]);
                         $colors = Color_model::pluck('name','id')->toArray();
                         $lowercaseColors = array_map('strtolower', $colors);
