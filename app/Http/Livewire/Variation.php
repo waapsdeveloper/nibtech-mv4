@@ -137,6 +137,18 @@ class Variation extends Component
         }
         $variation->save();
 
+        if($variation->sku != null && $variation->state != 4){
+            $duplicate = Variation_model::where('product_id', $variation->product_id)
+                ->where('storage', $variation->storage)
+                ->where('color', $variation->color)
+                ->where('grade', $variation->grade)
+                ->where('sku', null)
+                ->first();
+            if($duplicate != null){
+                $duplicate->merge($variation->id);
+            }
+
+        }
 
         return redirect()->back();
     }

@@ -684,6 +684,13 @@
                             }
                         }
 
+                        let buybox_button = '';
+                        if (listing.buybox !== 1 && listing.buybox_price > 0) {
+                            buybox_button = `<button class="${(best_price > 0 && $best_price < listing.buybox_price) ? 'btn btn-success' : 'btn btn-warning'}" id="get_buybox_${listing.id}" onclick="getBuybox(${listing.id}, ${variationId}, ${listing.buybox_price})">
+                                        Get Buybox
+                                    </button>`;
+                        }
+
                         listingsTable += `
                             <tr class="${classs}" ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
                                 <td title="${listing.id} ${countries[listing.country].title}">
@@ -735,7 +742,10 @@
                                     </div>
                                     ${p_append}
                                 </td>
-                                <td>${new Date(listing.updated_at).toLocaleString('en-GB', { timeZone: 'Europe/London', hour12: true })}</td>
+                                <td>
+                                    ${new Date(listing.updated_at).toLocaleString('en-GB', { timeZone: 'Europe/London', hour12: true })}
+                                    ${buybox_button}
+                                </td>
                                 <td>
                                     <div class="form-floating">
                                         <input type="number" class="form-control" id="target_${listing.id}" name="target" step="0.01" value="${listing.target_price}" form="change_target_${listing.id}">
