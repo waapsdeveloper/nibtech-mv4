@@ -884,6 +884,17 @@ class Repair extends Component
 
         }
 
+        if(Process_stock_model::where('stock_id',$stock->id)->where('process_id',$process_id)->count() > 0){
+            session()->put('error', "Stock already in Repair List");
+            if($back != 1 && $back != 2){
+                return redirect()->back();
+            }elseif($back == 2){
+                continue;
+            }else{
+                return 1;
+            }
+        }
+
         if($stock->status != 1){
             session()->put('error', "Stock Already Sold");
             if($back != 1 && $back != 2){
