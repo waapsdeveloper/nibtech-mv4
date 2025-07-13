@@ -587,9 +587,13 @@ class Repair extends Component
                     $q->where('customer_id', $repairer_id);
                 });
 
-            })->where('stock_id',$stock->id)->where('status',1)->orderBy('id','desc')->first();
+            })->where('stock_id',$stock->id)->orderBy('id','desc')->first();
             if($process_stock == null){
                 $error .= "IMEI ".$imei." not found in any list | ";
+                continue;
+            }
+            if($process_stock->status != 1){
+                $error .= "IMEI ".$imei." already processed at ".$process_stock->updated_at." | ";
                 continue;
             }
             // echo $process_stock->process_id;
@@ -681,6 +685,14 @@ class Repair extends Component
         $stock->status = 1;
         $stock->save();
 
+        // Check if the session variable 'counter' is set
+        if (session()->has('counter')) {
+            // Increment the counter
+            session()->increment('counter');
+        } else {
+            // Initialize the counter if it doesn't exist
+            session()->put('counter', 1);
+        }
 
         if($back != 1){
             return redirect(url('repair/detail').'/'.$process_id);
