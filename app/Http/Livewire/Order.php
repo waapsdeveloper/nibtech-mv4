@@ -316,7 +316,7 @@ class Order extends Component
                 }
             }
             // dd($ids, $difference_variations, $orders_clone);
-            $orders = $orders->whereNotIn('id', $ids);
+            $orders = $orders->whereNotIn('orders.id', $ids);
             // dd($difference_variations, array_sum($difference_variations));
         }
 
