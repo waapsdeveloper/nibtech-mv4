@@ -73,7 +73,7 @@
                         <input type='submit' value='Search'>
                     </form>
 
-                    <form method='post' action='".url("testing/upload_excel")."' enctype='multipart/form-data'>
+                    <form method='post' action='{{url("testing/upload_excel")}}' enctype='multipart/form-data'>
                         @csrf
                         <input type='file' name='sheet'><input type='submit' value='Upload'>
                     </form>
