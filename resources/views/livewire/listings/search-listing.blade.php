@@ -1,4 +1,4 @@
-
+<div>
     <div class="row">
         <div class="col-md col-sm-6">
             <div class="form-floating">
@@ -153,3 +153,4 @@ session()->forget('success');
 session()->forget('error');
 @endphp
 @endif
+</div>
