@@ -40,6 +40,7 @@
             @endif
         </form>
     </div>
+    <h4 class="card-title mg-b-0">Counter: {{ session('counter') }} <a href="{{ url('stock_room/reset_counter') }}">Reset</a></h4>
     <script>
 
         window.onload = function() {
