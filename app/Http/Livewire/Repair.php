@@ -732,9 +732,13 @@ class Repair extends Component
                     $q->where('customer_id', $repairer_id);
                 });
 
-            })->where('stock_id',$stock->id)->where('status',1)->orderBy('id','desc')->first();
+            })->where('stock_id',$stock->id)->orderBy('id','desc')->first();
             if($process_stock == null){
                 $error .= "IMEI ".$imei." not found in any list | ";
+                continue;
+            }
+            if($process_stock->status != 1){
+                $error .= "IMEI ".$imei." already processed at ".$process_stock->updated_at." | ";
                 continue;
             }
             // echo $process_stock->process_id;
