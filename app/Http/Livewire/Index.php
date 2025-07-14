@@ -164,8 +164,8 @@ class Index extends Component
                 $query->where('order_type_id', 3)->orWhere('reference_id', 999);
             })
             ->join('variation', 'stock.variation_id', '=', 'variation.id')
+            ->whereIn('variation.grade',[8,12,17])
             ->join('grade', 'variation.grade', '=', 'grade.id')
-            ->whereIn('grade.id',[8,12,17])
             ->join('orders', 'stock.order_id', '=', 'orders.id')
             // ->where('orders.order_type_id',3)
             ->groupBy('variation.grade', 'grade.name', 'orders.status', 'stock.status')
