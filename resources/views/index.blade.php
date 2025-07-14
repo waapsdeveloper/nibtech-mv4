@@ -297,7 +297,12 @@
                                 </div>
                             @endif
                             @if (session('user')->hasPermission('dashboard_top_selling_products'))
-                                @livewire('dashboard.top-selling-products')
+                                {{-- @livewire('dashboard.top-selling-products') --}}
+                                <livewire:dashboard.top-selling-products lazy />
+                                {{-- <div class="card">
+                                    <div class="card-header pb-0">
+                                        <div class="d-flex justify-content-between">
+                                            <h4 class="card-title
                                 {{-- <div class="card">
                                     <div class="card-header pb-0">
                                         <div class="d-flex justify-content-between">
@@ -481,7 +486,8 @@
                                 @endif
 
                                 @if (session('user')->hasPermission('dashboard_view_aftersale_inventory'))
-                                    @livewire('dashboard.aftersale-inventory-widget')
+                                    {{-- @livewire('dashboard.aftersale-inventory-widget') --}}
+                                    <livewire:dashboard.aftersale-inventory-widget lazy />
 
                                 {{-- Date search section --}}
                                 {{-- <div class="col-md col-xs-6">
