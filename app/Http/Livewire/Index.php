@@ -149,11 +149,11 @@ class Index extends Component
         if (session('user')->hasPermission('dashboard_view_aftersale_inventory')){
             $data['returns_in_progress'] = count($aftersale);
             $rmas = Order_model::whereIn('order_type_id',[2,5])->pluck('id')->toArray();
-            $rma = Stock_model::whereDoesntHave('order_items', function ($q) use ($rmas) {
+            $rma = Stock_model::Where('status',2)->whereDoesntHave('order_items', function ($q) use ($rmas) {
                     $q->whereIn('order_id', $rmas);
                 })->whereHas('variation', function ($q) {
                     $q->where('grade', 10);
-                })->Where('status',2)->count();
+                })->count();
             $data['rma'] = $rma;
             $data['aftersale_inventory'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', 'orders.status as status_id', 'stock.status as stock_status', DB::raw('COUNT(*) as quantity'))
             ->where('stock.status', 2)
