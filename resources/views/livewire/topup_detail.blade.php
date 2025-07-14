@@ -555,7 +555,11 @@
                                                         @endif
                                                     >
                                                         <td>{{ ++$j }}</td>
-                                                        <td>{{ $stock->imei }}{{ $stock->serial_number }}</td>
+                                                        <td>
+                                                            <a href="" ondblclick="window.open('{{ url('imei').'?imei='.$stock->imei.$stock->serial_number }}', '_blank'); return false;">
+                                                                {{ $stock->imei }}{{ $stock->serial_number }}
+                                                            </a>
+                                                        </td>
                                                         <td>
                                                             {{ $stock->latest_operation->description ?? null }}
                                                         </td>
