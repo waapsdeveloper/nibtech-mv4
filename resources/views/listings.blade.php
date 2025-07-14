@@ -652,7 +652,7 @@
                 success: function(data) {
                     listingsTable += data.error ? `<tr><td colspan="6">${data.error}</td></tr>` : '';
                     data.listings.forEach(function(listing) {
-                        let best_price = $('#best_price_'+variationId).text().replace('€', '');
+                        let best_price = $('#best_price_'+variationId).text().replace('€', '') ?? 0;
                         let exchange_rates_2 = exchange_rates;
                         let currencies_2 = currencies;
                         let currency_sign_2 = currency_sign;

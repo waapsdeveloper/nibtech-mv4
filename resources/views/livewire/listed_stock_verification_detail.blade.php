@@ -339,7 +339,7 @@
                         @foreach ($changed_listed_stocks as $item)
                             <tr>
                                 <td>{{ $i + 1 }}</td>
-                                <td>{{ $products[$item->variation->product_id]}} {{$storages[$item->variation->storage] ?? null}} {{$colors[$item->variation->color] ?? null}} {{$grades[$item->variation->grade] ?? "Grade not added" }} {{$grades[$item->variation->sub_grade] ?? '' }}</td>
+                                <td>{{ $products[$item->variation->product_id] ?? "Product not defined" }} {{$storages[$item->variation->storage] ?? null}} {{$colors[$item->variation->color] ?? null}} {{$grades[$item->variation->grade] ?? "Grade not added" }} {{$grades[$item->variation->sub_grade] ?? '' }}</td>
                                 <td>{{ $item->pending_orders }}</td>
                                 <td>{{ $item->qty_from }}</td>
                                 <td>{{ $item->qty_change }}</td>
