@@ -556,7 +556,7 @@
                                                     >
                                                         <td>{{ ++$j }}</td>
                                                         <td>
-                                                            <a href="" ondblclick="window.open('{{ url('imei').'?imei='.$stock->imei.$stock->serial_number }}', '_blank'); return false;">
+                                                            <a href="{{ url('imei').'?imei='.$stock->imei.$stock->serial_number }}" target="_blank">
                                                                 {{ $stock->imei }}{{ $stock->serial_number }}
                                                             </a>
                                                         </td>
