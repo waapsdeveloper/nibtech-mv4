@@ -2632,7 +2632,13 @@ class Order extends Component
             session()->put('error', 'Customer Email Not Found');
             return view('livewire.invoice_new')->with($data);
         }
-        Mail::to($order->customer->email)->queue(new InvoiceMail($data));
+        // Mail::to($order->customer->email)->queue(new InvoiceMail($data));
+
+        // try {
+        //     Mail::to($order->customer->email)->queue(new InvoiceMail($data));
+        // } catch (\Exception $e) {
+        //     session()->put('error', 'Failed to send invoice email: ' . $e->getMessage());
+        // }
         // if(session('user_id') == 1){
 
         // $recipientEmail = $order->customer->email;
