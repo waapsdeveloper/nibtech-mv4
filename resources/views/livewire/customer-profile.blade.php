@@ -223,6 +223,8 @@
                                             <th><small><b>Description</b></small></th>
                                             <th><small><b>Value</b></small></th>
                                             <th><small><b>Balance</b></small></th>
+                                            <th><small><b>Exchange Rate</b></small></th>
+                                            <th><small><b>Exchange Amount</b></small></th>
                                             <th><small><b>Creator</b></small></th>
                                             <th><small><b>Creation Date</b></small></th>
                                         </tr>
@@ -282,6 +284,8 @@
                                                         €{{ amount_formatter($remaining) ?? null }}
                                                     @endif
                                                 </td>
+                                                <td>{{ $transaction->exchange_rate ?? 1 }}</td>
+                                                <td>{{ $transaction->amount * ($transaction->exchange_rate ?? 1) }}</td>
                                                 <td>{{ $transaction->creator->first_name }}</td>
                                                 <td>{{ date('d-m-Y',strtotime($transaction->date)) }}</td>
                                                 <td>
