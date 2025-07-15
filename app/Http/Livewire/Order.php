@@ -2556,11 +2556,11 @@ class Order extends Component
         // dd($pdfContent);
         // Send the invoice via email
 
-        try {
-            Mail::to($order->customer->email)->queue(new InvoiceMail($data));
-        } catch (\Exception $e) {
-            session()->put('error', 'Failed to send invoice email: ' . $e->getMessage());
-        }
+        // try {
+        //     Mail::to($order->customer->email)->queue(new InvoiceMail($data));
+        // } catch (\Exception $e) {
+        //     session()->put('error', 'Failed to send invoice email: ' . $e->getMessage());
+        // }
         // if(session('user_id') == 1){
 
         // $recipientEmail = $order->customer->email;
