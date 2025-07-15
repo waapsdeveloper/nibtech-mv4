@@ -2556,11 +2556,16 @@ class Order extends Component
         // dd($pdfContent);
         // Send the invoice via email
 
-        // try {
-        //     Mail::to($order->customer->email)->queue(new InvoiceMail($data));
-        // } catch (\Exception $e) {
-        //     session()->put('error', 'Failed to send invoice email: ' . $e->getMessage());
-        // }
+            try {
+                Mail::to($order->customer->email)->queue(new InvoiceMail($data));
+            } catch (\Exception $e) {
+                // Try sending with a different mailer if the default fails
+                try {
+                Mail::mailer('smtp_secondary')->to($order->customer->email)->queue(new InvoiceMail($data));
+                } catch (\Exception $e2) {
+                session()->put('error', 'Failed to send invoice email: ' . $e->getMessage() . ' | Retry failed: ' . $e2->getMessage());
+                }
+            }
         // if(session('user_id') == 1){
 
         // $recipientEmail = $order->customer->email;
@@ -2634,11 +2639,16 @@ class Order extends Component
         }
         // Mail::to($order->customer->email)->queue(new InvoiceMail($data));
 
-        // try {
-        //     Mail::to($order->customer->email)->queue(new InvoiceMail($data));
-        // } catch (\Exception $e) {
-        //     session()->put('error', 'Failed to send invoice email: ' . $e->getMessage());
-        // }
+        try {
+            Mail::to($order->customer->email)->queue(new InvoiceMail($data));
+        } catch (\Exception $e) {
+            // Try sending with a different mailer if the default fails
+            try {
+            Mail::mailer('smtp_secondary')->to($order->customer->email)->queue(new InvoiceMail($data));
+            } catch (\Exception $e2) {
+            session()->put('error', 'Failed to send invoice email: ' . $e->getMessage() . ' | Retry failed: ' . $e2->getMessage());
+            }
+        }
         // if(session('user_id') == 1){
 
         // $recipientEmail = $order->customer->email;
