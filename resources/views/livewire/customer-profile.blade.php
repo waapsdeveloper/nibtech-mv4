@@ -285,7 +285,7 @@
                                                     @endif
                                                 </td>
                                                 <td>{{ $transaction->exchange_rate ?? 1 }}</td>
-                                                <td>{{ $transaction->amount * ($transaction->exchange_rate ?? 1) }}</td>
+                                                <td>{{ $transaction->currency->sign }}{{ $transaction->amount * ($transaction->exchange_rate ?? 1) }}</td>
                                                 <td>{{ $transaction->creator->first_name }}</td>
                                                 <td>{{ date('d-m-Y',strtotime($transaction->date)) }}</td>
                                                 <td>
