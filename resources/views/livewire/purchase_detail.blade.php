@@ -436,7 +436,7 @@
                                 // }
                             @endphp
 
-                            @foreach (collect($stock_summery)->sortBy('sort') as $summery)
+                            @foreach (collect($stock_summery)->sortBy('model') as $summery)
 
                                 @php
                                     $total_sold += $summery['sold_stock_count'];
