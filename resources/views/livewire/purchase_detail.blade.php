@@ -432,7 +432,7 @@
                                 $total_bt = 0;
                                 $total_other = 0;
                             @endphp
-                            @foreach ($stock_summery as $summery)
+                            @foreach ($stock_summery->sortBy('sort') as $summery)
                                 @php
                                     $total_sold += $summery['sold_stock_count'];
                                     $total_repair += $summery['repair_stock_count'];
