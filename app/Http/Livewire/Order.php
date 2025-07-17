@@ -1143,7 +1143,7 @@ class Order extends Component
 
             $product_storage_sort = Product_storage_sort_model::whereHas('stocks', function($q) use ($order_id){
                 $q->where('stock.order_id', $order_id);
-            })->orderBy('product_id')->orderBy('storage')#
+            })->orderBy('sort')
             ->with('stocks')
             ->get();
 
@@ -2556,16 +2556,16 @@ class Order extends Component
         // dd($pdfContent);
         // Send the invoice via email
 
+        try {
+            Mail::to($order->customer->email)->queue(new InvoiceMail($data));
+        } catch (\Exception $e) {
+            // Try sending with a different mailer if the default fails
             try {
-                Mail::to($order->customer->email)->queue(new InvoiceMail($data));
-            } catch (\Exception $e) {
-                // Try sending with a different mailer if the default fails
-                try {
-                Mail::mailer('smtp_secondary')->to($order->customer->email)->queue(new InvoiceMail($data));
-                } catch (\Exception $e2) {
-                session()->put('error', 'Failed to send invoice email: ' . $e->getMessage() . ' | Retry failed: ' . $e2->getMessage());
-                }
+            Mail::mailer('smtp_secondary')->to($order->customer->email)->queue(new InvoiceMail($data));
+            } catch (\Exception $e2) {
+            session()->put('error', 'Failed to send invoice email: ' . $e->getMessage() . ' | Retry failed: ' . $e2->getMessage());
             }
+        }
         // if(session('user_id') == 1){
 
         // $recipientEmail = $order->customer->email;
