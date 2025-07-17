@@ -432,7 +432,8 @@
                                 $total_bt = 0;
                                 $total_other = 0;
                             @endphp
-                            @foreach (collect($stock_summery)->sortBy('sort') as $summery)
+                            @foreach (collect($stock_summery)->sortBy('model') as $summery)
+
                                 @php
                                     $total_sold += $summery['sold_stock_count'];
                                     $total_repair += $summery['repair_stock_count'];
