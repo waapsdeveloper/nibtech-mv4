@@ -431,7 +431,11 @@
                                 $total_ws = 0;
                                 $total_bt = 0;
                                 $total_other = 0;
+                                if(session('user_id') == 1){
+                                    dd($stock_summery);
+                                }
                             @endphp
+
                             @foreach (collect($stock_summery)->sortBy('model') as $summery)
 
                                 @php
