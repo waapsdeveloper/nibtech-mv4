@@ -1158,7 +1158,7 @@ class Order extends Component
             $other_variations = $variations->whereNotIn('id',$wip_variations)->whereNotIn('id',$rtg_variations)->whereNotIn('id',$twox_variations)->whereNotIn('id',$repair_variations)->whereNotIn('id',$rma_variations)->whereNotIn('id',$ws_variations)->whereNotIn('id',$bt_variations)->pluck('id');
 
             $result = [];
-            foreach($product_storage_sort as $pss){
+            foreach($product_storage_sort->sortBy('sort') as $pss){
                 $product = $pss->product;
                 $storage = $pss->storage_id->name ?? null;
 
