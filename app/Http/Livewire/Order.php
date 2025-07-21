@@ -2318,6 +2318,7 @@ class Order extends Component
                     $n = implode(" ", $names);
                 }else{
                     $gb = null;
+                    $n = implode(" ", $names);
                 }
                 $product = Products_model::where('model',$n)->first();
                 if($product == null){
