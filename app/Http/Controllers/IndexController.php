@@ -1284,6 +1284,16 @@ class IndexController extends Controller
         // Artisan::call('config:cache');
         // Artisan::call('route:cache');
         // Artisan::call('optimize');
+
+            $data['dropdown_data'] = [];
+            $data['dropdown_data']['products'] = Products_model::pluck('model', 'id');
+            $data['dropdown_data']['categories'] = Category_model::pluck('name', 'id');
+            $data['dropdown_data']['brands'] = Brand_model::pluck('name', 'id');
+            $data['dropdown_data']['colors'] = Color_model::pluck('name', 'id');
+            $data['dropdown_data']['storages'] = Storage_model::pluck('name', 'id');
+            $data['dropdown_data']['grades'] = Grade_model::pluck('name', 'id');
+            session(['dropdown_data' => $data['dropdown_data']]);
+
         return redirect()->back();
     }
     public function test(){
