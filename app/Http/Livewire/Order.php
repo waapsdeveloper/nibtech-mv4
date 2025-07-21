@@ -2324,6 +2324,8 @@ class Order extends Component
                     session()->put('error', 'Product Not Found');
                     return redirect()->back();
                 }
+                $color = null;
+
                 $var = Variation_model::firstOrNew(['product_id' => $product->id, 'grade' => 9, 'storage' => $gb, 'color' => null]);
                 $var->save();
 
@@ -2331,6 +2333,7 @@ class Order extends Component
                 // dd($variation);
             }else{
                 $variation = $varia;
+
             }
             if(ctype_digit($variation)){
 
@@ -2341,6 +2344,17 @@ class Order extends Component
 
                     echo $variation;
                     echo $data->cost;
+
+
+                    $var = Variation_model::find($variation);
+                    if($var != null && $data->color != null){
+                        $clr = Color_model::firstOrNew(['name' => $data->color]);
+                        $clr->save();
+
+                        $var2 = Variation_model::firstOrNew(['product_id' => $var->product_id, 'grade' => $var->grade, 'storage' => $var->storage, 'color' => $clr->id]);
+                        $var2->save();
+                        $variation = $var2->id;
+                    }
 
                     if($this->add_purchase_item($issue->order_id,
                     $data->imei,
