@@ -2,7 +2,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div>
+
     {{-- Header Section --}}
     <div class="page-header">
         <div>
@@ -30,6 +30,21 @@
         </div>
         <strong>Loading all reports automatically...</strong>
     </div>
+
+    {{-- Success/Error Messages --}}
+    @if (session()->has('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    @if (session()->has('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
 
     {{-- Filters Section --}}
     <div class="card">
@@ -70,44 +85,36 @@
                         <label class="form-label">Category</label>
                         <select wire:model="category" class="form-select">
                             <option value="">All Categories</option>
-                            @if(is_array($categories))
-                                @foreach($categories as $id => $name)
-                                    <option value="{{ $id }}">{{ $name }}</option>
-                                @endforeach
-                            @endif
+                            @foreach($categories as $id => $name)
+                                <option value="{{ $id }}">{{ $name }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Brand</label>
                         <select wire:model="brand" class="form-select">
                             <option value="">All Brands</option>
-                            @if(is_array($brands))
-                                @foreach($brands as $id => $name)
-                                    <option value="{{ $id }}">{{ $name }}</option>
-                                @endforeach
-                            @endif
+                            @foreach($brands as $id => $name)
+                                <option value="{{ $id }}">{{ $name }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Product</label>
                         <select wire:model="product" class="form-select">
                             <option value="">All Products</option>
-                            @if(is_array($products) || is_object($products))
-                                @foreach($products as $id => $name)
-                                    <option value="{{ $id }}">{{ $name }}</option>
-                                @endforeach
-                            @endif
+                            @foreach($products as $id => $name)
+                                <option value="{{ $id }}">{{ $name }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Vendor</label>
                         <select wire:model="vendor" class="form-select">
                             <option value="">All Vendors</option>
-                            @if(is_array($vendors) || is_object($vendors))
-                                @foreach($vendors as $id => $name)
-                                    <option value="{{ $id }}">{{ $name }}</option>
-                                @endforeach
-                            @endif
+                            @foreach($vendors as $id => $name)
+                                <option value="{{ $id }}">{{ $name }}</option>
+                            @endforeach
                         </select>
                     </div>
                 </div>
@@ -118,33 +125,27 @@
                         <label class="form-label">Storage</label>
                         <select wire:model="storage" class="form-select">
                             <option value="">All Storage</option>
-                            @if(is_array($storages))
-                                @foreach($storages as $id => $name)
-                                    <option value="{{ $id }}">{{ $name }}</option>
-                                @endforeach
-                            @endif
+                            @foreach($storages as $id => $name)
+                                <option value="{{ $id }}">{{ $name }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Color</label>
                         <select wire:model="color" class="form-select">
                             <option value="">All Colors</option>
-                            @if(is_array($colors))
-                                @foreach($colors as $id => $name)
-                                    <option value="{{ $id }}">{{ $name }}</option>
-                                @endforeach
-                            @endif
+                            @foreach($colors as $id => $name)
+                                <option value="{{ $id }}">{{ $name }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Grade</label>
                         <select wire:model="grade" class="form-select">
                             <option value="">All Grades</option>
-                            @if(is_array($grades))
-                                @foreach($grades as $id => $name)
-                                    <option value="{{ $id }}">{{ $name }}</option>
-                                @endforeach
-                            @endif
+                            @foreach($grades as $id => $name)
+                                <option value="{{ $id }}">{{ $name }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -173,7 +174,7 @@
                 <input wire:model="report_type" type="radio" class="btn-check" name="report_type" id="sales_history" value="sales_history">
                 <label class="btn btn-outline-primary" for="sales_history">Sales History</label>
 
-                <input wire:model="report_type" type="radio" class="btn-check" name="report_type" id="all_reports" value="all_reports">
+                <input wire:model="report_type" type="radio" class="btn-check" name="report_type" id="all_reports" value="all_reports" checked>
                 <label class="btn btn-outline-success" for="all_reports">All Reports</label>
             </div>
         </div>
@@ -192,7 +193,7 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        @if(!empty($aggregated_sales) && is_array($aggregated_sales))
+                        @if(!empty($aggregated_sales))
                             <div class="table-responsive">
                                 <table class="table table-bordered table-hover">
                                     <thead>
@@ -212,7 +213,7 @@
                                                 $sale = (object) $sale;
                                                 $category_name = $categories[$sale->category_id] ?? 'Unknown';
                                                 $cost = $aggregated_sales_cost[$sale->category_id] ?? 0;
-                                                $profit = $sale->eur_items_sum - $cost - ($sale->items_repair_sum ?? 0);
+                                                $profit = ($sale->eur_items_sum ?? 0) - $cost - ($sale->items_repair_sum ?? 0);
                                             @endphp
                                             <tr>
                                                 <td>{{ $category_name }}</td>
@@ -248,7 +249,7 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        @if(!empty($aggregated_returns) && is_array($aggregated_returns))
+                        @if(!empty($aggregated_returns))
                             <div class="table-responsive">
                                 <table class="table table-bordered table-hover">
                                     <thead>
@@ -301,11 +302,11 @@
                 <h3 class="card-title">Batch Grade Reports</h3>
                 <div class="card-options">
                     <span class="badge bg-success">Auto-loaded</span>
-                    <span class="badge bg-primary">{{ $pending_orders_count ?? 0 }} Pending Orders</span>
+                    <span class="badge bg-primary">{{ $pending_orders_count }} Pending Orders</span>
                 </div>
             </div>
             <div class="card-body">
-                @if(!empty($batch_grade_reports) && is_array($batch_grade_reports))
+                @if(!empty($batch_grade_reports))
                     <div class="table-responsive">
                         <table class="table table-bordered table-hover">
                             <thead>
@@ -360,35 +361,31 @@
                 </div>
             </div>
             <div class="card-body">
-                @if(!empty($sales_history) && is_array($sales_history))
+                @if(!empty($sales_history))
                     <div class="table-responsive">
                         <table class="table table-bordered table-hover">
                             <thead>
                                 <tr>
                                     <th>Day</th>
-                                    @if(is_array($currencies))
-                                        @foreach($currencies as $currency_id => $sign)
-                                            <th>{{ $sign }} Quantity</th>
-                                            <th>{{ $sign }} Total</th>
-                                            <th>{{ $sign }} Average</th>
-                                        @endforeach
-                                    @endif
+                                    @foreach($currencies as $currency_id => $sign)
+                                        <th>{{ $sign }} Quantity</th>
+                                        <th>{{ $sign }} Total</th>
+                                        <th>{{ $sign }} Average</th>
+                                    @endforeach
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($sales_history as $day => $data)
                                     <tr>
                                         <td><strong>{{ $day }}</strong></td>
-                                        @if(is_array($currencies))
-                                            @foreach($currencies as $currency_id => $sign)
-                                                @php
-                                                    $currency_data = $data[$currency_id] ?? ['quantity' => 0, 'total_sales' => '0', 'average_price' => '0'];
-                                                @endphp
-                                                <td>{{ number_format($currency_data['quantity'] ?? 0) }}</td>
-                                                <td>{{ $sign }}{{ $currency_data['total_sales'] ?? '0' }}</td>
-                                                <td>{{ $sign }}{{ $currency_data['average_price'] ?? '0' }}</td>
-                                            @endforeach
-                                        @endif
+                                        @foreach($currencies as $currency_id => $sign)
+                                            @php
+                                                $currency_data = $data[$currency_id] ?? ['quantity' => 0, 'total_sales' => '0', 'average_price' => '0'];
+                                            @endphp
+                                            <td>{{ number_format($currency_data['quantity'] ?? 0) }}</td>
+                                            <td>{{ $sign }}{{ $currency_data['total_sales'] ?? '0' }}</td>
+                                            <td>{{ $sign }}{{ $currency_data['average_price'] ?? '0' }}</td>
+                                        @endforeach
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -403,52 +400,47 @@
             </div>
         </div>
     @endif
-</div>
 
-@push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Auto-load all reports on page load
-        console.log('Page loaded - Reports will auto-load');
-
-        // Set default to show all reports
-        if (typeof Livewire !== 'undefined') {
-            // Set the default report type to show all reports
-            @this.set('report_type', 'all_reports');
+    @push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-load all reports on page load
+            console.log('Page loaded - Reports will auto-load');
 
             // Real-time updates
-            Livewire.on('reportUpdated', () => {
-                console.log('Report updated automatically');
-            });
+            if (typeof Livewire !== 'undefined') {
+                Livewire.on('reportUpdated', () => {
+                    console.log('Report updated automatically');
+                });
 
-            // Export functionality
-            Livewire.on('exportStarted', (type) => {
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({
-                        title: 'Exporting...',
-                        text: `Preparing ${type} export`,
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
-                } else {
-                    console.log(`Exporting ${type}...`);
-                }
-            });
+                // Export functionality
+                Livewire.on('exportStarted', (type) => {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            title: 'Exporting...',
+                            text: `Preparing ${type} export`,
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+                    } else {
+                        console.log(`Exporting ${type}...`);
+                    }
+                });
 
-            Livewire.on('exportCompleted', () => {
-                if (typeof Swal !== 'undefined') {
-                    Swal.close();
-                } else {
-                    console.log('Export completed');
-                }
-            });
-        } else {
-            console.warn('Livewire is not loaded');
-        }
-    });
-</script>
-@endpush
+                Livewire.on('exportCompleted', () => {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.close();
+                    } else {
+                        console.log('Export completed');
+                    }
+                });
+            } else {
+                console.warn('Livewire is not loaded');
+            }
+        });
+    </script>
+    @endpush
 
 @endsection
