@@ -418,7 +418,7 @@ class Report extends Component
         ->when($query == 1, function ($q) use ($variation_ids) {
             return $q->whereIn('variation.id', $variation_ids);
         })
-        ->groupBy('variation.grade', 'orders.id', 'orders.reference_id', 'orders.reference', 'customer.first_name')
+        ->groupBy('variation.grade', 'orders.id', 'orders.reference_id', 'orders.reference', 'orders.customer_id', 'customer.first_name')
         ->orderByDesc('order_id')
         ->get();
         // ->paginate($per_page)

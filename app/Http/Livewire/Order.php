@@ -1775,6 +1775,29 @@ class Order extends Component
         $purchase = (object) request('purchase');
         $error = "";
         $issue = [];
+
+        if(request('purchase.sheet') == null){
+
+
+            $order = Order_model::firstOrNew(['reference_id' => $purchase->reference_id, 'order_type_id' => $purchase->type ]);
+
+            if($order->id != null){
+                if(session('user')->hasPermission('append_purchase_sheet')){}else{
+                    session()->put('error', "Append Purchase Sheet not Allowed");
+                    return redirect()->back();
+                }
+            }
+
+            $order->customer_id = $purchase->vendor;
+            $order->status = 2;
+            $order->currency = 4;
+            $order->order_type_id = $purchase->type;
+            $order->processed_by = session('user_id');
+            $order->save();
+
+            return redirect(url('purchase/detail').'/'.$order->id);
+        }
+
         // Validate the uploaded file
         request()->validate([
             'purchase.sheet' => 'required|file|mimes:xlsx,xls',

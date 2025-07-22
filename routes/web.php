@@ -148,6 +148,7 @@ Route::get('vendor_repair_report/{vendor_id}', [Report::class,'vendor_repair_rep
 Route::get('report/purchase_report', [Report::class,'purchase_report'])->name('purchase_report');
 Route::get('report/sales_history', [Report::class,'sales_history'])->name('sales_history_report');
 
+Route::get('report-lw', \App\Http\Livewire\ReportLw::class)->name('view_report_lw');
 
 Route::get('return', SalesReturn::class)->name('view_return');
 Route::get('add_return', [SalesReturn::class,'add_return'])->name('add_return');
