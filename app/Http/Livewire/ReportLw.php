@@ -392,6 +392,6 @@ class ReportLw extends Component
             'currencies' => Currency_model::pluck('sign', 'id'),
             'pending_orders_count' => Order_model::where('order_type_id', 3)->where('status', 2)->count(),
             'sales_history' => $sales_history ?? [],
-        ])->extends('layouts.app')->section('content');
+        ]);
     }
 }
