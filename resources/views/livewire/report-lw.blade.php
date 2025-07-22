@@ -1,3 +1,6 @@
+@extends('layouts.app')
+
+@section('content')
 {{-- filepath: c:\xampp\htdocs\nibritaintech\resources\views\livewire\report-lw.blade.php --}}
 <div>
     {{-- Header Section --}}
@@ -423,3 +426,5 @@
     });
 </script>
 @endpush
+
+@endsection
