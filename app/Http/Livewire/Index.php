@@ -214,7 +214,7 @@ class Index extends Component
                     ->where('created_at', '<=', $end)->count();
                 $order[$i] = $orders;
                 $topups = Process_model::where('created_at', '>', $start)->where('process_type_id',22)
-                    ->where('created_at', '<=', $end)->sum('quantity');
+                    ->where('updated_at', '<=', $end)->sum('quantity');
                 $topup[$i] = $topups;
                 $dates[$i] = $i;
             }
