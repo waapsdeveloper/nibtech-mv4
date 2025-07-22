@@ -72,8 +72,19 @@ class ReportLw extends Component
         $this->end_date = Carbon::now()->format('Y-m-d');
 
         session()->put('page_title', 'Reports - Livewire');
+
+        // Auto-load all reports on mount
+        $this->loadAllReports();
     }
 
+    public function loadAllReports()
+    {
+        // Load all report types automatically
+        $this->getSalesData();
+        $this->getReturnsData();
+        $this->getBatchGradeReports();
+        $this->getSalesHistory();
+    }
     public function updating($property)
     {
         // Reset pagination when filters change
@@ -88,6 +99,10 @@ class ReportLw extends Component
         if ($property === 'report_type') {
             $this->resetPage();
             $this->clearCache();
+        }
+        // Auto-reload data when any filter changes
+        if (in_array($property, ['start_date', 'end_date', 'category', 'brand', 'product', 'vendor', 'batch', 'storage', 'color', 'grade'])) {
+            $this->loadAllReports();
         }
     }
 
@@ -367,18 +382,10 @@ class ReportLw extends Component
 
     public function render()
     {
-        // Only load data for the current report type
-        switch ($this->report_type) {
-            case 'sales_returns':
-                $this->getSalesData();
-                $this->getReturnsData();
-                break;
-            case 'batch_grades':
-                $this->getBatchGradeReports();
-                break;
-            case 'sales_history':
-                $sales_history = $this->getSalesHistory();
-                break;
+
+        // Always ensure data is available
+        if (empty($this->aggregated_sales) && empty($this->aggregated_returns) && empty($this->batch_grade_reports)) {
+            $this->loadAllReports();
         }
 
         return view('livewire.report-lw', [
