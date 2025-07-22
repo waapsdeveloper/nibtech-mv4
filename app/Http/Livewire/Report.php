@@ -401,6 +401,11 @@ class Report extends Component
         $data['aggregated_returns'] = $aggregate_returns;
         $data['aggregated_return_cost'] = $aggregated_return_cost;
 
+        $po = Order_model::where('order_type_id', 1)->when(request('vendor') != '', function ($q) {
+            return $q->where('customer_id', request('vendor'));
+        })
+        ->orderByDesc('id')->limit(50)
+        ->pluck( 'id')->toArray();
 
         $data['batch_grade_reports'] = Stock_model::select('variation.grade as grade', 'orders.id as order_id', 'orders.reference_id as reference_id', 'orders.reference as reference', 'orders.customer_id', 'customer.first_name as vendor', DB::raw('COUNT(*) as quantity'), DB::raw('AVG(order_items.price) as average_cost'))
         ->join('variation', 'stock.variation_id', '=', 'variation.id')
@@ -412,9 +417,7 @@ class Report extends Component
                 ->whereRaw('order_items.order_id = stock.order_id')
                 ->limit(1);
         })
-        ->when(request('vendor') != '', function ($q) {
-            return $q->where('orders.customer_id', request('vendor'));
-        })
+        ->whereIn('stock.order_id', $po)
         ->when($query == 1, function ($q) use ($variation_ids) {
             return $q->whereIn('variation.id', $variation_ids);
         })
