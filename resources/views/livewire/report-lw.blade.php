@@ -1,7 +1,7 @@
+{{-- filepath: c:\xampp\htdocs\nibritaintech\resources\views\livewire\report-lw.blade.php --}}
 @extends('layouts.app')
 
 @section('content')
-{{-- filepath: c:\xampp\htdocs\nibritaintech\resources\views\livewire\report-lw.blade.php --}}
 <div>
     {{-- Header Section --}}
     <div class="page-header">
@@ -16,8 +16,19 @@
                 <button wire:click="exportReport('pdf')" class="btn btn-secondary">
                     <i class="fa fa-file-pdf"></i> Export PDF
                 </button>
+                <button wire:click="loadAllReports" class="btn btn-success">
+                    <i class="fa fa-refresh"></i> Refresh All
+                </button>
             </div>
         </div>
+    </div>
+
+    {{-- Auto-loading indicator --}}
+    <div wire:loading.delay class="alert alert-info text-center">
+        <div class="spinner-border spinner-border-sm me-2" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <strong>Loading all reports automatically...</strong>
     </div>
 
     {{-- Filters Section --}}
@@ -25,6 +36,7 @@
         <div class="card-header">
             <h3 class="card-title">Filters</h3>
             <div class="card-options">
+                <span class="badge bg-info">Auto-updates on filter change</span>
                 <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse">
                     <i class="fa fa-filter"></i> Toggle Filters
                 </button>
@@ -36,19 +48,19 @@
                     {{-- Date Range --}}
                     <div class="col-md-3">
                         <label class="form-label">Start Date</label>
-                        <input wire:model.lazy="start_date" type="date" class="form-control" />
+                        <input wire:model="start_date" type="date" class="form-control" />
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">End Date</label>
-                        <input wire:model.lazy="end_date" type="date" class="form-control" />
+                        <input wire:model="end_date" type="date" class="form-control" />
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Start Time</label>
-                        <input wire:model.lazy="start_time" type="time" class="form-control" />
+                        <input wire:model="start_time" type="time" class="form-control" />
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">End Time</label>
-                        <input wire:model.lazy="end_time" type="time" class="form-control" />
+                        <input wire:model="end_time" type="time" class="form-control" />
                     </div>
                 </div>
 
@@ -160,26 +172,24 @@
 
                 <input wire:model="report_type" type="radio" class="btn-check" name="report_type" id="sales_history" value="sales_history">
                 <label class="btn btn-outline-primary" for="sales_history">Sales History</label>
+
+                <input wire:model="report_type" type="radio" class="btn-check" name="report_type" id="all_reports" value="all_reports">
+                <label class="btn btn-outline-success" for="all_reports">All Reports</label>
             </div>
         </div>
     </div>
 
-    {{-- Loading Indicator --}}
-    <div wire:loading class="text-center my-3">
-        <div class="spinner-border" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-        <p>Loading report data...</p>
-    </div>
-
-    {{-- Content based on report type --}}
-    @if($report_type === 'sales_returns')
+    {{-- Show all reports by default or based on selection --}}
+    @if($report_type === 'sales_returns' || $report_type === 'all_reports')
+        {{-- Sales & Returns Summary --}}
         <div class="row">
-            {{-- Sales Summary --}}
             <div class="col-lg-6">
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">Sales Summary</h3>
+                        <div class="card-options">
+                            <span class="badge bg-success">Auto-loaded</span>
+                        </div>
                     </div>
                     <div class="card-body">
                         @if(!empty($aggregated_sales) && is_array($aggregated_sales))
@@ -199,7 +209,7 @@
                                     <tbody>
                                         @foreach($aggregated_sales as $sale)
                                             @php
-                                                $sale = (object) $sale; // Convert array to object
+                                                $sale = (object) $sale;
                                                 $category_name = $categories[$sale->category_id] ?? 'Unknown';
                                                 $cost = $aggregated_sales_cost[$sale->category_id] ?? 0;
                                                 $profit = $sale->eur_items_sum - $cost - ($sale->items_repair_sum ?? 0);
@@ -229,11 +239,13 @@
                 </div>
             </div>
 
-            {{-- Returns Summary --}}
             <div class="col-lg-6">
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">Returns Summary</h3>
+                        <div class="card-options">
+                            <span class="badge bg-success">Auto-loaded</span>
+                        </div>
                     </div>
                     <div class="card-body">
                         @if(!empty($aggregated_returns) && is_array($aggregated_returns))
@@ -252,7 +264,7 @@
                                     <tbody>
                                         @foreach($aggregated_returns as $return)
                                             @php
-                                                $return = (object) $return; // Convert array to object
+                                                $return = (object) $return;
                                                 $category_name = $categories[$return->category_id] ?? 'Unknown';
                                                 $cost = $aggregated_return_cost[$return->category_id] ?? 0;
                                                 $impact = ($return->eur_items_sum ?? 0) + $cost;
@@ -281,12 +293,14 @@
                 </div>
             </div>
         </div>
+    @endif
 
-    @elseif($report_type === 'batch_grades')
+    @if($report_type === 'batch_grades' || $report_type === 'all_reports')
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">Batch Grade Reports</h3>
                 <div class="card-options">
+                    <span class="badge bg-success">Auto-loaded</span>
                     <span class="badge bg-primary">{{ $pending_orders_count ?? 0 }} Pending Orders</span>
                 </div>
             </div>
@@ -308,7 +322,7 @@
                             <tbody>
                                 @foreach($batch_grade_reports as $report)
                                     @php
-                                        $report = (object) $report; // Convert array to object if needed
+                                        $report = (object) $report;
                                     @endphp
                                     <tr>
                                         <td>
@@ -335,11 +349,15 @@
                 @endif
             </div>
         </div>
+    @endif
 
-    @elseif($report_type === 'sales_history')
+    @if($report_type === 'sales_history' || $report_type === 'all_reports')
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">Sales History (Last 7 Days)</h3>
+                <div class="card-options">
+                    <span class="badge bg-success">Auto-loaded</span>
+                </div>
             </div>
             <div class="card-body">
                 @if(!empty($sales_history) && is_array($sales_history))
@@ -390,11 +408,17 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Check if Livewire is loaded
+        // Auto-load all reports on page load
+        console.log('Page loaded - Reports will auto-load');
+
+        // Set default to show all reports
         if (typeof Livewire !== 'undefined') {
+            // Set the default report type to show all reports
+            @this.set('report_type', 'all_reports');
+
             // Real-time updates
             Livewire.on('reportUpdated', () => {
-                console.log('Report updated');
+                console.log('Report updated automatically');
             });
 
             // Export functionality
