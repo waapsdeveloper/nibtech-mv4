@@ -133,6 +133,11 @@ class ListedStockVerification extends Component
         $process = Process_model::find($process_id);
         $process->description = request('description');
 
+        if(request('close') == 1){
+            $process->status = 2;
+            $process->save();
+            return redirect()->back()->with('success', 'Listed stock Verification closed successfully.');
+        }
         if(request('approve') == 1){
             $process->status = 2;
         }
