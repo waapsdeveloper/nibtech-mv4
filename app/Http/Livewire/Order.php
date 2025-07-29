@@ -1892,12 +1892,13 @@ class Order extends Component
             $n = str_replace('  ',' ',$n);
             $n = str_replace('  ',' ',$n);
             $c = $d[$cost];
-            if(ctype_digit(trim($d[$imei]))){
-                $i = trim($d[$imei]);
+            $im = trim($d[$imei]);
+            if(ctype_digit(trim($im))){
+                $i = trim($im);
                 $s = null;
             }else{
                 $i = null;
-                $s = trim($d[$imei]);
+                $s = trim($im);
             }
             $names = explode(" ",$n);
             $last = end($names);
