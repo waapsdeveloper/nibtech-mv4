@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Http\Livewire;
+
+use App\Exports\TopupsheetExport;
 use Livewire\Component;
 use App\Models\Variation_model;
 use App\Models\Products_model;
@@ -19,7 +21,7 @@ use App\Models\Process_model;
 use App\Models\Process_stock_model;
 use App\Models\Product_storage_sort_model;
 use App\Models\Stock_operations_model;
-
+use Maatwebsite\Excel\Facades\Excel;
 
 class Topup extends Component
 {
@@ -639,6 +641,11 @@ class Topup extends Component
         return redirect()->to(url('topup'))->with('success', 'Topup Deleted successfully');
     }
 
+    public function export_topup($process_id){
+        $process = Process_model::find($process_id);
+
+        return Excel::download(new TopupsheetExport, 'topups_'.$process->reference_id.'_'.$process->description.'_'.$process->process_stocks->count().'pcs.xlsx');
+    }
 
 
     public function undo_topup($id){
