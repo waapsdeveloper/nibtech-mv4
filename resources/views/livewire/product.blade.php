@@ -360,6 +360,7 @@
 
                             const colorList = mergeColors.cloneNode(true);
                             colorList.name = `merge_to`;
+                            colorList.required = true;
                             mergeForm.appendChild(colorList);
 
                             const colorButton = document.createElement('button');

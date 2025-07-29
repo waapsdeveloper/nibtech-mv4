@@ -1,0 +1,113 @@
+<?php
+
+namespace App\Exports;
+
+use App\Models\Process_model;
+use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+
+class TopupsheetExport implements FromCollection, WithHeadings
+{
+    protected $topup_batches;
+
+    public function __construct()
+    {
+        // Storing reference_id as key and id as value for topup_batches
+        $this->topup_batches = Process_model::whereIn('process_type_id', [21,22])
+            ->where('id', '!=', request('id'))
+            ->pluck('reference_id', 'id')
+            ->toArray();
+    }
+
+    public function collection()
+    {
+        $topup_batches = $this->topup_batches;
+        $data = DB::table('process')
+            ->leftJoin('process_stock as p_stock', 'process.id', '=', 'p_stock.process_id')
+            ->leftJoin('admin', 'p_stock.admin_id', '=', 'admin.id')
+            ->leftJoin('stock', 'p_stock.stock_id', '=', 'stock.id')
+            ->leftJoin('orders', 'stock.order_id', '=', 'orders.id')
+            ->leftJoin('customer', 'orders.customer_id', '=', 'customer.id')
+            ->leftJoin('variation', 'stock.variation_id', '=', 'variation.id')
+            ->leftJoin('products', 'variation.product_id', '=', 'products.id')
+            ->leftJoin('color', 'variation.color', '=', 'color.id')
+            ->leftJoin('process_stock', function ($join) use ($topup_batches) {
+                $join->on('stock.id', '=', 'process_stock.stock_id')
+                    ->whereNull('process_stock.deleted_at')
+                    ->whereIn('process_stock.process_id', array_keys($topup_batches))
+                    ->whereRaw('process_stock.id = (SELECT id FROM process_stock WHERE process_stock.stock_id = stock.id ORDER BY id DESC LIMIT 1)');
+            })
+            ->leftJoin('process as pr', 'process_stock.process_id', '=', 'pr.id')
+            ->leftJoin('storage', 'variation.storage', '=', 'storage.id')
+            ->leftJoin('grade', 'variation.grade', '=', 'grade.id')
+            ->leftJoin('stock_operations', function ($join) {
+                $join->on('stock.id', '=', 'stock_operations.stock_id')
+                    ->whereNull('stock_operations.deleted_at')
+                    ->whereRaw('stock_operations.id = (SELECT id FROM stock_operations WHERE stock_operations.stock_id = stock.id AND stock_operations.description NOT LIKE "%Price changed from%" AND stock_operations.description NOT LIKE "%Grade changed for Bulksale%" AND stock_operations.description NOT LIKE "% |  | DrPhone%" AND stock_operations.description NOT LIKE "Battery | | DrPhone" ORDER BY stock_operations.id DESC LIMIT 1)');
+            })
+            ->leftJoin('admin as admin2', 'stock_operations.admin_id', '=', 'admin2.id')
+
+            ->select(
+                DB::raw('CONCAT(products.model, " ", COALESCE(storage.name, "")) as model_storage'),
+                // 'products.model',
+                // 'storage.name as storage',
+                'color.name as color',
+                'grade.name as grade_name',
+                'orders.reference_id as po',
+                'customer.company as customer',
+                'pr.reference_id as process_id',
+                // 'stock.id as stock_id',
+                'stock.imei as imei',
+                'stock.serial_number as serial_number',
+                DB::raw('TRIM(BOTH " " FROM UPPER(
+                    TRIM(LEADING "Battery | " FROM TRIM(LEADING " | " FROM REPLACE(
+                        REPLACE(
+                            REPLACE(
+                                REPLACE(
+                                    REPLACE(
+                                        REPLACE(stock_operations.description, "TG", ""),
+                                    "Cover", ""),
+                                "5D", ""),
+                            "Dual-Esim", ""),
+                        " | DrPhone", ""),
+                    "BCC", "Battery Cycle Count")))
+                )) as issue'),
+                'admin2.first_name as admin_name',
+                'p_stock.status as status',
+                'p_stock.created_at as created_at'
+            )
+            ->where('process.id', request('id'))
+            // ->where('p_stock.status', 1)
+            ->whereNull('process.deleted_at')
+            ->whereNull('process_stock.deleted_at')
+            ->whereNull('stock.deleted_at')
+            ->whereNull('p_stock.deleted_at')
+            ->whereNull('orders.deleted_at')
+            ->whereNull('order_items.deleted_at')
+            ->whereNull('stock_operations.deleted_at')
+            ->orderBy('products.model', 'ASC')
+            ->get();
+
+        return $data;
+    }
+
+    public function headings(): array
+    {
+        return [
+            'Name',
+            // 'Storage',
+            'Color',
+            'Grade',
+            'PO',
+            'Customer',
+            'Process ID', // Corrected to generic 'Process ID' instead of trying to get from $topup_batches
+            'IMEI',
+            'Serial Number',
+            'Issue',
+            'Admin',
+            'Status',
+            'Created At',
+        ];
+    }
+}

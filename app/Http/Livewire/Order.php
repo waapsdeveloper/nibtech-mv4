@@ -1892,12 +1892,13 @@ class Order extends Component
             $n = str_replace('  ',' ',$n);
             $n = str_replace('  ',' ',$n);
             $c = $d[$cost];
-            if(ctype_digit(trim($d[$imei]))){
-                $i = trim($d[$imei]);
+            $im = trim($d[$imei]);
+            if(ctype_digit(trim($im))){
+                $i = trim($im);
                 $s = null;
             }else{
                 $i = null;
-                $s = trim($d[$imei]);
+                $s = trim($im);
             }
             $names = explode(" ",$n);
             $last = end($names);
@@ -2166,7 +2167,7 @@ class Order extends Component
     public function add_purchase_item($order_id, $imei = null, $variation_id = null, $price = null, $return = null, $v_grade = null){
         $issue = [];
         if(request('imei')){
-            $imei = request('imei');
+            $imei = trim(request('imei'));
         }
         if(request('order')){
             $order_id = request('order');
@@ -2174,7 +2175,41 @@ class Order extends Component
         if(request('variation') && $return == null){
             $variation_id = request('variation');
         }
-        $variation = Variation_model::find($variation_id);
+        $variation_id = trim($variation_id);
+        if(!ctype_digit($variation_id)){
+            $products = Products_model::pluck('model','id')->toArray();
+            $storages = Storage_model::pluck('name','id')->toArray();
+            $names = explode(" ",trim($variation_id));
+            $last = end($names);
+            if(in_array($last, $storages)){
+                $gb = array_search($last,$storages);
+                array_pop($names);
+                $n = implode(" ", $names);
+            }else{
+                $gb = 0;
+            }
+            if(in_array(strtolower($n), array_map('strtolower',$products))){
+                $product = array_search(strtolower($n), array_map('strtolower',$products));
+                $storage = $gb;
+
+                if($product == null){
+                    session()->put('error', "Product Not Found");
+                    if($return == null){
+                        return redirect()->back();
+                    }else{
+                        return $issue;
+                    }
+                }
+                $variation = Variation_model::firstOrNew(['product_id' => $product, 'grade' => 9, 'storage' => $storage]);
+                $variation->stock += 1;
+                $variation->status = 1;
+                $variation->save();
+            }
+        }else{
+            $variation = Variation_model::find($variation_id);
+        }
+
+        
         if(request('price')){
             $price = request('price');
             if(!is_numeric($price)){
@@ -2185,6 +2220,7 @@ class Order extends Component
         if(request('v_grade')){
             $v_grade = request('v_grade');
         }
+        $imei = trim($imei);
 
         if(ctype_digit($imei)){
             $i = $imei;
