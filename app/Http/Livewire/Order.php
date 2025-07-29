@@ -2371,7 +2371,7 @@ class Order extends Component
 
 
                     $var = Variation_model::find($variation);
-                    if($var != null && $data->color != null){
+                    if($var != null && isset($data->color) && $data->color != null){
                         $clr = Color_model::firstOrNew(['name' => $data->color]);
                         $clr->save();
 
