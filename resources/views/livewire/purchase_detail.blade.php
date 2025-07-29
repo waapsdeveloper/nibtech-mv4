@@ -913,7 +913,7 @@
                                                 @endphp
                                                     <tr>
                                                         <td>{{ $i }}</td>
-                                                        <td data-stock="{{ $item->id }}" class="{{$class}}">{{ $item->imei.$item->serial_number }}
+                                                        <td data-stock="{{ $item->id }}" class="{{$class}}" title="{{ $item->id}}">{{ $item->imei.$item->serial_number }}
                                                             @if ($class != "")
                                                                 <a href="{{ url('request_drfones?imei='.$item->imei.$item->serial_number) }}" class="text-danger" title="Check DRFones" target="_blank"><i class="fa fa-search"></i></a>
 
