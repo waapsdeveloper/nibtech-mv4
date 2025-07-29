@@ -2166,7 +2166,7 @@ class Order extends Component
     public function add_purchase_item($order_id, $imei = null, $variation_id = null, $price = null, $return = null, $v_grade = null){
         $issue = [];
         if(request('imei')){
-            $imei = request('imei');
+            $imei = trim(request('imei'));
         }
         if(request('order')){
             $order_id = request('order');
@@ -2185,6 +2185,7 @@ class Order extends Component
         if(request('v_grade')){
             $v_grade = request('v_grade');
         }
+        $imei = trim($imei);
 
         if(ctype_digit($imei)){
             $i = $imei;
