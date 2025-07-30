@@ -364,6 +364,7 @@ Route::post('delete_topup_imei', [Topup::class,'delete_topup_imei'])->name('dele
 Route::get('topup/delete/{id}', [Topup::class,'delete_topup'])->name('delete_topup');
 Route::post('topup/close/{id}', [Topup::class,'close_topup'])->name('close_topup');
 Route::get('topup/recheck_closed_topup/{id}', [Topup::class,'recheck_closed_topup'])->name('recheck_closed_topup');
+Route::get('topup/export', [Topup::class,'export_topup'])->name('export_topup');
 
 
 Route::get('process', Process::class)->name('view_process');
