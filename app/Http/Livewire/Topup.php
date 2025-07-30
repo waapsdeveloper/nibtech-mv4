@@ -306,6 +306,7 @@ class Topup extends Component
 
         $imei = request('imei');
         $imeis = explode(" ", $imei);
+        $error = '';
         foreach($imeis as $imei){
             if (ctype_digit($imei)) {
                 $i = $imei;
@@ -317,8 +318,10 @@ class Topup extends Component
             }
 
             if($stock == null){
-                session()->put('error', 'IMEI Invalid / Not Found');
-                return redirect()->back();
+                // session()->put('error', 'IMEI Invalid / Not Found');
+                // return redirect()->back();
+                $error .= 'IMEI Invalid / Not Found: '.$imei.'<br>';
+                continue;
             }
 
             $stock->availability();
@@ -331,12 +334,15 @@ class Topup extends Component
                     $product_id = session('product');
                     $storage_id = session('storage');
                     if($variation->product_id != $product_id){
-                        session()->forget('product');
-                        return redirect()->back()->with('error', 'Product ID does not match with the stock variation');
+                        // session()->forget('product');
+                        // return redirect()->back()->with('error', 'Product ID does not match with the stock variation');
+                        $error .= 'Product ID does not match with the stock variation '.$imei.'<br>';
+                        continue;
                     }
                     if($variation->storage != $storage_id){
                         session()->forget('storage');
-                        return redirect()->back()->with('error', 'Storage ID does not match with the stock variation');
+                        $error .= 'Storage ID does not match with the stock variation '.$imei.'<br>';
+                        continue;
                     }
                 }
 
@@ -348,7 +354,8 @@ class Topup extends Component
                 if(request('storage') != null){
                     $storage_id = request('storage');
                     if($variation->storage != $storage_id){
-                        return redirect()->back()->with('error', 'Storage ID does not match with the stock variation');
+                        $error .= 'Storage ID does not match with the stock variation '.$imei.'<br>';
+                        continue;
                     }
                 }else{
                     $storage_id = $variation->storage ?? 0;
@@ -363,8 +370,8 @@ class Topup extends Component
                     if(!str_contains(strtolower($product->model), 'dual esim')){
                         $new_product = Products_model::where(['model' => $product->model.' Dual eSIM'])->first();
                         if($new_product == null){
-                            session()->put('error', 'Dual eSIM Product Not Found');
-                            return redirect()->back();
+                            $error .= 'Dual eSIM Product Not Found: '.$imei.'<br>';
+                            continue;
                         }
 
                         $product_id = $new_product->id;
@@ -375,8 +382,8 @@ class Topup extends Component
                     if(!str_contains(strtolower($product->model), 'dual sim')){
                         $new_product = Products_model::where(['model' => $product->model.' Dual Sim'])->first();
                         if($new_product == null){
-                            session()->put('error', 'Dual SIM Product Not Found');
-                            return redirect()->back();
+                            $error .= 'Dual SIM Product Not Found: '.$imei.'<br>';
+                            continue;
                         }
                         $product_id = $new_product->id;
                     }
@@ -405,12 +412,12 @@ class Topup extends Component
                 ])->first();
                 // dd($new_variation);
                 if($new_variation == null){
-                    session()->put('error', 'Variation Not Found for the given Product, Storage, Color and Grade');
-                    return redirect()->back();
+                    $error .= 'Variation Not Found for the given Product, Storage, Color and Grade: '.$imei.'<br>';
+                    continue;
                 }
                 if($new_variation->sku == null){
-                    session()->put('error', 'SKU Not Found for the new variation');
-                    return redirect()->back();
+                    $error .= 'SKU Not Found for the new variation: '.$imei.'<br>';
+                    continue;
                 }
                 if($stock->variation_id != $new_variation->id && $new_variation->sku != null){
                     $new_variation->status = 1;
@@ -465,12 +472,14 @@ class Topup extends Component
             }
             $stock = Stock_model::find($stock->id);
             if($stock->variation->sku == null){
-                session()->put('error', 'SKU Not Found');
-                return redirect()->back();
+                // session()->put('error', 'SKU Not Found');
+                // return redirect()->back();
+                $error .= 'SKU Not Found: '.$imei.'<br>';
+                continue;
             }
             if(!in_array($stock->variation->state, [0,1,2,3])){
-                session()->put('error', 'Ad State is not valid for Topup: '.$stock->variation->state);
-                return redirect()->back();
+                $error .= 'Ad State is not valid for Topup: '.$stock->variation->state.'<br>';
+                continue;
             }
             if(session()->has('variation_id') && session('variation_id') != $stock->variation_id){
                 session()->put('warning', 'Variation ID does not match with the stock variation');
@@ -500,8 +509,8 @@ class Topup extends Component
                 session()->put('success', 'Stock Added successfully: SKU:'.$stock->variation->sku.' - '.$model.' - '.$storage.' - '.$color.' - '.$grade);
             }else{
                 if($process->status != 1 && $process_stock->id == null){
-                    session()->put('error', 'Topup is not in progress, please start a new Topup');
-                    return redirect()->back();
+                    $error .= 'Topup is not in progress, please start a new Topup: '.$imei.'<br>';
+                    continue;
                 }
 
                 if(request('copy') == 1 || request('copy_grade') == 1 || request('dual-esim') == 1 || request('dual-sim') == 1){
@@ -509,9 +518,14 @@ class Topup extends Component
                     $process_stock->save();
                     session()->put('success', 'Stock ReAdded successfully SKU:'.$stock->variation->sku);
                 }else{
-                    session()->put('error', 'Stock already Added SKU:'.$stock->variation->sku);
+                    // session()->put('error', 'Stock already Added SKU:'.$stock->variation->sku);
+                    $error .= 'Stock already Added SKU:'.$stock->variation->sku.'<br>';
+                    continue;
                 }
             }
+        }
+        if($error != ''){
+            session()->put('error', $error);
         }
         return redirect()->back();
     }
