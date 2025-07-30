@@ -646,7 +646,7 @@ class Topup extends Component
             session()->put('error', 'You do not have permission to export topup data');
             return redirect()->back();
         }
-        $process_id = request('process_id');
+        $process_id = request('id');
         $process = Process_model::find($process_id);
 
         return Excel::download(new TopupsheetExport, 'topups_'.$process->reference_id.'_'.$process->description.'_'.$process->process_stocks->count().'pcs.xlsx');
