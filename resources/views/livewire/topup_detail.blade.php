@@ -56,7 +56,7 @@
                             <a href="{{url('listing').'?process_id='.$process->id}}" class="btn btn-link">List Stock</a>
                         @endif
                         @if (session('user')->hasPermission('topup_export'))
-                            <a href="{{url('topup/export').'?process_id='.$process->id}}" class="btn btn-link"><i class="fa fa-file-export"></i> Export</a>
+                            <a href="{{url('topup/export').'?id='.$process->id}}" class="btn btn-link"><i class="fa fa-file-export"></i> Export</a>
                         @endif
                     </form>
 
