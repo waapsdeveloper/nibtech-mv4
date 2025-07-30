@@ -641,7 +641,12 @@ class Topup extends Component
         return redirect()->to(url('topup'))->with('success', 'Topup Deleted successfully');
     }
 
-    public function export_topup($process_id){
+    public function export_topup(){
+        if(!session('user')->hasPermission('topup_export')){
+            session()->put('error', 'You do not have permission to export topup data');
+            return redirect()->back();
+        }
+        $process_id = request('process_id');
         $process = Process_model::find($process_id);
 
         return Excel::download(new TopupsheetExport, 'topups_'.$process->reference_id.'_'.$process->description.'_'.$process->process_stocks->count().'pcs.xlsx');

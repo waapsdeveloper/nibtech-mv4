@@ -36,6 +36,7 @@
                         </div>
                         @if ($process->status == 1)
                             <button type="submit" class="btn btn-primary" name="approve" value="1">Send</button>
+                            <a class="btn btn-danger" href="{{url('topup/delete') . "/" . $process->id }}" onclick="return confirm('Are you sure you want to delete this topup?');">Delete</a>
                         @elseif ($process->status == 2)
                             @if (session('user')->hasPermission('topup_push_without_verification'))
 
@@ -51,9 +52,11 @@
                              >Push & Close</button>
 
                         @endif
-                        <a class="btn btn-danger" href="{{url('topup/delete') . "/" . $process->id }}" onclick="return confirm('Are you sure you want to delete this topup?');">Delete</a>
                         @if (session('user')->hasPermission('topup_list_stock'))
                             <a href="{{url('listing').'?process_id='.$process->id}}" class="btn btn-link">List Stock</a>
+                        @endif
+                        @if (session('user')->hasPermission('topup_export'))
+                            <a href="{{url('topup/export').'?process_id='.$process->id}}" class="btn btn-link"><i class="fa fa-file-export"></i> Export</a>
                         @endif
                     </form>
 
