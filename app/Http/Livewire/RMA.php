@@ -255,7 +255,7 @@ class RMA extends Component
             $transaction->reference_id = $order->reference_id;
             $transaction->created_by = session('user_id');
             // $transaction->created_at = $order->created_at;
-            $transaction->date = $order->created_at
+            $transaction->date = $order->created_at;
 
             $transaction->save();
             $transaction->reference_id = $transaction->id + 300000;
