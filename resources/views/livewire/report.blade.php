@@ -714,7 +714,7 @@
                                         <td>${b2bSale.b2b_order_items}</td>
                                         <td>€${b2bSale.b2b_stock_cost}</td>
                                         <td>€${b2bSale.b2b_stock_repair_cost}</td>
-                                        <td colspan="${Object.keys(data.currency_ids).length}">€${b2bSale.b2b_orders_sum}</td>
+                                        <td colspan="${Object.keys(data.currency_ids).length}">€${b2bSale.b2b_orders_sum} - €${b2bSale.b2b_charges_sum}</td>
                                         <td colspan="${Object.keys(data.currency_ids).length}">€${b2bSale.b2b_total}</td>
                                     </tr>
                                     <tr>
