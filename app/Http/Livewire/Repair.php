@@ -1215,13 +1215,14 @@ class Repair extends Component
                     continue;
                 }
                 $variation = Variation_model::where(['id' => $stock->variation_id])->first();
-                if($stock->id != null && $stock->status == 2){
-                    $issue[$dr]['data']['row'] = $dr;
-                    $issue[$dr]['data']['imei'] = $i.$s;
-                    $issue[$dr]['message'] = 'Item Already Sold';
+                // if($stock->id != null && $stock->status == 2){
+                //     $issue[$dr]['data']['row'] = $dr;
+                //     $issue[$dr]['data']['imei'] = $i.$s;
+                //     $issue[$dr]['message'] = 'Item Already Sold';
 
 
-                }elseif($stock->id == null ){
+                // }else
+                if($stock->id == null ){
                     $issue[$dr]['data']['row'] = $dr;
                     $issue[$dr]['data']['imei'] = $i.$s;
                     $issue[$dr]['message'] = 'Stock Not Found';
