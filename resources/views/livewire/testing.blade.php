@@ -116,6 +116,9 @@
                             <button type='submit'>Add IMEI</button>
                         </form>
                         @endif
+                        <a href='{{url("testing/send_to_eg")."/".$request->id}}' class='btn btn-primary'>Send to EG</a>
+                        <a href='{{url("testing/send_to_yk")."/".$request->id}}' class='btn btn-primary'>Send to YK</a>
+                        <a href='{{url("testing/delete_request")."/".$request->id}}' class='btn btn-danger'>Delete</a>
                     @endforeach
                     </pre>
 

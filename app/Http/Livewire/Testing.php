@@ -109,4 +109,28 @@ class Testing extends Component
     }
 
 
+    public function send_to_eg($id){
+        $request = Api_request_model::find($id);
+        $request->send_to_eg();
+
+        return redirect()->back()->with('success', 'Request sent to EG');
+    }
+    public function send_to_yk($id){
+        $request = Api_request_model::find($id);
+        $request->send_to_yk();
+
+        return redirect()->back()->with('success', 'Request sent to YK');
+    }
+
+
+    public function delete_request($id){
+        $request = Api_request_model::find($id);
+        if($request){
+            $request->delete();
+            return redirect()->back()->with('success', 'Request deleted successfully');
+        }else{
+            return redirect()->back()->with('error', 'Request not found');
+        }
+    }
+
 }
