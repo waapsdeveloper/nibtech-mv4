@@ -282,7 +282,7 @@
         </div>
 
         @if (request('summery') == 1)
-            <button class="btn btn-sm btn-link" id="export_btn" onclick="ExportExcel('#available_stock_summery')"><i
+            <button class="btn btn-sm btn-link" id="export_btn" onclick="ExportTableToTSC('#available_stock_summery')"><i
                     class="fa fa-file-export"></i></button>
             <button class="btn btn-sm btn-secondary" id="print_btn" onclick="PrintElem('print_inv')"><i
                     class="fa fa-print"></i></button>
@@ -584,7 +584,6 @@
 @endsection
 
 @section('scripts')
-@verbatim
     <script>
         function load_color_graded_count(productId) {
 
@@ -683,7 +682,7 @@
             return true;
         }
         // Function to export table to Excel without triggering Blade component parsing
-        function ExportExcel(selector, filename = 'table.tsc') {
+        function ExportTableToTSC(selector, filename = 'table.tsc') {
                 var table = document.querySelector(selector);
                 if (!table) {
                     alert("Table not found!");
@@ -799,7 +798,6 @@
 
         });
     </script>
-@endverbatim
     <!--Internal Sparkline js -->
     <script src="{{ asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js') }}"></script>
 
