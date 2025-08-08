@@ -282,6 +282,8 @@
         </div>
 
         @if (request('summery') == 1)
+            <button class="btn btn-sm btn-link" id="export_btn" onclick="ExportCSV('#available_stock_summery')"><i
+                    class="fa fa-file-export"></i></button>
             <button class="btn btn-sm btn-secondary" id="print_btn" onclick="PrintElem('print_inv')"><i
                     class="fa fa-print"></i></button>
         @endif
@@ -327,7 +329,7 @@
                         <input type="hidden" name="status" value="{{ Request::get('status') }}">
                         <input type="hidden" name="vendor" value="{{ Request::get('vendor') }}">
                     </form>
-                    <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                    <table class="table table-bordered table-hover mb-0 text-md-nowrap" id="available_stock_summery">
                         <thead>
                             <tr>
                                 <th><small><b>No</b></small></th>
@@ -678,6 +680,25 @@
             }, 500);
 
             return true;
+        }
+        // Function to export table to excel
+        function ExportCSV(elem) {
+            var table = document.querySelector(elem);
+            var rows = Array.from(table.querySelectorAll('tr'));
+            var csvContent = rows.map(row => {
+                var cols = Array.from(row.querySelectorAll('td, th'));
+                return cols.map(col => col.innerText).join(',');
+            }).join('\n');
+
+            // Create a Blob from the CSV content
+            var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            var link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'inventory.csv';
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         function get_average_cost() {
