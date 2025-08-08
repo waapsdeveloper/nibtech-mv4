@@ -690,7 +690,7 @@
                 }
 
                 var rows = Array.from(table.querySelectorAll('tr'));
-                var tsc = [];
+                var tsv = [];
 
                 rows.forEach((row, rowIndex) => {
                     var cols = Array.from(row.querySelectorAll('td, th'));
@@ -706,10 +706,10 @@
                         rowData.push(avgCost);
                     }
 
-                    tsc.push(rowData.join('\t'));
+                    tsv.push(rowData.join('\t'));
                 });
 
-                var blob = new Blob([tsc.join('\n')], { type: 'text/tab-separated-values;charset=utf-8;' });
+                var blob = new Blob([tsv.join('\n')], { type: 'text/tab-separated-values;charset=utf-8;' });
                 var link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
                 link.download = filename;
