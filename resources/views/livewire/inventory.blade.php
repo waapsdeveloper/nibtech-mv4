@@ -282,7 +282,7 @@
         </div>
 
         @if (request('summery') == 1)
-            <button class="btn btn-sm btn-link" id="export_btn" onclick="ExportCSV('#available_stock_summery')"><i
+            <button class="btn btn-sm btn-link" id="export_btn" onclick="ExportExcel('#available_stock_summery')"><i
                     class="fa fa-file-export"></i></button>
             <button class="btn btn-sm btn-secondary" id="print_btn" onclick="PrintElem('print_inv')"><i
                     class="fa fa-print"></i></button>
@@ -681,33 +681,44 @@
 
             return true;
         }
-        // Function to export table to excel
-        function ExportCSV(elem) {
+        // Function to export table to Excel
+        function ExportExcel(elem) {
             var table = document.querySelector(elem);
             var rows = Array.from(table.querySelectorAll('tr'));
-            var csvContent = rows.map((row, rowIndex) => {
-                var cols = Array.from(row.querySelectorAll('td, th'));
-                // Add average cost column for data rows (skip header/footer)
-                if (rowIndex === 0) {
-                    // Header row: add "Average Cost" column
-                    return cols.map(col => col.innerText).join(',') + ',Average Cost';
-                } else if (rowIndex > 0 && cols.length >= 4) {
-                    // Data row: calculate average cost (cost / quantity)
-                    var quantity = parseFloat(cols[2].innerText.replace(/,/g, '')) || 0;
-                    var cost = parseFloat(cols[3].innerText.replace(/,/g, '')) || 0;
-                    var avgCost = quantity > 0 ? (cost / quantity).toFixed(2) : '';
-                    return cols.map(col => col.innerText).join(',') + ',' + avgCost;
-                } else {
-                    // Footer or other rows
-                    return cols.map(col => col.innerText).join(',');
-                }
-            }).join('\n');
+            var excelContent = '<table>';
 
-            // Create a Blob from the CSV content
-            var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            rows.forEach((row, rowIndex) => {
+            var cols = Array.from(row.querySelectorAll('td, th'));
+            excelContent += '<tr>';
+            cols.forEach(col => {
+                excelContent += '<td>' + col.innerText + '</td>';
+            });
+            // Add average cost column for data rows (skip header/footer)
+            if (rowIndex === 0) {
+                excelContent += '<td>Average Cost</td>';
+            } else if (rowIndex > 0 && cols.length >= 4) {
+                var quantity = parseFloat(cols[2].innerText.replace(/,/g, '')) || 0;
+                var cost = parseFloat(cols[3].innerText.replace(/,/g, '')) || 0;
+                var avgCost = quantity > 0 ? (cost / quantity).toFixed(2) : '';
+                excelContent += '<td>' + avgCost + '</td>';
+            }
+            excelContent += '</tr>';
+            });
+
+            excelContent += '</table>';
+
+            var blob = new Blob(
+            [
+                '\ufeff',
+                `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                <head><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Sheet1</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>
+                <body>${excelContent}</body></html>`
+            ],
+            { type: 'application/vnd.ms-excel' }
+            );
             var link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = 'inventory.csv';
+            link.download = 'inventory.xls';
             link.style.display = 'none';
             document.body.appendChild(link);
             link.click();
