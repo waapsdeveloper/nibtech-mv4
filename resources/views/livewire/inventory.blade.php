@@ -683,70 +683,40 @@
             return true;
         }
         // Function to export table to Excel without triggering Blade component parsing
-        function ExportExcel(elem) {
+        function ExportExcel(selector, filename = 'table.tsc') {
+                var table = document.querySelector(selector);
+                if (!table) {
+                    alert("Table not found!");
+                    return;
+                }
 
-            var table = document.querySelector(elem);
-            if (!table) {
-                alert("Table not found!");
-                return;
-            }
+                var rows = Array.from(table.querySelectorAll('tr'));
+                var tsc = [];
 
-            var rows = Array.from(table.querySelectorAll('tr'));
-            var excelContent = '<table>';
+                rows.forEach((row, rowIndex) => {
+                    var cols = Array.from(row.querySelectorAll('td, th'));
+                    var rowData = cols.map(col => col.innerText.replace(/\t/g, ' ')); // remove tabs from data
 
-            rows.forEach((row, rowIndex) => {
-                var cols = Array.from(row.querySelectorAll('td, th'));
-                excelContent += '<tr>';
+                    // Add Average Cost column
+                    if (rowIndex === 0) {
+                        rowData.push('Average Cost');
+                    } else if (rowIndex > 0 && cols.length >= 4) {
+                        var quantity = parseFloat(cols[2].innerText.replace(/,/g, '')) || 0;
+                        var cost = parseFloat(cols[3].innerText.replace(/,/g, '')) || 0;
+                        var avgCost = quantity > 0 ? (cost / quantity).toFixed(2) : '';
+                        rowData.push(avgCost);
+                    }
 
-                cols.forEach(col => {
-                    excelContent += '<td>' + col.innerText + '</td>';
+                    tsc.push(rowData.join('\t'));
                 });
 
-                // Add Average Cost column
-                if (rowIndex === 0) {
-                    excelContent += '<td>Average Cost</td>';
-                } else if (rowIndex > 0 && cols.length >= 4) {
-                    var quantity = parseFloat(cols[2].innerText.replace(/,/g, '')) || 0;
-                    var cost = parseFloat(cols[3].innerText.replace(/,/g, '')) || 0;
-                    var avgCost = quantity > 0 ? (cost / quantity).toFixed(2) : '';
-                    excelContent += '<td>' + avgCost + '</td>';
-                }
-                excelContent += '</tr>';
-            });
-
-            excelContent += '</table>';
-
-            // Excel XML - Blade-safe (breaks the tag so Laravel won't parse it)
-            var excelFile =
-                '\ufeff' +
-                `<html xmlns:o="urn:schemas-microsoft-com:office:office"
-                    xmlns:x="urn:schemas-microsoft-com:office:excel"
-                    xmlns="http://www.w3.org/TR/REC-html40">
-                <head>
-                    <!--[if gte mso 9]>
-                    <xml>
-                        <x:${'ExcelWorkbook'}>
-                            <x:ExcelWorksheets>
-                                <x:ExcelWorksheet>
-                                    <x:Name>Sheet1</x:Name>
-                                    <x:WorksheetOptions></x:WorksheetOptions>
-                                </x:ExcelWorksheet>
-                            </x:ExcelWorksheets>
-                        </x:${'ExcelWorkbook'}>
-                    </xml>
-                    <![endif]-->
-                </head>
-                <body>${excelContent}</body>
-                </html>`;
-
-            // Create and download the Excel file
-            var blob = new Blob([excelFile], { type: 'application/vnd.ms-excel' });
-            var link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'inventory.xls';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+                var blob = new Blob([tsc.join('\n')], { type: 'text/tab-separated-values;charset=utf-8;' });
+                var link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
 
         }
 
