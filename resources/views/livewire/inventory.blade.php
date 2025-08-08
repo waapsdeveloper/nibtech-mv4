@@ -282,7 +282,7 @@
         </div>
 
         @if (request('summery') == 1)
-            <button class="btn btn-sm btn-link" id="export_btn" onclick="ExportTableToTSV('#available_stock_summery')"><i
+            <button class="btn btn-sm btn-link" id="export_btn" onclick="ExportTableToCSV('#available_stock_summery')"><i
                     class="fa fa-file-export"></i></button>
             <button class="btn btn-sm btn-secondary" id="print_btn" onclick="PrintElem('print_inv')"><i
                     class="fa fa-print"></i></button>
@@ -682,41 +682,42 @@
             return true;
         }
         // Function to export table to Excel without triggering Blade component parsing
-        function ExportTableToTSV(selector, filename = 'table.tsv') {
-                var table = document.querySelector(selector);
-                if (!table) {
-                    alert("Table not found!");
-                    return;
-                }
+        function ExportTableToCSV(selector, filename = 'table.csv') {
+            var table = document.querySelector(selector);
+            if (!table) {
+                alert("Table not found!");
+                return;
+            }
 
-                var rows = Array.from(table.querySelectorAll('tr'));
-                var tsv = [];
+            var rows = Array.from(table.querySelectorAll('tr'));
+            var csv = [];
 
-                rows.forEach((row, rowIndex) => {
-                    var cols = Array.from(row.querySelectorAll('td, th'));
-                    var rowData = cols.map(col => col.innerText.replace(/\t/g, ' ')); // remove tabs from data
+            rows.forEach((row, rowIndex) => {
+                var cols = Array.from(row.querySelectorAll('td, th'));
+                var rowData = cols.map((col, colIndex) => {
+                    var text = col.innerText.trim();
 
-                    // Add Average Cost column
-                    if (rowIndex === 0) {
-                        rowData.push('Average Cost');
-                    } else if (rowIndex > 0 && cols.length >= 4) {
-                        var quantity = parseFloat(cols[2].innerText.replace(/,/g, '')) || 0;
-                        var cost = parseFloat(cols[3].innerText.replace(/,/g, '')) || 0;
-                        var avgCost = quantity > 0 ? (cost / quantity).toFixed(2) : '';
-                        rowData.push(avgCost);
+                    // Remove commas from numeric values only
+                    if (!isNaN(text.replace(/,/g, '')) && text.match(/[\d]/)) {
+                        text = text.replace(/,/g, '');
                     }
 
-                    tsv.push(rowData.join('\t'));
+                    // Escape quotes
+                    text = text.replace(/"/g, '""');
+
+                    return `"${text}"`; // wrap each cell in quotes for safety
                 });
 
-                var blob = new Blob([tsv.join('\n')], { type: 'text/tab-separated-values;charset=utf-8;' });
-                var link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                csv.push(rowData.join(','));
+            });
 
+            var blob = new Blob([csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
+            var link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         function get_average_cost() {
