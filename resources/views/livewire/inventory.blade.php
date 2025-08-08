@@ -584,6 +584,7 @@
 @endsection
 
 @section('scripts')
+@verbatim
     <script>
         function load_color_graded_count(productId) {
 
@@ -819,6 +820,7 @@
 
         });
     </script>
+@endverbatim
     <!--Internal Sparkline js -->
     <script src="{{ asset('assets/plugins/jquery-sparkline/jquery.sparkline.min.js') }}"></script>
 
