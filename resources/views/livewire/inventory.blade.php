@@ -708,6 +708,18 @@
                     return `"${text}"`; // wrap each cell in quotes for safety
                 });
 
+                // Add average cost/quantity column if it's a data row (not header/footer)
+                if (rowIndex > 0 && cols.length >= 4) {
+                    // Assuming cost is in the last column and quantity is before it
+                    let quantity = parseFloat(cols[2].innerText.replace(/,/g, '')) || 0;
+                    let cost = parseFloat(cols[3].innerText.replace(/,/g, '')) || 0;
+                    let avg = quantity > 0 ? (cost / quantity).toFixed(2) : '';
+                    rowData.push(`"${avg}"`);
+                } else if (rowIndex === 0) {
+                    // Add header for average cost/quantity
+                    rowData.push('"Avg Cost/Qty"');
+                }
+
                 csv.push(rowData.join(','));
             });
 
