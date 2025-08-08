@@ -685,9 +685,22 @@
         function ExportCSV(elem) {
             var table = document.querySelector(elem);
             var rows = Array.from(table.querySelectorAll('tr'));
-            var csvContent = rows.map(row => {
+            var csvContent = rows.map((row, rowIndex) => {
                 var cols = Array.from(row.querySelectorAll('td, th'));
-                return cols.map(col => col.innerText).join(',');
+                // Add average cost column for data rows (skip header/footer)
+                if (rowIndex === 0) {
+                    // Header row: add "Average Cost" column
+                    return cols.map(col => col.innerText).join(',') + ',Average Cost';
+                } else if (rowIndex > 0 && cols.length >= 4) {
+                    // Data row: calculate average cost (cost / quantity)
+                    var quantity = parseFloat(cols[2].innerText.replace(/,/g, '')) || 0;
+                    var cost = parseFloat(cols[3].innerText.replace(/,/g, '')) || 0;
+                    var avgCost = quantity > 0 ? (cost / quantity).toFixed(2) : '';
+                    return cols.map(col => col.innerText).join(',') + ',' + avgCost;
+                } else {
+                    // Footer or other rows
+                    return cols.map(col => col.innerText).join(',');
+                }
             }).join('\n');
 
             // Create a Blob from the CSV content
