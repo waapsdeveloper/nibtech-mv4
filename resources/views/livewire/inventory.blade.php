@@ -282,7 +282,7 @@
         </div>
 
         @if (request('summery') == 1)
-            <button class="btn btn-sm btn-link" id="export_btn" onclick="ExportTableToTSC('#available_stock_summery')"><i
+            <button class="btn btn-sm btn-link" id="export_btn" onclick="ExportTableToTSV('#available_stock_summery')"><i
                     class="fa fa-file-export"></i></button>
             <button class="btn btn-sm btn-secondary" id="print_btn" onclick="PrintElem('print_inv')"><i
                     class="fa fa-print"></i></button>
@@ -682,7 +682,7 @@
             return true;
         }
         // Function to export table to Excel without triggering Blade component parsing
-        function ExportTableToTSC(selector, filename = 'table.tsc') {
+        function ExportTableToTSV(selector, filename = 'table.tsv') {
                 var table = document.querySelector(selector);
                 if (!table) {
                     alert("Table not found!");
