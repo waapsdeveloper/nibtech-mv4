@@ -136,15 +136,18 @@ class Wholesale extends Component
         $orderItem = Order_item_model::find($item_id);
 
         // Access the variation through orderItem->stock->variation
-        $variation = $orderItem->stock->variation;
+        if($orderItem->stock != null){
 
-        $variation->stock += 1;
-        $variation->save();
+            $variation = $orderItem->stock->variation;
 
-        // No variation record found or product_id and sku are both null, delete the order item
+            $variation->stock += 1;
+            $variation->save();
 
-        // $orderItem->stock->delete();
-        Stock_model::find($orderItem->stock_id)->update(['status'=>1]);
+            // No variation record found or product_id and sku are both null, delete the order item
+
+            // $orderItem->stock->delete();
+            Stock_model::find($orderItem->stock_id)->update(['status'=>1]);
+        }
         $orderItem->delete();
         // $orderItem->forceDelete();
 
