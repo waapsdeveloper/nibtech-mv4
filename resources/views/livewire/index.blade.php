@@ -526,7 +526,7 @@
                                 <div class="card-header border-bottom-0 d-flex justify-content-between">
                                     <h3 class="card-title mb-2 ">Available Inventory by Grade</h3>
                                     @if (session('user')->hasPermission('dashboard_view_listing_total'))
-                                        <h3 class="card-title mb-2 ">Total Listed Inventory: {{ $listed_inventory }}</h3>
+                                        <h3 class="card-title mb-2 " title="Should Be : {{ $should_be_listed }}">Total Listed Inventory: {{ $listed_inventory }}</h3>
                                     @endif
                                 </div>
                                 <div class="card-body row">
