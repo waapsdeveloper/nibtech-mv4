@@ -117,7 +117,7 @@
                 {{-- <td></td> --}}
                 <td style="text-align: right; padding:0; margin:0; line-height:10px" width="170">
                     <br><br>
-                    <h1 style="font-size: 26px; text-align:right;">INVOICE</h1>
+                    <h1 style="font-size: 26px; text-align:right;">REPAIR INVOICE</h1>
                     <table cellspacing="4">
 
                     <br><br><br><br>
