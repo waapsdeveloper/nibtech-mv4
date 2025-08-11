@@ -389,6 +389,27 @@ class Wholesale extends Component
             return redirect()->back()->withErrors(['Order not found']);
         }
 
+        if ($validated['charge'] == 0) {
+            // If charge is for shipping, apply it to the order
+            $prod = Products_model::where('model', 'LIKE', '%Shipping%')->first();
+            if (!$prod) {
+                return redirect()->back()->withErrors(['Shipping product not found']);
+            }
+            $variation = Variation_model::firstOrNew(['product_id' => $prod->id, 'storage' => null, 'color' => null, 'grade' => null]);
+            $variation->save();
+
+            $order_item = Order_item_model::firstOrNew(['order_id' => $order->id, 'variation_id' => $variation->id]);
+            $order_item->quantity = 1;
+            $order_item->price = $validated['amount'];
+            $order_item->discount = 0;
+            $order_item->status = 1;
+            $order_item->save();
+
+            $order->price += $validated['amount'];
+            $order->save();
+            return redirect()->back()->with('success', 'Shipping charge added successfully');
+        }
+
         $charge = Charge_model::find($validated['charge']);
 
         $charge_value = Charge_value_model::where('charge_id', $validated['charge'])
