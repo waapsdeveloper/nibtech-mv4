@@ -253,6 +253,7 @@
                                 @foreach ($ws_charges as $id => $charge)
                                     <option value="{{ $charge->id }}" @if(isset($_GET['charge']) && $charge->id == $_GET['charge']) {{'selected'}}@endif title="{{ $charge->description }}">{{ $charge->name }}</option>
                                 @endforeach
+                                <option value="0">Charge Customer for Shipping</option>
                             </select>
                         </div>
                         <div class="form-floating">
