@@ -266,6 +266,13 @@ class Repair extends Component
     }
     public function repair_approve($repair_id){
         $repair = Process_model::find($repair_id);
+
+        $currency = Currency_model::where('code',request('currency'))->first();
+        if($currency != null && $currency->id != 4){
+            $repair->currency = $currency->id;
+            $repair->exchange_rate = request('rate');
+        }
+
         $repair_stocks = $repair->process_stocks->where("status",2);
         $item_count = $repair_stocks->count();
         $cost = request('cost');
