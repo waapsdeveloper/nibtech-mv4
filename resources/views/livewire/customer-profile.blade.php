@@ -398,6 +398,7 @@
                                         <tr>
                                             <th><small><b>No</b></small></th>
                                             <th><small><b>Batch ID</b></small></th>
+                                            <th><small><b>Reference</b></small></th>
                                             @if (session('user')->hasPermission('view_cost'))
                                             <th><small><b>Cost</b></small></th>
                                             @endif
@@ -431,6 +432,7 @@
                                                             <span class="badge badge-warning">Not Sent</span>
                                                         @endif
                                                     </td>
+                                                    <td title="{{ $order->reference }}" class="wd-250">{{ Str::limit($order->reference, 30) }}</td>
                                                     @if ((!request('status') || request('status') == 3) && session('user')->hasPermission('view_cost'))
                                                     <td>Є{{ amount_formatter($order->process_stocks->sum('price'),2) }}</td>
                                                     @endif
