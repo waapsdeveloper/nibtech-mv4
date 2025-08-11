@@ -276,7 +276,7 @@ class Repair extends Component
         $repair_stocks = $repair->process_stocks->where("status",2);
         $item_count = $repair_stocks->count();
         $cost = request('cost');
-        $unit_cost = ($cost/$item_count) * $repair->exchange_rate;
+        $unit_cost = ($cost/$item_count) / $repair->exchange_rate;
         foreach($repair_stocks as $item){
             $item->price = $unit_cost;
             $item->save();
