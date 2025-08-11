@@ -318,14 +318,14 @@ class Wholesale extends Component
         // print_r(request('item_ids'));
         // echo request('unit_price');
 
-            echo "<p>Updating prices for items...</p>";
+            // echo "<p>Updating prices for items...</p>";
         // dd(request()->all());
         if(request('unit_price') > 0){
-            echo "<p>Updating prices for items...</p>";
+            // echo "<p>Updating prices for items...</p>";
             if(request('variation_ids') != null){
                 $variation_ids = request('variation_ids');
                 $items = Order_item_model::whereIn('variation_id', $variation_ids)->where('order_id', request('order_id'))->update(['price' => request('unit_price')]);
-                echo "<p>Updated items with variation IDs: " . implode(", ", $variation_ids) . " with price: " . request('unit_price') . "</p>";
+                // echo "<p>Updated items with variation IDs: " . implode(", ", $variation_ids) . " with price: " . request('unit_price') . "</p>";
             }else{
 
                 foreach(request('item_ids') as $item_id){
@@ -337,7 +337,7 @@ class Wholesale extends Component
                     }
                     $item->save();
 
-                    echo "<p>Updated item ID: $item_id with price: {$item->price}</p>";
+                    // echo "<p>Updated item ID: $item_id with price: {$item->price}</p>";
                 }
             }
         }
