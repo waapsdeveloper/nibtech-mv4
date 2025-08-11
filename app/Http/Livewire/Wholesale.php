@@ -970,6 +970,20 @@ class Wholesale extends Component
         // Find the order
         $order = Order_model::with('customer', 'order_items')->find($order_id);
 
+        $shipping_item = Order_item_model::where('order_id', $order_id)
+            ->whereHas('variation.product', function ($query) {
+                $query->where('model', 'LIKE', '%Shipping%');
+            })
+            ->first();
+
+        if ($shipping_item) {
+            $shipping_item_id = $shipping_item->id;
+            $shipping = $shipping_item->price;
+        } else {
+            $shipping_item_id = 0;
+            $shipping = 0;
+        }
+
         // if(request('packlist') != 1){
         $order_items = Order_item_model::
             join('variation', 'order_items.variation_id', '=', 'variation.id')
@@ -987,6 +1001,7 @@ class Wholesale extends Component
                 DB::raw('GROUP_CONCAT(DISTINCT order_items.variation_id) as variation_ids'),
             )
             ->where('order_items.order_id',$order_id)
+            ->where('order_items.id', '!=', $shipping_item_id)
             ->where('order_items.deleted_at',null)
             ->where('variation.deleted_at',null)
             ->where('products.deleted_at',null)
@@ -1011,6 +1026,7 @@ class Wholesale extends Component
                 DB::raw('SUM(order_items.discount) as total_discount'),
             )
             ->where('order_items.order_id',$order_id)
+            ->where('order_items.id', '!=', $shipping_item_id)
             ->where('order_items.deleted_at',null)
             ->where('variation.deleted_at',null)
             ->where('products.deleted_at',null)
@@ -1025,7 +1041,8 @@ class Wholesale extends Component
             'customer' => $order->customer,
             'order_items' =>$order_items,
             'order_items_2' =>$order_items_2,
-            'invoice' => $invoice
+            'invoice' => $invoice,
+            'shipping' => $shipping,
         ];
         $data['storages'] = session('dropdown_data')['storages'];
         $data['grades'] = session('dropdown_data')['grades'];
