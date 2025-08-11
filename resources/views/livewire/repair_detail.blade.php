@@ -612,8 +612,13 @@
                                             (isset($variation->grade) && isset($grades[$variation->grade]))?$grade = $grades[$variation->grade]:$grade = null;
                                             (isset($variation->sub_grade) && isset($grades[$variation->sub_grade]))?$sub_grade = $grades[$variation->sub_grade]:$sub_grade = null;
 
+                                            if ($item->multi_process_stocks($previous_repairs)->count() > 0 || $item->order->customer_id == 7110){
+                                                $danger = "bg-danger";
+                                            }else{
+                                                $danger = "";
+                                            }
                                         @endphp
-                                        <tr>
+                                        <tr class="{{ $danger }}">
                                             <td>{{ $i }}</td>
                                             {{-- <td>{{ $item->order->customer->first_name }}</td> --}}
                                             <td>{{ $item->imei.$item->serial_number }}</td>
