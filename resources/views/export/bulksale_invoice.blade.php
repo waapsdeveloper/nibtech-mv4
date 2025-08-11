@@ -246,7 +246,16 @@
                                     <td align="right"> <strong>€{{amount_formatter($totalDiscount)}} </strong></td>
                                 </tr>
                                 {{-- @endif --}}
-
+                                @if ($shipping > 0)
+                                <tr>
+                                    <td>Shipping:</td>
+                                    @if ($invoice != 1)
+                                    <td align="right"> <strong> €{{amount_formatter($shipping,2) }}</strong></td>
+                                    @else
+                                    <td align="right"> <strong>{{ $order->currency_id->sign }}{{amount_formatter($shipping*$order->exchange_rate,2) }}</strong></td>
+                                    @endif
+                                </tr>
+                                @endif
                                     <br>
                                     <hr>
                                     <tr>
