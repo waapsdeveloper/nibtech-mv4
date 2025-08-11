@@ -32,34 +32,34 @@
 
                         <div class="col-md-3">
                             <div class="row row-xs align-items-center mg-b-20">
-                                <div class="col-md-3">
+                                <div class="col-md-4">
                                     <label class="form-label mg-b-0">Company</label>
                                 </div>
-                                <div class="col-md-9 mg-t-5 mg-md-t-0">
+                                <div class="col-md-8 mg-t-5 mg-md-t-0">
                                     <input class="form-control" placeholder="Enter customer's company" name="customer[company]" value="{{$customer->company}}" type="text">
                                 </div>
                             </div>
                             <div class="row row-xs align-items-center mg-b-20">
-                                <div class="col-md-3">
+                                <div class="col-md-4">
                                     <label class="form-label mg-b-0">First name</label>
                                 </div>
-                                <div class="col-md-9 mg-t-5 mg-md-t-0">
+                                <div class="col-md-8 mg-t-5 mg-md-t-0">
                                     <input class="form-control" placeholder="Enter customer's firstname" name="customer[first_name]" value="{{$customer->first_name}}" type="text">
                                 </div>
                             </div>
                             <div class="row row-xs align-items-center mg-b-20">
-                                <div class="col-md-3">
+                                <div class="col-md-4">
                                     <label class="form-label mg-b-0">Last name</label>
                                 </div>
-                                <div class="col-md-9 mg-t-5 mg-md-t-0">
+                                <div class="col-md-8 mg-t-5 mg-md-t-0">
                                     <input class="form-control" placeholder="Enter customer's lastname" name="customer[last_name]" value="{{$customer->last_name}}" type="text">
                                 </div>
                             </div>
                             <div class="row row-xs align-items-center mg-b-20">
-                                <div class="col-md-3">
+                                <div class="col-md-4">
                                     <label class="form-label mg-b-0">Type</label>
                                 </div>
-                                <div class="col-md-9 mg-t-5 mg-md-t-0">
+                                <div class="col-md-8 mg-t-5 mg-md-t-0">
 
                                     <select name="customer[type]" class="form-select">
                                         <option value="" {{ $customer->type == Null ? 'selected' : '' }}>Customers</option>
@@ -145,7 +145,7 @@
                                     <label class="form-label mg-b-0">Note</label>
                                 </div>
                                 <div class="col-md-9 mg-t-5 mg-md-t-0">
-                                    <textarea class="form-control" placeholder="Enter customer's note" name="customer[note]" rows="5">{{$customer->note}}</textarea>
+                                    <textarea class="form-control" placeholder="Enter customer's note" name="customer[note]" rows="8">{{$customer->note}}</textarea>
                                 </div>
                             </div>
                         </div>
