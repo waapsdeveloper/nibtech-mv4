@@ -492,6 +492,7 @@
                                         <th><small><b>No</b></small></th>
                                         <th><small><b>Order ID</b></small></th>
                                         <th><small><b>Repairer</b></small></th>
+                                        <th><small><b>Ref</b></small></th>
                                         @if ((!request('status') || request('status') == 3) && session('user')->hasPermission('view_cost'))
                                         <th><small><b>Cost</b></small></th>
                                         @endif
@@ -520,6 +521,7 @@
                                                     <td>{{ $i + 1 }}</td>
                                                     <td><a href="{{url('repair/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
                                                     <td>{{ $repairers[$order->customer_id] ?? null }}</td>
+                                                    <td>{{ $order->description }}</td>
                                                 @if ((!request('status') || request('status') == 3) && session('user')->hasPermission('view_cost'))
                                                 <td>Є{{ amount_formatter($order->process_stocks->sum('price'),2) }}</td>
                                                 @endif
