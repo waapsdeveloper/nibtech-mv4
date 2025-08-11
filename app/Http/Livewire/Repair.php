@@ -1296,9 +1296,9 @@ class Repair extends Component
                 // 'variation.color',
                 'variation.storage',
                 // 'variation.grade',
-                ($invoice == 2 ? DB::raw('AVG(process_stock.price) as average_price') : DB::raw('AVG(purchase_item.price) as average_price')),
+                ($invoice >= 2 ? DB::raw('AVG(process_stock.price) as average_price') : DB::raw('AVG(purchase_item.price) as average_price')),
                 DB::raw('COUNT(process_stock.id) as total_quantity'),
-                ($invoice == 2 ? DB::raw('SUM(process_stock.price) as total_price') : DB::raw('SUM(purchase_item.price) as total_price'))
+                ($invoice >= 2 ? DB::raw('SUM(process_stock.price) as total_price') : DB::raw('SUM(purchase_item.price) as total_price'))
             )
             ->where('process_stock.process_id',$process_id)
             ->where('process_stock.deleted_at',null)
