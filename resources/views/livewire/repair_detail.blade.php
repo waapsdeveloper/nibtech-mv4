@@ -133,7 +133,11 @@
         <!-- /breadcrumb -->
         <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
                 {{-- <center><h4>External Repair Order Detail</h4></center> --}}
-            <h5>Reference: {{ $process->reference_id }} | Repairer: {{ $process->customer->first_name ?? null }} | Total Items: {{ $process->process_stocks->count() }} | Total € Price: €{{ amount_formatter($process->process_stocks->sum('price'),2) }} | Total {{ $currency }} Price: {{ $currency.amount_formatter($process->process_stocks->sum('price') * $process->exchange_rate,2) }}</h5>
+            <h5>Reference: {{ $process->reference_id }} | Repairer: {{ $process->customer->first_name ?? null }} | Total Items: {{ $process->process_stocks->count() }} | Total € Price: €{{ amount_formatter($process->process_stocks->sum('price'),2) }}
+                @if ($currency != 4)
+                    | Total {{ $currency }} Price: {{ $currency.amount_formatter($process->process_stocks->sum('price') * $process->exchange_rate,2) }}
+                @endif
+                </h5>
             @if ($process->status == 3)
             <div>
                 <a href="{{url('export_repair_invoice')}}/{{ $process->id }}/2" target="_blank"><button class="btn btn-sm btn-secondary">€ Invoice</button></a>
