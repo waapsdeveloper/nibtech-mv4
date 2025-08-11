@@ -135,12 +135,12 @@
                 {{-- <center><h4>External Repair Order Detail</h4></center> --}}
             <h5>Reference: {{ $process->reference_id }} | Repairer: {{ $process->customer->first_name ?? null }} | Total Items: {{ $process->process_stocks->count() }} | Total Price: {{ $currency.amount_formatter($process->process_stocks->sum('price'),2) }}</h5>
             @if ($process->status == 3)
-
-                <a href="{{url('export_repair_invoice')}}/{{ $process->id }}/2" target="_blank"><button class="btn btn-secondary">€ Invoice</button></a>
+            <div>
+                <a href="{{url('export_repair_invoice')}}/{{ $process->id }}/2" target="_blank"><button class="btn btn-sm btn-secondary">€ Invoice</button></a>
                 @if ($process->exchange_rate != null)
-                <a href="{{url('export_repair_invoice')}}/{{ $process->id }}/3" target="_blank"><button class="btn-sm btn-secondary">{{$process->currency_id->sign}} Invoice</button></a>
-
+                <a href="{{url('export_repair_invoice')}}/{{ $process->id }}/3" target="_blank"><button class="btn btn-sm btn-secondary">{{$process->currency_id->sign}} Invoice</button></a>
                 @endif
+            </div>
             @endif
             @if ($process->status == 1 && session('user')->hasPermission('delete_repair_item'))
             <div class="p-1">
