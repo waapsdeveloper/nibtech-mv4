@@ -30,7 +30,7 @@
                     @csrf
                     <div class="row">
 
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="row row-xs align-items-center mg-b-20">
                                 <div class="col-md-3">
                                     <label class="form-label mg-b-0">Company</label>
@@ -71,7 +71,7 @@
                             </div>
 
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="row row-xs align-items-center mg-b-20">
                                 <div class="col-md-3">
                                     <label class="form-label mg-b-0">Street Addres</label>
@@ -99,7 +99,7 @@
                             </div>
 
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="row row-xs align-items-center mg-b-20">
                                 <div class="col-md-3">
                                     <label class="form-label mg-b-0">Email</label>
@@ -136,6 +136,16 @@
                                 </div>
                                 <div class="col-md-9 mg-t-5 mg-md-t-0">
                                     <input class="form-control" placeholder="Enter customer's VAT Number" name="customer[vat]" value="{{$customer->vat}}" type="text">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="row row-xs align-items-center mg-b-20">
+                                <div class="col-md-3">
+                                    <label class="form-label mg-b-0">Note</label>
+                                </div>
+                                <div class="col-md-9 mg-t-5 mg-md-t-0">
+                                    <textarea class="form-control" placeholder="Enter customer's note" name="customer[note]" rows="5">{{$customer->note}}</textarea>
                                 </div>
                             </div>
                         </div>
