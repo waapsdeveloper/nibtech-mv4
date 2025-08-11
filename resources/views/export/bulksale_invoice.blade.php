@@ -261,9 +261,9 @@
                                     <tr>
                                         <td>Amount Due:</td>
                                     @if ($invoice != 1)
-                                    <td align="right"> <strong> €{{amount_formatter( $totalAmount-$totalDiscount,2) }}</strong></td>
+                                    <td align="right"> <strong> €{{amount_formatter( $totalAmount-$totalDiscount-$shipping,2) }}</strong></td>
                                     @else
-                                    <td align="right"> <strong>{{ $order->currency_id->sign }}{{amount_formatter( $totalAmount*$order->exchange_rate,2) }}</strong></td>
+                                    <td align="right"> <strong>{{ $order->currency_id->sign }}{{amount_formatter( ($totalAmount-$totalDiscount-$shipping)*$order->exchange_rate,2) }}</strong></td>
                                     @endif
                                         {{-- <td align="right"> <strong>{{ $order->currency_id->sign }}{{amount_formatter( $totalAmount,2) }}</strong></td> --}}
                                     </tr>
