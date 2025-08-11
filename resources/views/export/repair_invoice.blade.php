@@ -227,7 +227,7 @@
                                     <hr>
                                     <tr>
                                         <td>Amount Due:</td>
-                                        @if ($invoice != 1 && $invoice != 3)
+                                        @if ($invoice != 1)
                                         <td align="right"> <strong> €{{amount_formatter( $totalAmount,2) }}</strong></td>
                                         @else
                                         <td align="right"> <strong>{{ $process->currency_id->sign }}{{amount_formatter( $totalAmount*$process->exchange_rate,2) }}</strong></td>
