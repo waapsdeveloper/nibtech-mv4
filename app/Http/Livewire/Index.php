@@ -197,7 +197,7 @@ class Index extends Component
             $data['listed_inventory'] = Variation_model::where('listed_stock','>',0)->sum('listed_stock');
             $data['should_be_listed'] = $data['graded_inventory']->where('grade_id', '<', 6)->sum('quantity') - Process_stock_model::whereHas('process', function ($q) {
                 $q->where('process_type_id', 22)->where('status', '<', 3);
-            })->count();
+            })->count() - Order_model::where('status',2)->where('order_type_id',3)->count();
         }
         if (session('user')->hasPermission('dashboard_view_pending_orders')){
             $data['pending_orders_count'] = Order_model::where('status',2)->groupBy('order_type_id')->select('order_type_id', DB::raw('COUNT(id) as count'), DB::raw('SUM(price) as price'))->orderBy('order_type_id','asc')->get();
