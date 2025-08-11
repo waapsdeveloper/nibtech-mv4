@@ -101,6 +101,19 @@
                     <form class="form-inline" method="POST" action="{{url('repair/approve').'/'.$process->id}}">
                         @csrf
                         <div class="form-floating">
+                            <input type="text" list="currencies" id="currency" name="currency" class="form-control" value="{{$process->currency_id->code}}">
+                            <datalist id="currencies">
+                                @foreach ($exchange_rates as $target_currency => $rate)
+                                    <option value="{{$target_currency}}" data-rate="{{$rate}}"></option>
+                                @endforeach
+                            </datalist>
+                            <label for="currency">Currency</label>
+                        </div>
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="rate" name="rate" placeholder="Enter Exchange Rate" value="{{$process->exchange_rate}}" >
+                            <label for="rate">Exchange Rate</label>
+                        </div>
+                        <div class="form-floating">
                             <input type="text" class="form-control" id="cost" name="cost" value="{{$process->process_stocks->sum('price')}}" placeholder="Enter Total Cost" required>
                             <label for="cost">Total Cost</label>
                         </div>
