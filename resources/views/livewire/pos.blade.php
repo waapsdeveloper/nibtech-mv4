@@ -372,7 +372,7 @@
                     });
                 }
             });
-            });
+
             $(document).ready(function () {
                 $('#sb_toggle').click();
 
