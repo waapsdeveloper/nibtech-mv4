@@ -188,9 +188,6 @@
                             </div> --}}
                             <select class="form-select form-control" name="customer_id" id="customer_id" style="width: 100%">
                                 <option value="">Walk-in Customer</option>
-                                <option value="1">Test Customer A</option>
-                                <option value="2">Test Customer B</option>
-                                <option value="3">Test Customer C</option>
                             </select>
                         </form>
                     </div>
@@ -299,41 +296,35 @@
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     },
                     body: JSON.stringify({
-                    // Ensure the customer dropdown is a plain select (remove any Select2 that may have been applied globally)
+                    // Initialize Select2 with searchable AJAX customers
                     (function(){
-                        var $sel = $('#customer_id');
-                        function destroySelect2(){
-                            if (typeof $.fn.select2 === 'function' && $sel.data('select2')) {
-                                try { $sel.select2('destroy'); } catch(e) { console.debug('select2 destroy error', e); }
-                            }
-                            if ($sel.hasClass('select2-hidden-accessible')) {
-                                $sel.removeClass('select2-hidden-accessible');
-                                $sel.removeAttr('data-select2-id');
-                                var $next = $sel.next('.select2');
-                                if ($next.length) { $next.remove(); }
-                            }
-                            $sel.css('width','100%');
-                        }
                         $(document).ready(function(){
-                            destroySelect2();
-                            // In case a global script re-initializes later, clean it again shortly after
-                            setTimeout(destroySelect2, 300);
-                            setTimeout(destroySelect2, 1000);
-
-                            // Observe for DOM changes that try to wrap the select again
-                            var target = $sel.parent()[0] || document.body;
-                            try {
-                                var mo = new MutationObserver(function(muts){
-                                    muts.forEach(function(m){
-                                        if (m.addedNodes && m.addedNodes.length) {
-                                            if ($sel.next('.select2').length) {
-                                                destroySelect2();
-                                            }
-                                        }
-                                    })
-                                });
-                                mo.observe(target, { childList: true });
-                            } catch(e) { console.debug('MutationObserver not available', e); }
+                            if (!$.fn.select2) return;
+                            $('#customer_id').select2({
+                                placeholder: 'Search customers...',
+                                allowClear: true,
+                                width: '100%',
+                                ajax: {
+                                    url: `{{ url('get_b2b_customers_json') }}`,
+                                    dataType: 'json',
+                                    delay: 250,
+                                    data: function (params) {
+                                        return {
+                                            q: params.term || '',
+                                            page: params.page || 1
+                                        };
+                                    },
+                                    processResults: function (data) {
+                                        // Expecting an array of {id, text}
+                                        var items = Array.isArray(data?.results) ? data.results : (Array.isArray(data) ? data : []);
+                                        var results = items.map(function (i) { return { id: i.id, text: i.text }; })
+                                                          .filter(function (x) { return x.id != null && x.text; });
+                                        return { results: results };
+                                    },
+                                    cache: true
+                                },
+                                minimumInputLength: 1
+                            });
                         });
                     })();
 
