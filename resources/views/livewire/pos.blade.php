@@ -353,7 +353,12 @@
                         delay: 250,
                         processResults: function (data) {
                             return {
-                                results: data
+                                results: data.map(function(item) {
+                                    return {
+                                        id: item.id,
+                                        text: item.name // or item.text, depending on your API
+                                    };
+                                })
                             };
                         },
                         cache: true
