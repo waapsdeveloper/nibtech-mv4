@@ -77,11 +77,36 @@ class Customer extends Component
 
     public function get_b2b_customers_json()
     {
-        $customers = Customer_model::whereNotNull('is_vendor')
-        ->when(request('q') != '', function ($q) {
-            return $q->where('company', 'LIKE', '%' . request('q') . '%');
-        })
-        ->select('id', 'company as text')->get()->toArray();
+        $term = request('q');
+
+    $customers = Customer_model::query()
+            ->when($term != '' && $term !== null, function ($q) use ($term) {
+                return $q->where(function ($qq) use ($term) {
+                    $qq->where('company', 'LIKE', "%$term%")
+                        ->orWhere('first_name', 'LIKE', "%$term%")
+                        ->orWhere('last_name', 'LIKE', "%$term%")
+                        ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%$term%"])
+                        ->orWhere('email', 'LIKE', "%$term%")
+                        ->orWhere('phone', 'LIKE', "%$term%");
+                });
+            })
+            ->select('id', 'company', 'first_name', 'last_name', 'email', 'phone')
+            ->orderByRaw("CASE WHEN company IS NULL OR company = '' THEN 1 ELSE 0 END, company ASC")
+            ->limit(50)
+            ->get()
+            ->map(function ($c) {
+                $name = trim(($c->first_name ?? '') . ' ' . ($c->last_name ?? ''));
+                $text = $c->company ?: ($name !== '' ? $name : null);
+                if (!$text) {
+                    $text = $c->email ?: ($c->phone ?: ('Customer #' . $c->id));
+                }
+                return [
+                    'id' => $c->id,
+                    'text' => $text,
+                ];
+            })
+            ->values();
+
         return response()->json($customers);
     }
     public function profile($id)
