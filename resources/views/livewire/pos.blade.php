@@ -284,10 +284,10 @@
     @section('scripts')
 
 
-		<!-- INTERNAL Select2 js -->
-		<script src="{{asset('assets/plugins/select2/js/select2.full.min.js')}}"></script>
-		<script src="{{asset('assets/plugins/select2/js/select2.min.js')}}"></script>
+        <!-- jQuery must load before Select2 -->
         <script src="{{asset('assets/plugins/jquery/jquery.min.js')}}"></script>
+        <!-- INTERNAL Select2 js (load once) -->
+        <script src="{{asset('assets/plugins/select2/js/select2.full.min.js')}}"></script>
         <script>
             // Hold cart
             function holdCart() {
@@ -356,6 +356,14 @@
                     url: `{{ url('get_b2b_customers_json') }}`,
                     dataType: 'json',
                     delay: 250,
+                    transport: function (params, success, failure) {
+                        var request = $.ajax(params);
+                        request.then(success);
+                        request.fail(function (xhr, status, err) {
+                            console.error('Select2 AJAX failed:', status, xhr.status, err, xhr.responseText);
+                        });
+                        return request;
+                    },
                     // Send the typed term so backend can filter
                     data: function (params) {
                         return {
@@ -415,7 +423,16 @@
                         });
                         // Notify Select2 that options changed
                         $('#customer_id').trigger('change');
+                        if (items.length === 0) {
+                            console.warn('Customer prefetch returned 0 items');
+                            var option = new Option('No customers found', '', false, false);
+                            $(option).attr('disabled', true);
+                            $('#customer_id').append(option);
+                        }
                     }
+                })
+                .fail(function(xhr, status, err){
+                    console.error('Customer prefetch failed:', status, xhr.status, err, xhr.responseText);
                 });
 
 
