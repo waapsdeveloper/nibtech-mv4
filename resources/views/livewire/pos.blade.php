@@ -343,18 +343,22 @@
 
             $(document).ready(function () {
                 $('#sb_toggle').click();
+
                 $('.js-data-example-ajax').select2({
+                    placeholder: 'Walk-in Customer',
+                    allowClear: true,
                     ajax: {
                         url: `{{ url('get_b2b_customers_json') }}`,
                         dataType: 'json',
-                        // Additional AJAX parameters go here; see the end of this chapter for the full code of this example
-                        placeholder: {
-                            id: '', // the value of the option
-                            text: 'Walk-in Customer' // the text of the option
+                        delay: 250,
+                        processResults: function (data) {
+                            return {
+                                results: data
+                            };
                         },
-                        allowClear: true,
-
-                    }
+                        cache: true
+                    },
+                    minimumInputLength: 0
                 });
 
                 updateCartDisplay({!! json_encode($cart) !!});
