@@ -347,22 +347,48 @@
                 });
             };
 
-                $('#customer_id').select2({
-                    placeholder: 'Walk-in Customer',
-                    allowClear: true,
-                    ajax: {
-                        url: `{{ url('get_b2b_customers_json') }}`,
-                        dataType: 'json',
-                        delay: 250,
-                        processResults: function (data) {
-                            return {
-                                results: data
-                            };
-                        },
-                        cache: true
+            $('#customer_id').select2({
+                placeholder: 'Walk-in Customer',
+                allowClear: true,
+                width: '100%',
+                ajax: {
+                    url: `{{ url('get_b2b_customers_json') }}`,
+                    dataType: 'json',
+                    delay: 250,
+                    // Send the typed term so backend can filter
+                    data: function (params) {
+                        return {
+                            q: params.term || '',
+                            term: params.term || '', // some backends expect 'term'
+                            page: params.page || 1
+                        };
                     },
-                    minimumInputLength: 0
-                });
+                    // Normalize whatever the backend returns into [{id, text}]
+                    processResults: function (data, params) {
+                        params.page = params.page || 1;
+
+                        const items = Array.isArray(data?.results)
+                            ? data.results
+                            : (Array.isArray(data) ? data : []);
+
+                        const results = items.map(function (item) {
+                            const id = item.id ?? item.value ?? item.customer_id ?? item.ID ?? null;
+                            let text = item.text ?? item.name ?? item.full_name ?? item.company ?? item.label ?? null;
+                            if (!text && (item.first_name || item.last_name)) {
+                                text = [item.first_name, item.last_name].filter(Boolean).join(' ');
+                            }
+                            return { id: id, text: text };
+                        }).filter(function (x) { return x.id !== null && x.text !== null; });
+
+                        return {
+                            results: results,
+                            pagination: { more: false }
+                        };
+                    },
+                    cache: true
+                },
+                minimumInputLength: 0
+            });
             $(document).ready(function () {
                 $('#sb_toggle').click();
 
