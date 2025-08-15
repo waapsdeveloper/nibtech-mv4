@@ -343,15 +343,21 @@
 
             $(document).ready(function () {
                 $('#sb_toggle').click();
-                // Dummy data for Select2
-                $('.js-data-example-ajax').select2({
+
+                $('#customer_id').select2({
                     placeholder: 'Walk-in Customer',
                     allowClear: true,
-                    data: [
-                        { id: 1, text: 'John Doe' },
-                        { id: 2, text: 'Jane Smith' },
-                        { id: 3, text: 'Acme Corp.' }
-                    ],
+                    ajax: {
+                        url: `{{ url('get_b2b_customers_json') }}`,
+                        dataType: 'json',
+                        delay: 250,
+                        processResults: function (data) {
+                            return {
+                                results: data
+                            };
+                        },
+                        cache: true
+                    },
                     minimumInputLength: 0
                 });
 
