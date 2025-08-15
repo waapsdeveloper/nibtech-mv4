@@ -347,6 +347,7 @@
                 });
             };
 
+            $(function(){
             $('#customer_id').select2({
                 placeholder: 'Walk-in Customer',
                 allowClear: true,
@@ -367,9 +368,17 @@
                     processResults: function (data, params) {
                         params.page = params.page || 1;
 
-                        const items = Array.isArray(data?.results)
-                            ? data.results
-                            : (Array.isArray(data) ? data : []);
+                        // Prefer data.results, then data.data, else the payload itself if array
+                        let items = [];
+                        if (data && Array.isArray(data.results)) {
+                            items = data.results;
+                        } else if (data && Array.isArray(data.data)) {
+                            items = data.data;
+                        } else if (Array.isArray(data)) {
+                            items = data;
+                        } else {
+                            console.warn('Unexpected Select2 response shape', data);
+                        }
 
                         const results = items.map(function (item) {
                             const id = item.id ?? item.value ?? item.customer_id ?? item.ID ?? null;
@@ -380,14 +389,38 @@
                             return { id: id, text: text };
                         }).filter(function (x) { return x.id !== null && x.text !== null; });
 
-                        return {
+                        const output = {
                             results: results,
                             pagination: { more: false }
                         };
+                        if (results.length === 0) {
+                            console.info('Select2: no customers matched current query');
+                        }
+                        return output;
                     },
                     cache: true
                 },
                 minimumInputLength: 0
+            });
+
+            // Prefetch a small list so users see options immediately
+            $.getJSON(`{{ url('get_b2b_customers_json') }}`, { q: '' })
+                .done(function(items){
+                    if (Array.isArray(items)) {
+                        items.slice(0, 20).forEach(function(item){
+                            if (item && item.id != null && item.text) {
+                                var option = new Option(item.text, item.id, false, false);
+                                $('#customer_id').append(option);
+                            }
+                        });
+                        // Notify Select2 that options changed
+                        $('#customer_id').trigger('change');
+                    }
+                });
+
+
+
+
             });
             $(document).ready(function () {
                 $('#sb_toggle').click();
