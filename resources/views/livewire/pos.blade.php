@@ -186,8 +186,11 @@
                                 <input type="text" class="form-control" id="customer_name" placeholder="Customer Name">
                                 <label for="customer_name">Customer Name</label>
                             </div> --}}
-                            <select class="form-select js-data-example-ajax form-control" name="customer_id" id="customer_id" style="width: 100%">
-                                <option value=""></option>
+                            <select class="form-select form-control" name="customer_id" id="customer_id" style="width: 100%">
+                                <option value="">Walk-in Customer</option>
+                                <option value="1">Test Customer A</option>
+                                <option value="2">Test Customer B</option>
+                                <option value="3">Test Customer C</option>
                             </select>
                         </form>
                     </div>
@@ -286,8 +289,6 @@
 
         <!-- jQuery must load before Select2 -->
 
-        <!-- INTERNAL Select2 js (load once) -->
-        <script src="{{asset('assets/plugins/select2/js/select2.full.min.js')}}"></script>
         <script>
             // Hold cart
             function holdCart() {
@@ -298,6 +299,44 @@
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     },
                     body: JSON.stringify({
+                    // Ensure the customer dropdown is a plain select (remove any Select2 that may have been applied globally)
+                    (function(){
+                        var $sel = $('#customer_id');
+                        function destroySelect2(){
+                            if (typeof $.fn.select2 === 'function' && $sel.data('select2')) {
+                                try { $sel.select2('destroy'); } catch(e) { console.debug('select2 destroy error', e); }
+                            }
+                            if ($sel.hasClass('select2-hidden-accessible')) {
+                                $sel.removeClass('select2-hidden-accessible');
+                                $sel.removeAttr('data-select2-id');
+                                var $next = $sel.next('.select2');
+                                if ($next.length) { $next.remove(); }
+                            }
+                            $sel.css('width','100%');
+                        }
+                        $(document).ready(function(){
+                            destroySelect2();
+                            // In case a global script re-initializes later, clean it again shortly after
+                            setTimeout(destroySelect2, 300);
+                            setTimeout(destroySelect2, 1000);
+
+                            // Observe for DOM changes that try to wrap the select again
+                            var target = $sel.parent()[0] || document.body;
+                            try {
+                                var mo = new MutationObserver(function(muts){
+                                    muts.forEach(function(m){
+                                        if (m.addedNodes && m.addedNodes.length) {
+                                            if ($sel.next('.select2').length) {
+                                                destroySelect2();
+                                            }
+                                        }
+                                    })
+                                });
+                                mo.observe(target, { childList: true });
+                            } catch(e) { console.debug('MutationObserver not available', e); }
+                        });
+                    })();
+
                         cart: {!! json_encode($cart) !!},
                         currency: document.getElementById('currency').value,
                         mode: document.querySelector('input[name="mode"]:checked').value,
@@ -347,31 +386,7 @@
                 });
             };
 
-            // Static customer data to test dropdown rendering without AJAX
-            $(function(){
-                var customers = [
-                    { id: '', text: 'Walk-in Customer' },
-                    { id: '1', text: 'Test Customer A' },
-                    { id: '2', text: 'Test Customer B' },
-                    { id: '3', text: 'Test Customer C' }
-                ];
-
-                var $sel = $('#customer_id');
-                $sel.empty();
-                customers.forEach(function(c){
-                    var opt = new Option(c.text, c.id, false, false);
-                    $sel.append(opt);
-                });
-                $sel.val('');
-                // Initialize Select2 without AJAX
-                if ($.fn.select2) {
-                    $sel.select2({
-                        placeholder: 'Walk-in Customer',
-                        allowClear: true,
-                        width: '100%'
-                    });
-                }
-            });
+            // Using plain <select> with static options to isolate UI
 
             $(document).ready(function () {
                 $('#sb_toggle').click();
