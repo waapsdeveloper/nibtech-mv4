@@ -285,7 +285,7 @@
 
 
         <!-- jQuery must load before Select2 -->
-        <script src="{{asset('assets/plugins/jquery/jquery.min.js')}}"></script>
+
         <!-- INTERNAL Select2 js (load once) -->
         <script src="{{asset('assets/plugins/select2/js/select2.full.min.js')}}"></script>
         <script>
@@ -347,97 +347,31 @@
                 });
             };
 
+            // Static customer data to test dropdown rendering without AJAX
             $(function(){
-            $('#customer_id').select2({
-                placeholder: 'Walk-in Customer',
-                allowClear: true,
-                width: '100%',
-                ajax: {
-                    url: `{{ url('get_b2b_customers_json') }}`,
-                    dataType: 'json',
-                    delay: 250,
-                    transport: function (params, success, failure) {
-                        var request = $.ajax(params);
-                        request.then(success);
-                        request.fail(function (xhr, status, err) {
-                            console.error('Select2 AJAX failed:', status, xhr.status, err, xhr.responseText);
-                        });
-                        return request;
-                    },
-                    // Send the typed term so backend can filter
-                    data: function (params) {
-                        return {
-                            q: params.term || '',
-                            term: params.term || '', // some backends expect 'term'
-                            page: params.page || 1
-                        };
-                    },
-                    // Normalize whatever the backend returns into [{id, text}]
-                    processResults: function (data, params) {
-                        params.page = params.page || 1;
+                var customers = [
+                    { id: '', text: 'Walk-in Customer' },
+                    { id: '1', text: 'Test Customer A' },
+                    { id: '2', text: 'Test Customer B' },
+                    { id: '3', text: 'Test Customer C' }
+                ];
 
-                        // Prefer data.results, then data.data, else the payload itself if array
-                        let items = [];
-                        if (data && Array.isArray(data.results)) {
-                            items = data.results;
-                        } else if (data && Array.isArray(data.data)) {
-                            items = data.data;
-                        } else if (Array.isArray(data)) {
-                            items = data;
-                        } else {
-                            console.warn('Unexpected Select2 response shape', data);
-                        }
-
-                        const results = items.map(function (item) {
-                            const id = item.id ?? item.value ?? item.customer_id ?? item.ID ?? null;
-                            let text = item.text ?? item.name ?? item.full_name ?? item.company ?? item.label ?? null;
-                            if (!text && (item.first_name || item.last_name)) {
-                                text = [item.first_name, item.last_name].filter(Boolean).join(' ');
-                            }
-                            return { id: id, text: text };
-                        }).filter(function (x) { return x.id !== null && x.text !== null; });
-
-                        const output = {
-                            results: results,
-                            pagination: { more: false }
-                        };
-                        if (results.length === 0) {
-                            console.info('Select2: no customers matched current query');
-                        }
-                        return output;
-                    },
-                    cache: true
-                },
-                minimumInputLength: 0
-            });
-
-            // Prefetch a small list so users see options immediately
-            $.getJSON(`{{ url('get_b2b_customers_json') }}`, { q: '' })
-                .done(function(items){
-                    if (Array.isArray(items)) {
-                        items.slice(0, 20).forEach(function(item){
-                            if (item && item.id != null && item.text) {
-                                var option = new Option(item.text, item.id, false, false);
-                                $('#customer_id').append(option);
-                            }
-                        });
-                        // Notify Select2 that options changed
-                        $('#customer_id').trigger('change');
-                        if (items.length === 0) {
-                            console.warn('Customer prefetch returned 0 items');
-                            var option = new Option('No customers found', '', false, false);
-                            $(option).attr('disabled', true);
-                            $('#customer_id').append(option);
-                        }
-                    }
-                })
-                .fail(function(xhr, status, err){
-                    console.error('Customer prefetch failed:', status, xhr.status, err, xhr.responseText);
+                var $sel = $('#customer_id');
+                $sel.empty();
+                customers.forEach(function(c){
+                    var opt = new Option(c.text, c.id, false, false);
+                    $sel.append(opt);
                 });
-
-
-
-
+                $sel.val('');
+                // Initialize Select2 without AJAX
+                if ($.fn.select2) {
+                    $sel.select2({
+                        placeholder: 'Walk-in Customer',
+                        allowClear: true,
+                        width: '100%'
+                    });
+                }
+            });
             });
             $(document).ready(function () {
                 $('#sb_toggle').click();
