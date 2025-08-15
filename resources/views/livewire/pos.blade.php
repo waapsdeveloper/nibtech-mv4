@@ -341,9 +341,6 @@
                 });
             };
 
-            $(document).ready(function () {
-                $('#sb_toggle').click();
-
                 $('#customer_id').select2({
                     placeholder: 'Walk-in Customer',
                     allowClear: true,
@@ -360,6 +357,9 @@
                     },
                     minimumInputLength: 0
                 });
+            $(document).ready(function () {
+                $('#sb_toggle').click();
+
 
                 updateCartDisplay({!! json_encode($cart) !!});
 
