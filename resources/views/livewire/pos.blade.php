@@ -287,7 +287,7 @@
 		<!-- INTERNAL Select2 js -->
 		<script src="{{asset('assets/plugins/select2/js/select2.full.min.js')}}"></script>
 		<script src="{{asset('assets/plugins/select2/js/select2.min.js')}}"></script>
-
+        <script src="{{asset('assets/plugins/jquery/jquery.min.js')}}"></script>
         <script>
             // Hold cart
             function holdCart() {
