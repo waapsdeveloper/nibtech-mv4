@@ -311,10 +311,10 @@ class Api_request_model extends Model
 
                 }
                 $new_variation = [
-                    'product_id' => $stock->variation->product_id,
-                    'storage' => $stock->variation->storage,
-                    'color' => $stock->variation->color,
-                    'grade' => $stock->variation->grade,
+                    'product_id' => $stock->variation->product_id ?? null,
+                    'storage' => $stock->variation->storage ?? null,
+                    'color' => $stock->variation->color ?? null,
+                    'grade' => $stock->variation->grade ?? null,
                 ];
                 if(isset($sub_grade)){
                     $new_variation['sub_grade'] = $sub_grade;
