@@ -126,7 +126,13 @@ session()->forget('error');
                                     @continue
                                 @endif
                                 <td>{{ $i + 1 }}</td>
-                                <td>{{ $item->stock->variation->product->model ?? "Variation Model Not added"}} {{$storages[$item->stock->variation->storage] ?? null}} {{$colors[$item->stock->variation->color] ?? null}} {{$grades[$item->stock->variation->grade] ?? "Variation Grade Not added Reference: ".$item->stock->variation->reference_id }}</td>
+                                <td>{{ $item->stock->variation->product->model ?? "Variation Model Not added"}}
+                                    @if($stock->variation)
+                                    {{$storages[$item->stock->variation->storage] ?? null}} {{$colors[$item->stock->variation->color] ?? null}} {{$grades[$item->stock->variation->grade] ?? "Variation Grade Not added Reference: ".$item->stock->variation->reference_id }}
+                                    @else
+                                    <span class="text-danger">Variation Not Defined</span>
+                                @endif
+                                </td>
                                 <td>{{ $item->stock->imei.$item->stock->serial_number }}</td>
                                 <td>{{ $item->description }}</td>
                                 <td>{{ $item->stock->latest_operation->description ?? null }}</td>
