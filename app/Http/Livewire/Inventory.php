@@ -899,8 +899,10 @@ class Inventory extends Component
                 session()->put('copy', 0);
                 // session()->put('product_id', $stock->variation->product_id);
                 // session()->put('storage', $stock->variation->storage);
-                session()->put('color', $stock->variation->color);
-                session()->put('grade', $stock->variation->grade);
+                if($stock->variation){
+                    session()->put('color', $stock->variation->color);
+                    session()->put('grade', $stock->variation->grade);
+                }
             }
 
             $process_stock = Process_stock_model::firstOrNew(['process_id'=>$process_id, 'stock_id'=>$stock->id]);

@@ -62,6 +62,39 @@
             <script>
                 alert("{{session('error')}}");
             </script>
+            <script>
+                // Initialize Select2 with searchable AJAX customers (proper placement)
+                $(document).ready(function(){
+                    if (!$.fn.select2) return;
+                    var $cust = $('#customer_id');
+                    // If already initialized, destroy before re-init
+                    try { if ($cust.data('select2')) { $cust.select2('destroy'); } } catch(e) {}
+                    $cust.select2({
+                        placeholder: 'Search customers...',
+                        allowClear: true,
+                        width: '100%',
+                        ajax: {
+                            url: `{{ url('get_b2b_customers_json') }}`,
+                            dataType: 'json',
+                            delay: 250,
+                            data: function (params) {
+                                return {
+                                    q: params.term || '',
+                                    page: params.page || 1
+                                };
+                            },
+                            processResults: function (data) {
+                                var items = Array.isArray(data?.results) ? data.results : (Array.isArray(data) ? data : []);
+                                var results = items.map(function (i) { return { id: i.id, text: i.text }; })
+                                                  .filter(function (x) { return x.id != null && x.text; });
+                                return { results: results };
+                            },
+                            cache: true
+                        },
+                        minimumInputLength: 1
+                    });
+                });
+            </script>
             @php
             session()->forget('error');
             @endphp
@@ -296,38 +329,6 @@
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     },
                     body: JSON.stringify({
-                    // Initialize Select2 with searchable AJAX customers
-                    (function(){
-                        $(document).ready(function(){
-                            if (!$.fn.select2) return;
-                            $('#customer_id').select2({
-                                placeholder: 'Search customers...',
-                                allowClear: true,
-                                width: '100%',
-                                ajax: {
-                                    url: `{{ url('get_b2b_customers_json') }}`,
-                                    dataType: 'json',
-                                    delay: 250,
-                                    data: function (params) {
-                                        return {
-                                            q: params.term || '',
-                                            page: params.page || 1
-                                        };
-                                    },
-                                    processResults: function (data) {
-                                        // Expecting an array of {id, text}
-                                        var items = Array.isArray(data?.results) ? data.results : (Array.isArray(data) ? data : []);
-                                        var results = items.map(function (i) { return { id: i.id, text: i.text }; })
-                                                          .filter(function (x) { return x.id != null && x.text; });
-                                        return { results: results };
-                                    },
-                                    cache: true
-                                },
-                                minimumInputLength: 1
-                            });
-                        });
-                    })();
-
                         cart: {!! json_encode($cart) !!},
                         currency: document.getElementById('currency').value,
                         mode: document.querySelector('input[name="mode"]:checked').value,
