@@ -443,7 +443,16 @@
                                                 @continue
                                             @endif
                                             <td>{{ $i + 1 }}</td>
-                                            <td>{{ $item->stock->variation->product->model ?? "Variation Model Not added"}} {{$storages[$item->stock->variation->storage] ?? null}} {{$colors[$item->stock->variation->color] ?? null}} {{$grades[$item->stock->variation->grade] ?? "Variation Grade Not added Reference: ".$item->stock->variation->reference_id }}</td>
+                                            <td>
+                                                @if (data_get($item,'stock.variation'))
+                                                    {{ data_get($item,'stock.variation.product.model') ?? 'Variation Model Not added' }}
+                                                    {{ $storages[data_get($item,'stock.variation.storage')] ?? null }}
+                                                    {{ $colors[data_get($item,'stock.variation.color')] ?? null }}
+                                                    {{ $grades[data_get($item,'stock.variation.grade')] ?? ('Variation Grade Not added Reference: '.(data_get($item,'stock.variation.reference_id') ?? '')) }}
+                                                @else
+                                                    <span class="text-danger">Variation Not Defined</span>
+                                                @endif
+                                            </td>
                                             <td>{{ $item->stock->imei.$item->stock->serial_number }}</td>
                                             <td>{{ $item->stock->order->customer->last_name ?? "Purchase Entry Error" }}</td>
                                             <td style="width:220px">{{ $item->created_at }}</td>
@@ -531,8 +540,24 @@
                                     @foreach ($stocks as $index => $stock)
                                         <tr>
                                             <td title="{{ $stock->id }}">{{ $i + 1 }}</td>
-                                            <td><a title="Filter this variation" href="{{url('inventory_verification/progress').'?product='.$stock->variation->product_id.'&storage='.$stock->variation->storage.'&grade[]='.$stock->variation->grade}}">{{ (isset($stock->variation->product_id) ? $stock->variation->product->model . " " : null). (isset($stock->variation->storage) ? $storages[$stock->variation->storage] . " " : null) . " " .
-                                            (isset($stock->variation->color) ? $colors[$stock->variation->color] . " " : null) . ($grades[$stock->variation->grade] ?? "Grade Issue") . (isset($stock->variation->sub_grade) ? " ".$grades[$stock->variation->sub_grade] : null) }} </a></td>
+                                            <td>
+                                                @php $var = $stock->variation; @endphp
+                                                @if ($var)
+                                                    @php
+                                                        $filterUrl = url('inventory_verification/progress').'?product='.(data_get($var,'product_id') ?? '').'&storage='.(data_get($var,'storage') ?? '').'&grade[]='.(data_get($var,'grade') ?? '');
+                                                        $parts = [];
+                                                        if (data_get($var,'product.model')) { $parts[] = data_get($var,'product.model'); }
+                                                        if (!is_null(data_get($var,'storage'))) { $parts[] = $storages[data_get($var,'storage')] ?? null; }
+                                                        if (!is_null(data_get($var,'color'))) { $parts[] = $colors[data_get($var,'color')] ?? null; }
+                                                        $parts[] = $grades[data_get($var,'grade')] ?? 'Grade Issue';
+                                                        if (!is_null(data_get($var,'sub_grade'))) { $parts[] = $grades[data_get($var,'sub_grade')] ?? null; }
+                                                        $label = trim(implode(' ', array_filter($parts)));
+                                                    @endphp
+                                                    <a title="Filter this variation" href="{{ $filterUrl }}">{{ $label }}</a>
+                                                @else
+                                                    <span class="text-danger">Variation Not Defined</span>
+                                                @endif
+                                            </td>
                                             <td><a title="{{$stock->id}} | Search Serial" href="{{url('imei')."?imei=".$stock->imei.$stock->serial_number}}" target="_blank"> {{$stock->imei.$stock->serial_number }} </a></td>
                                             <td><a title="Vendor Profile" href="{{url('edit-customer').'/'.$stock->order->customer_id}}" target="_blank"> {{ $stock->order->customer->last_name ?? null}} </a></td>
                                             <td>
