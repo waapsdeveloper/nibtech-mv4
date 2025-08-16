@@ -126,8 +126,8 @@ session()->forget('error');
                                     @continue
                                 @endif
                                 <td>{{ $i + 1 }}</td>
-                                <td>{{ $item->stock->variation->product->model ?? "Variation Model Not added"}}
-                                    @if($stock->variation)
+                                <td>{{ data_get($item, 'stock.variation.product.model') ?? "Variation Model Not added"}}
+                                    @if(data_get($item,'stock.variation'))
                                     {{$storages[$item->stock->variation->storage] ?? null}} {{$colors[$item->stock->variation->color] ?? null}} {{$grades[$item->stock->variation->grade] ?? "Variation Grade Not added Reference: ".$item->stock->variation->reference_id }}
                                     @else
                                     <span class="text-danger">Variation Not Defined</span>
