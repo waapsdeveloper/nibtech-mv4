@@ -323,23 +323,25 @@ class Api_request_model extends Model
                     $new_variation['storage'] = $storage;
                 }
                 unset($message);
-                if($stock->variation != null && $stock->variation->storage != null && $stock->variation->storage != 0 && $stock->variation->storage != $storage && $storage != 0){
-                    $message = "Storage changed from: ".$stock->variation->storage_id->name." to: ".$storages[$storage];
-                    // dd($message, $stock, $datas);
-                }
-                if($stock->variation->color == null){
-                    $check_merge_color = Product_color_merge_model::where(['product_id' => $stock->variation->product_id, 'color_from' => $color])->first();
-                    if($check_merge_color != null){
-                        $color = $check_merge_color->color_to;
+                if($stock->variation != null){
+                    if($stock->variation != null && $stock->variation->storage != null && $stock->variation->storage != 0 && $stock->variation->storage != $storage && $storage != 0){
+                        $message = "Storage changed from: ".$stock->variation->storage_id->name." to: ".$storages[$storage];
+                        // dd($message, $stock, $datas);
                     }
-                    $new_variation['color'] = $color;
-                }
+                    if($stock->variation->color == null){
+                        $check_merge_color = Product_color_merge_model::where(['product_id' => $stock->variation->product_id, 'color_from' => $color])->first();
+                        if($check_merge_color != null){
+                            $color = $check_merge_color->color_to;
+                        }
+                        $new_variation['color'] = $color;
+                    }
 
-                if(($stock->variation->grade == 9 || $stock->variation->grade == 7 || $stock->variation->grade == $grade) && $grade != ''){
-                    $new_variation['grade'] = $grade;
-                }
-                if($stock->status == 1){
-                    $new_variation['grade'] = $grade;
+                    if(($stock->variation->grade == 9 || $stock->variation->grade == 7 || $stock->variation->grade == $grade) && $grade != ''){
+                        $new_variation['grade'] = $grade;
+                    }
+                    if($stock->status == 1){
+                        $new_variation['grade'] = $grade;
+                    }
                 }
                 if($stock->imei == $datas->Imei2 && $stock->imei != null){
                     if(isset($message)){
