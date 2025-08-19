@@ -55,9 +55,6 @@
                         @if (session('user')->hasPermission('topup_list_stock'))
                             <a href="{{url('listing').'?process_id='.$process->id}}" class="btn btn-link">List Stock</a>
                         @endif
-                        @if (session('user')->hasPermission('topup_export'))
-                            <a href="{{url('topup/export').'?id='.$process->id}}" class="btn btn-link"><i class="fa fa-file-export"></i> Export</a>
-                        @endif
                     </form>
 
                     <script>
@@ -80,6 +77,10 @@
                         <a href="{{url('repair/revert_status').'/'.$process->id}}">Revert Back to Pending</a>
                     @endif
                 @endif
+
+                        @if (session('user')->hasPermission('topup_export'))
+                            <a href="{{url('topup/export').'?id='.$process->id}}" class="btn btn-link"><i class="fa fa-file-export"></i> Export</a>
+                        @endif
                 </div>
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
