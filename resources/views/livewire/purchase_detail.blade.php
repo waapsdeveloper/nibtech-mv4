@@ -791,13 +791,13 @@
                                                                     <input type="text" class="form-control" id="imei" name="imei" placeholder="Enter IMEI">
                                                                     <label for="imei">IMEI</label>
                                                                 </div>
-                                                                <button class="btn btn-primary m-0" name="change_imei" value="1">Insert</button>
+                                                                <button class="btn btn-primary m-0" name="change_imei" value="1" title="Replace with IMEI added in box">Replace</button>
 
                                                             @else
                                                                 {{ $row->message }}
                                                             @endif
                                                                 <input type="hidden" name="id" value="{{$row->id}}">
-                                                                <button class="btn btn-danger m-0" name="remove_entry" value="1" form="order_issues_{{$row->id}}">Remove Entry</button>
+                                                                <button class="btn btn-danger m-0" name="remove_entry" value="1" form="order_issues_{{$row->id}}" title="Remove this Entry from Issue list - It will not delete the actual order item">Remove Entry from Issue list</button>
                                                             </form>
                                                         </td>
                                                         <td>{{ $row->created_at }}</td>
