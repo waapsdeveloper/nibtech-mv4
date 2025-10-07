@@ -538,6 +538,10 @@
                                                 $j = 0;
                                             @endphp
                                             @foreach ($testing_list as $id => $testing_list_grouped)
+                                                @if (!$testing_list_grouped || count($testing_list_grouped) == 0)
+                                                    @continue
+
+                                                @endif
                                                 <tr class="bg-light tx-center">
                                                     <td colspan="3" >{{ $testing_list_grouped[0]['product'].' '.$testing_list_grouped[0]['storage'] . ' ' . $testing_list_grouped[0]['color']  }}</td>
                                                     <td>
