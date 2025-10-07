@@ -1249,9 +1249,6 @@ class Order extends Component
                         $storage = $request->Memory ?? null;
                         $color = $request->Color ?? null;
 
-                        if(Stock_model::where('imei',$request->Imei)->orWhere('imei',$request->Imei2)->orWhere('serial_number',$request->Serial)->exists()){
-                            return null;
-                        }
 
                         $product_id = in_array(strtolower($product), $lower_products)
                             ? array_search(strtolower($product), $lower_products)
@@ -1292,6 +1289,10 @@ class Order extends Component
                         // Remove duplicate IMEI/serial_number entries per variation
                         $unique = [];
                         return $group->filter(function($item) use (&$unique) {
+
+                            if(Stock_model::where('imei',$item['imei'])->orWhere('imei',$item['imei'])->orWhere('serial_number',$item['serial_number'])->exists()){
+                                    return false;
+                                }
                             $key = ($item['imei'] ?? '') . '|' . ($item['serial_number'] ?? '');
                             if (!$key || isset($unique[$key])) {
                                 return false;
