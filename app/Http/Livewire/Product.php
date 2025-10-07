@@ -75,6 +75,12 @@ class Product extends Component
         // dd(request('product'));
         $product = (object) request('product');
         // dd($product);
+        $find_product = Products_model::where('model', $product->model)->first();
+        if($find_product){
+            session()->put('error', 'Product model already exists');
+            return redirect()->back();
+        }
+
         $products = new Products_model();
         $products->brand = $product->brand;
         $products->category = $product->category;
