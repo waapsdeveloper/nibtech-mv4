@@ -1249,6 +1249,10 @@ class Order extends Component
                         $storage = $request->Memory ?? null;
                         $color = $request->Color ?? null;
 
+                        if(Stock_model::where('imei',$request->Imei)->orWhere('imei',$request->Imei2)->orWhere('serial_number',$request->Serial)->exists()){
+                            return null;
+                        }
+
                         $product_id = in_array(strtolower($product), $lower_products)
                             ? array_search(strtolower($product), $lower_products)
                             : null;
