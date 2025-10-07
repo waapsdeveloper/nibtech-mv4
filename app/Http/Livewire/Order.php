@@ -589,18 +589,7 @@ class Order extends Component
         }
 
         $data['orders'] = Order_model::with('order_items', 'order_issues')->withCount('order_items_available as available_stock')
-        // select(
-        //     'orders.id',
-        //     'orders.reference_id',
-        //     'orders.customer_id',
-        //     DB::raw('SUM(order_items.price) as total_price'),
-        //     DB::raw('COUNT(order_items.id) as total_quantity'),
-        //     DB::raw('COUNT(CASE WHEN stock.status = 1 THEN order_items.id END) as available_stock'),
-        //     'orders.status',
-        //     'orders.created_at')
         ->where('orders.order_type_id', 1)
-        // ->join('order_items', 'orders.id', '=', 'order_items.order_id')
-        // ->join('stock', 'order_items.stock_id', '=', 'stock.id')
         ->when(request('start_date'), function ($q) {
             return $q->where('orders.created_at', '>=', request('start_date'));
         })
@@ -622,21 +611,9 @@ class Order extends Component
         ->when(request('status') == 3 && request('stock') == 1, function ($query) {
             return $query->having('available_stock', '>', 0);
         })
-        // ->when(!request('stock'), function ($query) {
-        //     return $query->having('available_stock');
-        // })
-        // ->when(request('stock'), function ($q) {
-        //     if (request('stock') == 0) {
-        //         return $q->havingRaw('COUNT(CASE WHEN stock.status = 1 THEN order_items.id END) = 0');
-        //     } else {
-        //         return $q->havingRaw('COUNT(CASE WHEN stock.status = 1 THEN order_items.id END) > 0');
-        //     }
-        // })
-
         ->when(request('deleted') == 1, function ($q) {
             return $q->onlyTrashed();
         })
-        // ->groupBy('orders.id', 'orders.reference_id', 'orders.customer_id', 'orders.status', 'orders.created_at')
         ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
         ->paginate($per_page)
         ->onEachSide(5)
@@ -2209,7 +2186,7 @@ class Order extends Component
             $variation = Variation_model::find($variation_id);
         }
 
-        
+
         if(request('price')){
             $price = request('price');
             if(!is_numeric($price)){
