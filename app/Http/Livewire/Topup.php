@@ -196,7 +196,6 @@ class Topup extends Component
                             'qty_from' => $listed_stock->qty_from,
                             'qty_change' => $listed_stock->qty_change,
                             'qty_to' => $listed_stock->qty_to,
-                            'admin_id' => $listed_stock->admin_id,
                             ])->delete();
                         break;
                     }
