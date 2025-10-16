@@ -122,7 +122,7 @@
                 </div>
                 <div class="text-center">
                     <h4>BulkSale Order Detail - {{ $order->reference_id }}</h4>
-                    <h5>{{ $order->customer->first_name }} | Items: {{ $order->order_items->sum('quantity') }} @if (session('user')->hasPermission('view_price')) | Price: €{{ amount_formatter($order->order_items->sum('price'),2) }} @endif
+                    <h5>{{ $order->customer->first_name ?? "Walk In" }} | Items: {{ $order->order_items->sum('quantity') }} @if (session('user')->hasPermission('view_price')) | Price: €{{ amount_formatter($order->order_items->sum('price'),2) }} @endif
                         @if ($order->order_charges->count() > 0)
                             <span title="
                             @foreach ($order->order_charges as $charge)
