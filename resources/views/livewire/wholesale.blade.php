@@ -260,7 +260,7 @@
                     <div class="modal-content">
                         <form method="POST" action="{{url('transaction/add_payment')}}" id="record_payment_form">
                             @csrf
-                            <input type="hidden" name="customer_id" value="{{ $customer->id }}">
+                            <input type="hidden" name="customer_id" id="customer_id" value="{{ $customer->id }}">
                             <input type="hidden" name="type" value="1">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="exampleModalLabel2">Record Payment for {{ $customer->company }}</h5>
@@ -391,9 +391,11 @@
                     var date = button.data('date');
                     var currency = button.data('currency');
                     var exchange_rate = button.data('exchange_rate');
+                    var customer_id = button.data('customer_id');
                     var transaction_id = button.data('transaction_id');
                     var transaction_ref = button.data('transaction_ref');
                     var modal = $(this);
+                    modal.find('.modal-body #customer_id').val(customer_id);
                     modal.find('.modal-body #transaction_id').val(transaction_id);
                     modal.find('.modal-body #amount').val(amount);
                     modal.find('.modal-body #description').val(description);

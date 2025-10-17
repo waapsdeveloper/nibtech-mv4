@@ -325,7 +325,7 @@ class Topup extends Component
 
             $stock->availability();
 
-            if(request('copy') == 1 || request('copy_grade') == 1 || request('dual-esim') == 1 || request('dual-sim') == 1){
+            if(request('copy') == 1 || request('copy_grade') == 1 || request('dual-esim') == 1 || request('dual-sim') || request('new-battery') == 1){
                 $variation = $stock->variation;
 
                 if(session()->has('product') && session()->has('storage'))
@@ -382,6 +382,17 @@ class Topup extends Component
                         $new_product = Products_model::where(['model' => $product->model.' Dual Sim'])->first();
                         if($new_product == null){
                             $error .= 'Dual SIM Product Not Found: '.$imei.'<br>';
+                            continue;
+                        }
+                        $product_id = $new_product->id;
+                    }
+                }
+                if(request('new-battery') != null){
+                    $product = Products_model::find($product_id);
+                    if(!str_contains(strtolower($product->model), 'new battery')){
+                        $new_product = Products_model::where(['model' => $product->model.' New Battery'])->first();
+                        if($new_product == null){
+                            $error .= 'New Battery Product Not Found: '.$imei.'<br>';
                             continue;
                         }
                         $product_id = $new_product->id;
@@ -457,6 +468,11 @@ class Topup extends Component
                 }else{
                     session()->put('dual-sim', 0);
                 }
+                if(request('new-battery') == 1){
+                    session()->put('new-battery', 1);
+                }else{
+                    session()->put('new-battery', 0);
+                }
                     session()->put('product', request('product'));
                     session()->put('storage', request('storage'));
             }else{
@@ -464,6 +480,7 @@ class Topup extends Component
                 session()->put('copy_grade', 0);
                 session()->put('dual-esim', 0);
                 session()->put('dual-sim', 0);
+                session()->put('new-battery', 0);
                 session()->put('product', $stock->variation->product_id);
                 session()->put('storage', $stock->variation->storage);
                 session()->put('color', $stock->variation->color);
@@ -512,7 +529,7 @@ class Topup extends Component
                     continue;
                 }
 
-                if(request('copy') == 1 || request('copy_grade') == 1 || request('dual-esim') == 1 || request('dual-sim') == 1){
+                if(request('copy') == 1 || request('copy_grade') == 1 || request('dual-esim') == 1 || request('dual-sim') == 1 || request('new-battery') == 1){
                     $process_stock->status = 1;
                     $process_stock->save();
                     session()->put('success', 'Stock ReAdded successfully SKU:'.$stock->variation->sku);
