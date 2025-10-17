@@ -260,7 +260,6 @@
                     <div class="modal-content">
                         <form method="POST" action="{{url('transaction/add_payment')}}" id="record_payment_form">
                             @csrf
-                            <input type="hidden" name="customer_id" id="customer_id" value="{{ $customer->id }}">
                             <input type="hidden" name="type" value="1">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="exampleModalLabel2">Record Payment for {{ $customer->company }}</h5>
@@ -268,6 +267,7 @@
                             </div>
                             <div class="modal-body pd-20">
                             <input type="hidden" name="transaction_id" id="transaction_id">
+                            <input type="hidden" name="customer_id" id="customer_id" value="{{ $customer->id }}">
                                 <div class="row hide-on-edit">
                                     <div class="col-md-6">
                                         <div class="form-group">
