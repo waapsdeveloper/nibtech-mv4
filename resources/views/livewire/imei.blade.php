@@ -712,8 +712,8 @@
 
                                             @endif
                                             <td title="{{ $stock_r->stock_id }}">{{ $i + 1 }}</td>
-                                            <td>{{ ($stoc->variation->product->model ?? "Variation Issue") . " " . (isset($stoc->variation->storage) ? $storages[$stoc->variation->storage] . " " : null) . " " .
-                                            (isset($stoc->variation->color) ? $colors[$stoc->variation->color] . " " : null) . ($grades[$stoc->variation->grade] ?? "Grade Issue") }}</td>
+                                            <td>{{ isset($stoc->variation) ? ($stoc->variation->product->model ?? "Product Issue") . " " . (isset($stoc->variation->storage) ? $storages[$stoc->variation->storage] . " " : null) . " " .
+                                            (isset($stoc->variation->color) ? $colors[$stoc->variation->color] . " " : null) . ($grades[$stoc->variation->grade] ?? "Grade Issue") : "Variation Issue" }}</td>
                                             <td>{{ $stock_r->exit_at }}</td>
                                             <td>{{ $stock_r->admin->first_name ?? null }}</td>
                                             <td>
