@@ -215,7 +215,7 @@
                     <label class="form-check-label" for="mds">Mark Dual Sim</label>
                 </div>
                 <div class="input-group form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="mnb" name="new_battery" value="1" @if (session('new_battery') == 1) {{'checked'}} @endif>&nbsp;&nbsp;
+                    <input class="form-check-input" type="checkbox" id="mnb" name="new-battery" value="1" @if (session('new-battery') == 1) {{'checked'}} @endif>&nbsp;&nbsp;
                     <label class="form-check-label" for="mnb">Mark as New Battery</label>
                 </div>
                 </div>
