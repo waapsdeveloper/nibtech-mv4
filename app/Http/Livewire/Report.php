@@ -17,6 +17,7 @@ use App\Models\Order_model;
 use App\Models\Order_item_model;
 use App\Models\Products_model;
 use App\Models\Color_model;
+use App\Models\Currency_exchange_model;
 use App\Models\Currency_model;
 use App\Models\Customer_model;
 use App\Models\Storage_model;
@@ -1421,6 +1422,9 @@ class Report extends Component
 
         $data['currency_ids'] = $b2c_prices_by_currency->keys()->merge($b2c_charges_by_currency->keys())->merge($b2c_return_prices_by_currency->keys())->unique();
 
+        $exchange_rates = Currency_exchange_model::whereIn('currency_id', $data['currency_ids'])->pluck('rate', 'currency_id')->toArray();
+
+
         $total['orders'] = $sale_data['b2c_orders'] + $b2b_data['b2b_orders'] . ' - ' . $return_data['b2c_returns'] + $b2b_return_data['b2b_returns'];
         $net['orders'] = $sale_data['b2c_orders'] + $b2b_data['b2b_orders'] - $return_data['b2c_returns'] - $b2b_return_data['b2b_returns'];
         $total['order_items'] = $sale_data['b2c_order_items'] + $b2b_data['b2b_order_items'] . ' - ' . $return_data['b2c_return_items'] + $b2b_return_data['b2b_return_items'];
@@ -1429,6 +1433,8 @@ class Report extends Component
         $net['cost'] = amount_formatter($b2c_stock_cost + $b2b_stock_cost - $b2c_return_stock_cost - $b2b_return_stock_cost);
         $total['repair_cost'] = amount_formatter($b2c_stock_repair_cost + $b2b_stock_repair_cost) . ' - ' . amount_formatter($b2c_return_stock_repair_cost + $b2b_return_stock_repair_cost);
         $net['repair_cost'] = amount_formatter($b2c_stock_repair_cost + $b2b_stock_repair_cost - $b2c_return_stock_repair_cost - $b2b_return_stock_repair_cost);
+
+        $grand = 0;
 
         foreach ($data['currency_ids'] as $currency_id) {
             if ($currency_id == 4){
@@ -1441,6 +1447,9 @@ class Report extends Component
 
                 $total['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id] + $b2b_total) . ' - ' . amount_formatter($b2c_return_totals[$currency_id] + $b2b_return_totals);
                 $net['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id] + $b2b_total - $b2c_return_totals[$currency_id] - $b2b_return_totals);
+
+                $grand += $net['total'][$currency_id];
+
             }else{
                 $return = isset($b2c_return_price[$currency_id]) ? $b2c_return_price[$currency_id] : 0;
                 $return_total = isset($b2b_return_totals[$currency_id]) ? $b2b_return_totals[$currency_id] : 0;
@@ -1459,8 +1468,8 @@ class Report extends Component
                 $total['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id]) . ' - ' . amount_formatter($b2c_return_totals[$currency_id]);
                 $net['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id] - $b2c_return_totals[$currency_id]);
 
+                $grand += $net['total'][$currency_id] + $exchange_rates[$currency_id];
             }
-
 
         }
 
@@ -1474,6 +1483,8 @@ class Report extends Component
         $data['b2b_return_data'] = $b2b_return_data;
         $data['total'] = $total;
         $data['net'] = $net;
+
+        $data['grand_total'] = $grand;
 
         return response()->json($data);
 
