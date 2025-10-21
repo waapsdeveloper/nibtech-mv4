@@ -183,6 +183,9 @@
                     }else{
                         # code...
                         $type = $transaction->payment_method->name ?? "Error Payment Method";
+                        if($transaction->payment_method_id == 5){
+                            $type = $transaction->description;
+                        }
                         $order = $transaction->reference_id;
                     }
 
