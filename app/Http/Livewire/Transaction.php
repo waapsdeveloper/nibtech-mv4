@@ -234,7 +234,10 @@ class Transaction extends Component
         $transaction->amount = request('amount');
         $transaction->currency = request('currency');
         $transaction->exchange_rate = request('exchange_rate');
-        $transaction->parent_id = request('transaction_id');
+
+        if(request('transaction_id') != 'None'){
+            $transaction->parent_id = request('transaction_id');
+        }
         $transaction->status = 1;
         $transaction->created_by = session('user_id');
         $transaction->save();
