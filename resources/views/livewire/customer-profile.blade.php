@@ -196,7 +196,7 @@
                         <div class="card-header pb-0 d-flex justify-content-between">
                             <h5 class="card-title mg-b-0"> Customer Transactions </h5>
                             @if (session('user')->hasPermission('record_payment_without_transaction'))
-                            <button class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#record_payment" data-transaction_id="None">Record Payment</button>
+                            <button class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#record_payment" data-transaction_id="None" data-transaction_ref="None" data-customer_id="{{ $customer->id }}" data-type="1" data-amount="0" data-description="General Adjustment" data-date="{{ now() }}"  data-currency="{{ 4 }}" data-exchange_rate="{{ 1 }}">Record Payment</button>
                             @endif
                             <form method="GET" action="{{ url('customer/export_reports/'.$customer->id) }}" target="_BLANK" class="form-inline">
                                 <input type="hidden" name="start_date" value="{{ request('start_date') }}">
