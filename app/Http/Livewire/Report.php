@@ -1454,8 +1454,10 @@ class Report extends Component
                 $total['charges_sum'][$currency_id] = amount_formatter($b2c_charge[$currency_id]);
                 $net['charges_sum'][$currency_id] = amount_formatter($b2c_charge[$currency_id]);
 
-                $total['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id]) . ' - ' . amount_formatter($return_total);
-                $net['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id] - $return_total);
+                // $total['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id]) . ' - ' . amount_formatter($return_total);
+                // $net['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id] - $return_total);
+                $total['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id]) . ' - ' . amount_formatter($b2c_return_totals[$currency_id]);
+                $net['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id] - $b2c_return_totals[$currency_id]);
 
             }
 
