@@ -182,7 +182,7 @@
                         $order = $transaction->process->reference_id;
                     }else{
                         # code...
-                        $type = $transaction->payment_method->name ?? "Error";
+                        $type = $transaction->payment_method->name ?? "Error Payment Method";
                         $order = $transaction->reference_id;
                     }
 
