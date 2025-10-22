@@ -166,6 +166,8 @@
                                         <th><small><b>No</b></small></th>
                                         <th><small><b>Order ID</b></small></th>
                                         <th><small><b>Purchaser</b></small></th>
+                                        <th><small><b>Description</b></small></th>
+                                        <th><small><b>Tracking</b></small></th>
                                         @if (session('user')->hasPermission('view_price'))
                                         <th><small><b>Cost</b></small></th>
                                         @endif
@@ -207,6 +209,8 @@
                                                 {{ $vendors[$order->customer_id] ?? "Walk In Customer" }}
                                                 </a>
                                             </td>
+                                            <td>{{ $order->reference }}</td>
+                                            <td>{{ $order->tracking_number }}</td>
                                             @if (session('user')->hasPermission('view_price'))
                                             <td>€{{ amount_formatter($price,2) }}</td>
                                             @endif
