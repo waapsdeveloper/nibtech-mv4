@@ -141,6 +141,12 @@
                             <td style="text-align: left; margin-top:5px;"><h4><strong>Invoice Date:</strong></h4></td>
                             <td colspan="2"><h4 style="font-weight: 400">{{ \Carbon\Carbon::parse($order->processed_at)->format('d-m-Y') }}</h4></td>
                         </tr>
+                        @if ($order->tracking_number != null)
+                            <tr>
+                                <td style="text-align: left; margin-top:5px;"><h4><strong>Tracking:</strong></h4></td>
+                                <td colspan="2"><h4 style="font-weight: 400">{{ $order->tracking_number }}</h4></td>
+                            </tr>
+                        @endif
                     </table>
                     {{-- <h3><strong>Order ID:</strong> {{ $order->reference_id }}</h3>
                     <h3><strong>Order Date:</strong> {{ \Carbon\Carbon::parse($order->created_at)->format('d/m/Y') }}</h4><h4> {{ \Carbon\Carbon::parse($order->created_at)->format('H:m:s') }}&nbsp;</h3>
