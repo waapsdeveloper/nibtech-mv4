@@ -162,6 +162,8 @@
                                         <th><small><b>No</b></small></th>
                                         <th><small><b>Order ID</b></small></th>
                                         <th><small><b>Customer</b></small></th>
+                                        <th><small><b>Description</b></small></th>
+                                        <th><small><b>Tracking</b></small></th>
                                         @if (session('user')->hasPermission('view_price'))
                                         <th><small><b>Price</b></small></th>
                                         @endif
@@ -194,6 +196,8 @@
                                                 <td><a href="{{url('wholesale_return/detail/'.$order->id)}}">{{ $order->reference_id }}</a></td>
 
                                                 <td>{{ $vendors[$order->customer_id] ?? "Not Set" }}</td>
+                                                <td>{{ $order->reference }}</td>
+                                                <td>{{ $order->tracking_number }}</td>
                                                 @if (session('user')->hasPermission('view_price'))
                                                 <td>€{{ amount_formatter($price,2) }}</td>
                                                 @endif
