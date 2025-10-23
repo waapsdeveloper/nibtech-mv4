@@ -133,19 +133,19 @@ class Transaction extends Component
             // die;
         }
 
-        // $process = Process_model::where(['process_type_id' => 19, 'description' => request()->file('sheet')->getClientOriginalName()])->first();
-        // if($process){
-        //     session()->put('error', "This file has already been processed");
-        //     return redirect()->back();
-        // }else{
-        //     $process = new Process_model();
-        //     $process->process_type_id = 19;
-        //     $process->description = request()->file('sheet')->getClientOriginalName();
-        //     $process->admin_id = session('user_id');
-        //     $process->status = 1;
-        //     $process->save();
+        $process = Process_model::where(['process_type_id' => 19, 'description' => request()->file('sheet')->getClientOriginalName()])->first();
+        if($process){
+            session()->put('error', "This file has already been processed");
+            return redirect()->back();
+        }else{
+            $process = new Process_model();
+            $process->process_type_id = 19;
+            $process->description = request()->file('sheet')->getClientOriginalName();
+            $process->admin_id = session('user_id');
+            $process->status = 1;
+            $process->save();
 
-        // }
+        }
 
         // dd($dh);
         foreach($data as $dr => $d) {
@@ -201,6 +201,7 @@ class Transaction extends Component
                 }else{
                     $transaction->transaction_type_id = 1;
                 }
+                $transaction->process_id = $process->id;
                 $transaction->created_by = session('user_id');
 
                 $transaction->save();
