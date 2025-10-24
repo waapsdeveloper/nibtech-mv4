@@ -43,15 +43,6 @@ return [
             'password' => env('MAIL_PASSWORD'),
             'timeout' => null,
         ],
-        'smtp_secondary' => [
-            'transport' => 'smtp',
-            'host' => env('MAIL_HOST', 'smtp.mailgun.org'),
-            'port' => env('MAIL_PORT', 587),
-            'encryption' => env('MAIL_ENCRYPTION', 'tls'),
-            'username' => env('MAIL_SECONDARY_USERNAME'),
-            'password' => env('MAIL_SECONDARY_PASSWORD'),
-            'timeout' => null,
-        ],
         'no-reply' => [
             'transport' => 'smtp',
             'host' => env('MAIL_HOST', 'smtp.mailgun.org'),
