@@ -146,12 +146,12 @@ class Transaction extends Component
             $process->save();
 
         }
-
+        $or = new Order();
         // dd($dh);
         foreach($data as $dr => $d) {
             $order = Order_model::where('reference_id',trim($d[$order_id]))->where('order_type_id',3)->first();
             if($order == null && $d[$order_id] != '' && $d[$order_id] != 'None'){
-                $or = new Order();
+                
                 $or->recheck(trim($d[$order_id]));
                 $order = Order_model::where('reference_id',trim($d[$order_id]))->where('order_type_id',3)->first();
             }elseif($order == null && $d[$order_id] == 'None' && str_contains($d[$designation],'DELIVERY - DHL Express')){
