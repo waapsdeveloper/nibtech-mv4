@@ -51,6 +51,8 @@ class Functions extends Command
         echo 4;
         $this->misc();
         echo 5;
+        $this->merge_order_transactions();
+        echo 6;
         $this->push_testing_api();
         return 0;
     }
@@ -121,6 +123,15 @@ class Functions extends Command
         Order_item_model::whereIn('id', function ($query) use ($subquery) {
             $query->select('id')->fromSub($subquery, 'subquery')->where('row_num', '>', 1);
         })->delete();
+
+    }
+
+    public function merge_order_transactions(){
+        $orders = Order_model::where(['order_type_id'=>3])->whereHas('transactions', function ($q) {
+                $q->where('status', null);
+            })->orderByDesc('id')->limit(1000)->each(function ($order) {
+                $order->merge_transaction_charge();
+            });
 
     }
 
