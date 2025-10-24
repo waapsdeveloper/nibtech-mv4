@@ -1,7 +1,5 @@
 <?php
 
-use Laravel\Sanctum\Sanctum;
-
 return [
 
     /*
@@ -11,14 +9,14 @@ return [
     |
     | Requests from the following domains / hosts will receive stateful API
     | authentication cookies. Typically, these should include your local
-    | and production domains which access your API via a frontend SPA.
+    | and variationion domains which access your API via a frontend SPA.
     |
     */
 
     'stateful' => explode(',', env('SANCTUM_STATEFUL_DOMAINS', sprintf(
         '%s%s',
         'localhost,localhost:3000,127.0.0.1,127.0.0.1:8000,::1',
-        Sanctum::currentApplicationUrlWithPort()
+        env('APP_URL') ? ','.parse_url(env('APP_URL'), PHP_URL_HOST) : ''
     ))),
 
     /*
@@ -41,8 +39,13 @@ return [
     |--------------------------------------------------------------------------
     |
     | This value controls the number of minutes until an issued token will be
+<<<<<<< HEAD
     | considered expired. This will override any values set in the token's
     | "expires_at" attribute, but first-party sessions are not affected.
+=======
+    | considered expired. If this value is null, personal access tokens do
+    | not expire. This won't tweak the lifetime of first-party sessions.
+>>>>>>> 594aa3fbcb5417de7be9c5036e4d2e09b7d4fbb1
     |
     */
 
@@ -50,6 +53,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+<<<<<<< HEAD
     | Token Prefix
     |--------------------------------------------------------------------------
     |
@@ -65,6 +69,8 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+=======
+>>>>>>> 594aa3fbcb5417de7be9c5036e4d2e09b7d4fbb1
     | Sanctum Middleware
     |--------------------------------------------------------------------------
     |
@@ -75,9 +81,14 @@ return [
     */
 
     'middleware' => [
+<<<<<<< HEAD
         'authenticate_session' => Laravel\Sanctum\Http\Middleware\AuthenticateSession::class,
         'encrypt_cookies' => App\Http\Middleware\EncryptCookies::class,
         'verify_csrf_token' => App\Http\Middleware\VerifyCsrfToken::class,
+=======
+        'verify_csrf_token' => App\Http\Middleware\VerifyCsrfToken::class,
+        'encrypt_cookies' => App\Http\Middleware\EncryptCookies::class,
+>>>>>>> 594aa3fbcb5417de7be9c5036e4d2e09b7d4fbb1
     ],
 
 ];

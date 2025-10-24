@@ -36,7 +36,11 @@ return [
             'secret' => env('PUSHER_APP_SECRET'),
             'app_id' => env('PUSHER_APP_ID'),
             'options' => [
+<<<<<<< HEAD
                 'cluster' => 'eu',
+=======
+                'cluster' => env('PUSHER_APP_CLUSTER'),
+>>>>>>> 594aa3fbcb5417de7be9c5036e4d2e09b7d4fbb1
                 'useTLS' => true,
             ],
             'client_options' => [
