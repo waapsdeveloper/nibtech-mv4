@@ -130,9 +130,8 @@ class Functions extends Command
         $orders = Order_model::where(['order_type_id'=>3])->whereHas('transactions', function ($q) {
                 $q->where('status', null);
             })->orderByDesc('id')->limit(1000)->each(function ($order) {
-                $order->merge_transaction_charge();
+                echo $order->merge_transaction_charge();
             });
-
     }
 
     public function push_testing_api(){
