@@ -143,6 +143,8 @@ class Api_request_model extends Model
                         $grade = 11;
                     }elseif($gradeName1 == 'bt'){
                         $grade = 21;
+                    }elseif($gradeName1 == 'cd'){
+                        $grade = 24;
                     }else{
                         $grade = array_search($gradeName1, $lowercaseGrades);
                     }
