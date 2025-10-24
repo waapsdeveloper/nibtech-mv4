@@ -15,4 +15,5 @@ yarn-error.log
 /.idea
 /.vscode
 user.name
+/config
 .gitignore
