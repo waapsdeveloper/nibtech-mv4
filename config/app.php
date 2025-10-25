@@ -178,11 +178,6 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
-<<<<<<< HEAD
-        App\Providers\FortifyServiceProvider::class,
-        App\Providers\JetstreamServiceProvider::class,
-=======
->>>>>>> 594aa3fbcb5417de7be9c5036e4d2e09b7d4fbb1
 
         Barryvdh\DomPDF\ServiceProvider::class,
 
