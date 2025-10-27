@@ -63,161 +63,294 @@ class Transaction extends Component
 
 
     }
-
     public function add_transaction_sheet()
     {
         ini_set('max_execution_time', 300);
         ini_set('memory_limit', '512M');
 
-        $issue = [];
         request()->validate([
             'sheet' => 'required|file|mimes:xlsx,xls,csv',
         ]);
 
-        // Store the uploaded file in a temporary location
-        $filePath = request()->file('sheet')->store('temp');
+        $file = request()->file('sheet');
+        $fileName = $file->getClientOriginalName();
+        $filePath = $file->store('temp');
+        $excelPath = storage_path("app/{$filePath}");
 
-        // // Perform operations on the Excel file
-        // $spreadsheet = IOFactory::load(storage_path('app/'.$filePath));
-        // // Perform your operations here...
+        $rows = Excel::toArray([], $excelPath)[0] ?? [];
 
-        // Replace 'your-excel-file.xlsx' with the actual path to your Excel file
-        $excelFilePath = storage_path('app/'.$filePath);
-
-        $data = Excel::toArray([], $excelFilePath)[0];
-        $dh = $data[0];
-        // print_r($dh);
-        unset($data[0]);
-        $arrayLower = array_map('strtolower', $dh);
-        // Search for the lowercase version of the search value in the lowercase array
-        $order_id = array_search('order_id', $arrayLower);
-        if(!in_array('order_id', $arrayLower)){
-            print_r($dh);
-            session()->put('error', "Heading not Found(order_id)");
-            return redirect()->back();
-            // die;
-        }
-        $value_date = array_search('value_date', $arrayLower);
-        if(!in_array('value_date', $arrayLower)){
-            print_r($dh);
-            session()->put('error', "Heading not Found(value_date)");
-            return redirect()->back();
-            // die;
-        }
-        $invoice_key = array_search('invoice_key', $arrayLower);
-        if(!in_array('invoice_key', $arrayLower)){
-            print_r($dh);
-            session()->put('error', "Heading not Found(invoice_key)". $invoice_key);
-            return redirect()->back();
-            // die;
-        }
-        $amoun = array_search('amount', $arrayLower);
-        if(!in_array('amount', $arrayLower)){
-            print_r($dh);
-            session()->put('error', "Heading not Found(amount)");
-            return redirect()->back();
-            // die;
-        }
-        $currenc = array_search('currency', $arrayLower);
-        if(!in_array('currency', $arrayLower)){
-            print_r($dh);
-            session()->put('error', "Heading not Found(currency)");
-            return redirect()->back();
-            // die;
-        }
-        $designation = array_search('designation', $arrayLower);
-        if(!in_array('designation', $arrayLower)){
-            print_r($dh);
-            session()->put('error', "Heading not Found(designation)");
-            return redirect()->back();
-            // die;
+        if (empty($rows)) {
+            return back()->with('error', 'Uploaded sheet is empty.');
         }
 
-        $process = Process_model::where(['process_type_id' => 19, 'description' => request()->file('sheet')->getClientOriginalName()])->first();
-        if($process){
-            session()->put('error', "This file has already been processed");
-            return redirect()->back();
-        }else{
-            $process = new Process_model();
-            $process->process_type_id = 19;
-            $process->description = request()->file('sheet')->getClientOriginalName();
-            $process->admin_id = session('user_id');
-            $process->status = 1;
-            $process->save();
+        $headers = array_map('strtolower', $rows[0]);
+        unset($rows[0]);
 
-        }
-        $or = new Order();
-        // dd($dh);
-        foreach($data as $dr => $d) {
-            $order = Order_model::where('reference_id',trim($d[$order_id]))->where('order_type_id',3)->first();
-            if($order == null && $d[$order_id] != '' && $d[$order_id] != 'None'){
-                
-                $or->recheck(trim($d[$order_id]));
-                $order = Order_model::where('reference_id',trim($d[$order_id]))->where('order_type_id',3)->first();
-            }elseif($order == null && $d[$order_id] == 'None' && str_contains($d[$designation],'DELIVERY - DHL Express')){
-                $tracking = str_replace('DELIVERY - DHL Express - ','',$d[$designation]);
-                $order = Order_model::where('tracking_number',$tracking)->where('order_type_id',3)->first();
-                if($order == null){
-                    $reference_id = $tracking;
-                }
-            }elseif($order == null && $d[$order_id] == '' && str_contains($d[$designation],'avoir_commission_order_id')){
-                $or = str_replace('avoir_commission_order_id','',$d[$designation]);
-                $order = Order_model::where('reference_id',trim($or))->where('order_type_id',3)->first();
-            }else{
-                $reference_id = '';
+        // Expected columns
+        $required = ['order_id', 'value_date', 'invoice_key', 'amount', 'currency', 'designation'];
+
+        foreach ($required as $column) {
+            if (!in_array($column, $headers, true)) {
+                return back()->with('error', "Heading not found: {$column}");
             }
-            if($order || isset($reference_id)){
+        }
 
-                $amount = str_replace(',','',$d[$amoun]);
-                $currency = Currency_model::where('code',$d[$currenc])->first();
+        // Get column indices
+        $col = array_combine($required, array_map(fn($key) => array_search($key, $headers), $required));
 
-                if($order){
-                    $transaction = Account_transaction_model::firstOrNew([
-                        'order_id' => $order->id,
-                        'customer_id' => $order->customer_id,
-                        'order_type_id' => 3,
-                        'amount' => $amount,
-                        'currency' => $currency->id,
-                        'date' => Carbon::parse($d[$value_date])->format('Y-m-d H:i:s'),
-                        'description' => $d[$invoice_key],
-                    ]);
-                }else{
-                    $transaction = Account_transaction_model::firstOrNew([
-                        'reference_id' => $reference_id,
-                        'order_id' => null,
-                        'customer_id' => null,
-                        'order_type_id' => null,
-                        'amount' => $amount,
-                        'currency' => $currency->id,
-                        'date' => Carbon::parse($d[$value_date])->format('Y-m-d H:i:s'),
-                        'description' => $d[$invoice_key],
-                    ]);
+        // Check if this file was already processed
+        $process = Process_model::firstOrNew([
+            'process_type_id' => 19,
+            'description' => $fileName,
+        ]);
+
+        if ($process->exists) {
+            return back()->with('error', 'This file has already been processed.');
+        }
+
+        $process->fill([
+            'admin_id' => session('user_id'),
+            'status' => 1,
+        ])->save();
+
+        // Preload data to reduce queries
+        $orderHelper = new Order();
+        $issues = [];
+
+        foreach ($rows as $row) {
+            $referenceId = trim($row[$col['order_id']] ?? '');
+            $designation = $row[$col['designation']] ?? '';
+            $invoiceKey = $row[$col['invoice_key']] ?? '';
+            $valueDate = $row[$col['value_date']] ?? '';
+            $amount = (float) str_replace(',', '', $row[$col['amount']] ?? 0);
+            $currencyCode = $row[$col['currency']] ?? '';
+
+            $order = null;
+
+            // Try to find order by different identifiers
+            if ($referenceId !== '' && $referenceId !== 'None') {
+                $order = Order_model::where('reference_id', $referenceId)
+                    ->where('order_type_id', 3)
+                    ->first();
+
+                if (!$order) {
+                    $orderHelper->recheck($referenceId);
+                    $order = Order_model::where('reference_id', $referenceId)
+                        ->where('order_type_id', 3)
+                        ->first();
                 }
-                if($transaction->id){
-                    continue;
-                }
-                if($amount < 0){
-                    $transaction->transaction_type_id = 2;
-                }else{
-                    $transaction->transaction_type_id = 1;
-                }
-                $transaction->process_id = $process->id;
-                $transaction->created_by = session('user_id');
-
-                $transaction->save();
-
-            }else{
-                $issue[] = $d;
+            } elseif (str_contains($designation, 'DELIVERY - DHL Express')) {
+                $tracking = str_replace('DELIVERY - DHL Express - ', '', $designation);
+                $order = Order_model::where('tracking_number', $tracking)
+                    ->where('order_type_id', 3)
+                    ->first();
+                $referenceId = $order ? null : $tracking;
+            } elseif (str_contains($designation, 'avoir_commission_order_id')) {
+                $ref = trim(str_replace('avoir_commission_order_id', '', $designation));
+                $order = Order_model::where('reference_id', $ref)
+                    ->where('order_type_id', 3)
+                    ->first();
             }
-            print_r($d);
+
+            if (!$order && empty($referenceId)) {
+                $issues[] = $row;
+                continue;
+            }
+
+            $currency = Currency_model::where('code', $currencyCode)->first();
+            if (!$currency) {
+                $issues[] = $row;
+                continue;
+            }
+
+            $data = [
+                'amount' => $amount,
+                'currency' => $currency->id,
+                'date' => Carbon::parse($valueDate)->format('Y-m-d H:i:s'),
+                'description' => $invoiceKey,
+            ];
+
+            if ($order) {
+                $data['order_id'] = $order->id;
+                $data['customer_id'] = $order->customer_id;
+                $data['order_type_id'] = 3;
+            } else {
+                $data['reference_id'] = $referenceId;
+            }
+
+            $transaction = Account_transaction_model::firstOrNew($data);
+
+            if ($transaction->exists) {
+                continue;
+            }
+
+            $transaction->transaction_type_id = $amount < 0 ? 2 : 1;
+            $transaction->process_id = $process->id;
+            $transaction->created_by = session('user_id');
+            $transaction->save();
         }
 
-        if(count($issue) > 0){
-            session()->put('error', json_encode($issue));
+        if (!empty($issues)) {
+            session()->put('error', json_encode($issues));
         }
-        return redirect()->back();
 
+        return back()->with('success', 'Transaction sheet processed successfully.');
     }
+
+    // public function add_transaction_sheet()
+    // {
+    //     ini_set('max_execution_time', 300);
+    //     ini_set('memory_limit', '512M');
+
+    //     $issue = [];
+    //     request()->validate([
+    //         'sheet' => 'required|file|mimes:xlsx,xls,csv',
+    //     ]);
+
+    //     // Store the uploaded file in a temporary location
+    //     $filePath = request()->file('sheet')->store('temp');
+
+    //     // // Perform operations on the Excel file
+    //     // $spreadsheet = IOFactory::load(storage_path('app/'.$filePath));
+    //     // // Perform your operations here...
+
+    //     // Replace 'your-excel-file.xlsx' with the actual path to your Excel file
+    //     $excelFilePath = storage_path('app/'.$filePath);
+
+    //     $data = Excel::toArray([], $excelFilePath)[0];
+    //     $dh = $data[0];
+    //     // print_r($dh);
+    //     unset($data[0]);
+    //     $arrayLower = array_map('strtolower', $dh);
+    //     // Search for the lowercase version of the search value in the lowercase array
+    //     $order_id = array_search('order_id', $arrayLower);
+    //     if(!in_array('order_id', $arrayLower)){
+    //         print_r($dh);
+    //         session()->put('error', "Heading not Found(order_id)");
+    //         return redirect()->back();
+    //         // die;
+    //     }
+    //     $value_date = array_search('value_date', $arrayLower);
+    //     if(!in_array('value_date', $arrayLower)){
+    //         print_r($dh);
+    //         session()->put('error', "Heading not Found(value_date)");
+    //         return redirect()->back();
+    //         // die;
+    //     }
+    //     $invoice_key = array_search('invoice_key', $arrayLower);
+    //     if(!in_array('invoice_key', $arrayLower)){
+    //         print_r($dh);
+    //         session()->put('error', "Heading not Found(invoice_key)". $invoice_key);
+    //         return redirect()->back();
+    //         // die;
+    //     }
+    //     $amoun = array_search('amount', $arrayLower);
+    //     if(!in_array('amount', $arrayLower)){
+    //         print_r($dh);
+    //         session()->put('error', "Heading not Found(amount)");
+    //         return redirect()->back();
+    //         // die;
+    //     }
+    //     $currenc = array_search('currency', $arrayLower);
+    //     if(!in_array('currency', $arrayLower)){
+    //         print_r($dh);
+    //         session()->put('error', "Heading not Found(currency)");
+    //         return redirect()->back();
+    //         // die;
+    //     }
+    //     $designation = array_search('designation', $arrayLower);
+    //     if(!in_array('designation', $arrayLower)){
+    //         print_r($dh);
+    //         session()->put('error', "Heading not Found(designation)");
+    //         return redirect()->back();
+    //         // die;
+    //     }
+
+    //     $process = Process_model::where(['process_type_id' => 19, 'description' => request()->file('sheet')->getClientOriginalName()])->first();
+    //     if($process){
+    //         session()->put('error', "This file has already been processed");
+    //         return redirect()->back();
+    //     }else{
+    //         $process = new Process_model();
+    //         $process->process_type_id = 19;
+    //         $process->description = request()->file('sheet')->getClientOriginalName();
+    //         $process->admin_id = session('user_id');
+    //         $process->status = 1;
+    //         $process->save();
+
+    //     }
+    //     $or = new Order();
+    //     // dd($dh);
+    //     foreach($data as $dr => $d) {
+    //         $order = Order_model::where('reference_id',trim($d[$order_id]))->where('order_type_id',3)->first();
+    //         if($order == null && $d[$order_id] != '' && $d[$order_id] != 'None'){
+
+    //             $or->recheck(trim($d[$order_id]));
+    //             $order = Order_model::where('reference_id',trim($d[$order_id]))->where('order_type_id',3)->first();
+    //         }elseif($order == null && $d[$order_id] == 'None' && str_contains($d[$designation],'DELIVERY - DHL Express')){
+    //             $tracking = str_replace('DELIVERY - DHL Express - ','',$d[$designation]);
+    //             $order = Order_model::where('tracking_number',$tracking)->where('order_type_id',3)->first();
+    //             if($order == null){
+    //                 $reference_id = $tracking;
+    //             }
+    //         }elseif($order == null && $d[$order_id] == '' && str_contains($d[$designation],'avoir_commission_order_id')){
+    //             $ord = str_replace('avoir_commission_order_id','',$d[$designation]);
+    //             $order = Order_model::where('reference_id',trim($ord))->where('order_type_id',3)->first();
+    //         }else{
+    //             $reference_id = '';
+    //         }
+    //         if($order || isset($reference_id)){
+
+    //             $amount = str_replace(',','',$d[$amoun]);
+    //             $currency = Currency_model::where('code',$d[$currenc])->first();
+
+    //             if($order){
+    //                 $transaction = Account_transaction_model::firstOrNew([
+    //                     'order_id' => $order->id,
+    //                     'customer_id' => $order->customer_id,
+    //                     'order_type_id' => 3,
+    //                     'amount' => $amount,
+    //                     'currency' => $currency->id,
+    //                     'date' => Carbon::parse($d[$value_date])->format('Y-m-d H:i:s'),
+    //                     'description' => $d[$invoice_key],
+    //                 ]);
+    //             }else{
+    //                 $transaction = Account_transaction_model::firstOrNew([
+    //                     'reference_id' => $reference_id,
+    //                     'order_id' => null,
+    //                     'customer_id' => null,
+    //                     'order_type_id' => null,
+    //                     'amount' => $amount,
+    //                     'currency' => $currency->id,
+    //                     'date' => Carbon::parse($d[$value_date])->format('Y-m-d H:i:s'),
+    //                     'description' => $d[$invoice_key],
+    //                 ]);
+    //             }
+    //             if($transaction->id){
+    //                 continue;
+    //             }
+    //             if($amount < 0){
+    //                 $transaction->transaction_type_id = 2;
+    //             }else{
+    //                 $transaction->transaction_type_id = 1;
+    //             }
+    //             $transaction->process_id = $process->id;
+    //             $transaction->created_by = session('user_id');
+
+    //             $transaction->save();
+
+    //         }else{
+    //             $issue[] = $d;
+    //         }
+    //         print_r($d);
+    //     }
+
+    //     if(count($issue) > 0){
+    //         session()->put('error', json_encode($issue));
+    //     }
+    //     return redirect()->back();
+
+    // }
     public function add_payment()
     {
         // dd(request()->all());
