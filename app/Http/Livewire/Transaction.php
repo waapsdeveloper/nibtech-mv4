@@ -147,9 +147,12 @@ class Transaction extends Component
 
         }
         $or = new Order();
-        // dd($dh);
-        foreach($data as $dr => $d) {
-            $order = Order_model::where('reference_id',trim($d[$order_id]))->where('order_type_id',3)->first();
+        $transactions = [];
+        $now = now();
+
+        foreach ($data as $dr => $d) {
+            $referenceId = null;
+            $order = Order_model::where('reference_id', trim($d[$order_id]))->where('order_type_id', 3)->first();
             if($order == null && $d[$order_id] != '' && $d[$order_id] != 'None'){
 
                 $or->recheck(trim($d[$order_id]));
@@ -158,61 +161,51 @@ class Transaction extends Component
                 $tracking = str_replace('DELIVERY - DHL Express - ','',$d[$designation]);
                 $order = Order_model::where('tracking_number',$tracking)->where('order_type_id',3)->first();
                 if($order == null){
-                    $reference_id = $tracking;
+                    $referenceId = $tracking;
                 }
             }elseif($order == null && $d[$order_id] == '' && str_contains($d[$designation],'avoir_commission_order_id')){
                 $ord = str_replace('avoir_commission_order_id','',$d[$designation]);
                 $order = Order_model::where('reference_id',trim($ord))->where('order_type_id',3)->first();
             }else{
-                $reference_id = '';
+                $referenceId = '';
             }
-            if($order || isset($reference_id)){
+            if($order || isset($referenceId)){
 
-                $amount = str_replace(',','',$d[$amoun]);
-                $currency = Currency_model::where('code',$d[$currenc])->first();
+                $amount = str_replace(',', '', $d[$amoun]);
+                $currency = Currency_model::where('code', $d[$currenc])->first();
 
-                if($order){
-                    $transaction = Account_transaction_model::firstOrNew([
-                        'order_id' => $order->id,
-                        'customer_id' => $order->customer_id,
-                        'order_type_id' => 3,
-                        'amount' => $amount,
-                        'currency' => $currency->id,
-                        'date' => Carbon::parse($d[$value_date])->format('Y-m-d H:i:s'),
-                        'description' => $d[$invoice_key],
-                    ]);
-                }else{
-                    $transaction = Account_transaction_model::firstOrNew([
-                        'reference_id' => $reference_id,
-                        'order_id' => null,
-                        'customer_id' => null,
-                        'order_type_id' => null,
-                        'amount' => $amount,
-                        'currency' => $currency->id,
-                        'date' => Carbon::parse($d[$value_date])->format('Y-m-d H:i:s'),
-                        'description' => $d[$invoice_key],
-                    ]);
-                }
-                if($transaction->id){
+                if (!$currency) {
+                    $issue[] = $d;
                     continue;
                 }
-                if($amount < 0){
-                    $transaction->transaction_type_id = 2;
-                }else{
-                    $transaction->transaction_type_id = 1;
-                }
-                $transaction->process_id = $process->id;
-                $transaction->created_by = session('user_id');
 
-                $transaction->save();
+                $basePayload = [
+                    'reference_id'          => $referenceId,
+                    'order_id'              => $order?->id,
+                    'customer_id'           => $order?->customer_id,
+                    'order_type_id'         => $order ? 3 : null,
+                    'amount'                => $amount,
+                    'currency'              => $currency->id,
+                    'date'                  => Carbon::parse($d[$value_date])->format('Y-m-d H:i:s'),
+                    'description'           => $d[$invoice_key],
+                    'transaction_type_id'   => $amount < 0 ? 2 : 1,
+                    'process_id'            => $process->id,
+                    'created_by'            => session('user_id'),
+                    'created_at'            => $now,
+                    'updated_at'            => $now,
+                ];
 
-            }else{
+                $transactions[] = $basePayload;
+            } else {
                 $issue[] = $d;
             }
-            print_r($d);
         }
 
-        if(count($issue) > 0){
+        foreach (array_chunk($transactions, 500) as $chunk) {
+            Account_transaction_model::insertOrIgnore($chunk);
+        }
+
+        if (count($issue) > 0) {
             session()->put('error', json_encode($issue));
         }
         return redirect()->back();
