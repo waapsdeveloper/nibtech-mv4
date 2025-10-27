@@ -41,6 +41,9 @@ class Transaction extends Component
         ->when(request('end_date') != '', function ($q) {
             return $q->whereDate('created_at', '<=', request('end_date') . ' 23:59:59');
         })
+        ->when(request('status') != '', function ($q) {
+            return $q->where('status', request('status'));
+        })
         ->orderBy('id','desc')
         ->paginate($per_page);
         $data['transactions'] = $transactions;
