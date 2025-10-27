@@ -102,6 +102,12 @@ class Api_request_model extends Model
                 continue;
 
             }
+            if(config('app.url') == 'https://sdpos.nibritaintech.com' && in_array(trim($datas->PCName), ['PC5'])){
+
+                $request->send_to_eg();
+                continue;
+
+            }
             if(in_array($datas->Memory, $storages)){
                 $storage = array_search($datas->Memory,$storages);
             }elseif(in_array(substr($datas->Memory, 0, -2), $storages)){
