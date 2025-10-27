@@ -88,7 +88,7 @@ class Api_request_model extends Model
             }
 
             if(!$stock && $datas->Imei == '' && $datas->Imei2 == ''){
-                if(config('app.url') == 'https://sdpos.nibritaintech.com' && in_array(trim($datas->PCName), ['PC12', 'PC13', 'PC14', 'PC15', 'PC16'])){
+                if(config('app.url') == 'https://sdpos.nibritaintech.com' && in_array(trim($datas->PCName), ['PC12', 'PC13', 'PC14', 'PC15', 'PC16', 'PC17'])){
 
                     $request->send_to_yk();
                     continue;
@@ -96,7 +96,7 @@ class Api_request_model extends Model
                 }
                 continue;
             }
-            if(config('app.url') == 'https://sdpos.nibritaintech.com' && in_array(trim($datas->PCName), ['PC12', 'PC13', 'PC14', 'PC15', 'PC16'])){
+            if(config('app.url') == 'https://sdpos.nibritaintech.com' && in_array(trim($datas->PCName), ['PC12', 'PC13', 'PC14', 'PC15', 'PC16', 'PC17'])){
 
                 $request->send_to_yk();
                 continue;
@@ -235,7 +235,7 @@ class Api_request_model extends Model
                 continue;
 
             }
-            if(config('app.url') == 'https://sdpos.nibritaintech.com' && in_array(trim($datas->PCName), ['PC12', 'PC13', 'PC14', 'PC15', 'PC16']) && $stock != null){
+            if(config('app.url') == 'https://sdpos.nibritaintech.com' && in_array(trim($datas->PCName), ['PC12', 'PC13', 'PC14', 'PC15', 'PC16', 'PC17']) && $stock != null){
 
                 $request->send_to_yk();
                 continue;
