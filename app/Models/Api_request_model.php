@@ -168,7 +168,7 @@ class Api_request_model extends Model
                         $grade = array_search($gradeName1, $lowercaseGrades);
                     }
 
-                    $gradeName2 = explode('|', $gradeName)[1];
+                    $gradeName2 = explode('/ ', $gradeName)[1];
                     if($gradeName2 == 'ok'){
                         $sub_grade = 5;
                     }else{
