@@ -354,17 +354,34 @@ class Index extends Component
             $data['ttl_average'] = $data['total_order_items']->pluck('average_price', 'currency');
             $data['ttl_total'] = $data['total_order_items']->pluck('total_price', 'currency');
 
+            $data['total_invoiced_items'] = Order_item_model::whereBetween('orders.processed_at', [$start_date, $end_date])
+                ->when(request('data') == 1, function($q) use ($variation_ids){
+                    return $q->whereIn('variation_id', $variation_ids);
+                })
+                ->selectRaw('orders.currency, AVG(order_items.price) as average_price, SUM(order_items.price) as total_price')
+                ->join('orders', 'order_items.order_id', '=', 'orders.id')
+                ->where('orders.order_type_id', 3)
+                ->whereNull('orders.deleted_at')
+                ->whereNull('order_items.deleted_at')
+                ->groupBy('orders.currency')
+                ->get();
+
+            $data['ttl_invoiced_average'] = $data['total_invoiced_items']->pluck('average_price', 'currency');
+            $data['ttl_invoiced_total'] = $data['total_invoiced_items']->pluck('total_price', 'currency');
+
             $data['ttl'] = [];
-            if($data['ttl_average']->count() == 0){
+            if($data['ttl_average']->count() == 0 && $data['ttl_invoiced_average']->count() == 0){
                 $data['ttl'] = [];
             }else{
-
-                $data['currencies'] = Currency_model::whereIn('id', $data['ttl_average']->keys())->pluck('code', 'id');
-                $data['currency_signs'] = Currency_model::whereIn('id', $data['ttl_average']->keys())->pluck('sign', 'id');
+                $currency_ids = $data['ttl_average']->keys()->merge($data['ttl_invoiced_average']->keys())->unique();
+                $data['currencies'] = Currency_model::whereIn('id', $currency_ids)->pluck('code', 'id');
+                $data['currency_signs'] = Currency_model::whereIn('id', $currency_ids)->pluck('sign', 'id');
 
                 foreach($data['currencies'] as $key => $currency){
-                    $data['ttl']['Average '.$currency] = $data['currency_signs'][$key] . amount_formatter($data['ttl_average'][$key], 2);
-                    $data['ttl']['Total '.$currency] = $data['currency_signs'][$key] . amount_formatter($data['ttl_total'][$key], 2);
+                    $data['ttl']['Average '.$currency] = $data['currency_signs'][$key] . amount_formatter(($data['ttl_average'][$key] ?? 0), 2);
+                    $data['ttl']['Total '.$currency] = $data['currency_signs'][$key] . amount_formatter(($data['ttl_total'][$key] ?? 0), 2);
+                    $data['ttl']['Invoiced Average '.$currency] = $data['currency_signs'][$key] . amount_formatter(($data['ttl_invoiced_average'][$key] ?? 0), 2);
+                    $data['ttl']['Invoiced Total '.$currency] = $data['currency_signs'][$key] . amount_formatter(($data['ttl_invoiced_total'][$key] ?? 0), 2);
                 }
             }
             // $data['currencies'] = Currency_model::whereIn('id', key($data['ttl_average']))->pluck('code', 'id');
