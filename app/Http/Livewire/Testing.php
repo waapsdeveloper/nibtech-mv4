@@ -39,7 +39,7 @@ class Testing extends Component
         // $this->remove_extra_variations();
 
         // die;
-        $requests = Api_request_model::whereNull('status')->orderBy('id','desc')->limit(100)->get();
+        $requests = Api_request_model::whereNull('status')->orderBy('id','desc')->get();
 
         $data['requests'] = $requests;
 
