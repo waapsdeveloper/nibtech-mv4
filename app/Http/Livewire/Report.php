@@ -17,9 +17,9 @@ use App\Models\Order_model;
 use App\Models\Order_item_model;
 use App\Models\Products_model;
 use App\Models\Color_model;
-use App\Models\Currency_exchange_model;
 use App\Models\Currency_model;
 use App\Models\Customer_model;
+use App\Models\ExchangeRate;
 use App\Models\Storage_model;
 use App\Models\Grade_model;
 use App\Models\Multi_type_model;
@@ -1422,7 +1422,7 @@ class Report extends Component
 
         $data['currency_ids'] = $b2c_prices_by_currency->keys()->merge($b2c_charges_by_currency->keys())->merge($b2c_return_prices_by_currency->keys())->unique();
 
-        $exchange_rates = Currency_exchange_model::whereIn('currency_id', $data['currency_ids'])->pluck('rate', 'currency_id')->toArray();
+        $exchange_rates = ExchangeRate::whereIn('currency_id', $data['currency_ids'])->pluck('rate', 'currency_id')->toArray();
 
 
         $total['orders'] = $sale_data['b2c_orders'] + $b2b_data['b2b_orders'] . ' - ' . $return_data['b2c_returns'] + $b2b_return_data['b2b_returns'];
