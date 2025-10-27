@@ -378,8 +378,8 @@ class Index extends Component
                 $data['currency_signs'] = Currency_model::whereIn('id', $currency_ids)->pluck('sign', 'id');
 
                 foreach($data['currencies'] as $key => $currency){
-                    $data['ttl']['Average '.$currency] = $data['currency_signs'][$key] . amount_formatter(($data['ttl_average'][$key] ?? 0), 2);
-                    $data['ttl']['Total '.$currency] = $data['currency_signs'][$key] . amount_formatter(($data['ttl_total'][$key] ?? 0), 2);
+                    $data['ttl']['Ord Avg '.$currency] = $data['currency_signs'][$key] . amount_formatter(($data['ttl_average'][$key] ?? 0), 2);
+                    $data['ttl']['Ord Ttl '.$currency] = $data['currency_signs'][$key] . amount_formatter(($data['ttl_total'][$key] ?? 0), 2);
                     $data['ttl']['Inv Avg '.$currency] = $data['currency_signs'][$key] . amount_formatter(($data['ttl_invoiced_average'][$key] ?? 0), 2);
                     $data['ttl']['Inv Ttl '.$currency] = $data['currency_signs'][$key] . amount_formatter(($data['ttl_invoiced_total'][$key] ?? 0), 2);
                 }
