@@ -88,7 +88,7 @@ class Api_request_model extends Model
             }
 
             if(!$stock && $datas->Imei == '' && $datas->Imei2 == ''){
-                if(config('app.url') == 'https://sdpos.nibritaintech.com' && in_array(trim($datas->PCName), ['PC12', 'PC13', 'PC14', 'PC15'])){
+                if(config('app.url') == 'https://sdpos.nibritaintech.com' && in_array(trim($datas->PCName), ['PC12', 'PC13', 'PC14', 'PC15', 'PC16'])){
 
                     $request->send_to_yk();
                     continue;
