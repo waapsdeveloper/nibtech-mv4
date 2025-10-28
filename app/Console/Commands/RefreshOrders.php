@@ -47,12 +47,12 @@ class RefreshOrders extends Command
         $currency_codes = Currency_model::pluck('id','code');
         $country_codes = Country_model::pluck('id','code');
         echo 1;
-        $resArray1 = $bm->getNewOrders();
+        $resArray1 = $bm->getNewOrders(['page-size'=>50]);
         if ($resArray1 !== null) {
             foreach ($resArray1 as $orderObj) {
                 if (!empty($orderObj)) {
                     foreach($orderObj->orderlines as $orderline){
-                        $this->validateOrderlines($orderObj->order_id, $orderline->listing);
+                        $this->validateOrderlines($orderObj->order_id, $orderline->listing, $bm);
                     }
                 }
             }
@@ -62,27 +62,12 @@ class RefreshOrders extends Command
             $modification = false;
         $resArray = $bm->getAllOrders(1, ['page-size'=>50], $modification);
         if ($resArray !== null) {
-            // print_r($resArray);
             foreach ($resArray as $orderObj) {
                 if (!empty($orderObj)) {
-                // print_r($orderObj);
                 $order_model->updateOrderInDB($orderObj, false, $bm, $currency_codes, $country_codes);
                 $order_item_model->updateOrderItemsInDB($orderObj,null,$bm);
                 echo 3;
-                // Dispatch the job to update or insert data into the database
-                // Serialize the payload data to compare
-                // $serializedPayload = serialize([$orderObj]);
-
-                // // Query the database to check if a job with the same payload already exists
-                // if (!Job_model::where('payload', $serializedPayload)->exists()) {
-                //     // Dispatch the job if it doesn't already exist
-                //     UpdateOrderInDB::dispatch($orderObj);
-                // }
-
-                // $this->updateOrderItemsInDB($orderObj);
                 }
-                // print_r($orderObj);
-                // if($i == 0){ break; } else { $i++; }
             }
         } else {
             echo 'No orders have been modified in 3 months!';
@@ -90,9 +75,8 @@ class RefreshOrders extends Command
 
     }
 
-    private function validateOrderlines($order_id, $sku, $validated = true)
+    private function validateOrderlines($order_id, $sku, $bm)
     {
-        $bm = new BackMarketAPIController();
         $end_point = 'orders/' . $order_id;
         $new_state = 2;
 
