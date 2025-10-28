@@ -1454,8 +1454,8 @@ class Report extends Component
 
                 $total['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id] + $b2b_total) . ' - ' . amount_formatter($b2c_return_totals[$currency_id] + $b2b_return_totals);
                 $net['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id] + $b2b_total - $b2c_return_totals[$currency_id] - $b2b_return_totals);
-dd($grand);
-                $grand += $net['total'][$currency_id];
+
+                $grand += $b2c_totals[$currency_id] + $b2b_total - $b2c_return_totals[$currency_id] - $b2b_return_totals;
 
             }else{
                 $return = isset($b2c_return_price[$currency_id]) ? $b2c_return_price[$currency_id] : 0;
@@ -1475,8 +1475,7 @@ dd($grand);
                 $total['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id]) . ' - ' . amount_formatter($b2c_return_totals[$currency_id]);
                 $net['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id] - $b2c_return_totals[$currency_id]);
 
-                $grand += $net['total'][$currency_id] * $rates[$currency_id];
-                dd($grand);
+                $grand += ($b2c_totals[$currency_id] - $b2c_return_totals[$currency_id]) * $rates[$currency_id];
             }
 
         }
