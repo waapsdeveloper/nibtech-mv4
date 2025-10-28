@@ -193,7 +193,7 @@ class Functions extends Command
     private function misc(){
 
         $variations = Variation_model::whereNull('product_storage_sort_id')->get();
-
+        echo " Misc";
         if($variations->count() > 0){
             echo $variations->count();
             foreach($variations as $variation){
