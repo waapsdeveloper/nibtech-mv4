@@ -806,6 +806,13 @@
                                 }
                                 table += `
                                     </tr>
+                                    <tr>
+                                        <td colspan="${5 + Object.keys(data.currency_ids).length * 2}"><small><i>Note: Profit/Loss is calculated as (Price - Charges) - (Cost + Repair Cost)</i></small></td>
+                                        <td>Grand Total in €</td>
+                                        <td>
+                                            €${data.grand_total}
+                                        </td>
+                                    </tr>
                                 </tfoot>
                             </table>
                         `;
