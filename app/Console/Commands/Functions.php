@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Http\Controllers\BackMarketAPIController;
 use App\Http\Livewire\Order;
+use App\Models\Account_transaction_model;
 use App\Models\Api_request_model;
 use App\Models\Color_model;
 use App\Models\Order_model;
@@ -126,11 +127,62 @@ class Functions extends Command
 
     }
 
-    public function merge_order_transactions(){
-        $orders = Order_model::where(['order_type_id'=>3])->with(['transactions', 'order_charges'])->whereHas('transactions', function ($q) {
-                $q->where('status', null);
-            })->orderByDesc('id')->limit(60)->each(function ($order) {
-                echo $order->merge_transaction_charge();
+    public function merge_order_transactions()
+    {
+        $latestRef = optional(
+            Account_transaction_model::whereNotNull('reference_id')
+                ->whereRaw('reference_id REGEXP "^[0-9]+$"')
+                ->orderByDesc('reference_id')
+                ->first()
+        )->reference_id ?? 0;
+
+        Order_model::where('order_type_id', 3)
+            ->with([
+                'transactions' => fn ($q) => $q->whereNull('status')->orderBy('id'),
+                'order_charges.charge'
+            ])
+            ->whereHas('transactions', fn ($q) => $q->whereNull('status'))
+            ->orderByDesc('id')
+            ->limit(60)
+            ->each(function ($order) use (&$latestRef) {
+                $chargesByName = $order->order_charges->keyBy(
+                    fn ($orderCharge) => trim(optional($orderCharge->charge)->name)
+                );
+
+                $changed = false;
+
+                foreach ($order->transactions as $transaction) {
+                    $description = trim($transaction->description);
+
+                    if ($description === 'sales') {
+                        $transaction->reference_id = ++$latestRef;
+                        $transaction->status = 1;
+                        $transaction->save();
+                        continue;
+                    }
+
+                    if (!$chargesByName->has($description)) {
+                        continue;
+                    }
+
+                    $orderCharge = $chargesByName->get($description);
+                    $amount = abs($transaction->amount);
+
+                    $orderCharge->transaction_id = $transaction->id;
+                    $orderCharge->amount = $amount;
+                    $orderCharge->save();
+
+                    $transaction->reference_id = ++$latestRef;
+                    $transaction->status = 1;
+                    $transaction->save();
+
+                    $changed = true;
+                }
+
+                if ($changed) {
+                    $order->charges = $order->order_charges->sum('amount');
+                    $order->save();
+                }
             });
     }
 
