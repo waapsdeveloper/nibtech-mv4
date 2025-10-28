@@ -124,7 +124,7 @@ class Order extends Component
             }
         }
 
-        $orders = Order_model::with(['customer','customer.orders','order_items','order_items.variation','order_items.variation.product', 'order_items.variation.grade_id', 'order_items.stock', 'order_items.replacement', 'transactions'])
+        $orders = Order_model::with(['customer','customer.orders','order_items','order_items.variation','order_items.variation.product', 'order_items.variation.grade_id', 'order_items.stock', 'order_items.replacement', 'transactions', 'order_charges'])
         // ->where('orders.order_type_id',3)
 
         ->when(request('type') == '', function ($q) {

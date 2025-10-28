@@ -127,7 +127,7 @@ class Functions extends Command
     }
 
     public function merge_order_transactions(){
-        $orders = Order_model::where(['order_type_id'=>3])->whereHas('transactions', function ($q) {
+        $orders = Order_model::where(['order_type_id'=>3])->with(['transactions', 'order_charges'])->whereHas('transactions', function ($q) {
                 $q->where('status', null);
             })->orderByDesc('id')->limit(60)->each(function ($order) {
                 echo $order->merge_transaction_charge();
