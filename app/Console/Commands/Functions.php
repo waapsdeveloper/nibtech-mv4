@@ -54,7 +54,7 @@ class Functions extends Command
         echo 5;
         $this->merge_order_transactions();
         echo 6;
-        $this->push_testing_api();
+        // $this->push_testing_api();
         return 0;
     }
     private function refund_currency(){
