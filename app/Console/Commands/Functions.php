@@ -54,7 +54,7 @@ class Functions extends Command
         echo " 5";
         $this->merge_order_transactions();
         echo " 6";
-        // $this->push_testing_api();
+        $this->push_testing_api();
         return 0;
     }
     private function refund_currency(){
@@ -136,15 +136,17 @@ class Functions extends Command
                 ->first()
         )->reference_id ?? 0;
 
-        Order_model::where('order_type_id', 3)
+        Order_model::query()->where('order_type_id', 3)
             ->with([
                 'transactions' => fn ($q) => $q->whereNull('status')->orderBy('id'),
                 'order_charges.charge'
             ])
             ->whereHas('transactions', fn ($q) => $q->whereNull('status'))
             ->orderByDesc('id')
-            ->limit(60)
+            ->limit(1000)
+            ->get()
             ->each(function ($order) use (&$latestRef) {
+                echo 1;
                 $chargesByName = $order->order_charges->keyBy(
                     fn ($orderCharge) => trim(optional($orderCharge->charge)->name)
                 );
@@ -218,7 +220,7 @@ class Functions extends Command
         echo " Misc2 ";
         $order_c = new Order();
         Order_model::query()->whereNull('scanned')->where('order_type_id',3)->whereNotNull('tracking_number')->whereBetween('created_at', ['2025-05-01 00:00:00', now()->subDays(1)->format('Y-m-d H:i:s')])
-        ->orderByDesc('id')->limit(50)->get()->each(function($order) use ($order_c){
+        ->orderByDesc('id')->limit(100)->get()->each(function($order) use ($order_c){
             echo 1;
             $order_c->getLabel($order->reference_id, false, true);
         });
