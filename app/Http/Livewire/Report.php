@@ -1489,7 +1489,7 @@ class Report extends Component
 
                 echo $grand += ($curr_b2c_total - $curr_b2c_return_total) * $rates[$currency_id];
             }
-
+            echo " ";
         }
 
 
