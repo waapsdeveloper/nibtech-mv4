@@ -1421,8 +1421,15 @@ class Report extends Component
 
 
         $data['currency_ids'] = $b2c_prices_by_currency->keys()->merge($b2c_charges_by_currency->keys())->merge($b2c_return_prices_by_currency->keys())->unique();
+        $currency_codes = Currency_model::whereIn('id', $data['currency_ids'])->pluck('code','id')->toArray();
+        $exchange_rates = ExchangeRate::whereIn('target_currency', array_values($currency_codes))
+            ->pluck('rate','target_currency')
+            ->toArray();
 
-        $exchange_rates = ExchangeRate::whereIn('currency_id', $data['currency_ids'])->pluck('rate', 'currency_id')->toArray();
+        // Ensure every currency_id from $data['currency_ids'] has an entry (default 0 when missing)
+        foreach ($currency_codes as $cid => $code) {
+            $rates[$cid] = $exchange_rates[$code] ?? 0;
+        }
 
 
         $total['orders'] = $sale_data['b2c_orders'] + $b2b_data['b2b_orders'] . ' - ' . $return_data['b2c_returns'] + $b2b_return_data['b2b_returns'];
@@ -1468,7 +1475,7 @@ class Report extends Component
                 $total['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id]) . ' - ' . amount_formatter($b2c_return_totals[$currency_id]);
                 $net['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id] - $b2c_return_totals[$currency_id]);
 
-                $grand += $net['total'][$currency_id] + $exchange_rates[$currency_id];
+                $grand += $net['total'][$currency_id] + $rates[$currency_id];
             }
 
         }
