@@ -217,8 +217,8 @@ class Functions extends Command
         }
         echo " Misc2 ";
         $order_c = new Order();
-        Order_model::whereNull('scanned')->where('order_type_id',3)->whereNotNull('tracking_number')->whereBetween('created_at', ['2025-05-01 00:00:00', now()->subDays(1)->format('Y-m-d H:i:s')])
-        ->orderByDesc('id')->limit(50)->each(function($order) use ($order_c){
+        Order_model::query()->whereNull('scanned')->where('order_type_id',3)->whereNotNull('tracking_number')->whereBetween('created_at', ['2025-05-01 00:00:00', now()->subDays(1)->format('Y-m-d H:i:s')])
+        ->orderByDesc('id')->limit(50)->get()->each(function($order) use ($order_c){
             echo 1;
             $order_c->getLabel($order->reference_id, false, true);
         });
