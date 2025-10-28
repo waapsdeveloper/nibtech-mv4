@@ -1503,7 +1503,7 @@ class Report extends Component
         $data['total'] = $total;
         $data['net'] = $net;
 
-        $data['grand_total'] = $grand;
+        $data['grand_total'] = amount_formatter($grand);
 
         return response()->json($data);
 
