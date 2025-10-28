@@ -41,7 +41,7 @@
         <br>
         <form action="" method="GET" id="search">
             <div class="row">
-                <div class="col-lg-3 col-xl-3 col-md-3 col-sm-6">
+                <div class="col-lg-2 col-xl-2 col-md-2 col-sm-6">
                     <div class="card-header">
                         <h4 class="card-title mb-1">Transaction ID</h4>
                     </div>
@@ -64,13 +64,13 @@
                     </div>
                     <input type="text" class="form-control" name="description" placeholder="Enter Description" value="@isset($_GET['description']){{$_GET['description']}}@endisset">
                 </div>
-                <div class="col-lg-3 col-xl-3 col-md-3 col-sm-6">
+                <div class="col-lg-2 col-xl-2 col-md-2 col-sm-6">
                     <div class="card-header">
                         <h4 class="card-title mb-1">{{ __('locale.Start Date') }}</h4>
                     </div>
                     <input class="form-control" name="start_date" id="datetimepicker" type="date" value="@isset($_GET['start_date']){{$_GET['start_date']}}@endisset">
                 </div>
-                <div class="col-lg-3 col-xl-3 col-md-3 col-sm-6">
+                <div class="col-lg-2 col-xl-2 col-md-2 col-sm-6">
                     <div class="card-header">
                         <h4 class="card-title mb-1">{{ __('locale.End Date') }}</h4>
                     </div>
