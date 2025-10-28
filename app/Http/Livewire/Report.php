@@ -1444,38 +1444,50 @@ class Report extends Component
         $grand = 0;
 
         foreach ($data['currency_ids'] as $currency_id) {
+            $curr_b2c_price = $b2c_price[$currency_id] ?? 0;
+            $curr_b2b_price = $b2b_prices_by_currency ?? 0;
+            $curr_b2c_return_price = $b2c_return_price[$currency_id] ?? 0;
+            $curr_b2b_return_price = $b2b_return_prices_by_currency ?? 0;
+
+            $curr_b2c_charges = $b2c_charge[$currency_id] ?? 0;
+            $curr_b2c_return_charges = $b2c_return_charges_by_currency[$currency_id] ?? 0;
+            $curr_b2b_charges = $b2b_charges_by_currency ?? 0;
+            $curr_b2b_return_charges = $b2b_return_charges_by_currency ?? 0;
+
+            $curr_b2c_total = $b2c_totals[$currency_id] ?? 0;
+            $curr_b2c_return_total = $b2c_return_totals[$currency_id] ?? 0;
+
+
             if ($currency_id == 4){
-                $total['orders_sum'][$currency_id] = amount_formatter($b2c_price[$currency_id] + $b2b_prices_by_currency) . ' - ' . amount_formatter($b2c_return_price[$currency_id] + $b2b_return_prices_by_currency);
-                $net['orders_sum'][$currency_id] = amount_formatter($b2c_price[$currency_id] + $b2b_prices_by_currency - $b2c_return_price[$currency_id] - $b2b_return_prices_by_currency);
+                $total['orders_sum'][$currency_id] = amount_formatter($curr_b2c_price + $curr_b2b_price) . ' - ' . amount_formatter($curr_b2c_return_price + $curr_b2b_return_price);
+                $net['orders_sum'][$currency_id] = amount_formatter($curr_b2c_price + $curr_b2b_price - $curr_b2c_return_price - $curr_b2b_return_price);
 
-                $total['charges_sum'][$currency_id] = amount_formatter($b2c_charge[$currency_id] + $b2b_charges_by_currency) . ' - ' .
-                amount_formatter($b2c_return_charges_by_currency[$currency_id] + $b2b_return_charges_by_currency);
-                $net['charges_sum'][$currency_id] = amount_formatter($b2c_charge[$currency_id] + $b2b_charges_by_currency - $b2c_return_charges_by_currency[$currency_id] - $b2b_return_charges_by_currency);
+                $total['charges_sum'][$currency_id] = amount_formatter($curr_b2c_charges + $curr_b2b_charges) . ' - ' .
+                amount_formatter($curr_b2c_return_charges + $curr_b2b_return_charges);
+                $net['charges_sum'][$currency_id] = amount_formatter($curr_b2c_charges + $curr_b2b_charges - $curr_b2c_return_charges - $curr_b2b_return_charges);
 
-                $total['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id] + $b2b_total) . ' - ' . amount_formatter($b2c_return_totals[$currency_id] + $b2b_return_totals);
-                $net['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id] + $b2b_total - $b2c_return_totals[$currency_id] - $b2b_return_totals);
+                $total['total'][$currency_id] = amount_formatter($curr_b2c_total + $b2b_total) . ' - ' . amount_formatter($curr_b2c_return_total + $b2b_return_totals);
+                $net['total'][$currency_id] = amount_formatter($curr_b2c_total + $b2b_total - $curr_b2c_return_total - $b2b_return_totals);
 
-                $grand += $b2c_totals[$currency_id] + $b2b_total - $b2c_return_totals[$currency_id] - $b2b_return_totals;
+                $grand += $curr_b2c_total + $b2b_total - $curr_b2c_return_total - $b2b_return_totals;
 
             }else{
-                $return = isset($b2c_return_price[$currency_id]) ? $b2c_return_price[$currency_id] : 0;
-                $return_total = isset($b2b_return_totals[$currency_id]) ? $b2b_return_totals[$currency_id] : 0;
 
                 $total['orders_sum'][$currency_id] =
-                amount_formatter($b2c_price[$currency_id]) . ' - ' .
-                amount_formatter($return);
+                amount_formatter($curr_b2c_price) . ' - ' . amount_formatter($curr_b2c_return_price);
 
-                $net['orders_sum'][$currency_id] = amount_formatter($b2c_price[$currency_id] - $return);
+                $net['orders_sum'][$currency_id] = amount_formatter($curr_b2c_price - $curr_b2c_return_price);
 
-                $total['charges_sum'][$currency_id] = amount_formatter($b2c_charge[$currency_id]);
-                $net['charges_sum'][$currency_id] = amount_formatter($b2c_charge[$currency_id]);
+                $total['charges_sum'][$currency_id] = amount_formatter($curr_b2c_charges) . ' - ' .
+                amount_formatter($curr_b2c_return_charges);
+                $net['charges_sum'][$currency_id] = amount_formatter($curr_b2c_charges - $curr_b2c_return_charges);
 
                 // $total['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id]) . ' - ' . amount_formatter($return_total);
                 // $net['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id] - $return_total);
-                $total['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id]) . ' - ' . amount_formatter($b2c_return_totals[$currency_id]);
-                $net['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id] - $b2c_return_totals[$currency_id]);
+                $total['total'][$currency_id] = amount_formatter($curr_b2c_total) . ' - ' . amount_formatter($curr_b2c_return_total);
+                $net['total'][$currency_id] = amount_formatter($curr_b2c_total - $curr_b2c_return_total);
 
-                $grand += ($b2c_totals[$currency_id] - $b2c_return_totals[$currency_id]) * $rates[$currency_id];
+                $grand += ($curr_b2c_total - $curr_b2c_return_total) * $rates[$currency_id];
             }
 
         }
