@@ -1454,7 +1454,7 @@ class Report extends Component
 
                 $total['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id] + $b2b_total) . ' - ' . amount_formatter($b2c_return_totals[$currency_id] + $b2b_return_totals);
                 $net['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id] + $b2b_total - $b2c_return_totals[$currency_id] - $b2b_return_totals);
-
+dd($grand);
                 $grand += $net['total'][$currency_id];
 
             }else{
