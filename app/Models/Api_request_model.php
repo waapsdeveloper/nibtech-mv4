@@ -87,20 +87,21 @@ class Api_request_model extends Model
                 $stock = Stock_model::where('imei',$datas->Imei)->orWhere('imei',$datas->Imei2)->orWhere('serial_number',$datas->Serial)->first();
             }
 
-            if(!$stock && $datas->Imei == '' && $datas->Imei2 == ''){
-                if(config('app.url') == 'https://sdpos.nibritaintech.com' && in_array(trim($datas->PCName), ['PC12', 'PC13', 'PC14', 'PC15', 'PC16'])){
-
-                    $request->send_to_yk();
-                    continue;
-
-                }
-                continue;
-            }
             if(config('app.url') == 'https://sdpos.nibritaintech.com' && in_array(trim($datas->PCName), ['PC12', 'PC13', 'PC14', 'PC15', 'PC16'])){
 
                 $request->send_to_yk();
                 continue;
 
+            }
+            // if domain = sdpos.nibritaintech.com
+            if(config('app.url') == 'https://sdpos.nibritaintech.com' && $stock == null && (str_contains(strtolower($datas->BatchID), 'eg') || str_contains(strtolower($datas->TesterName), 'rizwan') || str_contains(strtolower($datas->TesterName), 'aqeel'))){
+
+                $request->send_to_eg();
+                continue;
+
+            }
+            if(!$stock && $datas->Imei == '' && $datas->Imei2 == ''){
+                continue;
             }
             if(in_array($datas->Memory, $storages)){
                 $storage = array_search($datas->Memory,$storages);
@@ -227,19 +228,6 @@ class Api_request_model extends Model
                     // continue;
                 }
                 // }
-            }
-            // if domain = sdpos.nibritaintech.com
-            if(config('app.url') == 'https://sdpos.nibritaintech.com' && $stock == null && (str_contains(strtolower($datas->BatchID), 'eg') || str_contains(strtolower($datas->TesterName), 'rizwan') || str_contains(strtolower($datas->TesterName), 'aqeel'))){
-
-                $request->send_to_eg();
-                continue;
-
-            }
-            if(config('app.url') == 'https://sdpos.nibritaintech.com' && in_array(trim($datas->PCName), ['PC12', 'PC13', 'PC14', 'PC15', 'PC16']) && $stock != null){
-
-                $request->send_to_yk();
-                continue;
-
             }
 
 
