@@ -44,6 +44,38 @@ class Transaction extends Component
         ->when(request('status') != '', function ($q) {
             return $q->where('status', request('status'));
         })
+        ->when(request('order_id') != '', function ($q) {
+            if(str_contains(request('order_id'),'<')){
+                $order_ref = str_replace('<','',request('order_id'));
+                return $q->where('reference_id', '<', $order_ref);
+            }elseif(str_contains(request('order_id'),'>')){
+                $order_ref = str_replace('>','',request('order_id'));
+                return $q->where('reference_id', '>', $order_ref);
+            }elseif(str_contains(request('order_id'),'<=')){
+                $order_ref = str_replace('<=','',request('order_id'));
+                return $q->where('reference_id', '<=', $order_ref);
+            }elseif(str_contains(request('order_id'),'>=')){
+                $order_ref = str_replace('>=','',request('order_id'));
+                return $q->where('reference_id', '>=', $order_ref);
+            }elseif(str_contains(request('order_id'),'-')){
+                $order_ref = explode('-',request('order_id'));
+                return $q->whereBetween('reference_id', $order_ref);
+            }elseif(str_contains(request('order_id'),',')){
+                $order_ref = explode(',',request('order_id'));
+                return $q->whereIn('reference_id', $order_ref);
+            }elseif(str_contains(request('order_id'),' ')){
+                $order_ref = explode(' ',request('order_id'));
+                return $q->whereIn('reference_id', $order_ref);
+            }else{
+                return $q->where('reference_id', 'LIKE', request('order_id') . '%');
+            }
+        })
+        ->when(request('customer_id'), function ($q) {
+            return $q->where('customer_id', request('customer_id'));
+        })
+        ->when(request('description'), function ($q) {
+            return $q->where('description', 'LIKE', '%' . request('description') . '%');
+        })
         ->orderBy('id','desc')
         ->paginate($per_page);
         $data['transactions'] = $transactions;
