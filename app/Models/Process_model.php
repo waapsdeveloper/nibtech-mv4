@@ -79,4 +79,8 @@ class Process_model extends Model
     {
         return $this->hasMany(Account_transaction_model::class, 'process_id', 'id');
     }
+    public function admin()
+    {
+        return $this->hasOne(Admin_model::class, 'id', 'admin_id');
+    }
 }
