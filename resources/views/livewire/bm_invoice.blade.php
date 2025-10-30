@@ -205,8 +205,9 @@
                                                 <td>{{ $batch->listed_stocks_verification->sum('qty_from') }}</td>
                                                 <td>{{ $batch->listed_stocks_verification->sum('qty_change') }}</td>
                                                 <td>{{ $batch->listed_stocks_verification->sum('qty_to') }}</td>
+                                                <td style="width:220px">{{ $batch->started_at }}</td>
+                                                <td style="width:220px">{{ $batch->ended_at }}</td>
                                                 <td style="width:220px">{{ $batch->created_at }}</td>
-                                                <td style="width:220px">{{ $batch->updated_at }}</td>
                                                 <td>
                                                     <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                                     <div class="dropdown-menu">
