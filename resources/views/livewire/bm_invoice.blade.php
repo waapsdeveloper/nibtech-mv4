@@ -180,7 +180,14 @@
                                                 $id[] = $batch->id;
                                             }
                                             $j = 0;
-
+                                            if($batch->reference_id == null){
+                                                $new_reference = str_replace("bill_eu_",'',$batch->description);
+                                                $new_reference = str_replace(".csv",'',$new_reference);
+                                                $new_reference = trim($new_reference);
+                                                $new_reference = explode('(',$new_reference)[0];
+                                                $batch->reference_id = $new_reference;
+                                                $batch->save();
+                                            }
                                             // if($order->exchange_rate != null){
                                             //     $price = $price * $order->exchange_rate;
                                             // }
