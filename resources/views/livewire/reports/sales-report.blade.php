@@ -199,12 +199,6 @@
                             <td><strong>€{{ amount_formatter($total_eur_profit-$total_eur_loss) }} + £{{ amount_formatter($total_sale_gbp_items-$total_return_gbp_items,2) }}</strong></td>
                         </tr>
                     </tbody>
-                    <tfoot>
-                        <tr>
-                            <th colspan="8" style="text-align:right">Total Profit:</th>
-                            <th>€{{ amount_formatter($grand_total,2) }}</th>
-                        </tr>
-                    </tfoot>
                 </table>
             </div>
         </div>

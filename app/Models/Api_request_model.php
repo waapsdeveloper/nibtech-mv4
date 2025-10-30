@@ -221,12 +221,12 @@ class Api_request_model extends Model
                         $admin = 43;
                     }else{
                         echo "Please create/change Team Member First Name to: ".$adminName;
-                        // continue;
+                        continue;
                     }
                 }else{
                     echo "Hello";
                     echo "Please create/change Team Member First Name to: ".$adminName;
-                    // continue;
+                    continue;
                 }
                 // }
             }
