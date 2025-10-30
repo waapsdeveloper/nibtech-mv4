@@ -156,14 +156,11 @@
                                         <th><small><b>No</b></small></th>
                                         <th><small><b>Batch ID</b></small></th>
                                         <th><small><b>Description</b></small></th>
-                                        <th><small><b>Total Qty</b></small></th>
-                                        <th><small><b>Qty Scanned</b></small></th>
-                                        <th><small><b>Qty Verified</b></small></th>
-                                        <th><small><b>Qty Before</b></small></th>
-                                        <th><small><b>Qty Added</b></small></th>
-                                        <th><small><b>Qty After</b></small></th>
+                                        <th><small><b>Transactions</b></small></th>
+                                        <th><small><b>Admin</b></small></th>
                                         <th><small><b>Start Date</b></small></th>
                                         <th><small><b>End Date</b></small></th>
+                                        <th><small><b>Created Date</b></small></th>
                                         <th></th>
                                     </tr>
                                 </thead>
