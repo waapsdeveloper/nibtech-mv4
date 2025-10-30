@@ -45,7 +45,7 @@ class BMInvoice extends Component
             $per_page = 20;
         }
 
-        $data['batches'] = Process_model::where('process_type_id', 19)
+        $data['batches'] = Process_model::where('process_type_id', 19)->with(['admin', 'transactions'])
         ->when(request('start_date'), function ($q) {
             return $q->where('created_at', '>=', request('start_date'));
         })
