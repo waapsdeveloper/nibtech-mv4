@@ -75,4 +75,8 @@ class Process_model extends Model
     {
         return $this->hasMany(Listed_stock_verification_model::class, 'process_id', 'id');
     }
+    public function transactions()
+    {
+        return $this->hasMany(Account_transaction_model::class, 'process_id', 'id');
+    }
 }

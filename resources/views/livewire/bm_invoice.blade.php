@@ -200,7 +200,7 @@
                                                 <td><a href="{{url('topup/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a></td>
                                                 <td>{{ $batch->description }}</td>
                                                 <td>{{ $batch->quantity }}</td>
-                                                <td>{{ $batch->process_stocks->count() }}</td>
+                                                <td>{{ $batch->transactions->count() }}</td>
                                                 <td>{{ $batch->process_stocks->where('status',2)->count() }}</td>
                                                 <td>{{ $batch->listed_stocks_verification->sum('qty_from') }}</td>
                                                 <td>{{ $batch->listed_stocks_verification->sum('qty_change') }}</td>
