@@ -46,7 +46,10 @@ class Wholesale extends Component
     {
 
         $user_id = session('user_id');
-        $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('company','id');
+        $data['vendors'] = Customer_model::whereNotNull('is_vendor')
+            ->selectRaw("COALESCE(company, first_name) as name, id")
+            ->orderBy('name')
+            ->pluck('name','id');
 
 
         $data['title_page'] = "BulkSales";
