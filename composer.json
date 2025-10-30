@@ -15,6 +15,7 @@
         "guzzlehttp/guzzle": "^7.8",
         "illuminate/mail": "*",
         "intervention/image": "^3.4",
+        "laravel/fortify": "^1.19",
         "laravel/framework": "^9.0",
         "laravel/jetstream": "^3.0",
         "laravel/sanctum": "^3.3",

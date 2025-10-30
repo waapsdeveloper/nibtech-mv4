@@ -41,6 +41,7 @@ class Api_request_model extends Model
 
         $requests = Api_request_model::where('status', null)->orderBy('id','desc')->limit(300)->get();
         // $requests = Api_request_model::orderBy('id','asc')->get();
+        $log_info = 'Add these products manually:'."\n";
         foreach($requests as $request){
             unset($sub_grade);
             $data = $request->request;
@@ -237,7 +238,8 @@ class Api_request_model extends Model
                     if(!str_contains($p->model, 'Dual eSIM')){
                         $product = Products_model::firstOrNew(['model'=>$p->model.' Dual eSIM']);
                         if(!$product->id){
-                            Log::info($p->model.' '.'Dual eSIM');
+                            // Log::info($p->model.' '.'Dual eSIM');
+                            $log_info .= $p->model.' '.'Dual eSIM'."\n";
                             continue;
                             // $product->category = $p->category;
                             // $product->brand = $p->brand;
@@ -283,7 +285,8 @@ class Api_request_model extends Model
                     if(!str_contains($p->model, 'Dual Sim')){
                         $product = Products_model::firstOrNew(['model'=>$p->model.' Dual Sim']);
                         if(!$product->id){
-                            Log::info($p->model.' '.'Dual Sim');
+                            // Log::info($p->model.' '.'Dual Sim');
+                            $log_info .= $p->model.' '.'Dual Sim'."\n";
                             continue;
                             // $product->category = $p->category;
                             // $product->brand = $p->brand;
@@ -328,7 +331,8 @@ class Api_request_model extends Model
                     if(!str_contains($p->model, 'New Battery')){
                         $product = Products_model::firstOrNew(['model'=>$p->model.' New Battery']);
                         if(!$product->id){
-                            Log::info($p->model.' '.'New Battery');
+                            // Log::info($p->model.' '.'New Battery');
+                            $log_info .= $p->model.' '.'New Battery'."\n";
                             continue;
                             // $product->category = $p->category;
                             // $product->brand = $p->brand;
@@ -524,6 +528,9 @@ class Api_request_model extends Model
                 }
             }
         }
+
+        $log_info .= "Add these products manually:"."\n";
+        Log::info($log_info);
 
         return $return;
     }
