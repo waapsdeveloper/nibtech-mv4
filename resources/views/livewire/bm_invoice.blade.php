@@ -37,10 +37,10 @@
                         <input type="text" class="form-control" id="floatingInputRef" name="reference_id" placeholder="Reference ID" required>
                         <label for="floatingInputRef">Reference ID</label>
                     </div>
-                    <div class="form-floating">
+                    {{-- <div class="form-floating"> --}}
                         <input type="file" class="form-control" id="floatingInputFile" name="sheet" placeholder="Transaction File" required>
-                        <label for="floatingInputFile">Transaction File</label>
-                    </div>
+                        {{-- <label for="floatingInputFile">Transaction File</label> --}}
+                    {{-- </div> --}}
                     <button type="submit" class="btn btn-primary">Start New BM Invoices</button>
                 </form>
                 {{-- <a href="{{url('bm_invoice/progress')}}" class="btn btn-primary float-right"> BM Invoices Progress </a> --}}
