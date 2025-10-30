@@ -150,6 +150,8 @@ Route::get('report/sales_history', [Report::class,'sales_history'])->name('sales
 
 Route::get('report-lw', \App\Http\Livewire\ReportLw::class)->name('view_report_lw');
 
+Route::get('bm_invoice', \App\Http\Livewire\BMInvoice::class)->name('view_bm_invoice_report');
+
 Route::get('return', SalesReturn::class)->name('view_return');
 Route::get('add_return', [SalesReturn::class,'add_return'])->name('add_return');
 Route::post('add_return_item/{id}', [SalesReturn::class,'add_return_item'])->name('add_return_item');
