@@ -21,17 +21,17 @@
             <div class="breadcrumb-header justify-content-between">
                 <div class="left-content">
                 {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">BulkSale</span> --}}
-                {{-- <a href="{{url('topup/start')}}" class="btn btn-success float-right" data-bs-target="#modaldemo"
-                data-bs-toggle="modal"><i class="mdi mdi-plus"></i> New Topup </a> --}}
-                <form action="{{url('topup/start')}}" method="POST" id="topup_form" class="form-inline">
+                {{-- <a href="{{url('bm_invoice/start')}}" class="btn btn-success float-right" data-bs-target="#modaldemo"
+                data-bs-toggle="modal"><i class="mdi mdi-plus"></i> New BM Invoices </a> --}}
+                <form action="{{url('bm_invoice/start')}}" method="POST" id="bm_invoice_form" class="form-inline">
                     @csrf
                     <div class="form-floating">
                         <input type="number" class="form-control" id="floatingInput" name="quantity" placeholder="Quantity" required>
                         <label for="floatingInput">Quantity</label>
                     </div>
-                    <button type="submit" class="btn btn-primary">Start New Topup</button>
+                    <button type="submit" class="btn btn-primary">Start New BM Invoices</button>
                 </form>
-                {{-- <a href="{{url('topup/progress')}}" class="btn btn-primary float-right"> Topup Progress </a> --}}
+                {{-- <a href="{{url('bm_invoice/progress')}}" class="btn btn-primary float-right"> BM Invoices Progress </a> --}}
 
                 </div>
                 <div class="justify-content-center mt-2">
@@ -81,17 +81,17 @@
         <br>
         <div class="row">
             <div class="col-md-12" style="border-bottom: 1px solid rgb(216, 212, 212);">
-                <center><h4>Topup</h4></center>
+                <center><h4>BM Invoices</h4></center>
             </div>
         </div>
         <br>
 
         <div class="d-flex justify-content-between">
             <div>
-                <a href="{{url('topup')}}?status=1" class="btn btn-link @if (request('status') == 1) bg-white @endif ">Pending</a>
-                <a href="{{url('topup')}}?status=2" class="btn btn-link @if (request('status') == 2) bg-white @endif " >Sent</a>
-                <a href="{{url('topup')}}?status=3" class="btn btn-link @if (request('status') == 3) bg-white @endif " >Closed</a>
-                <a href="{{url('topup')}}" class="btn btn-link @if (!request('status')) bg-white @endif " >All</a>
+                <a href="{{url('bm_invoice')}}?status=1" class="btn btn-link @if (request('status') == 1) bg-white @endif ">Pending</a>
+                <a href="{{url('bm_invoice')}}?status=2" class="btn btn-link @if (request('status') == 2) bg-white @endif " >Sent</a>
+                <a href="{{url('bm_invoice')}}?status=3" class="btn btn-link @if (request('status') == 3) bg-white @endif " >Closed</a>
+                <a href="{{url('bm_invoice')}}" class="btn btn-link @if (!request('status')) bg-white @endif " >All</a>
             </div>
             <div class="">
             </div>
@@ -194,9 +194,8 @@
                                         {{-- @foreach ($items as $itemIndex => $item) --}}
                                             <tr>
                                                 <td>{{ $i + 1 }}</td>
-                                                <td><a href="{{url('topup/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a></td>
+                                                <td><a href="{{url('bm_invoice/detail/'.$batch->id)}}">{{ $batch->reference_id }}</a></td>
                                                 <td>{{ $batch->description }}</td>
-                                                <td>{{ $batch->quantity }}</td>
                                                 <td>{{ $batch->transactions->count() }}</td>
                                                 <td>{{ $batch->admin->first_name ?? null }}</td>
                                                 <td style="width:220px">{{ $batch->started_at }}</td>
