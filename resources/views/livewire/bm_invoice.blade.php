@@ -23,11 +23,23 @@
                 {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">BulkSale</span> --}}
                 {{-- <a href="{{url('bm_invoice/start')}}" class="btn btn-success float-right" data-bs-target="#modaldemo"
                 data-bs-toggle="modal"><i class="mdi mdi-plus"></i> New BM Invoices </a> --}}
-                <form action="{{url('bm_invoice/start')}}" method="POST" id="bm_invoice_form" class="form-inline">
+                <form method="POST" enctype="multipart/form-data" action="{{ url('transaction/add_transaction_sheet')}}" class="form-inline p-1">
                     @csrf
                     <div class="form-floating">
-                        <input type="number" class="form-control" id="floatingInput" name="quantity" placeholder="Quantity" required>
-                        <label for="floatingInput">Quantity</label>
+                        <input type="date" class="form-control" id="floatingInput" name="started_at" placeholder="Start Date" required>
+                        <label for="floatingInput">Start Date</label>
+                    </div>
+                    <div class="form-floating">
+                        <input type="date" class="form-control" id="floatingInputEnd" name="ended_at" placeholder="End Date" required>
+                        <label for="floatingInputEnd">End Date</label>
+                    </div>
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="floatingInputRef" name="reference_id" placeholder="Reference ID" required>
+                        <label for="floatingInputRef">Reference ID</label>
+                    </div>
+                    <div class="form-floating">
+                        <input type="file" class="form-control" id="floatingInputFile" name="sheet" placeholder="Transaction File" required>
+                        <label for="floatingInputFile">Transaction File</label>
                     </div>
                     <button type="submit" class="btn btn-primary">Start New BM Invoices</button>
                 </form>
