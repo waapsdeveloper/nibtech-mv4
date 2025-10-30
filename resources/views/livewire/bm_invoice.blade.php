@@ -201,10 +201,7 @@
                                                 <td>{{ $batch->description }}</td>
                                                 <td>{{ $batch->quantity }}</td>
                                                 <td>{{ $batch->transactions->count() }}</td>
-                                                <td>{{ $batch->process_stocks->where('status',2)->count() }}</td>
-                                                <td>{{ $batch->listed_stocks_verification->sum('qty_from') }}</td>
-                                                <td>{{ $batch->listed_stocks_verification->sum('qty_change') }}</td>
-                                                <td>{{ $batch->listed_stocks_verification->sum('qty_to') }}</td>
+                                                <td>{{ $batch->admin->first_name ?? null }}</td>
                                                 <td style="width:220px">{{ $batch->started_at }}</td>
                                                 <td style="width:220px">{{ $batch->ended_at }}</td>
                                                 <td style="width:220px">{{ $batch->created_at }}</td>
