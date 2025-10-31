@@ -45,7 +45,7 @@ class BMInvoice extends Component
             abort(404, 'Process not found.');
         }
 
-        $detailData = $this->prepareInvoiceDetailData($processId);
+    $detailData = $this->prepareInvoiceDetailData($processId);
 
         $data = array_merge($detailData, [
             'title_page' => 'BM Invoice Detail',
@@ -91,9 +91,9 @@ class BMInvoice extends Component
 
     private function prepareInvoiceDetailData(int $processId): array
     {
-        [$transactions, $duplicateTransactions] = $this->loadTransactions($processId);
+    [$transactions, $duplicateTransactions] = $this->loadTransactions($processId);
 
-        $orders = $this->loadOrders($transactions);
+    $orders = $this->loadOrders($transactions);
         $salesTransactions = $transactions
             ->filter(fn ($transaction) => $this->isSalesDescription($transaction->description))
             ->values();
@@ -105,7 +105,7 @@ class BMInvoice extends Component
             'duplicateTransactions' => $duplicateTransactions,
             'salesVsOrders' => $this->summarizeSalesVsOrders($orders, $salesTransactions, $currencyContext),
             'orderComparisons' => $this->buildOrderComparisons($orders, $salesTransactions, $currencyContext),
-            'report' => $this->buildDescriptionReport($processId, $chargeMap, $orders),
+            'report' => $this->buildDescriptionReport($transactions, $chargeMap, $orders),
         ];
     }
 
@@ -377,20 +377,18 @@ class BMInvoice extends Component
             ->all();
     }
 
-    private function buildDescriptionReport(int $processId, array $chargeMap, Collection $orders): Collection
+    private function buildDescriptionReport(Collection $transactions, array $chargeMap, Collection $orders): Collection
     {
         $orderPriceTotal = (float) $orders->sum(function ($order) {
             return (float) ($order->price ?? 0.0);
         });
 
-        return Account_transaction_model::query()
-            ->selectRaw('description, SUM(amount) AS transaction_total')
-            ->where('process_id', $processId)
-            ->groupBy('description')
-            ->get()
-            ->map(function ($row) use ($chargeMap, $orderPriceTotal) {
-                $description = trim((string) $row->description) ?: '—';
-                $transactionTotal = (float) $row->transaction_total;
+        return $transactions
+            ->groupBy(function ($transaction) {
+                return trim((string) $transaction->description) ?: '—';
+            })
+            ->map(function ($group, $description) use ($chargeMap, $orderPriceTotal) {
+                $transactionTotal = (float) $group->sum('amount');
                 $chargeTotal = $chargeMap[$description] ?? 0.0;
 
                 if ($this->isSalesDescription($description)) {
