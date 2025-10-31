@@ -45,7 +45,7 @@ class BMInvoice extends Component
             abort(404, 'Process not found.');
         }
 
-    $detailData = $this->prepareInvoiceDetailData($processId);
+        $detailData = $this->prepareInvoiceDetailData($processId);
 
         $data = array_merge($detailData, [
             'title_page' => 'BM Invoice Detail',
@@ -91,9 +91,9 @@ class BMInvoice extends Component
 
     private function prepareInvoiceDetailData(int $processId): array
     {
-    [$transactions, $duplicateTransactions] = $this->loadTransactions($processId);
+        [$transactions, $duplicateTransactions] = $this->loadTransactions($processId);
 
-    $orders = $this->loadOrders($transactions);
+        $orders = $this->loadOrders($transactions);
         $salesTransactions = $transactions
             ->filter(fn ($transaction) => $this->isSalesDescription($transaction->description))
             ->values();
@@ -101,11 +101,14 @@ class BMInvoice extends Component
         $currencyContext = $this->buildCurrencyContext($orders, $salesTransactions);
         $chargeMap = $this->buildChargeMap($orders);
 
+        $descriptionSummary = $this->buildDescriptionReport($transactions, $chargeMap, $orders);
+
         return [
             'duplicateTransactions' => $duplicateTransactions,
             'salesVsOrders' => $this->summarizeSalesVsOrders($orders, $salesTransactions, $currencyContext),
             'orderComparisons' => $this->buildOrderComparisons($orders, $salesTransactions, $currencyContext),
-            'report' => $this->buildDescriptionReport($transactions, $chargeMap, $orders),
+            'report' => $descriptionSummary->get('report'),
+            'reportSalesRow' => $descriptionSummary->get('sales'),
         ];
     }
 
@@ -383,7 +386,7 @@ class BMInvoice extends Component
             return (float) ($order->price ?? 0.0);
         });
 
-        return $transactions
+        $rows = $transactions
             ->groupBy(function ($transaction) {
                 return trim((string) $transaction->description) ?: '—';
             })
@@ -395,7 +398,7 @@ class BMInvoice extends Component
                     $chargeTotal = $orderPriceTotal;
                 }
 
-                if ($chargeTotal > 0 && $description !== 'sales') {
+                if ($chargeTotal > 0) {
                     $chargeTotal *= -1;
                 }
 
@@ -407,6 +410,15 @@ class BMInvoice extends Component
                 ];
             })
             ->values();
+
+        $salesRow = $rows->first(fn ($row) => $this->isSalesDescription($row['description']));
+
+        $chargeRows = $rows->reject(fn ($row) => $this->isSalesDescription($row['description']))->values();
+
+        return collect([
+            'report' => $chargeRows,
+            'sales' => $salesRow,
+        ]);
     }
 
     private function normalizeDescription($description): string
