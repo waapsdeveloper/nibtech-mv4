@@ -98,18 +98,56 @@ class BMInvoice extends Component
             return Str::lower(trim((string) $transaction->description)) === 'sales';
         });
 
-        $salesTransactionTotal = (float) $salesTransactions->sum('amount');
-        $orderTotal = (float) $orders->sum(function ($order) {
-            return (float) ($order->price ?? 0);
-        });
+        $currencyIds = $orders->pluck('currency')
+            ->merge($salesTransactions->pluck('currency'))
+            ->filter(function ($id) {
+                return !is_null($id);
+            })
+            ->unique();
 
-        $currencyIds = $orders->pluck('currency')->merge($salesTransactions->pluck('currency'))->filter(function ($id) {
-            return !is_null($id);
-        })->unique();
-
-        $currencyLabels = $currencyIds->isEmpty()
+        $currencyMeta = $currencyIds->isEmpty()
             ? collect()
-            : Currency_model::whereIn('id', $currencyIds)->pluck('code', 'id');
+            : Currency_model::whereIn('id', $currencyIds)->get(['id', 'code'])->keyBy('id');
+
+        $exchangeRates = $currencyMeta->isEmpty()
+            ? []
+            : ExchangeRate::whereIn('target_currency', $currencyMeta->pluck('code'))
+                ->pluck('rate', 'target_currency')
+                ->toArray();
+
+        $baseCurrencyCode = ExchangeRate::query()->value('base_currency');
+
+        if (!$baseCurrencyCode && $currencyMeta->isNotEmpty()) {
+            $baseCurrencyCode = optional($currencyMeta->first())->code;
+        }
+
+        $baseCurrencyCode = $baseCurrencyCode ? strtoupper($baseCurrencyCode) : 'GBP';
+
+        $convertToBase = function ($amount, $currencyId) use ($currencyMeta, $exchangeRates, $baseCurrencyCode) {
+            $amount = (float) $amount;
+
+            if ($amount == 0.0 || is_null($currencyId)) {
+                return $amount;
+            }
+
+            $code = optional($currencyMeta->get($currencyId))->code;
+
+            if (!$code) {
+                return $amount;
+            }
+
+            if ($baseCurrencyCode && strtoupper((string) $code) === $baseCurrencyCode) {
+                return $amount;
+            }
+
+            $rate = $exchangeRates[$code] ?? null;
+
+            if (!$rate || (float) $rate == 0.0) {
+                return $amount;
+            }
+
+            return $amount / (float) $rate;
+        };
 
         $salesPerCurrency = $salesTransactions->groupBy('currency')->map(function ($group) {
             return (float) $group->sum('amount');
@@ -121,22 +159,38 @@ class BMInvoice extends Component
             });
         });
 
-        $currencyBreakdown = $currencyIds->map(function ($currencyId) use ($currencyLabels, $salesPerCurrency, $orderPerCurrency) {
+        $salesTransactionTotalBase = $salesTransactions->sum(function ($transaction) use ($convertToBase) {
+            return $convertToBase($transaction->amount, $transaction->currency);
+        });
+
+        $orderTotalBase = $orders->sum(function ($order) use ($convertToBase) {
+            return $convertToBase($order->price, $order->currency);
+        });
+
+        $currencyBreakdown = $currencyIds->map(function ($currencyId) use ($currencyMeta, $salesPerCurrency, $orderPerCurrency, $convertToBase) {
             $salesTotal = $salesPerCurrency[$currencyId] ?? 0.0;
             $orderTotalByCurrency = $orderPerCurrency[$currencyId] ?? 0.0;
 
+            $salesTotalBase = $convertToBase($salesTotal, $currencyId);
+            $orderTotalBase = $convertToBase($orderTotalByCurrency, $currencyId);
+
             return [
-                'currency'    => $currencyLabels[$currencyId] ?? (string) $currencyId,
-                'sales_total' => $salesTotal,
-                'order_total' => $orderTotalByCurrency,
-                'difference'  => abs($salesTotal) - abs($orderTotalByCurrency),
+                'currency_id'        => $currencyId,
+                'currency'           => optional($currencyMeta->get($currencyId))->code ?? (string) $currencyId,
+                'sales_total'        => $salesTotal,
+                'order_total'        => $orderTotalByCurrency,
+                'difference'         => $salesTotal - $orderTotalByCurrency,
+                'sales_total_base'   => $salesTotalBase,
+                'order_total_base'   => $orderTotalBase,
+                'difference_base'    => $salesTotalBase - $orderTotalBase,
             ];
         })->values();
 
         $data['salesVsOrders'] = [
-            'transaction_total' => $salesTransactionTotal,
-            'order_total'       => $orderTotal,
-            'difference'        => abs($salesTransactionTotal) - abs($orderTotal),
+            'transaction_total' => $salesTransactionTotalBase,
+            'order_total'       => $orderTotalBase,
+            'difference'        => $salesTransactionTotalBase - $orderTotalBase,
+            'base_currency'     => $baseCurrencyCode,
             'breakdown'         => $currencyBreakdown,
         ];
 
