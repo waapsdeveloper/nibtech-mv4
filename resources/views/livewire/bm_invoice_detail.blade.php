@@ -118,6 +118,7 @@
 
         @if(isset($report) && $report instanceof \Illuminate\Support\Collection && $report->isNotEmpty())
             @php
+                $salesRow = $reportSalesRow ?? null;
                 $txnSum = $report->sum('transaction_total');
                 $chargeSum = $report->sum('charge_total');
                 $diffSum = $report->sum('difference');
@@ -127,6 +128,11 @@
                     <h4 class="card-title mg-b-0">Transaction vs Charge Summary</h4>
                 </div>
                 <div class="card-body">
+                    @if($salesRow)
+                        <div class="alert alert-info py-2 small">
+                            <strong>Sales (GBP)</strong>: Ledger {{ number_format($salesRow['transaction_total'], 2) }} vs BM Invoice {{ number_format(abs($salesRow['charge_total']), 2) }} — variance {{ number_format($salesRow['difference'], 2) }}. Detailed sales vs invoice totals are shown in the section below.
+                        </div>
+                    @endif
                     <div class="table-responsive">
                         <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                             <thead>
@@ -157,6 +163,9 @@
                             </tfoot>
                         </table>
                     </div>
+                    @if($salesRow)
+                        <p class="text-muted small mb-0">Sales transactions are excluded from the table above to prevent duplicate totals; see the Sales vs Invoice section for that comparison.</p>
+                    @endif
                 </div>
             </div>
         @endif
