@@ -11,6 +11,7 @@ use App\Models\Order_item_model;
 use App\Models\Customer_model;
 use App\Models\Storage_model;
 use App\Http\Controllers\ListingController;
+use App\Models\Account_transaction_model;
 use App\Models\Brand_model;
 use App\Models\Category_model;
 use App\Models\Color_model;
@@ -68,184 +69,29 @@ class BMInvoice extends Component
         return view('livewire.bm_invoice')->with($data);
     }
 
-    public function start_topup(){
-        $latest_ref = Process_model::where('process_type_id', 22)->latest()->first();
-        if($latest_ref != null){
-            $latest_ref = $latest_ref->reference_id + 1;
-        }else{
-            $latest_ref = 40001;
-        }
-        $process = new Process_model();
-        $process->reference_id = $latest_ref;
-        $process->process_type_id = 22;
-        $process->status = 1;
-        $process->admin_id = session('user_id');
-        $process->quantity = request('quantity');
-        $process->save();
-
-        return redirect()->to(url('topup/detail').'/'.$process->id)->with('success', 'Topup Started Started');
-    }
-
-    public function close_topup($process_id){
-        $process = Process_model::find($process_id);
-        $process->description = request('description');
-        $process->quantity = request('quantity');
-
-        $process->status = 2;
-
-        if(request('push') == 1){
-            $variation_qty = Process_stock_model::where('process_id', $process_id)->where('status', '<', 3)
-            ->when(!request('all'), function ($q) {
-                return $q->where('status', 2);
-            })
-            ->groupBy('variation_id')
-            ->selectRaw('variation_id, COUNT(*) as total, GROUP_CONCAT(id) as ps_ids')
-            ->get();
-
-            $wrong_variations = Variation_model::whereIn('id', $variation_qty->pluck('variation_id')->toArray())->whereNull('sku')->where('grade', '<', 6)->get();
-            if($wrong_variations->count() > 0){
-                $error = 'Please add SKU for the following variations:';
-                // session()->put('error', 'Please add SKU for the following variations:');
-                foreach($wrong_variations as $variation){
-                    $error .= ' '.$variation->product->model.' - '.$variation->storage_id->name.' - '.$variation->color_id->name.' - '.$variation->grade_id->name;
-                    // session()->put('error', $variation->product->model.' - '.$variation->storage_id->name.' - '.$variation->color_id->name.' - '.$variation->grade_id->name);
-                }
-                session()->put('error', $error);
-                return redirect()->back();
-            }
-            // dd($variation_qty);
-            $listingController = new ListingController();
-            foreach($variation_qty as $variation){
-                $listed_stock = Listed_stock_verification_model::where('process_id', $process->id)->where('variation_id', $variation->variation_id)->first();
-                // change status of all ids to 3
-                $process_stocks = Process_stock_model::whereIn('id', explode(',', $variation->ps_ids))->update(['status' => 3, 'verified_by' => session('user_id')]);
-                if($listed_stock == null){
-                    echo $listingController->add_quantity($variation->variation_id, $variation->total, $process->id);
-                }elseif($listed_stock->qty_change < $variation->total){
-                    $new_qty = $variation->total - $listed_stock->qty_change;
-                    echo $listingController->add_quantity($variation->variation_id1, $new_qty, $process->id);
-                }
-                // $listed_stock = Listed_stock_verification_model::where('process_id', $process->id)->where('variation_id', $variation->variation_id)->get();
-                // if($listed_stock->count() > 0){
-                //     $count_plus = 0;
-                //     $count_minus = 0;
-                //     foreach($listed_stock as $ls){
-                //         if($ls->qty_change > 0){
-                //             $count_plus += $ls->qty_to-$ls->qty_from;
-                //         }else{
-                //             $count_minus += $ls->qty_to-$ls->qty_from;
-                //         }
-                //     }
-                //     $count = $count_plus + $count_minus;
-                //     $new_qty = $variation->total - $count;
-                //     if($new_qty != 0){
-                //         dd($variation, $listed_stock, $count, $new_qty);
-                //         $listingController->add_quantity($variation->variation_id, $new_qty, $process->id);
-                //     }
-                // }else{
-                //     $listingController->add_quantity($variation->variation_id, $variation->total, $process->id);
-                // }
-                // if($listed_stock == null){
-                //     echo $listingController->add_quantity($variation->variation_id, $variation->total, $process->id);
-                // }elseif($listed_stock->qty_change != $variation->total){
-                //     $new_qty = $variation->total - $listed_stock->qty_change;
-                //     echo $listingController->add_quantity($variation->variation_id, $new_qty, $process->id);
-                // }
-            }
-
-            echo $scanned_total = Process_stock_model::where('process_id', $process_id)->count();
-            echo ' ';
-            echo $pushed_total = Listed_stock_verification_model::where('process_id', $process_id)->sum('qty_change');
-            if($scanned_total == $pushed_total){
-                $process->verified_by = session('user_id');
-                $process->status = 3;
-            }
-
-        }
-        if(request('close') == 1){
-            $process->verified_by = session('user_id');
-            $process->status = 3;
-        }
-
-        $process->save();
-
-        // if(request('push') == 1){
-        return redirect()->back();
-        // }else{
-        //     return "Updated";
-        // }
-        // return redirect()->back();
-    }
-
-    public function recheck_closed_topup($process_id){
-        $process = Process_model::find($process_id);
-
-        $scanned_total = Process_stock_model::where('process_id', $process_id)->count();
-        $pushed_total = Listed_stock_verification_model::where('process_id', $process_id)->sum('qty_change');
-
-        if($pushed_total > $scanned_total){
-            $pushed_variation_ids = Listed_stock_verification_model::where('process_id', $process_id)->orderBy('variation_id', 'asc')->pluck('variation_id')->unique();
-
-            foreach($pushed_variation_ids as $variation_id){
-                $listed_stocks = Listed_stock_verification_model::where('process_id', $process_id)->where('variation_id', $variation_id)->get();
-                // remove duplicates
-                if($listed_stocks->count() > 1){
-                    foreach($listed_stocks as $listed_stock){
-                        Listed_stock_verification_model::where('id', '!=', $listed_stock->id)->where('process_id', $process_id)->where('variation_id', $variation_id)->where([
-                            'pending_orders' => $listed_stock->pending_orders,
-                            'qty_from' => $listed_stock->qty_from,
-                            'qty_change' => $listed_stock->qty_change,
-                            'qty_to' => $listed_stock->qty_to,
-                            ])->delete();
-                        break;
-                    }
-                }
-            }
-
-        }
 
 
-
-
-
-
-        session()->put('success', 'Topup Process Rechecked');
-        return redirect()->back();
-    }
-    public function update_min_prices($process_id){
-        $process = Process_model::find($process_id);
-
-
-
-
-        session()->put('success', 'Minimum Prices Updated');
-        return redirect()->back();
-    }
-
-    public function topup_detail($process_id){
+    public function invoice_detail($process_id){
 
         ini_set('memory_limit', '2048M');
         ini_set('max_execution_time', 300);
         ini_set('pdo_mysql.max_input_vars', '10000');
 
-        if(str_contains(url()->previous(),url('topup')) && !str_contains(url()->previous(),'detail')){
+        if(str_contains(url()->previous(),url('bm_invoice')) && !str_contains(url()->previous(),'detail')){
             session()->put('previous', url()->previous());
         }
-        $data['title_page'] = "Topup Detail";
+        $data['title_page'] = "BM Invoice Detail";
         session()->put('page_title', $data['title_page']);
         // $data['imeis'] = Stock_model::whereIn('status',[1,3])->orderBy('serial_number','asc')->orderBy('imei','asc')->get();
-        if(request('per_page') != null){
-            $per_page = request('per_page');
-        }else{
-            $per_page = 5;
-        }
+
         $data['vendors'] = Customer_model::whereNotNull('is_vendor')->get();
         $data['exchange_rates'] = ExchangeRate::pluck('rate','target_currency');
         $data['colors'] = session('dropdown_data')['colors'];
         $data['grades'] = Grade_model::where('id','<',6)->pluck('name','id');
 
-        $last_ten = Process_stock_model::where('process_id',$process_id)->orderBy('id','desc')->limit($per_page)->with(['stock','stock.variation','stock.order.customer'])->where('admin_id',session('user_id'))->get();
-        $data['last_ten'] = $last_ten;
+        $transactions = Account_transaction_model::where(['process_id'=>$process_id])->get();
+
+        dd($transactions);
 
 
         $data['all_variations'] = Variation_model::whereNotNull('sku')->get();
