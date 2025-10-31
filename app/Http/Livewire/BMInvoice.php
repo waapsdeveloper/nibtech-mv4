@@ -18,6 +18,7 @@ use App\Models\Color_model;
 use App\Models\ExchangeRate;
 use App\Models\Grade_model;
 use App\Models\Listed_stock_verification_model;
+use App\Models\Order_charge_model;
 use App\Models\Process_model;
 use App\Models\Process_stock_model;
 use App\Models\Product_storage_sort_model;
@@ -82,62 +83,32 @@ class BMInvoice extends Component
         }
         $data['title_page'] = "BM Invoice Detail";
         session()->put('page_title', $data['title_page']);
-        // $data['imeis'] = Stock_model::whereIn('status',[1,3])->orderBy('serial_number','asc')->orderBy('imei','asc')->get();
 
-        $data['vendors'] = Customer_model::whereNotNull('is_vendor')->get();
-        $data['exchange_rates'] = ExchangeRate::pluck('rate','target_currency');
-        $data['colors'] = session('dropdown_data')['colors'];
-        $data['grades'] = Grade_model::where('id','<',6)->pluck('name','id');
 
         $transactions = Account_transaction_model::where(['process_id'=>$process_id])->get();
 
-        dd($transactions);
+        $summary = Account_transaction_model::query()
+            ->selectRaw('description, SUM(amount) AS transaction_total')
+            ->where('process_id', $process_id)
+            ->groupBy('description');
 
+        $charges = Order_charge_model::query()
+            ->selectRaw('order_id, charge_id, SUM(amount) AS charge_total')
+            ->with('charge')
+            ->whereIn('order_id', $transactions->pluck('order_id')->filter())
+            ->groupBy('order_id', 'charge_id');
 
-        $data['all_variations'] = Variation_model::whereNotNull('sku')->get();
-        $process = Process_model::with(['process_stocks'])->find($process_id);
-        $data['process'] = $process;
-        $data['scanned_total'] = Process_stock_model::where('process_id',$process_id)->where('admin_id',session('user_id'))->count();
-        if($process->status == 2){
-            $data['verified_total'] = Process_stock_model::where('process_id',$process_id)->where('verified_by',session('user_id'))->count();
-        }
-        $data['process_id'] = $process_id;
-
-        $data['products'] = session('dropdown_data')['products'];
-        $data['storages'] = session('dropdown_data')['storages'];
-        if(request('show') != null){
-            $stocks = Stock_model::whereIn('id',$data['process']->process_stocks->pluck('stock_id')->toArray())->get();
-            // $variations = Variation_model::whereIn('id',$stocks->pluck('variation_id')->toArray())->get();
-            $variation_ids = Process_stock_model::where('process_id', $process_id)->pluck('variation_id')->unique();
-            $variations = Variation_model::whereIn('variation.id', $variation_ids)
-            ->join('products', 'products.id', '=', 'variation.product_id')
-            ->orderBy('products.model', 'asc')
-            ->orderBy('variation.storage', 'asc')
-            ->orderBy('variation.color', 'asc')
-            ->orderBy('variation.grade', 'asc')
-            ->select('variation.*')
-            ->get();
-            $data['variations'] = $variations
-            // ->sortBy(function ($variation) use ($process_id) {
-            //     return Process_stock_model::where('process_id', $process_id)
-            //         ->where('variation_id', $variation->id)
-            //         ->orderBy('id', 'asc')
-            //         ->value('id');
-            // })
-            ;
-            $data['stocks'] = $stocks;
-
-            // if($process->status == 2){
-            //     $unverified_stock
-
-        }
-        // if($process->status == 2){
-            $data['listed_stocks'] = Listed_stock_verification_model::where('process_id', $process_id)
-            // ->orWhere('created_at','>', $process->updated_at)
-            ->get();
-        // }
-
-        return view('livewire.topup_detail')->with($data);
+        $data['report'] = $summary->get()->map(function ($row) use ($charges) {
+            $charge = $charges->first(fn ($c) => trim(optional($c->charge)->name) === trim($row->description));
+            return [
+                'description'        => $row->description,
+                'transaction_total'  => $row->transaction_total,
+                'charge_total'       => $charge->charge_total ?? 0,
+                'difference'         => $row->transaction_total - ($charge->charge_total ?? 0),
+            ];
+        });
+        dd($data['report']);
+        return view('livewire.bm_invoice_detail')->with($data);
 
     }
     public function add_topup_item($process_id){
