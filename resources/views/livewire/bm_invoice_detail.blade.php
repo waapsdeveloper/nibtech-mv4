@@ -125,6 +125,16 @@
             $partialRefundSummary = null;
             $fullRefundSummary = null;
 
+            $formatRefundAmount = function ($value) {
+                $value = (float) $value;
+
+                if (abs($value) < 0.0005) {
+                    return 0.0;
+                }
+
+                return $value > 0 ? -abs($value) : $value;
+            };
+
             if (isset($salesVsOrders)) {
                 $salesBreakdown = $salesVsOrders['breakdown'] ?? collect();
                 if (! $salesBreakdown instanceof \Illuminate\Support\Collection) {
@@ -373,11 +383,11 @@
                                         @if($refundSummary['is_single_currency'] && $refundSummary['primary_currency'])
                                             <div class="d-flex justify-content-between">
                                                 <span>Ledger Refunds ({{ $refundSummary['primary_currency'] }})</span>
-                                                <span class="fw-semibold">{{ number_format($refundSummary['transaction_total'] ?? 0, 2) }}</span>
+                                                <span class="fw-semibold">{{ number_format(($formatRefundAmount)($refundSummary['transaction_total'] ?? 0), 2) }}</span>
                                             </div>
                                             <div class="d-flex justify-content-between">
                                                 <span>Order Refunds ({{ $refundSummary['primary_currency'] }})</span>
-                                                <span class="fw-semibold">{{ number_format($refundSummary['order_total'] ?? 0, 2) }}</span>
+                                                <span class="fw-semibold">{{ number_format(($formatRefundAmount)($refundSummary['order_total'] ?? 0), 2) }}</span>
                                             </div>
                                             <div class="d-flex justify-content-between">
                                                 <span>Variance</span>
@@ -577,8 +587,8 @@
                                         <tr>
                                             <td>{{ $row['description'] }}</td>
                                             <td class="text-center">{{ $row['currency'] ?? '—' }}</td>
-                                            <td class="text-end">{{ number_format($row['transaction_total'], 2) }}</td>
-                                            <td class="text-end">{{ number_format($row['charge_total'], 2) }}</td>
+                                            <td class="text-end">{{ number_format(($formatRefundAmount)($row['transaction_total'] ?? 0), 2) }}</td>
+                                            <td class="text-end">{{ number_format(($formatRefundAmount)($row['charge_total'] ?? 0), 2) }}</td>
                                             <td class="text-end {{ $partialRowClass }}">{{ number_format($partialRowVariance, 2) }}</td>
                                         </tr>
                                     @endforeach
@@ -587,8 +597,8 @@
                                     <tr>
                                         <td><b>Total</b></td>
                                         <td class="text-center">—</td>
-                                        <td class="text-end"><b>{{ number_format($partialRefundSummary['transaction_total'], 2) }}</b></td>
-                                        <td class="text-end"><b>{{ number_format($partialRefundSummary['charge_total'], 2) }}</b></td>
+                                        <td class="text-end"><b>{{ number_format(($formatRefundAmount)($partialRefundSummary['transaction_total'] ?? 0), 2) }}</b></td>
+                                        <td class="text-end"><b>{{ number_format(($formatRefundAmount)($partialRefundSummary['charge_total'] ?? 0), 2) }}</b></td>
                                         <td class="text-end"><b>{{ number_format($partialRefundSummary['difference_total'], 2) }}</b></td>
                                     </tr>
                                 </tfoot>
@@ -621,8 +631,8 @@
                                         <tr>
                                             <td>{{ $row['description'] }}</td>
                                             <td class="text-center">{{ $row['currency'] ?? '—' }}</td>
-                                            <td class="text-end">{{ number_format($row['transaction_total'], 2) }}</td>
-                                            <td class="text-end">{{ number_format($row['charge_total'], 2) }}</td>
+                                            <td class="text-end">{{ number_format(($formatRefundAmount)($row['transaction_total'] ?? 0), 2) }}</td>
+                                            <td class="text-end">{{ number_format(($formatRefundAmount)($row['charge_total'] ?? 0), 2) }}</td>
                                             <td class="text-end {{ $fullRowClass }}">{{ number_format($fullRowVariance, 2) }}</td>
                                         </tr>
                                     @endforeach
@@ -631,8 +641,8 @@
                                     <tr>
                                         <td><b>Total</b></td>
                                         <td class="text-center">—</td>
-                                        <td class="text-end"><b>{{ number_format($fullRefundSummary['transaction_total'], 2) }}</b></td>
-                                        <td class="text-end"><b>{{ number_format($fullRefundSummary['charge_total'], 2) }}</b></td>
+                                        <td class="text-end"><b>{{ number_format(($formatRefundAmount)($fullRefundSummary['transaction_total'] ?? 0), 2) }}</b></td>
+                                        <td class="text-end"><b>{{ number_format(($formatRefundAmount)($fullRefundSummary['charge_total'] ?? 0), 2) }}</b></td>
                                         <td class="text-end"><b>{{ number_format($fullRefundSummary['difference_total'], 2) }}</b></td>
                                     </tr>
                                 </tfoot>
@@ -704,8 +714,8 @@
                                         @endphp
                                         <tr>
                                             <td>{{ $row['currency'] }}</td>
-                                            <td class="text-end">{{ number_format($row['transaction_total'] ?? 0, 2) }}</td>
-                                            <td class="text-end">{{ number_format($row['order_total'] ?? 0, 2) }}</td>
+                                            <td class="text-end">{{ number_format(($formatRefundAmount)($row['transaction_total'] ?? 0), 2) }}</td>
+                                            <td class="text-end">{{ number_format(($formatRefundAmount)($row['order_total'] ?? 0), 2) }}</td>
                                             <td class="text-end {{ $refundRowClass }}">{{ number_format($refundRowVariance, 2) }}</td>
                                         </tr>
                                     @endforeach
@@ -722,7 +732,9 @@
         @if(isset($orderComparisons) && $orderComparisons instanceof \Illuminate\Support\Collection && $orderComparisons->isNotEmpty())
             @php
                 $groupedOrderComparisons = $orderComparisons->groupBy(function ($row) {
-                    return $row['order_currency'] ?? '—';
+                    $currencyId = $row['order_currency_id'] ?? null;
+
+                    return $currencyId === null || $currencyId === '' ? '—' : (string) $currencyId;
                 });
                 $hasMultipleOrderCurrencies = $groupedOrderComparisons->count() > 1;
             @endphp
@@ -736,8 +748,8 @@
                 <div class="card-body">
                     @if(!$hasMultipleOrderCurrencies)
                         @php
-                            $singleCurrencyKey = $groupedOrderComparisons->keys()->first();
                             $singleCurrencyOrders = $groupedOrderComparisons->first();
+                            $singleCurrencyLabel = optional($singleCurrencyOrders->first())['order_currency'] ?? '—';
                             $singleCurrencyOrderTotal = $singleCurrencyOrders->sum('order_amount');
                             $singleCurrencySalesTotal = $singleCurrencyOrders->sum(function ($row) {
                                 return is_numeric($row['sales_total_currency']) ? $row['sales_total_currency'] : 0;
@@ -775,7 +787,7 @@
                                         <td class="text-center">—</td>
                                         <td><b>Totals</b></td>
                                         <td class="text-center">—</td>
-                                        <td class="text-center">{{ $singleCurrencyKey }}</td>
+                                        <td class="text-center">{{ $singleCurrencyLabel }}</td>
                                         <td class="text-end"><b>{{ number_format($singleCurrencyOrderTotal, 2) }}</b></td>
                                                 <td class="text-center">{{ $singleCurrencySalesCurrencyLabel }}</td>
                                         <td class="text-end">
@@ -913,7 +925,7 @@
                     @else
                         @foreach ($groupedOrderComparisons as $currencyKey => $ordersInCurrency)
                             @php
-                                $orderCurrencyLabel = $currencyKey;
+                                $orderCurrencyLabel = optional($ordersInCurrency->first())['order_currency'] ?? '—';
                                 $orderCurrencyTotal = $ordersInCurrency->sum('order_amount');
                                 $salesCurrencyTotal = $ordersInCurrency->sum(function ($row) {
                                     return is_numeric($row['sales_total_currency']) ? $row['sales_total_currency'] : 0;
@@ -1157,13 +1169,13 @@
                                             <td>{{ $refund['transaction_id'] }}</td>
                                             <td>{{ $refund['transaction_reference'] ?? '—' }}</td>
                                             <td class="text-center">{{ $refund['transaction_currency'] ?? '—' }}</td>
-                                            <td class="text-end">{{ number_format($refund['transaction_amount'] ?? 0, 2) }}</td>
+                                            <td class="text-end">{{ number_format(($formatRefundAmount)($refund['transaction_amount'] ?? 0), 2) }}</td>
                                             <td class="text-center {{ $matchClass }}">{{ $matchLabel }}</td>
                                             <td>{{ $refund['order_reference'] ?? '—' }}</td>
                                             <td class="text-center">{{ $refund['order_currency'] ?? '—' }}</td>
                                             <td class="text-end">
                                                 @if($refund['order_found'])
-                                                    {{ number_format($refund['order_amount'] ?? 0, 2) }}
+                                                    {{ number_format(($formatRefundAmount)($refund['order_amount'] ?? 0), 2) }}
                                                 @else
                                                     <span class="text-muted">—</span>
                                                 @endif
