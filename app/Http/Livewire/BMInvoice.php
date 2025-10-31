@@ -307,15 +307,23 @@ class BMInvoice extends Component
             ])
             ->filter(fn ($_, $key) => $key !== '');
 
+        $orderPriceTotal = (float) $orders->sum(function ($order) {
+            return (float) ($order->price ?? 0.0);
+        });
+
         $data['report'] = Account_transaction_model::query()
             ->selectRaw('description, SUM(amount) AS transaction_total')
             ->where('process_id', $process_id)
             ->groupBy('description')
             ->get()
-            ->map(function ($row) use ($chargeMap) {
+            ->map(function ($row) use ($chargeMap, $orderPriceTotal) {
                 $description   = trim((string) $row->description) ?: '—';
                 $txnTotal      = (float) $row->transaction_total;
                 $chargeTotal   = $chargeMap[$description] ?? 0.0;
+
+                if (Str::lower($description) === 'sales') {
+                    $chargeTotal = $orderPriceTotal;
+                }
 
                 return [
                     'description'        => $description,

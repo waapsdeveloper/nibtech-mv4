@@ -173,7 +173,7 @@
             <div class="card mt-3">
                 <div class="card-header pb-0">
                     <h4 class="card-title mg-b-0">
-                        Sales Transactions vs Order Amounts
+                        BM Invoice vs Recorded Sales
                         @if($baseCurrencyCode !== '')
                             <small class="text-muted">(Base: {{ $baseCurrencyCode }})</small>
                         @endif
@@ -184,15 +184,15 @@
                         <table class="table table-bordered table-hover mb-3 text-md-nowrap">
                             <tbody>
                                 <tr>
-                                    <td><b>Sales Transactions</b></td>
+                                    <td><b>Recorded Sales Total</b></td>
                                     <td class="text-end">{{ $basePrefix }}{{ number_format($salesVsOrders['transaction_total'] ?? 0, 2) }}</td>
                                 </tr>
                                 <tr>
-                                    <td><b>Order Amount</b></td>
+                                    <td><b>BM Invoice Total</b></td>
                                     <td class="text-end">{{ $basePrefix }}{{ number_format($salesVsOrders['order_total'] ?? 0, 2) }}</td>
                                 </tr>
                                 <tr>
-                                    <td><b>Difference</b></td>
+                                    <td><b>Variance (Sales - Invoice)</b></td>
                                     <td class="text-end">{{ $basePrefix }}{{ number_format($salesVsOrders['difference'] ?? 0, 2) }}</td>
                                 </tr>
                             </tbody>
@@ -205,13 +205,13 @@
                                 <thead>
                                     <tr>
                                         <th><small><b>Currency</b></small></th>
-                                        <th class="text-end"><small><b>Sales (Currency)</b></small></th>
-                                        <th class="text-end"><small><b>Orders (Currency)</b></small></th>
-                                        <th class="text-end"><small><b>Difference (Currency)</b></small></th>
+                                        <th class="text-end"><small><b>Recorded Sales (Currency)</b></small></th>
+                                        <th class="text-end"><small><b>BM Invoice (Currency)</b></small></th>
+                                        <th class="text-end"><small><b>Variance (Currency)</b></small></th>
                                         @if($baseCurrencyCode !== '')
-                                            <th class="text-end"><small><b>Sales ({{ $baseCurrencyCode }})</b></small></th>
-                                            <th class="text-end"><small><b>Orders ({{ $baseCurrencyCode }})</b></small></th>
-                                            <th class="text-end"><small><b>Difference ({{ $baseCurrencyCode }})</b></small></th>
+                                            <th class="text-end"><small><b>Recorded Sales ({{ $baseCurrencyCode }})</b></small></th>
+                                            <th class="text-end"><small><b>BM Invoice ({{ $baseCurrencyCode }})</b></small></th>
+                                            <th class="text-end"><small><b>Variance ({{ $baseCurrencyCode }})</b></small></th>
                                         @endif
                                     </tr>
                                 </thead>
@@ -247,7 +247,7 @@
             @endphp
             <div class="card mt-3">
                 <div class="card-header pb-0 d-flex justify-content-between align-items-center">
-                    <h4 class="card-title mg-b-0">Order-Level Comparison</h4>
+                    <h4 class="card-title mg-b-0">Order-Level Variance (BM Invoice vs Recorded Sales)</h4>
                     @if($baseCurrencyCode !== '')
                         <span class="text-muted small">Base Currency: {{ $baseCurrencyCode }}</span>
                     @endif
@@ -260,14 +260,14 @@
                                     <th style="width: 48px;"><span class="visually-hidden">Toggle</span></th>
                                     <th><small><b>Order Ref</b></small></th>
                                     <th class="text-center"><small><b>Currency</b></small></th>
-                                    <th class="text-end"><small><b>Order Amount</b></small></th>
-                                    <th class="text-center"><small><b>Sales Currency</b></small></th>
-                                    <th class="text-end"><small><b>Sales Amount</b></small></th>
-                                    <th class="text-end"><small><b>Difference</b></small></th>
+                                    <th class="text-end"><small><b>BM Invoice Amount</b></small></th>
+                                    <th class="text-center"><small><b>Recorded Sales Currency</b></small></th>
+                                    <th class="text-end"><small><b>Recorded Sales Amount</b></small></th>
+                                    <th class="text-end"><small><b>Variance (Sales - Invoice)</b></small></th>
                                     @if($baseCurrencyCode !== '')
-                                        <th class="text-end"><small><b>Order ({{ $baseCurrencyCode }})</b></small></th>
-                                        <th class="text-end"><small><b>Sales ({{ $baseCurrencyCode }})</b></small></th>
-                                        <th class="text-end"><small><b>Difference ({{ $baseCurrencyCode }})</b></small></th>
+                                        <th class="text-end"><small><b>BM Invoice ({{ $baseCurrencyCode }})</b></small></th>
+                                        <th class="text-end"><small><b>Recorded Sales ({{ $baseCurrencyCode }})</b></small></th>
+                                        <th class="text-end"><small><b>Variance ({{ $baseCurrencyCode }})</b></small></th>
                                     @endif
                                 </tr>
                             </thead>
@@ -312,15 +312,15 @@
                                     <tr class="collapse" id="{{ $collapseId }}">
                                         <td colspan="{{ $baseCurrencyCode !== '' ? 10 : 7 }}" class="bg-light">
                                             <div class="mb-2">
-                                                <strong>Difference Summary:</strong>
+                                                <strong>Variance Summary:</strong>
                                                 <ul class="mb-2 small">
                                                     @if(!is_null($differenceCurrency))
-                                                        <li>Currency Difference ({{ $order['order_currency'] ?? '—' }}): <span class="{{ $diffClass }}">{{ number_format($differenceCurrency, 2) }}</span></li>
+                                                        <li>Variance in {{ $order['order_currency'] ?? '—' }}: <span class="{{ $diffClass }}">{{ number_format($differenceCurrency, 2) }}</span></li>
                                                     @endif
                                                     @if($baseCurrencyCode !== '')
-                                                        <li>{{ $baseCurrencyCode }} Difference: <span class="{{ $diffClass }}">{{ number_format($differenceBase, 2) }}</span></li>
+                                                        <li>{{ $baseCurrencyCode }} Variance: <span class="{{ $diffClass }}">{{ number_format($differenceBase, 2) }}</span></li>
                                                     @endif
-                                                    <li>Order Amount vs Sales Total: {{ number_format($order['order_amount_base'] ?? 0, 2) }} → {{ number_format($order['sales_total_base'] ?? 0, 2) }}</li>
+                                                    <li>Invoice vs Recorded Sales: {{ number_format($order['order_amount_base'] ?? 0, 2) }} → {{ number_format($order['sales_total_base'] ?? 0, 2) }}</li>
                                                 </ul>
                                             </div>
 
@@ -334,10 +334,10 @@
                                                                 <th><small><b>Description</b></small></th>
                                                                 <th><small><b>Date</b></small></th>
                                                                 <th class="text-center"><small><b>Currency</b></small></th>
-                                                                <th class="text-end"><small><b>Amount</b></small></th>
+                                                                <th class="text-end"><small><b>Recorded Sales Amount</b></small></th>
                                                                 @if($baseCurrencyCode !== '')
                                                                     <th class="text-end"><small><b>Amount ({{ $baseCurrencyCode }})</b></small></th>
-                                                                    <th class="text-end"><small><b>Balance vs Order ({{ $baseCurrencyCode }})</b></small></th>
+                                                                    <th class="text-end"><small><b>Remaining Variance ({{ $baseCurrencyCode }})</b></small></th>
                                                                 @endif
                                                             </tr>
                                                         </thead>
@@ -377,7 +377,7 @@
                             <tfoot>
                                 <tr>
                                     @if($baseCurrencyCode !== '')
-                                        <td colspan="7" class="text-end"><b>Base Totals</b></td>
+                                        <td colspan="7" class="text-end"><b>Base Totals (Sales - Invoice)</b></td>
                                         <td class="text-end"><b>{{ number_format($orderAmountBaseSum, 2) }}</b></td>
                                         <td class="text-end"><b>{{ number_format($orderSalesBaseSum, 2) }}</b></td>
                                         <td class="text-end"><b>{{ number_format($orderDifferenceBaseSum, 2) }}</b></td>
