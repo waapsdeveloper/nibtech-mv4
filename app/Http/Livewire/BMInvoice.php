@@ -122,7 +122,7 @@ class BMInvoice extends Component
         return [
             'duplicateTransactions' => $duplicateTransactions,
             'salesVsOrders' => $this->summarizeSalesVsOrders($orders, $salesTransactions),
-            'orderComparisons' => $this->buildOrderComparisons($orders, $salesTransactions),
+            'orderComparisons' => $this->buildOrderComparisons($orders, $transactions),
             'report' => $descriptionSummary->get('report'),
             'reportSalesRow' => $descriptionSummary->get('sales'),
             'refundReport' => $refundReport,
@@ -217,49 +217,67 @@ class BMInvoice extends Component
         ];
     }
 
-    private function buildOrderComparisons(Collection $orders, Collection $salesTransactions): Collection
+    private function buildOrderComparisons(Collection $orders, Collection $transactions): Collection
     {
-        $salesByOrder = $salesTransactions->groupBy('order_id')->map(function ($group) {
-            return [
-                'total' => (float) $group->sum('amount'),
-                'transactions' => $group,
-            ];
-        });
+        $transactionsByOrder = $transactions
+            ->filter(fn ($transaction) => ! empty($transaction->order_id))
+            ->groupBy('order_id');
 
-        return $orders->map(function ($order) use ($salesByOrder) {
-            $salesData = $salesByOrder->get($order->id, [
-                'total' => 0.0,
-                'transactions' => collect(),
-            ]);
+        return $orders->map(function ($order) use ($transactionsByOrder) {
+            $orderTransactions = $transactionsByOrder->get($order->id, collect());
 
-            $orderAmount = (float) ($order->price ?? 0);
+            $salesTransactions = $orderTransactions->filter(fn ($transaction) => $this->isSalesDescription($transaction->description));
+            $refundTransactions = $orderTransactions->filter(fn ($transaction) => $this->isRefundDescription($transaction->description));
 
-            $salesTotal = (float) ($salesData['total'] ?? 0.0);
+            $originalOrderAmount = (float) ($order->price ?? 0.0);
+            $isRefundOrder = $originalOrderAmount < 0;
 
-            $salesTransactionsCollection = $salesData['transactions'] instanceof Collection
-                ? $salesData['transactions']
-                : collect($salesData['transactions']);
+            $primaryTransactions = $isRefundOrder ? $refundTransactions : $salesTransactions;
+            $primaryType = $isRefundOrder ? 'refund' : 'sale';
 
-            $salesCurrencyIds = $salesTransactionsCollection->pluck('currency')->filter()->unique();
+            if ($primaryTransactions->isEmpty()) {
+                if ($salesTransactions->isNotEmpty()) {
+                    $primaryTransactions = $salesTransactions;
+                    $primaryType = 'sale';
+                } elseif ($refundTransactions->isNotEmpty()) {
+                    $primaryTransactions = $refundTransactions;
+                    $primaryType = 'refund';
+                } else {
+                    $primaryTransactions = collect();
+                    $primaryType = 'unknown';
+                }
+            }
 
-            if ($salesCurrencyIds->isEmpty()) {
-                $salesCurrencyCode = $order->currency;
-                $salesTotalCurrency = 0.0;
-                $differenceCurrency = is_null($order->currency) ? null : (0.0 - $orderAmount);
-            } elseif ($salesCurrencyIds->count() === 1) {
-                $singleCurrencyId = $salesCurrencyIds->first();
-                $salesCurrencyCode = (string) $singleCurrencyId;
-                $salesTotalCurrency = $salesTotal;
-                $differenceCurrency = ((string) $singleCurrencyId === (string) $order->currency)
-                    ? ($salesTotal - $orderAmount)
+            $orderAmountForComparison = $originalOrderAmount;
+            if ($primaryType === 'refund') {
+                $orderAmountForComparison = $originalOrderAmount > 0
+                    ? $originalOrderAmount * -1
+                    : $originalOrderAmount;
+            } elseif ($primaryType === 'sale') {
+                $orderAmountForComparison = $originalOrderAmount < 0
+                    ? abs($originalOrderAmount)
+                    : $originalOrderAmount;
+            }
+
+            $currencyIds = $primaryTransactions->pluck('currency')->filter()->unique();
+
+            if ($primaryTransactions->isEmpty()) {
+                $recordedCurrencyCode = '—';
+                $recordedTotal = null;
+                $differenceCurrency = null;
+            } elseif ($currencyIds->count() === 1) {
+                $recordedCurrencyCode = (string) $currencyIds->first();
+                $recordedTotal = (float) $primaryTransactions->sum('amount');
+                $differenceCurrency = ((string) $recordedCurrencyCode === (string) $order->currency)
+                    ? ($recordedTotal - $orderAmountForComparison)
                     : null;
             } else {
-                $salesCurrencyCode = 'Mixed';
-                $salesTotalCurrency = null;
+                $recordedCurrencyCode = 'Mixed';
+                $recordedTotal = null;
                 $differenceCurrency = null;
             }
 
-            $transactions = $salesTransactionsCollection->map(function ($transaction) {
+            $transactionRows = $orderTransactions->map(function ($transaction) {
                 $currencyCode = (string) $transaction->currency;
                 $amount = (float) $transaction->amount;
 
@@ -268,6 +286,10 @@ class BMInvoice extends Component
                     $date = $transaction->created_at->toDateTimeString();
                 }
 
+                $type = $this->isSalesDescription($transaction->description)
+                    ? 'sale'
+                    : ($this->isRefundDescription($transaction->description) ? 'refund' : 'other');
+
                 return [
                     'id' => $transaction->id,
                     'reference_id' => $transaction->reference_id,
@@ -275,6 +297,7 @@ class BMInvoice extends Component
                     'date' => $date,
                     'currency' => $currencyCode,
                     'amount' => $amount,
+                    'type' => $type,
                 ];
             })->values()->all();
 
@@ -282,14 +305,17 @@ class BMInvoice extends Component
                 'order_id' => $order->id,
                 'order_reference' => $order->reference_id,
                 'order_currency' => $order->currency,
-                'order_amount' => $orderAmount,
-                'sales_currency' => $salesCurrencyCode,
-                'sales_total_currency' => $salesTotalCurrency,
+                'order_amount' => $orderAmountForComparison,
+                'order_amount_original' => $originalOrderAmount,
+                'sales_currency' => $recordedCurrencyCode,
+                'sales_total_currency' => $recordedTotal,
                 'difference_currency' => $differenceCurrency,
-                'transactions' => $transactions,
+                'transactions' => $transactionRows,
+                'primary_transaction_type' => $primaryType,
             ];
         })->sortByDesc(function ($row) {
-            return abs($row['difference_currency'] ?? 0.0);
+            $difference = $row['difference_currency'] ?? null;
+            return is_numeric($difference) ? abs($difference) : 0.0;
         })->values();
     }
 
