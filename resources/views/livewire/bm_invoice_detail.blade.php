@@ -311,7 +311,20 @@
                                     </tr>
                                     <tr class="collapse" id="{{ $collapseId }}">
                                         <td colspan="{{ $baseCurrencyCode !== '' ? 10 : 7 }}" class="bg-light">
-                                            @if(!empty($order['transactions']))
+                                            <div class="mb-2">
+                                                <strong>Difference Summary:</strong>
+                                                <ul class="mb-2 small">
+                                                    @if(!is_null($differenceCurrency))
+                                                        <li>Currency Difference ({{ $order['order_currency'] ?? '—' }}): <span class="{{ $diffClass }}">{{ number_format($differenceCurrency, 2) }}</span></li>
+                                                    @endif
+                                                    @if($baseCurrencyCode !== '')
+                                                        <li>{{ $baseCurrencyCode }} Difference: <span class="{{ $diffClass }}">{{ number_format($differenceBase, 2) }}</span></li>
+                                                    @endif
+                                                    <li>Order Amount vs Sales Total: {{ number_format($order['order_amount_base'] ?? 0, 2) }} → {{ number_format($order['sales_total_base'] ?? 0, 2) }}</li>
+                                                </ul>
+                                            </div>
+
+                        @if(!empty($order['transactions']))
                                                 <div class="table-responsive">
                                                     <table class="table table-sm mb-0">
                                                         <thead>
@@ -324,11 +337,20 @@
                                                                 <th class="text-end"><small><b>Amount</b></small></th>
                                                                 @if($baseCurrencyCode !== '')
                                                                     <th class="text-end"><small><b>Amount ({{ $baseCurrencyCode }})</b></small></th>
+                                                                    <th class="text-end"><small><b>Balance vs Order ({{ $baseCurrencyCode }})</b></small></th>
                                                                 @endif
                                                             </tr>
                                                         </thead>
                                                         <tbody>
+                                                            @php
+                                                                $runningBaseTotal = 0.0;
+                                                            @endphp
                                                             @foreach ($order['transactions'] as $trx)
+                                                                @php
+                                                                    $amountBase = $trx['amount_base'] ?? 0;
+                                                                    $runningBaseTotal += $amountBase;
+                                                                    $balanceBase = ($order['order_amount_base'] ?? 0) - $runningBaseTotal;
+                                                                @endphp
                                                                 <tr>
                                                                     <td>{{ $trx['id'] }}</td>
                                                                     <td>{{ $trx['reference_id'] }}</td>
@@ -337,7 +359,8 @@
                                                                     <td class="text-center">{{ $trx['currency'] }}</td>
                                                                     <td class="text-end">{{ number_format($trx['amount'] ?? 0, 2) }}</td>
                                                                     @if($baseCurrencyCode !== '')
-                                                                        <td class="text-end">{{ number_format($trx['amount_base'] ?? 0, 2) }}</td>
+                                                                        <td class="text-end">{{ number_format($amountBase, 2) }}</td>
+                                                                        <td class="text-end {{ abs($balanceBase) < 0.01 ? 'text-success' : ($balanceBase > 0 ? 'text-warning' : 'text-danger') }}">{{ number_format($balanceBase, 2) }}</td>
                                                                     @endif
                                                                 </tr>
                                                             @endforeach
