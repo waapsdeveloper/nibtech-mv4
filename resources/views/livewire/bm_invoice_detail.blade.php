@@ -162,9 +162,22 @@
         @endif
 
         @if(isset($salesVsOrders))
+            @php
+                $baseCurrencyCode = strtoupper($salesVsOrders['base_currency'] ?? '');
+                $basePrefix = $baseCurrencyCode !== '' ? $baseCurrencyCode . ' ' : '';
+                $breakdown = $salesVsOrders['breakdown'] ?? collect();
+                if (! $breakdown instanceof \Illuminate\Support\Collection) {
+                    $breakdown = collect($breakdown ?? []);
+                }
+            @endphp
             <div class="card mt-3">
                 <div class="card-header pb-0">
-                    <h4 class="card-title mg-b-0">Sales Transactions vs Order Amounts</h4>
+                    <h4 class="card-title mg-b-0">
+                        Sales Transactions vs Order Amounts
+                        @if($baseCurrencyCode !== '')
+                            <small class="text-muted">(Base: {{ $baseCurrencyCode }})</small>
+                        @endif
+                    </h4>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -172,38 +185,48 @@
                             <tbody>
                                 <tr>
                                     <td><b>Sales Transactions</b></td>
-                                    <td class="text-end">{{ number_format($salesVsOrders['transaction_total'] ?? 0, 2) }}</td>
+                                    <td class="text-end">{{ $basePrefix }}{{ number_format($salesVsOrders['transaction_total'] ?? 0, 2) }}</td>
                                 </tr>
                                 <tr>
                                     <td><b>Order Amount</b></td>
-                                    <td class="text-end">{{ number_format($salesVsOrders['order_total'] ?? 0, 2) }}</td>
+                                    <td class="text-end">{{ $basePrefix }}{{ number_format($salesVsOrders['order_total'] ?? 0, 2) }}</td>
                                 </tr>
                                 <tr>
                                     <td><b>Difference</b></td>
-                                    <td class="text-end">{{ number_format($salesVsOrders['difference'] ?? 0, 2) }}</td>
+                                    <td class="text-end">{{ $basePrefix }}{{ number_format($salesVsOrders['difference'] ?? 0, 2) }}</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
 
-                    @if(isset($salesVsOrders['breakdown']) && $salesVsOrders['breakdown'] instanceof \Illuminate\Support\Collection && $salesVsOrders['breakdown']->isNotEmpty())
+                    @if($breakdown->isNotEmpty())
                         <div class="table-responsive">
                             <table class="table table-sm table-striped mb-0 text-md-nowrap">
                                 <thead>
                                     <tr>
                                         <th><small><b>Currency</b></small></th>
-                                        <th class="text-end"><small><b>Sales Transactions</b></small></th>
-                                        <th class="text-end"><small><b>Order Amount</b></small></th>
-                                        <th class="text-end"><small><b>Difference</b></small></th>
+                                        <th class="text-end"><small><b>Sales (Currency)</b></small></th>
+                                        <th class="text-end"><small><b>Orders (Currency)</b></small></th>
+                                        <th class="text-end"><small><b>Difference (Currency)</b></small></th>
+                                        @if($baseCurrencyCode !== '')
+                                            <th class="text-end"><small><b>Sales ({{ $baseCurrencyCode }})</b></small></th>
+                                            <th class="text-end"><small><b>Orders ({{ $baseCurrencyCode }})</b></small></th>
+                                            <th class="text-end"><small><b>Difference ({{ $baseCurrencyCode }})</b></small></th>
+                                        @endif
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($salesVsOrders['breakdown'] as $row)
+                                    @foreach ($breakdown as $row)
                                         <tr>
                                             <td>{{ $row['currency'] }}</td>
                                             <td class="text-end">{{ number_format($row['sales_total'], 2) }}</td>
                                             <td class="text-end">{{ number_format($row['order_total'], 2) }}</td>
                                             <td class="text-end">{{ number_format($row['difference'], 2) }}</td>
+                                            @if($baseCurrencyCode !== '')
+                                                <td class="text-end">{{ number_format($row['sales_total_base'], 2) }}</td>
+                                                <td class="text-end">{{ number_format($row['order_total_base'], 2) }}</td>
+                                                <td class="text-end">{{ number_format($row['difference_base'], 2) }}</td>
+                                            @endif
                                         </tr>
                                     @endforeach
                                 </tbody>
