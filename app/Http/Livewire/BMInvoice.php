@@ -91,6 +91,30 @@ class BMInvoice extends Component
 
         $transactions = Account_transaction_model::where('process_id', $process_id)->get();
 
+        $seenKeys = [];
+        $duplicateTransactions = collect();
+
+        $transactions = $transactions->filter(function ($transaction) use (&$seenKeys, &$duplicateTransactions) {
+            $normalizedDescription = Str::lower(trim((string) $transaction->description));
+            $normalizedAmount = number_format((float) $transaction->amount, 4, '.', '');
+            $key = implode('|', [
+                $transaction->order_id ?? 'null',
+                $normalizedDescription,
+                $normalizedAmount,
+                $transaction->currency ?? 'null',
+            ]);
+
+            if (isset($seenKeys[$key])) {
+                $duplicateTransactions->push($transaction);
+                return false;
+            }
+
+            $seenKeys[$key] = true;
+            return true;
+        })->values();
+
+        $data['duplicateTransactions'] = $duplicateTransactions;
+
         $orderIds = $transactions->pluck('order_id')->filter()->unique();
         $orders = Order_model::whereIn('id', $orderIds)->get(['id', 'price', 'currency', 'reference_id']);
 
