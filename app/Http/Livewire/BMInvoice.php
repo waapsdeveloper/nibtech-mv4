@@ -397,7 +397,7 @@ class BMInvoice extends Component
                     $chargeTotal = $orderPriceTotal;
                 }
 
-                if ($chargeTotal > 0 && $description !== 'Sales') {
+                if ($chargeTotal > 0 && $description !== 'sales') {
                     $chargeTotal *= -1;
                 }
 
