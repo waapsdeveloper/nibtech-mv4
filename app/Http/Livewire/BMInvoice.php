@@ -200,7 +200,7 @@ class BMInvoice extends Component
                     'currency' => $this->formatCurrencyId($currencyId),
                     'sales_total' => $salesTotal,
                     'order_total' => $orderTotal,
-                    'difference' => $salesTotal + $orderTotal,
+                    'difference' => $salesTotal - $orderTotal,
                 ];
             })
             ->filter(function ($row) {
@@ -272,7 +272,7 @@ class BMInvoice extends Component
                 $recordedCurrencyCode = (string) $currencyIds->first();
                 $recordedTotal = (float) $primaryTransactions->sum('amount');
                 $differenceCurrency = ((string) $recordedCurrencyCode === (string) $order->currency)
-                    ? ($recordedTotal + $orderAmountForComparison)
+                    ? ($recordedTotal - $orderAmountForComparison)
                     : null;
             } else {
                 $recordedCurrencyCode = 'Mixed';
@@ -388,7 +388,7 @@ class BMInvoice extends Component
                     'description' => $description,
                     'transaction_total' => $transactionTotal,
                     'charge_total' => $chargeTotal,
-                    'difference' => abs($transactionTotal) + abs($chargeTotal),
+                    'difference' => abs($transactionTotal) - abs($chargeTotal),
                 ];
             })
             ->values();
