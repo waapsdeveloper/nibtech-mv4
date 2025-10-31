@@ -23,6 +23,9 @@ use App\Models\Process_model;
 use App\Models\Process_stock_model;
 use App\Models\Product_storage_sort_model;
 use App\Models\Stock_operations_model;
+use App\Models\Order_model;
+use App\Models\Currency_model;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 
 class BMInvoice extends Component
@@ -62,7 +65,6 @@ class BMInvoice extends Component
         })
         ->orderBy('reference_id', 'desc') // Secondary order by reference_id
         ->paginate($per_page)
-        ->onEachSide(5)
         ->appends(request()->except('page'));
 
 
@@ -89,10 +91,59 @@ class BMInvoice extends Component
 
         $transactions = Account_transaction_model::where('process_id', $process_id)->get();
 
+        $orderIds = $transactions->pluck('order_id')->filter()->unique();
+        $orders = Order_model::whereIn('id', $orderIds)->get(['id', 'price', 'currency', 'reference_id']);
+
+        $salesTransactions = $transactions->filter(function ($transaction) {
+            return Str::lower(trim((string) $transaction->description)) === 'sales';
+        });
+
+        $salesTransactionTotal = (float) $salesTransactions->sum('amount');
+        $orderTotal = (float) $orders->sum(function ($order) {
+            return (float) ($order->price ?? 0);
+        });
+
+        $currencyIds = $orders->pluck('currency')->merge($salesTransactions->pluck('currency'))->filter(function ($id) {
+            return !is_null($id);
+        })->unique();
+
+        $currencyLabels = $currencyIds->isEmpty()
+            ? collect()
+            : Currency_model::whereIn('id', $currencyIds)->pluck('code', 'id');
+
+        $salesPerCurrency = $salesTransactions->groupBy('currency')->map(function ($group) {
+            return (float) $group->sum('amount');
+        });
+
+        $orderPerCurrency = $orders->groupBy('currency')->map(function ($group) {
+            return (float) $group->sum(function ($order) {
+                return (float) ($order->price ?? 0);
+            });
+        });
+
+        $currencyBreakdown = $currencyIds->map(function ($currencyId) use ($currencyLabels, $salesPerCurrency, $orderPerCurrency) {
+            $salesTotal = $salesPerCurrency[$currencyId] ?? 0.0;
+            $orderTotalByCurrency = $orderPerCurrency[$currencyId] ?? 0.0;
+
+            return [
+                'currency'    => $currencyLabels[$currencyId] ?? (string) $currencyId,
+                'sales_total' => $salesTotal,
+                'order_total' => $orderTotalByCurrency,
+                'difference'  => abs($salesTotal) - abs($orderTotalByCurrency),
+            ];
+        })->values();
+
+        $data['salesVsOrders'] = [
+            'transaction_total' => $salesTransactionTotal,
+            'order_total'       => $orderTotal,
+            'difference'        => abs($salesTransactionTotal) - abs($orderTotal),
+            'breakdown'         => $currencyBreakdown,
+        ];
+
         $chargeMap = Order_charge_model::query()
             ->selectRaw('charge_value_id, SUM(amount) AS charge_total')
             ->with('charge')
-            ->whereIn('order_id', $transactions->pluck('order_id')->filter()->unique())
+            ->whereIn('order_id', $orderIds)
             ->groupBy('charge_value_id')
             ->get()
             ->mapWithKeys(fn ($charge) => [

@@ -161,6 +161,59 @@
             </div>
         @endif
 
+        @if(isset($salesVsOrders))
+            <div class="card mt-3">
+                <div class="card-header pb-0">
+                    <h4 class="card-title mg-b-0">Sales Transactions vs Order Amounts</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover mb-3 text-md-nowrap">
+                            <tbody>
+                                <tr>
+                                    <td><b>Sales Transactions</b></td>
+                                    <td class="text-end">{{ number_format($salesVsOrders['transaction_total'] ?? 0, 2) }}</td>
+                                </tr>
+                                <tr>
+                                    <td><b>Order Amount</b></td>
+                                    <td class="text-end">{{ number_format($salesVsOrders['order_total'] ?? 0, 2) }}</td>
+                                </tr>
+                                <tr>
+                                    <td><b>Difference</b></td>
+                                    <td class="text-end">{{ number_format($salesVsOrders['difference'] ?? 0, 2) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if(isset($salesVsOrders['breakdown']) && $salesVsOrders['breakdown'] instanceof \Illuminate\Support\Collection && $salesVsOrders['breakdown']->isNotEmpty())
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped mb-0 text-md-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th><small><b>Currency</b></small></th>
+                                        <th class="text-end"><small><b>Sales Transactions</b></small></th>
+                                        <th class="text-end"><small><b>Order Amount</b></small></th>
+                                        <th class="text-end"><small><b>Difference</b></small></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($salesVsOrders['breakdown'] as $row)
+                                        <tr>
+                                            <td>{{ $row['currency'] }}</td>
+                                            <td class="text-end">{{ number_format($row['sales_total'], 2) }}</td>
+                                            <td class="text-end">{{ number_format($row['order_total'], 2) }}</td>
+                                            <td class="text-end">{{ number_format($row['difference'], 2) }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        @endif
+
 
     </div>
         <br>
