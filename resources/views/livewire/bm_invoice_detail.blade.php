@@ -143,31 +143,36 @@
 
             if (isset($report) && $report instanceof \Illuminate\Support\Collection && $report->isNotEmpty()) {
                 $deferredKeys = collect(['deferred_payout_released', 'deferred_payout_retained']);
-                $refundKeys = collect(['refund_partial', 'refund_full']);
 
-                $deferredRows = $report->filter(function ($row) use ($deferredKeys) {
-                    $key = \Illuminate\Support\Str::lower($row['description'] ?? '');
-                    return $deferredKeys->contains($key);
-                })->values();
+                $normalizedReport = $report->map(function ($row) {
+                    $description = (string) ($row['description'] ?? '');
+                    $normalized = (string) \Illuminate\Support\Str::of($description)
+                        ->lower()
+                        ->replace(' ', '_')
+                        ->replace('-', '_');
 
-                $partialRefundRows = $report->filter(function ($row) use ($refundKeys) {
-                    $key = \Illuminate\Support\Str::lower($row['description'] ?? '');
-                    return $key === 'refund_partial';
-                })->filter(function ($row) {
-                    return abs((float) ($row['difference'] ?? 0)) >= 0.01;
-                })->values();
+                    return array_merge($row, [
+                        'normalized_description' => $normalized,
+                    ]);
+                });
 
-                $fullRefundRows = $report->filter(function ($row) use ($refundKeys) {
-                    $key = \Illuminate\Support\Str::lower($row['description'] ?? '');
-                    return $key === 'refund_full';
-                })->filter(function ($row) {
-                    return abs((float) ($row['difference'] ?? 0)) >= 0.01;
-                })->values();
+                $deferredRows = $normalizedReport
+                    ->filter(function ($row) use ($deferredKeys) {
+                        $key = $row['normalized_description'] ?? '';
+                        return $deferredKeys->contains($key);
+                    })
+                    ->values();
 
-                $otherChargeRows = $report->reject(function ($row) use ($deferredKeys, $refundKeys) {
-                    $key = \Illuminate\Support\Str::lower($row['description'] ?? '');
-                    return $deferredKeys->contains($key) || $refundKeys->contains($key);
-                })->values();
+                $otherChargeRows = $normalizedReport
+                    ->reject(function ($row) use ($deferredKeys) {
+                        $key = $row['normalized_description'] ?? '';
+                        return $deferredKeys->contains($key) || \Illuminate\Support\Str::contains($key, 'refund');
+                    })
+                    ->map(function ($row) {
+                        unset($row['normalized_description']);
+                        return $row;
+                    })
+                    ->values();
 
                 if ($otherChargeRows->isNotEmpty()) {
                     $chargeSummary = [
@@ -184,24 +189,6 @@
                         'transaction_total' => (float) $deferredRows->sum('transaction_total'),
                         'charge_total' => (float) $deferredRows->sum('charge_total'),
                         'difference_total' => (float) $deferredRows->sum('difference'),
-                    ];
-                }
-
-                if ($partialRefundRows->isNotEmpty()) {
-                    $partialRefundSummary = [
-                        'rows' => $partialRefundRows,
-                        'transaction_total' => (float) $partialRefundRows->sum('transaction_total'),
-                        'charge_total' => (float) $partialRefundRows->sum('charge_total'),
-                        'difference_total' => (float) $partialRefundRows->sum('difference'),
-                    ];
-                }
-
-                if ($fullRefundRows->isNotEmpty()) {
-                    $fullRefundSummary = [
-                        'rows' => $fullRefundRows,
-                        'transaction_total' => (float) $fullRefundRows->sum('transaction_total'),
-                        'charge_total' => (float) $fullRefundRows->sum('charge_total'),
-                        'difference_total' => (float) $fullRefundRows->sum('difference'),
                     ];
                 }
             }
@@ -226,6 +213,76 @@
                         'total_count' => $summary['total'] ?? 0,
                     ];
                 }
+
+                $refundDetails = $refundReport->get('details', collect());
+                if (! $refundDetails instanceof \Illuminate\Support\Collection) {
+                    $refundDetails = collect($refundDetails ?? []);
+                }
+
+                $classifiedRefundDetails = $refundDetails->map(function ($refund) {
+                    $transactionAmount = (float) ($refund['transaction_amount'] ?? 0);
+                    $orderAmount = (float) ($refund['order_amount'] ?? 0);
+                    $orderFound = (bool) ($refund['order_found'] ?? false);
+
+                    $hasOrderTotal = $orderFound && abs($orderAmount) > 0.01;
+                    $isFullRefund = $hasOrderTotal && abs($transactionAmount - $orderAmount) < 0.01;
+                    $isPartialRefund = $hasOrderTotal && ! $isFullRefund;
+
+                    return array_merge($refund, [
+                        'classification' => $isFullRefund ? 'full' : ($isPartialRefund ? 'partial' : 'other'),
+                    ]);
+                })->values();
+
+                $buildRefundRows = function ($items) {
+                    return collect($items)
+                        ->groupBy(function ($row) {
+                            $reference = $row['order_reference'] ?? $row['transaction_reference'] ?? ('txn-' . $row['transaction_id']);
+                            $currency = $row['transaction_currency'] ?? '—';
+                            return $reference . '|' . $currency;
+                        })
+                        ->map(function ($group, $key) {
+                            [$reference, $currency] = array_pad(explode('|', $key, 2), 2, '—');
+                            $transactionTotal = (float) $group->sum('transaction_amount');
+                            $orderTotal = (float) $group->sum('order_amount');
+
+                            return [
+                                'description' => $reference,
+                                'currency' => $currency,
+                                'transaction_total' => $transactionTotal,
+                                'charge_total' => $orderTotal,
+                                'difference' => $transactionTotal - $orderTotal,
+                            ];
+                        })
+                        ->values();
+                };
+
+                $partialRefundRows = $buildRefundRows($classifiedRefundDetails->where('classification', 'partial')->values())
+                    ->filter(function ($row) {
+                        return abs((float) ($row['difference'] ?? 0)) >= 0.01;
+                    })
+                    ->values();
+
+                $fullRefundRows = $buildRefundRows($classifiedRefundDetails->where('classification', 'full')->values())->values();
+
+                if ($partialRefundRows->isNotEmpty()) {
+                    $partialRefundSummary = [
+                        'rows' => $partialRefundRows,
+                        'transaction_total' => (float) $partialRefundRows->sum('transaction_total'),
+                        'charge_total' => (float) $partialRefundRows->sum('charge_total'),
+                        'difference_total' => (float) $partialRefundRows->sum('difference'),
+                    ];
+                }
+
+                if ($fullRefundRows->isNotEmpty()) {
+                    $fullRefundSummary = [
+                        'rows' => $fullRefundRows,
+                        'transaction_total' => (float) $fullRefundRows->sum('transaction_total'),
+                        'charge_total' => (float) $fullRefundRows->sum('charge_total'),
+                        'difference_total' => (float) $fullRefundRows->sum('difference'),
+                    ];
+                }
+
+                $refundDetails = $classifiedRefundDetails;
             }
         @endphp
 
@@ -502,7 +559,8 @@
                             <table class="table table-sm table-hover mb-0 text-md-nowrap">
                                 <thead>
                                     <tr>
-                                        <th><small><b>Description</b></small></th>
+                                        <th><small><b>Reference</b></small></th>
+                                        <th class="text-center"><small><b>Currency</b></small></th>
                                         <th class="text-end"><small><b>Ledger Transactions</b></small></th>
                                         <th class="text-end"><small><b>BM Invoice Charges</b></small></th>
                                         <th class="text-end"><small><b>Variance</b></small></th>
@@ -518,6 +576,7 @@
                                         @endphp
                                         <tr>
                                             <td>{{ $row['description'] }}</td>
+                                            <td class="text-center">{{ $row['currency'] ?? '—' }}</td>
                                             <td class="text-end">{{ number_format($row['transaction_total'], 2) }}</td>
                                             <td class="text-end">{{ number_format($row['charge_total'], 2) }}</td>
                                             <td class="text-end {{ $partialRowClass }}">{{ number_format($partialRowVariance, 2) }}</td>
@@ -527,6 +586,7 @@
                                 <tfoot>
                                     <tr>
                                         <td><b>Total</b></td>
+                                        <td class="text-center">—</td>
                                         <td class="text-end"><b>{{ number_format($partialRefundSummary['transaction_total'], 2) }}</b></td>
                                         <td class="text-end"><b>{{ number_format($partialRefundSummary['charge_total'], 2) }}</b></td>
                                         <td class="text-end"><b>{{ number_format($partialRefundSummary['difference_total'], 2) }}</b></td>
@@ -543,7 +603,8 @@
                             <table class="table table-sm table-hover mb-0 text-md-nowrap">
                                 <thead>
                                     <tr>
-                                        <th><small><b>Description</b></small></th>
+                                        <th><small><b>Reference</b></small></th>
+                                        <th class="text-center"><small><b>Currency</b></small></th>
                                         <th class="text-end"><small><b>Ledger Transactions</b></small></th>
                                         <th class="text-end"><small><b>BM Invoice Charges</b></small></th>
                                         <th class="text-end"><small><b>Variance</b></small></th>
@@ -559,6 +620,7 @@
                                         @endphp
                                         <tr>
                                             <td>{{ $row['description'] }}</td>
+                                            <td class="text-center">{{ $row['currency'] ?? '—' }}</td>
                                             <td class="text-end">{{ number_format($row['transaction_total'], 2) }}</td>
                                             <td class="text-end">{{ number_format($row['charge_total'], 2) }}</td>
                                             <td class="text-end {{ $fullRowClass }}">{{ number_format($fullRowVariance, 2) }}</td>
@@ -568,6 +630,7 @@
                                 <tfoot>
                                     <tr>
                                         <td><b>Total</b></td>
+                                        <td class="text-center">—</td>
                                         <td class="text-end"><b>{{ number_format($fullRefundSummary['transaction_total'], 2) }}</b></td>
                                         <td class="text-end"><b>{{ number_format($fullRefundSummary['charge_total'], 2) }}</b></td>
                                         <td class="text-end"><b>{{ number_format($fullRefundSummary['difference_total'], 2) }}</b></td>
