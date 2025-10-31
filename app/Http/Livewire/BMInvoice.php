@@ -489,7 +489,7 @@ class BMInvoice extends Component
                     'transaction_total' => (float) $group->sum('transaction_amount'),
                     'order_total' => (float) $group->sum('order_amount'),
                     'difference' => (float) $group->sum(function ($row) {
-                        return ($row['transaction_amount'] ?? 0) - ($row['order_amount'] ?? 0);
+                        return ($row['transaction_amount'] ?? 0) + ($row['order_amount'] ?? 0);
                     }),
                 ];
             })
