@@ -84,6 +84,8 @@ class BMInvoice extends Component
         $data['title_page'] = "BM Invoice Detail";
         session()->put('page_title', $data['title_page']);
 
+        $process = Process_model::with('admin')->find($process_id);
+        $data['process'] = $process;
 
         $transactions = Account_transaction_model::where('process_id', $process_id)->get();
 
