@@ -12,6 +12,8 @@ use Livewire\Component;
 
 class BMInvoice extends Component
 {
+    protected ?array $currencyLabelCache = null;
+
     public function mount()
     {
         if (! session('user_id')) {
@@ -194,8 +196,8 @@ class BMInvoice extends Component
                 $orderTotal = $ordersPerCurrency->get($currencyId, 0.0);
 
                 return [
-                    'currency_id' => $currencyId,
-                    'currency' => (string) $currencyId,
+                    'currency_id' => (string) $currencyId,
+                    'currency' => $this->formatCurrencyId($currencyId),
                     'sales_total' => $salesTotal,
                     'order_total' => $orderTotal,
                     'difference' => $salesTotal - $orderTotal,
@@ -231,6 +233,7 @@ class BMInvoice extends Component
 
             $originalOrderAmount = (float) ($order->price ?? 0.0);
             $isRefundOrder = $originalOrderAmount < 0;
+            $orderCurrencyId = (string) ($order->currency ?? '');
 
             $primaryTransactions = $isRefundOrder ? $refundTransactions : $salesTransactions;
             $primaryType = $isRefundOrder ? 'refund' : 'sale';
@@ -279,6 +282,7 @@ class BMInvoice extends Component
 
             $transactionRows = $orderTransactions->map(function ($transaction) {
                 $currencyCode = (string) $transaction->currency;
+                $displayCurrency = $this->formatCurrencyId($currencyCode);
                 $amount = (float) $transaction->amount;
 
                 $date = $transaction->date;
@@ -295,24 +299,42 @@ class BMInvoice extends Component
                     'reference_id' => $transaction->reference_id,
                     'description' => $transaction->description,
                     'date' => $date,
-                    'currency' => $currencyCode,
+                    'currency' => $displayCurrency,
                     'amount' => $amount,
                     'type' => $type,
                 ];
             })->values()->all();
 
+            $displayOrderCurrency = $this->formatCurrencyId($orderCurrencyId);
+            $displayRecordedCurrency = in_array($recordedCurrencyCode, ['—', 'Mixed'], true)
+                ? $recordedCurrencyCode
+                : $this->formatCurrencyId($recordedCurrencyCode);
+
             return [
                 'order_id' => $order->id,
                 'order_reference' => $order->reference_id,
-                'order_currency' => $order->currency,
+                'order_currency_id' => $orderCurrencyId,
+                'order_currency' => $displayOrderCurrency,
                 'order_amount' => $orderAmountForComparison,
                 'order_amount_original' => $originalOrderAmount,
-                'sales_currency' => $recordedCurrencyCode,
+                'sales_currency_code' => $recordedCurrencyCode,
+                'sales_currency' => $displayRecordedCurrency,
                 'sales_total_currency' => $recordedTotal,
                 'difference_currency' => $differenceCurrency,
                 'transactions' => $transactionRows,
                 'primary_transaction_type' => $primaryType,
             ];
+        })->filter(function ($row) {
+            $difference = $row['difference_currency'];
+            $recordedTotal = $row['sales_total_currency'];
+            $salesCurrency = $row['sales_currency'] ?? null;
+            $transactions = $row['transactions'] ?? [];
+
+            $hasMeaningfulDifference = is_numeric($difference) ? abs($difference) >= 0.01 : true;
+            $recordedMissing = ! is_numeric($recordedTotal) || ($salesCurrency === 'Mixed');
+            $hasTransactions = ! empty($transactions);
+
+            return $hasMeaningfulDifference || $recordedMissing || ! $hasTransactions;
         })->sortByDesc(function ($row) {
             $difference = $row['difference_currency'] ?? null;
             return is_numeric($difference) ? abs($difference) : 0.0;
@@ -405,7 +427,8 @@ class BMInvoice extends Component
 
         $details = $refundTransactions->map(function ($transaction) use ($ordersById, $ordersByReference) {
             $transactionAmount = (float) $transaction->amount;
-            $transactionCurrency = (string) $transaction->currency;
+            $transactionCurrencyId = (string) ($transaction->currency ?? '');
+            $transactionCurrency = $this->formatCurrencyId($transactionCurrencyId);
 
             $order = null;
             $matchSource = null;
@@ -427,18 +450,21 @@ class BMInvoice extends Component
                 $orderId = $order->id;
                 $orderReference = $order->reference_id;
                 $orderAmount = (float) ($order->price ?? 0.0);
-                $orderCurrency = (string) $order->currency;
+                $orderCurrencyId = (string) ($order->currency ?? '');
+                $orderCurrency = $this->formatCurrencyId($orderCurrencyId);
             }
 
             return [
                 'transaction_id' => $transaction->id,
                 'transaction_reference' => $transaction->reference_id,
+                'transaction_currency_id' => $transactionCurrencyId,
                 'transaction_currency' => $transactionCurrency,
                 'transaction_amount' => $transactionAmount,
                 'order_found' => (bool) $order,
                 'match_source' => $matchSource,
                 'order_id' => $orderId,
                 'order_reference' => $orderReference,
+                'order_currency_id' => $orderCurrencyId,
                 'order_currency' => $orderCurrency,
                 'order_amount' => $orderAmount,
                 'difference' => $transactionAmount - $orderAmount,
@@ -446,10 +472,20 @@ class BMInvoice extends Component
         })->values();
 
         $totalsByCurrency = $details
-            ->groupBy('transaction_currency')
-            ->map(function ($group, $currency) {
+            ->groupBy(function ($row) {
+                $currencyId = $row['transaction_currency_id'] ?? null;
+                $currencyId = is_null($currencyId) || $currencyId === '' ? '—' : (string) $currencyId;
+
+                return $currencyId;
+            })
+            ->map(function ($group, $currencyId) {
+                $currencyLabel = $currencyId === '—'
+                    ? '—'
+                    : $this->formatCurrencyId($currencyId);
+
                 return [
-                    'currency' => (string) $currency,
+                    'currency_id' => $currencyId,
+                    'currency' => $currencyLabel,
                     'transaction_total' => (float) $group->sum('transaction_amount'),
                     'order_total' => (float) $group->sum('order_amount'),
                     'difference' => (float) $group->sum(function ($row) {
@@ -476,6 +512,45 @@ class BMInvoice extends Component
             ],
             'details' => $details,
         ]);
+    }
+
+    private function currencyLabels(): array
+    {
+        if ($this->currencyLabelCache !== null) {
+            return $this->currencyLabelCache;
+        }
+
+    $this->currencyLabelCache = \App\Models\Currency_model::query()
+            ->get()
+            ->mapWithKeys(function ($currency) {
+                $symbol = trim((string) ($currency->symbol ?? ''));
+                $code = trim((string) ($currency->code ?? ''));
+                $label = $symbol !== '' ? $symbol : ($code !== '' ? $code : (string) $currency->id);
+
+                return [
+                    (string) $currency->id => $label,
+                ];
+            })
+            ->all();
+
+        return $this->currencyLabelCache;
+    }
+
+    private function formatCurrencyId($currencyId): string
+    {
+        if ($currencyId === null) {
+            return '—';
+        }
+
+        $value = trim((string) $currencyId);
+
+        if ($value === '' || $value === '—' || strcasecmp($value, 'mixed') === 0) {
+            return $value === '' ? '—' : $value;
+        }
+
+        $labels = $this->currencyLabels();
+
+        return $labels[$value] ?? $value;
     }
 
     private function normalizeDescription($description): string
