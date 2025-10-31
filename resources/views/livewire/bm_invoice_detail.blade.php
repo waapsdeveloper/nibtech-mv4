@@ -120,6 +120,7 @@
         @php
             $salesSummary = null;
             $chargeSummary = null;
+            $deferredSummary = null;
             $refundSummary = null;
 
             if (isset($salesVsOrders)) {
@@ -139,12 +140,35 @@
             }
 
             if (isset($report) && $report instanceof \Illuminate\Support\Collection && $report->isNotEmpty()) {
-                $chargeSummary = [
-                    'rows' => $report,
-                    'transaction_total' => (float) $report->sum('transaction_total'),
-                    'charge_total' => (float) $report->sum('charge_total'),
-                    'difference_total' => (float) $report->sum('difference'),
-                ];
+                $deferredKeys = collect(['deferred_payout_released', 'deferred_payout_retained']);
+
+                $deferredRows = $report->filter(function ($row) use ($deferredKeys) {
+                    $key = \Illuminate\Support\Str::lower($row['description'] ?? '');
+                    return $deferredKeys->contains($key);
+                })->values();
+
+                $otherChargeRows = $report->reject(function ($row) use ($deferredKeys) {
+                    $key = \Illuminate\Support\Str::lower($row['description'] ?? '');
+                    return $deferredKeys->contains($key);
+                })->values();
+
+                if ($otherChargeRows->isNotEmpty()) {
+                    $chargeSummary = [
+                        'rows' => $otherChargeRows,
+                        'transaction_total' => (float) $otherChargeRows->sum('transaction_total'),
+                        'charge_total' => (float) $otherChargeRows->sum('charge_total'),
+                        'difference_total' => (float) $otherChargeRows->sum('difference'),
+                    ];
+                }
+
+                if ($deferredRows->isNotEmpty()) {
+                    $deferredSummary = [
+                        'rows' => $deferredRows,
+                        'transaction_total' => (float) $deferredRows->sum('transaction_total'),
+                        'charge_total' => (float) $deferredRows->sum('charge_total'),
+                        'difference_total' => (float) $deferredRows->sum('difference'),
+                    ];
+                }
             }
 
             if (isset($refundReport) && $refundReport instanceof \Illuminate\Support\Collection) {
@@ -170,7 +194,7 @@
             }
         @endphp
 
-        @if($salesSummary || $chargeSummary || $refundSummary)
+    @if($salesSummary || $chargeSummary || $refundSummary || $deferredSummary)
             <div class="card mt-3">
                 <div class="card-header pb-0">
                     <h4 class="card-title mg-b-0">Financial Summary</h4>
@@ -178,7 +202,7 @@
                 <div class="card-body">
                     <div class="row g-3">
                         @if($salesSummary)
-                            <div class="col-md-4">
+                            <div class="col-lg-3 col-md-6">
                                 <div class="border rounded p-3 h-100">
                                     <small class="text-uppercase text-muted">Sales vs Invoice</small>
                                     <div class="mt-2 small">
@@ -213,7 +237,7 @@
                         @endif
 
                         @if($chargeSummary)
-                            <div class="col-md-4">
+                            <div class="col-lg-3 col-md-6">
                                 <div class="border rounded p-3 h-100">
                                     <small class="text-uppercase text-muted">Non-Sales Charges</small>
                                     @php
@@ -244,7 +268,7 @@
                         @endif
 
                         @if($refundSummary)
-                            <div class="col-md-4">
+                            <div class="col-lg-3 col-md-6">
                                 <div class="border rounded p-3 h-100">
                                     <small class="text-uppercase text-muted">Refund Variance</small>
                                     @php
@@ -271,6 +295,36 @@
                                             <p class="mb-2 text-muted">Multiple currencies detected. See breakdown below.</p>
                                         @endif
                                         <p class="text-muted small mb-0">Matched {{ $refundSummary['matched_count'] ?? 0 }} of {{ $refundSummary['total_count'] ?? 0 }} refunds.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if($deferredSummary)
+                            <div class="col-lg-3 col-md-6">
+                                <div class="border rounded p-3 h-100">
+                                    <small class="text-uppercase text-muted">Deferred Payouts</small>
+                                    @php
+                                        $deferredLedger = (float) ($deferredSummary['transaction_total'] ?? 0);
+                                        $deferredInvoice = (float) ($deferredSummary['charge_total'] ?? 0);
+                                        $deferredVariance = (float) ($deferredSummary['difference_total'] ?? 0);
+                                        $deferredVarianceClass = abs($deferredVariance) < 0.01
+                                            ? 'text-success'
+                                            : ($deferredVariance < 0 ? 'text-warning' : 'text-danger');
+                                    @endphp
+                                    <div class="mt-2 small">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Ledger Total</span>
+                                            <span class="fw-semibold">{{ number_format($deferredLedger, 2) }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Invoice Total</span>
+                                            <span class="fw-semibold">{{ number_format($deferredInvoice, 2) }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Variance</span>
+                                            <span class="fw-semibold {{ $deferredVarianceClass }}">{{ number_format($deferredVariance, 2) }}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -347,7 +401,48 @@
                                 </tfoot>
                             </table>
                         </div>
-                        <p class="text-muted small mb-0 mt-2">Sales transactions are excluded from this table; they are summarised in the section above.</p>
+                        <p class="text-muted small mb-0 mt-2">Sales transactions are excluded from this table; they are summarised above. Deferred payout adjustments appear in the dedicated section that follows.</p>
+                    @endif
+
+                    @if($deferredSummary && $deferredSummary['rows']->isNotEmpty())
+                        <hr class="my-4">
+                        <h6 class="mb-2">Deferred Payout Breakdown</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover mb-0 text-md-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th><small><b>Description</b></small></th>
+                                        <th class="text-end"><small><b>Ledger Transactions</b></small></th>
+                                        <th class="text-end"><small><b>BM Invoice Charges</b></small></th>
+                                        <th class="text-end"><small><b>Variance</b></small></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($deferredSummary['rows'] as $row)
+                                        @php
+                                            $deferredRowVariance = (float) ($row['difference'] ?? 0);
+                                            $deferredRowClass = abs($deferredRowVariance) < 0.01
+                                                ? 'text-success'
+                                                : ($deferredRowVariance < 0 ? 'text-warning' : 'text-danger');
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $row['description'] }}</td>
+                                            <td class="text-end">{{ number_format($row['transaction_total'], 2) }}</td>
+                                            <td class="text-end">{{ number_format($row['charge_total'], 2) }}</td>
+                                            <td class="text-end {{ $deferredRowClass }}">{{ number_format($deferredRowVariance, 2) }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td><b>Total</b></td>
+                                        <td class="text-end"><b>{{ number_format($deferredSummary['transaction_total'], 2) }}</b></td>
+                                        <td class="text-end"><b>{{ number_format($deferredSummary['charge_total'], 2) }}</b></td>
+                                        <td class="text-end"><b>{{ number_format($deferredSummary['difference_total'], 2) }}</b></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
                     @endif
 
                     @if($refundSummary && $refundSummary['totals_by_currency']->isNotEmpty())
