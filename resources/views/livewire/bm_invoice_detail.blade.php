@@ -237,6 +237,138 @@
             </div>
         @endif
 
+        @if(isset($orderComparisons) && $orderComparisons instanceof \Illuminate\Support\Collection && $orderComparisons->isNotEmpty())
+            @php
+                $baseCurrencyCode = strtoupper($salesVsOrders['base_currency'] ?? '');
+                $basePrefix = $baseCurrencyCode !== '' ? $baseCurrencyCode . ' ' : '';
+                $orderSalesBaseSum = $orderComparisons->sum('sales_total_base');
+                $orderAmountBaseSum = $orderComparisons->sum('order_amount_base');
+                $orderDifferenceBaseSum = $orderComparisons->sum('difference_base');
+            @endphp
+            <div class="card mt-3">
+                <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mg-b-0">Order-Level Comparison</h4>
+                    @if($baseCurrencyCode !== '')
+                        <span class="text-muted small">Base Currency: {{ $baseCurrencyCode }}</span>
+                    @endif
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover mb-0 text-md-nowrap align-middle">
+                            <thead>
+                                <tr>
+                                    <th style="width: 48px;"><span class="visually-hidden">Toggle</span></th>
+                                    <th><small><b>Order Ref</b></small></th>
+                                    <th class="text-center"><small><b>Currency</b></small></th>
+                                    <th class="text-end"><small><b>Order Amount</b></small></th>
+                                    <th class="text-center"><small><b>Sales Currency</b></small></th>
+                                    <th class="text-end"><small><b>Sales Amount</b></small></th>
+                                    <th class="text-end"><small><b>Difference</b></small></th>
+                                    @if($baseCurrencyCode !== '')
+                                        <th class="text-end"><small><b>Order ({{ $baseCurrencyCode }})</b></small></th>
+                                        <th class="text-end"><small><b>Sales ({{ $baseCurrencyCode }})</b></small></th>
+                                        <th class="text-end"><small><b>Difference ({{ $baseCurrencyCode }})</b></small></th>
+                                    @endif
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($orderComparisons as $order)
+                                    @php
+                                        $differenceBase = $order['difference_base'] ?? 0;
+                                        $differenceCurrency = $order['difference_currency'];
+                                        $diffClass = abs($differenceBase) < 0.01 ? 'text-success' : ($differenceBase > 0 ? 'text-warning' : 'text-danger');
+                                        $collapseId = 'order-compare-' . $order['order_id'];
+                                    @endphp
+                                    <tr>
+                                        <td class="text-center">
+                                            <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#{{ $collapseId }}" aria-expanded="false" aria-controls="{{ $collapseId }}">
+                                                <i class="fa fa-search"></i>
+                                            </button>
+                                        </td>
+                                        <td>{{ $order['order_reference'] ?? $order['order_id'] }}</td>
+                                        <td class="text-center">{{ $order['order_currency'] }}</td>
+                                        <td class="text-end">{{ number_format($order['order_amount'] ?? 0, 2) }}</td>
+                                        <td class="text-center">{{ $order['sales_currency'] ?? '—' }}</td>
+                                        <td class="text-end">
+                                            @if(!is_null($order['sales_total_currency']))
+                                                {{ number_format($order['sales_total_currency'], 2) }}
+                                            @else
+                                                <span class="text-muted">—</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-end {{ $diffClass }}">
+                                            @if(!is_null($differenceCurrency))
+                                                {{ number_format($differenceCurrency, 2) }}
+                                            @else
+                                                <span class="text-muted">—</span>
+                                            @endif
+                                        </td>
+                                        @if($baseCurrencyCode !== '')
+                                            <td class="text-end">{{ number_format($order['order_amount_base'] ?? 0, 2) }}</td>
+                                            <td class="text-end">{{ number_format($order['sales_total_base'] ?? 0, 2) }}</td>
+                                            <td class="text-end {{ $diffClass }}">{{ number_format($differenceBase ?? 0, 2) }}</td>
+                                        @endif
+                                    </tr>
+                                    <tr class="collapse" id="{{ $collapseId }}">
+                                        <td colspan="{{ $baseCurrencyCode !== '' ? 10 : 7 }}" class="bg-light">
+                                            @if(!empty($order['transactions']))
+                                                <div class="table-responsive">
+                                                    <table class="table table-sm mb-0">
+                                                        <thead>
+                                                            <tr>
+                                                                <th><small><b>ID</b></small></th>
+                                                                <th><small><b>Reference</b></small></th>
+                                                                <th><small><b>Description</b></small></th>
+                                                                <th><small><b>Date</b></small></th>
+                                                                <th class="text-center"><small><b>Currency</b></small></th>
+                                                                <th class="text-end"><small><b>Amount</b></small></th>
+                                                                @if($baseCurrencyCode !== '')
+                                                                    <th class="text-end"><small><b>Amount ({{ $baseCurrencyCode }})</b></small></th>
+                                                                @endif
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach ($order['transactions'] as $trx)
+                                                                <tr>
+                                                                    <td>{{ $trx['id'] }}</td>
+                                                                    <td>{{ $trx['reference_id'] }}</td>
+                                                                    <td>{{ $trx['description'] }}</td>
+                                                                    <td>{{ $trx['date'] ?? '—' }}</td>
+                                                                    <td class="text-center">{{ $trx['currency'] }}</td>
+                                                                    <td class="text-end">{{ number_format($trx['amount'] ?? 0, 2) }}</td>
+                                                                    @if($baseCurrencyCode !== '')
+                                                                        <td class="text-end">{{ number_format($trx['amount_base'] ?? 0, 2) }}</td>
+                                                                    @endif
+                                                                </tr>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            @else
+                                                <p class="mb-0 text-muted">No related sales transactions.</p>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    @if($baseCurrencyCode !== '')
+                                        <td colspan="7" class="text-end"><b>Base Totals</b></td>
+                                        <td class="text-end"><b>{{ number_format($orderAmountBaseSum, 2) }}</b></td>
+                                        <td class="text-end"><b>{{ number_format($orderSalesBaseSum, 2) }}</b></td>
+                                        <td class="text-end"><b>{{ number_format($orderDifferenceBaseSum, 2) }}</b></td>
+                                    @else
+                                        <td colspan="7" class="text-center text-muted"><b>No base currency totals available</b></td>
+                                    @endif
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        @endif
+
 
     </div>
         <br>
