@@ -153,11 +153,15 @@
                 $partialRefundRows = $report->filter(function ($row) use ($refundKeys) {
                     $key = \Illuminate\Support\Str::lower($row['description'] ?? '');
                     return $key === 'refund_partial';
+                })->filter(function ($row) {
+                    return abs((float) ($row['difference'] ?? 0)) >= 0.01;
                 })->values();
 
                 $fullRefundRows = $report->filter(function ($row) use ($refundKeys) {
                     $key = \Illuminate\Support\Str::lower($row['description'] ?? '');
                     return $key === 'refund_full';
+                })->filter(function ($row) {
+                    return abs((float) ($row['difference'] ?? 0)) >= 0.01;
                 })->values();
 
                 $otherChargeRows = $report->reject(function ($row) use ($deferredKeys, $refundKeys) {
@@ -488,7 +492,7 @@
                                 </tfoot>
                             </table>
                         </div>
-                        <p class="text-muted small mb-0 mt-2">Sales transactions are excluded from this table; they are summarised above. Deferred payout adjustments appear in the dedicated section that follows.</p>
+                        <p class="text-muted small mb-0 mt-2">Sales transactions are excluded from this table; they are summarised above. Partial and full refunds, along with deferred payout adjustments, each appear in their dedicated sections below.</p>
                     @endif
 
                     @if($partialRefundSummary && $partialRefundSummary['rows']->isNotEmpty())
@@ -1037,8 +1041,16 @@
                 if (! $refundDetails instanceof \Illuminate\Support\Collection) {
                     $refundDetails = collect($refundDetails ?? []);
                 }
+
+                $visibleRefundDetails = $refundDetails->filter(function ($refund) {
+                    $difference = is_numeric($refund['difference'] ?? null) ? (float) $refund['difference'] : 0;
+                    $isMatched = (bool) ($refund['order_found'] ?? false);
+
+                    // Hide fully matched refunds with no meaningful variance from the detailed table.
+                    return ! ($isMatched && abs($difference) < 0.01);
+                })->values();
             @endphp
-            @if($refundDetails->isNotEmpty())
+            @if($visibleRefundDetails->isNotEmpty())
                 <div class="card mt-3">
                     <div class="card-header pb-0 d-flex justify-content-between align-items-center">
                         <h4 class="card-title mg-b-0">Refund Validation Details</h4>
@@ -1066,7 +1078,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($refundDetails as $refund)
+                                    @foreach ($visibleRefundDetails as $refund)
                                         @php
                                             $matchSource = $refund['match_source'] ?? null;
                                             $matchLabel = $refund['order_found']
@@ -1100,6 +1112,10 @@
                             </table>
                         </div>
                     </div>
+                </div>
+            @elseif($refundDetails->isNotEmpty())
+                <div class="alert alert-secondary mt-3" role="alert">
+                    All refund records on this invoice are fully matched with no variance to review.
                 </div>
             @endif
         @endif

@@ -223,7 +223,7 @@ class BMInvoice extends Component
             ->filter(fn ($transaction) => ! empty($transaction->order_id))
             ->groupBy('order_id');
 
-        return $orders->map(function ($order) use ($transactionsByOrder) {
+    return $orders->map(function ($order) use ($transactionsByOrder) {
             $orderTransactions = $transactionsByOrder->get($order->id, collect());
 
             $salesTransactions = $orderTransactions->filter(fn ($transaction) => $this->isSalesDescription($transaction->description));
@@ -313,6 +313,17 @@ class BMInvoice extends Component
                 'transactions' => $transactionRows,
                 'primary_transaction_type' => $primaryType,
             ];
+        })->filter(function ($row) {
+            $difference = $row['difference_currency'];
+            $recordedTotal = $row['sales_total_currency'];
+            $salesCurrency = $row['sales_currency'] ?? null;
+            $transactions = $row['transactions'] ?? [];
+
+            $hasMeaningfulDifference = is_numeric($difference) ? abs($difference) >= 0.01 : true;
+            $recordedMissing = ! is_numeric($recordedTotal) || ($salesCurrency === 'Mixed');
+            $hasTransactions = ! empty($transactions);
+
+            return $hasMeaningfulDifference || $recordedMissing || ! $hasTransactions;
         })->sortByDesc(function ($row) {
             $difference = $row['difference_currency'] ?? null;
             return is_numeric($difference) ? abs($difference) : 0.0;
