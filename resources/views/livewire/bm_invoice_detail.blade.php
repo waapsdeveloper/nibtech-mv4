@@ -22,66 +22,7 @@
 
         <!-- breadcrumb -->
             <div class="breadcrumb-header justify-content-between mt-0">
-                <div class="left-content">
-                @if ($process->status < 3)
-                    <form class="form-inline" id="approveform" method="POST" action="{{url('topup/close').'/'.$process->id}}">
-                        @csrf
-                        <div class="form-floating">
-                            <input type="number" class="form-control" id="quantity" name="quantity" placeholder="Enter Quantity" value="{{$process->quantity}}" required>
-                            <label for="quantity">Batch Total Quantity</label>
-                        </div>
-                        <div class="form-floating">
-                            <input type="text" class="form-control" id="description" name="description" placeholder="Enter Description" value="{{$process->description}}" required>
-                            <label for="description">Description</label>
-                        </div>
-                        @if ($process->status == 1)
-                            <button type="submit" class="btn btn-primary" name="approve" value="1">Send</button>
-                            <a class="btn btn-danger" href="{{url('topup/delete') . "/" . $process->id }}" onclick="return confirm('Are you sure you want to delete this topup?');">Delete</a>
-                        @elseif ($process->status == 2)
-                            @if (session('user')->hasPermission('topup_push_without_verification'))
 
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="com" name="all" value="1">
-                                <label class="form-check-label" for="com">Push Without Verification</label>
-                            </div>
-
-                            @endif
-                            <button type="submit" class="btn btn-secondary" name="close" value="1">Close</button>
-                            <button type="submit" class="btn btn-primary" name="push" value="1"
-                             {{-- onclick="this.disabled=true;this.form.submit();" --}}
-                             >Push & Close</button>
-
-                        @endif
-                        @if (session('user')->hasPermission('topup_list_stock'))
-                            <a href="{{url('listing').'?process_id='.$process->id}}" class="btn btn-link">List Stock</a>
-                        @endif
-                    </form>
-
-                    <script>
-                        $('form').submit(function(){
-                            $('input[type=submit]', this).attr('disabled', 'disabled');
-                        });
-
-                    </script>
-                    {{-- @if($process->status == 2) --}}
-
-
-                @else
-                    <br>
-                    {{ $process->description }}
-
-                @endif
-                @if ($process->status != 1)
-                    @if (session('user')->hasPermission('topup_revert_status'))
-                        <br>
-                        <a href="{{url('repair/revert_status').'/'.$process->id}}">Revert Back to Pending</a>
-                    @endif
-                @endif
-
-                        @if (session('user')->hasPermission('topup_export'))
-                            <a href="{{url('topup/export').'?id='.$process->id}}" class="btn btn-link"><i class="fa fa-file-export"></i> Export</a>
-                        @endif
-                </div>
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
