@@ -386,7 +386,7 @@
             </div>
         @endif
 
-        @endif
+        {{-- @endif --}}
 
         @if(isset($orderComparisons) && $orderComparisons instanceof \Illuminate\Support\Collection && $orderComparisons->isNotEmpty())
             @php
