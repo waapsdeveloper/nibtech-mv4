@@ -2,101 +2,124 @@
 
 namespace App\Http\Livewire;
 
-use App\Exports\TopupsheetExport;
-use Livewire\Component;
-use App\Models\Variation_model;
-use App\Models\Products_model;
-use App\Models\Stock_model;
-use App\Models\Order_item_model;
-use App\Models\Customer_model;
-use App\Models\Storage_model;
-use App\Http\Controllers\ListingController;
 use App\Models\Account_transaction_model;
-use App\Models\Brand_model;
-use App\Models\Category_model;
-use App\Models\Color_model;
-use App\Models\ExchangeRate;
-use App\Models\Grade_model;
-use App\Models\Listed_stock_verification_model;
-use App\Models\Order_charge_model;
-use App\Models\Process_model;
-use App\Models\Process_stock_model;
-use App\Models\Product_storage_sort_model;
-use App\Models\Stock_operations_model;
-use App\Models\Order_model;
 use App\Models\Currency_model;
+use App\Models\ExchangeRate;
+use App\Models\Order_charge_model;
+use App\Models\Order_model;
+use App\Models\Process_model;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
-use Maatwebsite\Excel\Facades\Excel;
+use Livewire\Component;
 
 class BMInvoice extends Component
 {
-
     public function mount()
     {
-        $user_id = session('user_id');
-        if($user_id == NULL){
+        if (! session('user_id')) {
             return redirect('index');
         }
     }
+
     public function render()
     {
+        $title = 'BM Invoices Report';
+        session()->put('page_title', $title);
 
-        $data['title_page'] = "BM Invoices Report";
-        session()->put('page_title', $data['title_page']);
-
-        if(request('per_page') != null){
-            $per_page = request('per_page');
-        }else{
-            $per_page = 20;
-        }
-
-        $data['batches'] = Process_model::where('process_type_id', 19)->with(['admin', 'transactions'])
-        ->when(request('start_date'), function ($q) {
-            return $q->where('created_at', '>=', request('start_date'));
-        })
-        ->when(request('end_date'), function ($q) {
-            return $q->where('created_at', '<=', request('end_date') . " 23:59:59");
-        })
-        ->when(request('batch_id'), function ($q) {
-            return $q->where('reference_id', 'LIKE', request('batch_id') . '%');
-        })
-        ->when(request('status'), function ($q) {
-            return $q->where('status', request('status'));
-        })
-        ->orderBy('reference_id', 'desc') // Secondary order by reference_id
-        ->paginate($per_page)
-        ->appends(request()->except('page'));
-
-
-        // dd($data['orders']);
-        return view('livewire.bm_invoice')->with($data);
+        return view('livewire.bm_invoice', [
+            'title_page' => $title,
+            'batches' => $this->paginatedBatches((int) request('per_page', 20)),
+        ]);
     }
 
+    public function invoice_detail($processId)
+    {
+        $processId = (int) $processId;
 
+        $this->applyRuntimeLimits();
+        $this->rememberListPage();
 
-    public function invoice_detail($process_id){
+        $process = Process_model::with(['admin', 'listed_stocks_verification', 'process_stocks'])->find($processId);
 
-        ini_set('memory_limit', '2048M');
-        ini_set('max_execution_time', 300);
-        ini_set('pdo_mysql.max_input_vars', '10000');
-
-        if(str_contains(url()->previous(),url('bm_invoice')) && !str_contains(url()->previous(),'detail')){
-            session()->put('previous', url()->previous());
+        if (! $process) {
+            abort(404, 'Process not found.');
         }
-        $data['title_page'] = "BM Invoice Detail";
+
+        $detailData = $this->prepareInvoiceDetailData($processId);
+
+        $data = array_merge($detailData, [
+            'title_page' => 'BM Invoice Detail',
+            'process' => $process,
+        ]);
+
         session()->put('page_title', $data['title_page']);
 
-        $process = Process_model::with('admin')->find($process_id);
-        $data['process'] = $process;
+        return view('livewire.bm_invoice_detail')->with($data);
+    }
 
-        $transactions = Account_transaction_model::where('process_id', $process_id)->get();
+    private function paginatedBatches(int $perPage)
+    {
+        $perPage = $perPage > 0 ? $perPage : 20;
 
-        $seenKeys = [];
-        $duplicateTransactions = collect();
+        return Process_model::where('process_type_id', 19)
+            ->with(['admin', 'transactions'])
+            ->when(request('start_date'), fn ($query, $start) => $query->where('created_at', '>=', $start))
+            ->when(request('end_date'), fn ($query, $end) => $query->where('created_at', '<=', $end . ' 23:59:59'))
+            ->when(request('batch_id'), fn ($query, $batchId) => $query->where('reference_id', 'LIKE', $batchId . '%'))
+            ->when(request('status'), fn ($query, $status) => $query->where('status', $status))
+            ->orderBy('reference_id', 'desc')
+            ->paginate($perPage)
+            ->appends(request()->except('page'));
+    }
 
-        $transactions = $transactions->filter(function ($transaction) use (&$seenKeys, &$duplicateTransactions) {
-            $normalizedDescription = Str::lower(trim((string) $transaction->description));
+    private function applyRuntimeLimits(): void
+    {
+        ini_set('memory_limit', '2048M');
+        ini_set('max_execution_time', '300');
+        ini_set('pdo_mysql.max_input_vars', '10000');
+    }
+
+    private function rememberListPage(): void
+    {
+        $previous = url()->previous();
+        $listingUrl = url('bm_invoice');
+
+        if (str_contains($previous, $listingUrl) && ! str_contains($previous, 'detail')) {
+            session()->put('previous', $previous);
+        }
+    }
+
+    private function prepareInvoiceDetailData(int $processId): array
+    {
+        [$transactions, $duplicateTransactions] = $this->loadTransactions($processId);
+
+        $orders = $this->loadOrders($transactions);
+        $salesTransactions = $transactions
+            ->filter(fn ($transaction) => $this->isSalesDescription($transaction->description))
+            ->values();
+
+        $currencyContext = $this->buildCurrencyContext($orders, $salesTransactions);
+        $chargeMap = $this->buildChargeMap($orders);
+
+        return [
+            'duplicateTransactions' => $duplicateTransactions,
+            'salesVsOrders' => $this->summarizeSalesVsOrders($orders, $salesTransactions, $currencyContext),
+            'orderComparisons' => $this->buildOrderComparisons($orders, $salesTransactions, $currencyContext),
+            'report' => $this->buildDescriptionReport($processId, $chargeMap, $orders),
+        ];
+    }
+
+    private function loadTransactions(int $processId): array
+    {
+        $transactions = Account_transaction_model::where('process_id', $processId)->get();
+
+        $seen = [];
+        $duplicates = collect();
+
+        $unique = $transactions->filter(function ($transaction) use (&$seen, $duplicates) {
+            $normalizedDescription = $this->normalizeDescription($transaction->description);
             $normalizedAmount = number_format((float) $transaction->amount, 4, '.', '');
+
             $key = implode('|', [
                 $transaction->order_id ?? 'null',
                 $normalizedDescription,
@@ -104,30 +127,37 @@ class BMInvoice extends Component
                 $transaction->currency ?? 'null',
             ]);
 
-            if (isset($seenKeys[$key])) {
-                $duplicateTransactions->push($transaction);
+            if (isset($seen[$key])) {
+                $duplicates->push($transaction);
                 return false;
             }
 
-            $seenKeys[$key] = true;
+            $seen[$key] = true;
+
             return true;
         })->values();
 
-        $data['duplicateTransactions'] = $duplicateTransactions;
+        return [$unique, $duplicates->values()];
+    }
 
+    private function loadOrders(Collection $transactions): Collection
+    {
         $orderIds = $transactions->pluck('order_id')->filter()->unique();
-        $orders = Order_model::whereIn('id', $orderIds)->get(['id', 'price', 'currency', 'reference_id']);
 
-        $salesTransactions = $transactions->filter(function ($transaction) {
-            return Str::lower(trim((string) $transaction->description)) === 'sales';
-        });
+        if ($orderIds->isEmpty()) {
+            return collect();
+        }
 
+        return Order_model::whereIn('id', $orderIds)->get(['id', 'price', 'currency', 'reference_id']);
+    }
+
+    private function buildCurrencyContext(Collection $orders, Collection $salesTransactions): array
+    {
         $currencyIds = $orders->pluck('currency')
             ->merge($salesTransactions->pluck('currency'))
-            ->filter(function ($id) {
-                return !is_null($id);
-            })
-            ->unique();
+            ->filter(fn ($id) => ! is_null($id))
+            ->unique()
+            ->values();
 
         $currencyMeta = $currencyIds->isEmpty()
             ? collect()
@@ -141,7 +171,7 @@ class BMInvoice extends Component
 
         $baseCurrencyCode = ExchangeRate::query()->value('base_currency');
 
-        if (!$baseCurrencyCode && $currencyMeta->isNotEmpty()) {
+        if (! $baseCurrencyCode && $currencyMeta->isNotEmpty()) {
             $baseCurrencyCode = optional($currencyMeta->first())->code;
         }
 
@@ -154,36 +184,40 @@ class BMInvoice extends Component
                 return $amount;
             }
 
-            $code = optional($currencyMeta->get($currencyId))->code;
+            $currencyCode = optional($currencyMeta->get($currencyId))->code;
 
-            if (!$code) {
+            if (! $currencyCode) {
                 return $amount;
             }
 
-            if ($baseCurrencyCode && strtoupper((string) $code) === $baseCurrencyCode) {
+            if ($baseCurrencyCode && strtoupper((string) $currencyCode) === $baseCurrencyCode) {
                 return $amount;
             }
 
-            $rate = $exchangeRates[$code] ?? null;
+            $rate = $exchangeRates[$currencyCode] ?? null;
 
-            if (!$rate || (float) $rate == 0.0) {
+            if (! $rate || (float) $rate == 0.0) {
                 return $amount;
             }
 
             return $amount / (float) $rate;
         };
 
-        $salesPerCurrency = $salesTransactions->groupBy('currency')->map(function ($group) {
-            return (float) $group->sum('amount');
-        });
+        return [
+            'currencyIds' => $currencyIds,
+            'currencyMeta' => $currencyMeta,
+            'baseCurrency' => $baseCurrencyCode,
+            'convertToBase' => $convertToBase,
+        ];
+    }
 
-        $orderPerCurrency = $orders->groupBy('currency')->map(function ($group) {
-            return (float) $group->sum(function ($order) {
-                return (float) ($order->price ?? 0);
-            });
-        });
+    private function summarizeSalesVsOrders(Collection $orders, Collection $salesTransactions, array $currencyContext): array
+    {
+        $convertToBase = $currencyContext['convertToBase'];
+        $currencyMeta = $currencyContext['currencyMeta'];
+        $currencyIds = $currencyContext['currencyIds'];
 
-        $salesTransactionTotalBase = $salesTransactions->sum(function ($transaction) use ($convertToBase) {
+        $salesTotalBase = $salesTransactions->sum(function ($transaction) use ($convertToBase) {
             return $convertToBase($transaction->amount, $transaction->currency);
         });
 
@@ -191,54 +225,80 @@ class BMInvoice extends Component
             return $convertToBase($order->price, $order->currency);
         });
 
+        $salesPerCurrency = $salesTransactions
+            ->groupBy('currency')
+            ->map(fn ($group) => (float) $group->sum('amount'));
+
+        $ordersPerCurrency = $orders
+            ->groupBy('currency')
+            ->map(function ($group) {
+                return (float) $group->sum(function ($order) {
+                    return (float) ($order->price ?? 0);
+                });
+            });
+
+        $currencyBreakdown = $currencyIds->map(function ($currencyId) use ($currencyMeta, $salesPerCurrency, $ordersPerCurrency, $convertToBase) {
+            $salesTotal = $salesPerCurrency->get($currencyId, 0.0);
+            $orderTotal = $ordersPerCurrency->get($currencyId, 0.0);
+
+            $salesTotalBase = $convertToBase($salesTotal, $currencyId);
+            $orderTotalBase = $convertToBase($orderTotal, $currencyId);
+
+            return [
+                'currency_id' => $currencyId,
+                'currency' => optional($currencyMeta->get($currencyId))->code ?? (string) $currencyId,
+                'sales_total' => $salesTotal,
+                'order_total' => $orderTotal,
+                'difference' => $salesTotal - $orderTotal,
+                'sales_total_base' => $salesTotalBase,
+                'order_total_base' => $orderTotalBase,
+                'difference_base' => $salesTotalBase - $orderTotalBase,
+            ];
+        })->values();
+
+        return [
+            'transaction_total' => $salesTotalBase,
+            'order_total' => $orderTotalBase,
+            'difference' => $salesTotalBase - $orderTotalBase,
+            'base_currency' => $currencyContext['baseCurrency'],
+            'breakdown' => $currencyBreakdown,
+        ];
+    }
+
+    private function buildOrderComparisons(Collection $orders, Collection $salesTransactions, array $currencyContext): Collection
+    {
+        $convertToBase = $currencyContext['convertToBase'];
+        $currencyMeta = $currencyContext['currencyMeta'];
+
         $salesByOrder = $salesTransactions->groupBy('order_id')->map(function ($group) use ($convertToBase) {
             return [
-                'total'       => (float) $group->sum('amount'),
-                'total_base'  => $group->sum(function ($transaction) use ($convertToBase) {
+                'total' => (float) $group->sum('amount'),
+                'total_base' => $group->sum(function ($transaction) use ($convertToBase) {
                     return $convertToBase($transaction->amount, $transaction->currency);
                 }),
                 'transactions' => $group,
             ];
         });
 
-        $currencyBreakdown = $currencyIds->map(function ($currencyId) use ($currencyMeta, $salesPerCurrency, $orderPerCurrency, $convertToBase) {
-            $salesTotal = $salesPerCurrency[$currencyId] ?? 0.0;
-            $orderTotalByCurrency = $orderPerCurrency[$currencyId] ?? 0.0;
-
-            $salesTotalBase = $convertToBase($salesTotal, $currencyId);
-            $orderTotalBase = $convertToBase($orderTotalByCurrency, $currencyId);
-
-            return [
-                'currency_id'        => $currencyId,
-                'currency'           => optional($currencyMeta->get($currencyId))->code ?? (string) $currencyId,
-                'sales_total'        => $salesTotal,
-                'order_total'        => $orderTotalByCurrency,
-                'difference'         => $salesTotal - $orderTotalByCurrency,
-                'sales_total_base'   => $salesTotalBase,
-                'order_total_base'   => $orderTotalBase,
-                'difference_base'    => $salesTotalBase - $orderTotalBase,
-            ];
-        })->values();
-
-        $data['salesVsOrders'] = [
-            'transaction_total' => $salesTransactionTotalBase,
-            'order_total'       => $orderTotalBase,
-            'difference'        => $salesTransactionTotalBase - $orderTotalBase,
-            'base_currency'     => $baseCurrencyCode,
-            'breakdown'         => $currencyBreakdown,
-        ];
-
-        $orderComparisons = $orders->map(function ($order) use ($salesByOrder, $convertToBase, $currencyMeta) {
-            $salesData = $salesByOrder->get($order->id);
+        return $orders->map(function ($order) use ($salesByOrder, $convertToBase, $currencyMeta) {
+            $salesData = $salesByOrder->get($order->id, [
+                'total' => 0.0,
+                'total_base' => 0.0,
+                'transactions' => collect(),
+            ]);
 
             $orderAmount = (float) ($order->price ?? 0);
             $orderAmountBase = $convertToBase($orderAmount, $order->currency);
+
             $orderCurrencyCode = optional($currencyMeta->get($order->currency))->code ?? (string) $order->currency;
 
-            $salesTotal = $salesData['total'] ?? 0.0;
-            $salesTotalBase = $salesData['total_base'] ?? 0.0;
+            $salesTotal = (float) ($salesData['total'] ?? 0.0);
+            $salesTotalBase = (float) ($salesData['total_base'] ?? 0.0);
 
-            $salesTransactionsCollection = $salesData['transactions'] ?? collect();
+            $salesTransactionsCollection = $salesData['transactions'] instanceof Collection
+                ? $salesData['transactions']
+                : collect($salesData['transactions']);
+
             $salesCurrencyIds = $salesTransactionsCollection->pluck('currency')->filter()->unique();
 
             if ($salesCurrencyIds->isEmpty()) {
@@ -261,42 +321,50 @@ class BMInvoice extends Component
             $transactions = $salesTransactionsCollection->map(function ($transaction) use ($convertToBase, $currencyMeta) {
                 $currencyCode = optional($currencyMeta->get($transaction->currency))->code ?? (string) $transaction->currency;
                 $amount = (float) $transaction->amount;
+
                 $date = $transaction->date;
-                if (!$date && $transaction->created_at) {
+                if (! $date && $transaction->created_at) {
                     $date = $transaction->created_at->toDateTimeString();
                 }
 
                 return [
-                    'id'             => $transaction->id,
-                    'reference_id'   => $transaction->reference_id,
-                    'description'    => $transaction->description,
-                    'date'           => $date,
-                    'currency'       => $currencyCode,
-                    'amount'         => $amount,
-                    'amount_base'    => $convertToBase($amount, $transaction->currency),
+                    'id' => $transaction->id,
+                    'reference_id' => $transaction->reference_id,
+                    'description' => $transaction->description,
+                    'date' => $date,
+                    'currency' => $currencyCode,
+                    'amount' => $amount,
+                    'amount_base' => $convertToBase($amount, $transaction->currency),
                 ];
             })->values()->all();
 
             return [
-                'order_id'            => $order->id,
-                'order_reference'     => $order->reference_id,
-                'order_currency'      => $orderCurrencyCode,
-                'order_amount'        => $orderAmount,
-                'order_amount_base'   => $orderAmountBase,
-                'sales_currency'      => $salesCurrencyCode,
-                'sales_total_currency'=> $salesTotalCurrency,
-                'sales_total_base'    => $salesTotalBase,
+                'order_id' => $order->id,
+                'order_reference' => $order->reference_id,
+                'order_currency' => $orderCurrencyCode,
+                'order_amount' => $orderAmount,
+                'order_amount_base' => $orderAmountBase,
+                'sales_currency' => $salesCurrencyCode,
+                'sales_total_currency' => $salesTotalCurrency,
+                'sales_total_base' => $salesTotalBase,
                 'difference_currency' => $differenceCurrency,
-                'difference_base'     => $salesTotalBase - $orderAmountBase,
-                'transactions'        => $transactions,
+                'difference_base' => $salesTotalBase - $orderAmountBase,
+                'transactions' => $transactions,
             ];
         })->sortByDesc(function ($row) {
             return abs($row['difference_base']);
         })->values();
+    }
 
-        $data['orderComparisons'] = $orderComparisons;
+    private function buildChargeMap(Collection $orders): array
+    {
+        $orderIds = $orders->pluck('id')->filter()->unique();
 
-        $chargeMap = Order_charge_model::query()
+        if ($orderIds->isEmpty()) {
+            return [];
+        }
+
+        return Order_charge_model::query()
             ->selectRaw('charge_value_id, SUM(amount) AS charge_total')
             ->with('charge')
             ->whereIn('order_id', $orderIds)
@@ -305,45 +373,52 @@ class BMInvoice extends Component
             ->mapWithKeys(fn ($charge) => [
                 trim(optional($charge->charge)->name ?? '') => (float) $charge->charge_total,
             ])
-            ->filter(fn ($_, $key) => $key !== '');
+            ->filter(fn ($_, $key) => $key !== '')
+            ->all();
+    }
 
+    private function buildDescriptionReport(int $processId, array $chargeMap, Collection $orders): Collection
+    {
         $orderPriceTotal = (float) $orders->sum(function ($order) {
             return (float) ($order->price ?? 0.0);
         });
 
-        $data['report'] = Account_transaction_model::query()
+        return Account_transaction_model::query()
             ->selectRaw('description, SUM(amount) AS transaction_total')
-            ->where('process_id', $process_id)
+            ->where('process_id', $processId)
             ->groupBy('description')
             ->get()
             ->map(function ($row) use ($chargeMap, $orderPriceTotal) {
-                $description   = trim((string) $row->description) ?: '—';
-                $txnTotal      = (float) $row->transaction_total;
-                $chargeTotal   = $chargeMap[$description] ?? 0.0;
-                $normalized    = Str::lower($description);
+                $description = trim((string) $row->description) ?: '—';
+                $transactionTotal = (float) $row->transaction_total;
+                $chargeTotal = $chargeMap[$description] ?? 0.0;
 
-                if ($normalized === 'sales') {
+                if ($this->isSalesDescription($description)) {
                     $chargeTotal = $orderPriceTotal;
                 }
 
-                if (Str::contains($normalized, 'deduct')) {
-                    $chargeTotal = -abs($chargeTotal);
-                    $txnTotal = $txnTotal === 0.0 ? $txnTotal : -abs($txnTotal);
+                if ($chargeTotal > 0) {
+                    $chargeTotal *= -1;
                 }
 
                 return [
-                    'description'        => $description,
-                    'transaction_total'  => $txnTotal,
-                    'charge_total'       => $chargeTotal,
-                    'difference'         => abs($txnTotal) - abs($chargeTotal),
+                    'description' => $description,
+                    'transaction_total' => $transactionTotal,
+                    'charge_total' => $chargeTotal,
+                    'difference' => abs($transactionTotal) - abs($chargeTotal),
                 ];
             })
             ->values();
-
-        return view('livewire.bm_invoice_detail')->with($data);
-
     }
 
+    private function normalizeDescription($description): string
+    {
+        return Str::lower(trim((string) $description));
+    }
 
+    private function isSalesDescription($description): bool
+    {
+        return $this->normalizeDescription($description) === 'sales';
+    }
 }
 
