@@ -404,10 +404,11 @@
                                     <tr>
                                         <th style="width: 48px;"><span class="visually-hidden">Toggle</span></th>
                                         <th><small><b>Order Ref</b></small></th>
+                                        <th class="text-center"><small><b>Type</b></small></th>
                                         <th class="text-center"><small><b>Currency</b></small></th>
                                         <th class="text-end"><small><b>BM Invoice Amount</b></small></th>
-                                        <th class="text-center"><small><b>Recorded Sales Currency</b></small></th>
-                                        <th class="text-end"><small><b>Recorded Sales Amount</b></small></th>
+                                        <th class="text-center"><small><b>Recorded Amount Currency</b></small></th>
+                                        <th class="text-end"><small><b>Recorded Amount</b></small></th>
                                         <th class="text-end"><small><b>Variance (Sales - Invoice)</b></small></th>
                                     </tr>
                                 </thead>
@@ -415,6 +416,7 @@
                                     <tr class="table-secondary">
                                         <td class="text-center">—</td>
                                         <td><b>Totals</b></td>
+                                        <td class="text-center">—</td>
                                         <td class="text-center">{{ $singleCurrencyKey }}</td>
                                         <td class="text-end"><b>{{ number_format($singleCurrencyOrderTotal, 2) }}</b></td>
                                         <td class="text-center">{{ $singleCurrencySalesCurrencyLabel }}</td>
@@ -444,6 +446,8 @@
                                                 ? (abs($difference) < 0.01 ? 'text-success' : ($difference > 0 ? 'text-warning' : 'text-danger'))
                                                 : 'text-muted';
                                             $collapseId = 'order-compare-' . $order['order_id'];
+                                            $typeLabel = $order['primary_transaction_type'] ?? 'unknown';
+                                            $typeLabel = $typeLabel === 'unknown' ? '—' : ucfirst($typeLabel);
                                         @endphp
                                         <tr>
                                             <td class="text-center">
@@ -452,6 +456,7 @@
                                                 </button>
                                             </td>
                                             <td>{{ $order['order_reference'] ?? $order['order_id'] }}</td>
+                                            <td class="text-center">{{ $typeLabel }}</td>
                                             <td class="text-center">{{ $order['order_currency'] ?? '—' }}</td>
                                             <td class="text-end">{{ number_format($order['order_amount'] ?? 0, 2) }}</td>
                                             <td class="text-center">{{ $order['sales_currency'] ?? '—' }}</td>
@@ -471,12 +476,13 @@
                                             </td>
                                         </tr>
                                         <tr class="collapse" id="{{ $collapseId }}">
-                                            <td colspan="7" class="bg-light">
+                                            <td colspan="8" class="bg-light">
                                                 <div class="mb-2">
                                                     <strong>Variance Summary:</strong>
                                                     <ul class="mb-2 small">
+                                                        <li>Order Type: {{ $typeLabel === '—' ? 'Unknown' : $typeLabel }}</li>
                                                         <li>Invoice Amount: {{ number_format($order['order_amount'] ?? 0, 2) }} {{ $order['order_currency'] ?? '—' }}</li>
-                                                        <li>Recorded Sales Currency: {{ $order['sales_currency'] ?? '—' }}</li>
+                                                        <li>Recorded Amount Currency: {{ $order['sales_currency'] ?? '—' }}</li>
                                                         <li>
                                                             Recorded Sales Amount:
                                                             @if(is_numeric($order['sales_total_currency']))
@@ -501,9 +507,10 @@
                                                                     <th><small><b>ID</b></small></th>
                                                                     <th><small><b>Reference</b></small></th>
                                                                     <th><small><b>Description</b></small></th>
+                                                                    <th class="text-center"><small><b>Type</b></small></th>
                                                                     <th><small><b>Date</b></small></th>
                                                                     <th class="text-center"><small><b>Currency</b></small></th>
-                                                                    <th class="text-end"><small><b>Recorded Sales Amount</b></small></th>
+                                                                    <th class="text-end"><small><b>Recorded Amount</b></small></th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
@@ -512,6 +519,11 @@
                                                                         <td>{{ $trx['id'] }}</td>
                                                                         <td>{{ $trx['reference_id'] }}</td>
                                                                         <td>{{ $trx['description'] }}</td>
+                                                                        @php
+                                                                            $trxType = $trx['type'] ?? 'other';
+                                                                            $trxType = $trxType === 'other' ? 'Other' : ucfirst($trxType);
+                                                                        @endphp
+                                                                        <td class="text-center">{{ $trxType }}</td>
                                                                         <td>{{ $trx['date'] ?? '—' }}</td>
                                                                         <td class="text-center">{{ $trx['currency'] }}</td>
                                                                         <td class="text-end">{{ number_format($trx['amount'] ?? 0, 2) }}</td>
@@ -521,7 +533,7 @@
                                                         </table>
                                                     </div>
                                                 @else
-                                                    <p class="mb-0 text-muted">No related sales transactions.</p>
+                                                    <p class="mb-0 text-muted">No related transactions.</p>
                                                 @endif
                                             </td>
                                         </tr>
@@ -552,10 +564,11 @@
                                             <tr>
                                                 <th style="width: 48px;"><span class="visually-hidden">Toggle</span></th>
                                                 <th><small><b>Order Ref</b></small></th>
+                                                <th class="text-center"><small><b>Type</b></small></th>
                                                 <th class="text-center"><small><b>Currency</b></small></th>
                                                 <th class="text-end"><small><b>BM Invoice Amount</b></small></th>
-                                                <th class="text-center"><small><b>Recorded Sales Currency</b></small></th>
-                                                <th class="text-end"><small><b>Recorded Sales Amount</b></small></th>
+                                                <th class="text-center"><small><b>Recorded Amount Currency</b></small></th>
+                                                <th class="text-end"><small><b>Recorded Amount</b></small></th>
                                                 <th class="text-end"><small><b>Variance (Sales - Invoice)</b></small></th>
                                             </tr>
                                         </thead>
@@ -563,6 +576,7 @@
                                             <tr class="table-secondary">
                                                 <td class="text-center">—</td>
                                                 <td><b>Totals</b></td>
+                                                <td class="text-center">—</td>
                                                 <td class="text-center">{{ $orderCurrencyLabel }}</td>
                                                 <td class="text-end"><b>{{ number_format($orderCurrencyTotal, 2) }}</b></td>
                                                 @php
@@ -602,6 +616,8 @@
                                                         ? (abs($difference) < 0.01 ? 'text-success' : ($difference > 0 ? 'text-warning' : 'text-danger'))
                                                         : 'text-muted';
                                                     $collapseId = 'order-compare-' . $order['order_id'];
+                                                    $typeLabel = $order['primary_transaction_type'] ?? 'unknown';
+                                                    $typeLabel = $typeLabel === 'unknown' ? '—' : ucfirst($typeLabel);
                                                 @endphp
                                                 <tr>
                                                     <td class="text-center">
@@ -610,6 +626,7 @@
                                                         </button>
                                                     </td>
                                                     <td>{{ $order['order_reference'] ?? $order['order_id'] }}</td>
+                                                    <td class="text-center">{{ $typeLabel }}</td>
                                                     <td class="text-center">{{ $order['order_currency'] ?? '—' }}</td>
                                                     <td class="text-end">{{ number_format($order['order_amount'] ?? 0, 2) }}</td>
                                                     <td class="text-center">{{ $order['sales_currency'] ?? '—' }}</td>
@@ -629,12 +646,13 @@
                                                     </td>
                                                 </tr>
                                                 <tr class="collapse" id="{{ $collapseId }}">
-                                                    <td colspan="7" class="bg-light">
+                                                    <td colspan="8" class="bg-light">
                                                         <div class="mb-2">
                                                             <strong>Variance Summary:</strong>
                                                             <ul class="mb-2 small">
+                                                                <li>Order Type: {{ $typeLabel === '—' ? 'Unknown' : $typeLabel }}</li>
                                                                 <li>Invoice Amount: {{ number_format($order['order_amount'] ?? 0, 2) }} {{ $order['order_currency'] ?? '—' }}</li>
-                                                                <li>Recorded Sales Currency: {{ $order['sales_currency'] ?? '—' }}</li>
+                                                                <li>Recorded Amount Currency: {{ $order['sales_currency'] ?? '—' }}</li>
                                                                 <li>
                                                                     Recorded Sales Amount:
                                                                     @if(is_numeric($order['sales_total_currency']))
@@ -659,9 +677,10 @@
                                                                             <th><small><b>ID</b></small></th>
                                                                             <th><small><b>Reference</b></small></th>
                                                                             <th><small><b>Description</b></small></th>
+                                                                            <th class="text-center"><small><b>Type</b></small></th>
                                                                             <th><small><b>Date</b></small></th>
                                                                             <th class="text-center"><small><b>Currency</b></small></th>
-                                                                            <th class="text-end"><small><b>Recorded Sales Amount</b></small></th>
+                                                                            <th class="text-end"><small><b>Recorded Amount</b></small></th>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
@@ -670,6 +689,11 @@
                                                                                 <td>{{ $trx['id'] }}</td>
                                                                                 <td>{{ $trx['reference_id'] }}</td>
                                                                                 <td>{{ $trx['description'] }}</td>
+                                                                                @php
+                                                                                    $trxType = $trx['type'] ?? 'other';
+                                                                                    $trxType = $trxType === 'other' ? 'Other' : ucfirst($trxType);
+                                                                                @endphp
+                                                                                <td class="text-center">{{ $trxType }}</td>
                                                                                 <td>{{ $trx['date'] ?? '—' }}</td>
                                                                                 <td class="text-center">{{ $trx['currency'] }}</td>
                                                                                 <td class="text-end">{{ number_format($trx['amount'] ?? 0, 2) }}</td>
@@ -679,7 +703,7 @@
                                                                 </table>
                                                             </div>
                                                         @else
-                                                            <p class="mb-0 text-muted">No related sales transactions.</p>
+                                                            <p class="mb-0 text-muted">No related transactions.</p>
                                                         @endif
                                                     </td>
                                                 </tr>
