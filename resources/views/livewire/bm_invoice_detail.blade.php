@@ -285,8 +285,7 @@
 
         @if(isset($salesVsOrders))
             @php
-                $baseCurrencyCode = strtoupper($salesVsOrders['base_currency'] ?? '');
-                $basePrefix = $baseCurrencyCode !== '' ? $baseCurrencyCode . ' ' : '';
+                $primaryCurrency = $salesVsOrders['primary_currency'] ?? null;
                 $breakdown = $salesVsOrders['breakdown'] ?? collect();
                 if (! $breakdown instanceof \Illuminate\Support\Collection) {
                     $breakdown = collect($breakdown ?? []);
@@ -296,30 +295,40 @@
                 <div class="card-header pb-0">
                     <h4 class="card-title mg-b-0">
                         BM Invoice vs Recorded Sales
-                        @if($baseCurrencyCode !== '')
-                            <small class="text-muted">(Base: {{ $baseCurrencyCode }})</small>
+                        @if($primaryCurrency)
+                            <small class="text-muted">(Single Currency: {{ $primaryCurrency }})</small>
+                        @else
+                            <small class="text-muted">(Multi-currency view)</small>
                         @endif
                     </h4>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-hover mb-3 text-md-nowrap">
-                            <tbody>
-                                <tr>
-                                    <td><b>Recorded Sales Total</b></td>
-                                    <td class="text-end">{{ $basePrefix }}{{ number_format($salesVsOrders['transaction_total'] ?? 0, 2) }}</td>
-                                </tr>
-                                <tr>
-                                    <td><b>BM Invoice Total</b></td>
-                                    <td class="text-end">{{ $basePrefix }}{{ number_format($salesVsOrders['order_total'] ?? 0, 2) }}</td>
-                                </tr>
-                                <tr>
-                                    <td><b>Variance (Sales - Invoice)</b></td>
-                                    <td class="text-end">{{ $basePrefix }}{{ number_format($salesVsOrders['difference'] ?? 0, 2) }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    @if($primaryCurrency)
+                        @php
+                            $primaryVariance = $salesVsOrders['difference'] ?? 0;
+                            $primaryClass = abs($primaryVariance) < 0.01 ? 'text-success' : ($primaryVariance < 0 ? 'text-warning' : 'text-danger');
+                        @endphp
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover mb-3 text-md-nowrap">
+                                <tbody>
+                                    <tr>
+                                        <td><b>Recorded Sales Total ({{ $primaryCurrency }})</b></td>
+                                        <td class="text-end">{{ number_format($salesVsOrders['transaction_total'] ?? 0, 2) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><b>BM Invoice Total ({{ $primaryCurrency }})</b></td>
+                                        <td class="text-end">{{ number_format($salesVsOrders['order_total'] ?? 0, 2) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><b>Variance (Sales - Invoice)</b></td>
+                                        <td class="text-end {{ $primaryClass }}">{{ number_format($primaryVariance, 2) }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <p class="small text-muted">Multiple currencies detected. Totals are detailed per currency below.</p>
+                    @endif
 
                     @if($breakdown->isNotEmpty())
                         <div class="table-responsive">
@@ -327,28 +336,21 @@
                                 <thead>
                                     <tr>
                                         <th><small><b>Currency</b></small></th>
-                                        <th class="text-end"><small><b>Recorded Sales (Currency)</b></small></th>
-                                        <th class="text-end"><small><b>BM Invoice (Currency)</b></small></th>
-                                        <th class="text-end"><small><b>Variance (Currency)</b></small></th>
-                                        @if($baseCurrencyCode !== '')
-                                            <th class="text-end"><small><b>Recorded Sales ({{ $baseCurrencyCode }})</b></small></th>
-                                            <th class="text-end"><small><b>BM Invoice ({{ $baseCurrencyCode }})</b></small></th>
-                                            <th class="text-end"><small><b>Variance ({{ $baseCurrencyCode }})</b></small></th>
-                                        @endif
+                                        <th class="text-end"><small><b>Recorded Sales</b></small></th>
+                                        <th class="text-end"><small><b>BM Invoice</b></small></th>
+                                        <th class="text-end"><small><b>Variance</b></small></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($breakdown as $row)
+                                        @php
+                                            $varianceClass = abs($row['difference']) < 0.01 ? 'text-success' : ($row['difference'] < 0 ? 'text-warning' : 'text-danger');
+                                        @endphp
                                         <tr>
                                             <td>{{ $row['currency'] }}</td>
                                             <td class="text-end">{{ number_format($row['sales_total'], 2) }}</td>
                                             <td class="text-end">{{ number_format($row['order_total'], 2) }}</td>
-                                            <td class="text-end">{{ number_format($row['difference'], 2) }}</td>
-                                            @if($baseCurrencyCode !== '')
-                                                <td class="text-end">{{ number_format($row['sales_total_base'], 2) }}</td>
-                                                <td class="text-end">{{ number_format($row['order_total_base'], 2) }}</td>
-                                                <td class="text-end">{{ number_format($row['difference_base'], 2) }}</td>
-                                            @endif
+                                            <td class="text-end {{ $varianceClass }}">{{ number_format($row['difference'], 2) }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -361,155 +363,333 @@
 
         @if(isset($orderComparisons) && $orderComparisons instanceof \Illuminate\Support\Collection && $orderComparisons->isNotEmpty())
             @php
-                $baseCurrencyCode = strtoupper($salesVsOrders['base_currency'] ?? '');
-                $basePrefix = $baseCurrencyCode !== '' ? $baseCurrencyCode . ' ' : '';
-                $orderSalesBaseSum = $orderComparisons->sum('sales_total_base');
-                $orderAmountBaseSum = $orderComparisons->sum('order_amount_base');
-                $orderDifferenceBaseSum = $orderComparisons->sum('difference_base');
+                $groupedOrderComparisons = $orderComparisons->groupBy(function ($row) {
+                    return $row['order_currency'] ?? '—';
+                });
+                $hasMultipleOrderCurrencies = $groupedOrderComparisons->count() > 1;
             @endphp
             <div class="card mt-3">
                 <div class="card-header pb-0 d-flex justify-content-between align-items-center">
                     <h4 class="card-title mg-b-0">Order-Level Variance (BM Invoice vs Recorded Sales)</h4>
-                    @if($baseCurrencyCode !== '')
-                        <span class="text-muted small">Base Currency: {{ $baseCurrencyCode }}</span>
+                    @if($hasMultipleOrderCurrencies)
+                        <span class="text-muted small">Showing {{ $groupedOrderComparisons->count() }} currencies</span>
                     @endif
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-hover mb-0 text-md-nowrap align-middle">
-                            <thead>
-                                <tr>
-                                    <th style="width: 48px;"><span class="visually-hidden">Toggle</span></th>
-                                    <th><small><b>Order Ref</b></small></th>
-                                    <th class="text-center"><small><b>Currency</b></small></th>
-                                    <th class="text-end"><small><b>BM Invoice Amount</b></small></th>
-                                    <th class="text-center"><small><b>Recorded Sales Currency</b></small></th>
-                                    <th class="text-end"><small><b>Recorded Sales Amount</b></small></th>
-                                    <th class="text-end"><small><b>Variance (Sales - Invoice)</b></small></th>
-                                    @if($baseCurrencyCode !== '')
-                                        <th class="text-end"><small><b>BM Invoice ({{ $baseCurrencyCode }})</b></small></th>
-                                        <th class="text-end"><small><b>Recorded Sales ({{ $baseCurrencyCode }})</b></small></th>
-                                        <th class="text-end"><small><b>Variance ({{ $baseCurrencyCode }})</b></small></th>
-                                    @endif
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($orderComparisons as $order)
-                                    @php
-                                        $differenceBase = $order['difference_base'] ?? 0;
-                                        $differenceCurrency = $order['difference_currency'];
-                                        $diffClass = abs($differenceBase) < 0.01 ? 'text-success' : ($differenceBase > 0 ? 'text-warning' : 'text-danger');
-                                        $collapseId = 'order-compare-' . $order['order_id'];
-                                    @endphp
+                    @if(!$hasMultipleOrderCurrencies)
+                        @php
+                            $singleCurrencyKey = $groupedOrderComparisons->keys()->first();
+                            $singleCurrencyOrders = $groupedOrderComparisons->first();
+                            $singleCurrencyOrderTotal = $singleCurrencyOrders->sum('order_amount');
+                            $singleCurrencySalesTotal = $singleCurrencyOrders->sum(function ($row) {
+                                return is_numeric($row['sales_total_currency']) ? $row['sales_total_currency'] : 0;
+                            });
+                            $singleCurrencyVarianceTotal = $singleCurrencyOrders->sum(function ($row) {
+                                return is_numeric($row['difference_currency']) ? $row['difference_currency'] : 0;
+                            });
+                            $singleCurrencySalesCurrencies = $singleCurrencyOrders->pluck('sales_currency')->filter()->unique();
+                            $singleCurrencySalesCurrencyLabel = $singleCurrencySalesCurrencies->count() === 1
+                                ? $singleCurrencySalesCurrencies->first()
+                                : ($singleCurrencySalesCurrencies->isEmpty() ? '—' : 'Mixed');
+                            $singleCurrencyHasSalesTotals = $singleCurrencyOrders->contains(function ($row) {
+                                return is_numeric($row['sales_total_currency']);
+                            });
+                            $singleCurrencyHasVarianceTotals = $singleCurrencyOrders->contains(function ($row) {
+                                return is_numeric($row['difference_currency']);
+                            });
+                        @endphp
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover mb-0 text-md-nowrap align-middle">
+                                <thead>
                                     <tr>
-                                        <td class="text-center">
-                                            <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#{{ $collapseId }}" aria-expanded="false" aria-controls="{{ $collapseId }}">
-                                                <i class="fa fa-search"></i>
-                                            </button>
-                                        </td>
-                                        <td>{{ $order['order_reference'] ?? $order['order_id'] }}</td>
-                                        <td class="text-center">{{ $order['order_currency'] }}</td>
-                                        <td class="text-end">{{ number_format($order['order_amount'] ?? 0, 2) }}</td>
-                                        <td class="text-center">{{ $order['sales_currency'] ?? '—' }}</td>
+                                        <th style="width: 48px;"><span class="visually-hidden">Toggle</span></th>
+                                        <th><small><b>Order Ref</b></small></th>
+                                        <th class="text-center"><small><b>Currency</b></small></th>
+                                        <th class="text-end"><small><b>BM Invoice Amount</b></small></th>
+                                        <th class="text-center"><small><b>Recorded Sales Currency</b></small></th>
+                                        <th class="text-end"><small><b>Recorded Sales Amount</b></small></th>
+                                        <th class="text-end"><small><b>Variance (Sales - Invoice)</b></small></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="table-secondary">
+                                        <td class="text-center">—</td>
+                                        <td><b>Totals</b></td>
+                                        <td class="text-center">{{ $singleCurrencyKey }}</td>
+                                        <td class="text-end"><b>{{ number_format($singleCurrencyOrderTotal, 2) }}</b></td>
+                                        <td class="text-center">{{ $singleCurrencySalesCurrencyLabel }}</td>
                                         <td class="text-end">
-                                            @if(!is_null($order['sales_total_currency']))
-                                                {{ number_format($order['sales_total_currency'], 2) }}
-                                            @else
-                                                <span class="text-muted">—</span>
-                                            @endif
+                                            <b>
+                                                @if($singleCurrencyHasSalesTotals)
+                                                    {{ number_format($singleCurrencySalesTotal, 2) }}
+                                                @else
+                                                    —
+                                                @endif
+                                            </b>
                                         </td>
-                                        <td class="text-end {{ $diffClass }}">
-                                            @if(!is_null($differenceCurrency))
-                                                {{ number_format($differenceCurrency, 2) }}
-                                            @else
-                                                <span class="text-muted">—</span>
-                                            @endif
+                                        <td class="text-end">
+                                            <b>
+                                                @if($singleCurrencyHasVarianceTotals)
+                                                    {{ number_format($singleCurrencyVarianceTotal, 2) }}
+                                                @else
+                                                    —
+                                                @endif
+                                            </b>
                                         </td>
-                                        @if($baseCurrencyCode !== '')
-                                            <td class="text-end">{{ number_format($order['order_amount_base'] ?? 0, 2) }}</td>
-                                            <td class="text-end">{{ number_format($order['sales_total_base'] ?? 0, 2) }}</td>
-                                            <td class="text-end {{ $diffClass }}">{{ number_format($differenceBase ?? 0, 2) }}</td>
-                                        @endif
                                     </tr>
-                                    <tr class="collapse" id="{{ $collapseId }}">
-                                        <td colspan="{{ $baseCurrencyCode !== '' ? 10 : 7 }}" class="bg-light">
-                                            <div class="mb-2">
-                                                <strong>Variance Summary:</strong>
-                                                <ul class="mb-2 small">
-                                                    @if(!is_null($differenceCurrency))
-                                                        <li>Variance in {{ $order['order_currency'] ?? '—' }}: <span class="{{ $diffClass }}">{{ number_format($differenceCurrency, 2) }}</span></li>
-                                                    @endif
-                                                    @if($baseCurrencyCode !== '')
-                                                        <li>{{ $baseCurrencyCode }} Variance: <span class="{{ $diffClass }}">{{ number_format($differenceBase, 2) }}</span></li>
-                                                    @endif
-                                                    <li>Invoice vs Recorded Sales: {{ number_format($order['order_amount_base'] ?? 0, 2) }} → {{ number_format($order['sales_total_base'] ?? 0, 2) }}</li>
-                                                </ul>
-                                            </div>
-
-                        @if(!empty($order['transactions']))
-                                                <div class="table-responsive">
-                                                    <table class="table table-sm mb-0">
-                                                        <thead>
-                                                            <tr>
-                                                                <th><small><b>ID</b></small></th>
-                                                                <th><small><b>Reference</b></small></th>
-                                                                <th><small><b>Description</b></small></th>
-                                                                <th><small><b>Date</b></small></th>
-                                                                <th class="text-center"><small><b>Currency</b></small></th>
-                                                                <th class="text-end"><small><b>Recorded Sales Amount</b></small></th>
-                                                                @if($baseCurrencyCode !== '')
-                                                                    <th class="text-end"><small><b>Amount ({{ $baseCurrencyCode }})</b></small></th>
-                                                                    <th class="text-end"><small><b>Remaining Variance ({{ $baseCurrencyCode }})</b></small></th>
-                                                                @endif
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            @php
-                                                                $runningBaseTotal = 0.0;
-                                                            @endphp
-                                                            @foreach ($order['transactions'] as $trx)
-                                                                @php
-                                                                    $amountBase = $trx['amount_base'] ?? 0;
-                                                                    $runningBaseTotal += $amountBase;
-                                                                    $balanceBase = ($order['order_amount_base'] ?? 0) - $runningBaseTotal;
-                                                                @endphp
-                                                                <tr>
-                                                                    <td>{{ $trx['id'] }}</td>
-                                                                    <td>{{ $trx['reference_id'] }}</td>
-                                                                    <td>{{ $trx['description'] }}</td>
-                                                                    <td>{{ $trx['date'] ?? '—' }}</td>
-                                                                    <td class="text-center">{{ $trx['currency'] }}</td>
-                                                                    <td class="text-end">{{ number_format($trx['amount'] ?? 0, 2) }}</td>
-                                                                    @if($baseCurrencyCode !== '')
-                                                                        <td class="text-end">{{ number_format($amountBase, 2) }}</td>
-                                                                        <td class="text-end {{ abs($balanceBase) < 0.01 ? 'text-success' : ($balanceBase > 0 ? 'text-warning' : 'text-danger') }}">{{ number_format($balanceBase, 2) }}</td>
-                                                                    @endif
-                                                                </tr>
-                                                            @endforeach
-                                                        </tbody>
-                                                    </table>
+                                    @foreach ($singleCurrencyOrders as $order)
+                                        @php
+                                            $difference = $order['difference_currency'];
+                                            $diffClass = is_numeric($difference)
+                                                ? (abs($difference) < 0.01 ? 'text-success' : ($difference > 0 ? 'text-warning' : 'text-danger'))
+                                                : 'text-muted';
+                                            $collapseId = 'order-compare-' . $order['order_id'];
+                                        @endphp
+                                        <tr>
+                                            <td class="text-center">
+                                                <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#{{ $collapseId }}" aria-expanded="false" aria-controls="{{ $collapseId }}">
+                                                    <i class="fa fa-search"></i>
+                                                </button>
+                                            </td>
+                                            <td>{{ $order['order_reference'] ?? $order['order_id'] }}</td>
+                                            <td class="text-center">{{ $order['order_currency'] ?? '—' }}</td>
+                                            <td class="text-end">{{ number_format($order['order_amount'] ?? 0, 2) }}</td>
+                                            <td class="text-center">{{ $order['sales_currency'] ?? '—' }}</td>
+                                            <td class="text-end">
+                                                @if(is_numeric($order['sales_total_currency']))
+                                                    {{ number_format($order['sales_total_currency'], 2) }}
+                                                @else
+                                                    <span class="text-muted">—</span>
+                                                @endif
+                                            </td>
+                                            <td class="text-end {{ $diffClass }}">
+                                                @if(is_numeric($difference))
+                                                    {{ number_format($difference, 2) }}
+                                                @else
+                                                    <span class="text-muted">Variance unavailable</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                        <tr class="collapse" id="{{ $collapseId }}">
+                                            <td colspan="7" class="bg-light">
+                                                <div class="mb-2">
+                                                    <strong>Variance Summary:</strong>
+                                                    <ul class="mb-2 small">
+                                                        <li>Invoice Amount: {{ number_format($order['order_amount'] ?? 0, 2) }} {{ $order['order_currency'] ?? '—' }}</li>
+                                                        <li>Recorded Sales Currency: {{ $order['sales_currency'] ?? '—' }}</li>
+                                                        <li>
+                                                            Recorded Sales Amount:
+                                                            @if(is_numeric($order['sales_total_currency']))
+                                                                {{ number_format($order['sales_total_currency'], 2) }}
+                                                            @else
+                                                                <span class="text-muted">Mixed or unavailable</span>
+                                                            @endif
+                                                        </li>
+                                                        @if(is_numeric($difference))
+                                                            <li>Variance (Sales - Invoice): <span class="{{ $diffClass }}">{{ number_format($difference, 2) }}</span></li>
+                                                        @else
+                                                            <li class="text-muted">Variance shown only when currencies align.</li>
+                                                        @endif
+                                                    </ul>
                                                 </div>
-                                            @else
-                                                <p class="mb-0 text-muted">No related sales transactions.</p>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    @if($baseCurrencyCode !== '')
-                                        <td colspan="7" class="text-end"><b>Base Totals (Sales - Invoice)</b></td>
-                                        <td class="text-end"><b>{{ number_format($orderAmountBaseSum, 2) }}</b></td>
-                                        <td class="text-end"><b>{{ number_format($orderSalesBaseSum, 2) }}</b></td>
-                                        <td class="text-end"><b>{{ number_format($orderDifferenceBaseSum, 2) }}</b></td>
-                                    @else
-                                        <td colspan="7" class="text-center text-muted"><b>No base currency totals available</b></td>
-                                    @endif
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
+
+                                                @if(!empty($order['transactions']))
+                                                    <div class="table-responsive">
+                                                        <table class="table table-sm mb-0">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th><small><b>ID</b></small></th>
+                                                                    <th><small><b>Reference</b></small></th>
+                                                                    <th><small><b>Description</b></small></th>
+                                                                    <th><small><b>Date</b></small></th>
+                                                                    <th class="text-center"><small><b>Currency</b></small></th>
+                                                                    <th class="text-end"><small><b>Recorded Sales Amount</b></small></th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @foreach ($order['transactions'] as $trx)
+                                                                    <tr>
+                                                                        <td>{{ $trx['id'] }}</td>
+                                                                        <td>{{ $trx['reference_id'] }}</td>
+                                                                        <td>{{ $trx['description'] }}</td>
+                                                                        <td>{{ $trx['date'] ?? '—' }}</td>
+                                                                        <td class="text-center">{{ $trx['currency'] }}</td>
+                                                                        <td class="text-end">{{ number_format($trx['amount'] ?? 0, 2) }}</td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                @else
+                                                    <p class="mb-0 text-muted">No related sales transactions.</p>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        @foreach ($groupedOrderComparisons as $currencyKey => $ordersInCurrency)
+                            @php
+                                $orderCurrencyLabel = $currencyKey;
+                                $orderCurrencyTotal = $ordersInCurrency->sum('order_amount');
+                                $salesCurrencyTotal = $ordersInCurrency->sum(function ($row) {
+                                    return is_numeric($row['sales_total_currency']) ? $row['sales_total_currency'] : 0;
+                                });
+                                $varianceCurrencyTotal = $ordersInCurrency->sum(function ($row) {
+                                    return is_numeric($row['difference_currency']) ? $row['difference_currency'] : 0;
+                                });
+                            @endphp
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h5 class="mb-0">Currency: {{ $orderCurrencyLabel }}</h5>
+                                    <span class="text-muted small">Orders: {{ $ordersInCurrency->count() }}</span>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover mb-0 text-md-nowrap align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 48px;"><span class="visually-hidden">Toggle</span></th>
+                                                <th><small><b>Order Ref</b></small></th>
+                                                <th class="text-center"><small><b>Currency</b></small></th>
+                                                <th class="text-end"><small><b>BM Invoice Amount</b></small></th>
+                                                <th class="text-center"><small><b>Recorded Sales Currency</b></small></th>
+                                                <th class="text-end"><small><b>Recorded Sales Amount</b></small></th>
+                                                <th class="text-end"><small><b>Variance (Sales - Invoice)</b></small></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="table-secondary">
+                                                <td class="text-center">—</td>
+                                                <td><b>Totals</b></td>
+                                                <td class="text-center">{{ $orderCurrencyLabel }}</td>
+                                                <td class="text-end"><b>{{ number_format($orderCurrencyTotal, 2) }}</b></td>
+                                                @php
+                                                    $currencySalesCodes = $ordersInCurrency->pluck('sales_currency')->filter()->unique();
+                                                    $currencySalesLabel = $currencySalesCodes->count() === 1 ? $currencySalesCodes->first() : ($currencySalesCodes->isEmpty() ? '—' : 'Mixed');
+                                                    $currencyHasSalesTotals = $ordersInCurrency->contains(function ($row) {
+                                                        return is_numeric($row['sales_total_currency']);
+                                                    });
+                                                    $currencyHasVarianceTotals = $ordersInCurrency->contains(function ($row) {
+                                                        return is_numeric($row['difference_currency']);
+                                                    });
+                                                @endphp
+                                                <td class="text-center">{{ $currencySalesLabel }}</td>
+                                                <td class="text-end">
+                                                    <b>
+                                                        @if($currencyHasSalesTotals)
+                                                            {{ number_format($salesCurrencyTotal, 2) }}
+                                                        @else
+                                                            —
+                                                        @endif
+                                                    </b>
+                                                </td>
+                                                <td class="text-end">
+                                                    <b>
+                                                        @if($currencyHasVarianceTotals)
+                                                            {{ number_format($varianceCurrencyTotal, 2) }}
+                                                        @else
+                                                            —
+                                                        @endif
+                                                    </b>
+                                                </td>
+                                            </tr>
+                                            @foreach ($ordersInCurrency as $order)
+                                                @php
+                                                    $difference = $order['difference_currency'];
+                                                    $diffClass = is_numeric($difference)
+                                                        ? (abs($difference) < 0.01 ? 'text-success' : ($difference > 0 ? 'text-warning' : 'text-danger'))
+                                                        : 'text-muted';
+                                                    $collapseId = 'order-compare-' . $order['order_id'];
+                                                @endphp
+                                                <tr>
+                                                    <td class="text-center">
+                                                        <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#{{ $collapseId }}" aria-expanded="false" aria-controls="{{ $collapseId }}">
+                                                            <i class="fa fa-search"></i>
+                                                        </button>
+                                                    </td>
+                                                    <td>{{ $order['order_reference'] ?? $order['order_id'] }}</td>
+                                                    <td class="text-center">{{ $order['order_currency'] ?? '—' }}</td>
+                                                    <td class="text-end">{{ number_format($order['order_amount'] ?? 0, 2) }}</td>
+                                                    <td class="text-center">{{ $order['sales_currency'] ?? '—' }}</td>
+                                                    <td class="text-end">
+                                                        @if(is_numeric($order['sales_total_currency']))
+                                                            {{ number_format($order['sales_total_currency'], 2) }}
+                                                        @else
+                                                            <span class="text-muted">—</span>
+                                                        @endif
+                                                    </td>
+                                                    <td class="text-end {{ $diffClass }}">
+                                                        @if(is_numeric($difference))
+                                                            {{ number_format($difference, 2) }}
+                                                        @else
+                                                            <span class="text-muted">Variance unavailable</span>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                                <tr class="collapse" id="{{ $collapseId }}">
+                                                    <td colspan="7" class="bg-light">
+                                                        <div class="mb-2">
+                                                            <strong>Variance Summary:</strong>
+                                                            <ul class="mb-2 small">
+                                                                <li>Invoice Amount: {{ number_format($order['order_amount'] ?? 0, 2) }} {{ $order['order_currency'] ?? '—' }}</li>
+                                                                <li>Recorded Sales Currency: {{ $order['sales_currency'] ?? '—' }}</li>
+                                                                <li>
+                                                                    Recorded Sales Amount:
+                                                                    @if(is_numeric($order['sales_total_currency']))
+                                                                        {{ number_format($order['sales_total_currency'], 2) }}
+                                                                    @else
+                                                                        <span class="text-muted">Mixed or unavailable</span>
+                                                                    @endif
+                                                                </li>
+                                                                @if(is_numeric($difference))
+                                                                    <li>Variance (Sales - Invoice): <span class="{{ $diffClass }}">{{ number_format($difference, 2) }}</span></li>
+                                                                @else
+                                                                    <li class="text-muted">Variance shown only when currencies align.</li>
+                                                                @endif
+                                                            </ul>
+                                                        </div>
+
+                                                        @if(!empty($order['transactions']))
+                                                            <div class="table-responsive">
+                                                                <table class="table table-sm mb-0">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th><small><b>ID</b></small></th>
+                                                                            <th><small><b>Reference</b></small></th>
+                                                                            <th><small><b>Description</b></small></th>
+                                                                            <th><small><b>Date</b></small></th>
+                                                                            <th class="text-center"><small><b>Currency</b></small></th>
+                                                                            <th class="text-end"><small><b>Recorded Sales Amount</b></small></th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        @foreach ($order['transactions'] as $trx)
+                                                                            <tr>
+                                                                                <td>{{ $trx['id'] }}</td>
+                                                                                <td>{{ $trx['reference_id'] }}</td>
+                                                                                <td>{{ $trx['description'] }}</td>
+                                                                                <td>{{ $trx['date'] ?? '—' }}</td>
+                                                                                <td class="text-center">{{ $trx['currency'] }}</td>
+                                                                                <td class="text-end">{{ number_format($trx['amount'] ?? 0, 2) }}</td>
+                                                                            </tr>
+                                                                        @endforeach
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        @else
+                                                            <p class="mb-0 text-muted">No related sales transactions.</p>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        @endforeach
+                    @endif
                 </div>
             </div>
         @endif
