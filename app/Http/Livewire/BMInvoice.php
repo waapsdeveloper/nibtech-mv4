@@ -320,9 +320,15 @@ class BMInvoice extends Component
                 $description   = trim((string) $row->description) ?: '—';
                 $txnTotal      = (float) $row->transaction_total;
                 $chargeTotal   = $chargeMap[$description] ?? 0.0;
+                $normalized    = Str::lower($description);
 
-                if (Str::lower($description) === 'sales') {
+                if ($normalized === 'sales') {
                     $chargeTotal = $orderPriceTotal;
+                }
+
+                if (Str::contains($normalized, 'deduct')) {
+                    $chargeTotal = -abs($chargeTotal);
+                    $txnTotal = $txnTotal === 0.0 ? $txnTotal : -abs($txnTotal);
                 }
 
                 return [
