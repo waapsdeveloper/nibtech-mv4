@@ -89,12 +89,12 @@ class BMInvoice extends Component
 
         $chargeMap = Order_charge_model::query()
             ->selectRaw('charge_value_id, SUM(amount) AS charge_total')
-            ->with('charge')
+            ->with('chargeValue')
             ->whereIn('order_id', $transactions->pluck('order_id')->filter()->unique())
             ->groupBy('charge_value_id')
             ->get()
             ->mapWithKeys(fn ($charge) => [
-                trim(optional($charge->charge)->name ?? '') => (float) $charge->charge_total,
+                trim(optional($charge->chargeValue)->name ?? '') => (float) $charge->charge_total,
             ])
             ->filter(fn ($_, $key) => $key !== '');
 
@@ -104,19 +104,19 @@ class BMInvoice extends Component
             ->groupBy('description')
             ->get()
             ->map(function ($row) use ($chargeMap) {
-                $description = trim((string) $row->description);
-                $chargeTotal = $chargeMap[$description] ?? 0.0;
+                $description   = trim((string) $row->description) ?: '—';
+                $txnTotal      = (float) $row->transaction_total;
+                $chargeTotal   = $chargeMap[$description] ?? 0.0;
 
                 return [
-                    'description'        => $description !== '' ? $description : '—',
-                    'transaction_total'  => (float) $row->transaction_total,
+                    'description'        => $description,
+                    'transaction_total'  => $txnTotal,
                     'charge_total'       => $chargeTotal,
-                    'difference'         => (float) $row->transaction_total - $chargeTotal,
+                    'difference'         => abs($txnTotal) - abs($chargeTotal),
                 ];
             })
             ->values();
 
-        dd($data['report']);
         return view('livewire.bm_invoice_detail')->with($data);
 
     }
