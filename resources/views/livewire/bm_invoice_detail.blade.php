@@ -14,45 +14,15 @@
             .childs{
                 padding-top:5px
             }
-            .report-section {
-                margin-bottom: 1.5rem;
-            }
-            .section-divider {
-                border-top: 2px solid #e9ecef;
-                margin: 2rem 0;
-            }
-            .summary-card {
-                background: #f8f9fa;
-                border-left: 4px solid #0162e8;
-                padding: 1rem;
-                margin-bottom: 1rem;
-            }
-            .variance-positive {
-                color: #28a745;
-                font-weight: 600;
-            }
-            .variance-negative {
-                color: #dc3545;
-                font-weight: 600;
-            }
-            .variance-neutral {
-                color: #6c757d;
-            }
-            @media print {
-                .no-print {
-                    display: none !important;
-                }
-                .card {
-                    break-inside: avoid;
-                }
-            }
+
         </style>
     @endsection
     @section('content')
 
 
         <!-- breadcrumb -->
-            <div class="breadcrumb-header justify-content-between mt-0 no-print">
+            <div class="breadcrumb-header justify-content-between mt-0">
+
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
@@ -61,419 +31,378 @@
                     </ol>
                     @if ($process->status > 1 && $process->listed_stocks_verification->sum('qty_change') > $process->process_stocks->count())
                         <a href="{{ url('topup/recheck_closed_topup').'/'.$process->id }}" class="btn btn-link">Recheck BM Invoice</a>
+
                     @endif
                 </div>
             </div>
         <!-- /breadcrumb -->
+        <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
+            <h5>Reference: {{ $process->reference_id }} | Batch Quantity: {{ $process->quantity }} | Scanned Quantity: {{ $process->process_stocks->count() }}
+                @if ($process->status > 1)
+                    | Verified Quantity: {{ $process->process_stocks->where('status', 2)->count() }}
+                @endif
+                @if ($process->status == 3)
+                    | Listed Quantity: {{ $process->listed_stocks_verification->sum('qty_change') }}
+                @endif
+            </h5>
 
-        <!-- Process Header -->
-        <div class="card mb-3">
-            <div class="card-body">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <h4 class="mb-2 text-primary">BM Invoice: {{ $process->reference_id }}</h4>
-                        <div class="row">
-                            <div class="col-md-3 mb-2">
-                                <small class="text-muted d-block">Batch Quantity</small>
-                                <strong>{{ $process->quantity }}</strong>
-                            </div>
-                            <div class="col-md-3 mb-2">
-                                <small class="text-muted d-block">Scanned Quantity</small>
-                                <strong>{{ $process->process_stocks->count() }}</strong>
-                            </div>
-                            @if ($process->status > 1)
-                            <div class="col-md-3 mb-2">
-                                <small class="text-muted d-block">Verified Quantity</small>
-                                <strong>{{ $process->process_stocks->where('status', 2)->count() }}</strong>
-                            </div>
-                            @endif
-                            @if ($process->status == 3)
-                            <div class="col-md-3 mb-2">
-                                <small class="text-muted d-block">Listed Quantity</small>
-                                <strong>{{ $process->listed_stocks_verification->sum('qty_change') }}</strong>
-                            </div>
-                            @endif
-                        </div>
-                    </div>
+            @if ($process->status == 1)
+            <div class="p-1">
+                <form class="form-inline" action="{{ url('delete_topup_imei') }}" method="POST" id="topup_item"
+                 {{-- onSubmit="return confirm('Are you sure you want to remove this item?');" --}}
+                 >
+                    @csrf
+                    <label for="imei" class="">IMEI | Serial Number: &nbsp;</label>
+                    <input type="text" class="form-control form-control-sm" name="imei" @if (request('remove') == 1) id="imei" @endif placeholder="Enter IMEI" onloadeddata="$(this).focus()" autofocus required>
+                    <input type="hidden" name="process_id" value="{{$process->id}}">
+                    <input type="hidden" name="remove" value="1">
+                    <button class="btn-sm btn-secondary pd-x-20" type="submit">Remove</button>
 
-                    @if ($process->status == 1)
-                    <div class="col-md-4">
-                        <div class="border rounded p-3 bg-light">
-                            <form class="form-inline" action="{{ url('delete_topup_imei') }}" method="POST" id="topup_item">
-                                @csrf
-                                <label for="imei" class="mb-2"><strong>Remove Item</strong></label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control form-control-sm" name="imei" @if (request('remove') == 1) id="imei" @endif placeholder="Enter IMEI / Serial" autofocus required>
-                                    <input type="hidden" name="process_id" value="{{$process->id}}">
-                                    <input type="hidden" name="remove" value="1">
-                                    <button class="btn btn-sm btn-danger" type="submit">Remove</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                    @endif
-                </div>
+                </form>
             </div>
+            @endif
         </div>
 
-        <!-- Report Actions -->
-        <div class="d-flex justify-content-between align-items-center mb-3 no-print">
-            <h4 class="mb-0">Invoice Financial Report</h4>
-            <div class="btn-group" role="group">
-                <button type="button" class="btn btn-primary" onclick="PrintElem('invoice_report_content');">
-                    <i class="fe fe-printer"></i> Print Report
-                </button>
+        <br>
+
+        <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
+
+            <h4>BM Invoice Details</h4>
+
+
+            <div class="btn-group p-1" role="group">
+                {{-- JS Print to Print topup Variations DIv --}}
+                <button type="button" class="btn btn-primary" onclick="PrintElem('topup_variations');">Print</button>
             </div>
         </div>
-        <!-- Alert Messages -->
+        <div class="d-flex justify-content-between">
+
+        </div>
+        <br>
         @if (session('warning'))
-            <div class="alert alert-warning alert-dismissible fade show no-print" role="alert">
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
                 <span class="alert-inner--icon"><i class="fe fe-info"></i></span>
                 <span class="alert-inner--text"><strong>{{session('warning')}}</strong></span>
                 <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
             </div>
-            @php session()->forget('warning'); @endphp
+            <br>
+            @php
+            session()->forget('warning');
+            @endphp
         @endif
 
         @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show no-print" role="alert">
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <span class="alert-inner--icon"><i class="fe fe-thumbs-up"></i></span>
                 <span class="alert-inner--text"><strong>{{session('success')}}</strong></span>
                 <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
             </div>
-            @php session()->forget('success'); @endphp
+            <br>
+            @php
+            session()->forget('success');
+            @endphp
         @endif
-
         @if (session('error'))
-            <div class="alert alert-danger alert-dismissible fade show no-print" role="alert">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <span class="alert-inner--icon"><i class="fe fe-thumbs-down"></i></span>
                 <span class="alert-inner--text"><strong>{{session('error')}}</strong></span>
                 <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
             </div>
-            <script>alert("{{session('error')}}");</script>
-            @php session()->forget('error'); @endphp
+            <script>
+                alert("{{session('error')}}");
+            </script>
+        <br>
+        @php
+        session()->forget('error');
+        @endphp
         @endif
 
-        <!-- Main Report Content -->
-        <div id="invoice_report_content">
+        @php
+            $salesSummary = null;
+            $chargeSummary = null;
+            $refundSummary = null;
 
-            <!-- Report Header (Print Only) -->
-            <div class="d-none d-print-block mb-4">
-                <h2>BM Invoice Financial Report</h2>
-                <p><strong>Reference:</strong> {{ $process->reference_id }}</p>
-                <p><strong>Generated:</strong> {{ now()->format('d M Y H:i') }}</p>
-            </div>
+            if (isset($salesVsOrders)) {
+                $salesBreakdown = $salesVsOrders['breakdown'] ?? collect();
+                if (! $salesBreakdown instanceof \Illuminate\Support\Collection) {
+                    $salesBreakdown = collect($salesBreakdown ?? []);
+                }
 
-                    <!-- Section 4: Refund Validation -->
-            @if(isset($refundReport) && $refundReport instanceof \Illuminate\Support\Collection)
-                @php
-                    $refundSummary = $refundReport->get('summary', []);
-                    $refundDetails = $refundReport->get('details', collect());
-                    $totalsByCurrency = $refundSummary['totals_by_currency'] ?? collect();
-                    $isSingleCurrency = $refundSummary['is_single_currency'] ?? true;
-                    $refundMatchedCount = $refundSummary['matched_count'] ?? 0;
-                    $refundMissingCount = $refundSummary['missing_order_count'] ?? 0;
-                    $refundTotal = $refundSummary['total'] ?? 0;
-                @endphp
-                @if($refundDetails instanceof \Illuminate\Support\Collection && $refundDetails->isNotEmpty())
-                    <div class="report-section">
-                        <div class="card">
-                            <div class="card-header bg-warning text-dark">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="card-title mb-0">
-                                        <i class="fe fe-rotate-ccw"></i> Refund Validation Report
-                                    </h5>
-                                    <span class="badge bg-dark">
-                                        {{ $refundMatchedCount }}/{{ $refundTotal }} Matched
-                                        @if($refundMissingCount > 0)
-                                            | <span class="text-danger">{{ $refundMissingCount }} Missing</span>
-                                        @endif
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                @if($isSingleCurrency && $totalsByCurrency->isNotEmpty())
-                                    @php
-                                        $primaryRefund = $totalsByCurrency->first();
-                                        $primaryCurr = $primaryRefund['currency'] ?? '';
-                                        $refundVariance = $primaryRefund['difference'] ?? 0;
-                                        $refundVarianceClass = abs($refundVariance) < 0.01 ? 'variance-neutral' : ($refundVariance < 0 ? 'variance-negative' : 'variance-positive');
-                                    @endphp
-                                    <div class="row g-3 mb-3">
-                                        <div class="col-md-4">
-                                            <div class="summary-card">
-                                                <small class="text-muted d-block mb-1">Ledger Refund Total</small>
-                                                <h4 class="mb-0">{{ $primaryCurr }} {{ number_format($primaryRefund['transaction_total'] ?? 0, 2) }}</h4>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="summary-card">
-                                                <small class="text-muted d-block mb-1">System Refund Orders</small>
-                                                <h4 class="mb-0">{{ $primaryCurr }} {{ number_format($primaryRefund['order_total'] ?? 0, 2) }}</h4>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="summary-card">
-                                                <small class="text-muted d-block mb-1">Variance</small>
-                                                <h4 class="mb-0 {{ $refundVarianceClass }}">{{ $primaryCurr }} {{ number_format($refundVariance, 2) }}</h4>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @else
-                                    <div class="alert alert-info mb-3">
-                                        <i class="fe fe-info"></i> Multiple refund currencies detected.
-                                    </div>
-                                    @if($totalsByCurrency->isNotEmpty())
-                                        <div class="table-responsive mb-3">
-                                            <table class="table table-bordered table-sm">
-                                                <thead class="table-light">
-                                                    <tr>
-                                                        <th>Currency</th>
-                                                        <th class="text-end">Ledger Total</th>
-                                                        <th class="text-end">System Total</th>
-                                                        <th class="text-end">Variance</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @foreach ($totalsByCurrency as $currTotal)
-                                                        @php
-                                                            $currVar = $currTotal['difference'] ?? 0;
-                                                            $currVarClass = abs($currVar) < 0.01 ? 'variance-neutral' : ($currVar < 0 ? 'variance-negative' : 'variance-positive');
-                                                        @endphp
-                                                        <tr>
-                                                            <td><strong>{{ $currTotal['currency'] ?? '—' }}</strong></td>
-                                                            <td class="text-end">{{ number_format($currTotal['transaction_total'] ?? 0, 2) }}</td>
-                                                            <td class="text-end">{{ number_format($currTotal['order_total'] ?? 0, 2) }}</td>
-                                                            <td class="text-end {{ $currVarClass }}">{{ number_format($currVar, 2) }}</td>
-                                                        </tr>
-                                                    @endforeach
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    @endif
-                                @endif
+                $salesSummary = [
+                    'is_multi_currency' => empty($salesVsOrders['primary_currency']),
+                    'primary_currency' => $salesVsOrders['primary_currency'] ?? null,
+                    'recorded_total' => $salesVsOrders['transaction_total'] ?? null,
+                    'invoice_total' => $salesVsOrders['order_total'] ?? null,
+                    'variance' => $salesVsOrders['difference'] ?? null,
+                    'breakdown' => $salesBreakdown,
+                ];
+            }
 
-                                <div class="table-responsive">
-                                    <table class="table table-sm table-striped mb-0">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>Txn ID</th>
-                                                <th>Txn Ref</th>
-                                                <th class="text-center">Currency</th>
-                                                <th class="text-end">Amount</th>
-                                                <th class="text-center">Order Match</th>
-                                                <th>Order Ref</th>
-                                                <th class="text-end">Order Amount</th>
-                                                <th class="text-end">Variance</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach ($refundDetails as $refund)
-                                                @php
-                                                    $orderMatchLabel = $refund['order_found']
-                                                        ? ($refund['match_source'] === 'reference' ? 'By Ref' : 'By ID')
-                                                        : 'Missing';
-                                                    $orderMatchClass = $refund['order_found'] ? 'text-success' : 'text-danger';
-                                                    $variance = $refund['difference'] ?? 0;
-                                                    $varianceClass = abs($variance) < 0.01 ? 'variance-neutral' : ($variance < 0 ? 'variance-negative' : 'variance-positive');
-                                                @endphp
-                                                <tr>
-                                                    <td>{{ $refund['transaction_id'] }}</td>
-                                                    <td>{{ $refund['transaction_reference'] ?? '—' }}</td>
-                                                    <td class="text-center">{{ $refund['transaction_currency'] ?? '—' }}</td>
-                                                    <td class="text-end">{{ number_format($refund['transaction_amount'] ?? 0, 2) }}</td>
-                                                    <td class="text-center">
-                                                        <span class="badge {{ $refund['order_found'] ? 'bg-success' : 'bg-danger' }}">{{ $orderMatchLabel }}</span>
-                                                    </td>
-                                                    <td>{{ $refund['order_reference'] ?? '—' }}</td>
-                                                    <td class="text-end">
-                                                        @if($refund['order_found'])
-                                                            {{ number_format($refund['order_amount'] ?? 0, 2) }}
-                                                        @else
-                                                            <span class="text-muted">—</span>
-                                                        @endif
-                                                    </td>
-                                                    <td class="text-end {{ $varianceClass }}">{{ number_format($variance, 2) }}</td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endif
-            @endif
+            if (isset($report) && $report instanceof \Illuminate\Support\Collection && $report->isNotEmpty()) {
+                $chargeSummary = [
+                    'rows' => $report,
+                    'transaction_total' => (float) $report->sum('transaction_total'),
+                    'charge_total' => (float) $report->sum('charge_total'),
+                    'difference_total' => (float) $report->sum('difference'),
+                ];
+            }
 
-        </div><!-- End invoice_report_content -->
-    </div>
-
-    <br>
-
-            <!-- Section 2: Transaction vs Charge Summary -->
-            @if(isset($report) && $report instanceof \Illuminate\Support\Collection && $report->isNotEmpty())
-                @php
-                    $salesRow = $reportSalesRow ?? null;
-                    $txnSum = $report->sum('transaction_total');
-                    $chargeSum = $report->sum('charge_total');
-                    $diffSum = $report->sum('difference');
-                @endphp
-                <div class="report-section">
-                    <div class="card">
-                        <div class="card-header bg-info text-white">
-                            <h5 class="card-title mb-0 text-white">
-                                <i class="fe fe-file-text"></i> Transaction vs Charge Summary
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            @if($salesRow)
-                                <div class="alert alert-info py-2 mb-3">
-                                    <strong>Note:</strong> Sales transactions (Ledger {{ number_format($salesRow['transaction_total'], 2) }} vs Invoice {{ number_format(abs($salesRow['charge_total']), 2) }}) are detailed in the section above and excluded from the table below to prevent duplication.
-                                </div>
-                            @endif
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-hover mb-0">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Description</th>
-                                            <th class="text-end">Transactions</th>
-                                            <th class="text-end">Charges</th>
-                                            <th class="text-end">Difference</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($report as $row)
-                                            <tr>
-                                                <td><strong>{{ $row['description'] }}</strong></td>
-                                                <td class="text-end">{{ number_format($row['transaction_total'], 2) }}</td>
-                                                <td class="text-end">{{ number_format($row['charge_total'], 2) }}</td>
-                                                <td class="text-end">{{ number_format($row['difference'], 2) }}</td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                    <tfoot class="table-secondary">
-                                        <tr>
-                                            <td><strong>Total</strong></td>
-                                            <td class="text-end"><strong>{{ number_format($txnSum, 2) }}</strong></td>
-                                            <td class="text-end"><strong>{{ number_format($chargeSum, 2) }}</strong></td>
-                                            <td class="text-end"><strong>{{ number_format($diffSum, 2) }}</strong></td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="section-divider"></div>
-            @endif
-
-            <!-- Section 1: Sales vs Invoice Summary -->
-            @if(isset($salesVsOrders))
-                @php
-                    $primaryCurrency = $salesVsOrders['primary_currency'] ?? null;
-                    $breakdown = $salesVsOrders['breakdown'] ?? collect();
-                    if (! $breakdown instanceof \Illuminate\Support\Collection) {
-                        $breakdown = collect($breakdown ?? []);
+            if (isset($refundReport) && $refundReport instanceof \Illuminate\Support\Collection) {
+                $summary = $refundReport->get('summary');
+                if (is_array($summary)) {
+                    $totals = $summary['totals_by_currency'] ?? collect();
+                    if (! $totals instanceof \Illuminate\Support\Collection) {
+                        $totals = collect($totals ?? []);
                     }
-                @endphp
-                <div class="report-section">
-                    <div class="card">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="card-title mb-0 text-white">
-                                <i class="fe fe-dollar-sign"></i> Sales vs BM Invoice Summary
-                                @if($primaryCurrency)
-                                    <small>({{ $primaryCurrency }})</small>
-                                @else
-                                    <small>(Multi-currency)</small>
-                                @endif
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            @if($primaryCurrency)
-                                @php
-                                    $primaryVariance = $salesVsOrders['difference'] ?? 0;
-                                    $primaryClass = abs($primaryVariance) < 0.01 ? 'variance-neutral' : ($primaryVariance < 0 ? 'variance-negative' : 'variance-positive');
-                                @endphp
-                                <div class="row g-3 mb-3">
-                                    <div class="col-md-4">
-                                        <div class="summary-card">
-                                            <small class="text-muted d-block mb-1">Recorded Sales Total</small>
-                                            <h4 class="mb-0">{{ $primaryCurrency }} {{ number_format($salesVsOrders['transaction_total'] ?? 0, 2) }}</h4>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="summary-card">
-                                            <small class="text-muted d-block mb-1">BM Invoice Total</small>
-                                            <h4 class="mb-0">{{ $primaryCurrency }} {{ number_format($salesVsOrders['order_total'] ?? 0, 2) }}</h4>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="summary-card">
-                                            <small class="text-muted d-block mb-1">Variance (Sales - Invoice)</small>
-                                            <h4 class="mb-0 {{ $primaryClass }}">{{ $primaryCurrency }} {{ number_format($primaryVariance, 2) }}</h4>
-                                        </div>
-                                    </div>
-                                </div>
-                            @else
-                                <div class="alert alert-info mb-3">
-                                    <i class="fe fe-info"></i> Multiple currencies detected. See breakdown below.
-                                </div>
-                            @endif
 
-                            @if($breakdown->isNotEmpty())
-                                <div class="table-responsive">
-                                    <table class="table table-bordered table-hover mb-0">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>Currency</th>
-                                                <th class="text-end">Recorded Sales</th>
-                                                <th class="text-end">BM Invoice</th>
-                                                <th class="text-end">Variance</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach ($breakdown as $row)
-                                                @php
-                                                    $varianceClass = abs($row['difference']) < 0.01 ? 'variance-neutral' : ($row['difference'] < 0 ? 'variance-negative' : 'variance-positive');
-                                                @endphp
-                                                <tr>
-                                                    <td><strong>{{ $row['currency'] }}</strong></td>
-                                                    <td class="text-end">{{ number_format($row['sales_total'], 2) }}</td>
-                                                    <td class="text-end">{{ number_format($row['order_total'], 2) }}</td>
-                                                    <td class="text-end {{ $varianceClass }}">{{ number_format($row['difference'], 2) }}</td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            @endif
-                        </div>
-                    </div>
+                    $refundSummary = [
+                        'is_single_currency' => (bool) ($summary['is_single_currency'] ?? false),
+                        'primary_currency' => $summary['primary_currency'] ?? null,
+                        'transaction_total' => $summary['transaction_total'] ?? null,
+                        'order_total' => $summary['order_total'] ?? null,
+                        'difference' => $summary['difference'] ?? null,
+                        'totals_by_currency' => $totals,
+                        'matched_count' => $summary['matched_count'] ?? 0,
+                        'missing_count' => $summary['missing_order_count'] ?? 0,
+                        'total_count' => $summary['total'] ?? 0,
+                    ];
+                }
+            }
+        @endphp
+
+        @if($salesSummary || $chargeSummary || $refundSummary)
+            <div class="card mt-3">
+                <div class="card-header pb-0">
+                    <h4 class="card-title mg-b-0">Financial Summary</h4>
                 </div>
-                <div class="section-divider"></div>
-            @endif
-
-            <!-- Section 3: Order-Level Variance -->
-            @if(isset($orderComparisons) && $orderComparisons instanceof \Illuminate\Support\Collection && $orderComparisons->isNotEmpty())
-                @php
-                    $groupedOrderComparisons = $orderComparisons->groupBy(function ($row) {
-                        return $row['order_currency'] ?? '—';
-                    });
-                    $hasMultipleOrderCurrencies = $groupedOrderComparisons->count() > 1;
-                @endphp
-                <div class="report-section">
-                    <div class="card">
-                        <div class="card-header bg-success text-white">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h5 class="card-title mb-0 text-white">
-                                    <i class="fe fe-list"></i> Order-Level Variance Analysis
-                                </h5>
-                                @if($hasMultipleOrderCurrencies)
-                                    <span class="badge bg-white text-success">{{ $groupedOrderComparisons->count() }} Currencies</span>
-                                @endif
+                <div class="card-body">
+                    <div class="row g-3">
+                        @if($salesSummary)
+                            <div class="col-md-4">
+                                <div class="border rounded p-3 h-100">
+                                    <small class="text-uppercase text-muted">Sales vs Invoice</small>
+                                    <div class="mt-2 small">
+                                        @if(! $salesSummary['is_multi_currency'] && $salesSummary['primary_currency'])
+                                            @php
+                                                $salesCurrency = $salesSummary['primary_currency'];
+                                                $salesRecorded = (float) ($salesSummary['recorded_total'] ?? 0);
+                                                $salesInvoice = (float) ($salesSummary['invoice_total'] ?? 0);
+                                                $salesVariance = (float) ($salesSummary['variance'] ?? 0);
+                                                $salesVarianceClass = abs($salesVariance) < 0.01
+                                                    ? 'text-success'
+                                                    : ($salesVariance < 0 ? 'text-warning' : 'text-danger');
+                                            @endphp
+                                            <div class="d-flex justify-content-between">
+                                                <span>Recorded ({{ $salesCurrency }})</span>
+                                                <span class="fw-semibold">{{ number_format($salesRecorded, 2) }}</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Invoice ({{ $salesCurrency }})</span>
+                                                <span class="fw-semibold">{{ number_format($salesInvoice, 2) }}</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Variance</span>
+                                                <span class="fw-semibold {{ $salesVarianceClass }}">{{ number_format($salesVariance, 2) }}</span>
+                                            </div>
+                                        @else
+                                            <p class="mb-2 text-muted">Multiple currencies detected. See breakdown below.</p>
+                                        @endif
+                                    </div>
+                                </div>
                             </div>
+                        @endif
+
+                        @if($chargeSummary)
+                            <div class="col-md-4">
+                                <div class="border rounded p-3 h-100">
+                                    <small class="text-uppercase text-muted">Non-Sales Charges</small>
+                                    @php
+                                        $chargeLedger = abs((float) ($chargeSummary['transaction_total'] ?? 0));
+                                        $chargeInvoice = abs((float) ($chargeSummary['charge_total'] ?? 0));
+                                        $chargeVariance = (float) ($chargeSummary['difference_total'] ?? 0);
+                                        $chargeVarianceClass = abs($chargeVariance) < 0.01
+                                            ? 'text-success'
+                                            : ($chargeVariance < 0 ? 'text-warning' : 'text-danger');
+                                    @endphp
+                                    <div class="mt-2 small">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Ledger Total</span>
+                                            <span class="fw-semibold">{{ number_format($chargeLedger, 2) }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Invoice Total</span>
+                                            <span class="fw-semibold">{{ number_format($chargeInvoice, 2) }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Variance</span>
+                                            <span class="fw-semibold {{ $chargeVarianceClass }}">{{ number_format($chargeVariance, 2) }}</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-muted small mb-0 mt-2">Variance compares absolute ledger totals to invoice charges.</p>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if($refundSummary)
+                            <div class="col-md-4">
+                                <div class="border rounded p-3 h-100">
+                                    <small class="text-uppercase text-muted">Refund Variance</small>
+                                    @php
+                                        $refundVariance = (float) ($refundSummary['difference'] ?? 0);
+                                        $refundVarianceClass = abs($refundVariance) < 0.01
+                                            ? 'text-success'
+                                            : ($refundVariance < 0 ? 'text-warning' : 'text-danger');
+                                    @endphp
+                                    <div class="mt-2 small">
+                                        @if($refundSummary['is_single_currency'] && $refundSummary['primary_currency'])
+                                            <div class="d-flex justify-content-between">
+                                                <span>Ledger Refunds ({{ $refundSummary['primary_currency'] }})</span>
+                                                <span class="fw-semibold">{{ number_format($refundSummary['transaction_total'] ?? 0, 2) }}</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Order Refunds ({{ $refundSummary['primary_currency'] }})</span>
+                                                <span class="fw-semibold">{{ number_format($refundSummary['order_total'] ?? 0, 2) }}</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Variance</span>
+                                                <span class="fw-semibold {{ $refundVarianceClass }}">{{ number_format($refundVariance, 2) }}</span>
+                                            </div>
+                                        @else
+                                            <p class="mb-2 text-muted">Multiple currencies detected. See breakdown below.</p>
+                                        @endif
+                                        <p class="text-muted small mb-0">Matched {{ $refundSummary['matched_count'] ?? 0 }} of {{ $refundSummary['total_count'] ?? 0 }} refunds.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+
+                    @if($salesSummary && $salesSummary['breakdown']->isNotEmpty())
+                        <hr class="my-4">
+                        <h6 class="mb-2">Sales Totals by Currency</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped mb-0 text-md-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th><small><b>Currency</b></small></th>
+                                        <th class="text-end"><small><b>Recorded Sales</b></small></th>
+                                        <th class="text-end"><small><b>BM Invoice</b></small></th>
+                                        <th class="text-end"><small><b>Variance</b></small></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($salesSummary['breakdown'] as $row)
+                                        @php
+                                            $varianceClass = abs($row['difference']) < 0.01
+                                                ? 'text-success'
+                                                : ($row['difference'] < 0 ? 'text-warning' : 'text-danger');
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $row['currency'] }}</td>
+                                            <td class="text-end">{{ number_format($row['sales_total'], 2) }}</td>
+                                            <td class="text-end">{{ number_format($row['order_total'], 2) }}</td>
+                                            <td class="text-end {{ $varianceClass }}">{{ number_format($row['difference'], 2) }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
-                        <div class="card-body">
+                    @endif
+
+                    @if($chargeSummary && $chargeSummary['rows']->isNotEmpty())
+                        <hr class="my-4">
+                        <h6 class="mb-2">Non-Sales Charge Breakdown</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover mb-0 text-md-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th><small><b>Description</b></small></th>
+                                        <th class="text-end"><small><b>Ledger Transactions</b></small></th>
+                                        <th class="text-end"><small><b>BM Invoice Charges</b></small></th>
+                                        <th class="text-end"><small><b>Variance</b></small></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($chargeSummary['rows'] as $row)
+                                        @php
+                                            $rowVarianceClass = abs($row['difference']) < 0.01
+                                                ? 'text-success'
+                                                : ($row['difference'] < 0 ? 'text-warning' : 'text-danger');
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $row['description'] }}</td>
+                                            <td class="text-end">{{ number_format($row['transaction_total'], 2) }}</td>
+                                            <td class="text-end">{{ number_format($row['charge_total'], 2) }}</td>
+                                            <td class="text-end {{ $rowVarianceClass }}">{{ number_format($row['difference'], 2) }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td><b>Total</b></td>
+                                        <td class="text-end"><b>{{ number_format($chargeSummary['transaction_total'], 2) }}</b></td>
+                                        <td class="text-end"><b>{{ number_format($chargeSummary['charge_total'], 2) }}</b></td>
+                                        <td class="text-end"><b>{{ number_format($chargeSummary['difference_total'], 2) }}</b></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        <p class="text-muted small mb-0 mt-2">Sales transactions are excluded from this table; they are summarised in the section above.</p>
+                    @endif
+
+                    @if($refundSummary && $refundSummary['totals_by_currency']->isNotEmpty())
+                        <hr class="my-4">
+                        <h6 class="mb-2">Refund Totals by Currency</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped mb-0 text-md-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th><small><b>Currency</b></small></th>
+                                        <th class="text-end"><small><b>Ledger Refunds</b></small></th>
+                                        <th class="text-end"><small><b>Order Refunds</b></small></th>
+                                        <th class="text-end"><small><b>Variance</b></small></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($refundSummary['totals_by_currency'] as $row)
+                                        @php
+                                            $refundRowVariance = $row['difference'] ?? 0;
+                                            $refundRowClass = abs($refundRowVariance) < 0.01
+                                                ? 'text-success'
+                                                : ($refundRowVariance < 0 ? 'text-warning' : 'text-danger');
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $row['currency'] }}</td>
+                                            <td class="text-end">{{ number_format($row['transaction_total'] ?? 0, 2) }}</td>
+                                            <td class="text-end">{{ number_format($row['order_total'] ?? 0, 2) }}</td>
+                                            <td class="text-end {{ $refundRowClass }}">{{ number_format($refundRowVariance, 2) }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        @endif
+
+        @endif
+
+        @if(isset($orderComparisons) && $orderComparisons instanceof \Illuminate\Support\Collection && $orderComparisons->isNotEmpty())
+            @php
+                $groupedOrderComparisons = $orderComparisons->groupBy(function ($row) {
+                    return $row['order_currency'] ?? '—';
+                });
+                $hasMultipleOrderCurrencies = $groupedOrderComparisons->count() > 1;
+            @endphp
+            <div class="card mt-3">
+                <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mg-b-0">Order-Level Variance (Invoice vs Recorded Amounts)</h4>
+                    @if($hasMultipleOrderCurrencies)
+                        <span class="text-muted small">Showing {{ $groupedOrderComparisons->count() }} currencies</span>
+                    @endif
+                </div>
+                <div class="card-body">
                     @if(!$hasMultipleOrderCurrencies)
                         @php
                             $singleCurrencyKey = $groupedOrderComparisons->keys()->first();
@@ -504,10 +433,10 @@
                                         <th><small><b>Order Ref</b></small></th>
                                         <th class="text-center"><small><b>Type</b></small></th>
                                         <th class="text-center"><small><b>Currency</b></small></th>
-                                        <th class="text-end"><small><b>BM Invoice Amount</b></small></th>
+                                        <th class="text-end"><small><b>Invoice Amount (Comparison)</b></small></th>
                                         <th class="text-center"><small><b>Recorded Amount Currency</b></small></th>
                                         <th class="text-end"><small><b>Recorded Amount</b></small></th>
-                                        <th class="text-end"><small><b>Variance (Sales - Invoice)</b></small></th>
+                                        <th class="text-end"><small><b>Variance (Recorded - Invoice)</b></small></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -517,7 +446,7 @@
                                         <td class="text-center">—</td>
                                         <td class="text-center">{{ $singleCurrencyKey }}</td>
                                         <td class="text-end"><b>{{ number_format($singleCurrencyOrderTotal, 2) }}</b></td>
-                                        <td class="text-center">{{ $singleCurrencySalesCurrencyLabel }}</td>
+                                                <td class="text-center">{{ $singleCurrencySalesCurrencyLabel }}</td>
                                         <td class="text-end">
                                             <b>
                                                 @if($singleCurrencyHasSalesTotals)
@@ -546,6 +475,9 @@
                                             $collapseId = 'order-compare-' . $order['order_id'];
                                             $typeLabel = $order['primary_transaction_type'] ?? 'unknown';
                                             $typeLabel = $typeLabel === 'unknown' ? '—' : ucfirst($typeLabel);
+                                            $originalAmount = $order['order_amount_original'] ?? null;
+                                            $comparisonAmount = $order['order_amount'] ?? 0;
+                                            $showOriginalAmount = ! is_null($originalAmount) && abs($originalAmount - $comparisonAmount) > 0.01;
                                         @endphp
                                         <tr>
                                             <td class="text-center">
@@ -556,7 +488,12 @@
                                             <td>{{ $order['order_reference'] ?? $order['order_id'] }}</td>
                                             <td class="text-center">{{ $typeLabel }}</td>
                                             <td class="text-center">{{ $order['order_currency'] ?? '—' }}</td>
-                                            <td class="text-end">{{ number_format($order['order_amount'] ?? 0, 2) }}</td>
+                                            <td class="text-end">
+                                                {{ number_format($comparisonAmount, 2) }}
+                                                @if($showOriginalAmount)
+                                                    <div class="text-muted small">Original: {{ number_format($originalAmount, 2) }}</div>
+                                                @endif
+                                            </td>
                                             <td class="text-center">{{ $order['sales_currency'] ?? '—' }}</td>
                                             <td class="text-end">
                                                 @if(is_numeric($order['sales_total_currency']))
@@ -579,10 +516,13 @@
                                                     <strong>Variance Summary:</strong>
                                                     <ul class="mb-2 small">
                                                         <li>Order Type: {{ $typeLabel === '—' ? 'Unknown' : $typeLabel }}</li>
-                                                        <li>Invoice Amount: {{ number_format($order['order_amount'] ?? 0, 2) }} {{ $order['order_currency'] ?? '—' }}</li>
+                                                        <li>Invoice Amount (comparison): {{ number_format($comparisonAmount, 2) }} {{ $order['order_currency'] ?? '—' }}</li>
+                                                        @if($showOriginalAmount)
+                                                            <li>Invoice Amount (original): {{ number_format($originalAmount, 2) }} {{ $order['order_currency'] ?? '—' }}</li>
+                                                        @endif
                                                         <li>Recorded Amount Currency: {{ $order['sales_currency'] ?? '—' }}</li>
                                                         <li>
-                                                            Recorded Sales Amount:
+                                                            Recorded Amount:
                                                             @if(is_numeric($order['sales_total_currency']))
                                                                 {{ number_format($order['sales_total_currency'], 2) }}
                                                             @else
@@ -590,7 +530,7 @@
                                                             @endif
                                                         </li>
                                                         @if(is_numeric($difference))
-                                                            <li>Variance (Sales - Invoice): <span class="{{ $diffClass }}">{{ number_format($difference, 2) }}</span></li>
+                                                            <li>Variance (Recorded - Invoice): <span class="{{ $diffClass }}">{{ number_format($difference, 2) }}</span></li>
                                                         @else
                                                             <li class="text-muted">Variance shown only when currencies align.</li>
                                                         @endif
@@ -664,10 +604,10 @@
                                                 <th><small><b>Order Ref</b></small></th>
                                                 <th class="text-center"><small><b>Type</b></small></th>
                                                 <th class="text-center"><small><b>Currency</b></small></th>
-                                                <th class="text-end"><small><b>BM Invoice Amount</b></small></th>
+                                                <th class="text-end"><small><b>Invoice Amount (Comparison)</b></small></th>
                                                 <th class="text-center"><small><b>Recorded Amount Currency</b></small></th>
                                                 <th class="text-end"><small><b>Recorded Amount</b></small></th>
-                                                <th class="text-end"><small><b>Variance (Sales - Invoice)</b></small></th>
+                                                <th class="text-end"><small><b>Variance (Recorded - Invoice)</b></small></th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -716,6 +656,9 @@
                                                     $collapseId = 'order-compare-' . $order['order_id'];
                                                     $typeLabel = $order['primary_transaction_type'] ?? 'unknown';
                                                     $typeLabel = $typeLabel === 'unknown' ? '—' : ucfirst($typeLabel);
+                                                    $originalAmount = $order['order_amount_original'] ?? null;
+                                                    $comparisonAmount = $order['order_amount'] ?? 0;
+                                                    $showOriginalAmount = ! is_null($originalAmount) && abs($originalAmount - $comparisonAmount) > 0.01;
                                                 @endphp
                                                 <tr>
                                                     <td class="text-center">
@@ -726,7 +669,12 @@
                                                     <td>{{ $order['order_reference'] ?? $order['order_id'] }}</td>
                                                     <td class="text-center">{{ $typeLabel }}</td>
                                                     <td class="text-center">{{ $order['order_currency'] ?? '—' }}</td>
-                                                    <td class="text-end">{{ number_format($order['order_amount'] ?? 0, 2) }}</td>
+                                                    <td class="text-end">
+                                                        {{ number_format($comparisonAmount, 2) }}
+                                                        @if($showOriginalAmount)
+                                                            <div class="text-muted small">Original: {{ number_format($originalAmount, 2) }}</div>
+                                                        @endif
+                                                    </td>
                                                     <td class="text-center">{{ $order['sales_currency'] ?? '—' }}</td>
                                                     <td class="text-end">
                                                         @if(is_numeric($order['sales_total_currency']))
@@ -749,10 +697,13 @@
                                                             <strong>Variance Summary:</strong>
                                                             <ul class="mb-2 small">
                                                                 <li>Order Type: {{ $typeLabel === '—' ? 'Unknown' : $typeLabel }}</li>
-                                                                <li>Invoice Amount: {{ number_format($order['order_amount'] ?? 0, 2) }} {{ $order['order_currency'] ?? '—' }}</li>
+                                                                <li>Invoice Amount (comparison): {{ number_format($comparisonAmount, 2) }} {{ $order['order_currency'] ?? '—' }}</li>
+                                                                @if($showOriginalAmount)
+                                                                    <li>Invoice Amount (original): {{ number_format($originalAmount, 2) }} {{ $order['order_currency'] ?? '—' }}</li>
+                                                                @endif
                                                                 <li>Recorded Amount Currency: {{ $order['sales_currency'] ?? '—' }}</li>
                                                                 <li>
-                                                                    Recorded Sales Amount:
+                                                                    Recorded Amount:
                                                                     @if(is_numeric($order['sales_total_currency']))
                                                                         {{ number_format($order['sales_total_currency'], 2) }}
                                                                     @else
@@ -760,7 +711,7 @@
                                                                     @endif
                                                                 </li>
                                                                 @if(is_numeric($difference))
-                                                                    <li>Variance (Sales - Invoice): <span class="{{ $diffClass }}">{{ number_format($difference, 2) }}</span></li>
+                                                                    <li>Variance (Recorded - Invoice): <span class="{{ $diffClass }}">{{ number_format($difference, 2) }}</span></li>
                                                                 @else
                                                                     <li class="text-muted">Variance shown only when currencies align.</li>
                                                                 @endif
@@ -812,13 +763,82 @@
                             </div>
                         @endforeach
                     @endif
+                </div>
+            </div>
+        @endif
+
+        @if(isset($refundReport) && $refundReport instanceof \Illuminate\Support\Collection)
+            @php
+                $refundDetails = $refundReport->get('details', collect());
+                if (! $refundDetails instanceof \Illuminate\Support\Collection) {
+                    $refundDetails = collect($refundDetails ?? []);
+                }
+            @endphp
+            @if($refundDetails->isNotEmpty())
+                <div class="card mt-3">
+                    <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                        <h4 class="card-title mg-b-0">Refund Validation Details</h4>
+                        @if($refundSummary)
+                            <span class="text-muted small">
+                                Matched {{ $refundSummary['matched_count'] ?? 0 }} of {{ $refundSummary['total_count'] ?? $refundDetails->count() }}
+                                | Missing {{ $refundSummary['missing_count'] ?? 0 }}
+                            </span>
+                        @endif
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped mb-0 text-md-nowrap align-middle">
+                                <thead>
+                                    <tr>
+                                        <th><small><b>Txn ID</b></small></th>
+                                        <th><small><b>Txn Ref</b></small></th>
+                                        <th class="text-center"><small><b>Currency</b></small></th>
+                                        <th class="text-end"><small><b>Ledger Amount</b></small></th>
+                                        <th class="text-center"><small><b>Order Match</b></small></th>
+                                        <th><small><b>Order Ref</b></small></th>
+                                        <th class="text-center"><small><b>Order Currency</b></small></th>
+                                        <th class="text-end"><small><b>Order Amount</b></small></th>
+                                        <th class="text-end"><small><b>Variance</b></small></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($refundDetails as $refund)
+                                        @php
+                                            $matchSource = $refund['match_source'] ?? null;
+                                            $matchLabel = $refund['order_found']
+                                                ? ('Matched' . ($matchSource ? ' (' . ucfirst($matchSource) . ')' : ''))
+                                                : 'Missing';
+                                            $matchClass = $refund['order_found'] ? 'text-success' : 'text-danger';
+                                            $varianceValue = $refund['difference'] ?? 0;
+                                            $varianceClass = abs($varianceValue) < 0.01
+                                                ? 'text-success'
+                                                : ($varianceValue < 0 ? 'text-warning' : 'text-danger');
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $refund['transaction_id'] }}</td>
+                                            <td>{{ $refund['transaction_reference'] ?? '—' }}</td>
+                                            <td class="text-center">{{ $refund['transaction_currency'] ?? '—' }}</td>
+                                            <td class="text-end">{{ number_format($refund['transaction_amount'] ?? 0, 2) }}</td>
+                                            <td class="text-center {{ $matchClass }}">{{ $matchLabel }}</td>
+                                            <td>{{ $refund['order_reference'] ?? '—' }}</td>
+                                            <td class="text-center">{{ $refund['order_currency'] ?? '—' }}</td>
+                                            <td class="text-end">
+                                                @if($refund['order_found'])
+                                                    {{ number_format($refund['order_amount'] ?? 0, 2) }}
+                                                @else
+                                                    <span class="text-muted">—</span>
+                                                @endif
+                                            </td>
+                                            <td class="text-end {{ $varianceClass }}">{{ number_format($varianceValue, 2) }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
-                <div class="section-divider"></div>
             @endif
-
-            <!-- Section 4: Refund Validation -->
+        @endif
 
 
     </div>
@@ -846,20 +866,12 @@
 
                 var mywindow = window.open('', 'PRINT', 'height=600,width=900');
                 mywindow.document.write('<html><head>');
-                mywindow.document.write('<title>BM Invoice Report - {{ $process->reference_id }}</title>');
                 mywindow.document.write(
                     `<link rel="stylesheet" href="{{ asset('assets/plugins/bootstrap/css/bootstrap.min.css') }}" type="text/css" />`
                 );
                 mywindow.document.write(
                     `<link rel="stylesheet" href="{{ asset('assets/css/style.css') }}" type="text/css" />`);
-                mywindow.document.write('<style>');
-                mywindow.document.write('.no-print { display: none !important; }');
-                mywindow.document.write('.card { break-inside: avoid; margin-bottom: 1rem; }');
-                mywindow.document.write('.variance-positive { color: #28a745; font-weight: 600; }');
-                mywindow.document.write('.variance-negative { color: #dc3545; font-weight: 600; }');
-                mywindow.document.write('.variance-neutral { color: #6c757d; }');
-                mywindow.document.write('</style>');
-                mywindow.document.write('</head><body>');
+                mywindow.document.write('<title>' + document.title + '</title></head><body>');
                 mywindow.document.write(content);
                 mywindow.document.write('</body></html>');
 
