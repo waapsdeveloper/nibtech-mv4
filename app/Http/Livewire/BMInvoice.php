@@ -89,12 +89,12 @@ class BMInvoice extends Component
 
         $chargeMap = Order_charge_model::query()
             ->selectRaw('charge_value_id, SUM(amount) AS charge_total')
-            ->with('charge_value')
+            ->with('charge')
             ->whereIn('order_id', $transactions->pluck('order_id')->filter()->unique())
             ->groupBy('charge_value_id')
             ->get()
             ->mapWithKeys(fn ($charge) => [
-                trim(optional($charge->charge_value)->name ?? '') => (float) $charge->charge_total,
+                trim(optional($charge->charge)->name ?? '') => (float) $charge->charge_total,
             ])
             ->filter(fn ($_, $key) => $key !== '');
 
