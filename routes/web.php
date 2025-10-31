@@ -37,6 +37,7 @@ use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\IndexController;
 use App\Http\Controllers\ListingController;
 use App\Http\Controllers\ReportController;
+use App\Http\Livewire\BMInvoice;
 use App\Http\Livewire\Brand;
 use App\Http\Livewire\Category;
 use App\Http\Livewire\Color;
@@ -150,7 +151,8 @@ Route::get('report/sales_history', [Report::class,'sales_history'])->name('sales
 
 Route::get('report-lw', \App\Http\Livewire\ReportLw::class)->name('view_report_lw');
 
-Route::get('bm_invoice', \App\Http\Livewire\BMInvoice::class)->name('view_bm_invoice_report');
+Route::get('bm_invoice', BMInvoice::class)->name('view_bm_invoice_report');
+Route::get('bm_invoice/detail/{process_id}', [BMInvoice::class, 'invoice_detail'])->name('view_bm_invoice_detail_report');
 
 Route::get('return', SalesReturn::class)->name('view_return');
 Route::get('add_return', [SalesReturn::class,'add_return'])->name('add_return');
