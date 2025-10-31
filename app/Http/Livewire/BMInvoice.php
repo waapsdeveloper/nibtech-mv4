@@ -98,10 +98,29 @@ class BMInvoice extends Component
             ->filter(fn ($transaction) => $this->isSalesDescription($transaction->description))
             ->values();
 
-        $currencyContext = $this->buildCurrencyContext($orders, $salesTransactions);
+        $refundTransactions = $transactions
+            ->filter(fn ($transaction) => $this->isRefundDescription($transaction->description))
+            ->values();
+
+        $currencyContext = $this->buildCurrencyContext($orders, $transactions);
         $chargeMap = $this->buildChargeMap($orders);
 
+        $additionalRefundOrders = collect();
+
+        if ($refundTransactions->isNotEmpty()) {
+            $refundReferenceIds = $refundTransactions
+                ->filter(fn ($transaction) => empty($transaction->order_id) && ! empty($transaction->reference_id))
+                ->pluck('reference_id')
+                ->filter()
+                ->unique();
+
+            if ($refundReferenceIds->isNotEmpty()) {
+                $additionalRefundOrders = Order_model::whereIn('reference_id', $refundReferenceIds)->get(['id', 'price', 'currency', 'reference_id']);
+            }
+        }
+
         $descriptionSummary = $this->buildDescriptionReport($transactions, $chargeMap, $orders);
+        $refundReport = $this->buildRefundReport($refundTransactions, $orders, $additionalRefundOrders, $currencyContext);
 
         return [
             'duplicateTransactions' => $duplicateTransactions,
@@ -109,6 +128,7 @@ class BMInvoice extends Component
             'orderComparisons' => $this->buildOrderComparisons($orders, $salesTransactions, $currencyContext),
             'report' => $descriptionSummary->get('report'),
             'reportSalesRow' => $descriptionSummary->get('sales'),
+            'refundReport' => $refundReport,
         ];
     }
 
@@ -154,10 +174,10 @@ class BMInvoice extends Component
         return Order_model::whereIn('id', $orderIds)->get(['id', 'price', 'currency', 'reference_id']);
     }
 
-    private function buildCurrencyContext(Collection $orders, Collection $salesTransactions): array
+    private function buildCurrencyContext(Collection $orders, Collection $transactions): array
     {
         $currencyIds = $orders->pluck('currency')
-            ->merge($salesTransactions->pluck('currency'))
+            ->merge($transactions->pluck('currency'))
             ->filter(fn ($id) => ! is_null($id))
             ->unique()
             ->values();
@@ -257,6 +277,8 @@ class BMInvoice extends Component
                 'order_total_base' => $orderTotalBase,
                 'difference_base' => $salesTotalBase - $orderTotalBase,
             ];
+        })->filter(function ($row) {
+            return abs($row['sales_total']) > 0.01 || abs($row['order_total']) > 0.01;
         })->values();
 
         return [
@@ -421,6 +443,94 @@ class BMInvoice extends Component
         ]);
     }
 
+    private function buildRefundReport(Collection $refundTransactions, Collection $orders, Collection $referenceOrders, array $currencyContext): Collection
+    {
+        $baseCurrency = $currencyContext['baseCurrency'] ?? null;
+        $convertToBase = $currencyContext['convertToBase'];
+        $currencyMeta = $currencyContext['currencyMeta'];
+
+        if ($refundTransactions->isEmpty()) {
+            return collect([
+                'summary' => [
+                    'transaction_total_base' => 0.0,
+                    'order_total_base' => 0.0,
+                    'difference_base' => 0.0,
+                    'base_currency' => $baseCurrency,
+                    'matched_count' => 0,
+                    'missing_order_count' => 0,
+                    'total' => 0,
+                ],
+                'details' => collect(),
+            ]);
+        }
+
+        $ordersById = $orders->keyBy('id');
+        $ordersByReference = $referenceOrders->keyBy('reference_id');
+
+        $details = $refundTransactions->map(function ($transaction) use ($ordersById, $ordersByReference, $convertToBase, $currencyMeta) {
+            $transactionAmount = (float) $transaction->amount;
+            $transactionCurrency = optional($currencyMeta->get($transaction->currency))->code ?? (string) $transaction->currency;
+            $transactionBase = $convertToBase($transactionAmount, $transaction->currency);
+
+            $order = null;
+            $matchSource = null;
+
+            if (! empty($transaction->order_id) && $ordersById->has($transaction->order_id)) {
+                $order = $ordersById->get($transaction->order_id);
+                $matchSource = 'order_id';
+            } elseif (! empty($transaction->reference_id) && $ordersByReference->has($transaction->reference_id)) {
+                $order = $ordersByReference->get($transaction->reference_id);
+                $matchSource = 'reference';
+            }
+
+            $orderId = null;
+            $orderReference = null;
+            $orderAmount = 0.0;
+            $orderBase = 0.0;
+            $orderCurrency = null;
+
+            if ($order) {
+                $orderId = $order->id;
+                $orderReference = $order->reference_id;
+                $orderAmount = (float) ($order->price ?? 0.0);
+                $orderCurrency = optional($currencyMeta->get($order->currency))->code ?? (string) $order->currency;
+                $orderBase = $convertToBase($orderAmount, $order->currency);
+            }
+
+            return [
+                'transaction_id' => $transaction->id,
+                'transaction_reference' => $transaction->reference_id,
+                'transaction_currency' => $transactionCurrency,
+                'transaction_amount' => $transactionAmount,
+                'transaction_amount_base' => $transactionBase,
+                'order_found' => (bool) $order,
+                'match_source' => $matchSource,
+                'order_id' => $orderId,
+                'order_reference' => $orderReference,
+                'order_currency' => $orderCurrency,
+                'order_amount' => $orderAmount,
+                'order_amount_base' => $orderBase,
+                'difference_base' => $transactionBase - $orderBase,
+            ];
+        })->values();
+
+        $transactionTotalBase = $details->sum('transaction_amount_base');
+        $orderTotalBase = $details->sum('order_amount_base');
+
+        return collect([
+            'summary' => [
+                'transaction_total_base' => $transactionTotalBase,
+                'order_total_base' => $orderTotalBase,
+                'difference_base' => $transactionTotalBase - $orderTotalBase,
+                'base_currency' => $baseCurrency,
+                'matched_count' => $details->where('order_found', true)->count(),
+                'missing_order_count' => $details->where('order_found', false)->count(),
+                'total' => $details->count(),
+            ],
+            'details' => $details,
+        ]);
+    }
+
     private function normalizeDescription($description): string
     {
         return Str::lower(trim((string) $description));
@@ -429,6 +539,11 @@ class BMInvoice extends Component
     private function isSalesDescription($description): bool
     {
         return $this->normalizeDescription($description) === 'sales';
+    }
+
+    private function isRefundDescription($description): bool
+    {
+        return in_array($this->normalizeDescription($description), ['refund', 'refunds'], true);
     }
 }
 

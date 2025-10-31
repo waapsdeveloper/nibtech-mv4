@@ -90,6 +90,119 @@
             session()->forget('warning');
             @endphp
         @endif
+
+        @if(isset($refundReport) && $refundReport instanceof \Illuminate\Support\Collection)
+            @php
+                $refundSummary = $refundReport->get('summary', []);
+                $refundDetails = $refundReport->get('details', collect());
+                $refundBaseCurrency = strtoupper($refundSummary['base_currency'] ?? '');
+                $refundBasePrefix = $refundBaseCurrency !== '' ? $refundBaseCurrency . ' ' : '';
+                $refundTransactionTotal = $refundSummary['transaction_total_base'] ?? 0;
+                $refundOrderTotal = $refundSummary['order_total_base'] ?? 0;
+                $refundDifference = $refundSummary['difference_base'] ?? 0;
+                $refundMatchedCount = $refundSummary['matched_count'] ?? 0;
+                $refundMissingCount = $refundSummary['missing_order_count'] ?? 0;
+                $refundTotal = $refundSummary['total'] ?? $refundDetails->count();
+            @endphp
+            @if($refundDetails instanceof \Illuminate\Support\Collection && $refundDetails->isNotEmpty())
+                <div class="card mt-3">
+                    <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                        <h4 class="card-title mg-b-0">Refund Validation</h4>
+                        <span class="small text-muted">
+                            Matched {{ $refundMatchedCount }} of {{ $refundTotal }} refunds | Missing {{ $refundMissingCount }}
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-4">
+                                <div class="border rounded p-2">
+                                    <small class="text-muted d-block">Ledger Refund Total</small>
+                                    <span class="fw-semibold">{{ $refundBasePrefix }}{{ number_format($refundTransactionTotal, 2) }}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="border rounded p-2">
+                                    <small class="text-muted d-block">System Refund Orders</small>
+                                    <span class="fw-semibold">{{ $refundBasePrefix }}{{ number_format($refundOrderTotal, 2) }}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="border rounded p-2">
+                                    <small class="text-muted d-block">Variance (Ledger - System)</small>
+                                    @php
+                                        $refundVarianceClass = abs($refundDifference) < 0.01 ? 'text-success' : ($refundDifference < 0 ? 'text-warning' : 'text-danger');
+                                    @endphp
+                                    <span class="fw-semibold {{ $refundVarianceClass }}">{{ $refundBasePrefix }}{{ number_format($refundDifference, 2) }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped mb-0 text-md-nowrap align-middle">
+                                <thead>
+                                    <tr>
+                                        <th><small><b>Txn ID</b></small></th>
+                                        <th><small><b>Txn Ref</b></small></th>
+                                        <th class="text-center"><small><b>Currency</b></small></th>
+                                        <th class="text-end"><small><b>Refund Amount</b></small></th>
+                                        @if($refundBaseCurrency !== '')
+                                            <th class="text-end"><small><b>Refund ({{ $refundBaseCurrency }})</b></small></th>
+                                        @endif
+                                        <th class="text-center"><small><b>Order Match</b></small></th>
+                                        <th><small><b>Order Ref</b></small></th>
+                                        <th class="text-end"><small><b>Order Amount</b></small></th>
+                                        @if($refundBaseCurrency !== '')
+                                            <th class="text-end"><small><b>Order ({{ $refundBaseCurrency }})</b></small></th>
+                                            <th class="text-end"><small><b>Variance ({{ $refundBaseCurrency }})</b></small></th>
+                                        @endif
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($refundDetails as $refund)
+                                        @php
+                                            $orderMatchLabel = $refund['order_found']
+                                                ? ($refund['match_source'] === 'reference' ? 'Reference' : 'Order ID')
+                                                : 'Missing';
+                                            $orderMatchClass = $refund['order_found'] ? 'text-success' : 'text-danger';
+                                            $varianceBase = $refund['difference_base'] ?? 0;
+                                            $varianceClass = abs($varianceBase) < 0.01 ? 'text-success' : ($varianceBase < 0 ? 'text-warning' : 'text-danger');
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $refund['transaction_id'] }}</td>
+                                            <td>{{ $refund['transaction_reference'] ?? '—' }}</td>
+                                            <td class="text-center">{{ $refund['transaction_currency'] ?? '—' }}</td>
+                                            <td class="text-end">{{ number_format($refund['transaction_amount'] ?? 0, 2) }}</td>
+                                            @if($refundBaseCurrency !== '')
+                                                <td class="text-end">{{ number_format($refund['transaction_amount_base'] ?? 0, 2) }}</td>
+                                            @endif
+                                            <td class="text-center {{ $orderMatchClass }}">{{ $orderMatchLabel }}</td>
+                                            <td>{{ $refund['order_reference'] ?? '—' }}</td>
+                                            <td class="text-end">
+                                                @if($refund['order_found'])
+                                                    {{ number_format($refund['order_amount'] ?? 0, 2) }}
+                                                @else
+                                                    <span class="text-muted">—</span>
+                                                @endif
+                                            </td>
+                                            @if($refundBaseCurrency !== '')
+                                                <td class="text-end">
+                                                    @if($refund['order_found'])
+                                                        {{ number_format($refund['order_amount_base'] ?? 0, 2) }}
+                                                    @else
+                                                        <span class="text-muted">—</span>
+                                                    @endif
+                                                </td>
+                                                <td class="text-end {{ $varianceClass }}">{{ number_format($varianceBase, 2) }}</td>
+                                            @endif
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            @endif
+        @endif
         @if (session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <span class="alert-inner--icon"><i class="fe fe-thumbs-up"></i></span>
