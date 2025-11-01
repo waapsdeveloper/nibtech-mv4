@@ -458,28 +458,51 @@
                                         </div>
                                     </div>
                                 @endif
-                                @if (session('user')->hasPermission('dashboard_view_testing'))
+                                @if (session('user')->hasPermission('dashboard_view_testing') || session('user')->hasPermission('dashboard_view_repairing'))
 
                                     <div class="col-md col-xs-6">
-                                        <div class="card">
-                                            <div class="card-header">
-                                                <h4 class="card-title mb-1">Testing Count</h4>
-                                            </div>
-                                            <div class="card-body py-2">
-                                                <table class="w-100">
-                                                    @foreach ($testing_count as $testing)
-                                                        @if ($testing->stock_operations_count > 0)
+                                        @if (session('user')->hasPermission('dashboard_view_testing'))
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h4 class="card-title mb-1">Testing Count</h4>
+                                                </div>
+                                                <div class="card-body py-2">
+                                                    <table class="w-100">
+                                                        @foreach ($testing_count as $testing)
+                                                            @if ($testing->stock_operations_count > 0)
 
-                                                        <tr>
-                                                            <td>{{ $testing->first_name}}:</td>
-                                                            <td class="tx-right"><a href="{{url('move_inventory')}}?start_date={{ $start_date }}&end_date={{ $end_date }}&adm={{ $testing->id }}" title="Go to Move Inventory page">{{ $testing->stock_operations_count }}</a></td>
-                                                        </tr>
-                                                        @endif
-                                                    @endforeach
-                                                </table>
+                                                            <tr>
+                                                                <td>{{ $testing->first_name}}:</td>
+                                                                <td class="tx-right"><a href="{{url('move_inventory')}}?start_date={{ $start_date }}&end_date={{ $end_date }}&adm={{ $testing->id }}" title="Go to Move Inventory page">{{ $testing->stock_operations_count }}</a></td>
+                                                            </tr>
+                                                            @endif
+                                                        @endforeach
+                                                    </table>
 
+                                                </div>
                                             </div>
-                                        </div>
+                                        @endif
+                                        @if (session('user')->hasPermission('dashboard_view_repairing'))
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h4 class="card-title mb-1">Repairing Count</h4>
+                                                </div>
+                                                <div class="card-body py-2">
+                                                    <table class="w-100">
+                                                        @foreach ($repairing_count as $repairing)
+                                                            @if ($repairing->stock_operations_count > 0)
+
+                                                            <tr>
+                                                                <td>{{ $repairing->first_name}}:</td>
+                                                                <td class="tx-right"><a href="{{url('move_inventory')}}?start_date={{ $start_date }}&end_date={{ $end_date }}&adm={{ $repairing->id }}" title="Go to Move Inventory page">{{ $repairing->stock_operations_count }}</a></td>
+                                                            </tr>
+                                                            @endif
+                                                        @endforeach
+                                                    </table>
+
+                                                </div>
+                                            </div>
+                                        @endif
                                     </div>
 
                                 @endif
