@@ -136,10 +136,16 @@ class Index extends Component
 
         if(session('user')->hasPermission('dashboard_view_testing')){
             $testing_count = Admin_model::withCount(['stock_operations' => function($q) use ($start_date,$end_date) {
-                // $q->select(DB::raw('count(distinct stock_id)'))->where('description','LIKE','%DrPhone')->whereBetween('created_at', [$start_date, $end_date]);
                 $q->select(DB::raw('count(distinct stock_id)'))->where('process_id',1)->whereBetween('created_at', [$start_date, $end_date]);
             }])->orderByDesc('stock_operations_count')->get();
             $data['testing_count'] = $testing_count;
+        }
+
+        if(session('user')->hasPermission('dashboard_view_repairing')){
+            $repairing_count = Admin_model::where('role_id', 8)->withCount(['stock_operations' => function($q) use ($start_date,$end_date) {
+                $q->select(DB::raw('count(distinct stock_id)'))->whereBetween('created_at', [$start_date, $end_date]);
+            }])->orderByDesc('stock_operations_count')->get();
+            $data['repairing_count'] = $repairing_count;
         }
 
         $aftersale = Order_item_model::whereHas('order', function ($q) {
