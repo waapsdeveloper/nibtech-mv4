@@ -272,6 +272,7 @@ Route::get('testing/send_to_yk/{id}', [Testing::class, 'send_to_yk'])->name('sen
 Route::get('testing/delete_request/{id}', [Testing::class, 'delete_request'])->name('delete_testing_request');
 
 Route::get('order', Order::class)->name('view_order');
+Route::get('order/packing', \App\Http\Livewire\PackingDesk::class)->name('order.packing');
 Route::get('order/get_b2c_orders_by_customer_json/{id}/{order_id}', [Order::class,'get_b2c_orders_by_customer_json'])->name('view_order');
 Route::get('check_new/{return?}', [Order::class,'updateBMOrdersNew'])->name('view_order');
 Route::get('refresh_order', [Order::class,'getapiorders'])->name('view_order');
